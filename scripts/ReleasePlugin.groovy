@@ -122,22 +122,7 @@ target(releasePlugin: "The implementation target") {
             commitNewGlobalPluginList()
         }
         else if(argsMap.zipOnly) {
-
-            def localWorkingCopy = new File("${projectWorkDir}/working-copy" )
-            ant.mkdir(dir:localWorkingCopy)
-
-            if(isPluginNotInRepository()) {
-                updateLocalZipAndXml(localWorkingCopy)
-                importBaseToSVN(localWorkingCopy)
-            }
-            cleanLocalWorkingCopy(localWorkingCopy)
-            checkoutFromSVN(localWorkingCopy, trunk)
-            updateLocalZipAndXml(localWorkingCopy)
-            addPluginZipAndMetadataIfNeccessary(new File("${localWorkingCopy}/plugin.xml"), new File("${localWorkingCopy}/${new File(pluginZip).name}"))
-            commitDirectoryToSVN(localWorkingCopy)
-
-            tagPluginRelease()
-            modifyOrCreatePluginList()
+            publishZipOnlyRelease()
         }
         else {
             def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)
@@ -156,10 +141,14 @@ target(releasePlugin: "The implementation target") {
                     }
                     else {
                        def result = confirmInput("""
-The current directory is not a working copy and your latest changes won't be committed. You need to checkout
-a working copy and make your changes there. Alternatively, do you want to proceed and create a release from what is in SVN now?
-                    """)
+The current directory is not a working copy and your latest changes won't be committed.
+You need to checkout a working copy and make your changes there.
+Alternatively, would you like to publish a zip-only (no sources) release?""")
                         if(!result) exit(0)
+                        else {
+                            publishZipOnlyRelease()
+                            return
+                        }
                     }
                 }
                 else {
@@ -175,6 +164,25 @@ a working copy and make your changes there. Alternatively, do you want to procee
     catch(Exception e) {
         logErrorAndExit("Error occurred with release-plugin", e)
     }
+}
+
+def publishZipOnlyRelease() {
+    def localWorkingCopy = new File("${projectWorkDir}/working-copy")
+    ant.mkdir(dir: localWorkingCopy)
+
+    if (isPluginNotInRepository()) {
+        updateLocalZipAndXml(localWorkingCopy)
+        importBaseToSVN(localWorkingCopy)
+    }
+    cleanLocalWorkingCopy(localWorkingCopy)
+    checkoutFromSVN(localWorkingCopy, trunk)
+    updateLocalZipAndXml(localWorkingCopy)
+    addPluginZipAndMetadataIfNeccessary(new File("${localWorkingCopy}/plugin.xml"), new File("${localWorkingCopy}/${new File(pluginZip).name}"))
+    commitDirectoryToSVN(localWorkingCopy)
+
+    tagPluginRelease()
+    modifyOrCreatePluginList()
+    println "Successfully published zip-only plugin release."
 }
 
 def updateLocalZipAndXml(File localWorkingCopy) {
