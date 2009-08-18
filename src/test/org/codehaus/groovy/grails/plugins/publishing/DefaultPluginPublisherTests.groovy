@@ -61,11 +61,11 @@ Brief description of the plugin.
          def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
 
          def writer = new StringWriter()
-         writer << new groovy.xml.StreamingMarkupBuilder().bind {
-               mkp.yield result
-         }
-         new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
-         result = new XmlSlurper().parseText(writer.toString()) 
+         publisher.writePluginList(result, writer)
+
+         println writer
+         
+         result = new XmlSlurper().parseText(writer.toString())
 
          assertEquals 3, result.plugin.size()
 
@@ -79,6 +79,7 @@ Brief description of the plugin.
          assertEquals '0.1', releaseInfo.@version.text()
          assertEquals 'Bob', releaseInfo.author.text()
          assertEquals 'FooBar Plugin', releaseInfo.title.text()
+
      }
 
      void testPublishExistingPluginRelease() {
@@ -201,10 +202,12 @@ Brief description of the plugin.
          assertEquals 'Bob', releaseInfo[0].author.text()
          assertEquals 'FooBar Plugin', releaseInfo[0].title.text()
 
+
         assertEquals 'RELEASE_0_2', releaseInfo[1].@tag.text()
         assertEquals '0.2', releaseInfo[1].@version.text()
         assertEquals 'Bob', releaseInfo[1].author.text()
         assertEquals 'FooBar Plugin', releaseInfo[1].title.text()
+        assertEquals 'http://testrepo.com/grails-foo-bar/tags/RELEASE_0_2/grails-foo-bar-0.2.zip',releaseInfo[1].file.text()
 
     }
 
@@ -258,7 +261,7 @@ class TestPluginPublisher extends DefaultPluginPublisher{
     String testMetadata
 
     public TestPluginPublisher(String revNumber) {
-        super("0");    
+        super("0", "http://testrepo.com");
     }
 
     protected GPathResult getPluginMetadata(String pluginName) {

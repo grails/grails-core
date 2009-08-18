@@ -21,6 +21,12 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import org.springframework.core.io.Resource
 import grails.util.BuildSettingsHolder
+import javax.xml.transform.stream.StreamSource
+import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.Source
+import javax.xml.transform.Transformer
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.OutputKeys
 
 /**
  * Utility methods for manipulating the plugin-list.xml file used
@@ -33,17 +39,29 @@ import grails.util.BuildSettingsHolder
 public class DefaultPluginPublisher {
 
     String revision = "0"
-    DefaultPluginPublisher(String revNumber) {
+    String repositoryURL
+    DefaultPluginPublisher(String revNumber, String repositoryURL) {
         if(revNumber)
-            this.revision = revNumber        
+            this.revision = revNumber
+        if(!repositoryURL) throw new IllegalArgumentException("Argument [repositoryURL] must be specified!")
+        this.repositoryURL = repositoryURL
     }
 
+    /**
+     * Writes the given plugin list to the given writer
+     */
     void writePluginList(GPathResult pluginList, Writer targetWriter) {
         def stringWriter = new StringWriter()
         stringWriter << new groovy.xml.StreamingMarkupBuilder().bind {
               mkp.yield pluginList
         }
-        new XmlNodePrinter(new PrintWriter(targetWriter)).print(new XmlParser().parseText(stringWriter.toString()))        
+        Source xmlInput = new StreamSource(new StringReader(stringWriter.toString()));
+
+        StreamResult xmlOutput = new StreamResult(targetWriter);
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", String.valueOf(4));
+        transformer.transform(xmlInput, xmlOutput)
     }
 
     /**
@@ -70,6 +88,7 @@ public class DefaultPluginPublisher {
                 for(p in props) {
                     "$p"(releaseMetadata."$p".text())
                 }
+                file "$repositoryURL/grails-$pluginName/tags/$releaseTag/grails-$pluginName-${pluginVersion}.zip"
             }
         }
 
