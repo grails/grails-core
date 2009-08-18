@@ -121,7 +121,7 @@ target(releasePlugin: "The implementation target") {
         if(argsMap.pluginlist) {
             commitNewGlobalPluginList()
         }
-        if(argsMap.zipOnly) {
+        else if(argsMap.zipOnly) {
 
             def localWorkingCopy = new File("${projectWorkDir}/working-copy" )
             ant.mkdir(dir:localWorkingCopy)
