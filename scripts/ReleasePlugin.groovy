@@ -121,6 +121,24 @@ target(releasePlugin: "The implementation target") {
         if(argsMap.pluginlist) {
             commitNewGlobalPluginList()
         }
+        if(argsMap.zipOnly) {
+
+            def localWorkingCopy = new File("${projectWorkDir}/working-copy" )
+            ant.mkdir(dir:localWorkingCopy)
+
+            if(isPluginNotInRepository()) {
+                updateLocalZipAndXml(localWorkingCopy)
+                importBaseToSVN(localWorkingCopy)
+            }
+            cleanLocalWorkingCopy(localWorkingCopy)
+            checkoutFromSVN(localWorkingCopy, trunk)
+            updateLocalZipAndXml(localWorkingCopy)
+            addPluginZipAndMetadataIfNeccessary(new File("${localWorkingCopy}/plugin.xml"), new File("${localWorkingCopy}/${new File(pluginZip).name}"))
+            commitDirectoryToSVN(localWorkingCopy)
+
+            tagPluginRelease()
+            modifyOrCreatePluginList()
+        }
         else {
             def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)
 
@@ -132,17 +150,7 @@ target(releasePlugin: "The implementation target") {
             catch(SVNException ex) {
                 // error with status, not in repo, attempt import.
                 if (ex.message.contains("is not a working copy")) {
-                    // Now check whether the plugin is in the repository.
-                    // If not, we ask the user whether they want to import
-                    // it.
-                    SVNRepository repos = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(pluginSVN))
-                    boolean notInRepository = true
-                    try {
-                        notInRepository = !repos.info("grails-$pluginName", -1)
-                    }
-                    catch (e) {
-                        // ignore
-                    }
+                    boolean notInRepository = isPluginNotInRepository()
                     if (notInRepository) {
                         importToSVN()
                     }
@@ -169,6 +177,31 @@ a working copy and make your changes there. Alternatively, do you want to procee
     }
 }
 
+def updateLocalZipAndXml(File localWorkingCopy) {
+    ant.copy(file: pluginZip, todir: localWorkingCopy, overwrite:true)
+    ant.copy(file: "${basedir}/plugin.xml", todir: localWorkingCopy, overwrite:true)
+}
+
+def cleanLocalWorkingCopy(File localWorkingCopy) {
+    ant.delete(dir: localWorkingCopy)
+    ant.mkdir(dir: localWorkingCopy)
+}
+
+boolean isPluginNotInRepository() {
+// Now check whether the plugin is in the repository.
+    // If not, we ask the user whether they want to import
+    // it.
+    SVNRepository repos = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(pluginSVN))
+    boolean notInRepository = true
+    try {
+        notInRepository = !repos.info("grails-$pluginName", -1)
+    }
+    catch (e) {
+        // ignore
+    }
+    return notInRepository
+}
+
 target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or creates a new one in the repo") {
     withPluginListUpdate {
         ant.delete(file:pluginsListFile)
@@ -190,7 +223,7 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
             }
         }
 
-        def publisher = new DefaultPluginPublisher(remoteRevision)
+        def publisher = new DefaultPluginPublisher(remoteRevision, pluginSVN)
         def updatedList = publisher.publishRelease(pluginName, new FileSystemResource(pluginsListFile), !skipLatest)
         pluginsListFile.withWriter { w ->
             publisher.writePluginList(updatedList, w)    
@@ -270,30 +303,38 @@ private def commitNewestPluginList(File pluginMetaDir, SVNCommitClient importCli
 
 
 target(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in already") {
-    def statusClient = new SVNStatusClient((ISVNAuthenticationManager)authManager,null)
-    def wcClient = new SVNWCClient((ISVNAuthenticationManager)authManager,null)
-    def pluginFile = new File(pluginZip)
+
+    def pluginXml = new File("${basedir}/plugin.xml")
+
+    addPluginZipAndMetadataIfNeccessary(pluginXml, new File(pluginZip))
+}
+
+def addPluginZipAndMetadataIfNeccessary(File pluginXml, File pluginFile) {
+    def statusClient = new SVNStatusClient((ISVNAuthenticationManager) authManager, null)
+    def wcClient = new SVNWCClient((ISVNAuthenticationManager) authManager, null)
+
     def addPluginFile = false
     try {
         def status = statusClient.doStatus(pluginFile, true)
-        if(status.kind == SVNNodeKind.NONE || status.kind == SVNNodeKind.UNKNOWN) addPluginFile = true
+        if (status.kind == SVNNodeKind.NONE || status.kind == SVNNodeKind.UNKNOWN) addPluginFile = true
     }
-    catch(SVNException) {
+    catch (SVNException) {
         // not checked in add and commit
         addPluginFile = true
     }
-    if(addPluginFile) wcClient.doAdd(pluginFile,true,false,false,false)
-    def pluginXml = new File("${basedir}/plugin.xml")
+    if (addPluginFile) wcClient.doAdd(pluginFile, true, false, false, false)
     addPluginFile = false
     try {
         def status = statusClient.doStatus(pluginXml, true)
-        if(status.kind == SVNNodeKind.NONE || status.kind == SVNNodeKind.UNKNOWN) addPluginFile = true
+        if (status.kind == SVNNodeKind.NONE || status.kind == SVNNodeKind.UNKNOWN) addPluginFile = true
     }
-    catch(SVNException e) {
+    catch (SVNException e) {
         addPluginFile = true
     }
-    if(addPluginFile) wcClient.doAdd(pluginXml, true, false,false,false)
+    if (addPluginFile) wcClient.doAdd(pluginXml, true, false, false, false)
 }
+
+
 target(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
    def result = confirmInput("""
 This command will perform the following steps to release your plug-in to Grails' SVN repository:
@@ -305,31 +346,43 @@ NOTE: This command will not add new resources for you, if you have additional so
 NOTE: Make sure you have updated the version number in your *GrailsPlugin.groovy descriptor.
 
 Are you sure you wish to proceed?
-""") 
+""")
     if(!result) exit(0)
 
         checkInPluginZip()
 
 
-    updateClient = new SVNUpdateClient((ISVNAuthenticationManager)authManager, null)
-
-    println "Updating from SVN..."
-    long r = updateClient.doUpdate(baseFile, SVNRevision.HEAD, true)
+    long r = updateDirectoryFromSVN(baseFile)
     println "Updated to revision ${r}. Committing local, please wait..."
 
-    commitClient = new SVNCommitClient((ISVNAuthenticationManager)authManager, null)
+    def commit = commitDirectoryToSVN(baseFile)
 
-    if(!commitMessage) askForMessage()
+    println "Committed revision ${commit.newRevision}."
+}
+
+def commitDirectoryToSVN(baseFile) {
+    commitClient = new SVNCommitClient((ISVNAuthenticationManager) authManager, null)
+
+    if (!commitMessage) askForMessage()
 
     println "Committing code. Please wait..."
 
-    def commit = commitClient.doCommit([baseFile] as File[],false,commitMessage,true,true)
+    def commit = commitClient.doCommit([baseFile] as File[], false, commitMessage, true, true)
+    return commit
+}
 
-    println "Committed revision ${commit.newRevision}."
-}  
+long updateDirectoryFromSVN(baseFile) {
+    updateClient = new SVNUpdateClient((ISVNAuthenticationManager) authManager, null)
+
+    println "Updating from SVN..."
+    long r = updateClient.doUpdate(baseFile, SVNRevision.HEAD, true)
+    return r
+}
+
+
 
 target(importToSVN:"Imports a plug-in project to Grails' remote SVN repository") {
-    checkOutDir = new File("${baseFile.parentFile.absolutePath}/checkout/${baseFile.name}")
+    File checkOutDir = new File("${baseFile.parentFile.absolutePath}/checkout/${baseFile.name}")
 
     def result = confirmInput("""
 This plug-in project is not currently in the repository, this command will now:
@@ -345,28 +398,39 @@ Are you sure you wish to proceed?
     ant.mkdir(dir:"${basedir}/unzipped/grails-app")
 
 
-    importClient = new SVNCommitClient((ISVNAuthenticationManager)authManager, null)
-    askForMessage()
+    File importBaseDirectory = new File("${basedir}/unzipped")
 
-    println "Importing project to ${remoteLocation}. Please wait..."               
-
-    def svnURL = SVNURL.parseURIDecoded("${remoteLocation}/trunk")
-    importClient.doImport(new File("${basedir}/unzipped"),svnURL,commitMessage,true)
-    println "Plug-in project imported to SVN at location '${remoteLocation}/trunk'"
+    SVNURL svnURL = importBaseToSVN(importBaseDirectory)
 
     ant.delete(dir:"${basedir}/unzipped")
 
     checkOutDir.parentFile.mkdirs()
 
-    updateClient = new SVNUpdateClient((ISVNAuthenticationManager)authManager, null)
-    println "Checking out locally to '${checkOutDir}'."
-    updateClient.doCheckout(svnURL, checkOutDir, SVNRevision.HEAD,SVNRevision.HEAD, true)
+    checkoutFromSVN(checkOutDir, svnURL)
 
     event('StatusFinal', ["""
 Completed SVN project import. If you are in terminal navigate to imported project with:
 cd ${checkOutDir}
 
 Future changes should be made to the SVN controlled sources!"""])
+}
+
+def checkoutFromSVN(File checkOutDir, SVNURL svnURL) {
+    updateClient = new SVNUpdateClient((ISVNAuthenticationManager) authManager, null)
+    println "Checking out locally to '${checkOutDir}'."
+    updateClient.doCheckout(svnURL, checkOutDir, SVNRevision.HEAD, SVNRevision.HEAD, true)
+}
+
+SVNURL importBaseToSVN(File importBaseDirectory) {
+    importClient = new SVNCommitClient((ISVNAuthenticationManager) authManager, null)
+    askForMessage()
+
+    println "Importing project to ${remoteLocation}. Please wait..."
+
+    def svnURL = SVNURL.parseURIDecoded("${remoteLocation}/trunk")
+    importClient.doImport(importBaseDirectory, svnURL, commitMessage, true)
+    println "Plug-in project imported to SVN at location '${remoteLocation}/trunk'"
+    return svnURL
 }
 
 target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and version tag within the /tags area of SVN") {
