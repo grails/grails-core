@@ -846,7 +846,12 @@ cacheKnownPlugin = { String pluginName, String pluginRelease ->
           def pluginCacheFileName = "${pluginsBase}/grails-${plugin.'@name'}-${pluginRelease}.zip"
           if (!new File(pluginCacheFileName).exists() || pluginRelease.endsWith("SNAPSHOT")) {
               ant.mkdir(dir:pluginsBase)
-              fetchRemoteFile("${pluginDistName}", pluginCacheFileName)
+              if(!pluginDistName) {
+                cleanupPluginInstallAndExit("Plugin '${pluginName}' is in the [$repositoryName] repository, but contains no valid releases.") 
+              }
+              else {
+                fetchRemoteFile("${pluginDistName}", pluginCacheFileName)
+              }
           }
           fullPluginName = "$pluginName-$pluginRelease"
           currentPluginName = pluginName
