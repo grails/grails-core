@@ -107,13 +107,13 @@ target( packageApp : "Implementation of package target") {
 		profile("converting native message bundles to ascii") {
 			ant.native2ascii(src:"${basedir}/grails-app/i18n",
 							 dest:i18nDir,
-							 includes:"*.properties",
+							 includes:"**/*.properties",
 							 encoding:"UTF-8")
 		}
 	}
 	else {
 	    ant.copy(todir:i18nDir) {
-			fileset(dir:"${basedir}/grails-app/i18n", includes:"*.properties")
+			fileset(dir:"${basedir}/grails-app/i18n", includes:"**/*.properties")
 		}
 	}
     ant.copy(todir:classesDirPath) {

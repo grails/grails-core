@@ -31,9 +31,9 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver
  * @since 0.4
  */
 class I18nGrailsPlugin {
-	
+    def baseDir = "grails-app/i18n"
 	def version = grails.util.GrailsUtil.getGrailsVersion()
-	def watchedResources = "file:./grails-app/i18n/*.properties"
+	def watchedResources = "file:./${baseDir}/**/*.properties".toString()
 	
 	def doWithSpring = {
 		// find i18n resource bundles and resolve basenames
@@ -41,18 +41,29 @@ class I18nGrailsPlugin {
 
         def messageResources
         if(application.warDeployed) {
-            messageResources = parentCtx?.getResources("**/WEB-INF/grails-app/i18n/*.properties")?.toList()
+            messageResources = parentCtx?.getResources("**/WEB-INF/${baseDir}/**/*.properties")?.toList()
         }
         else {
             messageResources = plugin.watchedResources
         }
 
-        messageResources?.each {
-			def baseName = FilenameUtils.getBaseName(it.filename)
-			baseName = StringUtils.substringBefore(baseName, "_") // trims possible locale specification
-			baseNames << "WEB-INF/grails-app/i18n/" + baseName
+        messageResources?.each { resource ->
+            // Skip files with a locale specification, since we assume
+            // that there is an associated base resource bundle too.
+            if (resource.filename.contains("_")) {
+                return
+            }
+
+            // Extract the file path of the file's parent directory
+            // that comes after "grails-app/i18n".
+            def path = StringUtils.substringAfter(resource.path, baseDir)
+
+            // Lop off the extension - the "basenames" property in the
+            // message source cannot have entries with an extension.
+            path -= ".properties"
+
+			baseNames << "WEB-INF/" + baseDir + path
 		}
-		baseNames = baseNames.unique()
 		
 		log.debug("Creating messageSource with basenames: " + baseNames);
 
