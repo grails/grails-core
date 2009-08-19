@@ -186,7 +186,6 @@ compileTests = { String type ->
     try {
         def classpathId = "grails.test.classpath"
         ant.groovyc(destdir: destDir,
-                projectName: grailsAppName,
                 encoding:"UTF-8",
                 classpathref: classpathId) {
             javac(classpathref:classpathId, debug:"yes")
