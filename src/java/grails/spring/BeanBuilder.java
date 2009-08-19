@@ -323,10 +323,40 @@ public class BeanBuilder extends GroovyObjectSupport {
 
 			public void leftShift(Object value) {
 				InvokerHelper.invokeMethod(propertyValue, "leftShift", value);
-				if(value instanceof RuntimeBeanReference) {
-					deferredProperties.put(beanConfig.getName(), new DeferredProperty(beanConfig, propertyName, propertyValue));				
-				}
-			}			
+                updateDeferredProperties(value);
+			}
+
+            public boolean add(Object value) {
+                boolean retval = (Boolean) InvokerHelper.invokeMethod(propertyValue, "add", value);
+                updateDeferredProperties(value);
+                return retval;
+            }
+
+            public boolean addAll(Collection values) {
+                boolean retval = (Boolean) InvokerHelper.invokeMethod(propertyValue, "addAll", values);
+                for (Object value : values) {
+                    updateDeferredProperties(value);
+                }
+                return retval;
+            }
+
+            public Object invokeMethod(String name, Object args) {
+                return InvokerHelper.invokeMethod(propertyValue, name, args);
+            }
+
+            public Object getProperty(String name) {
+                return InvokerHelper.getProperty(propertyValue, name);
+            }
+
+            public void setProperty(String name, Object value) {
+                InvokerHelper.setProperty(propertyValue, name, value);
+            }
+
+            private void updateDeferredProperties(Object value) {
+                if (value instanceof RuntimeBeanReference) {
+                    deferredProperties.put(beanConfig.getName(), new DeferredProperty(beanConfig, propertyName, propertyValue));
+                }
+            }
 		}
 		public Object invokeMethod(String name, Object args) {
 			return this.metaClass.invokeMethod(this, name, args);
