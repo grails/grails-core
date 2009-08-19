@@ -46,7 +46,7 @@ class GrailsCompiler extends Groovyc {
     GrailsCompiler() {
     }
 
-
+	String projectName
 	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
 	
 	private destList = []
