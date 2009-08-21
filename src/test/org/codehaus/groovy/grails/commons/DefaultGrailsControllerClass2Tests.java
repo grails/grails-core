@@ -58,41 +58,53 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue(grailsClass.mapsToURI("/test/action"));
         assertTrue(grailsClass.mapsToURI("/test/action/**"));
     }
-	
+
+    public void testMappingToControllerBeginningWith2UpperCaseLetters() {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        Class clazz = cl.parseClass("class MYdemoController { def action = { return null }; } ");
+        GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+
+        assertEquals("MYdemo", grailsClass.getName());
+        assertEquals("MYdemoController", grailsClass.getFullName());
+        assertTrue(grailsClass.mapsToURI("/MYdemo"));
+        assertTrue(grailsClass.mapsToURI("/MYdemo/action"));
+        assertTrue(grailsClass.mapsToURI("/MYdemo/action/**"));
+    }
+
 
 	public void testInterceptors() throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class TestController { \n" +
 										"def beforeInterceptor = [action:this.&before,only:'list']\n" +
 										"def before() { return 'success' }\n" +
-										"def list = { return 'test' }\n " +										
+										"def list = { return 'test' }\n " +
 									"} ");
 		GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 		GroovyObject controller = (GroovyObject)grailsClass.newInstance();
-		
-		
+
+
 		assertTrue(grailsClass.isInterceptedBefore(controller,"list"));
 		assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
-		
+
 		Closure bi = grailsClass.getBeforeInterceptor(controller);
 		assertNotNull(bi);
 		assertEquals("success", bi.call());
 		assertNull(grailsClass.getAfterInterceptor(controller));
-		
+
 		clazz = cl.parseClass("class AfterController { \n" +
 				"def afterInterceptor = [action:this.&before,except:'list']\n" +
 				"def after() { return 'success' }\n" +
 				"def list = { return 'test' }\n " +
 				"def save = { return 'test' }\n " +
-			"} ");	
-		
+			"} ");
+
 		grailsClass = new DefaultGrailsControllerClass(clazz);
-		controller = (GroovyObject)grailsClass.newInstance();	
-		
+		controller = (GroovyObject)grailsClass.newInstance();
+
 		assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
 		assertTrue(grailsClass.isInterceptedAfter(controller,"save"));
 	}
-    
+
     public void testBeforeInterceptorWithNoExcept() {
         GroovyClassLoader cl = new GroovyClassLoader();
 		Class clazz = cl.parseClass("class TestController { \n" +
