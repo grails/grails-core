@@ -832,7 +832,7 @@ public class GrailsClassUtils {
 	}
 
     /**
-     * Retrieves the logical name of the classs without the trailing name
+     * Retrieves the logical name of the class without the trailing name
      * @param name The name of the class
      * @param trailingName The trailing name
      * @return The logical name

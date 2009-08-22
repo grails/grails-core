@@ -33,8 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * <p>Uses the GrailsApplication sesssionFactory to apply the filter
- * 
+ * <p>Uses the GrailsApplication sessionFactory to apply the filter
+ *
  * @author Graeme Rocher
  * @since Oct 20, 2005
  */

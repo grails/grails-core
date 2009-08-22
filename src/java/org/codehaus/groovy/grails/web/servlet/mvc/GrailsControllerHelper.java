@@ -65,7 +65,7 @@ public interface GrailsControllerHelper {
 	
 	/**
 	 * Handles a Grails URI
-	 * @param uri The URI to processs
+	 * @param uri The URI to process
 	 * @param webRequest The GrailsWebRequest
 	 * @return A ModelAndView instance
 	 */

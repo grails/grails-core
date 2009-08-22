@@ -96,7 +96,7 @@ class IdTest {}
         assertEquals 2, obj.version
     }
 
-    void testInjectHasManyAsssociation() {
+    void testInjectHasManyAssociation() {
         def clz = gcl.parseClass('''
 class IdTest {
     static hasMany = [others:AssocTest]

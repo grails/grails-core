@@ -209,7 +209,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
     Collection getPluginObservers(GrailsPlugin plugin);
 
     /**
-     * inform the specified plugins observers of the event specified by the passsed Map instance
+     * inform the specified plugins observers of the event specified by the passed Map instance
      *
      * @param pluginName The name of the plugin
      * @param event The event

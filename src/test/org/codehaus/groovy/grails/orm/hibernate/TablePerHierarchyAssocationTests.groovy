@@ -2,10 +2,10 @@ package org.codehaus.groovy.grails.orm.hibernate
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Mar 18, 2008
  */
-class TablePerHierarchyAsssocationTests extends AbstractGrailsHibernateTests{
+class TablePerHierarchyAssocationTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -29,7 +29,7 @@ class TablePerHierarchOneToMany {
 '''
     }
 
-    
+
 
     void testLoadSubclassAssociation() {
         def testClass = ga.getDomainClass("TablePerHierarchOneToMany").clazz

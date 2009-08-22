@@ -51,17 +51,17 @@ public class GrailsFlashScope implements FlashScope {
             if(value instanceof Map) {
                 reassociateObjectsWithErrors((Map)value);
             }
-            reasssociateObjectWithErrors(scope, value);
+            reassociateObjectWithErrors(scope, value);
 
         }
     }
 
-    private void reasssociateObjectWithErrors(Map scope, Object value) {
+    private void reassociateObjectWithErrors(Map scope, Object value) {
         if(value instanceof Collection) {
              Collection values = (Collection)value;
             for (Iterator i = values.iterator(); i.hasNext();) {
                 Object current = i.next();
-                reasssociateObjectWithErrors(scope, current);
+                reassociateObjectWithErrors(scope, current);
             }
         }
         else {
