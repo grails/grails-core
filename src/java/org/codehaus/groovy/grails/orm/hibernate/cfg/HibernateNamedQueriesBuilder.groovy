@@ -62,22 +62,27 @@ class NamedCriteriaProxy {
     private criteriaClosure
     private domainClass
 
-    def list(params = [:]) {
+    def list(Object[] params) {
         def closureClone = criteriaClosure.clone()
         def listClosure = {
             closureClone.delegate = delegate
-            closureClone()
-            if(params.max) {
-                maxResults(params.max)
+            def paramsMap
+            if(params && params[-1] instanceof Map) {
+                paramsMap = params[-1]
+                params = params.size() > 1 ? params[0..-2] : []
             }
-            if(params.offset) {
-                firstResult params.offset
+            closureClone(* params)
+            if (paramsMap?.max) {
+                maxResults(paramsMap.max)
+            }
+            if (paramsMap?.offset) {
+                firstResult paramsMap.offset
             }
         }
         domainClass.withCriteria(listClosure)
     }
 
-    def call(params = [:]) {
+    def call(Object[] params) {
         list(params)
     }
 
