@@ -32,7 +32,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	public Writer getOut() {
 		return out;
 	}
-
+	
 	public boolean isFinalTargetHere() {
 		return this.finalTargetHere;
 	}
@@ -64,6 +64,10 @@ public class GrailsPrintWriter extends PrintWriter {
         	InvokerHelper.write(this, value);
         }
         return this;
+    }
+    
+    public GrailsPrintWriter plus(Object value) throws IOException {
+    	return this.leftShift(value);
     }
 
 	/**
@@ -112,7 +116,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 * @param      obj   The <code>Object</code> to be printed
 	 * @see        java.lang.Object#toString()
 	 */
-	public void print(Object obj) {
+	public void print(final Object obj) {
 		if (trouble || obj == null) {
 			return;
 		} else {
@@ -122,6 +126,8 @@ public class GrailsPrintWriter extends PrintWriter {
 				} catch (IOException e) {
 					handleIOException(e);
 				}
+			} else if(obj instanceof StreamCharBuffer) {
+				this.write((StreamCharBuffer)obj);
 			} else {
 				write(String.valueOf(obj));
 			}
@@ -137,7 +143,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 *
 	 * @param      s   The <code>String</code> to be printed
 	 */
-	public void print(String s) {
+	public void print(final String s) {
 		if (s == null) {
 			return;
 		}
@@ -151,7 +157,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 * @param      s   The <code>String</code> to be printed
 	 */
 	@Override
-    public void write(String s) {
+    public void write(final String s) {
         if(trouble || s == null) {
         	return;
         }
@@ -167,7 +173,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 * @param c int specifying a character to be written.
 	 */
     @Override
-	public void write(int c) {
+	public void write(final int c) {
 		if (trouble) return;
 		try {
 			out.write(c);
@@ -183,7 +189,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 * @param len Number of characters to write
 	 */
 	@Override
-	public void write(char buf[], int off, int len) {
+	public void write(final char buf[], final int off, final int len) {
 		if (trouble || buf == null || len == 0) return;
 		try {
 			out.write(buf, off, len);
@@ -199,7 +205,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 * @param len Number of characters to write
 	 */
 	@Override
-	public void write(String s, int off, int len) {
+	public void write(final String s, final int off, final int len) {
 		if (trouble || s == null || s.length() == 0) return;
 		try {
 			out.write(s, off, len);
@@ -209,14 +215,14 @@ public class GrailsPrintWriter extends PrintWriter {
 	} // write()
 
     @Override
-    public void write(char buf[]) {
+    public void write(final char buf[]) {
         write(buf, 0, buf.length);
     }
 
     /** delegate methods, not synchronized **/
 
     @Override
-    public void print(boolean b) {
+    public void print(final boolean b) {
         if(b)
             write("true");
         else
@@ -224,32 +230,32 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
     @Override
-    public void print(char c) {
+    public void print(final char c) {
         write(c);
     }
 
     @Override
-    public void print(int i) {
+    public void print(final int i) {
         write(String.valueOf(i));
     }
 
     @Override
-    public void print(long l) {
+    public void print(final long l) {
         write(String.valueOf(l));
     }
 
     @Override
-    public void print(float f) {
+    public void print(final float f) {
         write(String.valueOf(f));
     }
 
     @Override
-    public void print(double d) {
+    public void print(final double d) {
         write(String.valueOf(d));
     }
 
     @Override
-    public void print(char s[]) {
+    public void print(final char s[]) {
         write(s);
     }
 
@@ -259,61 +265,61 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
     @Override
-    public void println(boolean b) {
+    public void println(final boolean b) {
         print(b);
         println();
     }
 
     @Override
-    public void println(char c) {
+    public void println(final char c) {
         print(c);
         println();
     }
 
     @Override
-    public void println(int i) {
+    public void println(final int i) {
         print(i);
         println();
     }
 
     @Override
-    public void println(long l) {
+    public void println(final long l) {
         print(l);
         println();
     }
 
     @Override
-    public void println(float f) {
+    public void println(final float f) {
         print(f);
         println();
     }
 
     @Override
-    public void println(double d) {
+    public void println(final double d) {
         print(d);
         println();
     }
 
     @Override
-    public void println(char c[]) {
+    public void println(final char c[]) {
         print(c);
         println();
     }
 
     @Override
-    public void println(String s) {
+    public void println(final String s) {
         print(s);
         println();
     }
 
     @Override
-    public void println(Object o) {
+    public void println(final Object o) {
         print(o);
         println();
     }
 
 	@Override
-	public PrintWriter append(char c) {
+	public PrintWriter append(final char c) {
 		try {
 			out.append(c);
 		} catch (IOException e) {
@@ -323,7 +329,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	}
 
 	@Override
-	public PrintWriter append(CharSequence csq, int start, int end) {
+	public PrintWriter append(final CharSequence csq, final int start, final int end) {
 		try {
 			out.append(csq, start, end);
 		} catch (IOException e) {
@@ -333,7 +339,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	}
 
 	@Override
-	public PrintWriter append(CharSequence csq) {
+	public PrintWriter append(final CharSequence csq) {
 		try {
 			out.append(csq);
 		} catch (IOException e) {
@@ -345,5 +351,34 @@ public class GrailsPrintWriter extends PrintWriter {
     @Override
     protected Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
+    }
+
+    public void write(final StreamCharBuffer otherBuffer) {
+    	if(trouble) return;
+    	try {
+			otherBuffer.writeTo(getOut(),true,false);
+		} catch (IOException e) {
+			handleIOException(e);
+		}
+    }
+    
+    public void print(final StreamCharBuffer otherBuffer) {
+    	write(otherBuffer);
+    }
+    
+    public void append(final StreamCharBuffer otherBuffer) {
+    	write(otherBuffer);
+    }
+
+    public void println(final StreamCharBuffer otherBuffer) {
+    	write(otherBuffer);
+    	println();
+    }
+    
+    public GrailsPrintWriter leftShift(final StreamCharBuffer otherBuffer) {
+    	if(otherBuffer != null) {
+    		write(otherBuffer);
+    	}
+    	return this;
     }
 }

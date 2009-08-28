@@ -41,8 +41,11 @@ public class GSPWriter extends PrintWriter {
     }
 
     public void printlnToResponse(String s) {
-        if(s == null) s = "''";
-        super.print("out.print(");
+    	if(s==null || s.trim().length()==0) {
+    		return;
+    	}
+    	parse.flushTagBuffering();
+        super.print("printToOut(");
         super.print(s);
         super.print(")");
         println();

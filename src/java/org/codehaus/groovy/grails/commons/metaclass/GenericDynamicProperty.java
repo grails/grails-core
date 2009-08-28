@@ -20,6 +20,7 @@ import groovy.lang.MissingPropertyException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A generic dyanmic property for any type
@@ -31,7 +32,7 @@ public class GenericDynamicProperty extends AbstractDynamicProperty {
 
 	private Class type;
 	private boolean readyOnly;
-	private Map propertyToInstanceMap = Collections.synchronizedMap(new HashMap());
+	private Map propertyToInstanceMap = new ConcurrentHashMap();
 	private Object initialValue;
     private FunctionCallback initialValueGenerator;
 

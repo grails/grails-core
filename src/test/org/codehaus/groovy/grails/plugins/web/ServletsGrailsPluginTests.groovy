@@ -126,7 +126,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
         def results = request.findAll {
             println it
-            it.key.startsWith("foo")
+            it.key.toString().startsWith("foo")
         }
 
         assertEquals( [foo:"bar",foobar:"yes!"],results )
@@ -139,7 +139,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         request["bar"] = "foo"
         request["foobar"] = "yes!"
 
-        def results = request.find { it.key.startsWith("bar") }
+        def results = request.find { it.key.toString().startsWith("bar") }
 
         assertEquals( [bar:"foo"],results )
     }

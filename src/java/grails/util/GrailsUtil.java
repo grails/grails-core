@@ -18,6 +18,17 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Writable;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
@@ -33,14 +44,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 /**
  *
@@ -77,34 +80,42 @@ public class GrailsUtil {
     };
 
     static {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        String version = null;
-        try {
-            Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
-            Manifest grailsManifest = null;
-            for (int i = 0; i < manifests.length; i++) {
-                Resource r = manifests[i];
-                Manifest mf = new Manifest(r.getInputStream());
-                String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
-                if(!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
-                    grailsManifest = mf;
-                    break;
-                }
-            }
-
-            if(grailsManifest != null) {
-                version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-            }
-
-            if(isBlank(version)) {
-                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? " );
-                version = "Unknown";
-            }
-        } catch (IOException e) {
-            version = "Unknown";
-            LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
+        String version = GrailsUtil.class.getPackage().getImplementationVersion();
+        if(version==null || isBlank(version)) {
+	        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+	        try {
+	            Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
+	            Manifest grailsManifest = null;
+	            for (int i = 0; i < manifests.length; i++) {
+	                Resource r = manifests[i];
+	                InputStream inputStream = null;
+	                Manifest mf = null;
+	                try {
+	                	inputStream = r.getInputStream();
+	                	mf = new Manifest(inputStream);
+	                } finally {
+	                	IOUtils.closeQuietly(inputStream);
+	                }
+	                String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
+	                if(!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
+	                    grailsManifest = mf;
+	                    break;
+	                }
+	            }
+	
+	            if(grailsManifest != null) {
+	                version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+	            }
+	
+	            if(isBlank(version)) {
+	                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? " );
+	                version = "Unknown";
+	            }
+	        } catch (IOException e) {
+	            version = "Unknown";
+	            LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
+	        }
         }
-
         GRAILS_VERSION = version;
     }
 

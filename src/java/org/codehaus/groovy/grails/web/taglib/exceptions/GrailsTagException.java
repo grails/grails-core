@@ -38,13 +38,13 @@ public class GrailsTagException extends GrailsException implements SourceCodeAwa
     }
 
     public GrailsTagException(String message, String pageName, int lineNumber) {
-        super(message);
+        super(message + " (" + pageName + ":" + lineNumber + ")");
         this.fileName = pageName;
         this.lineNumber = lineNumber;
     }
 
     public GrailsTagException(String arg0, Throwable arg1, String fileName, int lineNumber) {
-        super(arg0, arg1);
+        super(arg0 + " (" + fileName + ":" + lineNumber + ")", arg1);
         this.fileName = fileName;
         this.lineNumber = lineNumber;
     }

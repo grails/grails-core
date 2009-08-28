@@ -32,6 +32,7 @@ import org.springframework.ui.context.ThemeSource
 import org.springframework.ui.context.Theme
 import org.springframework.ui.context.support.SimpleTheme
 import org.springframework.context.MessageSource
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -84,6 +85,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 	def withTag(String tagName, Writer out, Closure callable) {
 		def result = null
 		runTest {
+	        def webRequest = RequestContextHolder.currentRequestAttributes()
+	        webRequest.out = out
+
 			def mockController = grailsApplication.getControllerClass("MockController").newInstance()
 
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
@@ -100,9 +104,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 			if(go instanceof ApplicationContextAware) {
 				go.applicationContext = appCtx
 			}
-	        def webRequest = RequestContextHolder.currentRequestAttributes()
 
-	        webRequest.out = out
+			GroovyPageOutputStack stack=GroovyPageOutputStack.createNew(out)
+
 	        println "calling tag '${tagName}'"
 	        result = callable.call(go.getProperty(tagName))
 		}
@@ -189,7 +193,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
 		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
-	    grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
+		// Why are the TagLibClasses removed?
+	    //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
 		mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
@@ -256,7 +261,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         def text =  getCompiledSource(template, params)
         println "----- GSP SOURCE -----"
         println text
-
     }
 
     def getCompiledSource(template, params = [:]) {
@@ -308,8 +312,15 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         def engine = appCtx.groovyPagesTemplateEngine
 
+        //printCompiledSource(template)
+        
         assert engine
         def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+        
+        /*
+        println "------------HTMLPARTS----------------------"
+        t.metaInfo.htmlParts.eachWithIndex {it, i -> print "htmlpart[${i}]:\n>${it}<\n--------\n" }
+        */
 
         def w = t.make(params)
 
@@ -326,6 +337,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
 
+        printCompiledSource(template)
+
         assert engine
         def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
 
@@ -334,7 +347,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         def sw = new StringWriter()
         def out = new PrintWriter(sw)
         webRequest.out = out
+
         w.writeTo(out)
+        out.flush()
 
         return sw.toString()
     }

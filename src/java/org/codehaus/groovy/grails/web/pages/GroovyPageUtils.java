@@ -15,11 +15,14 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.GrailsNameUtils;
+import groovy.lang.Binding;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 import javax.servlet.ServletRequest;
 
@@ -205,4 +208,15 @@ public class GroovyPageUtils {
             return buf.toString();
         }
     }
+    
+	public static Binding findPageScopeBinding(Object owner, GrailsWebRequest webRequest) {
+		if(owner instanceof GroovyPage)
+            return ((GroovyPage) owner).getBinding();
+        else if(owner != null && owner.getClass().getName().endsWith(TagLibArtefactHandler.TYPE)) {
+        	return (Binding) ((GroovyObject)owner).getProperty(GroovyPage.PAGE_SCOPE);
+        } else {
+        	return (Binding)webRequest.getCurrentRequest().getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+        }
+	}
+    
 }

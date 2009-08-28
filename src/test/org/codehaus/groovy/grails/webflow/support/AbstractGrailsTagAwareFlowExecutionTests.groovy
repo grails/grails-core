@@ -137,7 +137,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
 		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
-	    grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
+	    //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
 		mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
@@ -147,7 +147,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
     }
 
     final void tearDown() {
-        RequestContextHolder.setRequestAttributes(null)
+    	RequestContextHolder.setRequestAttributes(null)
 		GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
 
         onDestroy()
@@ -197,7 +197,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 
     }
 
-    String getFlowId() { "testFlow" }
+    String getFlowId() { 'testFlow' }
 
     abstract Closure getFlowClosure();
 }

@@ -17,11 +17,16 @@
 package org.codehaus.groovy.grails.plugins.web
 
 
+import groovy.lang.MetaClass;
+
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
@@ -163,6 +168,8 @@ public class GroovyPagesGrailsPlugin {
         for(taglib in application.tagLibClasses) {
             "${taglib.fullName}"(taglib.clazz) { bean ->
                    bean.autowire = true
+                   // Taglib scoping support could be easily added here. Scope could be based on a static field in the taglib class.
+				   //bean.scope = 'request'
             }
         }
 
@@ -230,8 +237,7 @@ public class GroovyPagesGrailsPlugin {
             WebMetaUtils.registerCommonWebProperties(mc, application)
 
             for(tag in taglib.tagNames) {
-                def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, tag)
-                WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, tag)
+                WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }
 
             mc.throwTagError = {String message ->
@@ -245,19 +251,19 @@ public class GroovyPagesGrailsPlugin {
 
             mc.getPageScope = {->
                 def request = RequestContextHolder.currentRequestAttributes().currentRequest
-                def binding = request[GrailsApplicationAttributes.PAGE_SCOPE]
+                def binding = request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE)
                 if (!binding) {
-                    binding = new Binding()
-                    request[GrailsApplicationAttributes.PAGE_SCOPE] = binding
+                    binding = new GroovyPageBinding()
+                    request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding)
                 }
                 binding
             }
 
             mc.getOut = {->
-                RequestContextHolder.currentRequestAttributes().out
+            	org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack.currentWriter()
             }
             mc.setOut = {Writer newOut ->
-                RequestContextHolder.currentRequestAttributes().out = newOut
+            	org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack.currentStack().push(newOut,true)
             }
             mc.propertyMissing = {String name ->
                 def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)
@@ -279,10 +285,15 @@ public class GroovyPagesGrailsPlugin {
 
             }
             mc.methodMissing = {String name, args ->
+            	def usednamespace = namespace
                 def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-                if(!tagLibrary) tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
+                if(!tagLibrary) {
+                	tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
+					usednamespace = GroovyPage.DEFAULT_NAMESPACE
+                }
                 if(tagLibrary) {
-                    WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
+                	WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, usednamespace, name)
+                    //WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
                 }
                 if (mc.respondsTo(delegate, name, args)) {
                     return mc.invokeMethod(delegate, name, args)
@@ -291,7 +302,6 @@ public class GroovyPagesGrailsPlugin {
                     throw new MissingMethodException(name, delegate.class, args)
                 }
             }
-            ctx.getBean(taglib.fullName).metaClass = mc
         }
 
     }
@@ -305,7 +315,7 @@ public class GroovyPagesGrailsPlugin {
             def tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
             if (tagLibrary) {
                 MetaClass controllerMc = delegate.class.metaClass
-                WebMetaUtils.registerMethodMissingForTags(controllerMc,tagLibrary, name)
+                WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, name)
                 if(controllerMc.respondsTo(delegate, name, args)) {
                   return controllerMc.invokeMethod(delegate, name, args)
                 }
@@ -330,6 +340,7 @@ public class GroovyPagesGrailsPlugin {
                 def beans = beans {
                     "$beanName"(taglibClass.getClazz()) {bean ->
                         bean.autowire = true
+						//bean.scope = 'request'
                     }
                 }
                 beans.registerBeans(event.ctx)

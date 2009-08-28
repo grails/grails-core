@@ -404,10 +404,10 @@ class PrototypeProvider implements JavascriptProvider {
         }
 
         if(attrs.url) {
-			url = taglib.createLink(attrs.url)
+			url = taglib.createLink(attrs.url)?.toString()
 		}
 		else {
-			url = taglib.createLink(attrs)
+			url = taglib.createLink(attrs)?.toString()
 		}
 
         if(!attrs.params) attrs.params = [:]
