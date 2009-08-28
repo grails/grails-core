@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import groovy.lang.GString;
 
 import java.io.Writer;
 import java.util.HashMap;
@@ -117,6 +118,9 @@ public class GroovyPageTagBody extends Closure {
 
             StreamCharBuffer buffer=capturedOut.getBuffer();
             if(buffer.charsAvailable()==0 && bodyResult != null && !(bodyResult instanceof Writer)) {
+				if(bodyResult instanceof GString) {
+                    return bodyResult.toString();
+                }
        			return bodyResult;
             } 
             return buffer;

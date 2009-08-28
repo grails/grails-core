@@ -22,29 +22,43 @@ public final class GroovyPageOutputStack {
 	}
 	
 	public static final GroovyPageOutputStack currentStack(boolean allowCreate) {
-		return currentStack(allowCreate, (Writer)RequestContextHolder.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.OUT, RequestAttributes.SCOPE_REQUEST), true, false);
+		return currentStack(allowCreate, null, allowCreate, false);
 	}
 	
 	public static final GroovyPageOutputStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
 		GroovyPageOutputStack outputStack=instances.get();
 		if(outputStack!=null) {
-			if(pushTop) {
+			if(pushTop && topWriter != null) {
 				outputStack.push(topWriter);
 			}
 			return outputStack;
 		} else if(allowCreate) {
+			if(topWriter==null) {
+				topWriter=defaultRequest();
+			}
 			return createNew(topWriter, autoSync);
 		} else {
 			return null;
 		} 
 	}
 	
+	private static Writer defaultRequest() {
+		return (Writer)RequestContextHolder.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.OUT, RequestAttributes.SCOPE_REQUEST);
+	}
+	
 	public static final GroovyPageOutputStack createNew(Writer topWriter) {
 		return createNew(topWriter, false);
 	}
 	
-	private static final GroovyPageOutputStack createNew(Writer topWriter, boolean autoCreated) {
-		GroovyPageOutputStack instance=new GroovyPageOutputStack(topWriter, autoCreated);
+	private static final GroovyPageOutputStack createNew(Writer topWriter, boolean autoSync) {
+		GroovyPageOutputStack instance=new GroovyPageOutputStack(topWriter, autoSync);
+		// clear instance after the request is over
+		RequestContextHolder.currentRequestAttributes().registerDestructionCallback(GroovyPageOutputStack.class.getName(), new Runnable() {
+			@Override
+			public void run() {
+				GroovyPageOutputStack.removeCurrentInstance();
+			}
+		}, RequestAttributes.SCOPE_REQUEST);
 		instances.set(instance);
 		return instance;
 	}
@@ -58,7 +72,7 @@ public final class GroovyPageOutputStack {
 		if(outputStack != null) {
 			return outputStack.getProxyWriter();
 		} else {
-			return (Writer)RequestContextHolder.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.OUT, RequestAttributes.SCOPE_REQUEST);
+			return defaultRequest();
 		}
 	}
 	
@@ -112,7 +126,7 @@ public final class GroovyPageOutputStack {
 	}
 	
 	public void push(final Writer newWriter, final boolean checkExisting) {
-		if(newWriter == proxyWriter) {
+		if(newWriter == proxyWriter && stack.size() > 0) {
 			stack.push(stack.peek());
 			return;
 		}
@@ -124,7 +138,7 @@ public final class GroovyPageOutputStack {
 			}
 		}
 		Writer unwrappedWriter = unwrapTargetWriter(newWriter);
-		if(unwrappedWriter == proxyWriter) {
+		if(unwrappedWriter == proxyWriter && stack.size() > 0) {
 			stack.push(stack.peek());
 			return;
 		}

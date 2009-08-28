@@ -302,6 +302,7 @@ public class GroovyPagesGrailsPlugin {
                     throw new MissingMethodException(name, delegate.class, args)
                 }
             }
+            ctx.getBean(taglib.fullName).metaClass = mc
         }
 
     }
