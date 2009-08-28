@@ -18,8 +18,10 @@ package org.codehaus.groovy.grails.commons.metaclass;
 import groovy.lang.MissingPropertyException;
 import org.apache.commons.collections.map.ReferenceMap;
 
+import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A generic dyanmic property for any type used a soft hashmap implementation for generic properties
@@ -32,7 +34,7 @@ public class WeakGenericDynamicProperty extends AbstractDynamicProperty {
 
     private Class type;
     private boolean readyOnly;
-    private Map propertyToInstanceMap = Collections.synchronizedMap(new ReferenceMap(ReferenceMap.SOFT,ReferenceMap.SOFT,true));
+    private Map<String, SoftReference<Object>> propertyToInstanceMap = new ConcurrentHashMap<String, SoftReference<Object>>();
     private Object initialValue;
     private FunctionCallback initialValueGenerator;
 
@@ -82,16 +84,19 @@ public class WeakGenericDynamicProperty extends AbstractDynamicProperty {
 
     public Object get(Object object) {
         String propertyKey = System.identityHashCode(object) + getPropertyName();
-        if(propertyToInstanceMap.containsKey(propertyKey)) {
-            return propertyToInstanceMap.get(propertyKey);
+        
+        SoftReference<Object> ref=propertyToInstanceMap.get(propertyKey);
+        Object val=(ref != null)?ref.get():null;
+        if(val != null) {
+        	return val;
         }
         else if (this.initialValueGenerator != null) {
             final Object value = this.initialValueGenerator.execute(object);
-            propertyToInstanceMap.put(propertyKey, value);
+            propertyToInstanceMap.put(propertyKey, new SoftReference<Object>(value));
             return value;
         }
         else if(this.initialValue != null) {
-            propertyToInstanceMap.put(propertyKey, this.initialValue);
+            propertyToInstanceMap.put(propertyKey, new SoftReference<Object>(this.initialValue));
             return this.initialValue;
         }
         return null;
@@ -100,7 +105,7 @@ public class WeakGenericDynamicProperty extends AbstractDynamicProperty {
     public void set(Object object, Object newValue) {
         if(!readyOnly) {
             if(this.type.isInstance(newValue))
-                propertyToInstanceMap.put(String.valueOf(System.identityHashCode(object)) + getPropertyName(), newValue );
+                propertyToInstanceMap.put(String.valueOf(System.identityHashCode(object)) + getPropertyName(), new SoftReference<Object>(newValue) );
             else if(newValue != null)
                 throw new MissingPropertyException("Property '"+this.getPropertyName()+"' for object '"+object.getClass()+"' cannot be set with value '"+newValue+"'. Incorrect type.",object.getClass());
         }

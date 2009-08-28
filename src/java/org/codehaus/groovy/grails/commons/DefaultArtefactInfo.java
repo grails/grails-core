@@ -103,11 +103,11 @@ public class DefaultArtefactInfo implements ArtefactInfo {
         return this.grailsClassesByName;
     }
 
-    public synchronized GrailsClass getGrailsClass(String name) {
+    public GrailsClass getGrailsClass(String name) {
         return this.grailsClassesByName.get(name);
     }
 
-    public synchronized GrailsClass getGrailsClassByLogicalPropertyName(String logicalName) {
+    public GrailsClass getGrailsClassByLogicalPropertyName(String logicalName) {
         return logicalPropertyNameToClassMap.get(logicalName);
     }
 

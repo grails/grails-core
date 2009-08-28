@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.Writable;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Reader;
@@ -86,7 +88,7 @@ import java.util.List;
  * @author Lari Hotari, Sagire Software Oy
  *
  */
-public class StreamCharBuffer {
+public class StreamCharBuffer implements Writable {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
 	private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
 	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent",100);
@@ -245,8 +247,9 @@ public class StreamCharBuffer {
 	 * @param target
 	 * @throws IOException
 	 */
-	public void writeTo(Writer target) throws IOException {
+	public Writer writeTo(Writer target) throws IOException {
 		writeTo(target, true, true);
+		return getWriter();
 	}
 
 	/**
@@ -318,6 +321,10 @@ public class StreamCharBuffer {
 			}
 		}
 		return cachedToString;
+	}
+	
+	public String plus(String value) {
+		return toString() + value;
 	}
 
 	/**
@@ -458,7 +465,7 @@ public class StreamCharBuffer {
 		private boolean writerUsed = false;
 
 		@Override
-		public void write(char[] b, int off, int len) throws IOException {
+		public void write(final char[] b, final int off, final int len) throws IOException {
 			if (b == null) {
 				throw new NullPointerException();
 			} else if ((off < 0) || (off > b.length) || (len < 0)
@@ -485,7 +492,7 @@ public class StreamCharBuffer {
 			}
 		}
 
-		private boolean shouldWriteDirectly(int len) {
+		private boolean shouldWriteDirectly(final int len) {
 			if(connectedWriters.isEmpty()) {
 				return false;
 			}
@@ -493,12 +500,12 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public void write(String str) throws IOException {
+		public void write(final String str) throws IOException {
 			write(str, 0, str.length());
 		}
 
 		@Override
-		public void write(String str, int off, int len) throws IOException {
+		public void write(final String str, final int off, final int len) throws IOException {
 			if(len==0) return;
 			writerUsed = true;
 			if(shouldWriteDirectly(len)) {
@@ -522,7 +529,7 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public Writer append(CharSequence csq, int start, int end)
+		public Writer append(final CharSequence csq, final int start, final int end)
 				throws IOException {
 			writerUsed = true;
 			if(csq==null) {
@@ -554,7 +561,7 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public Writer append(CharSequence csq) throws IOException {
+		public Writer append(final CharSequence csq) throws IOException {
 			writerUsed = true;
 			if(csq==null) {
 				write("null");
@@ -580,7 +587,7 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public void write(int b) throws IOException {
+		public void write(final int b) throws IOException {
 			writerUsed = true;
 			allocateSpace();
 			currentWriteChunk.write((char) b);
@@ -614,11 +621,11 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public int read(char[] b, int off, int len) throws IOException {
+		public int read(final char[] b, final int off, final int len) throws IOException {
 			return readImpl(b, off, len);
 		}
 
-		int readImpl(char[] b, int off, int len) throws EOFException {
+		int readImpl(final char[] b, final int off, final int len) throws EOFException {
 			if (b == null) {
 				throw new NullPointerException();
 			} else if ((off < 0) || (off > b.length) || (len < 0)
@@ -700,7 +707,7 @@ public class StreamCharBuffer {
 			writingStringChunkGroup=null;
 		}
 
-		public boolean write(char ch) {
+		public boolean write(final char ch) {
 			if (used < size) {
 				buffer[used++] = ch;
 				return true;
@@ -713,12 +720,12 @@ public class StreamCharBuffer {
 			return buffer.length;
 		}
 
-		public void write(char[] ch, int off, int len) {
+		public void write(final char[] ch, final int off, final int len) {
 			arrayCopy(ch, off, buffer, used, len);
 			used += len;
 		}
 
-		public void appendStringChunk(String str, int off, int len) throws IOException {
+		public void appendStringChunk(final String str, final int off, final int len) throws IOException {
 			if(writingStringChunkGroup == null || used!=writingStringChunkGroup.getOwnerIndex()) {
 				writingStringChunkGroup = new StringChunkGroup(used);
 				if(StringChunkGroups==null) {
@@ -747,22 +754,22 @@ public class StreamCharBuffer {
 			return true;
 		}
 
-		public void writeString(String str, int off, int len) {
+		public void writeString(final String str, final int off, final int len) {
 			str.getChars(off, off+len, buffer, used);
 			used += len;
 		}
 
-		public void writeStringBuilder(StringBuilder stringBuilder, int off, int len) {
+		public void writeStringBuilder(final StringBuilder stringBuilder, final int off, final int len) {
 			stringBuilder.getChars(off, off+len, buffer, used);
 			used += len;
 		}
 
-		public void writeStringBuffer(StringBuffer stringBuffer, int off, int len) {
+		public void writeStringBuffer(final StringBuffer stringBuffer, final int off, final int len) {
 			stringBuffer.getChars(off, off+len, buffer, used);
 			used += len;
 		}
 
-		public void read(char[] ch, int off, int len) {
+		public void read(final char[] ch, final int off, final int len) {
 			int readLen = len;
 			int readOff = off;
 			while(readLen > 0) {
@@ -791,7 +798,7 @@ public class StreamCharBuffer {
 			}
 		}
 
-		public int writeTo(Writer target) throws IOException {
+		public int writeTo(final Writer target) throws IOException {
 			int writtenCount=0;
 			while(charsUnread() > 0) {
 				if(prepareChildArrayChunkReading()) {
@@ -857,7 +864,7 @@ public class StreamCharBuffer {
 			return unreadChars + ((currentStringChunkUnderRead != null)?currentStringChunkUnderRead.getUnreadChars():0);
 		}
 
-		public int appendString(String str, int off, int len) {
+		public int appendString(final String str, final int off, final int len) {
 			if(str.length() > 0) {
 				StringChunk child=new StringChunk(str,off,len);
 				unreadStringChunks.add(child);
@@ -887,7 +894,7 @@ public class StreamCharBuffer {
 			}
 		}
 
-		public int read(char[] ch, int off, int len) {
+		public int read(final char[] ch, final int off, final int len) {
 			int totalChars = 0;
 			int readLen = Math.min(getUnreadChars(), len);
 			int readOff = off;
@@ -901,7 +908,7 @@ public class StreamCharBuffer {
 			return totalChars;
 		}
 
-		public int writeTo(Writer target) throws IOException {
+		public int writeTo(final Writer target) throws IOException {
 			int writtenCount=0;
 			while(prepareReading()) {
 				writtenCount+=currentStringChunkUnderRead.writeTo(target);
@@ -922,11 +929,11 @@ public class StreamCharBuffer {
 	 *
 	 */
 	static final class StringChunk {
-		private String str;
+		final private String str;
 		private int readOffset;
 		private int unreadChars;
 
-		public StringChunk(String str, int off, int len) {
+		public StringChunk(final String str, final int off, final int len) {
 			this.str=str;
 			this.readOffset=off;
 			this.unreadChars=len;
@@ -936,7 +943,7 @@ public class StreamCharBuffer {
 			return unreadChars;
 		}
 
-		public int read(char[] ch, int off, int len) {
+		public int read(final char[] ch, final int off, final int len) {
 			int readCharsLen = Math.min(unreadChars, len);
 			str.getChars(readOffset, (readOffset + readCharsLen), ch, off);
 			readOffset += readCharsLen;
@@ -944,7 +951,7 @@ public class StreamCharBuffer {
 			return readCharsLen;
 		}
 
-		public int writeTo(Writer target) throws IOException {
+		public int writeTo(final Writer target) throws IOException {
 			int len=unreadChars;
 			target.write(str, readOffset, len);
 			readOffset+=len;
@@ -973,14 +980,14 @@ public class StreamCharBuffer {
 	static final class ConnectedWriter {
 		Writer writer;
 		LazyInitializingWriter lazyInitializingWriter;
-		boolean autoFlush;
+		final boolean autoFlush;
 
-		ConnectedWriter(Writer writer, boolean autoFlush) {
+		ConnectedWriter(final Writer writer, final boolean autoFlush) {
 			this.writer=writer;
 			this.autoFlush=autoFlush;
 		}
 
-		ConnectedWriter(LazyInitializingWriter lazyInitializingWriter, boolean autoFlush) {
+		ConnectedWriter(final LazyInitializingWriter lazyInitializingWriter, final boolean autoFlush) {
 			this.lazyInitializingWriter=lazyInitializingWriter;
 			this.autoFlush=autoFlush;
 		}
@@ -1008,9 +1015,9 @@ public class StreamCharBuffer {
 	 *
 	 */
 	static final class MultiOutputWriter extends Writer {
-		List<ConnectedWriter> writers;
+		final List<ConnectedWriter> writers;
 
-		public MultiOutputWriter(List<ConnectedWriter> writers) {
+		public MultiOutputWriter(final List<ConnectedWriter> writers) {
 			this.writers = writers;
 		}
 
@@ -1027,14 +1034,14 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public void write(char[] cbuf, int off, int len) throws IOException {
+		public void write(final char[] cbuf, final int off, final int len) throws IOException {
 			for(ConnectedWriter writer : writers) {
 				writer.getWriter().write(cbuf, off, len);
 			}
 		}
 
 		@Override
-		public Writer append(CharSequence csq, int start, int end)
+		public Writer append(final CharSequence csq, final int start, final int end)
 				throws IOException {
 			for(ConnectedWriter writer : writers) {
 				writer.getWriter().append(csq, start, end);

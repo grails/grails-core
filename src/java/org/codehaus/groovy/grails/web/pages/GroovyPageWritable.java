@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -48,13 +49,13 @@ import java.util.*;
  *        Time: 11:36:44 AM
  */
 class GroovyPageWritable implements Writable {
-
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
 
     private HttpServletResponse response;
     private HttpServletRequest request;
     private GroovyPageMetaInfo metaInfo;
     private boolean showSource;
+    private GrailsWebRequest webRequest;
 
     private ServletContext context;
     private Map additionalBinding = new HashMap();
@@ -90,6 +91,9 @@ class GroovyPageWritable implements Writable {
         this.showSource = showSource;
     }
 
+    
+
+    
     /**
      * Writes the template to the specified Writer
      *
@@ -136,8 +140,12 @@ class GroovyPageWritable implements Writable {
             page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
             page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
             page.setHtmlParts(metaInfo.getHtmlParts());
-
-            page.run();
+            page.initRun(out, webRequest);
+            try {
+            	page.run();
+            } finally {
+            	page.cleanup();
+            }
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);        
         }
         return out;
@@ -158,12 +166,12 @@ class GroovyPageWritable implements Writable {
 	}
 
     private Binding createBinding() {
-        Binding binding = new Binding();
+        Binding binding = new GroovyPageBinding();
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
         binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
         return binding;
     }
-
+    
     /**
      * Copy all of input to output.
      * @param in The input stream to writeInputStreamToResponse from
@@ -200,6 +208,7 @@ class GroovyPageWritable implements Writable {
      */
     protected void writeGroovySourceToResponse(GroovyPageMetaInfo info, Writer out) throws IOException {
         InputStream in = info.getGroovySource();
+        if(in==null) return;
         try {
             try {
                 in.reset();

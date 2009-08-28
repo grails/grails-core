@@ -16,15 +16,15 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
-import groovy.lang.GString;
-import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
+import org.codehaus.groovy.grails.web.pages.GroovyPageUtils;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
  * A closure that represents the body of a tag and captures its output returning the result when invoked
@@ -43,11 +43,11 @@ public class GroovyPageTagBody extends Closure {
     private static final String BLANK_STRING = "";
     private boolean writeStringResult = false;
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,Closure bodyClosure) {
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
         this(owner, webRequest, false, bodyClosure);
     }
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,boolean writeStringResult, Closure bodyClosure) {
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, boolean writeStringResult, Closure bodyClosure) {
         super(owner);
 
         if(bodyClosure == null) throw new IllegalStateException("Argument [bodyClosure] cannot be null!");
@@ -55,24 +55,16 @@ public class GroovyPageTagBody extends Closure {
 
         this.bodyClosure = bodyClosure;
         this.webRequest = webRequest;
-        binding = null;
-        if(owner instanceof GroovyPage)
-            binding = ((GroovyPage) owner).getBinding();
-        else if(owner != null && owner.getClass().getName().endsWith(TagLibArtefactHandler.TYPE)) {
-            binding = (Binding) ((GroovyObject)owner).getProperty(GroovyPage.PAGE_SCOPE);
-        }
+        this.binding = GroovyPageUtils.findPageScopeBinding(owner, webRequest);
 
         this.writeStringResult=writeStringResult;
     }
 
-
     private Object captureClosureOutput(Object args) {
-        Writer originalOut = webRequest.getOut();
-
+        final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter();
         try {
-            final GroovyPageTagWriter capturedOut = createWriter();
-
-
+            GroovyPageOutputStack.currentStack().push(capturedOut);
+            
             Object bodyResult;
 
             if(args!=null) {
@@ -104,9 +96,8 @@ public class GroovyPageTagBody extends Closure {
                         currentBinding.putAll((Map) args);
                     }
 
-
                     try {
-                        bodyResult = bodyClosure.call(args);
+                        bodyResult = executeClosure(bodyClosure, args);
                     }
                     finally {
                         if(binding!=null) {
@@ -117,44 +108,32 @@ public class GroovyPageTagBody extends Closure {
                     }
                 }
                 else {
-                    bodyResult = bodyClosure.call(args);
+                    bodyResult = executeClosure(bodyClosure, args);
                 }
             }
             else {
-                bodyResult = bodyClosure.call();
-            }
-            String output = capturedOut.getValue();
-            if(org.apache.commons.lang.StringUtils.isBlank(output)) {
-                if(bodyResult instanceof String) {
-                    return bodyResult;
-                }
-                else if(bodyResult instanceof GString) {
-                    return bodyResult.toString();
-                }
-                else {
-                    return BLANK_STRING;
-                }
+                bodyResult = executeClosure(bodyClosure, null);
             }
 
-            return output;
+            StreamCharBuffer buffer=capturedOut.getBuffer();
+            if(buffer.charsAvailable()==0 && bodyResult != null && !(bodyResult instanceof Writer)) {
+       			return bodyResult;
+            } 
+            return buffer;
         } finally {
-            if(binding!=null) {
-                binding.setVariable(GroovyPage.OUT, originalOut);
-            }
-            webRequest.setOut(originalOut);
+        	GroovyPageOutputStack.currentStack().pop();
         }
     }
 
-    private GroovyPageTagWriter createWriter() {
-
-        GroovyPageTagWriter out = new GroovyPageTagWriter();
-        if(binding!=null) {
-            binding.setVariable(GroovyPage.OUT, out);
-        }
-        webRequest.setOut(out);
-
-        return out;
-    }
+	private Object executeClosure(Closure bodyClosure, Object args) {
+		Object bodyResult=null;
+		if(args != null) {
+			bodyResult=bodyClosure.call(args);
+		} else {
+			bodyResult=bodyClosure.call();
+		}
+		return bodyResult;
+	}
 
     public Object doCall() {
         return captureClosureOutput(null);

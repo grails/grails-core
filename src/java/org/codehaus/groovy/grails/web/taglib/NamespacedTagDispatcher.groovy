@@ -16,8 +16,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 
 /**
 * <p>This class allows dispatching to namespaced tag libraries and is used within controllers and tag libraries
@@ -33,20 +33,19 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 class NamespacedTagDispatcher extends GroovyObjectSupport {
    String namespace
    GrailsApplication application
-   ApplicationContext applicationContext
    Class type
+   TagLibraryLookup lookup
 
-   NamespacedTagDispatcher(String ns, Class callingType, GrailsApplication application, ApplicationContext applicationContext) {
+   NamespacedTagDispatcher(String ns, Class callingType, GrailsApplication application, TagLibraryLookup lookup) {
         this.namespace = ns
         this.application = application
-        this.applicationContext = applicationContext
+        this.lookup = lookup
         this.type = callingType
    }
+
    def invokeMethod(String name, args) {
-        def tag = "$namespace:$name"
-        def tagLibClass = application.getArtefactForFeature(TagLibArtefactHandler.TYPE, tag.toString())
-        if(tagLibClass) {
-            def tagBean = applicationContext.getBean(tagLibClass.fullName)
+        def tagBean = lookup.lookupTagLibrary(namespace, name)
+        if(tagBean) {
             Object result = tagBean.invokeMethod(name, args)
             return result
         }

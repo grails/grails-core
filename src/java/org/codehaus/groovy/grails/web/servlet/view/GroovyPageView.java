@@ -31,6 +31,7 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Map;
 
@@ -144,7 +145,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      */
     //TODO this method is dupe'd across GSP servlet, reload servlet and here...
     protected Writer createResponseWriter(HttpServletResponse response) {
-        Writer out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+        PrintWriter out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

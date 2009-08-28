@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
@@ -63,7 +64,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 	private static final Log LOG = LogFactory.getLog( GrailsLayoutDecoratorMapper.class );
 
 
-	private Map decoratorMap = new HashMap();
+	private Map<String, Decorator> decoratorMap = new ConcurrentHashMap<String, Decorator>();
 	private ServletContext servletContext;
     private WebApplicationContext applicationContext;
     private PluginMetaManager pluginMetaManager;

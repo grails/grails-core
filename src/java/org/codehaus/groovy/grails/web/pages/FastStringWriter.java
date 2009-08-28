@@ -20,9 +20,9 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
- * Java's default StringWriter uses a StringBuffer which is synchronized.
- * This implementation doesn't use synchronization
- *
+ * Java's default StringWriter uses a StringBuffer which is synchronized. This
+ * implementation doesn't use synchronization
+ * 
  * @author Graeme Rocher
  * @author Lari Hotari
  * @since 1.1
@@ -30,24 +30,33 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
  *        Created: Jan 20, 2009
  */
 public class FastStringWriter extends GrailsPrintWriter {
-    private StreamCharBuffer streamBuffer;
+	private final StreamCharBuffer streamBuffer;
 
-    public FastStringWriter() {
-    	super(new StreamCharBuffer().getWriter());
-        this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter)this.out).getBuffer();
-    }
+	public FastStringWriter() {
+		super(new StreamCharBuffer().getWriter());
+		this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) this.out)
+				.getBuffer();
+	}
 
-    protected FastStringWriter(Object o) {
-    	this();
-    	this.print(o);
-    }
+	protected FastStringWriter(Object o) {
+		this();
+		this.print(o);
+	}
 
-    @Override
-    public String toString() {
-        return streamBuffer.toString();
-    }
+	public StreamCharBuffer getBuffer() {
+		return streamBuffer;
+	}
 
-    public Reader getReader() {
-    	return streamBuffer.getReader();
-    }
+	@Override
+	public String toString() {
+		return this.getValue();
+	}
+	
+	public String getValue() {
+		return streamBuffer.toString();
+	}
+
+	public Reader getReader() {
+		return streamBuffer.getReader();
+	}
 }

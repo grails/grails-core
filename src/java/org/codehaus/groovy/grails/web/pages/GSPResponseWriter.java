@@ -115,7 +115,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 	private GSPResponseWriter(Writer activeWriter) {
 		super(activeWriter);
 	}
-
+	
 	/**
 	 * Close the stream.
 	 * @see #checkError()
