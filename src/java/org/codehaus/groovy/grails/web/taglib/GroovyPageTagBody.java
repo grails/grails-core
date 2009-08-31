@@ -118,9 +118,6 @@ public class GroovyPageTagBody extends Closure {
 
             StreamCharBuffer buffer=capturedOut.getBuffer();
             if(buffer.charsAvailable()==0 && bodyResult != null && !(bodyResult instanceof Writer)) {
-				if(bodyResult instanceof GString) {
-                    return bodyResult.toString();
-                }
        			return bodyResult;
             } 
             return buffer;

@@ -37,6 +37,12 @@ public class FastStringWriter extends GrailsPrintWriter {
 		this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) this.out)
 				.getBuffer();
 	}
+	
+	public FastStringWriter(int initialChunkSize) {
+		super(new StreamCharBuffer(initialChunkSize).getWriter());
+		this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) this.out)
+				.getBuffer();
+	}
 
 	protected FastStringWriter(Object o) {
 		this();

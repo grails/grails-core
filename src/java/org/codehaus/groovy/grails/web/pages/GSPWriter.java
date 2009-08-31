@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.web.pages;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * A PrintWriter used in the generation of GSP pages that allows printing to the target output stream and
  * maintains a record of the current line number during usage.
@@ -41,11 +43,11 @@ public class GSPWriter extends PrintWriter {
     }
 
     public void printlnToResponse(String s) {
-    	if(s==null || s.trim().length()==0) {
+    	if(StringUtils.isEmpty(s)) {
     		return;
     	}
     	parse.flushTagBuffering();
-        super.print("printToOut(");
+        super.print("out.print(");
         super.print(s);
         super.print(")");
         println();

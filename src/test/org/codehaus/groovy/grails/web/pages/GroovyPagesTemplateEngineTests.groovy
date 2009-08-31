@@ -30,7 +30,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
             w.writeTo(pw)
 
-            assertTrue(sw.toString().indexOf("printToOut('hello')") > -1)
+            assertTrue(sw.toString().indexOf("out.print('hello')") > -1)
 
         }
         finally {

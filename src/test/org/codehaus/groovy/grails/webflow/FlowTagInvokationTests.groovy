@@ -50,10 +50,10 @@ class TestController {
         return {
             one {
                 on('two'){
-                    [theLink:link(controller:"foo", action:"bar")]
+                    [theLink:link(controller:"foo", action:"bar")?.toString()]
                 }.to 'two'
                 on('three'){
-                    [theLink:g.link(controller:"foo", action:"bar")]
+                    [theLink:g.link(controller:"foo", action:"bar")?.toString()]
                 }.to 'three'
             }
             two {

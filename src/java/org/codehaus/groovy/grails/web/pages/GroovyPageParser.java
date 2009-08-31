@@ -642,7 +642,7 @@ public class GroovyPageParser implements Tokens {
 			out.println("def request = binding.request");
 			out.println("def flash = binding.flash");
 			out.println("def response = binding.response");
-			//out.println("def out = binding.out");
+			out.println("def out = binding.out");
 			if (codecClassName != null) {
 				out
 						.println("request.setAttribute('org.codehaus.groovy.grails.GSP_CODEC', '"
@@ -805,7 +805,7 @@ public class GroovyPageParser implements Tokens {
 			
 			if(tm.bufferMode && tm.bufferPartNumber != -1){
 				if(!bodyVarsDefined.contains(tm.tagIndex)) {
-					out.print("def ");
+					//out.print("def ");
 					bodyVarsDefined.add(tm.tagIndex);
 				}
 				out
@@ -967,7 +967,7 @@ public class GroovyPageParser implements Tokens {
 		if (tm.bufferMode) {
 			tm.bufferMode = false;			
 			if(!bodyVarsDefined.contains(tm.tagIndex)) {
-				out.print("def ");
+				//out.print("def ");
 				bodyVarsDefined.add(tm.tagIndex);
 			}
 			out

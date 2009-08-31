@@ -46,6 +46,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import java.lang.reflect.Modifier
 import org.springframework.beans.factory.config.PropertiesFactoryBean
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -260,10 +261,10 @@ public class GroovyPagesGrailsPlugin {
             }
 
             mc.getOut = {->
-            	org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack.currentWriter()
+            	GroovyPageOutputStack.currentWriter()
             }
             mc.setOut = {Writer newOut ->
-            	org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack.currentStack().push(newOut,true)
+            	GroovyPageOutputStack.currentStack().push(newOut,true)
             }
             mc.propertyMissing = {String name ->
                 def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)

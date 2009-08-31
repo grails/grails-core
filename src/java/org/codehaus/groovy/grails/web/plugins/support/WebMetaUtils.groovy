@@ -95,24 +95,24 @@ class WebMetaUtils {
 
     static registerMethodMissingForTags(MetaClass mc, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
     	def tagLibBean=gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-    	def lookupTagLib={-> tagLibBean }
+    	//def lookupTagLib={-> tagLibBean }
     	// for Request scope support, change this
     	// def lookupTagLib={-> gspTagLibraryLookup.lookupTagLibrary(namespace, name) }
     	
         mc."$name" = {Map attrs, Closure body ->
-            GroovyPage.captureTagOutput(lookupTagLib(), name, attrs, body, RCH.currentRequestAttributes())
+            GroovyPage.captureTagOutput(tagLibBean, name, attrs, body, RCH.currentRequestAttributes())
         }
         mc."$name" = {Map attrs, String body ->
             delegate."$name"(attrs, new GroovyPage.ConstantClosure(body))
         }
         mc."$name" = {Map attrs ->
-            GroovyPage.captureTagOutput(lookupTagLib(), name, attrs, null, RCH.currentRequestAttributes())
+            GroovyPage.captureTagOutput(tagLibBean, name, attrs, null, RCH.currentRequestAttributes())
         }
         mc."$name" = {Closure body ->
-            GroovyPage.captureTagOutput(lookupTagLib(), name, [:], body, RCH.currentRequestAttributes())
+            GroovyPage.captureTagOutput(tagLibBean, name, [:], body, RCH.currentRequestAttributes())
         }
         mc."$name" = {->
-            GroovyPage.captureTagOutput(lookupTagLib(), name, [:], null, RCH.currentRequestAttributes())
+            GroovyPage.captureTagOutput(tagLibBean, name, [:], null, RCH.currentRequestAttributes())
         }
     }
 

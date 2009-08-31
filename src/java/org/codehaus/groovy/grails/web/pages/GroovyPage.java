@@ -100,8 +100,6 @@ public abstract class GroovyPage extends Script {
     private GroovyPageOutputStack outputStack;
     private GrailsWebRequest webRequest;
     
-    private static ThreadLocal<PrintWriter> activeWriterCache=new ThreadLocal<PrintWriter>();
-   
     public static final class ConstantClosure extends Closure {
 		private static final long serialVersionUID = 1L;
 		final Object retval;
@@ -295,6 +293,7 @@ public abstract class GroovyPage extends Script {
             }};
         }
 
+        boolean prevUsed=out.resetUsed();
         try {
 
             if( gspTagLibraryLookup.hasNamespace(tagNamespace) ) {
@@ -303,11 +302,13 @@ public abstract class GroovyPage extends Script {
                     Object tagLibProp = tagLib.getProperty(tagName);
                     if(tagLibProp instanceof Closure) {
                         Closure tag = (Closure) ((Closure)tagLibProp).clone();
-
+                        Object tagresult=null;
                         switch(tag.getParameterTypes().length) {
                             case 1:
-
-                                tag.call( new Object[]{ attrs });
+                                tagresult=tag.call( new Object[]{ attrs });
+                                if(tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
+                                	out.print(tagresult);
+                                }
                                 if(body != null && body != EMPTY_BODY_CLOSURE) {
                                     body.call();
                                 }
@@ -316,7 +317,10 @@ public abstract class GroovyPage extends Script {
 
                             case 2:
                                 if(tag.getParameterTypes().length == 2) {
-                                    tag.call( new Object[] { attrs, (body!=null)?body:EMPTY_BODY_CLOSURE });
+                                	tagresult=tag.call( new Object[] { attrs, (body!=null)?body:EMPTY_BODY_CLOSURE });
+                                    if(tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
+                                    	out.print(tagresult);
+                                    }
                                 }
                             break;
                         }
@@ -357,6 +361,10 @@ public abstract class GroovyPage extends Script {
            else {
                throw new GrailsTagException("Error executing tag <"+tagNamespace+":"+tagName+">: " + e.getMessage(),e, getGroovyPageFileName(),lineNumber);
            }
+        } finally {
+        	if(prevUsed) {
+        		out.setUsed(true);
+        	}
         }
     }
 
@@ -430,8 +438,8 @@ public abstract class GroovyPage extends Script {
 			    	bodyResult=tag.call( new Object[]{ attrs });
 			        if(actualBody != null && actualBody != EMPTY_BODY_CLOSURE) {
 			            Object bodyResult2=actualBody.call();
-			            if(bodyResult==null) {
-			            	bodyResult=bodyResult2;
+			            if(bodyResult2!=null) {
+			            	out.print(bodyResult2);
 			            }
 			        }
 			    } else if(tag.getParameterTypes().length == 2) {
@@ -445,7 +453,7 @@ public abstract class GroovyPage extends Script {
         			return bodyResult;
 	            }
 	            // add some method to always return string, configurable?
-	            return buffer.toString();
+	            return buffer;
 			}else {
 			    throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
 			}
@@ -480,19 +488,6 @@ public abstract class GroovyPage extends Script {
     	out.write(htmlParts[partNumber]);
     }
 
-    public final void printToOut(final Object value) {
-    	if(value==null) {
-    		return;
-    	}
-    	if(value instanceof String) {
-    		out.print((String)value);
-    	} else if(value instanceof char[]) {
-    		out.print((char[])value);
-    	} else {
-    		out.print(value);
-    	}
-    }
-    
     /**
      * Sets the JSP tags used by this GroovyPage instance
      *

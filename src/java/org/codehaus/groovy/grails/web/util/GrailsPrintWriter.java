@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.Writable;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -23,6 +25,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	protected boolean trouble=false;
 	protected Writer out;
 	private boolean finalTargetHere=false;
+	private boolean usageFlag=false;
 
 	public GrailsPrintWriter(Writer out) {
 		super(out);
@@ -61,12 +64,14 @@ public class GrailsPrintWriter extends PrintWriter {
      */
     public GrailsPrintWriter leftShift(Object value) throws IOException {
         if(value!=null) {
+        	usageFlag=true;
         	InvokerHelper.write(this, value);
         }
         return this;
     }
     
     public GrailsPrintWriter plus(Object value) throws IOException {
+    	usageFlag=true;
     	return this.leftShift(value);
     }
 
@@ -120,14 +125,17 @@ public class GrailsPrintWriter extends PrintWriter {
 		if (trouble || obj == null) {
 			return;
 		} else {
-			if(obj instanceof CharSequence) {
+			if(obj instanceof StreamCharBuffer) {
+				this.write((StreamCharBuffer)obj);
+			} else if(obj instanceof Writable) {
+					write((Writable)obj);
+			} else if(obj instanceof CharSequence) {
 				try {
+					usageFlag=true;
 					out.append((CharSequence) obj);
 				} catch (IOException e) {
 					handleIOException(e);
 				}
-			} else if(obj instanceof StreamCharBuffer) {
-				this.write((StreamCharBuffer)obj);
 			} else {
 				write(String.valueOf(obj));
 			}
@@ -162,6 +170,7 @@ public class GrailsPrintWriter extends PrintWriter {
         	return;
         }
         try {
+			usageFlag=true;        	
        		out.write(s);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -176,6 +185,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	public void write(final int c) {
 		if (trouble) return;
 		try {
+			usageFlag=true;
 			out.write(c);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -192,6 +202,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	public void write(final char buf[], final int off, final int len) {
 		if (trouble || buf == null || len == 0) return;
 		try {
+			usageFlag=true;
 			out.write(buf, off, len);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -208,6 +219,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	public void write(final String s, final int off, final int len) {
 		if (trouble || s == null || s.length() == 0) return;
 		try {
+			usageFlag=true;
 			out.write(s, off, len);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -321,6 +333,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	@Override
 	public PrintWriter append(final char c) {
 		try {
+			usageFlag=true;
 			out.append(c);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -331,6 +344,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	@Override
 	public PrintWriter append(final CharSequence csq, final int start, final int end) {
 		try {
+			usageFlag=true;
 			out.append(csq, start, end);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -341,6 +355,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	@Override
 	public PrintWriter append(final CharSequence csq) {
 		try {
+			usageFlag=true;
 			out.append(csq);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -356,6 +371,7 @@ public class GrailsPrintWriter extends PrintWriter {
     public void write(final StreamCharBuffer otherBuffer) {
     	if(trouble) return;
     	try {
+			usageFlag=true;
 			otherBuffer.writeTo(getOut(),true,false);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -381,4 +397,37 @@ public class GrailsPrintWriter extends PrintWriter {
     	}
     	return this;
     }
+
+    public void write(final Writable writable) {
+    	if(trouble) return;
+    	try {
+			usageFlag=true;
+    		writable.writeTo(getOut());
+		} catch (IOException e) {
+			handleIOException(e);
+		}
+    }
+    
+    public void print(final Writable writable) {
+    	write(writable);
+    }
+    
+    public GrailsPrintWriter leftShift(final Writable writable) {
+    	write(writable);
+    	return this;
+    }
+
+	public boolean isUsed() {
+		return this.usageFlag;
+	}
+	
+	public void setUsed(boolean newUsed) {
+		this.usageFlag = newUsed;
+	}
+	
+	public boolean resetUsed() {
+		boolean prevUsed = this.usageFlag;
+		this.usageFlag = false;
+		return prevUsed;
+	}
 }
