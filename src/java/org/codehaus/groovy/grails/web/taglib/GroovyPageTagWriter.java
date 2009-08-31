@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter;
  */
 public class GroovyPageTagWriter extends FastStringWriter {
     public GroovyPageTagWriter() {
-        super();
+        super(64);
     }
 
     public String getValue() {

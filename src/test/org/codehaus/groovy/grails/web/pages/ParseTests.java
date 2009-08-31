@@ -65,7 +65,7 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+            
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-            //"def out = binding.out\n"+
+            "def out = binding.out\n"+
 
 			"printHtmlPart(0)\n"+
 			"}\n"+ GSP_FOOTER;
@@ -84,7 +84,7 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-            //"def out = binding.out\n"+
+            "def out = binding.out\n"+
 
             "invokeTag('message','g',1,[\"code\":evaluate('\"[\"', 1, it) { return \"[\" }],null)\n"+
 			"}\n" + GSP_FOOTER;
@@ -96,7 +96,7 @@ public class ParseTests extends TestCase {
         try{
             parseCode("myTest3", "<g:message value=\"${boom\">");
         }catch(GrailsTagException e){
-            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'? (myTest3:14)", e.getMessage());
+            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'? (myTest3:15)", e.getMessage());
             return;
         }
 		fail("Expected parse exception not thrown");
@@ -130,7 +130,7 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-            //"def out = binding.out\n"+
+            "def out = binding.out\n"+
             "printHtmlPart(0)\n"+
             "}\n" + GSP_FOOTER;;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
@@ -165,7 +165,7 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-            //"def out = binding.out\n"+
+            "def out = binding.out\n"+
             "printHtmlPart(0)\n"+
             "}\n" + GSP_FOOTER;;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
@@ -230,9 +230,9 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-            //"def out = binding.out\n"+
+            "def out = binding.out\n"+
             "printHtmlPart(0)\n" +
-            "printToOut(evaluate('uri', 3, it) { return uri })\n"+
+            "out.print(evaluate('uri', 3, it) { return uri })\n"+
             "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
 

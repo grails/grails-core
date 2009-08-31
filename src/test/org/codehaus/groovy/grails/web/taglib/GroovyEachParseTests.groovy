@@ -18,6 +18,7 @@ def params = binding.params
 def request = binding.request
 def flash = binding.flash
 def response = binding.response
+def out = binding.out
 
 printHtmlPart(0)
 evaluate('"blah"', 2, it) { return "blah" }.each { t ->
@@ -41,6 +42,7 @@ def params = binding.params
 def request = binding.request
 def flash = binding.flash
 def response = binding.response
+def out = binding.out
 
 printHtmlPart(0)
 evaluate('"blah"', 1, it) { return "blah" }.each { t ->
@@ -65,6 +67,7 @@ def params = binding.params
 def request = binding.request
 def flash = binding.flash
 def response = binding.response
+def out = binding.out
 
 printHtmlPart(0)
 evaluate('"blah"', 2, it) { return "blah" }.eachWithIndex { t,i ->
