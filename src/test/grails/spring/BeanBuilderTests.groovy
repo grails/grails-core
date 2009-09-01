@@ -694,7 +694,30 @@ bb.createApplicationContext()
         knight.embarkOnQuest()
     }
 
+    // test for GRAILS-5057
+    void testRegisterBeans() {
+        def bb = new BeanBuilder()
 
+        bb.beans {
+           personA(AdvisedPerson) {
+               name = "Bob"
+           }
+        }
+
+        def appCtx = bb.createApplicationContext()
+
+        assertEquals "Bob", appCtx.getBean("personA").name
+
+        bb = new BeanBuilder()
+        bb.beans {
+            personA(AdvisedPerson) {
+                name = "Fred"
+            }
+        }
+        bb.registerBeans(appCtx)
+
+        assertEquals "Fred", appCtx.getBean("personA").name
+    }
 
 }
 class HolyGrailQuest {
