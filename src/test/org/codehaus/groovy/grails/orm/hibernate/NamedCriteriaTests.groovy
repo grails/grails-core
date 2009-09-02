@@ -23,8 +23,17 @@ class Publication {
        publicationsWithBookInTitle {
            like 'title', '%Book%'
        }
-   }
 
+       recentPublicationsByTitle { title ->
+           def now = new Date()
+           gt 'datePublished', now - 365
+           eq 'title', title
+       }
+
+       publishedBetween { start, end ->
+           between 'datePublished', start, end
+       }
+   }
 }
 ''')
     }
@@ -149,7 +158,7 @@ class Publication {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        (1..5).each { num ->
+        (1..5).each {num ->
             3.times {
                 assert publicationClass.newInstance(title: "Book Number ${num}",
                         datePublished: now).save(flush: true)
@@ -160,11 +169,52 @@ class Publication {
         assertEquals 3, pubs?.size()
     }
 
+    void testNamedQueryWithOneParameter() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        (1..5).each {num ->
+            3.times {
+                assert publicationClass.newInstance(title: "Book Number ${num}",
+                        datePublished: now).save(flush: true)
+            }
+        }
+
+        def pubs = publicationClass.recentPublicationsByTitle('Book Number 2')
+        assertEquals 3, pubs?.size()
+    }
+
+    void testNamedQueryWithMultipleParameters() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        (1..5).each {num ->
+            assert publicationClass.newInstance(title: "Book Number ${num}",
+                    datePublished: ++now).save(flush: true)
+        }
+
+        def pubs = publicationClass.publishedBetween(now-2, now)
+        assertEquals 3, pubs?.size()
+    }
+
+    void testNamedQueryWithMultipleParametersAndMap() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        (1..10).each {num ->
+            assert publicationClass.newInstance(title: "Book Number ${num}",
+                    datePublished: ++now).save(flush: true)
+        }
+
+        def pubs = publicationClass.publishedBetween(now-8, now-2, [offset:2, max: 4])
+        assertEquals 4, pubs?.size()
+    }
+
     void testFindWhereWithNamedQuery() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
-        (1..5).each { num ->
+        (1..5).each {num ->
             3.times {
                 assert publicationClass.newInstance(title: "Book Number ${num}",
                         datePublished: now).save(flush: true)
