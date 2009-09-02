@@ -28,8 +28,11 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter;
  *        Time: 5:49:46 PM
  */
 public class GroovyPageTagWriter extends FastStringWriter {
-    public GroovyPageTagWriter() {
-        super(64);
+	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("groovypagetagwriter.chunksize", 512);
+	
+    public GroovyPageTagWriter(boolean preferSubChunkWhenWritingToOtherBuffer) {
+        super(DEFAULT_CHUNK_SIZE);
+        getBuffer().setPreferSubChunkWhenWritingToOtherBuffer(preferSubChunkWhenWritingToOtherBuffer);
     }
 
     public String getValue() {

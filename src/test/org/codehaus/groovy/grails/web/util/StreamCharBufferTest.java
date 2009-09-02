@@ -50,14 +50,14 @@ public class StreamCharBufferTest extends TestCase {
 
 	public void testBufferedConnectedStringWriting() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer(10,0,10);
-		charBuffer.setStringChunkMinSize(6);
+		charBuffer.setSubStringChunkMinSize(6);
 		charBuffer.setWriteDirectlyToConnectedMinSize(6);
 		doBufferedTesting(charBuffer);
 	}
 
 	public void testBufferedConnectedStringWritingResizeableChunkSize() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer(10);
-		charBuffer.setStringChunkMinSize(6);
+		charBuffer.setSubStringChunkMinSize(6);
 		charBuffer.setWriteDirectlyToConnectedMinSize(6);
 		doBufferedTesting(charBuffer);
 	}
@@ -85,7 +85,7 @@ public class StreamCharBufferTest extends TestCase {
 
 	public void testReaderWithStringArrays() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer(10);
-		charBuffer.setStringChunkMinSize(6);
+		charBuffer.setSubStringChunkMinSize(6);
 		Writer writer=charBuffer.getWriter();
 		writer.write("ABCDE");
 		writer.write("12345".toCharArray());
@@ -164,7 +164,7 @@ public class StreamCharBufferTest extends TestCase {
 
 	public void testStringCharArraysWriteTo() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer();
-		charBuffer.setStringChunkMinSize(0);
+		charBuffer.setSubStringChunkMinSize(0);
 		Writer writer=charBuffer.getWriter();
 		writer.write("ABCDE");
 		writer.write("12345".toCharArray());
@@ -182,7 +182,7 @@ public class StreamCharBufferTest extends TestCase {
 
 	public void testStringCharArraysWriteTo2() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer();
-		charBuffer.setStringChunkMinSize(10000);
+		charBuffer.setSubStringChunkMinSize(10000);
 		Writer writer=charBuffer.getWriter();
 		writer.write("ABCDE");
 		writer.write("12345".toCharArray());

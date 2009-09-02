@@ -86,7 +86,7 @@ public class ParseTests extends TestCase {
             "def response = binding.response\n"+
             "def out = binding.out\n"+
 
-            "invokeTag('message','g',1,[\"code\":evaluate('\"[\"', 1, it) { return \"[\" }],null)\n"+
+            "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }],null)\n"+
 			"}\n" + GSP_FOOTER;
 
 		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));

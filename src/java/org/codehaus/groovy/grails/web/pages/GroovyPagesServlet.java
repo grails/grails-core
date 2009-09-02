@@ -81,7 +81,6 @@ public class GroovyPagesServlet extends FrameworkServlet {
     /**
      * The size of the buffer used when formulating the response
      */
-    private static final int BUFFER_SIZE = 8192;
     private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+GroovyPage.EXTENSION;
     public static final String EXCEPTION_MODEL_KEY = "exception";
     public static final String SERVLET_INSTANCE = "org.codehaus.groovy.grails.GSP_SERVLET";
@@ -205,7 +204,7 @@ public class GroovyPagesServlet extends FrameworkServlet {
      * @return The created java.io.Writer
      */
     protected Writer createResponseWriter(HttpServletResponse response) {
-        PrintWriter out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+        PrintWriter out = GSPResponseWriter.getInstance(response);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

@@ -39,30 +39,35 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
  */
 public class GroovyPageTagBody extends Closure {
     private Closure bodyClosure;
-    private GrailsWebRequest webRequest;
     private Binding binding;
-    private static final String BLANK_STRING = "";
-    private boolean writeStringResult = false;
+    private boolean preferSubChunkWhenWritingToOtherBuffer;
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
-        this(owner, webRequest, false, bodyClosure);
+	public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
+    	this(owner, webRequest, bodyClosure, false);
     }
-
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, boolean writeStringResult, Closure bodyClosure) {
+    
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure, boolean preferSubChunkWhenWritingToOtherBuffer) {
         super(owner);
 
         if(bodyClosure == null) throw new IllegalStateException("Argument [bodyClosure] cannot be null!");
         if(webRequest == null) throw new IllegalStateException("Argument [webRequest] cannot be null!");
 
         this.bodyClosure = bodyClosure;
-        this.webRequest = webRequest;
         this.binding = GroovyPageUtils.findPageScopeBinding(owner, webRequest);
-
-        this.writeStringResult=writeStringResult;
+        this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
     }
+    
+    public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
+		return preferSubChunkWhenWritingToOtherBuffer;
+	}
 
-    private Object captureClosureOutput(Object args) {
-        final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter();
+	public void setPreferSubChunkWhenWritingToOtherBuffer(
+			boolean preferSubChunkWhenWritingToOtherBuffer) {
+		this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
+	}
+
+	private Object captureClosureOutput(Object args) {
+        final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
             GroovyPageOutputStack.currentStack().push(capturedOut);
             
@@ -116,11 +121,10 @@ public class GroovyPageTagBody extends Closure {
                 bodyResult = executeClosure(bodyClosure, null);
             }
 
-            StreamCharBuffer buffer=capturedOut.getBuffer();
-            if(buffer.charsAvailable()==0 && bodyResult != null && !(bodyResult instanceof Writer)) {
+            if(!capturedOut.isUsed() && bodyResult != null && !(bodyResult instanceof Writer)) {
        			return bodyResult;
             } 
-            return buffer;
+            return capturedOut.getBuffer();
         } finally {
         	GroovyPageOutputStack.currentStack().pop();
         }

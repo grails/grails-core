@@ -57,12 +57,7 @@ import java.util.Map;
  *        Time: 8:25:10 AM
  */
 public class GroovyPageView extends AbstractUrlBasedView  {
-
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
-    /**
-     * The size of the buffer to use for the GSPReponseWriter
-     */
-    private static final int BUFFER_SIZE = 8024;
     private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+ GroovyPage.EXTENSION;
     public static final String EXCEPTION_MODEL_KEY = "exception";
 
@@ -145,7 +140,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      */
     //TODO this method is dupe'd across GSP servlet, reload servlet and here...
     protected Writer createResponseWriter(HttpServletResponse response) {
-        PrintWriter out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+        PrintWriter out = GSPResponseWriter.getInstance(response);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

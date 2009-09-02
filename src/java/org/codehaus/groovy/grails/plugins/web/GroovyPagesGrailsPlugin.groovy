@@ -241,6 +241,10 @@ public class GroovyPagesGrailsPlugin {
                 WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }
 
+            mc.getTagNamesThatReturnObject = {->
+            	taglib.getTagNamesThatReturnObject()
+            }
+            
             mc.throwTagError = {String message ->
                 throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
             }
