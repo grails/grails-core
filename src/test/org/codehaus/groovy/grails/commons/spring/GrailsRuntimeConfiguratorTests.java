@@ -13,8 +13,6 @@ import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping;
-import org.springframework.aop.target.HotSwappableTargetSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -101,10 +99,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         org.codehaus.groovy.grails.validation.GrailsDomainClassValidator validator = (org.codehaus.groovy.grails.validation.GrailsDomainClassValidator)ctx.getBean("TestValidator");
         assertTrue(validator.supports(dc));
-
-        // test controller config
-        HotSwappableTargetSource ts = (HotSwappableTargetSource)ctx.getBean(GrailsUrlHandlerMapping.APPLICATION_CONTEXT_TARGET_SOURCE);
-        assertNotNull(ts.getTarget());
 
         GroovyObject controller = (GroovyObject)ctx.getBean("TestController");
         assertEquals(c,controller.getClass());
