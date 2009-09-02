@@ -16,7 +16,10 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsUtil;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.BootstrapArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -36,17 +39,12 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.servlet.*;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
-import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.util.NestedServletException;
-import org.springframework.web.util.UrlPathHelper;
-import org.springframework.webflow.mvc.servlet.AbstractFlowHandler;
-import org.springframework.webflow.mvc.servlet.FlowHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -63,13 +61,10 @@ import java.util.Map;
  */
 public class GrailsDispatcherServlet extends DispatcherServlet {
     private GrailsApplication application;
-    private UrlPathHelper urlHelper = new GrailsUrlPathHelper();
-    private Controller mainController;
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
     private static final String EXCEPTION_ATTRIBUTE = "exception";
-    private static final String MAIN_SIMPLE_CONTROLLER = "mainSimpleController";
-    private static final String MAIN_FLOW_CONTROLLER = "mainFlowController";
+
 
     public GrailsDispatcherServlet() {
         super();
@@ -87,11 +82,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 	 * Initialize the MultipartResolver used by this class.
 	 * If no bean is defined with the given name in the BeanFactory
 	 * for this namespace, no multipart handling is provided.
-	 */
+     *
+     * @throws org.springframework.beans.BeansException Thrown if there is an error initializing the mutlipartResolver
+     */
 	private void initMultipartResolver() throws BeansException {
 		try {
-			this.multipartResolver = (MultipartResolver)
-					getWebApplicationContext().getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
+			this.multipartResolver = getWebApplicationContext().getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
 			if (logger.isInfoEnabled()) {
 				logger.info("Using MultipartResolver [" + this.multipartResolver + "]");
 			}
@@ -111,7 +107,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     	WebApplicationContext webContext;
         // construct the SpringConfig for the container managed application
         Assert.notNull(parent, "Grails requires a parent ApplicationContext, is the /WEB-INF/applicationContext.xml file missing?");
-        this.application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        this.application = parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
 
         if(wac instanceof GrailsApplicationContext) {
@@ -130,16 +126,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
         }
 
-        initMainController(webContext);
         this.interceptors = establishInterceptors(webContext);
 
         return webContext;
-    }
-
-    private void initMainController(WebApplicationContext webContext) {
-        if(webContext.containsBean(MAIN_SIMPLE_CONTROLLER)) {
-            this.mainController = (Controller)webContext.getBean(MAIN_SIMPLE_CONTROLLER);
-        }
     }
 
 
@@ -165,22 +154,22 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         // state if and when users access the database within their
         // filters.
         int j = 0;
-        for (int i = 0; i < webRequestInterceptors.length; i++) {
-            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor)webContext.getBean(webRequestInterceptors[i]));
+        for (String webRequestInterceptor : webRequestInterceptors) {
+            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor) webContext.getBean(webRequestInterceptor));
         }
-        for (int i = 0; i < interceptorNames.length; i++) {
-            interceptors[j++] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
+        for (String interceptorName : interceptorNames) {
+            interceptors[j++] = (HandlerInterceptor) webContext.getBean(interceptorName);
         }
         return interceptors;
     }
 
     public void destroy() {
         WebApplicationContext webContext = getWebApplicationContext();
-        GrailsApplication application = (GrailsApplication) webContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        GrailsApplication application = webContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
         GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
-        for (int i = 0; i < bootstraps.length; i++) {
-            ((GrailsBootstrapClass)bootstraps[i]).callDestroy();
+        for (GrailsClass bootstrap : bootstraps) {
+            ((GrailsBootstrapClass) bootstrap).callDestroy();
         }
         super.destroy();
     }
@@ -220,7 +209,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         GrailsWebRequest previousRequestAttributes = null;
         Exception handlerException = null;
         try {
-            ModelAndView mv = null;
+            ModelAndView mv;
             try {
                 Object exceptionAttribute = request.getAttribute(EXCEPTION_ATTRIBUTE);
                 // only process multipart requests if an exception hasn't occured
@@ -359,8 +348,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected void copyParamsFromPreviousRequest(GrailsWebRequest previousRequestAttributes, GrailsWebRequest requestAttributes) {
         Map previousParams = previousRequestAttributes.getParams();
         Map params =  requestAttributes.getParams();
-        for (Iterator i = previousParams.keySet().iterator(); i.hasNext();) {
-            String name =  (String)i.next();
+        for (Object o : previousParams.keySet()) {
+            String name = (String) o;
             params.put(name, previousParams.get(name));
         }
     }
@@ -408,52 +397,5 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         if(resolvedRequest!=null) return resolvedRequest;
         return request;
 	}
-    /**
-     * Overrides the default behaviour to establish the handler from the GrailsApplication instance
-     *
-     * @param request The request
-     * @param cache Whether to cache the Handler in the request
-     * @return The HandlerExecutionChain
-     *
-     * @throws Exception
-     */
-    protected HandlerExecutionChain getHandler(HttpServletRequest request, boolean cache) throws Exception {
-        String uri = urlHelper.getPathWithinApplication(request);
-        if(logger.isDebugEnabled()) {
-            logger.debug("Looking up Grails controller for URI ["+uri+"]");
-        }
-        GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactForFeature(
-            ControllerArtefactHandler.TYPE, uri);
-        final String actionName = (String) request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
-	
-        if(controllerClass!=null) {
-
-             HandlerInterceptor[] interceptors;
-            // if we're in a development environment we want to re-establish interceptors just in case they
-            // have changed at runtime
-
-             if(GrailsUtil.isDevelopmentEnv()) {
-                  interceptors = establishInterceptors(getWebApplicationContext());
-             }
-             else {
-                  interceptors = this.interceptors;
-             }
-             if(controllerClass.isFlowAction(actionName)) {
-		 final String flowid = controllerClass.getLogicalPropertyName() + "/" + actionName;
-                 FlowHandler flowHandler = new AbstractFlowHandler() {
-                     public String getFlowId() {
-                         return flowid;
-                     }
-                 };
-                 return new HandlerExecutionChain(flowHandler, interceptors);
-             }
-             else {
-                 return new HandlerExecutionChain(mainController, interceptors);
-             }
-        }
-        else {
-            return super.getHandler(request, cache);
-        }
-    }
 
 }

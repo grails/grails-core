@@ -39,6 +39,9 @@
            <fileset dir="lib">
                <exclude name="**/CVS/**"/>
                <exclude name="hibernate**"/>
+               <exclude name="org.springframework.webflow**"/>
+               <exclude name="org.springframework.js**"/>
+               <exclude name="org.springframework.binding**"/>
                <exclude name="javassist**"/>
                <exclude name="aspectj**"/>
                <exclude name="dom4j**"/>

@@ -54,6 +54,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
+import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
 
 /**
  * A plug-in that handles the configuration of controllers for Grails
@@ -78,34 +79,24 @@ class ControllersGrailsPlugin {
         if (!application.config.grails.disableCommonsMultipart) {
             multipartResolver(ContentLengthAwareCommonsMultipartResolver)
         }
-        def urlMappings = [:]
-        grailsUrlMappings(UrlMappingFactoryBean) {
-            mappings = urlMappings
-        }
         mainSimpleController(SimpleGrailsController.class) {
             grailsApplication = ref("grailsApplication", true)
         }
 
         def handlerInterceptors = [ref("localeChangeInterceptor")]
-        grailsUrlHandlerMapping(GrailsUrlHandlerMapping) {
-            interceptors = handlerInterceptors
-            mappings = grailsUrlMappings
-        }
-        // allow @Controller annotated beans
-        annotationHandlerMapping(DefaultAnnotationHandlerMapping) {
+        def interceptorsClosure = {
         	interceptors = handlerInterceptors
         }
+        // allow @Controller annotated beans
+        annotationHandlerMapping(DefaultAnnotationHandlerMapping, interceptorsClosure)
+        // allow default controller mappings
+        controllerHandlerMappings(GrailsControllerHandlerMapping, interceptorsClosure)
+
+
         annotationHandlerAdapter(AnnotationMethodHandlerAdapter)
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
              stripLeadingSlash = false
-        }
-
-        handlerMappingTargetSource(HotSwappableTargetSource, grailsUrlHandlerMapping)
-        handlerMapping(ProxyFactoryBean) {
-            targetSource = handlerMappingTargetSource
-            proxyInterfaces = [org.springframework.web.servlet.HandlerMapping]
-        }
-
+        }   
         for(controller in application.controllerClasses) {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
