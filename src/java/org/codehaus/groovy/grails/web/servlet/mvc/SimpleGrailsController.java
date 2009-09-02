@@ -35,11 +35,11 @@ import javax.servlet.http.HttpServletResponse;
  * <p>Base class for Grails controllers.
  *
  * @author Steven Devijver
+ * @author Graeme Rocher
+ * 
  * @since Jul 2, 2005
  */
-public class SimpleGrailsController implements Controller, ServletContextAware {
-
-    public static final String APPLICATION_CONTEXT_ID = "simpleGrailsController";
+public class SimpleGrailsController implements Controller, ServletContextAware {   
     
     private UrlPathHelper urlPathHelper = new GrailsUrlPathHelper();
     private GrailsApplication application = null;

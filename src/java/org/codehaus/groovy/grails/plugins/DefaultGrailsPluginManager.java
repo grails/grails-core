@@ -660,7 +660,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                 else {
                     if (configLastModified < lastModified) {
                         LOG.info("Configuration [" + configURL + "] changed, reloading changes..");
-                        ConfigSlurper slurper = new ConfigSlurper(GrailsUtil.getEnvironment());
+                        ConfigSlurper slurper = new ConfigSlurper(Environment.getCurrent().getName());
 
                         try {
                             config = slurper.parse(configURL);

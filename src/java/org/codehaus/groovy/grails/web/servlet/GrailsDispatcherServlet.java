@@ -398,4 +398,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return request;
 	}
 
+    @Override
+    public HandlerExecutionChain getHandler(HttpServletRequest request, boolean cache) throws Exception {
+        return super.getHandler(request, cache);    
+    }
 }

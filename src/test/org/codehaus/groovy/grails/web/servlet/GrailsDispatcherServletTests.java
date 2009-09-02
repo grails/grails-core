@@ -27,9 +27,7 @@ import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter;
 
 /**
  * Tests for handler mapping in the Grails dispatcher servlet
@@ -51,9 +49,10 @@ public class GrailsDispatcherServletTests extends TestCase {
             appCtx.registerMockBean("openSessionInView", new OpenSessionInViewInterceptor());
 
             SimpleGrailsController controller = new SimpleGrailsController();
-            appCtx.registerMockBean(SimpleGrailsController.APPLICATION_CONTEXT_ID, controller);
-            appCtx.registerMockBean("simpleControllerHandlerAdapter", new SimpleControllerHandlerAdapter());
-            appCtx.registerMockBean("handlerMappings", new SimpleUrlHandlerMapping());
+            appCtx.registerMockBean("mainSimpleController", controller);
+            GrailsControllerHandlerMapping handlerMapping = new GrailsControllerHandlerMapping();
+
+            appCtx.registerMockBean("controllerHandlerMappings", handlerMapping);
 
             GrailsDispatcherServlet dispatcherServlet = new GrailsDispatcherServlet()  {
                 protected WebApplicationContext initWebApplicationContext() throws BeansException {
@@ -69,6 +68,10 @@ public class GrailsDispatcherServletTests extends TestCase {
                     "}");
             final DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication(cl.getLoadedClasses(), cl);
             grailsApplication.initialise();
+
+            handlerMapping.setGrailsApplication(grailsApplication);
+            handlerMapping.setApplicationContext(appCtx);
+            
             dispatcherServlet.setApplication(grailsApplication);
             dispatcherServlet.init(new MockServletConfig(new MockServletContext()));
 

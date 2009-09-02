@@ -17,8 +17,8 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import grails.persistence.Entity;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.support.SpringLobHandlerDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator;
@@ -35,7 +35,6 @@ import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.core.JdkVersion;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.util.StringUtils;
@@ -185,12 +184,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         MutablePropertyValues propertyValues = sessionFactoryBean.getPropertyValues();
         final RuntimeBeanReference dataSourceRef = new RuntimeBeanReference(dataSourceId);
         propertyValues.addPropertyValue("dataSource", dataSourceRef);
-        if(JdkVersion.isAtLeastJava15()) {
-            propertyValues.addPropertyValue("configClass", GrailsAnnotationConfiguration.class);
-        }
-        else {
-            propertyValues.addPropertyValue("configClass", DefaultGrailsDomainConfiguration.class);
-        }
+        propertyValues.addPropertyValue("configClass", GrailsAnnotationConfiguration.class);
         propertyValues.addPropertyValue(GrailsApplication.APPLICATION_ID, new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
 
         targetRegistry.registerBeanDefinition(sessionFactoryId,sessionFactoryBean);
