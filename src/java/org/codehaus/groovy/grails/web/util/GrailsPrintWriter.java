@@ -8,6 +8,7 @@ import java.io.Writer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
@@ -63,8 +64,8 @@ public class GrailsPrintWriter extends PrintWriter {
      * @throws IOException
      */
     public GrailsPrintWriter leftShift(Object value) throws IOException {
-        if(value!=null) {
-        	usageFlag=true;
+    	usageFlag=true;
+    	if(value!=null) {
         	InvokerHelper.write(this, value);
         }
         return this;
@@ -123,6 +124,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 */
 	public void print(final Object obj) {
 		if (trouble || obj == null) {
+        	usageFlag=true;
 			return;
 		} else {
 			if(obj instanceof StreamCharBuffer) {
@@ -153,6 +155,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	 */
 	public void print(final String s) {
 		if (s == null) {
+        	usageFlag=true;
 			return;
 		}
 		write(s);
@@ -166,11 +169,11 @@ public class GrailsPrintWriter extends PrintWriter {
 	 */
 	@Override
     public void write(final String s) {
-        if(trouble || s == null) {
+		usageFlag=true;        	
+		if(trouble || s == null) {
         	return;
         }
         try {
-			usageFlag=true;        	
        		out.write(s);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -183,9 +186,9 @@ public class GrailsPrintWriter extends PrintWriter {
 	 */
     @Override
 	public void write(final int c) {
-		if (trouble) return;
+		usageFlag=true;
+    	if (trouble) return;
 		try {
-			usageFlag=true;
 			out.write(c);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -200,9 +203,9 @@ public class GrailsPrintWriter extends PrintWriter {
 	 */
 	@Override
 	public void write(final char buf[], final int off, final int len) {
+    	usageFlag=true;
 		if (trouble || buf == null || len == 0) return;
 		try {
-			usageFlag=true;
 			out.write(buf, off, len);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -217,9 +220,9 @@ public class GrailsPrintWriter extends PrintWriter {
 	 */
 	@Override
 	public void write(final String s, final int off, final int len) {
+		usageFlag=true;
 		if (trouble || s == null || s.length() == 0) return;
 		try {
-			usageFlag=true;
 			out.write(s, off, len);
 		} catch (IOException e) {
 			handleIOException(e);
@@ -273,6 +276,7 @@ public class GrailsPrintWriter extends PrintWriter {
 
     @Override
     public void println() {
+		usageFlag=true;        	
         write(CRLF);
     }
 
@@ -369,14 +373,28 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
     public void write(final StreamCharBuffer otherBuffer) {
+		usageFlag=true;
     	if(trouble) return;
     	try {
-			usageFlag=true;
-			otherBuffer.writeTo(getOut(),true,false);
+			otherBuffer.writeTo(findStreamCharBufferTarget());
 		} catch (IOException e) {
 			handleIOException(e);
 		}
     }
+    
+	private Writer findStreamCharBufferTarget() {
+		Writer target=getOut();
+		while(target instanceof GrailsPrintWriter) {
+			GrailsPrintWriter gpr=((GrailsPrintWriter)target);
+			gpr.setUsed(true);
+			target=gpr.getOut();
+		}
+		if(target instanceof StreamCharBufferWriter) {
+			return target;
+		} else {
+			return getOut();
+		}
+	}
     
     public void print(final StreamCharBuffer otherBuffer) {
     	write(otherBuffer);
@@ -399,9 +417,9 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
     public void write(final Writable writable) {
+		usageFlag=true;
     	if(trouble) return;
     	try {
-			usageFlag=true;
     		writable.writeTo(getOut());
 		} catch (IOException e) {
 			handleIOException(e);
@@ -418,6 +436,16 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
 	public boolean isUsed() {
+		if(this.usageFlag) {
+			return true;
+		}
+		Writer target=findStreamCharBufferTarget();
+		if(target instanceof StreamCharBufferWriter) {
+			StreamCharBuffer buffer=((StreamCharBufferWriter)target).getBuffer();
+			if(buffer.calculateTotalCharsUnread() > 0) {
+				return true;
+			}
+		}
 		return this.usageFlag;
 	}
 	

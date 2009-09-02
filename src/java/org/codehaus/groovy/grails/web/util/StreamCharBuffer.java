@@ -94,8 +94,9 @@ public class StreamCharBuffer implements Writable {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
 	private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
 	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent",100);
-	private static final int STRING_CHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.stringchunkminsize", 64);
-	private static final int WRITE_DIRECT_MIN_SIZE = Integer.getInteger("streamcharbuffer.writedirectminsize", 512);
+	private static final int SUB_BUFFERCHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.subbufferchunkminsize", 512);
+	private static final int SUB_STRINGCHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.substringchunkminsize", 512);
+	private static final int WRITE_DIRECT_MIN_SIZE = Integer.getInteger("streamcharbuffer.writedirectminsize", 1024);
 
 	private LinkedList<StreamCharBufferChunk> chunks;
 	private StreamCharBufferChunk currentWriteChunk;
@@ -104,7 +105,8 @@ public class StreamCharBuffer implements Writable {
 	private final int firstChunkSize;
 	private final int growProcent;
 	private final int maxChunkSize;
-	private int stringChunkMinSize = STRING_CHUNK_MIN_SIZE;
+	private int subStringChunkMinSize = SUB_STRINGCHUNK_MIN_SIZE;
+	private int subBufferChunkMinSize = SUB_BUFFERCHUNK_MIN_SIZE;
 	private int writeDirectlyToConnectedMinSize = WRITE_DIRECT_MIN_SIZE;
 
 	private int chunkSize;
@@ -114,12 +116,14 @@ public class StreamCharBuffer implements Writable {
 	private int totalChunkSize = 0;
 	private int totalCharsUnread = 0;
 
-	private List<ConnectedWriter> connectedWriters = new ArrayList<ConnectedWriter>(2);
-	private Writer connectedWritersWriter = new MultiOutputWriter(connectedWriters);
+	private List<ConnectedWriter> connectedWriters;
+	private Writer connectedWritersWriter;
 
 	private String cachedToString = null;
 	private char[] cachedToCharArray = null;
-
+	
+	boolean preferSubChunkWhenWritingToOtherBuffer=false;
+	
 	public StreamCharBuffer() {
 		this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
 	}
@@ -136,12 +140,20 @@ public class StreamCharBuffer implements Writable {
 		this.firstChunkSize = chunkSize;
 		this.growProcent = growProcent;
 		this.maxChunkSize = maxChunkSize;
-		this.stringChunkMinSize = STRING_CHUNK_MIN_SIZE;
 		writer = new StreamCharBufferWriter();
 		reader = new StreamCharBufferReader();
 		reset(true);
 	}
 
+	public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
+		return preferSubChunkWhenWritingToOtherBuffer;
+	}
+
+	public void setPreferSubChunkWhenWritingToOtherBuffer(
+			boolean preferSubChunkWhenWritingToOtherBuffer) {
+		this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
+	}
+	
 	public void reset() {
 		reset(true);
 	}
@@ -153,32 +165,43 @@ public class StreamCharBuffer implements Writable {
 	 *
 	 * @param writer
 	 */
-	public void connectTo(Writer writer) {
+	public final void connectTo(Writer writer) {
 		connectTo(writer, true);
 	}
 
-	public void connectTo(Writer writer, boolean autoFlush) {
+	public final void connectTo(Writer writer, boolean autoFlush) {
+		initConnected();
 		connectedWriters.add(new ConnectedWriter(writer, autoFlush));
 	}
 
-	public void connectTo(LazyInitializingWriter writer) {
+	public final void connectTo(LazyInitializingWriter writer) {
 		connectTo(writer, true);
 	}
 
-	public void connectTo(LazyInitializingWriter writer, boolean autoFlush) {
+	public final void connectTo(LazyInitializingWriter writer, boolean autoFlush) {
+		initConnected();
 		connectedWriters.add(new ConnectedWriter(writer, autoFlush));
 	}
 
-	public void removeConnections() {
-		connectedWriters.clear();
+	public final void removeConnections() {
+		if(connectedWriters != null) {
+			connectedWriters.clear();
+		}
 	}
-
+	
+	private void initConnected() {
+		if(connectedWriters==null) {
+			connectedWriters = new ArrayList<ConnectedWriter>(2);
+			connectedWritersWriter = new MultiOutputWriter(connectedWriters);
+		}
+	}
+	
 	public int filledChunkCount() {
 		return chunks.size();
 	}
 
-	public int getStringChunkMinSize() {
-		return stringChunkMinSize;
+	public int getSubStringChunkMinSize() {
+		return subStringChunkMinSize;
 	}
 
 	/**
@@ -187,8 +210,16 @@ public class StreamCharBuffer implements Writable {
 	 *
 	 * @param stringChunkMinSize
 	 */
-	public void setStringChunkMinSize(int stringChunkMinSize) {
-		this.stringChunkMinSize = stringChunkMinSize;
+	public void setSubStringChunkMinSize(int stringChunkMinSize) {
+		this.subStringChunkMinSize = stringChunkMinSize;
+	}
+
+	public int getSubBufferChunkMinSize() {
+		return subBufferChunkMinSize;
+	}
+
+	public void setSubBufferChunkMinSize(int subBufferChunkMinSize) {
+		this.subBufferChunkMinSize = subBufferChunkMinSize;
 	}
 
 	public int getWriteDirectlyToConnectedMinSize() {
@@ -250,7 +281,7 @@ public class StreamCharBuffer implements Writable {
 	 * @throws IOException
 	 */
 	public Writer writeTo(Writer target) throws IOException {
-		writeTo(target, true, true);
+		writeTo(target, true, false);
 		return getWriter();
 	}
 
@@ -264,14 +295,20 @@ public class StreamCharBuffer implements Writable {
 	 */
 	public void writeTo(Writer target, boolean flushAll, boolean flushTarget) throws IOException {
 		if(target instanceof StreamCharBufferWriter) {
-			((StreamCharBufferWriter)target).write(this);
-		} else {
-			while (prepareRead(flushAll) != -1) {
-				totalCharsUnread -= currentReadChunk.writeTo(target);
+			int otherMinSize=((StreamCharBufferWriter)target).getBuffer().getSubBufferChunkMinSize();
+			if(preferSubChunkWhenWritingToOtherBuffer || otherMinSize<=0 || calculateTotalCharsUnread() >= otherMinSize) {
+				if(target==writer) {
+					throw new IllegalArgumentException("Cannot write buffer to itself.");				
+				}
+				((StreamCharBufferWriter)target).write(this);
+				return;
 			}
-			if(flushTarget) {
-				target.flush();
-			}
+		} 
+		while (prepareRead(flushAll) != -1) {
+			totalCharsUnread -= currentReadChunk.writeTo(target);
+		}
+		if(flushTarget) {
+			target.flush();
 		}
 	}
 
@@ -333,6 +370,10 @@ public class StreamCharBuffer implements Writable {
 		return toString() + value;
 	}
 
+	public String plus(Object value) {
+		return toString() + String.valueOf(value);
+	}
+	
 	/**
 	 * reads (and empties) the buffer to a char[], but caches the return value for subsequent calls.
 	 *
@@ -406,7 +447,7 @@ public class StreamCharBuffer implements Writable {
 	}
 
 	private void flushIfConnected(boolean flushAll, boolean flushTarget) throws IOException {
-		if(!connectedWriters.isEmpty()) {
+		if(connectedWriters != null && !connectedWriters.isEmpty()) {
 			writeTo(connectedWritersWriter, flushAll, flushTarget);
 		}
 	}
@@ -499,7 +540,7 @@ public class StreamCharBuffer implements Writable {
 		}
 
 		private boolean shouldWriteDirectly(final int len) {
-			if(connectedWriters.isEmpty()) {
+			if(connectedWriters==null || connectedWriters.isEmpty()) {
 				return false;
 			}
 			return writeDirectlyToConnectedMinSize >= 0 && len > writeDirectlyToConnectedMinSize;
@@ -517,7 +558,7 @@ public class StreamCharBuffer implements Writable {
 			if(shouldWriteDirectly(len)) {
 				flushCurrentWriteChunkInConnectedMode();
 				connectedWritersWriter.write(str, off, len);
-			} else if (len > stringChunkMinSize) {
+			} else if (len > subStringChunkMinSize) {
 				currentWriteChunk.appendStringChunk(str, off, len);
 				totalCharsUnread += len;
 			} else {
@@ -547,20 +588,20 @@ public class StreamCharBuffer implements Writable {
 			if(csq==null) {
 				write("null");
 			} else {
-				if(csq instanceof StringBuilder || csq instanceof StringBuffer || csq instanceof String) {
+				if(csq instanceof String || csq instanceof StringBuffer || csq instanceof StringBuilder) {
 					int len = end-start;
 					int charsLeft = len;
 					int currentOffset = start;
 					while (charsLeft > 0) {
 						int spaceLeft = allocateSpace();
 						int writeChars = Math.min(spaceLeft, charsLeft);
-						if(csq instanceof StringBuilder) {
-							currentWriteChunk.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
+						if (csq instanceof String) {
+							currentWriteChunk.writeString((String)csq, currentOffset, writeChars);
 						} else if (csq instanceof StringBuffer) {
 							currentWriteChunk.writeStringBuffer((StringBuffer)csq, currentOffset, writeChars);
-						} else if (csq instanceof String) {
-							currentWriteChunk.writeString((String)csq, currentOffset, writeChars);
-						}
+						} else if(csq instanceof StringBuilder) {
+							currentWriteChunk.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
+						} 
 						charsLeft -= writeChars;
 						currentOffset += writeChars;
 					}
@@ -748,20 +789,20 @@ public class StreamCharBuffer implements Writable {
 		}
 		
 		public int appendStreamCharBuffer(StreamCharBuffer subBuffer) {
-			prepareWrite();
+			prepareSubChunkWrite();
 			int appendlen=writingSubChunkGroup.appendStreamCharBuffer(subBuffer);
 			unreadCharsInSubChunkGroups+=appendlen;
 			return appendlen;
 		}
 
 		public int appendStringChunk(final String str, final int off, final int len) throws IOException {
-			prepareWrite();
+			prepareSubChunkWrite();
 			int appendlen=writingSubChunkGroup.appendString(str, off, len);
 			unreadCharsInSubChunkGroups+=appendlen;
 			return appendlen;
 		}
 
-		private void prepareWrite() {
+		private void prepareSubChunkWrite() {
 			if(writingSubChunkGroup == null || used!=writingSubChunkGroup.getOwnerIndex()) {
 				writingSubChunkGroup = new SubChunkGroup(used);
 				if(subChunkGroups==null) {
@@ -771,7 +812,7 @@ public class StreamCharBuffer implements Writable {
 			}
 		}
 
-		private boolean prepareChildArrayChunkReading() {
+		private boolean prepareSubChunkRead() {
 			if(subChunkGroups==null) {
 				return false;
 			}
@@ -808,7 +849,7 @@ public class StreamCharBuffer implements Writable {
 			int readLen = len;
 			int readOff = off;
 			while(readLen > 0) {
-				if(prepareChildArrayChunkReading()) {
+				if(prepareSubChunkRead()) {
 					int readCharsLen = readingSubChunkGroup.read(ch, readOff, readLen);
 					readLen -= readCharsLen;
 					readOff += readCharsLen;
@@ -836,7 +877,7 @@ public class StreamCharBuffer implements Writable {
 		public int writeTo(final Writer target) throws IOException {
 			int writtenCount=0;
 			while(charsUnread() > 0) {
-				if(prepareChildArrayChunkReading()) {
+				if(prepareSubChunkRead()) {
 					writtenCount+=readingSubChunkGroup.writeTo(target);
 					if(readingSubChunkGroup.getUnreadChars()==0) {
 						readingSubChunkGroup=null;

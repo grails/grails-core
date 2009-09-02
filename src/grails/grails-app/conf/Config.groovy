@@ -32,6 +32,9 @@ grails.converters.encoding="UTF-8"
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
 
+// enable GSP preprocessing: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
+grails.views.gsp.sitemesh.preprocess = true
+
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {

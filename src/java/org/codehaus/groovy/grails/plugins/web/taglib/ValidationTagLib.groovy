@@ -36,7 +36,8 @@ import org.springframework.context.MessageSourceAware
 */
 
 class ValidationTagLib {
-
+	static returnObjectForTags = ['message']
+	
     /**
      * Renders an error message for the given bean and field
      *

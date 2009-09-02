@@ -93,6 +93,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		if(!containsValue && body) value = body()
 
 		this."$scope"."$var" = value
+		null
 	}
 
     /**

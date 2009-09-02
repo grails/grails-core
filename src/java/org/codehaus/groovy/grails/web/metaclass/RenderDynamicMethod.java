@@ -78,7 +78,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_RICO = "rico";
     private static final String BUILDER_TYPE_JSON = "json";
 
-    private static final int BUFFER_SIZE = 8192;
     private static final String TEXT_HTML = "text/html";
     private String gspEncoding;
     private static final String DEFAULT_ENCODING = "utf-8";
@@ -126,13 +125,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 String contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString();
                 String encoding = argMap.get(ARGUMENT_ENCODING).toString();
                 setContentType(response, contentType, encoding);
-                out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+                out = GSPResponseWriter.getInstance(response);
             } else if (argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
                 setContentType(response, argMap.get(ARGUMENT_CONTENT_TYPE).toString(), DEFAULT_ENCODING);
-                out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+                out = GSPResponseWriter.getInstance(response);
             } else {
                 setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
-                out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+                out = GSPResponseWriter.getInstance(response);
             }
 
             if(argMap.containsKey(ARGUMENT_STATUS)) {

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.GroovyObject;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +45,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     private GrailsApplication grailsApplication;
     private Map<String, String> tagLibraries = new HashMap<String, String>();
     private Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
+    private Set<String> tagsThatReturnObject = new HashSet<String>();
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -93,7 +95,13 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         String namespace = taglib.getNamespace();
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
         for(String tagName : taglib.getTagNames()) {
-            tagLibraries.put(namespace+':'+tagName, taglib.getFullName());
+        	String nameKey=tagNameKey(namespace, tagName);
+            tagLibraries.put(nameKey, taglib.getFullName());
+            tagsThatReturnObject.remove(nameKey);
+        }
+        for(String tagName : taglib.getTagNamesThatReturnObject()) {
+        	String nameKey=tagNameKey(namespace, tagName);
+        	tagsThatReturnObject.add(nameKey);
         }
     }
 
@@ -105,12 +113,20 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      * @return The tag library or null if it wasn't found
      */
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
-    	String fullName = tagLibraries.get(namespace+':'+tagName);
+    	String fullName = tagLibraries.get(tagNameKey(namespace, tagName));
     	if(fullName != null) {
     		return (GroovyObject) applicationContext.getBean(fullName);
     	} else {
     		return null;
     	}
+    }
+
+	private String tagNameKey(String namespace, String tagName) {
+		return namespace+':'+tagName;
+	}
+    
+    public boolean doesTagReturnObject(String namespace, String tagName) {
+    	return tagsThatReturnObject.contains(tagNameKey(namespace, tagName));
     }
 
     /**

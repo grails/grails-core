@@ -20,7 +20,6 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 import groovy.lang.Script;
 
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +37,6 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -124,6 +122,8 @@ public abstract class GroovyPage extends Script {
     }
     
 	protected static final Closure EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
+
+	private static final String REQUEST_TAGLIB_CACHE = GroovyPage.class.getName() + ".TAGLIBCACHE";
     
     
     public GroovyPage() {
@@ -295,18 +295,25 @@ public abstract class GroovyPage extends Script {
 
         boolean prevUsed=out.resetUsed();
         try {
-
-            if( gspTagLibraryLookup.hasNamespace(tagNamespace) ) {
-                GroovyObject tagLib = getTagLib(tagName,tagNamespace);
+            GroovyObject tagLib = getTagLib(tagNamespace,tagName);
+            if( tagLib != null || gspTagLibraryLookup.hasNamespace(tagNamespace) ) {
                 if(tagLib != null) {
+                	boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
                     Object tagLibProp = tagLib.getProperty(tagName);
                     if(tagLibProp instanceof Closure) {
                         Closure tag = (Closure) ((Closure)tagLibProp).clone();
                         Object tagresult=null;
+                        
+                        // GSP<->Sitemesh integration requires that the body or head subchunk isn't written to output
+                    	boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(tagNamespace, tagName);
+                    	if(body instanceof GroovyPageTagBody && preferSubChunkWhenWritingToOtherBuffer) {
+                    		((GroovyPageTagBody)body).setPreferSubChunkWhenWritingToOtherBuffer(true);
+                    	}
+                        
                         switch(tag.getParameterTypes().length) {
                             case 1:
                                 tagresult=tag.call( new Object[]{ attrs });
-                                if(tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
+                                if(returnsObject && tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
                                 	out.print(tagresult);
                                 }
                                 if(body != null && body != EMPTY_BODY_CLOSURE) {
@@ -318,7 +325,7 @@ public abstract class GroovyPage extends Script {
                             case 2:
                                 if(tag.getParameterTypes().length == 2) {
                                 	tagresult=tag.call( new Object[] { attrs, (body!=null)?body:EMPTY_BODY_CLOSURE });
-                                    if(tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
+                                    if(returnsObject && tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
                                     	out.print(tagresult);
                                     }
                                 }
@@ -368,12 +375,20 @@ public abstract class GroovyPage extends Script {
         }
     }
 
-    private GroovyObject getTagLib(String tagName) {
-    	return getTagLib(tagName,DEFAULT_NAMESPACE);
+	private static boolean resolvePreferSubChunk(String tagNamespace, String tagName) {
+		boolean preferSubChunkWhenWritingToOtherBuffer=false;
+		if(DEFAULT_NAMESPACE.equals(tagNamespace) && tagName.startsWith("capture")) {
+			preferSubChunkWhenWritingToOtherBuffer=true;
+		}
+		return preferSubChunkWhenWritingToOtherBuffer;
+	}
+
+    private GroovyObject getTagLibForDefaultNamespace(String tagName) {
+    	return getTagLib(DEFAULT_NAMESPACE,tagName);
     }
 
-    private GroovyObject getTagLib(String tagName, String namespace) {
-        return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupTagLibrary(namespace, tagName) : null;
+    private GroovyObject getTagLib(String namespace, String tagName) {
+        return lookupCachedTagLib(webRequest, gspTagLibraryLookup, namespace, tagName);
     }
 
     /**
@@ -389,7 +404,7 @@ public abstract class GroovyPage extends Script {
 
         Map attrs = null;
         Object body = null;
-        GroovyObject tagLib = getTagLib(methodName);
+        GroovyObject tagLib = getTagLibForDefaultNamespace(methodName);
         if(tagLib != null) {
             // get attributes and body closure
             if (args instanceof Object[]) {
@@ -408,7 +423,7 @@ public abstract class GroovyPage extends Script {
                 attrs = new HashMap();
             }
 
-            return captureTagOutput(tagLib,methodName, attrs, body, webRequest, false);
+            return captureTagOutput(gspTagLibraryLookup, DEFAULT_NAMESPACE, methodName, attrs, body, webRequest);
         }
         else {
             return super.invokeMethod(methodName, args);
@@ -416,20 +431,16 @@ public abstract class GroovyPage extends Script {
 
     }
     
-    public static Object captureTagOutput(GroovyObject tagLib, String methodName, Map attrs, Object body, GrailsWebRequest webRequest) {
-    	return captureTagOutput(tagLib, methodName, attrs, body, webRequest, true);
-    }
+    public static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace, String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
+    	GroovyObject tagLib=lookupCachedTagLib(webRequest, gspTagLibraryLookup, namespace, tagName); 
+    	
+    	boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(namespace, tagName);
+		Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest, preferSubChunkWhenWritingToOtherBuffer);
 
-    public static Object captureTagOutput(GroovyObject tagLib, String methodName, Map attrs, Object body, GrailsWebRequest webRequest, boolean mcMethodCall) {
-		// in a direct invocation the body is expected to return a string
-		// invoke the body closure and create a new closure that outputs
-		// to the response writer on each body invocation
-		Closure actualBody = createTagOutputCapturingClosure(tagLib, body, webRequest);
-
-		final GroovyPageTagWriter out = new GroovyPageTagWriter();
+		final GroovyPageTagWriter out = new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
         	GroovyPageOutputStack.currentStack().push(out);
-			Object tagLibProp = tagLib.getProperty(methodName); // retrieve tag lib and create wrapper writer
+			Object tagLibProp = tagLib.getProperty(tagName); // retrieve tag lib and create wrapper writer
 			if(tagLibProp instanceof Closure) {
 			    Closure tag = (Closure) ((Closure)tagLibProp).clone();
 			    Object bodyResult=null;
@@ -445,30 +456,60 @@ public abstract class GroovyPage extends Script {
 			    } else if(tag.getParameterTypes().length == 2) {
 			        bodyResult=tag.call( new Object[] { attrs, actualBody });
 			    } else {
-			        throw new GrailsTagException("Tag ["+methodName+"] does not specify expected number of params in tag library ["+tagLib.getClass().getName()+"]");
+			        throw new GrailsTagException("Tag ["+tagName+"] does not specify expected number of params in tag library ["+tagLib.getClass().getName()+"]");
 			    }
 			    
-	            StreamCharBuffer buffer=out.getBuffer();
-	            if(buffer.charsAvailable()==0 && bodyResult != null && !(bodyResult instanceof Writer)) {
+			    boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(namespace, tagName);
+			    
+	            if(returnsObject && !out.isUsed() && bodyResult != null && !(bodyResult instanceof Writer)) {
         			return bodyResult;
 	            }
 	            // add some method to always return string, configurable?
-	            return buffer;
+	            return out.getBuffer();
 			}else {
-			    throw new GrailsTagException("Tag ["+methodName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
+			    throw new GrailsTagException("Tag ["+tagName+"] does not exist in tag library ["+tagLib.getClass().getName()+"]");
 			}
         } finally {
         	GroovyPageOutputStack.currentStack().pop();
         }
     }
 
-	private static Closure createTagOutputCapturingClosure(Object wrappedInstance, final Object body1, final GrailsWebRequest webRequest) {
+	private static GroovyObject lookupCachedTagLib(GrailsWebRequest webRequest,
+			TagLibraryLookup gspTagLibraryLookup, String namespace,
+			String tagName) {
+		if(webRequest != null) {
+			String tagKey = namespace + ":" + tagName;
+			Map<String, GroovyObject> tagLibCache=(Map<String, GroovyObject>)webRequest.getCurrentRequest().getAttribute(REQUEST_TAGLIB_CACHE);
+			GroovyObject tagLib=null;
+			if(tagLibCache==null) {
+				tagLibCache=new HashMap<String, GroovyObject>();
+				webRequest.getCurrentRequest().setAttribute(REQUEST_TAGLIB_CACHE, tagLibCache);
+			} else {
+				tagLib=tagLibCache.get(tagKey);
+			}
+			if(tagLib==null) {
+				tagLib=gspTagLibraryLookup.lookupTagLibrary(namespace, tagName);
+				if(tagLib != null) {
+					tagLibCache.put(tagKey, tagLib);
+				}
+			}
+			return tagLib;
+		} else {
+			return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupTagLibrary(namespace, tagName) : null;
+		}
+	}
+
+	public static Closure createOutputCapturingClosure(Object wrappedInstance, final Object body1, final GrailsWebRequest webRequest, boolean preferSubChunkWhenWritingToOtherBuffer) {
 		if(body1==null) {
 			return EMPTY_BODY_CLOSURE;
-		} else if (body1 instanceof GroovyPageTagBody){
-            return (GroovyPageTagBody) body1;
+		} else if (body1 instanceof GroovyPageTagBody) {
+			GroovyPageTagBody gptb=(GroovyPageTagBody)body1;
+			gptb.setPreferSubChunkWhenWritingToOtherBuffer(preferSubChunkWhenWritingToOtherBuffer);
+			return gptb;
+		} else if (body1 instanceof ConstantClosure){
+            return (Closure)body1;
 		} else if (body1 instanceof Closure) {
-			return new GroovyPageTagBody(wrappedInstance, webRequest, (Closure)body1);
+			return new GroovyPageTagBody(wrappedInstance, webRequest, (Closure)body1, preferSubChunkWhenWritingToOtherBuffer);
         } else {
         	return new ConstantClosure(body1);
         }
