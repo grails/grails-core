@@ -90,7 +90,7 @@ import java.util.List;
  * @author Lari Hotari, Sagire Software Oy
  *
  */
-public class StreamCharBuffer implements Writable {
+public class StreamCharBuffer implements Writable, CharSequence {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
 	private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
 	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent",100);
@@ -1171,5 +1171,22 @@ public class StreamCharBuffer implements Writable {
 			}
 			return this;
 		}
+	}
+
+	/* Compatibility methods so that StreamCharBuffer will behave more like java.lang.String in groovy code */
+	
+	@Override
+	public char charAt(int index) {
+		return toString().charAt(index);
+	}
+
+	@Override
+	public int length() {
+		return toString().length();
+	}
+
+	@Override
+	public CharSequence subSequence(int start, int end) {
+		return toString().subSequence(start, end);
 	}
 }
