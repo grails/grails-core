@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -119,5 +120,12 @@ class WebMetaUtils {
         registerMethodMissingForTags(mc,gspTagLibraryLookup,namespace,name)
     }
 
+    static registerStreamCharBufferMetaClass() {
+		StreamCharBuffer.metaClass.methodMissing = { String name, args ->
+			def retval = delegate.toString().invokeMethod(name, args)
+			StreamCharBuffer.metaClass."$name" = { Object[] varArgs -> delegate.toString().invokeMethod(name,varArgs) }
+			retval
+		}
+    }
 
 }

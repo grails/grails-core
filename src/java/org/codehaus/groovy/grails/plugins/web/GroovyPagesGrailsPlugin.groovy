@@ -204,6 +204,8 @@ public class GroovyPagesGrailsPlugin {
      */
     def doWithDynamicMethods = { ApplicationContext ctx ->
 
+    	WebMetaUtils.registerStreamCharBufferMetaClass()
+
         TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
 
         if(manager?.hasGrailsPlugin("controllers")) {
