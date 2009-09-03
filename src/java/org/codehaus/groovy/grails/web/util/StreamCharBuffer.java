@@ -1182,7 +1182,11 @@ public class StreamCharBuffer implements Writable, CharSequence {
 
 	@Override
 	public int length() {
-		return toString().length();
+		if(cachedToString != null) {
+			return toString().length();
+		} else {
+			return size();
+		}
 	}
 
 	@Override
