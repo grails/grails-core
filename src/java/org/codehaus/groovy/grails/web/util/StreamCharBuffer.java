@@ -294,7 +294,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	 * @throws IOException
 	 */
 	public void writeTo(Writer target, boolean flushAll, boolean flushTarget) throws IOException {
-		if(target instanceof StreamCharBufferWriter) {
+		if(target instanceof StreamCharBufferWriter && cachedToString == null) {
 			int otherMinSize=((StreamCharBufferWriter)target).getBuffer().getSubBufferChunkMinSize();
 			if(preferSubChunkWhenWritingToOtherBuffer || otherMinSize<=0 || calculateTotalCharsUnread() >= otherMinSize) {
 				if(target==writer) {
@@ -303,7 +303,10 @@ public class StreamCharBuffer implements Writable, CharSequence {
 				((StreamCharBufferWriter)target).write(this);
 				return;
 			}
-		} 
+		} else if(cachedToString != null) { 
+			// toString() has been called so write the cached (and already flushed part) to the target first
+			target.write(cachedToString);
+		}
 		while (prepareRead(flushAll) != -1) {
 			totalCharsUnread -= currentReadChunk.writeTo(target);
 		}
