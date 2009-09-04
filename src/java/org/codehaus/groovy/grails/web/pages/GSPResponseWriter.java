@@ -54,6 +54,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 	private BoundedCharsAsEncodedBytesCounter bytesCounter;
 	private static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
 	private static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
+	private static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
     private static final int BUFFER_SIZE = Integer.getInteger("GSPResponseWriter.bufferSize", 8042);
 
     public static GSPResponseWriter getInstance(final ServletResponse response) {
@@ -73,12 +74,13 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 
 		if(!(response instanceof GrailsContentBufferingResponse) && (BUFFERING_ENABLED || CONTENT_LENGTH_COUNTING_ENABLED)) {
 			streamBuffer=new StreamCharBuffer(max, 0, max);
+			streamBuffer.setChunkMinSize(max/2);
 			target=streamBuffer.getWriter();
 			if(CONTENT_LENGTH_COUNTING_ENABLED) {
 				bytesCounter = new BoundedCharsAsEncodedBytesCounter(max * 2, response.getCharacterEncoding());
-				streamBuffer.connectTo(bytesCounter.getCountingWriter(), true);
+				streamBuffer.connectTo(bytesCounter.getCountingWriter(), AUTOFLUSH_ENABLED);
 			}
-			streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, !CONTENT_LENGTH_COUNTING_ENABLED);
+			streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, AUTOFLUSH_ENABLED);
 		} else {
 			try {
 				target=response.getWriter();

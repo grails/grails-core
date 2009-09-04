@@ -73,7 +73,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 
 	@Override
 	public int originalLength() {
-		return pageBuffer.calculateTotalCharsUnread();
+		return pageBuffer.size();
 	}
 
 	@Override
