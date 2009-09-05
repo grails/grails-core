@@ -104,7 +104,7 @@ import java.util.Set;
 public class StreamCharBuffer implements Writable, CharSequence {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
 	private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
-	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent",100);
+	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent", 100);
 	private static final int SUB_BUFFERCHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.subbufferchunkminsize", 512);
 	private static final int SUB_STRINGCHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.substringchunkminsize", 512);
 	private static final int WRITE_DIRECT_MIN_SIZE = Integer.getInteger("streamcharbuffer.writedirectminsize", 1024);
@@ -201,6 +201,15 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	public final void connectTo(Writer writer, boolean autoFlush) {
 		initConnected();
 		connectedWriters.add(new ConnectedWriter(writer, autoFlush));
+		initConnectedWritersWriter();
+	}
+
+	private void initConnectedWritersWriter() {
+		if(connectedWriters.size() > 1) {
+			connectedWritersWriter=new MultiOutputWriter(connectedWriters);
+		} else {
+			connectedWritersWriter=new SingleOutputWriter(connectedWriters.get(0));
+		}
 	}
 
 	public final void connectTo(LazyInitializingWriter writer) {
@@ -210,18 +219,19 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	public final void connectTo(LazyInitializingWriter writer, boolean autoFlush) {
 		initConnected();
 		connectedWriters.add(new ConnectedWriter(writer, autoFlush));
+		initConnectedWritersWriter();
 	}
 
 	public final void removeConnections() {
 		if(connectedWriters != null) {
 			connectedWriters.clear();
+			connectedWritersWriter = null;
 		}
 	}
 	
 	private void initConnected() {
 		if(connectedWriters==null) {
 			connectedWriters = new ArrayList<ConnectedWriter>(2);
-			connectedWritersWriter = new MultiOutputWriter(connectedWriters);
 		}
 	}
 
@@ -557,7 +567,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 				return false;
 			}
 			
-			if(!(writeDirectlyToConnectedMinSize >= 0 && len > writeDirectlyToConnectedMinSize)) {
+			if(!(writeDirectlyToConnectedMinSize >= 0 && len >= writeDirectlyToConnectedMinSize)) {
 				return false;
 			}
 			
@@ -566,7 +576,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 
 		private boolean isNextChunkBigEnough(final int len) {
 			// check if allocBuffer has enough chars to flush
-			return chunkMinSize <= 0 || allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft() ;
+			return chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 || allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft() ;
 		}
 		
 		@Override
@@ -581,7 +591,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			if(shouldWriteDirectly(len)) {
 				appendCharBufferChunk(true);
 				connectedWritersWriter.write(str, off, len);
-			} else if (len > subStringChunkMinSize && isNextChunkBigEnough(len)) {
+			} else if (len >= subStringChunkMinSize && isNextChunkBigEnough(len)) {
 				appendStringChunk(str, off, len);
 			} else {
 				int charsLeft = len;
@@ -599,7 +609,10 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		public void write(StreamCharBuffer subBuffer) throws IOException {
 			writerUsed = true;
 			int len=subBuffer.size();
-			if(subBuffer.preferSubChunkWhenWritingToOtherBuffer || (len > subBufferChunkMinSize && isNextChunkBigEnough(len))) {
+			if(shouldWriteDirectly(len)) {
+				appendCharBufferChunk(true);
+				subBuffer.writeToImpl(connectedWritersWriter,false,false);
+			} else if(subBuffer.preferSubChunkWhenWritingToOtherBuffer || (len >= subBufferChunkMinSize && isNextChunkBigEnough(len))) {
 				appendStreamCharBufferChunk(subBuffer);
 				subBuffer.addParentBuffer(StreamCharBuffer.this);
 			} else {
@@ -1199,6 +1212,41 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			return autoFlush;
 		}
 	}
+	
+	static final class SingleOutputWriter extends Writer {
+		private ConnectedWriter writer;
+		
+		public SingleOutputWriter(ConnectedWriter writer) {
+			this.writer=writer;
+		}
+		
+		@Override
+		public void close() throws IOException {
+
+		}
+
+		@Override
+		public void flush() throws IOException {
+			writer.flush();
+		}
+
+		@Override
+		public void write(final char[] cbuf, final int off, final int len) throws IOException {
+			writer.getWriter().write(cbuf, off, len);
+		}
+
+		@Override
+		public Writer append(final CharSequence csq, final int start, final int end)
+				throws IOException {
+			writer.getWriter().append(csq, start, end);
+			return this;
+		}
+
+		@Override
+		public void write(String str, int off, int len) throws IOException {
+			StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+		}
+	}
 
 	/**
 	 * delegates to several writers, used in "connectTo" mode.
@@ -1242,7 +1290,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		@Override
 		public void write(String str, int off, int len) throws IOException {
 			for(ConnectedWriter writer : writers) {
-				writer.getWriter().write(str, off, len);
+				StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
 			}
 		}
 	}

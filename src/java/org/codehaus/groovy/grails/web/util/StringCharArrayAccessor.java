@@ -117,13 +117,7 @@ public class StringCharArrayAccessor {
 	}
 
 	private static void writeStringFallback(Writer writer, String str, int off, int len) throws IOException {
-		if(str.length()==len && off==0) {
-			writer.write(str.toCharArray());
-		} else {
-			char[] buf=new char[len];
-			str.getChars(off, off+len, buf, 0);
-			writer.write(buf);
-		}
+		writer.write(str, off, len);
 	}
 
 	static char[] getValue(String str) {
