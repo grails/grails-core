@@ -39,49 +39,6 @@ includeJars = true
 
 warName = null
 
-DEFAULT_DEPS = [
-    "ant-*.jar",
-    "ant-launcher-*.jar",
-    "hibernate3-*.jar",
-    "jdbc2_0-stdext.jar",
-    "jta-*.jar",
-    "groovy-all-*.jar",
-    "standard-${servletVersion}.jar",
-    "jstl-${servletVersion}.jar",
-    "antlr-*.jar",
-    "cglib-*.jar",
-    "dom4j-*.jar",        
-    "oscache-*.jar",
-    "backport-util-concurrent*.jar",
-    "ehcache-*.jar",
-    "ivy-*.jar",
-    "jsr107cache-*.jar",
-    "sitemesh-*.jar",
-    "org.springframework.*-*.jar",
-    "jcl-over-slf4j-*.jar",
-    "jul-to-slf4j-*.jar",
-    "slf4j-api-*.jar",
-    "slf4j-log4j12-*.jar",
-    "log4j-*.jar",
-    "ognl-*.jar",
-    "hsqldb-*.jar",
-    "commons-lang-*.jar",
-    "commons-codec-*.jar",
-    "commons-collections-*.jar",
-    "commons-beanutils-*.jar",
-    "commons-pool-*.jar",
-    "commons-dbcp-*.jar",
-    "commons-cli-*.jar",
-    "commons-validator-*.jar",
-    "commons-fileupload-*.jar",
-    "commons-io-*.jar",
-    "*oro-*.jar",
-    "xercesImpl-*.jar",
-    "xpp3_min-1.1.3.4.O.jar",
-    "hibernate-annotations-*.jar",
-    "hibernate-commons-annotations-*.jar",
-    "ejb3-persistence-*.jar"
-]
 
 defaultWarDependencies = { antBuilder ->
 

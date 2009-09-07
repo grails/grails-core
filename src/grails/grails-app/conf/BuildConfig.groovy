@@ -3,8 +3,8 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir	= "target/test-reports"
 
 grails.dependency.resolution = {
-    // log level of Ivy resolver
-    log "info"
+    // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    log "warn"
     repositories {
         grailsHome()
 
@@ -20,20 +20,21 @@ grails.dependency.resolution = {
 
         // dependencies needed by the Grails build system
          build "org.tmatesoft.svnkit:svnkit:1.2.0",
- 			  "org.apache.ant:ant:1.7.1",
- 			  "org.apache.ant:ant-launcher:1.7.1",
-              "org.apache.ant:ant-junit:1.7.1",
-              "org.apache.ant:ant-nodeps:1.7.1",
-              "org.apache.ant:ant-trax:1.7.1",
-              "radeox:radeox:1.0-b2",
-              "apache-tomcat:jasper-compiler:5.5.15",
-              "jline:jline:0.9.91",
-              "xalan:serializer:2.7.1",
-              "org.grails:grails-scripts:$grailsVersion",
-              "org.grails:grails-core:$grailsVersion",
-              "org.grails:grails-resources:$grailsVersion",
-              "org.grails:grails-web:$grailsVersion",
-              "org.sl4j:slf4j-log4j12:1.5.6"
+ 			   "org.apache.ant:ant:1.7.1",
+ 			   "org.apache.ant:ant-launcher:1.7.1",
+               "org.apache.ant:ant-junit:1.7.1",
+               "org.apache.ant:ant-nodeps:1.7.1",
+               "org.apache.ant:ant-trax:1.7.1",
+               "radeox:radeox:1.0-b2",
+               "apache-tomcat:jasper-compiler:5.5.15",
+               "jline:jline:0.9.91",
+               "xalan:serializer:2.7.1",
+               "org.grails:grails-bootstrap:$grailsVersion",
+               "org.grails:grails-scripts:$grailsVersion",
+               "org.grails:grails-core:$grailsVersion",
+               "org.grails:grails-resources:$grailsVersion",
+               "org.grails:grails-web:$grailsVersion",
+               "org.sl4j:slf4j-log4j12:1.5.6"
 
         // dependencies needed during development, but not for deployment
         provided "javax.servlet:servlet-api:2.5",
@@ -41,6 +42,10 @@ grails.dependency.resolution = {
                  "javax.servlet:jstl:1.1.2"
 
         // dependencies needed for compilation
+        compile("org.codehaus.groovy:groovy-all:1.6.4") {
+            excludes 'jline'
+        }
+        
         compile "aopalliance:aopalliance:1.0",
                 "commons-validator:commons-validator:1.3.1",
                 "commons-el:commons-el:1.0",
@@ -50,6 +55,7 @@ grails.dependency.resolution = {
                 "commons-lang:commons-lang:2.4",
                 "javax.transaction:jta:1.1",
                 "opensymphony:sitemesh:2.4",
+                "org.grails:grails-bootstrap:$grailsVersion",
                 "org.grails:grails-core:$grailsVersion",                
                 "org.grails:grails-crud:$grailsVersion",
                 "org.grails:grails-docs:$grailsVersion",
