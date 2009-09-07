@@ -35,7 +35,12 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
 
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(props.'grails.version'))
+        assertEquals 52, manager.listDependencies('runtime').size()
+        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 16, manager.listDependencies('build').size()
+        assertEquals 3, manager.listDependencies('provided').size()
         def report = manager.resolveDependencies()
+
 
         assertFalse "dependency resolve should have no errors!",report.hasError()
     }
