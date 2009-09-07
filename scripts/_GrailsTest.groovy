@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.test.DefaultGrailsTestRunner
 import org.codehaus.groovy.grails.test.GrailsIntegrationTestHelper
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import org.springframework.mock.web.MockServletContext
+
 
 /**
  * Gant script that runs the Grails unit tests
@@ -277,7 +277,7 @@ integrationTestsPreparation = {
     def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
     if (beanNames.size() > 0) appCtx.getBean(beanNames[0]).init()
 
-    MockServletContext servletContext = new org.springframework.mock.web.MockServletContext()
+    def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext );
 

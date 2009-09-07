@@ -540,26 +540,26 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.beans-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.expression-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.instrument.classloading-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.web-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.oxm-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.web.servlet-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.aspects-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.test-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.transaction-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.integration-tests-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.jms-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.context.support-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.context-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.jdbc-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.aop-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.core-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.asm-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.instrument-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.web.portlet-sources-3.0.0.CI-325.jar!/" />
-        <root url="jar:///Users/graemerocher/Downloads/spring-framework-3.0.0.CI-325/src/org.springframework.orm-sources-3.0.0.CI-325.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.oxm-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.test-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.asm-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.web-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.web.portlet-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.expression-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.core-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.web.servlet-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.jdbc-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.aspects-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.jms-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.instrument-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.transaction-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.context.support-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.beans-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.orm-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.instrument.classloading-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.context-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.aop-sources-3.0.0.M4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.integration-tests-sources-3.0.0.M4.jar!/" />
       </SOURCES>
     </library>
     <library name="dom4j">

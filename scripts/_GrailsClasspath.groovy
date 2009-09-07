@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
  * Gant script containing the Grails classpath setup.
  *
  * @author Peter Ledbrook
+ * @author Graeme Rocher
  *
  * @since 1.1
  */
@@ -161,35 +162,6 @@ classpathToUrls = { String classpathId ->
     return ant.project.properties.get(propName).split(":").collect { new File(it).toURI().toURL() }
 }
 
-// I don't think this is needed anymore, but keeping around just in
-// case the paths specified are actually important!
-//
-//grailsClasspath = {pluginLibs, grailsDir ->
-//    pathelement(location: "${classesDir.absolutePath}")
-//    pathelement(location: "${basedir}/test/unit")
-//    pathelement(location: "${basedir}/test/integration")
-//    pathelement(location: "${basedir}")
-//    pathelement(location: "${basedir}/web-app")
-//    pathelement(location: "${basedir}/web-app/WEB-INF")
-//    pathelement(location: "${basedir}/web-app/WEB-INF/classes")
-//
-//    if (new File("${basedir}/web-app/WEB-INF/lib").exists()) {
-//        fileset(dir: "${basedir}/web-app/WEB-INF/lib")
-//    }
-//    for (d in grailsDir) {
-//        pathelement(location: "${d.file.absolutePath}")
-//    }
-//
-//	if(preInitConfig.grails.compiler.dependencies) {
-//		def callable = preInitConfig.grails.compiler.dependencies
-//		callable.delegate = delegate
-//		callable.resolveStrategy = Closure.DELEGATE_FIRST
-//		callable()
-//	}
-//    else {
-//        defaultCompilerDependencies(delegate)
-//    }
-//}
 
 void setClasspath() {
     // Make sure the following code is only executed once.

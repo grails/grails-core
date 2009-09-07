@@ -92,6 +92,7 @@
                 <include name="grails/util/GrailsMain*"/>
                 <include name="grails/ant/**/*"/>
                 <include name="**/groovy/grails/cli/**/*" />
+                <include name="**/groovy/grails/resolve/**/*" />
             </fileset>
             <file file="${basedir}/build.properties"/>
         </jar>

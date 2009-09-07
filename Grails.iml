@@ -130,6 +130,17 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Apache Ivy">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ivy-2.0.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../../../apache/ivy-2.0.0/src/java" />
+        </SOURCES>
+      </library>
+    </orderEntry>
     <javadoc-paths>
       <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
       <root url="file://$MODULE_DIR$/../hibernate-3.2/doc/api" />

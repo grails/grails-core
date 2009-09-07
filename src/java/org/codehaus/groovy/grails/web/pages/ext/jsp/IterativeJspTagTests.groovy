@@ -36,7 +36,7 @@ class IterativeJspTagTests extends GroovyTestCase {
 
         TagLibraryResolver.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-            def res = new FileSystemResource("lib/standard-2.4.jar")
+            def res = new FileSystemResource("lib/standard-1.1.2.jar")
             rootLoader.addURL res.getURL()
             return rootLoader
         }

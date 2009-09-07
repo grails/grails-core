@@ -110,9 +110,11 @@ public class GrailsScriptRunner {
             System.out.println("Script not found: " + ex.getScriptName());
         }
         catch (Throwable t) {
-            System.out.println("Error executing script " + script.name + ": " + t.getMessage());
+            String msg = "Error executing script " + script.name + ": " + t.getMessage();
+            System.out.println(msg);
             sanitizeStacktrace(t);
             t.printStackTrace(System.out);
+            System.out.println(msg);
             System.exit(1);
         }
     }
@@ -322,7 +324,7 @@ public class GrailsScriptRunner {
         // loader plus all the application's compiled classes.
         URLClassLoader classLoader;
         try {
-            // JARs already on the classpath should be excluded.
+            // JARs already on the classpath should be ed.
             Set existingJars = new HashSet();
             for (URL url : settings.getRootLoader().getURLs()) {
                 existingJars.add(url.getFile());
@@ -624,34 +626,17 @@ public class GrailsScriptRunner {
             urls.add(settings.getResourcesDir().toURI().toURL());
         }
 
-        // Add compilation dependencies
-        List compileDependencies = settings.getCompileDependencies();
-        for (Object compileDependency : compileDependencies) {
-            File file = (File) compileDependency;
-            if (!excludes.contains(file.getName())) {
-                urls.add(file.toURI().toURL());
-                excludes.add(file.getName());
-            }
-
-        }
+        // Add build-only dependencies to the project
+        System.out.println("Resolving dependencies...");
+        long now = System.currentTimeMillis();
+        // add dependencies required by the build system
+        addDependenciesToURLs(excludes, urls, settings.getBuildDependencies());
+        // add dependencies required at development time, but not at deployment time
+        addDependenciesToURLs(excludes, urls, settings.getProvidedDependencies());                                                                                    
         // Add the project's runtime dependencies because most of them
         // will be required for the build to work.
-        List runtimeDeps = settings.getRuntimeDependencies();
-        for (Iterator iter = runtimeDeps.iterator(); iter.hasNext();) {
-            File file = (File) iter.next();
-            if(urls.contains(file)) continue;
-            if (!excludes.contains(file.getName())) {
-                urls.add(file.toURI().toURL());
-                excludes.add(file.getName());
-            }
-        }
-
-
-        // If we're using a Grails installation, add any remaining JARs
-        // from its "lib" directory.
-        if (settings.getGrailsHome() != null) {
-            addLibs(new File(settings.getGrailsHome(), "lib"), urls, excludes);
-        }
+        addDependenciesToURLs(excludes, urls, settings.getRuntimeDependencies());
+        System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
 
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
@@ -660,6 +645,16 @@ public class GrailsScriptRunner {
             }
         }
         return urls.toArray(new URL[urls.size()]);
+    }
+
+    private static void addDependenciesToURLs(Set excludes, List<URL> urls, List<File> runtimeDeps) throws MalformedURLException {
+        for (File file : runtimeDeps) {
+            if (urls.contains(file)) continue;
+            if (!excludes.contains(file.getName())) {
+                urls.add(file.toURI().toURL());
+                excludes.add(file.getName());
+            }
+        }
     }
 
     /**
@@ -777,7 +772,7 @@ public class GrailsScriptRunner {
             method.invoke(null, new Object[] {t});
         }
         catch (Exception ex) {
-            ex.printStackTrace();
+            // cannot sanitize, ignore
         }
     }
 

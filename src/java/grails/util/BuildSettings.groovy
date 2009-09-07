@@ -16,6 +16,10 @@
 package grails.util
 
 import java.util.regex.Pattern
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.apache.ivy.core.report.ArtifactDownloadReport
+import org.apache.ivy.util.DefaultMessageLogger
+import org.apache.ivy.util.Message
 
 /**
  * <p>This class represents the project paths and other build settings
@@ -28,17 +32,8 @@ import java.util.regex.Pattern
  * but not others. If you set one of them explicitly, set all of them
  * to ensure consistent behaviour.</p>
  */
-class BuildSettings {
-    static final Pattern DEFAULT_DEPS = ~"""\
-(ant-\\d|ant-launcher-|antlr-|aopalliance-|backport-util-concurrent-|cglib-|commons-beanutils-|commons-cli-|\
-commons-codec-|commons-collections-|commons-dbcp-|commons-fileupload-|commons-io-|commons-lang-|\
-commons-pool-|commons-validator-|dom4j-|ehcache-|ejb3-persistence-|groovy-all-|hsqldb-|ivy-|jul-to-slf4j-|jcl-over-slf4j-|jdbc2_0-stdext|\
-jsr107cache-|jta-|log4j-|ognl-|org\\.springframework|oro-|\
-oscache-|sitemesh-|slf4j-api-|slf4j-log4j12-|xercesImpl-|\
-xpp3_min-).*\\.jar"""
+class BuildSettings {    
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
-
-
     /**
      * The base directory of the application
      */
@@ -162,14 +157,57 @@ xpp3_min-).*\\.jar"""
      */    
     Map defaultPluginMap
 
+    /**
+     * List of jars provided in the applications 'lib' directory
+     */
+    List applicationJars = []
+
     /** List containing the compile-time dependencies of the app as File instances. */
-    List compileDependencies
+    @Lazy List<File> compileDependencies = {
+        return dependencyManager
+                   .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
+                   .allArtifactsReports
+                   .localFile + applicationJars
+    }()
 
     /** List containing the test-time dependencies of the app as File instances. */
-    List testDependencies
+    @Lazy List<File> testDependencies = {
+        return dependencyManager
+                   .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
+                   .allArtifactsReports
+                   .localFile + applicationJars
+    }()
 
     /** List containing the runtime-time dependencies of the app as File instances. */
-    List runtimeDependencies
+    @Lazy List<File> runtimeDependencies = {
+        return dependencyManager
+                   .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
+                   .allArtifactsReports
+                   .localFile + applicationJars
+    }()
+
+    /** List containing the dependencies needed at development time, but provided by the container at runtime **/
+    @Lazy List<File> providedDependencies = {
+        return dependencyManager
+                   .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
+                   .allArtifactsReports
+                   .localFile
+    }()
+
+    /**
+     * List containing the dependencies required for the build system only
+     */
+    @Lazy List<File> buildDependencies = {
+        return dependencyManager
+                   .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
+                   .allArtifactsReports
+                   .localFile + applicationJars
+    }()
+
+    /**
+     * Manages dependencies and dependency resolution in a Grails application 
+     */
+    IvyDependencyManager dependencyManager
 
     /*
      * This is an unclever solution for handling "sticky" values in the
@@ -192,12 +230,6 @@ xpp3_min-).*\\.jar"""
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
 
-    private addJars = { File jar ->
-        this.compileDependencies << jar
-        this.testDependencies << jar
-        this.runtimeDependencies << jar
-    }
-
     BuildSettings() {
         this(null)
     }
@@ -210,6 +242,7 @@ xpp3_min-).*\\.jar"""
         this.userHome = new File(System.getProperty("user.home"))
 
         if (grailsHome) this.grailsHome = grailsHome
+
 
         // Load the 'build.properties' file from the classpath and
         // retrieve the Grails version from it.
@@ -226,29 +259,12 @@ xpp3_min-).*\\.jar"""
         // If 'grailsHome' is set, add the JAR file dependencies.
         this.defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
         this.defaultPluginSet = defaultPluginMap.keySet()
-        this.compileDependencies = []
-        this.testDependencies = []
-        this.runtimeDependencies = []
 
-        if (grailsHome) {
-            // Currently all JARs are added to each of the dependency
-            // lists.
-            new File(this.grailsHome, "lib").eachFileMatch(DEFAULT_DEPS, addJars)
-            new File(this.grailsHome, "dist").eachFileMatch(JAR_PATTERN) { File jar ->
-                // don't include test or scripts jar in runtime dependencies
-                if(jar.name.startsWith("grails-test") || jar.name.startsWith("grails-scripts")) {
-                    testDependencies <<  jar
-                    compileDependencies << jar
-                }
-                else {
-                    addJars(jar)
-                }
-
-            }
-        }
 
         // Update the base directory. This triggers some extra config.
         setBaseDir(baseDir)
+
+
 
         // The "grailsScript" closure definition. Returns the location
         // of the corresponding script file if GRAILS_HOME is set,
@@ -304,27 +320,16 @@ xpp3_min-).*\\.jar"""
         establishProjectStructure()
 
         if (grailsHome) {
-            // Now add the "standard-*.jar" and "jstl-*.jar" for the
-            // configured servlet version. Note: we don't use
-            // Metadata.getCurrent() because it caches the loaded props,
-            // and some properties may be loaded after the metadata is
-            // cached.
-            //
-            // Also, "baseDir" may not be the root of the project, in
-            // which case "servletVersion" won't be known and its value
-            // below will be 'null'.
-            def metadata = Metadata.getInstance(new File(this.baseDir, "application.properties"))
-            def servletVersion = metadata.getServletVersion()
-            if (servletVersion) {
-                addJars(new File(this.grailsHome, "lib/standard-${servletVersion}.jar"))
-                addJars(new File(this.grailsHome, "lib/jstl-${servletVersion}.jar"))
+            // Initialize Metadata
+            Metadata.getInstance(new File(this.baseDir, "application.properties"))
+            // Add the application's libraries.
+            def appLibDir = new File(this.baseDir, "lib")
+            if (appLibDir.exists()) {
+                appLibDir.eachFileMatch(JAR_PATTERN) {
+                    this.applicationJars << it
+                }
             }
-        }
 
-        // Add the application's libraries.
-        def appLibDir = new File(this.baseDir, "lib")
-        if (appLibDir.exists()) {
-            appLibDir.eachFileMatch(JAR_PATTERN, addJars)
         }
     }
 
@@ -429,15 +434,7 @@ xpp3_min-).*\\.jar"""
         // the root loader as its parent. Otherwise we get something
         // like NoClassDefFoundError for Script.
         GroovyClassLoader gcl = this.rootLoader != null ? new GroovyClassLoader(this.rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader());
-        def slurper = new ConfigSlurper()
-        slurper.setBinding(
-                    basedir: baseDir.path,
-                    baseFile: baseDir,
-                    baseName: baseDir.name,
-                    grailsHome: grailsHome?.path,
-                    grailsVersion: grailsVersion,
-                    userHome: userHome,
-                    grailsSettings: this)
+        ConfigSlurper slurper = createConfigSlurper()
       
         // Find out whether the file exists, and if so parse it.
         def settingsFile = new File("$userHome/.grails/settings.groovy")
@@ -462,11 +459,45 @@ xpp3_min-).*\\.jar"""
 
         establishProjectStructure()
 
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN);
+        Metadata metadata = Metadata.current
+        def appName = metadata.getApplicationName() ?: "grails"
+        def appVersion = metadata.getApplicationVersion() ?: grailsVersion
+
+        this.dependencyManager = IvyDependencyManager.getInstance(appName,
+                                                                  appVersion)
+
+        def dependencyConfig = config.grails.dependency.resolution ?: {
+           def defaultBuildConfigFile = new File("$grailsHome/src/grails/grails-app/conf/BuildConfig.groovy")
+           if(defaultBuildConfigFile.exists()) {
+               def configSlurper = createConfigSlurper()
+               def defaultBuildConfig = configSlurper.parse(defaultBuildConfigFile.toURI().toURL())
+               return defaultBuildConfig.grails.dependency.resolution
+           }
+        }()
+
+        if(dependencyConfig)
+            dependencyManager.parseDependencies dependencyConfig
+
+
         if(config.grails.default.plugin.set instanceof List) {
             defaultPluginSet = config.grails.default.plugin.set
         }
 
         return config
+    }
+
+    ConfigSlurper createConfigSlurper() {
+        def slurper = new ConfigSlurper()
+        slurper.setBinding(
+                basedir: baseDir.path,
+                baseFile: baseDir,
+                baseName: baseDir.name,
+                grailsHome: grailsHome?.path,
+                grailsVersion: grailsVersion,
+                userHome: userHome,
+                grailsSettings: this)
+        return slurper
     }
 
     private void establishProjectStructure() {
