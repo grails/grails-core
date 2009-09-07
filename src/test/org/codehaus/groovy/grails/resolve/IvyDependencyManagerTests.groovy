@@ -5,6 +5,9 @@ import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.util.Message
 import org.apache.ivy.util.MessageLogger
 import org.apache.ivy.util.DefaultMessageLogger
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
+import grails.util.GrailsUtil
 
 /**
  * @author Graeme Rocher
@@ -19,6 +22,50 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
     protected void tearDown() {
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
+    }
+
+    void testDefaultDependencyDefinition() {
+
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        def manager = new IvyDependencyManager("test", "0.1")
+        def props = new Properties()
+        new File("./build.properties").withInputStream {
+            props.load(it)
+        }
+
+
+        manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(props.'grails.version'))
+        def report = manager.resolveDependencies()
+
+        assertFalse "dependency resolve should have no errors!",report.hasError()
+    }
+    void testInheritence() {
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        def manager = new IvyDependencyManager("test", "0.1")
+
+
+        def settings = new BuildSettings()
+        try {
+            BuildSettingsHolder.settings = settings
+            settings.config.grails.test.dependency.resolution = {
+                test "junit:junit:3.8.2"
+            }
+            // test simple exclude
+            manager.parseDependencies {
+                 inherits 'test'
+                 runtime("opensymphony:oscache:2.4.1") {
+                     excludes 'jms'
+                 }
+            }
+
+            assertEquals 2, manager.listDependencies("test").size()
+        }
+        finally {
+            BuildSettingsHolder.settings=null
+        }
+
+
+
     }
 
     void testExcludes() {

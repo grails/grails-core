@@ -20,6 +20,7 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
 
 
     String scope
+    boolean inherited
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
         super(mrid, force);

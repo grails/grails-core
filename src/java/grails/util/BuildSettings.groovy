@@ -32,7 +32,7 @@ import org.apache.ivy.util.Message
  * but not others. If you set one of them explicitly, set all of them
  * to ensure consistent behaviour.</p>
  */
-class BuildSettings {    
+class BuildSettings {
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
     /**
      * The base directory of the application
@@ -467,14 +467,11 @@ class BuildSettings {
         this.dependencyManager = IvyDependencyManager.getInstance(appName,
                                                                   appVersion)
 
-        def dependencyConfig = config.grails.dependency.resolution ?: {
-           def defaultBuildConfigFile = new File("$grailsHome/src/grails/grails-app/conf/BuildConfig.groovy")
-           if(defaultBuildConfigFile.exists()) {
-               def configSlurper = createConfigSlurper()
-               def defaultBuildConfig = configSlurper.parse(defaultBuildConfigFile.toURI().toURL())
-               return defaultBuildConfig.grails.dependency.resolution
-           }
-        }()
+        config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+
+
+        def dependencyConfig = config.grails.project.dependency.resolution ?:
+                               config.grails.global.dependency.resolution
 
         if(dependencyConfig)
             dependencyManager.parseDependencies dependencyConfig
