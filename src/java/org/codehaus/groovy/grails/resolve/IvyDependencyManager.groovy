@@ -203,10 +203,11 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                     excludes 'jline'
                 }
 
+                compile("commons-beanutils:commons-beanutils:1.8.0", "commons-el:commons-el:1.0", "commons-validator:commons-validator:1.3.1") {
+                    excludes "commons-logging", "xml-apis"
+                }
+
                 compile "aopalliance:aopalliance:1.0",
-                        "commons-validator:commons-validator:1.3.1",
-                        "commons-el:commons-el:1.0",
-                        "commons-beanutils:commons-beanutils:1.8.0",
                         "commons-collections:commons-collections:3.2.1",
                         "commons-io:commons-io:1.4",
                         "commons-lang:commons-lang:2.4",
@@ -346,7 +347,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             this.moduleDescriptor.addConfiguration TEST_CONFIGURATION
             this.moduleDescriptor.addConfiguration PROVIDED_CONFIGURATION
             
-            def evaluator = new IvyDomainSpecificLanguagerEvaluator(this)
+            def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
             definition.delegate = evaluator
             definition.resolveStrategy = Closure.DELEGATE_FIRST
             definition()
@@ -354,14 +355,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
 }
-class IvyDomainSpecificLanguagerEvaluator {
+class IvyDomainSpecificLanguageEvaluator {
 
     static final String WILDCARD = '*'
 
     boolean inherited = false
     @Delegate IvyDependencyManager delegate
 
-    IvyDomainSpecificLanguagerEvaluator(IvyDependencyManager delegate) {
+    IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
         this.delegate = delegate
     }
 
