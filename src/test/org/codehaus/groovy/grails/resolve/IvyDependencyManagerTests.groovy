@@ -24,6 +24,19 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testMapSyntaxForDependencies() {
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        def manager = new IvyDependencyManager("test", "0.1")
+        // test simple exclude
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
+                     [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+        }
+
+
+        assertEquals 2, manager.listDependencies('runtime').size()
+    }
+
     void testDefaultDependencyDefinition() {
 
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
@@ -37,7 +50,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(props.'grails.version'))
         assertEquals 52, manager.listDependencies('runtime').size()
         assertEquals 56, manager.listDependencies('test').size()
-        assertEquals 16, manager.listDependencies('build').size()
+        assertEquals 17, manager.listDependencies('build').size()
         assertEquals 3, manager.listDependencies('provided').size()
         def report = manager.resolveDependencies()
 

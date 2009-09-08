@@ -207,38 +207,40 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                     excludes "commons-logging", "xml-apis"
                 }
 
-                compile "aopalliance:aopalliance:1.0",
-                        "commons-collections:commons-collections:3.2.1",
-                        "commons-io:commons-io:1.4",
-                        "commons-lang:commons-lang:2.4",
-                        "javax.transaction:jta:1.1",
-                        "opensymphony:sitemesh:2.4",
-                        "org.grails:grails-bootstrap:$grailsVersion",
-                        "org.grails:grails-core:$grailsVersion",
-                        "org.grails:grails-crud:$grailsVersion",
-                        "org.grails:grails-docs:$grailsVersion",
-                        "org.grails:grails-gorm:$grailsVersion",
-                        "org.grails:grails-resources:$grailsVersion",
-                        "org.grails:grails-spring:$grailsVersion",
-                        "org.grails:grails-web:$grailsVersion",
-                        "org.springframework:org.springframework.core:3.0.0.M4",
-                        "org.springframework:org.springframework.aop:3.0.0.M4",
-                        "org.springframework:org.springframework.aspects:3.0.0.M4",
-                        "org.springframework:org.springframework.asm:3.0.0.M4",
-                        "org.springframework:org.springframework.beans:3.0.0.M4",
-                        "org.springframework:org.springframework.context:3.0.0.M4",
-                        "org.springframework:org.springframework.context.support:3.0.0.M4",
-                        "org.springframework:org.springframework.expression:3.0.0.M4",
-                        "org.springframework:org.springframework.instrument:3.0.0.M4",
-                        "org.springframework:org.springframework.instrument.classloading:3.0.0.M4",
-                        "org.springframework:org.springframework.jdbc:3.0.0.M4",
-                        "org.springframework:org.springframework.jms:3.0.0.M4",
-                        "org.springframework:org.springframework.orm:3.0.0.M4",
-                        "org.springframework:org.springframework.oxm:3.0.0.M4",
-                        "org.springframework:org.springframework.transaction:3.0.0.M4",
-                        "org.springframework:org.springframework.web:3.0.0.M4",
-                        "org.springframework:org.springframework.web.servlet:3.0.0.M4",
-                        [transitive:false]
+                compile( "aopalliance:aopalliance:1.0",
+                         "commons-collections:commons-collections:3.2.1",
+                         "commons-io:commons-io:1.4",
+                         "commons-lang:commons-lang:2.4",
+                         "javax.transaction:jta:1.1",
+                         "opensymphony:sitemesh:2.4",
+                         "org.grails:grails-bootstrap:$grailsVersion",
+                         "org.grails:grails-core:$grailsVersion",
+                         "org.grails:grails-crud:$grailsVersion",
+                         "org.grails:grails-docs:$grailsVersion",
+                         "org.grails:grails-gorm:$grailsVersion",
+                         "org.grails:grails-resources:$grailsVersion",
+                         "org.grails:grails-spring:$grailsVersion",
+                         "org.grails:grails-web:$grailsVersion",
+                         "org.springframework:org.springframework.core:3.0.0.M4",
+                         "org.springframework:org.springframework.aop:3.0.0.M4",
+                         "org.springframework:org.springframework.aspects:3.0.0.M4",
+                         "org.springframework:org.springframework.asm:3.0.0.M4",
+                         "org.springframework:org.springframework.beans:3.0.0.M4",
+                         "org.springframework:org.springframework.context:3.0.0.M4",
+                         "org.springframework:org.springframework.context.support:3.0.0.M4",
+                         "org.springframework:org.springframework.expression:3.0.0.M4",
+                         "org.springframework:org.springframework.instrument:3.0.0.M4",
+                         "org.springframework:org.springframework.instrument.classloading:3.0.0.M4",
+                         "org.springframework:org.springframework.jdbc:3.0.0.M4",
+                         "org.springframework:org.springframework.jms:3.0.0.M4",
+                         "org.springframework:org.springframework.orm:3.0.0.M4",
+                         "org.springframework:org.springframework.oxm:3.0.0.M4",
+                         "org.springframework:org.springframework.transaction:3.0.0.M4",
+                         "org.springframework:org.springframework.web:3.0.0.M4",
+                         "org.springframework:org.springframework.web.servlet:3.0.0.M4") {
+                        transitive = false
+                }
+
 
                 // dependencies needed for running tests
                 test "junit:junit:3.8.2",
@@ -327,7 +329,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         resolveDependencies('')
     }
     public ResolveReport resolveDependencies(String conf) {
-        def options = new ResolveOptions()
+        def options = new ResolveOptions(checkIfChanged:false, outputReport:false, validate:false)
         if(conf)
             options.confs = [conf] as String[]
 
@@ -461,7 +463,7 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     def methodMissing(String name, args) {
-        if(!args || !(args[0] instanceof String))
+        if(!args || !((args[0] instanceof String)||(args[0] instanceof Map)))
             throw new MissingMethodException(name, IvyDependencyManager, args)
         
         def dependencies = args
@@ -489,27 +491,43 @@ class IvyDomainSpecificLanguageEvaluator {
                     addDependency mrid
 
                     def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
-                    dependencyDescriptor.inherited=inherited
-                    def mappings = configurationMappings[scope]
-                    mappings?.each {
-                        dependencyDescriptor.addDependencyConfiguration scope, it
-                    }
-
-                    if(dependencyConfigurer) {
-                        dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
-                        dependencyConfigurer.setDelegate(dependencyDescriptor)
-                        dependencyConfigurer.call()
-                    }
-
-                    dependencyDescriptors << dependencyDescriptor
-                    moduleDescriptor.addDependency dependencyDescriptor
+                    configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
 
                 }
 
             }
+            else if(dependency instanceof Map) {
+                if(dependency.group && dependency.name && dependency.version) {
+                   def mrid = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.version)
+
+                   addDependency mrid
+
+                   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, dependency.containsKey('transitive') ? !!dependency.transitive : true, scope)
+
+                   configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
+
+                }
+            }
         }
     }
 
+    protected configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer) {
+
+        dependencyDescriptor.inherited = inherited
+        def mappings = configurationMappings[scope]
+        mappings?.each {
+            dependencyDescriptor.addDependencyConfiguration scope, it
+        }
+
+        if (dependencyConfigurer) {
+            dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
+            dependencyConfigurer.setDelegate(dependencyDescriptor)
+            dependencyConfigurer.call()
+        }
+
+        dependencyDescriptors << dependencyDescriptor
+        moduleDescriptor.addDependency dependencyDescriptor
+    }
 
 
 }

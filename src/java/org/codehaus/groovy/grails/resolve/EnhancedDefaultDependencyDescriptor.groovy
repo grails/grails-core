@@ -6,6 +6,8 @@ import org.apache.ivy.core.module.id.ArtifactId
 import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
 import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.plugins.matcher.ExactPatternMatcher
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor
+import java.lang.reflect.Field
 
 /**
  * Adds new methods to make access to this class Groovier
@@ -26,6 +28,13 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
         super(mrid, force);
         this.scope = scope
     }
+
+    EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, boolean transitive, String scope) {
+        super(mrid, force);
+        setTransitive(transitive) 
+    }
+
+
 
     void excludes(Object... args) {
         for(arg in args) {
@@ -50,7 +59,10 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
     }
 
     void setTransitive (boolean b) {
-        this.@isTransitive = b
+        // nasty hack since the isTransitive Ivy field is not public
+        Field field = getClass().getSuperclass().getDeclaredField("isTransitive")
+        field.accessible = true
+        field.set(this, b)         
     }
 
 
