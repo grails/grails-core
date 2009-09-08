@@ -112,7 +112,7 @@ target(monitorApp:"Monitors an application for changes using the PluginManager a
 
     long lastModified = classesDir.lastModified()
     while(keepMonitoring) {
-        sleep(3500)
+        sleep(10000)
         try {
             pluginManager.checkForChanges()
 

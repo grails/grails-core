@@ -46,6 +46,7 @@
         <jar destfile="${grails.target}/grails-plugin-files.jar">
             <fileset dir="${basedir}/src/grails/templates/plugins"/>
             <fileset dir="${basedir}/src/grails">
+                  <include name="grails-app/conf/BuildConfig.groovy"/>
                   <include name="grails-app/views/error.gsp" />
             </fileset>
         </jar>

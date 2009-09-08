@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.resolve.DependencyDefinitionParser
 import org.codehaus.groovy.grails.resolve.DependencyResolver
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -47,14 +48,14 @@ import grails.util.BuildSettings
 public class IvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
     /*
-     * Out of the box Ivy configurations are:
-     *
-     * - build: Dependencies for the build system only
-     * - compile: Dependencies for the compile step
-     * - runtime: Dependencies needed at runtime but not for compilation (see above)
-     * - test: Dependencies needed for testing but not at runtime (see above)
-     * - provided: Dependencies needed at development time, but not during WAR deployment
-     */
+    * Out of the box Ivy configurations are:
+    *
+    * - build: Dependencies for the build system only
+    * - compile: Dependencies for the compile step
+    * - runtime: Dependencies needed at runtime but not for compilation (see above)
+    * - test: Dependencies needed for testing but not at runtime (see above)
+    * - provided: Dependencies needed at development time, but not during WAR deployment
+    */
     static Configuration BUILD_CONFIGURATION  = new Configuration("build",
                                                                 Configuration.Visibility.PUBLIC,
                                                                 "Build system dependencies",
@@ -104,6 +105,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     IvySettings ivySettings
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
+    List repositoryData = []
 
     private static managers = new ConcurrentHashMap()
     private static currentManager
@@ -147,6 +149,50 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         this.applicationName = applicationName
         this.applicationVersion = applicationVersion
         this.buildSettings = settings
+    }
+
+    /**
+     * Serializes the parsed dependencies using the given builder.
+     *
+     * @param builder A builder such as groovy.xml.MarkupBuilder
+     */
+    public void serialize(builder, boolean createRoot = true) {
+
+        if(createRoot) {
+            builder.dependencies {
+                serializeResolvers(builder)
+                serializeDependencies(builder)
+            }
+        }
+        else {
+            serializeResolvers(builder)
+            serializeDependencies(builder)
+        }
+    }
+
+    private serializeResolvers(builder) {
+        builder.resolvers {
+            for(resolverData in repositoryData) {
+                if(resolverData.name=='grailsHome') continue
+
+                builder.resolver resolverData
+            }
+        }
+    }
+
+    private serializeDependencies(builder) {
+        for (EnhancedDefaultDependencyDescriptor dd in dependencyDescriptors) {
+            // dependencies inherited by Grails' global config are not included
+            if(dd.inherited) continue
+            
+            def mrid = dd.dependencyRevisionId
+            builder.dependency( group: mrid.organisation, name: mrid.name, version: mrid.revision, conf: dd.scope, transitive: dd.transitive ) {
+                for(ExcludeRule er in dd.allExcludeRules) {
+                   def mid = er.id.moduleId
+                   excludes group:mid.organisation,name:mid.name
+                }
+            }
+        }
     }
 
     /**
@@ -401,6 +447,8 @@ class IvyDomainSpecificLanguageEvaluator {
         repos?.call()
     }
 
+
+
     void flatDir(Map args) {
         def name = args.name?.toString()
         if(name && args.dirs) {
@@ -409,6 +457,8 @@ class IvyDomainSpecificLanguageEvaluator {
             fileSystemResolver.name = name
 
             def dirs = args.dirs instanceof Collection ? args.dirs : [args.dirs]
+
+            repositoryData << ['class':FileSystemResolver, name:name, dirs:dirs.join(',')]
             dirs.each { dir ->
                fileSystemResolver.addArtifactPattern "${new File(dir?.toString()).absolutePath}/[artifact]-[revision].[ext]"
             }
@@ -428,11 +478,13 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void mavenRepo(String url) {
+        repositoryData << ['class':IBiblioResolver, root:url, name:url, m2compatbile:true]
         chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings)
     }
 
     void mavenRepo(Map args) {
         if(args) {
+            repositoryData << ( ['class':IBiblioResolver] + args )
             args.settings = ivySettings
             chainResolver.add new IBiblioResolver(args)
         }
@@ -445,6 +497,7 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void mavenCentral() {
+        repositoryData << ['class':IBiblioResolver, name:"mavenCentral", m2compatbile:true]
         IBiblioResolver mavenResolver = new IBiblioResolver(name:"mavenCentral")
         mavenResolver.m2compatible = true
         mavenResolver.settings = ivySettings

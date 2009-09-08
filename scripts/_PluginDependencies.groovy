@@ -46,6 +46,7 @@ import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import org.tmatesoft.svn.core.SVNAuthenticationException
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -401,6 +402,9 @@ generatePluginXml = { File descriptor ->
                     delegate.plugin(name:d.key, version:d.value)
                 }
             }
+
+            IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+            dependencyManager.serialize(delegate, false) 
         }
 
         def docContext = DocumentationContext.instance

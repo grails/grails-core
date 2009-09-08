@@ -8,6 +8,7 @@ import org.apache.ivy.util.DefaultMessageLogger
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.GrailsUtil
+import groovy.xml.MarkupBuilder
 
 /**
  * @author Graeme Rocher
@@ -24,6 +25,67 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testSerializerToMarkup() {
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+        settings.config.grails.test.dependency.resolution = {
+            test "org.grails:grails-test:1.2"
+        }
+
+
+        // test simple exclude
+        manager.parseDependencies {
+            inherits "global"
+            repositories {
+                grailsHome()
+                mavenRepo "http://snapshots.repository.codehaus.org"
+            }
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
+                     [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+
+            runtime("opensymphony:foocache:2.4.1") {
+                     excludes 'jms'
+            }
+        }
+
+        def w = new StringWriter()
+        def builder = new MarkupBuilder(w)
+
+        manager.serialize(builder)
+
+        println w
+        def xml = new XmlSlurper().parseText(w.toString())
+
+        println xml
+        def dependencies = xml.dependency
+
+        assertEquals 3, dependencies.size()
+
+        def oscache = dependencies.find { it.@name == 'oscache' }
+        
+        assertEquals 'opensymphony', oscache.@group.text()
+        assertEquals 'oscache', oscache.@name.text()
+        assertEquals '2.4.1', oscache.@version.text()
+        assertEquals 'runtime', oscache.@conf.text()
+        assertEquals 'false', oscache.@transitive.text()
+
+        def foocache = dependencies.find { it.@name == 'foocache' }
+
+        assertEquals 'opensymphony', foocache.@group.text()
+        assertEquals 'foocache', foocache.@name.text()
+        assertEquals '2.4.1', foocache.@version.text()
+        assertEquals 'runtime', foocache.@conf.text()
+        assertEquals 'true', foocache.@transitive.text()
+
+        assertEquals 'jms', foocache.excludes.@name.text()
+        assertEquals '*', foocache.excludes.@group.text()
+
+        // should not include inherited dependencies
+        def inherited = dependencies.find { it.@name == 'grails-test' }
+
+        assertEquals 0, inherited.size()
+    }
     void testMapSyntaxForDependencies() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
         def manager = new IvyDependencyManager("test", "0.1")
@@ -41,13 +103,8 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
         def manager = new IvyDependencyManager("test", "0.1")
-        def props = new Properties()
-        new File("./build.properties").withInputStream {
-            props.load(it)
-        }
-
-
-        manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(props.'grails.version'))
+        def grailsVersion = getCurrentGrailsVersion()
+        manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
         assertEquals 52, manager.listDependencies('runtime').size()
         assertEquals 56, manager.listDependencies('test').size()
         assertEquals 17, manager.listDependencies('build').size()
@@ -57,29 +114,33 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertFalse "dependency resolve should have no errors!",report.hasError()
     }
+
+    def getCurrentGrailsVersion() {
+        def props = new Properties()
+        new File("./build.properties").withInputStream {
+            props.load(it)
+        }
+        def grailsVersion = props.'grails.version'
+        return grailsVersion
+    }
+
     void testInheritence() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
 
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
-        try {
-
-            settings.config.grails.test.dependency.resolution = {
-                test "junit:junit:3.8.2"
-            }
-            // test simple exclude
-            manager.parseDependencies {
-                 inherits 'test'
-                 runtime("opensymphony:oscache:2.4.1") {
-                     excludes 'jms'
-                 }
-            }
-
-            assertEquals 2, manager.listDependencies("test").size()
+        settings.config.grails.test.dependency.resolution = {
+            test "junit:junit:3.8.2"
         }
-        finally {
-            BuildSettingsHolder.settings=null
+        // test simple exclude
+        manager.parseDependencies {
+             inherits 'test'
+             runtime("opensymphony:oscache:2.4.1") {
+                 excludes 'jms'
+             }
         }
+
+        assertEquals 2, manager.listDependencies("test").size()
 
 
 
