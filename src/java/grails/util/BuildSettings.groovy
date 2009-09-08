@@ -465,7 +465,8 @@ class BuildSettings {
         def appVersion = metadata.getApplicationVersion() ?: grailsVersion
 
         this.dependencyManager = IvyDependencyManager.getInstance(appName,
-                                                                  appVersion)
+                                                                  appVersion,
+                                                                  this)
 
         config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
 

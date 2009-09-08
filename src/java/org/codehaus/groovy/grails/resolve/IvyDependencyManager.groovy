@@ -15,33 +15,28 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettingsHolder
+import java.util.concurrent.ConcurrentHashMap
 import org.apache.ivy.core.event.EventManager
+import org.apache.ivy.core.module.descriptor.Configuration
+import org.apache.ivy.core.module.descriptor.Configuration.Visibility
+import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.apache.ivy.core.report.ResolveReport
+import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.resolve.ResolveEngine
+import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
-import org.codehaus.groovy.grails.resolve.DependencyDefinitionParser
-import org.codehaus.groovy.grails.resolve.DependencyResolver
-import org.apache.ivy.core.resolve.ResolveOptions
-import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
-import org.apache.ivy.core.report.ResolveReport
-import org.apache.ivy.core.resolve.IvyNode
-import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
-import org.apache.ivy.core.module.descriptor.Configuration
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor
-import org.apache.ivy.core.module.descriptor.DependencyDescriptor
-import java.util.concurrent.ConcurrentHashMap
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-import org.apache.ivy.core.module.descriptor.ExcludeRule
-import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
-import org.apache.ivy.plugins.matcher.PatternMatcher
-import org.apache.ivy.core.module.id.ArtifactId
-import org.apache.ivy.core.module.id.ModuleId
-import org.apache.ivy.plugins.matcher.ExactPatternMatcher
+import org.codehaus.groovy.grails.resolve.DependencyDefinitionParser
+import org.codehaus.groovy.grails.resolve.DependencyResolver
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+import grails.util.BuildSettings
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -103,7 +98,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
 
     ResolveEngine resolveEngine
-
+    BuildSettings buildSettings
     String applicationName
     String applicationVersion
     IvySettings ivySettings
@@ -116,14 +111,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     /**
      * Obtain an Ivy dependency manager instance for the given application name and version
      */
-    static IvyDependencyManager getInstance(String applicationName, String applicationVersion) {
+    static IvyDependencyManager getInstance(String applicationName, String applicationVersion, BuildSettings settings = null) {
         if(!applicationName) throw new IllegalArgumentException("Cannot supply a null application name to Ivy dependency manager")
         if(!applicationVersion) throw new IllegalArgumentException("Cannot supply a null application version to Ivy dependency manager")
 
         def cacheKey = [version:applicationVersion, name:applicationName]
         def manager = managers[cacheKey]
         if(!manager) {
-            manager = new IvyDependencyManager(applicationName, applicationVersion)
+            manager = new IvyDependencyManager(applicationName, applicationVersion, settings)
             managers[cacheKey] = manager
         }
         currentManager = manager
@@ -140,7 +135,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     /**
      * Creates a new IvyDependencyManager instance
      */
-    IvyDependencyManager(String applicationName, String applicationVersion) {
+    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null) {
         ivySettings = new IvySettings()
         ivySettings.defaultInit()
         chainResolver.settings = ivySettings
@@ -151,7 +146,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
         this.applicationName = applicationName
         this.applicationVersion = applicationVersion
-        
+        this.buildSettings = settings
     }
 
     /**
@@ -369,7 +364,7 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void inherits(String name) {
-        def config = BuildSettingsHolder.settings?.config?.grails
+        def config = buildSettings?.config?.grails
         if(config) {
             def dependencies = config[name]?.dependency?.resolution
             if(dependencies instanceof Closure) {

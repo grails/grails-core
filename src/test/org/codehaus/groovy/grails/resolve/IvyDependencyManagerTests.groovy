@@ -59,12 +59,11 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
     }
     void testInheritence() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
-        def manager = new IvyDependencyManager("test", "0.1")
-
 
         def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
         try {
-            BuildSettingsHolder.settings = settings
+
             settings.config.grails.test.dependency.resolution = {
                 test "junit:junit:3.8.2"
             }
