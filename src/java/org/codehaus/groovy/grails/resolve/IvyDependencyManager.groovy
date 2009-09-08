@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.resolve.DependencyResolver
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -106,6 +107,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
     List repositoryData = []
+    Set<String> configuredPlugins = [] as Set
 
     private static managers = new ConcurrentHashMap()
     private static currentManager
@@ -216,7 +218,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             dependencies {
 
                 // dependencies needed by the Grails build system
-                 build "org.tmatesoft.svnkit:svnkit:1.2.0",
+                 build "org.gparallelizer:GParallelizer:0.8.3",
+                       "org.tmatesoft.svnkit:svnkit:1.2.0",
                        "org.apache.ant:ant:1.7.1",
                        "org.apache.ant:ant-launcher:1.7.1",
                        "org.apache.ant:ant-junit:1.7.1",
@@ -350,8 +353,67 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
     }
 
+    /**
+     * Adds a dependency descriptor to the project
+     */
+    void addDependencyDescriptor(DependencyDescriptor dd) {
+        if(dd) {
+            dependencyDescriptors << dd
+            addDependency(dd.dependencyRevisionId)
+        }
+    }
+
+
+
+    /**
+     * For usages such as addPluginDependency("foo", [group:"junit", name:"junit", version:"3.8.2"])
+     *
+     * This method is designed to be used by the internal framework and plugins and not be end users.
+     * The idea is that plugins can provide dependencies at runtime which are then inherited by
+     * the user's dependency configuration
+     *
+     * A user can however override a plugin's dependencies inside the dependency resolution DSL
+     */
+    void addPluginDependency(String pluginName, Map args) {
+        if(args?.group && args?.name && args?.version) {
+             def transitive = !!args.transitive
+             def scope = args.conf ?: 'runtime'
+             def mrid = ModuleRevisionId.newInstance(args.group, args.name, args.version)
+             def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, transitive, scope)
+             dd.inherited=true
+             dd.plugin = pluginName
+             configureDependencyDescriptor(dd, scope)
+             if(args.excludes) {
+                 for(ex in excludes) {
+                     dd.exclude(ex)
+                 }                 
+             }
+             addDependencyDescriptor dd
+        }
+    }
+
+    def configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer=null) {
+        def mappings = configurationMappings[scope]
+        mappings?.each {
+            dependencyDescriptor.addDependencyConfiguration scope, it
+        }
+
+        if (dependencyConfigurer) {
+            dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
+            dependencyConfigurer.setDelegate(dependencyDescriptor)
+            dependencyConfigurer.call()
+        }
+
+        dependencyDescriptors << dependencyDescriptor
+        moduleDescriptor.addDependency dependencyDescriptor
+    }
+
+
     Set<ModuleRevisionId> getModuleRevisionIds(String org) { orgToDepMap[org] }
 
+    /**
+     * Lists all known dependencies for the given configuration name (defaults to all dependencies)
+     */
     IvyNode[] listDependencies(String conf = null) {
         def options = new ResolveOptions()
         if(conf)
@@ -394,6 +456,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             definition.delegate = evaluator
             definition.resolveStrategy = Closure.DELEGATE_FIRST
             definition()
+
         }
     }
 
@@ -403,6 +466,7 @@ class IvyDomainSpecificLanguageEvaluator {
     static final String WILDCARD = '*'
 
     boolean inherited = false
+    String plugin = null
     @Delegate IvyDependencyManager delegate
 
     IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
@@ -425,6 +489,20 @@ class IvyDomainSpecificLanguageEvaluator {
 
             }
         }
+    }
+
+    void plugin(String name, Closure callable) {
+        configuredPlugins << name
+
+        try {
+            plugin = name
+            callable?.delegate = this
+            callable?.call()
+        }
+        finally {
+            plugin = null
+        }
+
     }
 
     void log(String level) {
@@ -458,7 +536,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
             def dirs = args.dirs instanceof Collection ? args.dirs : [args.dirs]
 
-            repositoryData << ['class':FileSystemResolver, name:name, dirs:dirs.join(',')]
+            repositoryData << ['type':'flatDir', name:name, dirs:dirs.join(',')]
             dirs.each { dir ->
                fileSystemResolver.addArtifactPattern "${new File(dir?.toString()).absolutePath}/[artifact]-[revision].[ext]"
             }
@@ -478,13 +556,13 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void mavenRepo(String url) {
-        repositoryData << ['class':IBiblioResolver, root:url, name:url, m2compatbile:true]
+        repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
         chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings)
     }
 
     void mavenRepo(Map args) {
         if(args) {
-            repositoryData << ( ['class':IBiblioResolver] + args )
+            repositoryData << ( ['type':'mavenRepo'] + args )
             args.settings = ivySettings
             chainResolver.add new IBiblioResolver(args)
         }
@@ -497,7 +575,7 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void mavenCentral() {
-        repositoryData << ['class':IBiblioResolver, name:"mavenCentral", m2compatbile:true]
+        repositoryData << ['type':'mavenCentral']
         IBiblioResolver mavenResolver = new IBiblioResolver(name:"mavenCentral")
         mavenResolver.m2compatible = true
         mavenResolver.settings = ivySettings
@@ -539,6 +617,10 @@ class IvyDomainSpecificLanguageEvaluator {
                     addDependency mrid
 
                     def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
+                    dependencyDescriptor.inherited = inherited
+                    if(plugin) {
+                        dependencyDescriptor.plugin = plugin
+                    }
                     configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
 
                 }
@@ -551,6 +633,10 @@ class IvyDomainSpecificLanguageEvaluator {
                    addDependency mrid
 
                    def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, dependency.containsKey('transitive') ? !!dependency.transitive : true, scope)
+                   dependencyDescriptor.inherited = inherited
+                   if(plugin) {
+                       dependencyDescriptor.plugin = plugin
+                   }
 
                    configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
 
@@ -559,23 +645,6 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
-    protected configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer) {
-
-        dependencyDescriptor.inherited = inherited
-        def mappings = configurationMappings[scope]
-        mappings?.each {
-            dependencyDescriptor.addDependencyConfiguration scope, it
-        }
-
-        if (dependencyConfigurer) {
-            dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
-            dependencyConfigurer.setDelegate(dependencyDescriptor)
-            dependencyConfigurer.call()
-        }
-
-        dependencyDescriptors << dependencyDescriptor
-        moduleDescriptor.addDependency dependencyDescriptor
-    }
 
 
 }

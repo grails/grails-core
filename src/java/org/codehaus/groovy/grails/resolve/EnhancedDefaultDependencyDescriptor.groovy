@@ -36,7 +36,17 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
     static final String WILDCARD = '*'
 
 
+    /**
+     * Configuration scope of the plugin 'runtime', 'build', 'test' etc.
+     */
     String scope
+    /**
+     * Plugin that the dependency relates to, null if it is a framework or application dependency
+     */
+    String plugin
+    /**
+     * Whether the dependency is inherted from a plugin or framework and not an application dependency
+     */
     boolean inherited
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
@@ -53,12 +63,16 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
 
     void excludes(Object... args) {
         for(arg in args) {
-            if(arg instanceof String) {
-                excludeForString(arg)
-            }
-            else if(arg instanceof Map) {
-                excludeForMap(arg)
-            }            
+            exclude(arg)            
+        }
+    }
+
+    void exclude(def exclude) {
+        if (exclude instanceof String) {
+            excludeForString(exclude)
+        }
+        else if (exclude instanceof Map) {
+            excludeForMap(exclude)
         }
     }
 

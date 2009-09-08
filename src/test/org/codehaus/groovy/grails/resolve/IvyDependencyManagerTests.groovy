@@ -25,6 +25,15 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testDynamicAddDependencyDescriptor() {
+
+        def manager = new IvyDependencyManager("test", "0.1")
+        manager.parseDependencies {}
+
+        manager.addPluginDependency("foo",[group:"org.grails", name:"grail-test", version:"1.2"])
+
+        assertEquals 1, manager.listDependencies("runtime").size()
+    }
     void testSerializerToMarkup() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
         def settings = new BuildSettings()
@@ -107,7 +116,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
         assertEquals 52, manager.listDependencies('runtime').size()
         assertEquals 56, manager.listDependencies('test').size()
-        assertEquals 17, manager.listDependencies('build').size()
+        assertEquals 18, manager.listDependencies('build').size()
         assertEquals 3, manager.listDependencies('provided').size()
         def report = manager.resolveDependencies()
 
