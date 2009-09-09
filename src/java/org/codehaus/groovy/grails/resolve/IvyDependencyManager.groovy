@@ -38,8 +38,8 @@ import org.codehaus.groovy.grails.resolve.DependencyResolver
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import grails.util.GrailsNameUtils
+import org.gparallelizer.Asynchronizer
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -664,7 +664,7 @@ class IvyDomainSpecificLanguageEvaluator {
         deps?.call()
     }
 
-    def methodMissing(String name, args) {
+    def invokeMethod(String name, args) {
         if(!args || !((args[0] instanceof String)||(args[0] instanceof Map)))
             throw new MissingMethodException(name, IvyDependencyManager, args)
         
@@ -680,42 +680,44 @@ class IvyDomainSpecificLanguageEvaluator {
 
     private parseDependenciesInternal(dependencies, String scope, Closure dependencyConfigurer) {
 
-        for (dependency in dependencies) {
-            if ((dependency instanceof String) || (dependency instanceof GString)) {
-                def depDefinition = dependency.toString()
+        Asynchronizer.withAsynchronizer(5) {
+            dependencies.eachAsync { dependency ->
+                if ((dependency instanceof String) || (dependency instanceof GString)) {
+                    def depDefinition = dependency.toString()
 
-                def m = depDefinition =~ /([a-zA-Z0-9\-\/\._+=]*?):([a-zA-Z0-9\-\/\._+=]+?):([a-zA-Z0-9\-\/\._+=]+)/
+                    def m = depDefinition =~ /([a-zA-Z0-9\-\/\._+=]*?):([a-zA-Z0-9\-\/\._+=]+?):([a-zA-Z0-9\-\/\._+=]+)/
 
-                if (m.matches()) {
+                    if (m.matches()) {
 
-                    def mrid = ModuleRevisionId.newInstance(m[0][1], m[0][2], m[0][3])
+                        def mrid = ModuleRevisionId.newInstance(m[0][1], m[0][2], m[0][3])
 
-                    addDependency mrid
+                        addDependency mrid
 
-                    def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
-                    dependencyDescriptor.inherited = inherited
-                    if(plugin) {
-                        dependencyDescriptor.plugin = plugin
+                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
+                        dependencyDescriptor.inherited = inherited
+                        if(plugin) {
+                            dependencyDescriptor.plugin = plugin
+                        }
+                        configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
+
                     }
-                    configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
 
                 }
+                else if(dependency instanceof Map) {
+                    if(dependency.group && dependency.name && dependency.version) {
+                       def mrid = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.version)
 
-            }
-            else if(dependency instanceof Map) {
-                if(dependency.group && dependency.name && dependency.version) {
-                   def mrid = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.version)
+                       addDependency mrid
 
-                   addDependency mrid
+                       def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, dependency.containsKey('transitive') ? !!dependency.transitive : true, scope)
+                       dependencyDescriptor.inherited = inherited
+                       if(plugin) {
+                           dependencyDescriptor.plugin = plugin
+                       }
 
-                   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, dependency.containsKey('transitive') ? !!dependency.transitive : true, scope)
-                   dependencyDescriptor.inherited = inherited
-                   if(plugin) {
-                       dependencyDescriptor.plugin = plugin
-                   }
+                       configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
 
-                   configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
-
+                    }
                 }
             }
         }

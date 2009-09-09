@@ -15,14 +15,13 @@
  */
 package grails.util
 
+import grails.util.Metadata
 import java.util.regex.Pattern
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-import org.springframework.core.io.FileSystemResource
-import org.gparallelizer.Parallelizer
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.gparallelizer.Asynchronizer
+
 
 /**
  * <p>This class represents the project paths and other build settings
@@ -520,14 +519,14 @@ class BuildSettings {
 
             Asynchronizer.withAsynchronizer(5) {
                 Closure predicate = { it.directory && !it.hidden }
-                def pluginDirs = projectPluginsDir.listFiles().findAll (predicate)
+                def pluginDirs = projectPluginsDir.listFiles().findAllAsync (predicate)
 
 
                 if(globalPluginsDir.exists()) {
-                    pluginDirs.addAll(globalPluginsDir.listFiles().findAll (predicate))
+                    pluginDirs.addAll(globalPluginsDir.listFiles().findAllAsync (predicate))
                 }
                 def pluginLocations = config?.grails?.plugin?.location
-                pluginLocations?.values().each { location ->
+                pluginLocations?.values().eachAsync { location ->
                     pluginDirs << new File(location)
                 }
 
