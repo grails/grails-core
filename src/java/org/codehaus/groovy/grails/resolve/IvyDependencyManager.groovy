@@ -613,16 +613,30 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
+    private boolean isResolverNotAlreadyDefined(String name) {
+        if(chainResolver.resolvers.any { it.name == name }) {
+            Message.debug("Dependency resolver $name already defined. Ignoring...")
+            return false
+        }
+        return true
+    }
     void mavenRepo(String url) {
-        repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
-        chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings)
+        if(isResolverNotAlreadyDefined(url)) {
+            repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
+            chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings)
+        }
     }
 
     void mavenRepo(Map args) {
-        if(args) {
-            repositoryData << ( ['type':'mavenRepo'] + args )
-            args.settings = ivySettings
-            chainResolver.add new IBiblioResolver(args)
+        if(args && args.name) {
+            if(isResolverNotAlreadyDefined(args.name)) {
+                repositoryData << ( ['type':'mavenRepo'] + args )
+                args.settings = ivySettings
+                chainResolver.add new IBiblioResolver(args)
+            }
+        }
+        else {
+            Message.warn("A mavenRepo specified doesn't have a name argument. Please specify one!")
         }
     }
 
@@ -633,11 +647,14 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void mavenCentral() {
-        repositoryData << ['type':'mavenCentral']
-        IBiblioResolver mavenResolver = new IBiblioResolver(name:"mavenCentral")
-        mavenResolver.m2compatible = true
-        mavenResolver.settings = ivySettings
-        chainResolver.add mavenResolver
+        if(isResolverNotAlreadyDefined('mavenCentral')) {
+            repositoryData << ['type':'mavenCentral']
+            IBiblioResolver mavenResolver = new IBiblioResolver(name:"mavenCentral")
+            mavenResolver.m2compatible = true
+            mavenResolver.settings = ivySettings
+            chainResolver.add mavenResolver
+
+        }
     }
 
         
