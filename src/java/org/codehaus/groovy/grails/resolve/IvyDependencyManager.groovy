@@ -243,7 +243,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                        "org.grails:grails-core:$grailsVersion",
                        "org.grails:grails-resources:$grailsVersion",
                        "org.grails:grails-web:$grailsVersion",
-                       "org.sl4j:slf4j-log4j12:1.5.6",
+                       "org.slf4j:slf4j-api:1.5.6",
+                       "org.slf4j:slf4j-log4j12:1.5.6",
                        "org.springframework:org.springframework.test:3.0.0.M4"  
 
                 // dependencies needed during development, but not for deployment
