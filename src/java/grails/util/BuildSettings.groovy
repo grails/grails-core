@@ -20,6 +20,9 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
+import org.springframework.core.io.FileSystemResource
+import org.gparallelizer.Parallelizer
+import org.gparallelizer.Asynchronizer
 
 /**
  * <p>This class represents the project paths and other build settings
@@ -164,44 +167,56 @@ class BuildSettings {
 
     /** List containing the compile-time dependencies of the app as File instances. */
     @Lazy List<File> compileDependencies = {
-        return dependencyManager
-                   .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-                   .allArtifactsReports
-                   .localFile + applicationJars
+        def jarFiles = dependencyManager
+                            .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
+                            .allArtifactsReports
+                            .localFile + applicationJars
+        Message.debug("Resolved jars for [compile]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /** List containing the test-time dependencies of the app as File instances. */
     @Lazy List<File> testDependencies = {
-        return dependencyManager
-                   .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
-                   .allArtifactsReports
-                   .localFile + applicationJars
+        def jarFiles = dependencyManager
+                            .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
+                            .allArtifactsReports
+                            .localFile + applicationJars
+        Message.debug("Resolved jars for [test]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /** List containing the runtime-time dependencies of the app as File instances. */
     @Lazy List<File> runtimeDependencies = {
-        return dependencyManager
+        def jarFiles = dependencyManager
                    .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
                    .allArtifactsReports
                    .localFile + applicationJars
+        Message.debug("Resolved jars for [runtime]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /** List containing the dependencies needed at development time, but provided by the container at runtime **/
     @Lazy List<File> providedDependencies = {
-        return dependencyManager
-                   .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-                   .allArtifactsReports
-                   .localFile
+        def jarFiles = dependencyManager
+                       .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
+                       .allArtifactsReports
+                       .localFile
+
+        Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /**
      * List containing the dependencies required for the build system only
      */
     @Lazy List<File> buildDependencies = {
-        return dependencyManager
-                   .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-                   .allArtifactsReports
-                   .localFile + applicationJars
+        def jarFiles = dependencyManager
+                           .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
+                           .allArtifactsReports
+                           .localFile + applicationJars
+
+        Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /**
@@ -474,8 +489,53 @@ class BuildSettings {
         def dependencyConfig = config.grails.project.dependency.resolution ?:
                                config.grails.global.dependency.resolution
 
-        if(dependencyConfig)
+        if(dependencyConfig) {
             dependencyManager.parseDependencies dependencyConfig
+            def pluginSlurper = createConfigSlurper()
+
+            def handlePluginDirectory = { File dir ->
+                def pluginName = dir.name
+                if(!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
+                    def pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
+                    if(pluginDependencyDescriptor.exists()) {
+
+
+                        try {
+                            def pluginConfig = pluginSlurper.parse(pluginDependencyDescriptor.toURI().toURL())
+                            def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
+                            if(pluginDependencyConfig instanceof Closure) {
+                                dependencyManager.parseDependencies( pluginName, pluginDependencyConfig )
+                            }
+                        }
+                        catch (e) {
+                            println "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}"
+                        }
+
+                    }
+                }
+                else {
+                    println "Plugin [$pluginName] dependencies are configured by application. Skipping.."
+                }
+            }
+
+            Asynchronizer.withAsynchronizer(5) {
+                Closure predicate = { it.directory && !it.hidden }
+                def pluginDirs = projectPluginsDir.listFiles().findAll (predicate)
+
+
+                if(globalPluginsDir.exists()) {
+                    pluginDirs.addAll(globalPluginsDir.listFiles().findAll (predicate))
+                }
+                def pluginLocations = config?.grails?.plugin?.location
+                pluginLocations?.values().each { location ->
+                    pluginDirs << new File(location)
+                }
+
+                pluginDirs.eachAsync(handlePluginDirectory)
+
+            }
+
+        }
 
 
         if(config.grails.default.plugin.set instanceof List) {

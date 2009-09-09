@@ -25,6 +25,33 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testHasApplicationDependencies() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+        settings.config.grails.test.dependency.resolution = {
+            test "org.grails:grails-test:1.2"
+        }
+
+        manager.parseDependencies {
+            inherits "test"
+        }
+
+        assertEquals 1, manager.listDependencies("test").size()
+        assertFalse "application has only inherited dependencies!",manager.hasApplicationDependencies()
+
+        manager.parseDependencies {
+            inherits "test"
+
+            runtime("opensymphony:foocache:2.4.1") {
+                     excludes 'jms'
+            }
+
+        }
+
+        assertTrue "application has dependencies!",manager.hasApplicationDependencies()
+
+    }
+
     void testDynamicAddDependencyDescriptor() {
 
         def manager = new IvyDependencyManager("test", "0.1")
@@ -45,7 +72,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         // test simple exclude
         manager.parseDependencies {
-            inherits "global"
+            inherits "test"
             repositories {
                 grailsHome()
                 mavenRepo "http://snapshots.repository.codehaus.org"

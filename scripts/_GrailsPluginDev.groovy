@@ -35,6 +35,7 @@ pluginIncludes = [
 	metadataFile.name,
 	"*GrailsPlugin.groovy",
     "plugin.xml",
+    "dependencies.groovy",
 	"grails-app/**",
 	"lib/**",
     "scripts/**",
@@ -70,6 +71,7 @@ target(packagePlugin:"Implementation target") {
 
     if(!pluginFile) ant.fail("Plugin file not found for plugin project")
     plugin = generatePluginXml(pluginFile)
+    generateDependencyDescriptor()
 
 	event("PackagePluginStart", [pluginName])
 
@@ -84,12 +86,21 @@ target(packagePlugin:"Implementation target") {
     
     def includesList = pluginIncludes.join(",")
     def excludesList = pluginExcludes.join(",")
-    ant.zip(basedir:"${basedir}", destfile:pluginZip, includes:includesList, excludes:excludesList, filesonly:true)
+    ant.zip(destfile:pluginZip, filesonly:true) {
+        fileset(dir:basedir, includes:includesList, excludes:excludesList)
+        fileset(dir:"$projectWorkDir/plugin-info")
+    }
 
 	event("PackagePluginEnd", [pluginName])
 
 }
 
+private generateDependencyDescriptor() {
+    if(grailsSettings.dependencyManager.hasApplicationDependencies()) {
+        ant.mkdir(dir:"$projectWorkDir/plugin-info")
+        ant.copy(file:"$basedir/grails-app/conf/BuildConfig.groovy", tofile:"$projectWorkDir/plugin-info/dependencies.groovy", failonerror:false)
+    }
+}
 private def loadBasePlugin() {
 		pluginManager?.allPlugins?.find { it.basePlugin }
 }

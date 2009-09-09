@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import grails.util.GrailsNameUtils
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -52,6 +53,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     * Out of the box Ivy configurations are:
     *
     * - build: Dependencies for the build system only
+    * - plugin-build: Dependencies needed by plugins for the build system only
     * - compile: Dependencies for the compile step
     * - runtime: Dependencies needed at runtime but not for compilation (see above)
     * - test: Dependencies needed for testing but not at runtime (see above)
@@ -91,6 +93,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     private Set<ModuleRevisionId> dependencies = [] as Set
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
     private orgToDepMap = [:]
+    private hasApplicationDependencies = false
 
     Map configurationMappings = [ runtime:['runtime(*)','master(*)'],
                                   build:['default'],
@@ -108,6 +111,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     DefaultModuleDescriptor moduleDescriptor
     List repositoryData = []
     Set<String> configuredPlugins = [] as Set
+    Set<String> usedConfigurations = [] as Set
 
     private static managers = new ConcurrentHashMap()
     private static currentManager
@@ -154,11 +158,16 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
     /**
+     * Returns true if the application has any dependencies that are not inherited
+     * from the framework or other plugins
+     */
+    boolean hasApplicationDependencies() { this.hasApplicationDependencies }
+    /**
      * Serializes the parsed dependencies using the given builder.
      *
      * @param builder A builder such as groovy.xml.MarkupBuilder
      */
-    public void serialize(builder, boolean createRoot = true) {
+    void serialize(builder, boolean createRoot = true) {
 
         if(createRoot) {
             builder.dependencies {
@@ -375,6 +384,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      * A user can however override a plugin's dependencies inside the dependency resolution DSL
      */
     void addPluginDependency(String pluginName, Map args) {
+        // do nothing if the dependencies of the plugin are configured by the application
+        if(isPluginConfiguredByApplication(pluginName)) return
         if(args?.group && args?.name && args?.version) {
              def transitive = !!args.transitive
              def scope = args.conf ?: 'runtime'
@@ -392,7 +403,15 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
     }
 
+    boolean isPluginConfiguredByApplication(String name) {
+        (configuredPlugins.contains(name) || configuredPlugins.contains(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)))        
+    }
+
     def configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer=null) {
+        if(!usedConfigurations.contains(scope)) {
+            usedConfigurations << scope
+        }
+
         def mappings = configurationMappings[scope]
         mappings?.each {
             dependencyDescriptor.addDependencyConfiguration scope, it
@@ -403,7 +422,9 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             dependencyConfigurer.setDelegate(dependencyDescriptor)
             dependencyConfigurer.call()
         }
-
+        if(!dependencyDescriptor.inherited) {
+            hasApplicationDependencies = true
+        }
         dependencyDescriptors << dependencyDescriptor
         moduleDescriptor.addDependency dependencyDescriptor
     }
@@ -432,26 +453,37 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         resolveDependencies('')
     }
     public ResolveReport resolveDependencies(String conf) {
-        def options = new ResolveOptions(checkIfChanged:false, outputReport:false, validate:false)
-        if(conf)
-            options.confs = [conf] as String[]
+        if(usedConfigurations.contains(conf)) {
+            def options = new ResolveOptions(checkIfChanged:false, outputReport:false, validate:false)
+            if(conf)
+                options.confs = [conf] as String[]
 
 
-        resolveEngine.resolve(moduleDescriptor,options)
+            return resolveEngine.resolve(moduleDescriptor,options)
+        }
+        else {
+            // return an empty resolve report
+            return new ResolveReport(moduleDescriptor)
+        }
     }
 
+    /**
+     * Parses the Ivy DSL definition
+     */
     void parseDependencies(Closure definition) {
         if(definition && applicationName && applicationVersion) {
-            this.moduleDescriptor =
-                DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion))
+            if(this.moduleDescriptor == null) {                
+                this.moduleDescriptor =
+                    DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion))
 
-            // TODO: make configurations extensible
-            this.moduleDescriptor.addConfiguration BUILD_CONFIGURATION
-            this.moduleDescriptor.addConfiguration COMPILE_CONFIGURATION
-            this.moduleDescriptor.addConfiguration RUNTIME_CONFIGURATION
-            this.moduleDescriptor.addConfiguration TEST_CONFIGURATION
-            this.moduleDescriptor.addConfiguration PROVIDED_CONFIGURATION
-            
+                // TODO: make configurations extensible
+                this.moduleDescriptor.addConfiguration BUILD_CONFIGURATION
+                this.moduleDescriptor.addConfiguration COMPILE_CONFIGURATION
+                this.moduleDescriptor.addConfiguration RUNTIME_CONFIGURATION
+                this.moduleDescriptor.addConfiguration TEST_CONFIGURATION
+                this.moduleDescriptor.addConfiguration PROVIDED_CONFIGURATION
+            }
+
             def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
             definition.delegate = evaluator
             definition.resolveStrategy = Closure.DELEGATE_FIRST
@@ -459,6 +491,27 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
         }
     }
+
+
+    /**
+     * Parses dependencies of a plugin
+     *
+     * @param pluginName the name of the plugin
+     * @param definition the Ivy DSL definition
+     */
+    void parseDependencies(String pluginName,Closure definition) {
+        if(!isPluginConfiguredByApplication(pluginName) && definition) {
+            if(moduleDescriptor == null) throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
+
+            def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
+            evaluator.plugin = pluginName
+            definition.delegate = evaluator
+            definition.resolveStrategy = Closure.DELEGATE_FIRST
+            definition()
+        }
+    }
+
+
 
 }
 class IvyDomainSpecificLanguageEvaluator {
@@ -474,6 +527,9 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void inherits(String name) {
+        // plugins can't configure inheritance
+        if(plugin) return
+
         def config = buildSettings?.config?.grails
         if(config) {
             def dependencies = config[name]?.dependency?.resolution
@@ -506,6 +562,8 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void log(String level) {
+        // plugins can't configure log
+        if(plugin) return
         switch(level) {
             case "warn":
                 Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN); break
@@ -599,10 +657,10 @@ class IvyDomainSpecificLanguageEvaluator {
             dependencies = dependencies[0..-2]
         }
 
-        parseDependencies(dependencies, name, callable)
+        parseDependenciesInternal(dependencies, name, callable)
     }
 
-    private parseDependencies(dependencies, String scope, Closure dependencyConfigurer) {
+    private parseDependenciesInternal(dependencies, String scope, Closure dependencyConfigurer) {
 
         for (dependency in dependencies) {
             if ((dependency instanceof String) || (dependency instanceof GString)) {
