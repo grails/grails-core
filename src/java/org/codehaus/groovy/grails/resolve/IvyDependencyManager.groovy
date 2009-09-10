@@ -292,7 +292,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                          "org.springframework:org.springframework.oxm:3.0.0.M4",
                          "org.springframework:org.springframework.transaction:3.0.0.M4",
                          "org.springframework:org.springframework.web:3.0.0.M4",
-                         "org.springframework:org.springframework.web.servlet:3.0.0.M4") {
+                         "org.springframework:org.springframework.web.servlet:3.0.0.M4",
+                         "org.slf4j:slf4j-api:1.5.6") {
                         transitive = false
                 }
 
@@ -325,8 +326,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 runtime  "log4j:log4j:1.2.15",
                          "org.slf4j:jcl-over-slf4j:1.5.6",
                          "org.slf4j:jul-to-slf4j:1.5.6",
-                         "org.slf4j:slf4j-api:1.5.6",
-                         "org.sl4j:slf4j-log4j12:1.5.6"
+
+                         "org.slf4j:slf4j-log4j12:1.5.6"
 
                 // JSP support
                 runtime "apache-taglibs:standard:1.1.2",
