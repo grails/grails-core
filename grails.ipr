@@ -582,10 +582,10 @@
     </library>
     <library name="javax.servlet">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/jstl-2.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/standard-2.4.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jsp-api-2.0.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5-6.1.14.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jstl-1.1.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/standard-1.1.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

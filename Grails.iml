@@ -106,7 +106,7 @@
     <orderEntry type="module-library">
       <library name="Radeox">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/radeox.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/radeox-1.0-b2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
