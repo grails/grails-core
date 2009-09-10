@@ -160,6 +160,29 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         return grailsVersion
     }
 
+    void testInheritanceAndExcludes() {
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+
+          def settings = new BuildSettings()
+          def manager = new IvyDependencyManager("test", "0.1",settings)
+          settings.config.grails.test.dependency.resolution = {
+              test "junit:junit:3.8.2"
+          }
+          // test simple exclude
+          manager.parseDependencies {
+               inherits('test') {
+                   excludes 'junit'
+               }
+               runtime("opensymphony:oscache:2.4.1") {
+                   excludes 'jms'
+               }
+          }
+
+          assertEquals 1, manager.listDependencies("test").size()
+
+
+    }
+
     void testInheritence() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
 
