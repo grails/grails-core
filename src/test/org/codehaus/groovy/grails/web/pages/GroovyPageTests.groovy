@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.plugins.*
 import org.springframework.web.context.request.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.codehaus.groovy.grails.web.servlet.*
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.mock.web.*
 import org.springframework.validation.*
 import org.springframework.web.servlet.*
@@ -61,7 +62,7 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 		"class MyTagLib {\n"+
 		"def isaid = { attrs, body ->\n"+
 		"out.print('I said, \"')\n"+
-		"body()\n" +
+		"out << body()\n" +
 		"out.print('\"')\n"+
 		"}\n"+
 		"}" ;
@@ -90,6 +91,7 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 		"class test_index_gsp extends GroovyPage {\n"+
         "String getGroovyPageFileName() { \"test\" }\n"+
 		"public Object run() {\n"+
+		"def out=binding.out\n"+
 		"out.print('<div>RunPage test</div>')\n"+
 		"}\n"+
 		"}" ;
@@ -103,15 +105,14 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 		def result = null
 		runTest {
 			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
+			PrintWriter pw = new GrailsPrintWriter(sw);
 			
 			String contentType = "text/html;charset=UTF-8";
 	    	response.setContentType(contentType); // must come before response.getWriter()
 	    	
 	    	GroovyPage gspScript = parseGroovyPage(pageCode)
 	    	gspScript.binding = getBinding(pw)
-	    	webRequest.out = pw
-	    	
+	    	gspScript.initRun(pw, webRequest)
 	    	gspScript.run()
 	    	result =  sw.toString()
 		}
@@ -151,6 +152,7 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
+                "def out=binding.out\n"+
                 "body1 = { out.print('Boo!') }\n"+
                 "invokeTag('Person','foaf',[a:'b',c:'d'],body1)\n"+
                 "}\n"+
@@ -181,7 +183,7 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
 	
 	def getBinding(out) {
     	// if there is no controller in the request configure using existing attributes, creating objects where necessary
-    	Binding binding = new Binding();
+    	Binding binding = new GroovyPageBinding();
     	GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext)            	
         binding.setVariable(GroovyPage.REQUEST, request);
         binding.setVariable(GroovyPage.RESPONSE, response);
@@ -192,8 +194,9 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
         binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));	            
         binding.setVariable(GroovyPage.SESSION, request.getSession());
         binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request));
+        binding.setVariable(GroovyPage.WEB_REQUEST, webRequest)
         binding.setVariable(GroovyPage.OUT, out);
-        binding.setVariable(GroovyPage.WEB_REQUEST, RequestContextHolder.currentRequestAttributes())
+        webRequest.out = out
 
         return binding
 	}

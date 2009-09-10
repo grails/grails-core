@@ -72,7 +72,7 @@ abstract class AbstractDelegate extends WebRequestDelegatingRequestContext  {
             def application = applicationContext?.getBean(GrailsApplication.APPLICATION_ID)
             def tagLibraryClass = application?.getArtefactForFeature(TagLibArtefactHandler.TYPE, name)
             if(tagLibraryClass) {
-                def ntd = new NamespacedTagDispatcher(tagLibraryClass.namespace,controller ? controller.class : getClass(), application, applicationContext)
+                def ntd = new NamespacedTagDispatcher(tagLibraryClass.namespace,controller ? controller.class : getClass(), application, applicationContext?.getBean('gspTagLibraryLookup'))
                 AbstractDelegate.metaClass."${GrailsClassUtils.getGetterName(name)}" = {-> ntd }
                 return ntd
             }

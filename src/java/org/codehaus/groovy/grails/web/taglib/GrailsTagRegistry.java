@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A registry for holding all Grails tag implementations
@@ -29,7 +30,7 @@ import java.util.Map;
 public class GrailsTagRegistry {
     private static GrailsTagRegistry instance;
 
-    private static Map tagRegistry = Collections.synchronizedMap(new HashMap());
+    private static Map tagRegistry = new ConcurrentHashMap();
 
     static {
         GrailsTagRegistry tagRegistry = getInstance();

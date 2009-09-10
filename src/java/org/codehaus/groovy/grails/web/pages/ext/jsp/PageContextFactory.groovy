@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp
 import javax.servlet.jsp.PageContext as PC
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GAA
 import javax.servlet.jsp.PageContext
@@ -63,7 +64,7 @@ class PageContextFactory {
             }
             def pageScope = request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE)
             if(!pageScope) {
-                pageScope = new Binding()
+                pageScope = new GroovyPageBinding()
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
             }
 

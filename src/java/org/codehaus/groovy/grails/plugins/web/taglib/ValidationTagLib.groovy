@@ -36,7 +36,8 @@ import org.springframework.context.MessageSourceAware
 */
 
 class ValidationTagLib {
-
+	static returnObjectForTags = ['message']
+	
     /**
      * Renders an error message for the given bean and field
      *
@@ -148,6 +149,10 @@ class ValidationTagLib {
      * Loops through each error for either field or global errors
      */
     def eachError = { attrs, body ->
+    	eachErrorInternal(attrs,body)
+    }
+    
+    def eachErrorInternal(attrs, body) {
         def errorsList = extractErrors(attrs)
         def var = attrs.var
         def field = attrs['field']
@@ -167,9 +172,11 @@ class ValidationTagLib {
             if(var) {
                 out << body([(var):error])
             } else {
-                out << body(error)
+            	out << body(error)
             }
         }
+
+        null
     }
 
     /**
@@ -184,7 +191,7 @@ class ValidationTagLib {
             if (codec=='none') codec = ''
 
             out << "<ul>"
-            out << eachError(attrs, {
+            out << eachErrorInternal(attrs, {
                 out << "<li>${message(error:it, encodeAs:codec)}</li>"
               }
             )
@@ -192,11 +199,11 @@ class ValidationTagLib {
         }
         else if(renderAs.equalsIgnoreCase("xml")) {
             def mkp = new MarkupBuilder(out)
-            mkp.errors {
-                eachError(attrs, {
+            mkp.errors() {
+            	eachErrorInternal(attrs, {
                     error(object:it.objectName,
                           field:it.field,
-                          message:message(error:it),
+                          message:message(error:it)?.toString(),
                           'rejected-value':StringEscapeUtils.escapeXml(it.rejectedValue))
                 })
             }
@@ -241,7 +248,7 @@ class ValidationTagLib {
                 }
           }
           if (text) {
-                out << (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
+                return (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
           }
     }
     // Maps out how Grails contraints map to Apache commons validators

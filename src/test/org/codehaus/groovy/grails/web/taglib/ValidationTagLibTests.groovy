@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib;
 
+import java.util.Locale;
+
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.util.StringUtils
@@ -28,6 +30,7 @@ class Article {
     String title
 }
         ''')
+
     }
 
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
@@ -41,6 +44,7 @@ class Article {
 
         def template = '<g:fieldError bean="${book}" field="title" />'
 
+        webRequest.currentRequest.addPreferredLocale(Locale.US)
         assertOutputEquals 'Property [Subject] of class [Reading Material] cannot be null', template, [book:b]
 
     }
@@ -56,6 +60,7 @@ class Article {
 
         def template = '<g:fieldError bean="${book}" field="title" />'
 
+        webRequest.currentRequest.addPreferredLocale(Locale.US)
         assertOutputEquals 'Property [Subject] of class [Reading Material] cannot be null', template, [book:b]
 
     }
@@ -190,6 +195,7 @@ class Article {
         def template = '''<g:eachError var="err" bean="${book}">${err.field}|</g:eachError>'''
 
         def result = applyTemplate(template, [book:b])
+        println result
         assertTrue result.contains("title|")
         assertTrue result.contains("releaseDate|")
         assertTrue result.contains("publisherURL|")

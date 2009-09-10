@@ -23,18 +23,24 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import com.opensymphony.module.sitemesh.PageParserSelector
 import com.opensymphony.module.sitemesh.Factory
+import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.web.context.ServletConfigAware
 import javax.servlet.ServletConfig
 import org.springframework.beans.factory.InitializingBean;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.WebUtils
 import java.util.concurrent.ConcurrentHashMap
 import groovy.text.Template
@@ -95,19 +101,44 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def contentType = attrs.contentType ? attrs.contentType : "text/html"
 
         def content = ""
-        if(attrs.view || attrs.template) {
-            content = render(attrs)
-        }
-        else if(attrs.url) {
-            content = new URL(attrs.url).text
-        }
-        else {
-            content = body()
+        GSPSitemeshPage gspSiteMeshPage = null
+        if(attrs.url) {
+        	content = new URL(attrs.url).text
+        } else {
+        	def oldGspSiteMeshPage=request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+        	try {
+        		gspSiteMeshPage = new GSPSitemeshPage()
+        		request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+		        if(attrs.view || attrs.template) {
+		            content = render(attrs)
+		        }
+		        else {
+		        	def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest, true)
+		            content = bodyClosure()
+		        }
+        		if(content instanceof StreamCharBuffer) {
+        			gspSiteMeshPage.setPageBuffer(content)
+        		} else if (content != null) {
+        			def buf=new StreamCharBuffer()
+        			buf.writer.write(content)
+        			gspSiteMeshPage.setPageBuffer(buf)
+        		}
+        	} finally {
+          		 if(oldGspSiteMeshPage != null) {
+        			 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
+        		 }        		
+        	}
         }
 
         def parser = getFactory().getPageParser(contentType)
 
-        def page = parser.parse(content.toCharArray())
+        def page = null
+        if(gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        	page = gspSiteMeshPage
+        } else {
+        	page = parser.parse(content.toCharArray())
+        }
+        
         attrs.params?.each { k,v->
             page.addProperty(k,v)
         }
@@ -228,6 +259,77 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		getPage().writeHead(out)
 	}
 
+    def captureTagContent(writer, tagname, attrs, body) {
+    	def content=null
+    	if(body != null) {
+    		content = body()
+    	}
+    	writer << "<" 
+    	writer << tagname
+    	if(attrs) {
+    		attrs.each { k, v ->
+    			writer << " ${k}=\"${v.encodeAsHTML()}\""
+    		}
+    	}
+    	if(content) {
+	    	writer << ">"
+	    	writer << content
+	    	writer << "</"
+	    	writer << tagname
+	    	writer << ">"
+    	} else {
+    		writer << "/>"
+    	}
+    	content
+    }
+
+    def captureHead = { attrs, body ->
+    	def content=captureTagContent(out, 'head', attrs, body)
+    	if(content instanceof StreamCharBuffer) {
+    		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            if(smpage) {
+            	smpage.setHeadBuffer(content)
+            }
+    	}
+    }
+
+    def captureBody = { attrs, body ->
+		def content=captureTagContent(out, 'body', attrs, body)
+		if(content instanceof StreamCharBuffer) {
+    		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            if(smpage) {
+            	smpage.setBodyBuffer(content)
+		    	if(attrs) {
+		    		attrs.each { k, v ->
+		    			smpage.addProperty("body.${k.toLowerCase()}", v?.toString())
+		    		}
+		    	}            	
+            }
+		}
+    }
+
+    def captureMeta = { attrs, body ->
+    	def content=captureTagContent(out, 'meta', attrs, body)
+   		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+    	if(attrs && smpage) {
+    		if(attrs.name) {
+    			smpage.addProperty("meta.${attrs.name}", attrs.content)
+    			smpage.addProperty("meta.${attrs.name.toLowerCase()}", attrs.content)
+    		} else if (attrs['http-equiv']) {
+    			smpage.addProperty("meta.http-equiv.${attrs['http-equiv']}", attrs.content)
+    			smpage.addProperty("meta.http-equiv.${attrs['http-equiv'].toLowerCase()}", attrs.content)
+    			smpage.addProperty("meta.http-equiv.${WordUtils.capitalize(attrs['http-equiv'],['-'] as char[])}", attrs.content)
+        	}
+    	}            	
+    }
+
+    def captureTitle = { attrs, body ->
+    	def content=captureTagContent(out, 'title', attrs, body)
+    	GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+    	if(smpage) {
+    		smpage.addProperty('title', body()?.toString())
+    	}
+    }
 
 	/**
 	 * Creates next/previous links to support pagination for the current controller

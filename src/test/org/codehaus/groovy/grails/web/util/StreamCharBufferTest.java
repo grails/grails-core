@@ -34,15 +34,15 @@ import junit.framework.TestCase;
  *
  */
 public class StreamCharBufferTest extends TestCase {
-	private static final int TESTROUNDS = 1000;
-	static char[] testbuffer = new char[2^16 * TESTROUNDS];
+	private static final int TESTROUNDS = 1;
+	static char[] testbuffer = new char[Short.MAX_VALUE];
 
 	@Override
 	protected void setUp() throws Exception {
 		if (testbuffer == null) {
 			for (int i = 0; i < TESTROUNDS; i++) {
-				for (int j = 0; j < (2^16); j++) {
-					testbuffer[i * 2^16 + j] = (char) j;
+				for (int j = 0; j < Short.MAX_VALUE; j++) {
+					testbuffer[i * Short.MAX_VALUE + j] = (char) j;
 				}
 			}
 		}
@@ -50,14 +50,14 @@ public class StreamCharBufferTest extends TestCase {
 
 	public void testBufferedConnectedStringWriting() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer(10,0,10);
-		charBuffer.setStringChunkMinSize(6);
+		charBuffer.setSubStringChunkMinSize(6);
 		charBuffer.setWriteDirectlyToConnectedMinSize(6);
 		doBufferedTesting(charBuffer);
 	}
 
 	public void testBufferedConnectedStringWritingResizeableChunkSize() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer(10);
-		charBuffer.setStringChunkMinSize(6);
+		charBuffer.setSubStringChunkMinSize(6);
 		charBuffer.setWriteDirectlyToConnectedMinSize(6);
 		doBufferedTesting(charBuffer);
 	}
@@ -72,6 +72,7 @@ public class StreamCharBufferTest extends TestCase {
 		writer.write("A");
 		assertEquals("ABCDE12345", sw.toString());
 		writer.write("1234567");
+		writer.flush();
 		if(StringCharArrayAccessor.isEnabled()) {
 			assertEquals("ABCDE12345A1234567", sw.toString());
 		}
@@ -79,24 +80,49 @@ public class StreamCharBufferTest extends TestCase {
 		writer.write("67890".toCharArray());
 		writer.close();
 		assertEquals("ABCDE12345A1234567ABCDE67890", sw.toString());
-		assertEquals(0, charBuffer.charsAvailable());
 		assertEquals(0, charBuffer.size());
 	}
 
-	public void testReaderWithStringArrays() throws IOException {
-		StreamCharBuffer charBuffer = new StreamCharBuffer(10);
-		charBuffer.setStringChunkMinSize(6);
+	public void testSubStreamCharBuffer() throws IOException {
+		StreamCharBuffer charBuffer = new StreamCharBuffer();
 		Writer writer=charBuffer.getWriter();
 		writer.write("ABCDE");
 		writer.write("12345".toCharArray());
-		writer.write("A");
+		writer.write("!");
+		StreamCharBuffer charBuffer2 = new StreamCharBuffer(3);
+		charBuffer2.setPreferSubChunkWhenWritingToOtherBuffer(true);
+		Writer writer2=charBuffer2.getWriter();
+		writer2.write(">OOOOO<");
+		charBuffer2.writeTo(writer);
 		writer.write("1234567");
 		writer.write("ABCDE");
 		writer.write("67890".toCharArray());
 		writer.close();
-		assertEquals("ABCDE12345A1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		assertEquals("ABCDE12345!>OOOOO<1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+		assertEquals("ABCDE12345!>OOOOO<1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+		assertEquals(35, charBuffer.size());
+		writer2.write("-----");
+		assertEquals(35, charBuffer.size());
+		writer2.flush();
+		assertEquals(40, charBuffer.size());
+		assertEquals("ABCDE12345!>OOOOO<-----1234567ABCDE67890", charBuffer.toString());
+		assertEquals("ABCDE12345!>OOOOO<-----1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+	}
+	
+	public void testReaderWithStringArrays() throws IOException {
+		StreamCharBuffer charBuffer = new StreamCharBuffer(10);
+		charBuffer.setSubStringChunkMinSize(6);
+		Writer writer=charBuffer.getWriter();
+		writer.write("ABCDE");
+		writer.write("12345".toCharArray());
+		writer.write("!");
+		writer.write("1234567");
+		writer.write("ABCDE");
+		writer.write("67890".toCharArray());
+		writer.close();
+		assertEquals("ABCDE12345!1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+		assertEquals("ABCDE12345!1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+		assertEquals(28, charBuffer.size());
 	}
 
 	public void testStringCharArrays() throws IOException {
@@ -110,8 +136,7 @@ public class StreamCharBufferTest extends TestCase {
 		writer.close();
 		assertEquals(25, charBuffer.size());
 		assertEquals("ABCDE12345ABCDEABCDE67890", charBuffer.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testWritingStringBuilder() throws IOException {
@@ -122,8 +147,8 @@ public class StreamCharBufferTest extends TestCase {
 		writer.close();
 		assertEquals(25, charBuffer.size());
 		assertEquals("ABCDE12345ABCDEABCDE67890", charBuffer.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testWritingStringBuffer() throws IOException {
@@ -134,8 +159,8 @@ public class StreamCharBufferTest extends TestCase {
 		writer.close();
 		assertEquals(25, charBuffer.size());
 		assertEquals("ABCDE12345ABCDEABCDE67890", charBuffer.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testWritingStringBuilder2() throws IOException {
@@ -146,8 +171,8 @@ public class StreamCharBufferTest extends TestCase {
 		writer.close();
 		assertEquals(25, charBuffer.size());
 		assertEquals("ABCDE12345ABCDEABCDE67890", charBuffer.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testWritingStringBuffer2() throws IOException {
@@ -158,13 +183,13 @@ public class StreamCharBufferTest extends TestCase {
 		writer.close();
 		assertEquals(25, charBuffer.size());
 		assertEquals("ABCDE12345ABCDEABCDE67890", charBuffer.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testStringCharArraysWriteTo() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer();
-		charBuffer.setStringChunkMinSize(0);
+		charBuffer.setSubStringChunkMinSize(0);
 		Writer writer=charBuffer.getWriter();
 		writer.write("ABCDE");
 		writer.write("12345".toCharArray());
@@ -176,13 +201,13 @@ public class StreamCharBufferTest extends TestCase {
 		StringWriter sw=new StringWriter();
 		charBuffer.writeTo(sw);
 		assertEquals("ABCDE12345ABCDEABCDE67890", sw.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testStringCharArraysWriteTo2() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer();
-		charBuffer.setStringChunkMinSize(10000);
+		charBuffer.setSubStringChunkMinSize(10000);
 		Writer writer=charBuffer.getWriter();
 		writer.write("ABCDE");
 		writer.write("12345".toCharArray());
@@ -194,8 +219,8 @@ public class StreamCharBufferTest extends TestCase {
 		StringWriter sw=new StringWriter();
 		charBuffer.writeTo(sw);
 		assertEquals("ABCDE12345ABCDEABCDE67890", sw.toString());
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(25, charBuffer.size());
 	}
 
 	public void testToString() throws IOException {
@@ -203,54 +228,54 @@ public class StreamCharBufferTest extends TestCase {
 		Writer writer=charBuffer.getWriter();
 		writer.write("Hello world!");
 		writer.close();
-		assertEquals(0, charBuffer.filledChunkCount());
+		//assertEquals(0, charBuffer.filledChunkCount());
 		String str=charBuffer.readAsString();
 		assertEquals("Hello world!", str);
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(12, charBuffer.size());
 	}
 
 	public void testToCharArray() throws IOException {
 		StreamCharBuffer charBuffer = createTestInstance();
 		char[] result = charBuffer.readAsCharArray();
 		assertTrue(Arrays.equals(testbuffer, result));
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(testbuffer.length, charBuffer.size());
 	}
 
 	public void testToReader() throws IOException {
 		StreamCharBuffer charBuffer = createTestInstance();
 		Reader input = charBuffer.getReader();
 		CharArrayWriter charsOut = new CharArrayWriter(charBuffer
-				.calculateTotalCharsUnread());
+				.size());
 		copy(input, charsOut, 2048);
 		char[] result = charsOut.toCharArray();
 		assertTrue(Arrays.equals(testbuffer, result));
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(testbuffer.length, charBuffer.size());
 	}
 
 	public void testToReaderOneByOne() throws IOException {
 		StreamCharBuffer charBuffer = createTestInstance();
 		Reader input = charBuffer.getReader();
 		CharArrayWriter charsOut = new CharArrayWriter(charBuffer
-				.calculateTotalCharsUnread());
+				.size());
 		copyOneByOne(input, charsOut);
 		char[] result = charsOut.toCharArray();
 		assertTrue(Arrays.equals(testbuffer, result));
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(testbuffer.length, charBuffer.size());
 	}
 
 	public void testWriteTo() throws IOException {
 		StreamCharBuffer charBuffer = createTestInstance();
 		CharArrayWriter charsWriter = new CharArrayWriter(charBuffer
-				.calculateTotalCharsUnread());
+				.size());
 		charBuffer.writeTo(charsWriter);
 		char[] result = charsWriter.toCharArray();
 		assertTrue(Arrays.equals(testbuffer, result));
-		assertEquals(0, charBuffer.charsAvailable());
-		assertEquals(0, charBuffer.size());
+		
+		assertEquals(testbuffer.length, charBuffer.size());
 	}
 
 	private int copy(Reader input, Writer output, int bufSize)
@@ -287,6 +312,9 @@ public class StreamCharBufferTest extends TestCase {
 			throws IOException {
 		int position = 0;
 		int charsLeft = testbuffer.length;
+		if (charsLeft < partsize) {
+			partsize = charsLeft;
+		}		
 		while (charsLeft > 0) {
 			output.write(testbuffer, position, partsize);
 			position += partsize;

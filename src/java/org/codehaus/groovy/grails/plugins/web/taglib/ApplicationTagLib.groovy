@@ -93,6 +93,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		if(!containsValue && body) value = body()
 
 		this."$scope"."$var" = value
+		null
 	}
 
     /**
@@ -112,7 +113,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     /**
      * Check for "absolute" attribute and render server URL if available from Config or deducible in non-production
      */
-    private handleAbsolute(attrs) {
+    private handleAbsolute(out, attrs) {
         def abs = attrs.remove("absolute")
         if (Boolean.valueOf(abs)) {
             def u = makeServerURL()
@@ -147,7 +148,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		if (attrs.base) {
 		    writer << attrs.remove('base')
 		} else {
-		    handleAbsolute(attrs)
+		    handleAbsolute(writer, attrs)
 	    }       
         def dir = attrs['dir']
         if(dir) {
@@ -182,6 +183,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      *  <a href="${createLink(action:'list')}">List</a>
      */
     def createLink = { attrs ->
+    	def writer = getOut()
+    
         // prefer a URL attribute
         def urlAttrs = attrs
         if(attrs['url'] instanceof Map) {
@@ -193,13 +196,13 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
         if(urlAttrs instanceof String) {
             if(useJsessionId)
-              out << response.encodeURL(urlAttrs)
+              writer << response.encodeURL(urlAttrs)
             else
-              out << urlAttrs
+              writer << urlAttrs
         }
         else {
-            def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller") : controllerName
-            def action = urlAttrs.remove("action")
+            def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller")?.toString() : controllerName
+            def action = urlAttrs.remove("action")?.toString()
             if(controller && !action) {
                 GrailsControllerClass controllerClass = grailsApplication.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controller)
                 String defaultAction = controllerClass?.getDefaultAction()
@@ -207,7 +210,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
                     action = defaultAction
             }
             def id = urlAttrs.remove("id")
-            def frag = urlAttrs.remove('fragment')
+            def frag = urlAttrs.remove('fragment')?.toString()
             def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
             params.mappingName = urlAttrs.remove('mapping')
 			if(request['flowExecutionKey']) {
@@ -223,14 +226,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             UrlCreator mapping = urlMappings.getReverseMapping(controller,action,params)
             url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
             if (attrs.base != null) {
-                out << attrs.remove('base')
+                writer << attrs.remove('base')
             } else {
-                handleAbsolute(attrs)
+                handleAbsolute(writer, attrs)
             }
             if(useJsessionId)
-               out << response.encodeURL(url)
+               writer << response.encodeURL(url)
             else
-               out << url
+               writer << url
         }
 
     }
