@@ -59,7 +59,7 @@ class WebFlowGrailsPluginTestController {
 	    pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
 		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.webflow.WebFlowGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.webflow.MockWebFlowGrailsPlugin")
 
     }
 
