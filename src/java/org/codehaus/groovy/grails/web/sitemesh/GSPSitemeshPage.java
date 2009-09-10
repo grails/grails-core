@@ -1,12 +1,11 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
 import com.opensymphony.sitemesh.Content;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
+import java.io.IOException;
+import java.io.Writer;
 
 public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	StreamCharBuffer headBuffer;
@@ -47,7 +46,6 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 		}
 	}
 
-	@Override
 	public String getHead() {
 		if(headBuffer != null) {
 			return headBuffer.toString();
@@ -71,12 +69,10 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 		return null;
 	}
 
-	@Override
 	public int originalLength() {
 		return pageBuffer.size();
 	}
 
-	@Override
 	public void writeOriginal(Writer writer) throws IOException {
 		writePage(writer);
 	}

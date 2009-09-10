@@ -104,7 +104,6 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
 		return namespace;
 	}
 
-	@Override
 	public Set<String> getTagNamesThatReturnObject() {
 		return returnObjectForTagsSet;
 	}

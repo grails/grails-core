@@ -954,25 +954,21 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			this.parent=parent;
 			this.pointer=parent.offset;
 		}
-		
-		@Override
+
 		public int read(final char[] ch, final int off, final int len) throws IOException {
 			arrayCopy(parent.buffer, pointer, ch, off, len);
 			pointer += len;
 			return len;
 		}
 
-		@Override
 		public int getReadLenLimit(int askedAmount) {
 			return Math.min(parent.lastposition-pointer, askedAmount);
 		}
 
-		@Override
 		public boolean hasUnread() {
 			return (parent.lastposition-pointer > 0);
 		}
 
-		@Override
 		public ChunkReader next() {
 			if(parent.next != null) {
 				return parent.next.getChunkReader();
@@ -1036,17 +1032,14 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			return len;
 		}
 
-		@Override
 		public int getReadLenLimit(int askedAmount) {
 			return Math.min(parent.lastposition - position, askedAmount);
 		}
 
-		@Override
 		public boolean hasUnread() {
 			return (parent.lastposition - position > 0);
 		}
 		
-		@Override
 		public ChunkReader next() {
 			if(parent.next != null) {
 				return parent.next.getChunkReader();
@@ -1105,22 +1098,18 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			this.reader=(StreamCharBufferReader)parent.streamCharBuffer.getReader();
 		}
 
-		@Override
 		public int getReadLenLimit(int askedAmount) {
 			return reader.getReadLenLimit(askedAmount);
 		}
 
-		@Override
 		public boolean hasUnread() {
 			return reader.hasUnread();
 		}
 
-		@Override
 		public int read(char[] ch, int off, int len) throws IOException {
 			return reader.read(ch, off, len);
 		}
 		
-		@Override
 		public ChunkReader next() {
 			if(parent.next != null) {
 				return parent.next.getChunkReader();
@@ -1139,24 +1128,20 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			this.position=parent.chunkStart;
 		}
 
-		@Override
 		public int getReadLenLimit(int askedAmount) {
 			return Math.min(parent.used - position, askedAmount);
 		}
 
-		@Override
 		public boolean hasUnread() {
 			return (parent.used - position) > 0;
 		}
 
-		@Override
 		public int read(char[] ch, int off, int len) throws IOException {
 			arrayCopy(parent.buffer, position, ch, off, len);
 			position += len;
 			return len;
 		}
 		
-		@Override
 		public ChunkReader next() {
 			return null;
 		}
@@ -1297,17 +1282,14 @@ public class StreamCharBuffer implements Writable, CharSequence {
 
 	/* Compatibility methods so that StreamCharBuffer will behave more like java.lang.String in groovy code */
 	
-	@Override
 	public char charAt(int index) {
 		return toString().charAt(index);
 	}
 
-	@Override
 	public int length() {
 		return size();
 	}
 
-	@Override
 	public CharSequence subSequence(int start, int end) {
 		return toString().subSequence(start, end);
 	}

@@ -1,9 +1,5 @@
 package org.codehaus.groovy.grails.web.pages;
 
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -11,6 +7,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Stack;
 
 public final class GroovyPageOutputStack {
 	public static final Log log = LogFactory.getLog(GroovyPageOutputStack.class);
@@ -54,7 +54,6 @@ public final class GroovyPageOutputStack {
 		GroovyPageOutputStack instance=new GroovyPageOutputStack(topWriter, autoSync);
 		// clear instance after the request is over
 		RequestContextHolder.currentRequestAttributes().registerDestructionCallback(GroovyPageOutputStack.class.getName(), new Runnable() {
-			@Override
 			public void run() {
 				GroovyPageOutputStack.removeCurrentInstance();
 			}
