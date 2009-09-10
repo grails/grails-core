@@ -116,6 +116,7 @@ else {
 // Other useful properties.
 args = System.getProperty("grails.cli.args")
 classesDir = grailsSettings.classesDir
+projectTargetDir = grailsSettings.projectTargetDir
 grailsApp = null
 grailsWorkDir = grailsSettings.grailsWorkDir
 grailsTmp = "${grailsSettings.grailsWorkDir}/tmp"

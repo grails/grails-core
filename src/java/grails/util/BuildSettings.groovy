@@ -85,6 +85,12 @@ class BuildSettings {
      */
     public static final String PROJECT_TEST_REPORTS_DIR = "grails.project.test.reports.dir"
 
+
+    /**
+     * The name of the system property for {@link #projectTargetDir}.
+     */
+    public static final String PROJECT_TARGET_DIR = "grails.project.target.dir"
+
     /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
@@ -118,6 +124,9 @@ class BuildSettings {
 
     /** The location of the project working directory for project-specific temporary files. */
     File projectWorkDir
+
+    /** The location of the project target directory where reports, artifacts and so on are output. */
+    File projectTargetDir
 
     /** The location of the Grails WAR directory where exploded WAR is built. */
     File projectWarExplodedDir
@@ -236,6 +245,7 @@ class BuildSettings {
      */
     private boolean grailsWorkDirSet
     private boolean projectWorkDirSet
+    private boolean projectTargetDirSet
     private boolean projectWarExplodedDirSet
     private boolean classesDirSet
     private boolean testClassesDirSet
@@ -571,6 +581,10 @@ class BuildSettings {
             projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${baseDir.name}"))
         }
 
+        if (!projectTargetDirSet) {
+            projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
+        }
+
         if (!projectWarExplodedDirSet) {
             projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
         }
@@ -596,7 +610,7 @@ class BuildSettings {
         }
 
         if (!testReportsDirSet) {
-            testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${baseDir}/test/reports"))
+            testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
         }
     }
 

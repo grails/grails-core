@@ -53,7 +53,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     * Out of the box Ivy configurations are:
     *
     * - build: Dependencies for the build system only
-    * - plugin-build: Dependencies needed by plugins for the build system only
     * - compile: Dependencies for the compile step
     * - runtime: Dependencies needed at runtime but not for compilation (see above)
     * - test: Dependencies needed for testing but not at runtime (see above)
@@ -455,7 +454,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
     public ResolveReport resolveDependencies(String conf) {
         if(usedConfigurations.contains(conf)) {
-            def options = new ResolveOptions(checkIfChanged:false, outputReport:false, validate:false)
+            def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
             if(conf)
                 options.confs = [conf] as String[]
 
