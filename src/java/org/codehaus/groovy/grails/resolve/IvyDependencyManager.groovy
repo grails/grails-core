@@ -596,6 +596,18 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
+    /**
+     * Defines dependency resolvers
+     */
+    void resolvers(Closure resolvers) {
+        repositories resolvers
+    }
+
+
+
+    /**
+     * Same as #resolvers(Closure) 
+     */
     void repositories(Closure repos) {
         repos?.delegate = this
         repos?.call()

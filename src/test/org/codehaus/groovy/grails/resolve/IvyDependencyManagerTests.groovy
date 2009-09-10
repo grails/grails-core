@@ -73,7 +73,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         // test simple exclude
         manager.parseDependencies {
             inherits "test"
-            repositories {
+            resolvers {
                 grailsHome()
                 mavenRepo "http://snapshots.repository.codehaus.org"
             }
