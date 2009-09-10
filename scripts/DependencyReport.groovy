@@ -1,4 +1,5 @@
 import groovy.xml.NamespaceBuilder
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 /*
 * Copyright 2004-2005 the original author or authors.
@@ -27,10 +28,21 @@ import groovy.xml.NamespaceBuilder
 includeTargets << grailsScript("_GrailsSettings")
 
 target(dependencyReport:"Produces a dependency report for the current Grails application") {
+    // create ivy namespace
     ivy = NamespaceBuilder.newInstance(ant, 'antlib:org.apache.ivy.ant')
+
     String targetDir = "$projectTargetDir/dependency-report"
+    ant.delete(dir:targetDir, failonerror:false)
     ant.mkdir(dir:targetDir)
-    ivy.report(organisation:grailsAppName, module:grailsAppName,todir:targetDir, conf:'runtime')
+
+    println "Obtaining dependency data..."
+    IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+    for(conf in IvyDependencyManager.ALL_CONFIGURATIONS) {
+        dependencyManager.resolveDependencies(conf)
+    }
+
+    def conf = args.trim() ?: 'build, compile, provided, runtime, test'
+    ivy.report(organisation:grailsAppName, module:grailsAppName,todir:targetDir, conf:conf)
 
     println "Dependency report output to [$targetDir]"
 }

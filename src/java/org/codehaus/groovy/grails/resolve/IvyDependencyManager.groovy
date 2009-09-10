@@ -88,6 +88,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                                                                 ['default'] as String[],
                                                                 true, null)
 
+    static List<Configuration> ALL_CONFIGURATIONS = [BUILD_CONFIGURATION, COMPILE_CONFIGURATION, RUNTIME_CONFIGURATION, TEST_CONFIGURATION, PROVIDED_CONFIGURATION]
+
 
     private Set<ModuleRevisionId> dependencies = [] as Set
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
