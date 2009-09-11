@@ -58,7 +58,7 @@ import java.util.*;
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
  * For example for a set of fields defined as:
- *
+ * <p/>
  * <code>
      * <input type="hidden" name="myDate_year" value="2005" />
      * <input type="hidden" name="myDate_month" value="6" />
@@ -66,7 +66,7 @@ import java.util.*;
      * <input type="hidden" name="myDate_hour" value="13" />
      * <input type="hidden" name="myDate_minute" value="45" />
  * </code>
- *
+ * <p/>
  * This would set the property "myDate" of type java.util.Date with the specified values.
  *
  * @author Graeme Rocher
@@ -111,10 +111,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         if (grailsApplication!=null && grailsApplication.isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
             if (target instanceof GroovyObject) {
                 disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
-            } else {
+            }
+            else {
                 disallowed = DOMAINCLASS_DISALLOWED;
             }
-        } else if (target instanceof GroovyObject) {
+        }
+        else if (target instanceof GroovyObject) {
             disallowed = GROOVY_DISALLOWED;
         }
         setDisallowedFields(disallowed);
@@ -126,6 +128,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     /**
      * Collects all PropertyEditorRegistrars in the application context and
      * calls them to register their custom editors
+     *
      * @param registry The PropertyEditorRegistry instance
      */
     private static void registerCustomEditors(PropertyEditorRegistry registry) {
@@ -162,6 +165,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     /**
      * Registers all known
+     *
      * @param registry
      * @param locale
      */
@@ -252,7 +256,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     	MutablePropertyValues mpvs;
     	if (prefix != null) {
     		mpvs = new ServletRequestParameterPropertyValues(request, prefix, PREFIX_SEPERATOR);
-    	} else {
+        }
+        else {
             mpvs = new ServletRequestParameterPropertyValues(request);
     	}
 
@@ -401,7 +406,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
 
 
-
         Class type = bean.getPropertyType(propertyName);
         Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null;
         
@@ -431,7 +435,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                }
                bean.setPropertyValue(propertyName, c);
                val = c;
-
 
 
                if(c!= null && currentKeyStart > -1 && currentKeyEnd > -1) {
@@ -625,7 +628,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 return null; // GORM not installed, continue to operate as normal
             }
 
-        } finally {
+        }
+        finally {
             try {
                 Thread.currentThread().setContextClassLoader(currentClassLoader);
             }
@@ -737,6 +741,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     /**
      * Checks for structured properties. Structured properties are properties with a name
      * containg a "_"
+     *
      * @param propertyValues
      */
     private void checkStructuredProperties(MutablePropertyValues propertyValues) {
@@ -756,29 +761,27 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     fields.addAll(structuredEditor.getOptionalFields());
                     Map<String, String> fieldValues = new HashMap<String, String>();
                     try {
-                        for (Object field1 : fields) {
-                            String field = (String) field1;
-                            PropertyValue requiredProperty = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
-                            if (requiredProperty == null && structuredEditor.getRequiredFields().contains(field)) {
-                                break;
+                        for (Object fld : fields) {
+                            String field = (String) fld;
+                            PropertyValue partialStructValue = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
+                            if (partialStructValue == null && structuredEditor.getRequiredFields().contains(field)) {
+                                throw new MissingPropertyException("Required structured property is missing [" + field + "]");
                             }
-                            else if (requiredProperty == null)
+                            else if (partialStructValue == null)
                                 continue;
-                            fieldValues.put(field, getStringValue(requiredProperty));
+                            fieldValues.put(field, getStringValue(partialStructValue));
                         }
                         try {
                             Object value = structuredEditor.assemble(type, fieldValues);
-                            if (null != value) {
-                                for (Object field : fields) {
-                                    String requiredField = (String) field;
-                                    PropertyValue requiredProperty = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + requiredField);
-                                    if (null != requiredProperty) {
-                                        requiredProperty.setConvertedValue(getStringValue(requiredProperty));
+                            for (Object fld : fields) {
+                                String field = (String) fld;
+                                PropertyValue partialStructValue = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
+                                if (null != partialStructValue) {
+                                    partialStructValue.setConvertedValue(getStringValue(partialStructValue));
                                     }
                                 }
                                 propertyValues.addPropertyValue(new PropertyValue(propertyName, value));
                             }
-                        }
                         catch (IllegalArgumentException iae) {
                             LOG.warn("Unable to parse structured date from request for date [" + propertyName + "]", iae);
                         }

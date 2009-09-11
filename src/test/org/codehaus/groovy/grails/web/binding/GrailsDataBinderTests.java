@@ -15,15 +15,15 @@
 package org.codehaus.groovy.grails.web.binding;
 
 import junit.framework.TestCase;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import java.beans.PropertyEditorSupport;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -31,8 +31,11 @@ import java.util.Locale;
  */
 public class GrailsDataBinderTests extends TestCase {
 
+    public static final String DATE_TIME_FORMAT = "MM/dd/yyyy hh:mm a";
+
     class TestBean {
         private Date myDate;
+        private TestDateTimeBean myDateTime;
         private java.sql.Date mySqlDate;
         private String name;
         private Long securityNumber;
@@ -54,6 +57,14 @@ public class GrailsDataBinderTests extends TestCase {
 
         public void setMyDate(Date myDate) {
             this.myDate = myDate;
+        }
+
+        public TestDateTimeBean getMyDateTime() {
+            return myDateTime;
+        }
+
+        public void setMyDateTime(TestDateTimeBean myDateTime) {
+            this.myDateTime = myDateTime;
         }
 
         public java.sql.Date getMySqlDate() {
@@ -97,6 +108,61 @@ public class GrailsDataBinderTests extends TestCase {
         }
     }
 
+    class TestDateTimeBean {
+        private Date dateTime;
+
+        public Date getDateTime() {
+            return dateTime;
+        }
+
+        public void setDateTime(Date dateTime) {
+            this.dateTime = dateTime;
+        }
+    }
+
+    class TestDateTimePropertyEditor extends PropertyEditorSupport implements StructuredPropertyEditor {
+
+        SimpleDateFormat dateFormat;
+
+        public TestDateTimePropertyEditor(String format) {
+            this.dateFormat = new SimpleDateFormat(format);
+        }
+
+        public List getRequiredFields() {
+            List requiredFields = new ArrayList();
+            requiredFields.add("date");
+            return requiredFields;
+        }
+
+        public List getOptionalFields() {
+            List optionalFields = new ArrayList();
+            optionalFields.add("time");
+            return optionalFields;
+        }
+
+        public TestDateTimeBean assemble(Class type, Map fieldValues) throws IllegalArgumentException {
+            String date = (String) fieldValues.get("date");
+            if (StringUtils.isBlank(date)) {
+                return null;
+            }
+
+            String time = (String) fieldValues.get("time");
+            if (StringUtils.isBlank(time)) time = "00:00 AM";
+
+            String dateTime = date + " " + time;
+
+            try {
+                TestDateTimeBean dt = new TestDateTimeBean();
+                dt.setDateTime(dateFormat.parse(dateTime));
+                return dt; 
+            }
+            catch (Exception nfe) {
+                throw new IllegalArgumentException("Unable to parse structured DateTime from request for date (" + dateTime + ").");
+            }
+        }
+
+    }
+
     public void testBindStructuredDateWithYearPrecision() throws Exception {
         testBindStructuredDate("2006", null, null, null, null); // January 1st, 2006 - 00:00
     }
@@ -135,6 +201,22 @@ public class GrailsDataBinderTests extends TestCase {
     public void testBindStructuredDateWithNoYear() throws Exception {
         testBindInvalidStructuredDate("", "2", "1"); // February 1, ????
         testBindInvalidStructuredDate(null, "2", "29"); // February 29, ????
+    }
+
+    public void testBindStructuredDateTimeWithValidData() {
+        TestBean bean = bindDateTimeWithCustomEditor("01/01/2009",  "01:00 PM");
+        assertNotNull(bean.getMyDateTime());
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
+        assertEquals("01/01/2009 01:00 PM", dateFormat.format(bean.getMyDateTime().getDateTime()));
+
+        bean = bindDateTimeWithCustomEditor("01/01/2009",  "");
+        assertNotNull(bean.getMyDateTime());
+        assertEquals("01/01/2009 12:00 AM", dateFormat.format(bean.getMyDateTime().getDateTime()));
+    }
+
+    public void testBindStructuredDateTimeWithBlankRequiredFieldYieldsNullBinding() {
+        TestBean bean = bindDateTimeWithCustomEditor("",  "01:00 PM");
+        assertNull(bean.getMyDateTime());
     }
 
     private void testBindInvalidStructuredDate(String year, String month, String  day) throws Exception {
@@ -191,6 +273,7 @@ public class GrailsDataBinderTests extends TestCase {
 		public String getName() {
 			return name;
 		}
+
 		public void setName(String name) {
 			this.name = name;
 		}
@@ -198,6 +281,7 @@ public class GrailsDataBinderTests extends TestCase {
 		public int getAge() {
 			return this.age;
 		}
+
 		public void setAge(int age){
 			this.age = age;
 		}
@@ -277,7 +361,6 @@ public class GrailsDataBinderTests extends TestCase {
     }
 
 
-
     /**
      * Tests the <code>GrailsDataBinder</code> using the specified request parameters.  Assumes that each of the
      * specified request parameters is either null or a valid integer value for the given parameter.  Asserts that the
@@ -350,4 +433,19 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(expectedMonthValue,c.get(Calendar.MONTH));
         assertEquals(expectedDayValue,c.get(Calendar.DAY_OF_MONTH));
     }
+
+
+    private TestBean bindDateTimeWithCustomEditor(String date, String time) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addParameter("myDateTime", "struct");
+        request.addParameter("myDateTime_date", date);
+        request.addParameter("myDateTime_time", time);
+
+        TestBean testBean = new TestBean();
+        GrailsDataBinder binder = GrailsDataBinder.createBinder(testBean, "testBean", request);
+        binder.registerCustomEditor(TestDateTimeBean.class, new TestDateTimePropertyEditor(DATE_TIME_FORMAT));
+        binder.bind(request);
+        return testBean;
+    }
+
 }
