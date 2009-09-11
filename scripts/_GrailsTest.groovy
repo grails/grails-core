@@ -74,21 +74,25 @@ compilationFailures = []
 testHelper = null
 testsFailed = false
 
+target(testDependencies:"Configures test time dependencies") {
+    // add test dependencies to classpath
+    def currentClasspathURLs = rootLoader.URLs.toList()
+    for(file in grailsSettings.testDependencies) {
+        def url = file.toURL()
+        if(!currentClasspathURLs.contains(url))
+            rootLoader.addURL url
+    }
+
+}
+
 target(allTests: "Runs the project's tests.") {
-    depends(compile, packagePlugins)
+    depends(compile, packagePlugins, testDependencies)
     packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
     ant.mkdir(dir: "${testReportsDir}/html")
     ant.mkdir(dir: "${testReportsDir}/plain")
 
-    // add test dependencies to classpath
-    def currentClasspathURLs = rootLoader.URLs.toList()
-    grailsSettings.testDependencies.each { file ->
-        def url = file.toURL()        
-        if(!currentClasspathURLs.contains(url))
-            rootLoader.addURL url        
-    }
 
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
