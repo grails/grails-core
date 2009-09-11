@@ -40,11 +40,6 @@ SCHEME_HTTPS="https"
 grailsServer = null
 grailsContext = null
 autoRecompile = System.getProperty("disable.auto.recompile") ? !(System.getProperty("disable.auto.recompile").toBoolean()) : true
-// server port options
-serverPort = getPropertyValue("grails.server.port.http", 8080)?.toInteger()
-serverPortHttps = getPropertyValue("grails.server.port.https", 8443)?.toInteger() 
-serverHost = getPropertyValue("grails.server.host", null)
-
 
 // How often should recompilation occur while the application is running (in seconds)?
 // Defaults to 3s.
