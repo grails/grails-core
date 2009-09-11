@@ -47,10 +47,6 @@ defaultWarDependencies = { antBuilder ->
         resolveStrategy = Closure.DELEGATE_FIRST
     }
 
-    fileset(dir:"${basedir}/lib") {
-        include(name:"*.jar")
-    }
-
     // For backwards compatibility, we handle the list version of
     // "grails.war.dependencies" specially.
     if (buildConfig.grails.war.dependencies instanceof List) {
@@ -163,6 +159,11 @@ target (war: "The implementation target") {
 
         if(includeJars) {            
         	def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
+
+            GrailsPluginManager pm = pluginManager
+            pluginInfos = pluginInfos.findAll { info -> pm.supportsCurrentBuildScope(info.name) }
+
+
         	if(pluginInfos) {
                 ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
                     for(PluginInfo info in pluginInfos) {
