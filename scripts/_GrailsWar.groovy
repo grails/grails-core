@@ -36,7 +36,7 @@ includeTargets << grailsScript("_GrailsPackage")
 
 generateLog4jFile = true
 includeJars = true
-
+buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
 warName = null
 
 

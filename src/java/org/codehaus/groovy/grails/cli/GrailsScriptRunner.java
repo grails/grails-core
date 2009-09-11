@@ -499,9 +499,12 @@ public class GrailsScriptRunner {
 
         // Add other binding variables, such as Grails version and
         // environment.
-        binding.setVariable("basedir", settings.getBaseDir().getPath());
-        binding.setVariable("baseFile", settings.getBaseDir());
-        binding.setVariable("baseName", settings.getBaseDir().getName());
+        final File basedir = settings.getBaseDir();
+        final String baseDirPath = basedir.getPath();
+        binding.setVariable("basedir", baseDirPath);
+        binding.setVariable("scaffoldDir", baseDirPath + "/web-app/WEB-INF/templates/scaffolding");
+        binding.setVariable("baseFile", basedir);
+        binding.setVariable("baseName", basedir.getName());
         binding.setVariable("grailsHome", (settings.getGrailsHome() != null ? settings.getGrailsHome().getPath() : null));
         binding.setVariable("grailsVersion", settings.getGrailsVersion());
         binding.setVariable("userHome", settings.getUserHome());
@@ -509,13 +512,21 @@ public class GrailsScriptRunner {
         binding.setVariable("defaultEnv", Boolean.valueOf(settings.getDefaultEnv()));
         binding.setVariable("buildConfig", settings.getConfig());
         binding.setVariable("rootLoader", settings.getRootLoader());
+        binding.setVariable("configFile", new File(baseDirPath + "/grails-app/conf/Config.groovy"));
+
 
         // Add the project paths too!
-        binding.setVariable("grailsWorkDir", settings.getGrailsWorkDir().getPath());
+        String grailsWork = settings.getGrailsWorkDir().getPath();
+        binding.setVariable("grailsWorkDir", grailsWork);
         binding.setVariable("projectWorkDir", settings.getProjectWorkDir().getPath());
+        binding.setVariable("projectTargetDir", settings.getProjectTargetDir());
+        binding.setVariable("classesDir", settings.getClassesDir());
+        binding.setVariable("grailsTmp", grailsWork +"/tmp");
         binding.setVariable("classesDirPath", settings.getClassesDir().getPath());
         binding.setVariable("testDirPath", settings.getTestClassesDir().getPath());
-        binding.setVariable("resourcesDirPath", settings.getResourcesDir().getPath());
+        final String resourcesDir = settings.getResourcesDir().getPath();
+        binding.setVariable("resourcesDirPath", resourcesDir);
+        binding.setVariable("webXmlFile", new File(resourcesDir + "/web.xml"));
         binding.setVariable("pluginsDirPath", settings.getProjectPluginsDir().getPath());
         binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
 
@@ -533,7 +544,7 @@ public class GrailsScriptRunner {
             // First, if this is a plugin project, we need to add its
             // descriptor.
             List descriptors = new ArrayList();
-            File desc = getPluginDescriptor(settings.getBaseDir());
+            File desc = getPluginDescriptor(basedir);
             if (desc != null) descriptors.add(desc);
 
             // Next add all those of installed plugins.

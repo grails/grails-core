@@ -484,6 +484,7 @@ class BuildSettings {
         establishProjectStructure()
 
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN);
+
         Metadata metadata = Metadata.current
         def appName = metadata.getApplicationName() ?: "grails"
         def appVersion = metadata.getApplicationVersion() ?: grailsVersion

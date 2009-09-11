@@ -73,17 +73,8 @@ buildProps = buildConfig.toProperties()
 enableJndi = getPropertyValue("enable.jndi", false).toBoolean()
 enableProfile = getPropertyValue("grails.script.profile", false).toBoolean()
 pluginsHome = grailsSettings.projectPluginsDir.path
-buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
 
-// These are legacy settings...
-serverPort = getPropertyValue("server.port", 8080).toInteger()
-serverPortHttps = getPropertyValue("server.port.https", 8443).toInteger()
-serverHost = getPropertyValue("server.host", null)
 
-// ...which are superceded by these
-serverPort = getPropertyValue("grails.server.port.http", null)?.toInteger() ?: serverPort
-serverPortHttps = getPropertyValue("grails.server.port.https", null)?.toInteger() ?: serverPortHttps
-serverHost = getPropertyValue("grails.server.host", null) ?: serverHost
 
 // Load the application metadata (application.properties)
 grailsAppName = null
@@ -115,18 +106,13 @@ else {
 
 // Other useful properties.
 args = System.getProperty("grails.cli.args")
-classesDir = grailsSettings.classesDir
-projectTargetDir = grailsSettings.projectTargetDir
 grailsApp = null
-grailsWorkDir = grailsSettings.grailsWorkDir
-grailsTmp = "${grailsSettings.grailsWorkDir}/tmp"
-isPluginProject = grailsSettings.baseDir.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
+
+isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 
 shouldPackageTemplates = false
 config = new ConfigObject()
-scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"
-configFile = new File("${basedir}/grails-app/conf/Config.groovy")
-webXmlFile = new File("${resourcesDirPath}/web.xml")
+
 
 // Pattern that matches artefacts in the 'grails-app' directory.
 // Note that the capturing group matches any package directory
