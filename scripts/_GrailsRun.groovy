@@ -290,7 +290,14 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
 
 target(stopServer: "Stops the Grails Jetty server") {
     if (grailsServer) {
-        grailsServer.stop()
+        try {
+            grailsServer.stop()
+        }
+        catch (Throwable e) {
+            GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
+            println "Error stopping server: ${e.message}"
+        }
     }
     event("StatusFinal", ["Server stopped"])
 }
