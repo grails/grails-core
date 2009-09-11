@@ -174,6 +174,16 @@ target (war: "The implementation target") {
             }
         }
 
+        String metaInfo = "$stagingDir/META-INF"
+        ant.mkdir(dir:metaInfo)
+        String manifestFile = "$metaInfo/MANIFEST.MF"
+        ant.manifest(file:manifestFile) {
+            section(name:"Grails Application") {
+                attribute(name:"Implementation-Title",value:"${grailsAppName}")
+                attribute(name:"Implementation-Version",value:"${metadata.getApplicationVersion()}")
+                attribute(name:"Grails-Version",value:"${metadata.getGrailsVersion()}")
+            }
+        }
         ant.propertyfile(file:"${stagingDir}/WEB-INF/classes/application.properties") {
             entry(key:Environment.KEY, value:grailsEnv)
             entry(key:Metadata.WAR_DEPLOYED, value:"true")
@@ -199,7 +209,7 @@ target (war: "The implementation target") {
         warPlugins()
         createDescriptor()
     	event("CreateWarStart", [warName, stagingDir])
-        if (!buildExplodedWar) ant.jar(destfile:warName, basedir:stagingDir)
+        if (!buildExplodedWar) ant.jar(destfile:warName, basedir:stagingDir, manifest:manifestFile)
     	event("CreateWarEnd", [warName, stagingDir])
     }
     finally {
