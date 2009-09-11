@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 
 /**
- * Gant script that executes Grails using an embedded Jetty server
+ * Gant script that executes Grails using an embedded server
  *
  * @author Graeme Rocher
  *
@@ -124,9 +124,6 @@ private runInline(scheme, host, httpPort, httpsPort) {
 private runWar(scheme, host, httpPort, httpsPort) {
     EmbeddableServerFactory serverFactory = loadServerFactory()
     grailsServer = serverFactory.createForWAR(warName, serverContextPath)
-    if(serverFactory.class.name.contains("Jetty")) {
-         event("ConfigureJetty", [grailsServer.grailsServer])
-    }
 
     grails.util.Metadata.getCurrent().put(grails.util.Metadata.WAR_DEPLOYED, "true")
     runServer server:grailsServer, host:host, httpPort:httpPort, httpsPort: httpsPort, scheme: scheme
@@ -262,7 +259,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
         // functional tests so that we can stop the servers that are
         // started.
         if (killFile.exists()) {
-            println "Stopping Jetty server..."
+            println "Stopping server..."
             grailsServer.stop()
             killFile.delete()
             keepRunning = false
@@ -280,7 +277,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         // functional tests so that we can stop the servers that are
         // started.
         if (killFile.exists()) {
-            println "Stopping Jetty server..."
+            println "Stopping server..."
             grailsServer.stop()
             killFile.delete()
             keepRunning = false
@@ -288,7 +285,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
     }
 }
 
-target(stopServer: "Stops the Grails Jetty server") {
+target(stopServer: "Stops the Grails servlet container") {
     if (grailsServer) {
         try {
             grailsServer.stop()
