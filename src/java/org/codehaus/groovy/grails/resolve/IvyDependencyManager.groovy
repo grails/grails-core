@@ -711,8 +711,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
     private parseDependenciesInternal(dependencies, String scope, Closure dependencyConfigurer) {
 
-        Asynchronizer.withAsynchronizer(5) {
-            dependencies.eachAsync { dependency ->
+        def parseDep = { dependency ->
                 if ((dependency instanceof String) || (dependency instanceof GString)) {
                     def depDefinition = dependency.toString()
 
@@ -752,12 +751,15 @@ class IvyDomainSpecificLanguageEvaluator {
                                dependencyDescriptor.plugin = plugin
                            }
 
-                           configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)                           
+                           configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
                        }
 
                     }
                 }
             }
+
+        Asynchronizer.withAsynchronizer(5) {
+            dependencies.eachAsync parseDep 
         }
     }
 
