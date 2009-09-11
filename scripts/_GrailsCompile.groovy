@@ -47,7 +47,7 @@ compilerPaths = { String classpathId, boolean compilingTests ->
 
     src(path:"${basedir}/src/groovy")
     src(path:"${basedir}/src/java")
-    javac(classpathref:classpathId, debug:"yes")
+    javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
 	if(compilingTests) {
         src(path:"${basedir}/test/unit")
         src(path:"${basedir}/test/integration")
@@ -113,7 +113,7 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
                 exclude(name: "**/*DataSource.groovy")
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
-                javac(classpathref:classpathId, debug:"yes")
+                javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
             }
         }
     }
