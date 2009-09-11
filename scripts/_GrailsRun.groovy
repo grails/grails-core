@@ -144,8 +144,11 @@ runServer = { Map args ->
         def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
 
         EmbeddableServer server = args["server"]
-        if(server.class.name.contains("Jetty")) {
-             server.eventListener = this
+        if(server.hasProperty('eventListener')) {
+            server.eventListener = this
+        }
+        if(server.hasProperty('grailsConfig')) {
+            server.grailsConfig = config
         }
 
         profile("start server") {
