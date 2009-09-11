@@ -27,6 +27,7 @@ import org.springframework.core.io.FileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.codehaus.groovy.grails.support.CommandLineResourceLoader
+import org.springframework.mock.jndi.SimpleNamingContextBuilder
 
 
 /**
@@ -82,8 +83,16 @@ target(loadApp:"Loads the Grails application object") {
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
     appCtx.resourceLoader = new  CommandLineResourceLoader()
 	profile("Performing runtime Spring configuration") {
-	    def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
-        appCtx = config.configure(servletContext)
+	    def configurer = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
+        def jndiEntries = config?.grails?.naming?.entries
+        if(jndiEntries instanceof Map) {            
+            def builder = new SimpleNamingContextBuilder()
+            jndiEntries.each { key, val ->
+                builder.bind("java:comp/env/$key", val)
+            }
+            builder.activate()
+        }
+        appCtx = configurer.configure(servletContext)
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx );
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 	}
