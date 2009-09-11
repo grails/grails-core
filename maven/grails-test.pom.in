@@ -39,26 +39,18 @@
             <version>2.4</version>
         </dependency>
 
+<!-- Grails Dependencies -->
+
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.5.6</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-integration-tests</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
-            <version>3.0-M4</version>
-            <exclusions>
-                <!-- We have JCL-over-SLF4J instead. -->
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>spring-test</artifactId>
         </dependency>
 
-<!-- Grails Dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>grails-web</artifactId>
@@ -78,13 +70,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>3.8.2</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.5.6</version>
             <scope>runtime</scope>
         </dependency>
 
