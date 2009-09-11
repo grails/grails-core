@@ -70,7 +70,6 @@ getPropertyValue = { String propName, defaultValue ->
 // over the defaults.
 isInteractive = true
 buildProps = buildConfig.toProperties()
-enableJndi = getPropertyValue("enable.jndi", false).toBoolean()
 enableProfile = getPropertyValue("grails.script.profile", false).toBoolean()
 pluginsHome = grailsSettings.projectPluginsDir.path
 
