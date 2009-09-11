@@ -79,7 +79,12 @@ pluginsHome = grailsSettings.projectPluginsDir.path
 grailsAppName = null
 grailsAppVersion = null
 appGrailsVersion = null
-servletVersion = getPropertyValue("servlet.version", "2.4")
+servletVersion = getPropertyValue("servlet.version", "2.5")
+// server port options
+serverPort = getPropertyValue("grails.server.port.http", 8080)?.toInteger()
+serverPortHttps = getPropertyValue("grails.server.port.https", 8443)?.toInteger()
+serverHost = getPropertyValue("grails.server.host", null)
+
 metadataFile = new File("${basedir}/application.properties")
 metadata = Metadata.getInstance(metadataFile)
 
