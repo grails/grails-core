@@ -278,17 +278,17 @@
             depends="jar,-mavenInit"
             description="Installs the Grails artifacts in the local Maven repository.">
         <mavenInstallRepo version="${grails.version}" prefix="grails"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-bootstrap"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-docs"/>        
-        <mavenInstallRepo version="${grails.version}" prefix="grails-core"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-crud"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-gorm"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-resources"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-scripts"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-spring"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-test"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-web"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-webflow"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-bootstrap"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-docs"/>        
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-core"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-crud"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-gorm"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-resources"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-scripts"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-spring"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-test"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-web"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-webflow"/>
     </target>
 
     <target name="maven-deploy"
