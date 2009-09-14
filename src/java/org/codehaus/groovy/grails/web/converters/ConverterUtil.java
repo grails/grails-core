@@ -22,6 +22,14 @@ package org.codehaus.groovy.grails.web.converters;
  */
 
 import groovy.lang.Closure;
+
+import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
@@ -36,14 +44,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import java.io.File;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 public class ConverterUtil {
 
     private final static Log log = LogFactory.getLog(ConverterUtil.class);
@@ -51,6 +51,8 @@ public class ConverterUtil {
     private static ConverterUtil INSTANCE;
 
     private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = "org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper";
+    
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     public static BeanWrapper createBeanWrapper(Object o) {
         BeanWrapper beanWrapper;
@@ -199,7 +201,12 @@ public class ConverterUtil {
     		return delegate;
     	else if(delegate instanceof Collection && clazz.isArray()) {
     		if(clazz.getComponentType() == Object.class) {
-    			return ((Collection)delegate).toArray((Object[])Array.newInstance(clazz.getComponentType(), ((Collection)delegate).size()));
+    			int size=((Collection)delegate).size();
+    			if(size==0) {
+    				return EMPTY_OBJECT_ARRAY;
+    			} else {
+    				return ((Collection)delegate).toArray((Object[])Array.newInstance(clazz.getComponentType(), size));
+    			}
     		} else {
     			return DefaultTypeTransformation.asArray(delegate, clazz);
     		}
