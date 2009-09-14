@@ -22,6 +22,14 @@ package org.codehaus.groovy.grails.web.converters;
  */
 
 import groovy.lang.Closure;
+
+import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
@@ -30,16 +38,11 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 public class ConverterUtil {
 
@@ -48,6 +51,8 @@ public class ConverterUtil {
     private static ConverterUtil INSTANCE;
 
     private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = "org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper";
+    
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
     public static BeanWrapper createBeanWrapper(Object o) {
         BeanWrapper beanWrapper;
@@ -192,7 +197,20 @@ public class ConverterUtil {
     }
 
     public static Object invokeOriginalAsTypeMethod(Object delegate, Class clazz) {
-        if (delegate instanceof Collection)
+    	if(clazz.isInstance(delegate))
+    		return delegate;
+    	else if(delegate instanceof Collection && clazz.isArray()) {
+    		if(clazz.getComponentType() == Object.class) {
+    			int size=((Collection)delegate).size();
+    			if(size==0) {
+    				return EMPTY_OBJECT_ARRAY;
+    			} else {
+    				return ((Collection)delegate).toArray((Object[])Array.newInstance(clazz.getComponentType(), size));
+    			}
+    		} else {
+    			return DefaultTypeTransformation.asArray(delegate, clazz);
+    		}
+    	} else  if (delegate instanceof Collection)
             return DefaultGroovyMethods.asType((Collection) delegate, clazz);
         else if (delegate instanceof Closure)
             return DefaultGroovyMethods.asType((Closure) delegate, clazz);

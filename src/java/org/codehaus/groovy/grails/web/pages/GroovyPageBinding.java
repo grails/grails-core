@@ -5,12 +5,7 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Binding;
 
-import java.io.Writer;
 import java.util.Map;
-
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 public class GroovyPageBinding extends Binding {
 	public GroovyPageBinding() {
@@ -23,5 +18,15 @@ public class GroovyPageBinding extends Binding {
 
 	public GroovyPageBinding(String[] args) {
 		super(args);
+	}
+
+	@Override
+	public Object getProperty(String property) {
+		return getVariable(property);
+	}
+
+	@Override
+	public void setProperty(String property, Object newValue) {
+		setVariable(property, newValue);
 	}
 }

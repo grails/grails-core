@@ -237,9 +237,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     }
 
     public static void enhanceProxy ( HibernateProxy proxy ) {
-        
-        proxy.metaClass {
-            propertyMissing { String name, val ->
+        proxy.metaClass.propertyMissing = { String name, val ->
                 if(delegate instanceof HibernateProxy) {
                     def obj = GrailsHibernateUtil.unwrapProxy(delegate)
                     if(val != null) {
@@ -252,7 +250,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 }
              }
 
-            methodMissing { String name, args ->
+        proxy.metaClass.methodMissing = { String name, args ->
                 if(delegate instanceof HibernateProxy) {
                     def obj = GrailsHibernateUtil.unwrapProxy(delegate)
                     return obj."$name"(*args)
@@ -262,9 +260,6 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 }
 
             }
-        }
-
-
     }
 
 
