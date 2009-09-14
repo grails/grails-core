@@ -644,9 +644,9 @@ public class GrailsScriptRunner {
         addDependenciesToURLs(excludes, urls, settings.getBuildDependencies());
         // add dependencies required at development time, but not at deployment time
         addDependenciesToURLs(excludes, urls, settings.getProvidedDependencies());                                                                                    
-        // Add the project's runtime dependencies because most of them
+        // Add the project's test dependencies (which include runtime dependencies) because most of them
         // will be required for the build to work.
-        addDependenciesToURLs(excludes, urls, settings.getRuntimeDependencies());
+        addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
         System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
 
         // Add the libraries of both project and global plugins.

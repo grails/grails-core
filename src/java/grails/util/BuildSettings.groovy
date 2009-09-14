@@ -453,36 +453,49 @@ class BuildSettings {
      * returns an empty config.
      */
     public ConfigObject loadConfig(File configFile) {
-        // To avoid class loader issues, we make sure that the
-        // Groovy class loader used to parse the config file has
-        // the root loader as its parent. Otherwise we get something
-        // like NoClassDefFoundError for Script.
-        GroovyClassLoader gcl = this.rootLoader != null ? new GroovyClassLoader(this.rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader());
-        ConfigSlurper slurper = createConfigSlurper()
-      
-        // Find out whether the file exists, and if so parse it.
-        def settingsFile = new File("$userHome/.grails/settings.groovy")
-        if (settingsFile.exists()) {
-            Script script = gcl.parseClass(settingsFile)?.newInstance();
-            if(script)
-                config = slurper.parse(script)
+
+        try {
+            // To avoid class loader issues, we make sure that the
+            // Groovy class loader used to parse the config file has
+            // the root loader as its parent. Otherwise we get something
+            // like NoClassDefFoundError for Script.
+            GroovyClassLoader gcl = this.rootLoader != null ? new GroovyClassLoader(this.rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader());
+            ConfigSlurper slurper = createConfigSlurper()
+
+            // Find out whether the file exists, and if so parse it.
+            def settingsFile = new File("$userHome/.grails/settings.groovy")
+            if (settingsFile.exists()) {
+                Script script = gcl.parseClass(settingsFile)?.newInstance();
+                if(script)
+                    config = slurper.parse(script)
+            }
+
+            if (configFile.exists()) {
+                URL configUrl = configFile.toURI().toURL()
+                Script script = gcl.parseClass(configFile)?.newInstance();
+
+                if (!config && script)
+                   config = slurper.parse(script)
+                else if(script)
+                   config.merge(slurper.parse(script))
+
+                config.setConfigFile(configUrl)
+
+            }
+            establishProjectStructure()
+            if(config.grails.default.plugin.set instanceof List) {
+                defaultPluginSet = config.grails.default.plugin.set
+            }
+        }
+        finally {
+            configureDependencyManager(config)
         }
 
-        if (configFile.exists()) {
-            URL configUrl = configFile.toURI().toURL()
-            Script script = gcl.parseClass(configFile)?.newInstance();
 
-            if (!config && script)
-               config = slurper.parse(script)
-            else if(script)
-               config.merge(slurper.parse(script))
+        return config
+    }
 
-            config.setConfigFile(configUrl)
-
-        }
-
-        establishProjectStructure()
-
+    def configureDependencyManager(ConfigObject config) {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN);
 
         Metadata metadata = Metadata.current
@@ -490,31 +503,31 @@ class BuildSettings {
         def appVersion = metadata.getApplicationVersion() ?: grailsVersion
 
         this.dependencyManager = IvyDependencyManager.getInstance(appName,
-                                                                  appVersion,
-                                                                  this)
+                appVersion,
+                this)
 
         config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
 
 
         def dependencyConfig = config.grails.project.dependency.resolution ?:
-                               config.grails.global.dependency.resolution
+            config.grails.global.dependency.resolution
 
-        if(dependencyConfig) {
+        if (dependencyConfig) {
             dependencyManager.parseDependencies dependencyConfig
             def pluginSlurper = createConfigSlurper()
 
-            def handlePluginDirectory = { File dir ->
+            def handlePluginDirectory = {File dir ->
                 def pluginName = dir.name
-                if(!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
+                if (!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
                     def pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
-                    if(pluginDependencyDescriptor.exists()) {
+                    if (pluginDependencyDescriptor.exists()) {
 
 
                         try {
                             def pluginConfig = pluginSlurper.parse(pluginDependencyDescriptor.toURI().toURL())
                             def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
-                            if(pluginDependencyConfig instanceof Closure) {
-                                dependencyManager.parseDependencies( pluginName, pluginDependencyConfig )
+                            if (pluginDependencyConfig instanceof Closure) {
+                                dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
                             }
                         }
                         catch (e) {
@@ -530,14 +543,14 @@ class BuildSettings {
 
             Asynchronizer.withAsynchronizer(5) {
                 Closure predicate = { it.directory && !it.hidden }
-                def pluginDirs = projectPluginsDir.listFiles().findAllAsync (predicate)
+                def pluginDirs = projectPluginsDir.listFiles().findAllAsync(predicate)
 
 
-                if(globalPluginsDir.exists()) {
-                    pluginDirs.addAll(globalPluginsDir.listFiles().findAllAsync (predicate))
+                if (globalPluginsDir.exists()) {
+                    pluginDirs.addAll(globalPluginsDir.listFiles().findAllAsync(predicate))
                 }
                 def pluginLocations = config?.grails?.plugin?.location
-                pluginLocations?.values().eachAsync { location ->
+                pluginLocations?.values().eachAsync {location ->
                     pluginDirs << new File(location)
                 }
 
@@ -546,13 +559,6 @@ class BuildSettings {
             }
 
         }
-
-
-        if(config.grails.default.plugin.set instanceof List) {
-            defaultPluginSet = config.grails.default.plugin.set
-        }
-
-        return config
     }
 
     ConfigSlurper createConfigSlurper() {
