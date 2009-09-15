@@ -10,7 +10,6 @@ import org.codehaus.groovy.grails.cli.support.GrailsRootLoader;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -57,6 +56,7 @@ public class GrailsTask extends Task {
     private String environment;
     private boolean includeRuntimeClasspath = true;
     private Path classpath;
+
     private Path compileClasspath;
     private Path testClasspath;
     private Path runtimeClasspath;
@@ -88,11 +88,6 @@ public class GrailsTask extends Task {
             urls.addAll(getRequiredLibsFromHome());
         }
 
-        // Now add the runtime dependencies if necessary.
-        if (includeRuntimeClasspath && runtimeClasspath != null) {
-            urls.addAll(pathsToUrls(runtimeClasspath));
-        }
-
         try {
             URL[] loaderUrls = urls.toArray(new URL[urls.size()]);
             GrailsRootLoader rootLoader = new GrailsRootLoader(loaderUrls, getClass().getClassLoader());
@@ -106,7 +101,6 @@ public class GrailsTask extends Task {
                 helper = new GrailsBuildHelper(rootLoader, home == null ? null : home.getCanonicalPath());
             }
             
-            configureBuildSettings(helper);
 
             int retval;
             if (environment == null) {
@@ -159,13 +153,6 @@ public class GrailsTask extends Task {
         }
     }
 
-    private void configureBuildSettings(GrailsBuildHelper helper)
-            throws ClassNotFoundException, IllegalAccessException,
-            InstantiationException, NoSuchMethodException, InvocationTargetException {
-        helper.setCompileDependencies(pathsToFiles(compileClasspath));
-        helper.setTestDependencies(pathsToFiles(testClasspath));
-        helper.setRuntimeDependencies(pathsToFiles(runtimeClasspath));
-    }
 
     private List<URL> pathsToUrls(Path path) {
         if (path == null) return Collections.emptyList();
@@ -179,16 +166,6 @@ public class GrailsTask extends Task {
         return urls;
     }
 
-    private List<File> pathsToFiles(Path path) {
-        if (path == null) return Collections.emptyList();
-
-        List<File> files = new ArrayList<File>(path.size());
-        for (String filePath : path.list()) {
-            files.add(new File(filePath));
-        }
-
-        return files;
-    }
 
     public String getCommand() {
         return GrailsNameUtils.getScriptName(this.script);
@@ -250,26 +227,32 @@ public class GrailsTask extends Task {
         addClasspath((Path) ref.getReferencedObject());
     }
 
+    @Deprecated
     public Path getCompileClasspath() {
         return compileClasspath;
     }
 
+    @Deprecated
     public void addCompileClasspath(Path compileClasspath) {
         this.compileClasspath = compileClasspath;
     }
 
+    @Deprecated
     public Path getTestClasspath() {
         return testClasspath;
     }
 
+    @Deprecated
     public void addTestClasspath(Path testClasspath) {
         this.testClasspath = testClasspath;
     }
 
+    @Deprecated
     public Path getRuntimeClasspath() {
         return runtimeClasspath;
     }
 
+    @Deprecated
     public void addRuntimeClasspath(Path runtimeClasspath) {
         this.runtimeClasspath = runtimeClasspath;
     }
