@@ -16,10 +16,10 @@
 package org.codehaus.groovy.grails.plugins.i18n
 
 import grails.util.BuildSettingsHolder
-import org.apache.commons.io.FilenameUtils
+import grails.util.GrailsUtil
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
-import org.codehaus.groovy.grails.support.DevelopmentResourceLoader
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
@@ -31,6 +31,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver
  * @since 0.4
  */
 class I18nGrailsPlugin {
+    private static LOG = LogFactory.getLog(I18nGrailsPlugin)
     def baseDir = "grails-app/i18n"
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def watchedResources = "file:./${baseDir}/**/*.properties".toString()
@@ -47,25 +48,28 @@ class I18nGrailsPlugin {
             messageResources = plugin.watchedResources
         }
 
-        messageResources?.each { resource ->
-            // Skip files with a locale specification, since we assume
-            // that there is an associated base resource bundle too.
-            if (resource.filename.contains("_")) {
-                return
+        if(messageResources) {
+
+            for( resource in messageResources) {
+                // Skip files with a locale specification, since we assume
+                // that there is an associated base resource bundle too.
+                if (resource.filename.contains("_")) {
+                    return
+                }
+
+                // Extract the file path of the file's parent directory
+                // that comes after "grails-app/i18n".
+                def path = StringUtils.substringAfter(resource.path, baseDir)
+
+                // Lop off the extension - the "basenames" property in the
+                // message source cannot have entries with an extension.
+                path -= ".properties"
+
+                baseNames << "WEB-INF/" + baseDir + path
             }
+        }
 
-            // Extract the file path of the file's parent directory
-            // that comes after "grails-app/i18n".
-            def path = StringUtils.substringAfter(resource.path, baseDir)
-
-            // Lop off the extension - the "basenames" property in the
-            // message source cannot have entries with an extension.
-            path -= ".properties"
-
-			baseNames << "WEB-INF/" + baseDir + path
-		}
-		
-		log.debug("Creating messageSource with basenames: " + baseNames);
+		LOG.debug("Creating messageSource with basenames: " + baseNames);
 
         messageSource(PluginAwareResourceBundleMessageSource) {
 			basenames = baseNames.toArray()
@@ -107,7 +111,7 @@ class I18nGrailsPlugin {
 			messageSource.clearCache()
 		}
 		else {
-			log.warn("Bean messageSource is not an instance of org.springframework.context.support.ReloadableResourceBundleMessageSource. Can't reload")
+			LOG.warn("Bean messageSource is not an instance of org.springframework.context.support.ReloadableResourceBundleMessageSource. Can't reload")
 		}
 	}
 }
