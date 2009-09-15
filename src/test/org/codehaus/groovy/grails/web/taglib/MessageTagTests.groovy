@@ -3,6 +3,13 @@ package org.codehaus.groovy.grails.web.taglib;
 
 class MessageTagTests extends AbstractGrailsTagTests {
 
+    void testMessageTagInTemplate() {
+        def template = '<g:message code="test.code" />'
+	    messageSource.addMessage("test.code", new Locale("en"), "hello world!")
+
+        assertOutputEquals 'hello world!', template 
+    }
+
 	void testMessageTag() {
 		StringWriter sw = new StringWriter();
 		

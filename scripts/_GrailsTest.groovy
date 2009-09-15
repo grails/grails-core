@@ -95,41 +95,46 @@ target(allTests: "Runs the project's tests.") {
     // This runs the tests and generates the formatted result files.
     testRunner = loadTestRunner()
 
-    // Process the tests in each phase that is configured to run.
-    for( phase in phasesToRun) {
-        // Skip this phase if there are no test types registered for it.
-        def testTypes = this."${phase}Tests"
-        if (!testTypes) return
+    try {
+        // Process the tests in each phase that is configured to run.
+        for( phase in phasesToRun) {
+            // Skip this phase if there are no test types registered for it.
+            def testTypes = this."${phase}Tests"
+            if (!testTypes) return
 
-        // Add a blank line before the start of this phase so that it
-        // is easier to distinguish
-        println()
+            // Add a blank line before the start of this phase so that it
+            // is easier to distinguish
+            println()
 
-        event("StatusUpdate", ["Starting $phase tests"])
-        event("TestPhaseStart", [phase])
+            event("StatusUpdate", ["Starting $phase tests"])
+            event("TestPhaseStart", [phase])
 
-        // Do whatever preparation is needed to run the tests in this
-        // phase. The method/closure should return a test helper.
-        testHelper = this."${phase}TestsPreparation"()
+            // Do whatever preparation is needed to run the tests in this
+            // phase. The method/closure should return a test helper.
+            testHelper = this."${phase}TestsPreparation"()
 
-        // Now run all the tests registered for this phase.
-        testTypes.each(processTests)
+            // Now run all the tests registered for this phase.
+            testTypes.each(processTests)
 
-        // Perform any clean up required.
-        this."${phase}TestsCleanUp"()
+            // Perform any clean up required.
+            this."${phase}TestsCleanUp"()
 
-        event("TestPhaseEnd", [phase])
+            event("TestPhaseEnd", [phase])
+        }
+
+    } finally {
+        String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
+        if (createTestReports) {
+            produceReports()
+            msg += " - view reports in ${testReportsDir}."
+        }
+
+        event("StatusFinal", [msg])
+
+        event("TestPhasesEnd", [])
+        
     }
 
-    String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
-    if (createTestReports) {
-        produceReports()
-        msg += " - view reports in ${testReportsDir}."
-    }
-
-    event("StatusFinal", [msg])
-
-    event("TestPhasesEnd", [])
 
     return testsFailed ? 1 : 0
 }

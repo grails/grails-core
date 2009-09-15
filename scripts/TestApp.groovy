@@ -53,10 +53,7 @@ target('default': "Run a Grails applications unit tests") {
     if (argsMap["functional"]) phasesToRun << "functional"
     if (argsMap["other"]) phasesToRun << "other"
     if (argsMap["params"]) testNames = argsMap["params"]
-    if(argsMap['noreports']) {
-        createTestReports = false
-    }
-    else if (argsMap["xml"]) {
+    if (argsMap["xml"]) {
         reportFormats = [ "xml" ]
         createTestReports = false
     }

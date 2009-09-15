@@ -317,10 +317,6 @@ public class GroovyPageParser implements Tokens {
 		this.precompileMode = precompileMode;
 
 		out = new GSPWriter(target, this);
-		if (packageName != null) {
-			out.println("package " + packageName);
-			out.println();
-		}
 		page();
 		finalPass = true;
 		scan.reset();
@@ -646,6 +642,11 @@ public class GroovyPageParser implements Tokens {
 		if (finalPass) {
 			out.println();
 			out.print("class ");
+            if (packageName != null) {
+                out.print(packageName);
+                out.print('_');
+            }
+
 			out.print(className);
 			out.println(" extends GroovyPage {");
 

@@ -18,6 +18,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.hibernate.SessionFactory;
+import org.hibernate.FlushMode;
+import org.hibernate.classic.Session;
 import org.hibernate.collection.PersistentCollection;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeansException;
@@ -49,6 +51,26 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
         }
     };
     private ApplicationContext applicationContext;
+    private SessionFactory sessionFactory;
+
+    @Override
+    public void validate(Object obj, Errors errors, boolean cascade) {
+        final Session session = sessionFactory.getCurrentSession();
+        FlushMode previousMode = null;
+        try {
+            if(session!=null) {
+                previousMode = session.getFlushMode();
+                session.setFlushMode(FlushMode.MANUAL);
+            }
+
+            super.validate(obj, errors, cascade);
+        }
+        finally {
+            if(session!=null && previousMode!=null) {
+                session.setFlushMode(previousMode);
+            }
+        }
+    }
 
     /**
      * Overrides the default behaviour and first checks if a PersistentCollection instance has been initialised using the
@@ -109,5 +131,13 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        if(applicationContext!=null) {
+            try {
+                this.sessionFactory = applicationContext.getBean("sessionFactory", SessionFactory.class);
+            }
+            catch (BeansException e) {
+                // no session factory, continue
+            }
+        }
     }
 }

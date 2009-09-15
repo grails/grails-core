@@ -269,6 +269,7 @@ public class GrailsDomainConfigurationUtil {
     }
 
     public static boolean isBasicType(Class propType) {
+        if(propType == null) return false;
         if (propType.isArray()) {
             return isBasicType(propType.getComponentType());
         }

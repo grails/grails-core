@@ -101,7 +101,7 @@ public class GroovyPageCompiler {
         if (gspfile.exists() && (!classFile.exists() || gspfile.lastModified() > classFile.lastModified())) {
             LOG.debug("Compiling gsp ${gspfile}...")
 
-            def packageName = packageDir.replace('/','.')
+            def packageName = packageDir.replace('/','_')
 
             def gspgroovyfile = new File(new File(generatedGroovyPagesDirectory, packageDir), className + ".groovy")
             gspgroovyfile.getParentFile().mkdirs()

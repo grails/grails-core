@@ -39,7 +39,6 @@ import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import grails.util.GrailsNameUtils
-import org.gparallelizer.Asynchronizer
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -246,8 +245,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                        "org.grails:grails-web:$grailsVersion",
                        "org.slf4j:slf4j-api:1.5.6",
                        "org.slf4j:slf4j-log4j12:1.5.6",
-                       "org.springframework:org.springframework.test:3.0.0.M4",
-                       "junit:junit:3.8.2"  
+                       "org.springframework:org.springframework.test:3.0.0.M4"
 
                 // dependencies needed during development, but not for deployment
                 provided "javax.servlet:servlet-api:2.5",
@@ -758,9 +756,9 @@ class IvyDomainSpecificLanguageEvaluator {
                 }
             }
 
-        Asynchronizer.withAsynchronizer(5) {
-            dependencies.eachAsync parseDep 
-        }
+            for(dep in dependencies) {
+                parseDep dep
+            }          
     }
 
 

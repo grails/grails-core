@@ -66,18 +66,6 @@
 			<fileset dir="${lib.dir}"/>
         </path>
 
-        <path id="compile.classpath">
-            <fileset dir="${lib.dir}/compile"/>
-        </path>
-
-        <path id="test.classpath">
-            <fileset dir="${lib.dir}/test"/>
-        </path>
-
-        <path id="app.classpath">
-            <fileset dir="${lib.dir}/runtime"/>
-        </path>
-
         <taskdef name="grailsTask"
                  classname="grails.ant.GrailsTask"
                  classpathref="grails.classpath"/>
