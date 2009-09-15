@@ -128,6 +128,7 @@ public class GroovyPageParser implements Tokens {
 	private Map jspTags = new HashMap();
 	private long lastModified;
 	private boolean precompileMode;
+	private boolean sitemeshPreprocessMode=false;
 
 	public String getContentType() {
 		return this.contentType;
@@ -183,7 +184,8 @@ public class GroovyPageParser implements Tokens {
 				LOG.debug("Preprocessing " + filename + " for sitemesh. Replacing head, title, meta and body elements with g:capture*.");
 			}
 			// GSP preprocessing for direct sitemesh integration: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
-			gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);			
+			gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);
+			sitemeshPreprocessMode=true;
 		}
 		scan = new GroovyPageScanner(gspSource);
 		this.pageName = filename;
@@ -655,6 +657,9 @@ public class GroovyPageParser implements Tokens {
 			out.println("def flash = binding.flash");
 			out.println("def response = binding.response");
 			out.println("def out = binding.out");
+			if(sitemeshPreprocessMode) {
+				out.println("registerSitemeshPreprocessMode(request)");
+			}
 			if (codecClassName != null) {
 				out
 						.println("request.setAttribute('org.codehaus.groovy.grails.GSP_CODEC', '"

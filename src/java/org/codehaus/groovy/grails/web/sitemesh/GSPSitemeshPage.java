@@ -2,6 +2,8 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
 import com.opensymphony.sitemesh.Content;
+
+import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 import java.io.IOException;
@@ -9,6 +11,18 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 
+ * Grails/GSP specific implementation of Sitemesh's AbstractHTMLPage
+ * 
+ * g:capture* tags in RenderTagLib are used to capture head, meta, title, component & body contents.
+ * No html parsing is required for templating since capture tags are added at GSP compilation time.
+ * 
+ * 
+ * @see SitemeshPreprocessor
+ * @author Lari Hotari, Sagire Software Oy
+ *
+ */
 public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	StreamCharBuffer headBuffer;
 	StreamCharBuffer bodyBuffer;
@@ -19,14 +33,6 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	public GSPSitemeshPage() {
 
 	}
-
-	/*
-	@Override
-	public void addProperty(String name, String value) {
-		super.addProperty(name, value);
-		System.out.println("property >" + name + "< -> >" + value + "<");
-	}
-	*/
 
 	@Override
 	public void writeHead(Writer out) throws IOException {
@@ -39,6 +45,9 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	public void writeBody(Writer out) throws IOException {
 		if(bodyBuffer != null) {
 			bodyBuffer.writeTo(out);
+		} else if (pageBuffer != null) {
+			// no body was captured, so write the whole page content
+			pageBuffer.writeTo(out);
 		}
 	}
 
@@ -96,6 +105,10 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 
 	public boolean isUsed() {
 		return used;
+	}
+
+	public void setUsed(boolean used) {
+		this.used = used;
 	}
 
 	public void setComponentBuffer(String tagName, StreamCharBuffer buffer) {
