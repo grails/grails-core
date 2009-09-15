@@ -33,7 +33,7 @@ class DomainClassGrailsPlugin {
 	
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [i18n:version]
-	def loadAfter = ['hibernate', 'controllers']
+	def loadAfter = ['controllers']
 	
 	def doWithSpring = {
 		for(dc in application.domainClasses) {
