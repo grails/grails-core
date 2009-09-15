@@ -459,7 +459,7 @@ class BuildSettings {
             // Groovy class loader used to parse the config file has
             // the root loader as its parent. Otherwise we get something
             // like NoClassDefFoundError for Script.
-            GroovyClassLoader gcl = this.rootLoader != null ? new GroovyClassLoader(this.rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader());
+            GroovyClassLoader gcl = obtainGroovyClassLoader();
             ConfigSlurper slurper = createConfigSlurper()
 
             // Find out whether the file exists, and if so parse it.
@@ -495,6 +495,14 @@ class BuildSettings {
         return config
     }
 
+    private GroovyClassLoader gcl
+    GroovyClassLoader obtainGroovyClassLoader() {
+        if(gcl == null) {            
+            this.gcl = this.rootLoader != null ? new GroovyClassLoader(this.rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader())
+        }
+        return gcl
+    }
+
     def configureDependencyManager(ConfigObject config) {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN);
 
@@ -520,11 +528,13 @@ class BuildSettings {
                 def pluginName = dir.name
                 if (!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
                     def pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
-                    if (pluginDependencyDescriptor.exists()) {
 
+                    if (pluginDependencyDescriptor.exists()) {
+                        def gcl = obtainGroovyClassLoader()
 
                         try {
-                            def pluginConfig = pluginSlurper.parse(pluginDependencyDescriptor.toURI().toURL())
+                            Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
+                            def pluginConfig = pluginSlurper.parse(script)
                             def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
                             if (pluginDependencyConfig instanceof Closure) {
                                 dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
