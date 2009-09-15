@@ -19,16 +19,6 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 import groovy.lang.Script;
-
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -41,6 +31,10 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.Writer;
+import java.util.*;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -556,7 +550,9 @@ public abstract class GroovyPage extends Script {
     
     public void registerSitemeshPreprocessMode(HttpServletRequest request) {
     	GSPSitemeshPage page=(GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
-    	page.setUsed(true);
+        if(page!=null) {
+            page.setUsed(true);
+        }
     }
 } // GroovyPage
 
