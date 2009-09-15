@@ -83,7 +83,7 @@ class ControllersGrailsPlugin {
             grailsApplication = ref("grailsApplication", true)
         }
 
-        def handlerInterceptors = [ref("localeChangeInterceptor")]
+        def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
         def interceptorsClosure = {
         	interceptors = handlerInterceptors
         }
