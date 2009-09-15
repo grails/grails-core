@@ -39,7 +39,6 @@ import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import grails.util.GrailsNameUtils
-import org.gparallelizer.Asynchronizer
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -758,9 +757,9 @@ class IvyDomainSpecificLanguageEvaluator {
                 }
             }
 
-        Asynchronizer.withAsynchronizer(5) {
-            dependencies.eachAsync parseDep 
-        }
+            for(dep in dependencies) {
+                parseDep dep
+            }          
     }
 
 
