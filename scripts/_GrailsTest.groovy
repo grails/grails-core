@@ -74,19 +74,8 @@ compilationFailures = []
 testHelper = null
 testsFailed = false
 
-target(testDependencies:"Configures test time dependencies") {
-    // add test dependencies to classpath
-    def currentClasspathURLs = rootLoader.URLs.toList()
-    for(file in grailsSettings.testDependencies) {
-        def url = file.toURL()
-        if(!currentClasspathURLs.contains(url))
-            rootLoader.addURL url
-    }
-
-}
-
 target(allTests: "Runs the project's tests.") {
-    depends(compile, packagePlugins, testDependencies)
+    depends(compile, packagePlugins)
     packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
@@ -104,20 +93,10 @@ target(allTests: "Runs the project's tests.") {
     event("TestPhasesStart", [phasesToRun])
 
     // This runs the tests and generates the formatted result files.
-    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner";
-    testRunner = null
-    if (testRunnerClassName) {
-        try {
-            testRunner = Class.forName(testRunnerClassName).getConstructor(File, List).newInstance(testReportsDir, reportFormats)
-        }
-        catch (Throwable e) {
-            println "Cannot load test runner class '${testRunnerClassName}'. Reason: ${e.message}"
-            testRunner = new DefaultGrailsTestRunner(testReportsDir, reportFormats)
-        }
-    }
+    testRunner = loadTestRunner()
 
     // Process the tests in each phase that is configured to run.
-    phasesToRun.each { String phase ->
+    for( phase in phasesToRun) {
         // Skip this phase if there are no test types registered for it.
         def testTypes = this."${phase}Tests"
         if (!testTypes) return
@@ -153,6 +132,21 @@ target(allTests: "Runs the project's tests.") {
     event("TestPhasesEnd", [])
 
     return testsFailed ? 1 : 0
+}
+
+def loadTestRunner() {
+    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner";
+    def testRunner = null
+    if (testRunnerClassName) {
+        try {
+            testRunner = Class.forName(testRunnerClassName).getConstructor(File, List).newInstance(testReportsDir, reportFormats)
+        }
+        catch (Throwable e) {
+            println "Cannot load test runner class '${testRunnerClassName}'. Reason: ${e.message}"
+            testRunner = new DefaultGrailsTestRunner(testReportsDir, reportFormats)
+        }
+    }
+    return testRunner
 }
 
 /**
