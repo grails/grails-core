@@ -277,6 +277,129 @@ public class StreamCharBufferTest extends TestCase {
 		
 		assertEquals(testbuffer.length, charBuffer.size());
 	}
+	
+	public void testReadWrite() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer();
+		Writer writer=buf.getWriter();
+		Reader reader=buf.getReader();
+		writer.write("12345");
+		char[] b=new char[5];
+		reader.read(b);
+		assertEquals("12345", new String(b));
+		StringWriter sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("", sw.toString());
+		writer.write("12345");
+		writer.write("12345");
+		sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("1234512345", sw.toString());
+	}
+
+	public void testReadWriteWithChunks() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(5);
+		Writer writer=buf.getWriter();
+		Reader reader=buf.getReader();
+		writer.write("12345");
+		char[] b=new char[5];
+		reader.read(b);
+		assertEquals("12345", new String(b));
+		StringWriter sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("", sw.toString());
+		writer.write("12345");
+		writer.write("12345");
+		sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("1234512345", sw.toString());
+	}
+
+	public void testReadWriteWithChunks2() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(3);
+		Writer writer=buf.getWriter();
+		Reader reader=buf.getReader();
+		writer.write("12345");
+		char[] b=new char[5];
+		reader.read(b);
+		assertEquals("12345", new String(b));
+		StringWriter sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("", sw.toString());
+		writer.write("12345");
+		writer.write("12345");
+		sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("1234512345", sw.toString());
+	}
+
+	public void testReadWriteWithChunks3() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(3);
+		Writer writer=buf.getWriter();
+		Reader reader=buf.getReader();
+		writer.write("12345");
+		char[] b=new char[5];
+		reader.read(b);
+		assertEquals("12345", new String(b));
+		StringWriter sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("", sw.toString());
+		writer.write("12345");
+		writer.write("12345");
+		char[] b2=new char[8];
+		reader.read(b2);
+		assertEquals("12345123", new String(b2));
+		int len=reader.read(b2);
+		assertEquals("45", new String(b2, 0, len));
+		// check that buffer isn't emptied by the reader
+		assertEquals("123451234512345", buf.toString());
+	}
+	
+	public void testReadWriteWithChunksRemoveAfterReading() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(3);
+		doRemoveChunksAfterReadingTesting(buf);
+	}
+
+	private void doRemoveChunksAfterReadingTesting(StreamCharBuffer buf)
+			throws IOException {
+		Writer writer=buf.getWriter();
+		Reader reader=buf.getReader(true);
+		writer.write("12345");
+		char[] b=new char[5];
+		reader.read(b);
+		assertEquals("12345", new String(b));
+		StringWriter sw=new StringWriter();
+		IOUtils.copy(reader, sw);
+		assertEquals("", sw.toString());
+		writer.write("12345");
+		writer.write("12345");
+		char[] b2=new char[8];
+		reader.read(b2);
+		assertEquals("12345123", new String(b2));
+		int len=reader.read(b2);
+		assertEquals("45", new String(b2, 0, len));
+		// check that buffer is emptied by the reader
+		assertEquals("", buf.toString());
+	}
+
+	public void testReadWriteWithChunksRemoveAfterReading2() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(3, 0);
+		doRemoveChunksAfterReadingTesting(buf);
+	}	
+
+	public void testReadWriteWithChunksRemoveAfterReading3() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(1, 0);
+		doRemoveChunksAfterReadingTesting(buf);
+	}
+	
+	public void testReadWriteWithChunksRemoveAfterReading4() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(1000, 0);
+		doRemoveChunksAfterReadingTesting(buf);
+	}	
+	
+	public void testReadWriteWithChunksRemoveAfterReading5() throws IOException {
+		StreamCharBuffer buf=new StreamCharBuffer(5, 0);
+		doRemoveChunksAfterReadingTesting(buf);
+	}	
 
 	private int copy(Reader input, Writer output, int bufSize)
 			throws IOException {
@@ -324,5 +447,4 @@ public class StreamCharBufferTest extends TestCase {
 			}
 		}
 	}
-
 }
