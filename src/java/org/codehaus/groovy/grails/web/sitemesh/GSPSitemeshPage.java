@@ -6,12 +6,15 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	StreamCharBuffer headBuffer;
 	StreamCharBuffer bodyBuffer;
 	StreamCharBuffer pageBuffer;
 	boolean used=false;
+	Map<String, StreamCharBuffer> componentBuffers;
 	
 	public GSPSitemeshPage() {
 
@@ -93,5 +96,23 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 
 	public boolean isUsed() {
 		return used;
+	}
+
+	public void setComponentBuffer(String tagName, StreamCharBuffer buffer) {
+		this.used=true;
+		if(componentBuffers==null) {
+			componentBuffers=new HashMap<String, StreamCharBuffer>();
+		}
+		String propertyName = "page." + tagName;
+		componentBuffers.put(propertyName, buffer);
+		// just mark that the property is set
+		super.addProperty(propertyName, "");
+	}
+	
+	public Object getComponentBuffer(String name) {
+		if(componentBuffers==null) {
+			return null;
+		}
+		return componentBuffers.get(name);
 	}
 }

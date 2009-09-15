@@ -76,6 +76,7 @@ public class GroovyPageParser implements Tokens {
 	private GrailsTagRegistry tagRegistry = GrailsTagRegistry.getInstance();
 	private Environment environment;
 	private List<String> htmlParts = new ArrayList<String>();
+	private static SitemeshPreprocessor sitemeshPreprocessor = new SitemeshPreprocessor();
 	
 	Set<Integer> bodyVarsDefined=new HashSet<Integer>();
 	Map<Integer, String> attrsVarsMapDefinition=new HashMap<Integer, String>();
@@ -182,7 +183,7 @@ public class GroovyPageParser implements Tokens {
 				LOG.debug("Preprocessing " + filename + " for sitemesh. Replacing head, title, meta and body elements with g:capture*.");
 			}
 			// GSP preprocessing for direct sitemesh integration: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
-			gspSource = addGspSitemeshCapturing(gspSource);			
+			gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);			
 		}
 		scan = new GroovyPageScanner(gspSource);
 		this.pageName = filename;
@@ -193,64 +194,6 @@ public class GroovyPageParser implements Tokens {
 
 	} // Parse()
 
-	private String addGspSitemeshCapturing(String gspSource) {
-		StringBuffer sb=new StringBuffer((int)(gspSource.length() * 1.2));
-		Pattern headPattern=Pattern.compile("<head([^>]*)>(.*?)</head>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-		Matcher m=headPattern.matcher(gspSource);
-		if(m.find()) {
-			m.appendReplacement(sb, "");
-			sb.append("<g:captureHead").append(m.group(1)).append(">");
-			sb.append(addMetaCapturing(addTitleCapturing(m.group(2))));
-			sb.append("</g:captureHead>");
-		}
-		m.appendTail(sb);
-		
-		StringBuffer sb2=new StringBuffer((int)(sb.length() * 1.2));
-		Pattern bodyPattern=Pattern.compile("<body([^>]*)>(.*?)</body>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-		m=bodyPattern.matcher(sb);
-		if(m.find()) {
-			m.appendReplacement(sb2, "");
-			sb2.append("<g:captureBody").append(m.group(1)).append(">");
-			sb2.append(m.group(2));
-			sb2.append("</g:captureBody>");
-		}
-		m.appendTail(sb2);
-		
-		return sb2.toString();
-	}
-
-	private String addTitleCapturing(String headContent) {
-		StringBuffer sb=new StringBuffer((int)(headContent.length() * 1.2));
-		Pattern titlePattern=Pattern.compile("<title([^>]*)>(.*?)</title>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-		Matcher m=titlePattern.matcher(headContent);
-		if(m.find()) {
-			m.appendReplacement(sb, "");
-			sb.append("<g:captureTitle").append(m.group(1)).append(">");
-			sb.append(m.group(2));
-			sb.append("</g:captureTitle>");
-		}
-		m.appendTail(sb);
-		return sb.toString();
-	}
-
-	private String addMetaCapturing(String headContent) {
-		StringBuffer sb=new StringBuffer((int)(headContent.length() * 1.2));
-		Pattern metaPattern=Pattern.compile("<meta([^>]+)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-		Matcher m=metaPattern.matcher(headContent);
-		while(m.find()) {
-			m.appendReplacement(sb, "");
-			sb.append("<g:captureMeta");
-			String tagContent=m.group(1);
-			sb.append(tagContent);
-			if(!tagContent.endsWith("/")) {
-				sb.append("/");
-			}
-			sb.append(">");
-		}
-		m.appendTail(sb);
-		return sb.toString();
-	}
-	
 	private void lookupCodec(Object o) {
 		if (o != null) {
 			this.codecName = o.toString();

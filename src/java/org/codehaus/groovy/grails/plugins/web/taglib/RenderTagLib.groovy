@@ -42,6 +42,7 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import java.util.concurrent.ConcurrentHashMap
 import groovy.text.Template
 
@@ -176,8 +177,15 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 
             def propertyName = attrs.name
             def htmlPage = getPage()
+            def propertyValue = null
+            
+            if(htmlPage instanceof GSPSitemeshPage) {
+            	// check if there is an component content buffer
+            	propertyValue = htmlPage.getComponentBuffer(propertyName)
+            }
 
-            String propertyValue = htmlPage.getProperty(propertyName)
+            if(!propertyValue)
+            	propertyValue = htmlPage.getProperty(propertyName)
 
             if (!propertyValue)
                 propertyValue = attrs.'default';
@@ -186,7 +194,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
                 if (attrs.writeEntireProperty) {
                     out << ' '
                     out << propertyName.substring(propertyName.lastIndexOf('.') + 1)
-                    out << "=\"${propertyValue}\""
+                    out << "=\""
+                    out << propertyValue
+                    out << "\""
                 }
                 else {
                     out << propertyValue
@@ -283,22 +293,32 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
     	content
     }
 
+    def wrapContentInBuffer(content) {
+    	if(!(content instanceof StreamCharBuffer)) {
+        	// the body closure might be a string constant, so wrap it in a StreamCharBuffer in that case
+    		def newbuffer=new FastStringWriter()
+    		newbuffer.print(content)
+    		content=newbuffer.buffer
+    	}
+    	content
+    }
+    
     def captureHead = { attrs, body ->
     	def content=captureTagContent(out, 'head', attrs, body)
-    	if(content instanceof StreamCharBuffer) {
+    	if(content != null) {
     		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
             if(smpage) {
-            	smpage.setHeadBuffer(content)
+            	smpage.setHeadBuffer(wrapContentInBuffer(content))
             }
     	}
     }
 
     def captureBody = { attrs, body ->
 		def content=captureTagContent(out, 'body', attrs, body)
-		if(content instanceof StreamCharBuffer) {
+		if(content != null) {
     		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
             if(smpage) {
-            	smpage.setBodyBuffer(content)
+            	smpage.setBodyBuffer(wrapContentInBuffer(content))
 		    	if(attrs) {
 		    		attrs.each { k, v ->
 		    			smpage.addProperty("body.${k.toLowerCase()}", v?.toString())
@@ -308,6 +328,16 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		}
     }
 
+    def captureComponent = { attrs, body ->
+		def content=captureTagContent(out, 'component', attrs, body)
+		if(content != null) {
+			GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+	        if(smpage && attrs.tag) {
+	        	smpage.setComponentBuffer(attrs.tag, wrapContentInBuffer(content))
+	        }
+		}
+	}
+    
     def captureMeta = { attrs, body ->
     	def content=captureTagContent(out, 'meta', attrs, body)
    		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
@@ -326,8 +356,8 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
     def captureTitle = { attrs, body ->
     	def content=captureTagContent(out, 'title', attrs, body)
     	GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
-    	if(smpage) {
-    		smpage.addProperty('title', body()?.toString())
+    	if(smpage && content != null) {
+    		smpage.addProperty('title', content?.toString())
     	}
     }
 

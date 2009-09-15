@@ -40,7 +40,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
-abstract class AbstractGrailsTagTests extends GroovyTestCase {
+abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 
 	MockServletContext servletContext
 	GrailsWebRequest webRequest
