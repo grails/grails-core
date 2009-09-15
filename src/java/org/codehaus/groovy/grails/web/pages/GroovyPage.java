@@ -27,12 +27,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -549,5 +553,10 @@ public abstract class GroovyPage extends Script {
     public GroovyPageOutputStack getOutputStack() {
 		return outputStack;
 	}
+    
+    public void registerSitemeshPreprocessMode(HttpServletRequest request) {
+    	GSPSitemeshPage page=(GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+    	page.setUsed(true);
+    }
 } // GroovyPage
 

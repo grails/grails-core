@@ -34,6 +34,7 @@ import org.springframework.ui.context.support.SimpleTheme
 import org.springframework.context.MessageSource
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
@@ -333,7 +334,7 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         assertEquals expected, transform(mockResponse.contentAsString)
     }	
 
-	def applyTemplate(template, params = [:] ) {
+	def applyTemplate(template, params = [:], target = null ) {
 
         GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
 
@@ -344,14 +345,15 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 
         def w = t.make(params)
 
-        def sw = new StringWriter()
-        def out = new PrintWriter(sw)
-        webRequest.out = out
+        if(!target) {
+        	target = new FastStringWriter()
+        } 
+        webRequest.out = target
 
-        w.writeTo(out)
-        out.flush()
+        w.writeTo(target)
+        target.flush()
 
-        return sw.toString()
+        return target.toString()
     }
 
     /**

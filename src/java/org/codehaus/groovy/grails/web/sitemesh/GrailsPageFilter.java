@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Random;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
