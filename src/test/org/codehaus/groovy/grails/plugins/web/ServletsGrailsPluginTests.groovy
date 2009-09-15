@@ -18,6 +18,9 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         def remove = GroovySystem.metaClassRegistry.&removeMetaClass
 
         remove MockServletContext
+        remove MockHttpSession
+        remove MockHttpServletResponse
+        remove MockHttpServletRequest
     }
 
 	void testServletContextObject() {
