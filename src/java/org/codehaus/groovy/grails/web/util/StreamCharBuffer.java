@@ -152,8 +152,9 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	private Map<StreamCharBuffer, StreamCharBufferSubChunk> dynamicChunkMap;
 	private Set<SoftReference<StreamCharBuffer>> parentBuffers;
 	
-	private int allocatedBufferIdSequence=0;
-	private int readerCount=0;
+	int allocatedBufferIdSequence=0;
+	int readerCount=0;
+	boolean hasReaders=false;
 	
 	public StreamCharBuffer() {
 		this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
@@ -327,6 +328,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	 */
 	public Reader getReader(boolean removeAfterReading) {
 		readerCount++;
+		hasReaders=true;
 		return new StreamCharBufferReader(removeAfterReading);
 	}	
 
@@ -519,7 +521,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		return spaceLeft;
 	}
 	
-	private void appendStringChunk(String str, int off, int len) throws IOException {
+	void appendStringChunk(String str, int off, int len) throws IOException {
 		appendCharBufferChunk(false);
 		addChunk(new StringChunk(str, off, len));
 	}
@@ -529,10 +531,13 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		addChunk(new StreamCharBufferSubChunk(subBuffer));
 	}	
 	
-	private void addChunk(AbstractChunk newChunk) {
+	void addChunk(AbstractChunk newChunk) {
 		if(lastChunk != null) {
 			lastChunk.next = newChunk;
-			newChunk.prev = lastChunk;
+			if(hasReaders) {
+				// double link only if there are active readers since backwards iterating is only required for simultaneous writer & reader
+				newChunk.prev = lastChunk;
+			}
 		}
 		lastChunk = newChunk;
 		if(firstChunk==null) {
@@ -573,7 +578,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	protected static final void arrayCopy(char[] src, int srcPos, char[] dest, int destPos, int length) {
 		if(length==1) {
 			dest[destPos]=src[srcPos];
-		} else if (length > 0) {
+		} else {
 			System.arraycopy(src, srcPos, dest, destPos, length);
 		}
 	}
@@ -585,11 +590,12 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	 * @author Lari Hotari, Sagire Software Oy
 	 */
 	final public class StreamCharBufferWriter extends Writer {
-		private boolean closed = false;
-		private int writerUsedCounter = 0;
-
+		boolean closed = false;
+		int writerUsedCounter = 0;
+		boolean increaseCounter = true;
+		
 		@Override
-		public void write(final char[] b, final int off, final int len) throws IOException {
+		public final void write(final char[] b, final int off, final int len) throws IOException {
 			if (b == null) {
 				throw new NullPointerException();
 			} else if ((off < 0) || (off > b.length) || (len < 0)
@@ -598,7 +604,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			} else if (len == 0) {
 				return;
 			}
-			writerUsedCounter++;
+			markUsed();
 			if(shouldWriteDirectly(len)) {
 				appendCharBufferChunk(true);
 				connectedWritersWriter.write(b, off, len);
@@ -615,7 +621,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			}
 		}
 
-		private boolean shouldWriteDirectly(final int len) {
+		private final boolean shouldWriteDirectly(final int len) {
 			if(!isConnectedMode()) {
 				return false;
 			}
@@ -627,20 +633,20 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			return isNextChunkBigEnough(len);
 		}
 
-		private boolean isNextChunkBigEnough(final int len) {
+		private final boolean isNextChunkBigEnough(final int len) {
 			// check if allocBuffer has enough chars to flush
 			return chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 || allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft() ;
 		}
 		
 		@Override
-		public void write(final String str) throws IOException {
+		public final void write(final String str) throws IOException {
 			write(str, 0, str.length());
 		}
 
 		@Override
-		public void write(final String str, final int off, final int len) throws IOException {
+		public final void write(final String str, final int off, final int len) throws IOException {
 			if(len==0) return;
-			writerUsedCounter++;
+			markUsed();
 			if(shouldWriteDirectly(len)) {
 				appendCharBufferChunk(true);
 				connectedWritersWriter.write(str, off, len);
@@ -659,8 +665,8 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			}
 		}
 		
-		public void write(StreamCharBuffer subBuffer) throws IOException {
-			writerUsedCounter++;
+		public final void write(StreamCharBuffer subBuffer) throws IOException {
+			markUsed();
 			int len=subBuffer.size();
 			if(shouldWriteDirectly(len)) {
 				appendCharBufferChunk(true);
@@ -674,9 +680,9 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 
 		@Override
-		public Writer append(final CharSequence csq, final int start, final int end)
+		public final Writer append(final CharSequence csq, final int start, final int end)
 				throws IOException {
-			writerUsedCounter++;
+			markUsed();
 			if(csq==null) {
 				write("null");
 			} else {
@@ -705,8 +711,8 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 
 		@Override
-		public Writer append(final CharSequence csq) throws IOException {
-			writerUsedCounter++;
+		public final Writer append(final CharSequence csq) throws IOException {
+			markUsed();
 			if(csq==null) {
 				write("null");
 			} else {
@@ -730,19 +736,25 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			return writerUsedCounter > 0;
 		}
 		
-		public void markUsed() {
-			writerUsedCounter++;
+		public final void markUsed() {
+			if(increaseCounter) {
+				writerUsedCounter++;
+				if(!hasReaders) {
+					increaseCounter=false;
+				}
+			}
 		}
 		
 		public int resetUsed() {
 			int prevUsed = writerUsedCounter;
 			writerUsedCounter=0;
+			increaseCounter=true;
 			return prevUsed;
 		}
 
 		@Override
 		public void write(final int b) throws IOException {
-			writerUsedCounter++;
+			markUsed();
 			allocateSpace();
 			allocBuffer.write((char) b);
 		}
@@ -755,7 +767,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			notifyBufferChange();
 		}
 
-		public StreamCharBuffer getBuffer() {
+		public final StreamCharBuffer getBuffer() {
 			return StreamCharBuffer.this;
 		}
 	}
@@ -778,9 +790,8 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 		
 		private int prepareRead(int len) {
-			if(eofReachedCounter != 0) {
-				int currentWriterCounter=writer.writerUsedCounter;
-				if(eofReachedCounter != currentWriterCounter) {
+			if(hasReaders && eofReachedCounter != 0) {
+				if(eofReachedCounter != writer.writerUsedCounter) {
 					eofReachedCounter=0;
 					eofException=false;
 					repositionChunkReader();
@@ -809,8 +820,12 @@ public class StreamCharBuffer implements Writable, CharSequence {
 				}
 			}
 			if(chunkReader==null) {
-				eofReachedCounter=writer.writerUsedCounter;
-			} else {
+				if(hasReaders) {
+					eofReachedCounter=writer.writerUsedCounter;
+				} else {
+					eofReachedCounter=1;
+				}
+			} else if(hasReaders) {
 				lastChunkReader=chunkReader;
 			}
 			return available;
@@ -857,11 +872,11 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 
 		@Override
-		public int read(final char[] b, final int off, final int len) throws IOException {
+		public final int read(final char[] b, final int off, final int len) throws IOException {
 			return readImpl(b, off, len);
 		}
 
-		int readImpl(final char[] b, final int off, final int len) throws IOException {
+		final int readImpl(final char[] b, final int off, final int len) throws IOException {
 			if (b == null) {
 				throw new NullPointerException();
 			} else if ((off < 0) || (off > b.length) || (len < 0)
@@ -899,7 +914,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 
 		}
 
-		public StreamCharBuffer getBuffer() {
+		public final StreamCharBuffer getBuffer() {
 			return StreamCharBuffer.this;
 		}
 
@@ -915,7 +930,11 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		int writerUsedCounter;
 		
 		public AbstractChunk() {
-			writerUsedCounter=writer.writerUsedCounter;
+			if(hasReaders) {
+				writerUsedCounter=writer.writerUsedCounter;
+			} else {
+				writerUsedCounter=1;
+			}
 		}
 		
 		public abstract void writeTo(Writer target) throws IOException;
@@ -931,16 +950,16 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	}
 	
 	// keep read state in this class
-	static interface ChunkReader {
+	static abstract class ChunkReader {
 		public abstract int read(char[] ch, int off, int len) throws IOException;
 		public abstract int getReadLenLimit(int askedAmount);
-		public ChunkReader next();
-		public int getWriterUsedCounter();
-		public boolean isValid();
+		public abstract ChunkReader next();
+		public abstract int getWriterUsedCounter();
+		public abstract boolean isValid();
 	}
 	
 	
-	class AllocatedBuffer {
+	final class AllocatedBuffer {
 		private int id=allocatedBufferIdSequence++;
 		private int size;
 		private char[] buffer;
@@ -984,22 +1003,22 @@ public class StreamCharBuffer implements Writable, CharSequence {
 			}
 		}
 		
-		public void write(final char[] ch, final int off, final int len) {
+		public final void write(final char[] ch, final int off, final int len) {
 			arrayCopy(ch, off, buffer, used, len);
 			used += len;
 		}
 
-		public void writeString(final String str, final int off, final int len) {
+		public final void writeString(final String str, final int off, final int len) {
 			str.getChars(off, off+len, buffer, used);
 			used += len;
 		}
 
-		public void writeStringBuilder(final StringBuilder stringBuilder, final int off, final int len) {
+		public final void writeStringBuilder(final StringBuilder stringBuilder, final int off, final int len) {
 			stringBuilder.getChars(off, off+len, buffer, used);
 			used += len;
 		}
 
-		public void writeStringBuffer(final StringBuffer stringBuffer, final int off, final int len) {
+		public final void writeStringBuffer(final StringBuffer stringBuffer, final int off, final int len) {
 			stringBuffer.getChars(off, off+len, buffer, used);
 			used += len;
 		}
@@ -1033,7 +1052,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	 * @author Lari Hotari
 	 *
 	 */
-	class CharBufferChunk extends AbstractChunk {
+	final class CharBufferChunk extends AbstractChunk {
 		int allocatedBufferId;
 		char[] buffer;
 		int offset;
@@ -1068,7 +1087,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 	}
 	
-	abstract class AbstractChunkReader {
+	abstract class AbstractChunkReader extends ChunkReader {
 		private AbstractChunk parentChunk;
 		private boolean removeAfterReading;
 		
@@ -1114,7 +1133,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	}
 	
 
-	class CharBufferChunkReader extends AbstractChunkReader implements ChunkReader {
+	final class CharBufferChunkReader extends AbstractChunkReader {
 		CharBufferChunk parent;
 		int pointer;
 		
@@ -1145,7 +1164,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	 * @author Lari Hotari
 	 *
 	 */
-	class StringChunk extends AbstractChunk {
+	final class StringChunk extends AbstractChunk {
 		String str;
 		int offset;
 		int lastposition;
@@ -1179,7 +1198,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}		
 	}
 	
-	class StringChunkReader extends AbstractChunkReader implements ChunkReader {
+	final class StringChunkReader extends AbstractChunkReader {
 		StringChunk parent;
 		int position;
 		
@@ -1200,9 +1219,9 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 	}
 
-	class StreamCharBufferSubChunk extends AbstractChunk {
-		private StreamCharBuffer streamCharBuffer;
-		private int cachedSize;
+	final class StreamCharBufferSubChunk extends AbstractChunk {
+		StreamCharBuffer streamCharBuffer;
+		int cachedSize;
 
 		public StreamCharBufferSubChunk(StreamCharBuffer streamCharBuffer) {
 			super();
@@ -1254,7 +1273,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		
 	}
 	
-	class StreamCharBufferSubChunkReader extends AbstractChunkReader implements ChunkReader {
+	final class StreamCharBufferSubChunkReader extends AbstractChunkReader {
 		StreamCharBufferSubChunk parent;
 		private StreamCharBufferReader reader;
 		
@@ -1273,8 +1292,8 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		}
 	}
 	
-	class AllocatedBufferReader implements ChunkReader {
-		private AllocatedBuffer parent;
+	final class AllocatedBufferReader extends ChunkReader {
+		AllocatedBuffer parent;
 		int position;
 		int writerUsedCounter;
 		boolean removeAfterReading;
@@ -1282,7 +1301,11 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		public AllocatedBufferReader(AllocatedBuffer parent, boolean removeAfterReading) {
 			this.parent=parent;
 			this.position=parent.chunkStart;
-			this.writerUsedCounter=writer.writerUsedCounter;
+			if(hasReaders) {
+				this.writerUsedCounter=writer.writerUsedCounter;
+			} else {
+				this.writerUsedCounter=1;
+			}
 			this.removeAfterReading=removeAfterReading;
 		}
 
@@ -1463,14 +1486,14 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	
 	/* methods for notifying child (sub) StreamCharBuffer changes to the parent StreamCharBuffer */ 
 
-	private void addParentBuffer(StreamCharBuffer parent) {
+	void addParentBuffer(StreamCharBuffer parent) {
 		if(parentBuffers==null) {
 			parentBuffers=new HashSet<SoftReference<StreamCharBuffer>>();
 		}
 		parentBuffers.add(new SoftReference<StreamCharBuffer>(parent));
 	}
 	
-	private boolean bufferChanged(StreamCharBuffer buffer) {
+	boolean bufferChanged(StreamCharBuffer buffer) {
 		StreamCharBufferSubChunk subChunk=dynamicChunkMap.get(buffer);
 		if(subChunk==null) {
 			// buffer isn't a subchunk in this buffer any more
@@ -1485,7 +1508,7 @@ public class StreamCharBuffer implements Writable, CharSequence {
 		return true;
 	}
 
-	private void notifyBufferChange() {
+	void notifyBufferChange() {
 		if(parentBuffers != null) {
 			for(Iterator<SoftReference<StreamCharBuffer>> i=parentBuffers.iterator();i.hasNext();){
 				SoftReference<StreamCharBuffer> ref=i.next();
