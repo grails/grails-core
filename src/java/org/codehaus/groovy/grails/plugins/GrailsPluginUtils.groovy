@@ -417,6 +417,24 @@ public class GrailsPluginUtils {
         return pluginLibs
     }
 
+
+
+    private static Resource[] plugin18nDirectories = null
+    /**
+     * Obtains an array of all plugin i18n directories
+     */
+    static synchronized Resource[] getPluginI18nDirectories(String pluginsDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path,
+                                                            Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+        if(!plugin18nDirectories) {
+            plugin18nDirectories = new Resource[0]
+            plugin18nDirectories = resolvePluginResourcesAndAdd(plugin18nDirectories, pluginsDirPath) { pluginDir ->
+                resourceResolver("file:${pluginDir}/grails-app/i18n")
+            }
+
+        }
+        return plugin18nDirectories
+    }
+
     /**
      * Obtains the path to the globa plugins directory
      */
