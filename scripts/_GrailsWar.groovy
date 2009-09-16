@@ -295,9 +295,14 @@ target(warPlugins:"Includes the plugins in the WAR") {
                 copy(todir:targetPluginDir, failonerror:true) {
                     fileset(dir:pluginBase.absolutePath) {
                         include(name:"plugin.xml")
+                        include(name:"grails-app/views/**")
+                        exclude(name:"grails-app/**/*.groovy")
+                    }
+                    fileset(dir:"$resourcesDirPath/plugins/${info.name}-${info.version}") {
                         include(name:"grails-app/**")
                         exclude(name:"grails-app/**/*.groovy")
                     }
+
                 }
 
                 // copy spring configs to /WEB-INF/spring/...
