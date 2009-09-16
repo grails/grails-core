@@ -19,6 +19,9 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.gparallelizer.Asynchronizer
+import org.springframework.core.io.Resource
 
 /**
  * Gant script that packages a Grails application (note: does not create WAR)
@@ -103,12 +106,39 @@ target( packageApp : "Implementation of package target") {
         }
     }
 
-	if(config.grails.enable.native2ascii) {
+	def nativeascii = config.grails.enable.native2ascii
+    nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
+    if(nativeascii) {
 		profile("converting native message bundles to ascii") {
 			ant.native2ascii(src:"${basedir}/grails-app/i18n",
 							 dest:i18nDir,
 							 includes:"**/*.properties",
 							 encoding:"UTF-8")
+
+            def i18nPluginDirs = GrailsPluginUtils.getPluginI18nDirectories()
+            if(i18nPluginDirs) {
+                Asynchronizer.withAsynchronizer(5) {
+                    i18nPluginDirs.eachAsync { Resource srcDir ->
+                        if(srcDir.exists()) {
+                            def file = srcDir.file
+                            def pluginDirName = file.parentFile.parentFile.name
+                            def destDir = "$resourcesDirPath/plugins/${pluginDirName}/grails-app/i18n"
+                            try {
+                                def ant = new AntBuilder()
+                                ant.mkdir(dir:destDir)
+                                ant.native2ascii(src:file,
+                                             dest:destDir,
+                                             includes:"**/*.properties",
+                                             encoding:"UTF-8")
+                            }
+                            catch (e) {
+                                println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                            }
+
+                        }
+                    }
+                }
+            }
 		}
 	}
 	else {

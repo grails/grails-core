@@ -54,7 +54,7 @@ class I18nGrailsPlugin {
                 // Skip files with a locale specification, since we assume
                 // that there is an associated base resource bundle too.
                 if (resource.filename.contains("_")) {
-                    return
+                    continue
                 }
 
                 // Extract the file path of the file's parent directory
@@ -93,7 +93,9 @@ class I18nGrailsPlugin {
 
         def ant = new AntBuilder()
 
-        if(event.application.config.grails.enable.native2ascii == true) {
+        def nativeascii = event.application.config.grails.enable.native2ascii
+        nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
+        if(nativeascii) {
             ant.native2ascii(src:"./grails-app/i18n",
                              dest:i18nDir,
                              includes:"*.properties",
