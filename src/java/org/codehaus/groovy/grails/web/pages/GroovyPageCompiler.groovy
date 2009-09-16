@@ -89,19 +89,33 @@ public class GroovyPageCompiler {
         def viewuri = viewPrefix + relPath
 
         def relPackagePath = relativePath(viewsDir, gspfile.getParentFile())
+
         def packageDir = "gsp/${packagePrefix}"
         if(relPackagePath.length() > 0) {
-            packageDir += "/" + generateJavaName(relPackagePath)
+        	if(packageDir.length() > 0 && !packageDir.endsWith('/')) 
+        		packageDir += "/"
+            packageDir += generateJavaName(relPackagePath)
         }
 
-        def className = generateJavaName(gspfile.name - '.gsp')
+        def className = packageDir.replace('/','_')
+        className += generateJavaName(gspfile.name)
+        // using default package because of GRAILS-5022
+        packageDir = ''
+        //def className = generateJavaName(gspfile.name)
+
         def classFile = new File(new File(targetDir, packageDir), "${className}.class")
 
         // compile check
         if (gspfile.exists() && (!classFile.exists() || gspfile.lastModified() > classFile.lastModified())) {
             LOG.debug("Compiling gsp ${gspfile}...")
 
-            def packageName = packageDir.replace('/','_')
+            def packageName = packageDir.replace('/','.')
+            def fullClassName
+            if(packageName) {
+            	fullClassName = packageName + '.' + className
+        	} else {
+        		fullClassName = className
+        	}
 
             def gspgroovyfile = new File(new File(generatedGroovyPagesDirectory, packageDir), className + ".groovy")
             gspgroovyfile.getParentFile().mkdirs()
@@ -124,7 +138,7 @@ public class GroovyPageCompiler {
                 gpp.writeLineNumbers(lineNumbersDataFile)
 
                 // register viewuri -> classname mapping
-                compileGSPRegistry[viewuri] = packageName + "." + className
+                compileGSPRegistry[viewuri] = fullClassName
 
                 def unit = new CompilationUnit(compilerConfig, null, classLoader)
                 unit.addSource(gspgroovyfile)
@@ -165,18 +179,22 @@ public class GroovyPageCompiler {
     protected generateJavaName(String str) {
         StringBuilder sb = new StringBuilder()
         int i = 0
-        char ch = str.charAt(i)
-        if (Character.isJavaIdentifierStart(ch)) {
-            sb.append(ch)
-            i++
-        } else if (Character.isJavaIdentifierPart(ch)) {
-            sb.append('_')
-        }
+        boolean nextMustBeStartChar=true
+        char ch
         while (i < str.length()) {
             ch = str.charAt(i++)
-            sb.append((ch=='/' || Character.isJavaIdentifierPart(ch)) ? ch : '_')
+            if(ch=='/') {
+            	nextMustBeStartChar=true
+            	sb.append(ch)
+            } else {
+            	// package or class name cannot start with a number
+                if(nextMustBeStartChar && !Character.isJavaIdentifierStart(ch)) {
+                	sb.append('_')
+                }
+            	nextMustBeStartChar=false
+                sb.append(Character.isJavaIdentifierPart(ch) ? ch : '_')
+            }
         }
-        sb.append("_gsp")
         sb.toString()
     }
 
