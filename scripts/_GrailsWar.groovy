@@ -298,11 +298,13 @@ target(warPlugins:"Includes the plugins in the WAR") {
                         include(name:"grails-app/views/**")
                         exclude(name:"grails-app/**/*.groovy")
                     }
-                    fileset(dir:"$resourcesDirPath/plugins/${info.name}-${info.version}") {
-                        include(name:"grails-app/**")
-                        exclude(name:"grails-app/**/*.groovy")
+                    def pluginResources = new File("$resourcesDirPath/plugins/${info.name}-${info.version}")
+                    if(pluginResources.exists()) {
+                        fileset(dir:pluginResources) {
+                            include(name:"grails-app/**")
+                            exclude(name:"grails-app/**/*.groovy")
+                        }
                     }
-
                 }
 
                 // copy spring configs to /WEB-INF/spring/...
