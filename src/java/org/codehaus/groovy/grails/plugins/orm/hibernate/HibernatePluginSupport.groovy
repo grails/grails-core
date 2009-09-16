@@ -238,44 +238,57 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
 
     
-    public static void enhanceProxy ( HibernateProxy proxy ) {
-    	// getter
-    	proxy.metaClass.propertyMissing = { String name ->
-	        if(delegate instanceof HibernateProxy) {
-	            return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
+    public static void enhanceProxyClass ( Class proxyClass ) {
+    	def mc = proxyClass.metaClass
+    	if(! mc.pickMethod('isEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY) ) {
+	    	// getter
+    		mc.propertyMissing = { String name ->
+		        if(delegate instanceof HibernateProxy) {
+		            return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
+		        }
+		        else {
+		            throw new MissingPropertyException(name, delegate.class)
+		        }
+		    }
+	
+	        // setter
+	    	mc.propertyMissing = { String name, val ->
+	            if(delegate instanceof HibernateProxy) {
+	                GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
+	            }
+	            else {
+	                throw new MissingPropertyException(name, delegate.class)
+	            }
 	        }
-	        else {
-	            throw new MissingPropertyException(name, delegate.class)
+	
+	    	mc.methodMissing = { String name, args ->
+	            if(delegate instanceof HibernateProxy) {
+	                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+	                return obj."$name"(*args)
+	            }
+	            else {
+	                throw new MissingPropertyException(name, delegate.class)
+	            }
+	
 	        }
-	    }
+	
+	    	mc.isEnhanced = { true }
+    	}
 
-        // setter
-        proxy.metaClass.propertyMissing = { String name, val ->
-            if(delegate instanceof HibernateProxy) {
-                GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
-            }
-            else {
-                throw new MissingPropertyException(name, delegate.class)
-            }
-        }
-
-        proxy.metaClass.methodMissing = { String name, args ->
-            if(delegate instanceof HibernateProxy) {
-                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-                return obj."$name"(*args)
-            }
-            else {
-                throw new MissingPropertyException(name, delegate.class)
-            }
-
-        }
+    	
     }
 
+    public static void enhanceProxy ( HibernateProxy proxy ) {
+   	 	MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(proxy.getClass())
+   	 	proxy.metaClass = emc
+    }
 
     private static DOMAIN_INITIALIZERS = [:]
     static initializeDomain(Class c) {
-         DOMAIN_INITIALIZERS.get(c)?.call()
+    	 // enhance domain class only once, initializer is removed after calling
+         DOMAIN_INITIALIZERS.remove(c)?.call()
     }
+    
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
         // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
         // the overhead of doing so at start-up time

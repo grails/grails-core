@@ -72,6 +72,7 @@ public class GrailsHibernateUtil {
     public static final String ARGUMENT_CACHE = "cache";
     public static final String ARGUMENT_LOCK = "lock";
     public static final String CONFIG_PROPERTY_CACHE_QUERIES="grails.hibernate.cache.queries";
+    public static final Class[] EMPTY_CLASS_ARRAY=new Class[0];
 
 
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
