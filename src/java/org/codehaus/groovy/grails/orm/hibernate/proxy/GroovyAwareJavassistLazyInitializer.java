@@ -42,19 +42,21 @@ import java.util.Set;
  *        Created: Apr 21, 2009
  */
 public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer implements MethodHandler {
-
+	private static final String WRITE_CLASSES_DIRECTORY = System.getProperty("javassist.writeDirectory");
+	
     private static final Set GROOVY_METHODS = new HashSet() {{
         add("invokeMethod");
         add("getMetaClass");
+        add("setMetaClass");
         add("metaClass");
         add("getProperty");
         add("setProperty");
-
+        add("$getStaticMetaClass");
     }};
 	private static final MethodFilter METHOD_FILTERS = new MethodFilter() {
 		public boolean isHandled(Method m) {
 			// skip finalize methods
-            return !GROOVY_METHODS.contains(m.getName()) && !(m.getParameterTypes().length == 0 && (m.getName().equals("finalize")));
+            return m.getName().indexOf("super$")==-1 && !GROOVY_METHODS.contains(m.getName()) && !(m.getParameterTypes().length == 0 && (m.getName().equals("finalize")));
         }
 	};
 
@@ -99,12 +101,16 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 			factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
 			factory.setInterfaces( interfaces );
 			factory.setFilter(METHOD_FILTERS);
-			Class cl = factory.createClass();
-
-			final HibernateProxy proxy = ( HibernateProxy ) cl.newInstance();
+			if(WRITE_CLASSES_DIRECTORY != null) {
+				factory.writeDirectory = WRITE_CLASSES_DIRECTORY;
+			}
+			Class proxyClass = factory.createClass();
+            HibernatePluginSupport.enhanceProxyClass(proxyClass);
+            
+			final HibernateProxy proxy = ( HibernateProxy ) proxyClass.newInstance();
 			( ( ProxyObject ) proxy ).setHandler( instance );
+			HibernatePluginSupport.enhanceProxy(proxy);
 			instance.constructed = true;
-            HibernatePluginSupport.enhanceProxy(proxy);
 			return proxy;
 		}
 		catch ( Throwable t ) {
@@ -151,8 +157,8 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 		}
 		( ( ProxyObject ) proxy ).setHandler( instance );
 		instance.constructed = true;
+		HibernatePluginSupport.enhanceProxy(proxy);
         HibernatePluginSupport.initializeDomain(persistentClass);
-        HibernatePluginSupport.enhanceProxy(proxy);
 		return proxy;
 	}
 
@@ -166,7 +172,12 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 			factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
 			factory.setInterfaces( interfaces );
 			factory.setFilter(METHOD_FILTERS);
-			return  factory.createClass();
+			if(WRITE_CLASSES_DIRECTORY != null) {
+				factory.writeDirectory = WRITE_CLASSES_DIRECTORY;
+			}
+			Class proxyClass=factory.createClass();
+	        HibernatePluginSupport.enhanceProxyClass(proxyClass);
+	        return proxyClass;
 		}
 		catch ( Throwable t ) {
 			LoggerFactory.getLogger( BasicLazyInitializer.class ).error(
