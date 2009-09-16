@@ -52,7 +52,6 @@ import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
-import com.opensymphony.sitemesh.webapp.decorator.NoDecorator;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -98,6 +97,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         super.destroy();
         FactoryHolder.setFactory(null);
     }
+    
     /*
      * TODO: This method has been copied from the parent to fix a bug in sitemesh 2.3. When sitemesh 2.4 is release this method and the two private methods below can removed
 
@@ -183,23 +183,22 @@ public class GrailsPageFilter extends SiteMeshFilter {
 	}
 
     @Override
-
     protected DecoratorSelector initDecoratorSelector(SiteMeshWebAppContext webAppContext) {
         // TODO: Remove heavy coupling on horrible SM2 Factory
         final Factory factory = Factory.getInstance(new Config(filterConfig));
         factory.refresh();
         return new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper()) {
+        	@Override
             public Decorator selectDecorator(Content content, SiteMeshContext context) {
                 SiteMeshWebAppContext webAppContext = (SiteMeshWebAppContext) context;
                 final com.opensymphony.module.sitemesh.Decorator decorator =
                         factory.getDecoratorMapper().getDecorator(webAppContext.getRequest(), content2htmlPage(content));
                 if (decorator == null || decorator.getPage() == null) {
-                    return new NoDecorator();
+                    return new GrailsNoDecorator();
                 } else {
                     return new OldDecorator2NewDecorator(decorator) {
-
-
-                        protected void render(Content content, HttpServletRequest request, HttpServletResponse response,
+                    	@Override
+                    	protected void render(Content content, HttpServletRequest request, HttpServletResponse response,
                                               ServletContext servletContext, SiteMeshWebAppContext webAppContext)
                                 throws IOException, ServletException {
 
@@ -275,11 +274,6 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
     }
 
-
-
-
-
-
  	private boolean filterAlreadyAppliedForRequest(HttpServletRequest request) {
         if (request.getAttribute(ALREADY_APPLIED_KEY) == Boolean.TRUE) {
             return true;
@@ -289,13 +283,11 @@ public class GrailsPageFilter extends SiteMeshFilter {
         }
  	}
 
-
     private void detectContentTypeFromPage(Content page, HttpServletResponse response) {
          String contentType = page.getProperty("meta.http-equiv.Content-Type");
          if(contentType != null && "text/html".equals(response.getContentType())) {
              response.setContentType(contentType);
          }
      }
-
 
 }
