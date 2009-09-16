@@ -299,12 +299,17 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             }
             MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(dc.clazz)
         }
+        def initializeDomainOnceClosure = {GrailsDomainClass dc ->
+        	initializeDomain(dc.clazz)
+        }
+        
 
         for (GrailsDomainClass dc in application.domainClasses) {
             //    registerDynamicMethods(dc, application, ctx)
             MetaClass mc = dc.metaClass
             def initDomainClass = lazyInit.curry(dc)
             DOMAIN_INITIALIZERS[dc.clazz] = initDomainClass
+            def initDomainClassOnce = initializeDomainOnceClosure.curry(dc)
             // these need to be eagerly initialised here, otherwise Groovy's findAll from the DGM is called
             def findAllMethod = new FindAllPersistentMethod(sessionFactory, application.classLoader)
             mc.static.findAll = {->
@@ -314,11 +319,11 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             mc.static.findAll = {Object example, Map args -> findAllMethod.invoke(mc.javaClass, "findAll", [example, args] as Object[])}
 
             mc.methodMissing = { String name, args ->
-                initDomainClass()
+            	initDomainClassOnce()
                 mc.invokeMethod(delegate, name, args)
             }
             mc.static.methodMissing = {String name, args ->
-                initDomainClass()
+            	initDomainClassOnce()
                 def result
                 if (delegate instanceof Class) {
     				result = mc.invokeStaticMethod(delegate, name, args)
@@ -326,7 +331,6 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 else {
 	            	    result = mc.invokeMethod(delegate, name, args)
 				}
-
                 result
             }
             addValidationMethods(dc, application, ctx, sessionFactory)
