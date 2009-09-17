@@ -97,13 +97,8 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 			        componentIdType,
 			        session
 			);
-			ProxyFactory factory = new ProxyFactory();
-			factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
-			factory.setInterfaces( interfaces );
-			factory.setFilter(METHOD_FILTERS);
-			if(WRITE_CLASSES_DIRECTORY != null) {
-				factory.writeDirectory = WRITE_CLASSES_DIRECTORY;
-			}
+			ProxyFactory factory = createProxyFactory(persistentClass,
+					interfaces);
 			Class proxyClass = factory.createClass();
             HibernatePluginSupport.enhanceProxyClass(proxyClass);
             
@@ -168,13 +163,8 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 		// note: interfaces is assumed to already contain HibernateProxy.class
 
 		try {
-			ProxyFactory factory = new ProxyFactory();
-			factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
-			factory.setInterfaces( interfaces );
-			factory.setFilter(METHOD_FILTERS);
-			if(WRITE_CLASSES_DIRECTORY != null) {
-				factory.writeDirectory = WRITE_CLASSES_DIRECTORY;
-			}
+			ProxyFactory factory = createProxyFactory(persistentClass,
+					interfaces);
 			Class proxyClass=factory.createClass();
 	        HibernatePluginSupport.enhanceProxyClass(proxyClass);
 	        return proxyClass;
@@ -189,6 +179,18 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 					+ persistentClass.getName(), t
 			);
 		}
+	}
+
+	private static ProxyFactory createProxyFactory(Class persistentClass,
+			Class[] interfaces) {
+		ProxyFactory factory = new ProxyFactory();
+		factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
+		factory.setInterfaces( interfaces );
+		factory.setFilter(METHOD_FILTERS);
+		if(WRITE_CLASSES_DIRECTORY != null) {
+			factory.writeDirectory = WRITE_CLASSES_DIRECTORY;
+		}
+		return factory;
 	}
 
 
