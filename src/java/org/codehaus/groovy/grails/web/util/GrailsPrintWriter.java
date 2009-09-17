@@ -335,7 +335,7 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
 	@Override
-	public PrintWriter append(final char c) {
+	public GrailsPrintWriter append(final char c) {
 		try {
 			usageFlag=true;
 			out.append(c);
@@ -346,7 +346,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	}
 
 	@Override
-	public PrintWriter append(final CharSequence csq, final int start, final int end) {
+	public GrailsPrintWriter append(final CharSequence csq, final int start, final int end) {
 		try {
 			usageFlag=true;
 			out.append(csq, start, end);
@@ -357,13 +357,18 @@ public class GrailsPrintWriter extends PrintWriter {
 	}
 
 	@Override
-	public PrintWriter append(final CharSequence csq) {
+	public GrailsPrintWriter append(final CharSequence csq) {
 		try {
 			usageFlag=true;
 			out.append(csq);
 		} catch (IOException e) {
 			handleIOException(e);
 		}
+		return this;
+	}
+	
+	public GrailsPrintWriter append(final Object obj) {
+		this.print(obj);
 		return this;
 	}
 
@@ -376,17 +381,19 @@ public class GrailsPrintWriter extends PrintWriter {
 		usageFlag=true;
     	if(trouble) return;
     	try {
-			otherBuffer.writeTo(findStreamCharBufferTarget());
+			otherBuffer.writeTo(findStreamCharBufferTarget(true));
 		} catch (IOException e) {
 			handleIOException(e);
 		}
     }
     
-	private Writer findStreamCharBufferTarget() {
+	private Writer findStreamCharBufferTarget(boolean markUsed) {
 		Writer target=getOut();
 		while(target instanceof GrailsPrintWriter) {
 			GrailsPrintWriter gpr=((GrailsPrintWriter)target);
-			gpr.setUsed(true);
+			if(markUsed) {
+				gpr.setUsed(true);
+			}
 			target=gpr.getOut();
 		}
 		if(target instanceof StreamCharBufferWriter) {
@@ -439,7 +446,7 @@ public class GrailsPrintWriter extends PrintWriter {
 		if(this.usageFlag) {
 			return true;
 		}
-		Writer target=findStreamCharBufferTarget();
+		Writer target=findStreamCharBufferTarget(false);
 		if(target instanceof StreamCharBufferWriter) {
 			StreamCharBuffer buffer=((StreamCharBufferWriter)target).getBuffer();
 			if(buffer.size() > 0) {
