@@ -88,12 +88,8 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
 
                     }
                 }
-                try {
-                    return crit.uniqueResult();
-                } catch (HibernateException e) {
-                    crit.setMaxResults(1);
-                    return crit.uniqueResult();
-                }
+                crit.setMaxResults(1);
+                return crit.uniqueResult();
             }
 		});
 	}

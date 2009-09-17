@@ -503,7 +503,7 @@ public class ConstrainedProperty   {
      * @param blank The blank to set.
      */
     public void setBlank(boolean blank) {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("Blank constraint can only be applied to a String property",BLANK_CONSTRAINT,owningClass);
         }
 
@@ -533,7 +533,7 @@ public class ConstrainedProperty   {
      * @return Returns the email.
      */
     public boolean isEmail() {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("Email constraint only applies to a String property",EMAIL_CONSTRAINT,owningClass);
         }
 
@@ -544,7 +544,7 @@ public class ConstrainedProperty   {
      * @param email The email to set.
      */
     public void setEmail(boolean email) {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("Email constraint can only be applied to a String property",EMAIL_CONSTRAINT,owningClass);
         }
 
@@ -569,12 +569,16 @@ public class ConstrainedProperty   {
 
     }
 
+    private boolean isNotValidStringType() {
+        return !CharSequence.class.isAssignableFrom(propertyType);
+    }
+
 
     /**
      * @return Returns the creditCard.
      */
     public boolean isCreditCard() {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("CreditCard constraint only applies to a String property",CREDIT_CARD_CONSTRAINT,owningClass);
         }
 
@@ -585,7 +589,7 @@ public class ConstrainedProperty   {
      * @param creditCard The creditCard to set.
      */
     public void setCreditCard(boolean creditCard) {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("CreditCard constraint only applies to a String property",CREDIT_CARD_CONSTRAINT,owningClass);
         }
 
@@ -614,7 +618,7 @@ public class ConstrainedProperty   {
      * @return Returns the matches.
      */
     public String getMatches() {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("Matches constraint only applies to a String property",MATCHES_CONSTRAINT,owningClass);
         }
         MatchesConstraint c = (MatchesConstraint)this.appliedConstraints.get( MATCHES_CONSTRAINT );
@@ -628,7 +632,7 @@ public class ConstrainedProperty   {
      * @param regex The matches to set.
      */
     public void setMatches(String regex) {
-        if(!String.class.isInstance( regex )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("Matches constraint can only be applied to a String property",MATCHES_CONSTRAINT,owningClass);
         }
 
@@ -799,7 +803,7 @@ public class ConstrainedProperty   {
      * @return Returns the url.
      */
     public boolean isUrl() {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("URL constraint can only be applied to a String property",URL_CONSTRAINT,owningClass);
         }
         return this.appliedConstraints.containsKey( URL_CONSTRAINT );
@@ -809,7 +813,7 @@ public class ConstrainedProperty   {
      * @param url The url to set.
      */
     public void setUrl(boolean url) {
-        if(!String.class.isInstance( propertyType )) {
+        if(isNotValidStringType()) {
             throw new MissingPropertyException("URL constraint can only be applied to a String property",URL_CONSTRAINT,owningClass);
         }
         Constraint c = (Constraint)this.appliedConstraints.get( URL_CONSTRAINT );

@@ -31,6 +31,44 @@ public class ConstrainedPropertyTests extends TestCase {
         this.testValidatorValue = testValidatorValue;
     }
 
+    public void testGetSetURL() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
+        cp.setUrl(true);
+
+
+        assertTrue("should be an url", cp.isUrl());
+    }
+    public void testGetSetEmail() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
+        cp.setEmail(true);
+
+
+        assertTrue("should be an email", cp.isEmail());
+    }
+
+    public void testGetSetBlank() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
+        cp.setBlank(true);
+
+
+        assertTrue("should be blank", cp.isBlank());
+    }
+
+
+    public void testGetSetMatches() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
+        cp.setMatches("\\.+");
+
+
+        assertEquals("should match expression","\\.+", cp.getMatches());
+    }
+    public void testGetSetCreditCart() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
+        cp.setCreditCard(true);
+
+
+        assertTrue("should be credit cart", cp.isCreditCard());
+    }
     /* 
      * Test method for 'org.codehaus.groovy.grails.validation.ConstrainedProperty.supportsContraint(String)'
      */
