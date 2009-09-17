@@ -352,6 +352,9 @@ public class StreamCharBuffer implements Writable, CharSequence {
 	 * @throws IOException
 	 */
 	public void writeTo(Writer target, boolean flushTarget, boolean emptyAfter) throws IOException {
+		if(target instanceof GrailsPrintWriter) {
+			target=((GrailsPrintWriter)target).getOut();
+		} 
 		if(target instanceof StreamCharBufferWriter) {
 			if(target==writer) {
 				throw new IllegalArgumentException("Cannot write buffer to itself.");				
