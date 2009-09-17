@@ -9,6 +9,7 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.GrailsUtil
 import groovy.xml.MarkupBuilder
+import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 
 /**
  * @author Graeme Rocher
@@ -23,6 +24,23 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
     protected void tearDown() {
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
+    }
+
+    void testReadMavenPom() {
+        def settings = new BuildSettings()
+        def manager = new DummyMavenAwareDependencyManager("test", "0.1",settings)
+
+        assertFalse "shouldn't be reading POM", manager.readPom
+
+        manager.parseDependencies {
+            pom true
+        }
+
+        assertTrue "should be reading POM", manager.readPom
+        def deps = manager.listDependencies("test")
+        assertEquals 1, deps.size()
+        assertEquals "junit", deps[0].moduleId.name
+
     }
 
     void testHasApplicationDependencies() {
@@ -322,4 +340,17 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                 }
 
     }
+}
+class DummyMavenAwareDependencyManager extends IvyDependencyManager {
+
+    public DummyMavenAwareDependencyManager(String applicationName, String applicationVersion, BuildSettings settings) {
+        super(applicationName, applicationVersion, settings);    
+    }
+
+    public List readDependenciesFromPOM() {
+        return [
+                [getGroupId:{"junit"}, getArtifactId:{"junit"}, getVersion:{"3.8.3"}, getScope:{"test"}] as PomDependencyMgt
+        ]
+    }
+
 }
