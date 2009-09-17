@@ -291,7 +291,6 @@ public abstract class GroovyPage extends Script {
             }};
         }
 
-        boolean prevUsed=out.resetUsed();
         try {
             GroovyObject tagLib = getTagLib(tagNamespace,tagName);
             if( tagLib != null || gspTagLibraryLookup.hasNamespace(tagNamespace) ) {
@@ -311,7 +310,7 @@ public abstract class GroovyPage extends Script {
                         switch(tag.getParameterTypes().length) {
                             case 1:
                                 tagresult=tag.call( new Object[]{ attrs });
-                                if(returnsObject && tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
+                                if(returnsObject && tagresult != null && !(tagresult instanceof Writer)) {
                                 	out.print(tagresult);
                                 }
                                 if(body != null && body != EMPTY_BODY_CLOSURE) {
@@ -323,7 +322,7 @@ public abstract class GroovyPage extends Script {
                             case 2:
                                 if(tag.getParameterTypes().length == 2) {
                                 	tagresult=tag.call( new Object[] { attrs, (body!=null)?body:EMPTY_BODY_CLOSURE });
-                                    if(returnsObject && tagresult != null && !(tagresult instanceof Writer) && !out.isUsed()) {
+                                    if(returnsObject && tagresult != null && !(tagresult instanceof Writer)) {
                                     	out.print(tagresult);
                                     }
                                 }
@@ -338,20 +337,29 @@ public abstract class GroovyPage extends Script {
                     throw new GrailsTagException("Tag ["+tagName+"] does not exist. No tag library found for namespace: " + tagNamespace, getGroovyPageFileName(),lineNumber);
                 }
             } else {
-                StringBuilder plainTag = new StringBuilder();
-                String fullTagName = tagNamespace + ":" + tagName;
-                plainTag.append("<").append(fullTagName);
+                out.append('<').append(tagNamespace).append(':').append(tagName);
                 for (Object o : attrs.entrySet()) {
                     Map.Entry entry = (Map.Entry) o;
-                    plainTag.append(" ").append(entry.getKey()).append("=\"").append(entry.getValue()).append("\"");
+                    out.append(' ');
+                    out.append(entry.getKey()).append('=');
+                    String value=String.valueOf(entry.getValue());
+                    // handle attribute value quotes & possible escaping " -> &quot;
+                    boolean containsQuotes=(value.indexOf('"') > -1);
+                    boolean containsSingleQuote=(value.indexOf('\'') > -1);
+                    if(containsQuotes && !containsSingleQuote) {
+                   		out.append('\'').append(value).append('\'');
+                    } else if (containsQuotes & containsSingleQuote) {
+                    	out.append('\"').append(value.replaceAll("\"", "&quot;")).append('\"');
+                    } else {
+                    	out.append('\"').append(value).append('\"');
+                    }
                 }
-                plainTag.append(">");
-                out.write(plainTag.toString());
+                out.append('>');
                 if(body != null) {
                     Object bodyOutput = body.call();
-                    if(bodyOutput != null) out.write(bodyOutput.toString());
+                    if(bodyOutput != null) out.print(bodyOutput);
                 }
-                out.write("</" + fullTagName + ">");
+                out.append("</").append(tagNamespace).append(':').append(tagName).append('>');
             }
 		}
         catch(Exception e) {
@@ -366,10 +374,6 @@ public abstract class GroovyPage extends Script {
            else {
                throw new GrailsTagException("Error executing tag <"+tagNamespace+":"+tagName+">: " + e.getMessage(),e, getGroovyPageFileName(),lineNumber);
            }
-        } finally {
-        	if(prevUsed) {
-        		out.setUsed(true);
-        	}
         }
     }
 
@@ -459,7 +463,7 @@ public abstract class GroovyPage extends Script {
 			    
 			    boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(namespace, tagName);
 			    
-	            if(returnsObject && !out.isUsed() && bodyResult != null && !(bodyResult instanceof Writer)) {
+	            if(returnsObject && bodyResult != null && !(bodyResult instanceof Writer)) {
         			return bodyResult;
 	            }
 	            // add some method to always return string, configurable?
@@ -476,6 +480,7 @@ public abstract class GroovyPage extends Script {
 			TagLibraryLookup gspTagLibraryLookup, String namespace,
 			String tagName) {
 		if(webRequest != null) {
+			// caches the taglibs in request context. is this a good idea or not?
 			String tagKey = namespace + ":" + tagName;
 			Map<String, GroovyObject> tagLibCache=(Map<String, GroovyObject>)webRequest.getCurrentRequest().getAttribute(REQUEST_TAGLIB_CACHE);
 			GroovyObject tagLib=null;

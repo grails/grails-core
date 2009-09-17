@@ -522,15 +522,23 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     private String getPathForResource(Resource res) {
+    	if (res == null) return "";
         String path = null;
         try {
-            path = res.getFile().getAbsolutePath();
+        	File file = res.getFile();
+        	if(file != null)
+        		path = file.getAbsolutePath();
         }
         catch (IOException e) {
             // ignore
         }
-        path = path != null ? path : res.getDescription();
-        return path;
+        if(path != null) {
+        	return path;
+        } else if (res.getDescription() != null) {
+        	return res.getDescription();
+        } else {
+        	return "";
+        }
     }
 
     /**

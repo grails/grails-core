@@ -240,7 +240,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     
     public static void enhanceProxyClass ( Class proxyClass ) {
     	def mc = proxyClass.metaClass
-    	if(! mc.pickMethod('isEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY) ) {
+    	if(! mc.pickMethod('grailsEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY) ) {
 	    	// getter
     		mc.propertyMissing = { String name ->
 		        if(delegate instanceof HibernateProxy) {
@@ -272,7 +272,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 	
 	        }
 	
-	    	mc.isEnhanced = { true }
+	    	mc.grailsEnhanced = { true }
     	}
 
     	

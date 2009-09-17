@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
-import groovy.lang.GString;
 
 import java.io.Writer;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import java.util.Map;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
  * A closure that represents the body of a tag and captures its output returning the result when invoked
