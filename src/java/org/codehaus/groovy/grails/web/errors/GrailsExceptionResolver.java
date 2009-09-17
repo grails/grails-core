@@ -51,8 +51,12 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
     * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
     */
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+
         if (ex instanceof InvokerInvocationException) {
-           ex = (Exception)getRootCause(ex);
+           Throwable t = getRootCause(ex);
+           if(t instanceof Exception) {
+               ex = (Exception) t;
+           }
         }
         ModelAndView mv = super.resolveException(request, response, handler, ex);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
