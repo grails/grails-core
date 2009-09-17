@@ -340,7 +340,8 @@ public abstract class GroovyPage extends Script {
                 out.append('<').append(tagNamespace).append(':').append(tagName);
                 for (Object o : attrs.entrySet()) {
                     Map.Entry entry = (Map.Entry) o;
-                    out.append(' ').append(entry.getKey()).append('=');
+                    out.append(' ');
+                    out.append(entry.getKey()).append('=');
                     String value=String.valueOf(entry.getValue());
                     // handle attribute value quotes & possible escaping " -> &quot;
                     boolean containsQuotes=(value.indexOf('"') > -1);

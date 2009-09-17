@@ -335,7 +335,7 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
 	@Override
-	public GrailsPrintWriter append(final char c) {
+	public PrintWriter append(final char c) {
 		try {
 			usageFlag=true;
 			out.append(c);
@@ -346,7 +346,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	}
 
 	@Override
-	public GrailsPrintWriter append(final CharSequence csq, final int start, final int end) {
+	public PrintWriter append(final CharSequence csq, final int start, final int end) {
 		try {
 			usageFlag=true;
 			out.append(csq, start, end);
@@ -357,7 +357,7 @@ public class GrailsPrintWriter extends PrintWriter {
 	}
 
 	@Override
-	public GrailsPrintWriter append(final CharSequence csq) {
+	public PrintWriter append(final CharSequence csq) {
 		try {
 			usageFlag=true;
 			out.append(csq);
