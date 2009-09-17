@@ -37,8 +37,8 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
     }
 
 
-    // test for GRAILS-4573 FIXME!
-    /*void testIterativeTags() {
+    // test for GRAILS-4573 
+    void testIterativeTags() {
 
         def template = '''
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -51,7 +51,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
 
         printCompiledSource(template) 
         assertOutputContains("1 . 1<br/>2 . 2<br/>3 . 3<br/>",template)
-    } */
+    } 
 
     void testGRAILS3797() {
         println request.locale
