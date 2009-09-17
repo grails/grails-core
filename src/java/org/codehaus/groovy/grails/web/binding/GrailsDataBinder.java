@@ -430,16 +430,18 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         else {
             final Object beanInstance = bean.getWrappedInstance();
             if(type!= null && Collection.class.isAssignableFrom(type)) {
-               Collection c;
+               Collection c = null;
                final Class referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
 
                if(isNullAndWritableProperty(bean, propertyName)) {
                    c = decorateCollectionForDomainAssociation(GrailsClassUtils.createConcreteCollection(type), referencedType);
                }
                 else {
-                   c = decorateCollectionForDomainAssociation((Collection) bean.getPropertyValue(propertyName), referencedType);
+                   if(bean.isReadableProperty(propertyName))
+                        c = decorateCollectionForDomainAssociation((Collection) bean.getPropertyValue(propertyName), referencedType);
                }
-               bean.setPropertyValue(propertyName, c);
+               if(bean.isWritableProperty(propertyName) && c != null)
+                    bean.setPropertyValue(propertyName, c);
                val = c;
 
 
@@ -564,7 +566,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isNullAndWritableProperty(ConfigurablePropertyAccessor bean, String propertyName) {
-        return bean.getPropertyValue(propertyName) == null && bean.isWritableProperty(propertyName);
+        return bean.isWritableProperty(propertyName) && (bean.isReadableProperty(propertyName) && bean.getPropertyValue(propertyName) == null) ;
     }
 
     /**
