@@ -173,8 +173,25 @@ class BuildSettings {
      */
     List applicationJars = []
 
+    private List<File> compileDependencies = []
+
     /** List containing the compile-time dependencies of the app as File instances. */
-    @Lazy List<File> compileDependencies = {
+    List<File> getCompileDependencies() {
+        if(!this.compileDependencies) {
+           return defaultCompileDependencies
+        }
+        return this.compileDependencies
+    }
+
+    /**
+     * Sets the compile time dependencies for the project 
+     */
+    void setCompileDependencies(List<File> deps) {
+        this.compileDependencies = deps
+    }
+
+    /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances. */
+    @Lazy List<File> defaultCompileDependencies = {
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
                             .allArtifactsReports
@@ -183,8 +200,26 @@ class BuildSettings {
         return jarFiles
     }()
 
+
+    private List<File> testDependencies = []
+
     /** List containing the test-time dependencies of the app as File instances. */
-    @Lazy List<File> testDependencies = {
+    List<File> getTestDependencies() {
+        if(!this.testDependencies) {
+           return defaultTestDependencies
+        }
+        return this.testDependencies
+    }
+
+    /**
+     * Sets the test time dependencies for the project
+     */
+    void setTestDependencies(List<File> deps) {
+        this.testDependencies = deps
+    }
+
+    /** List containing the default test-time dependencies of the app as File instances. */
+    @Lazy List<File> defaultTestDependencies = {
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
                             .allArtifactsReports
@@ -193,8 +228,25 @@ class BuildSettings {
         return jarFiles
     }()
 
-    /** List containing the runtime-time dependencies of the app as File instances. */
-    @Lazy List<File> runtimeDependencies = {
+    private List<File> runtimeDependencies = []
+
+    /** List containing the runtime dependencies of the app as File instances. */
+    List<File> getRuntimeDependencies() {
+        if(!this.runtimeDependencies) {
+           return defaultRuntimeDependencies
+        }
+        return this.runtimeDependencies
+    }
+
+    /**
+     * Sets the runtime dependencies for the project
+     */
+    void setRuntimeDependencies(List<File> deps) {
+        this.runtimeDependencies = deps
+    }
+
+    /** List containing the default runtime-time dependencies of the app as File instances. */
+    @Lazy List<File> defaultRuntimeDependencies = {
         def jarFiles = dependencyManager
                    .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
                    .allArtifactsReports
