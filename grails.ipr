@@ -259,6 +259,13 @@
     <option name="FILTER_INFO" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/../grails-maven-archetype/pom.xml" />
+      </list>
+    </option>
+  </component>
   <component name="Palette2">
     <group name="Swing">
       <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.png" removable="false" auto-create-binding="false" can-attach-label="false">
@@ -391,6 +398,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" filepath="$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" filepath="$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
