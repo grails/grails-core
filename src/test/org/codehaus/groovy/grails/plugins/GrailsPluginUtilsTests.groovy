@@ -76,6 +76,18 @@ grails {
     }
 
 
+    void testIsAtLeastVersion() {
+        assertFalse "should not support 1.1", GrailsPluginUtils.supportsAtLeastVersion("1.1 > *", "1.2")
+        assertFalse "should not support 1.1", GrailsPluginUtils.supportsAtLeastVersion("1.1", "1.2")
+        assertFalse "should not support anything", GrailsPluginUtils.supportsAtLeastVersion("*", "1.2")
+        assertFalse "should not support anything", GrailsPluginUtils.supportsAtLeastVersion("* > 1.2", "1.2")
+
+        assertTrue "should support 1.2 and above", GrailsPluginUtils.supportsAtLeastVersion("1.2 > *", "1.2")
+        assertTrue "should support 1.2 and above", GrailsPluginUtils.supportsAtLeastVersion("1.2", "1.2")
+
+
+    }
+
     void testGetUpperVersion() {
         assertEquals "*", GrailsPluginUtils.getUpperVersion("1.0 > * ")
         assertEquals "*", GrailsPluginUtils.getUpperVersion("1.0 >*")

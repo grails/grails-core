@@ -380,7 +380,7 @@ generatePluginXml = { File descriptor ->
     def rcComparator = [ compare: {a, b -> a.URI.compareTo(b.URI) } ] as Comparator
     Arrays.sort(resourceList, rcComparator)
 
-    def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+    pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     if(plugin.metaClass.hasProperty(plugin,"grailsVersion")) {
         pluginGrailsVersion = plugin.grailsVersion
     }

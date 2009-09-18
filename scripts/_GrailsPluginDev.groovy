@@ -19,6 +19,9 @@ import groovy.xml.MarkupBuilder
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import grails.util.GrailsNameUtils
 import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.apache.ivy.core.report.ArtifactDownloadReport
 
 /**
  * Gant script that deals with those tasks required for plugin developers
@@ -83,12 +86,36 @@ target(packagePlugin:"Implementation target") {
     if(plugin?.pluginExcludes) {
         pluginExcludes.addAll(plugin?.pluginExcludes)
     }
-    
+
+
+
     def includesList = pluginIncludes.join(",")
     def excludesList = pluginExcludes.join(",")
+    def libsDir = new File("${projectWorkDir}/tmp-libs")
+    ant.delete(dir:libsDir, failonerror:false)
+    def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
+
+    if(!GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")) {
+        IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+        def deps = dependencyManager.resolveApplicationDependencies()
+
+        if(deps) {
+            ant.mkdir(dir:"${libsDir}/lib")
+            ant.copy(todir:"${libsDir}/lib") {
+                for(ArtifactDownloadReport dep in deps) {
+                    def file = dep.localFile
+                    fileset(dir:file.parentFile, includes:file.name)
+                }
+            }            
+        }
+    }
+
     ant.zip(destfile:pluginZip, filesonly:true) {
         fileset(dir:basedir, includes:includesList, excludes:excludesList)
         fileset(dir:"$projectWorkDir/plugin-info")
+        if(libsDir.exists()) {
+            fileset(dir:libsDir)
+        }
     }
 
 	event("PackagePluginEnd", [pluginName])

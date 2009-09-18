@@ -34,7 +34,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
  */
 public class GrailsPluginUtils {
 
-
     static final String WILDCARD = "*";
     public static final GRAILS_HOME
     static {
@@ -94,9 +93,25 @@ public class GrailsPluginUtils {
      * Returns the upper version of a Grails version number expression in a plugin
      */
     static String getUpperVersion(String pluginVersion) {
-        if(pluginVersion.indexOf('>')>-1) {
+        return getPluginVersionInternal(pluginVersion,1)
+    }
+
+   /**
+     * Returns the lower version of a Grails version number expression in a plugin
+     */
+    static String getLowerVersion(String pluginVersion) {
+        return getPluginVersionInternal(pluginVersion,0)
+    }
+
+    static boolean supportsAtLeastVersion(String pluginVersion, String requiredVersion) {
+        def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginVersion)
+        lowerVersion != '*' && GrailsPluginUtils.isValidVersion(lowerVersion, "$requiredVersion > *")
+    }
+
+    private static getPluginVersionInternal(String pluginVersion, index) {
+        if (pluginVersion.indexOf('>') > -1) {
             def tokens = pluginVersion.split(">")*.trim()
-            return tokens[1].trim()
+            return tokens[index].trim()
         }
         else {
             return pluginVersion.trim()
