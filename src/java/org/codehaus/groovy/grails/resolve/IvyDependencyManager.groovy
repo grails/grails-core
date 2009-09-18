@@ -304,8 +304,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                      "org.springframework:org.springframework.test:3.0.0.M4"
 
                 // dependencies needed at runtime only
-                runtime "aspectj:aspectjweaver:1.6.2",
-                        "aspectj:aspectjrt:1.6.2",
+                runtime "org.aspectj:aspectjweaver:1.6.2",
+                        "org.aspectj:aspectjrt:1.6.2",
                         "cglib:cglib-nodep:2.1_3",
                         "commons-fileupload:commons-fileupload:1.2.1",
                         "oro:oro:2.0.8"
