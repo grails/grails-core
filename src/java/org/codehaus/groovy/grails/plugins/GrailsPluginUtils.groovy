@@ -242,7 +242,7 @@ public class GrailsPluginUtils {
      * Obtains an array of all plug-in provided source files (Java and Groovy)
      */
     static Resource[] getPluginSourceFiles(String pluginsDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginResourceBundles(pluginsDirPath)
+        getPluginBuildSettings().getPluginSourceFiles(pluginsDirPath)
     }
 
     /**
