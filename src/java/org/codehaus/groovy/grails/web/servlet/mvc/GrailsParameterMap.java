@@ -180,8 +180,8 @@ public class GrailsParameterMap implements Map {
 	}
 
 	public void putAll(Map map) {
-        for (Object key : map.keySet()) {
-            put(key, map.get(key));
+        for (Map.Entry<Object, Object> entry : ((Map<Object,Object>)map).entrySet()) {
+            put(entry.getKey(), entry.getValue());
         }
 	}
 

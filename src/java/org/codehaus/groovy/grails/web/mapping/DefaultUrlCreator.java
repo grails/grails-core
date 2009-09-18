@@ -148,15 +148,16 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     /*
-     * Appends all the requeset parameters to the URI buffer
+     * Appends all the request parameters to the URI buffer
      */
-    private void appendRequestParams(StringBuilder actualUriBuf, Map params, HttpServletRequest request) {
+    private void appendRequestParams(StringBuilder actualUriBuf, Map<Object,Object> params, HttpServletRequest request) {
 
 
         boolean querySeparator = false;
 
-        for (Object name : params.keySet()) {
-            if (name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION) || name.equals(ARGUMENT_ID))
+        for (Map.Entry<Object, Object> entry : params.entrySet()) {
+        	Object name = entry.getKey();
+        	if (name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION) || name.equals(ARGUMENT_ID))
                 continue;
 
             if (!querySeparator) {
@@ -166,7 +167,7 @@ public class DefaultUrlCreator implements UrlCreator {
             else {
                 actualUriBuf.append(ENTITY_AMPERSAND);
             }
-            Object value = params.get(name);
+            Object value = entry.getValue();
             if (value instanceof Collection) {
                 Collection values = (Collection) value;
                 Iterator valueIterator = values.iterator();
