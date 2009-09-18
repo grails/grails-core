@@ -45,6 +45,7 @@ import org.apache.ivy.plugins.repository.file.FileRepository
 import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleId
+import org.apache.ivy.core.report.ArtifactDownloadReport
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -351,6 +352,15 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     Set<ModuleRevisionId> getDependencies() { dependencies }
 
 
+    /**
+     * Returns all of the dependency descriptors for dependencies of the application and not
+     * those inherited from frameworks or plugins
+     */
+    Set<DependencyDescriptor> getApplicationDependencyDescriptors(String scope = null) {
+        dependencyDescriptors.findAll { EnhancedDefaultDependencyDescriptor dd ->
+            !dd.inherited && (!scope || dd.scope == scope)
+        }
+    }
 
     /**
     * Obtains a list of dependency descriptors defined in the project
@@ -461,11 +471,34 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         resolveDependencies(conf.name)
     }
 
+    /**
+     * Resolves only application dependencies and returns a list of the resolves JAR files
+     */
+    public List<ArtifactDownloadReport> resolveApplicationDependencies(String conf = '') {
+        ResolveReport report = resolveDependencies(conf)
+
+        def descriptors = getApplicationDependencyDescriptors(conf)
+        report.allArtifactsReports.findAll { ArtifactDownloadReport downloadReport ->
+            def mrid = downloadReport.artifact.moduleRevisionId
+            descriptors.any { DependencyDescriptor dd -> mrid == dd.dependencyRevisionId}
+        }
+    }
+
+    /**
+     * Performs a resolve of all dependencies, potentially going out to the internet to download jars
+     * if they are not found locally
+     */
     public ResolveReport resolveDependencies() {
         resolveDependencies('')
     }
+
+
+    /**
+     * Performs a resolve of all dependencies for the given configuration,
+     * potentially going out to the internet to download jars if they are not found locally
+     */
     public ResolveReport resolveDependencies(String conf) {
-        if(usedConfigurations.contains(conf)) {
+        if(usedConfigurations.contains(conf) || conf == '') {
             def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
             if(conf)
                 options.confs = [conf] as String[]

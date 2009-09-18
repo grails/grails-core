@@ -26,6 +26,43 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testResolveApplicationDependencies() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+        settings.config.grails.test.dependency.resolution = {
+            test "org.grails:grails-test:1.2"
+        }
+        // test simple exclude
+        manager.parseDependencies {
+            inherits "test"
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
+            test( [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+        }
+
+        manager.resolveApplicationDependencies()
+        
+    }
+
+    void testGetApplicationDependencies() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+        settings.config.grails.test.dependency.resolution = {
+            test "org.grails:grails-test:1.2"
+        }
+        // test simple exclude
+        manager.parseDependencies {
+            inherits "test"
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
+            test( [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+        }
+
+        assertEquals 2, manager.getApplicationDependencyDescriptors().size()
+        assertEquals 1, manager.getApplicationDependencyDescriptors('runtime').size()
+        assertEquals 1, manager.getApplicationDependencyDescriptors('test').size()
+        assertEquals 0, manager.getApplicationDependencyDescriptors('build').size()
+
+    }
+
     void testReadMavenPom() {
         def settings = new BuildSettings()
         def manager = new DummyMavenAwareDependencyManager("test", "0.1",settings)
