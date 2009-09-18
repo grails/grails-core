@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.springframework.core.io.Resource
-import groovy.util.slurpersupport.GPathResult
+
 
 /**
  * A class used mainly by the build system that encapsulates access to information
@@ -29,13 +29,15 @@ import groovy.util.slurpersupport.GPathResult
 public class PluginInfo {
 
     Resource pluginDir
+    grails.util.PluginBuildSettings pluginBuildSettings
     def metadata
 
-    public PluginInfo(Resource pluginDir) {
+    public PluginInfo(Resource pluginDir, grails.util.PluginBuildSettings pluginBuildSettings) {
         super();
         if(pluginDir)
         this.pluginDir = pluginDir
-        this.metadata = GrailsPluginUtils.getMetadataForPlugin(pluginDir)
+        this.metadata = new XmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
+        this.pluginBuildSettings = pluginBuildSettings
     }
 
 
