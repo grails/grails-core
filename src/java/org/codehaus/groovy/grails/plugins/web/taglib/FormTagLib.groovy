@@ -314,6 +314,7 @@ class FormTagLib {
     * eg. <g:datePicker name="myDate" value="${new Date()}" />
     */
     def datePicker = {attrs ->
+    	def out = out
         def xdefault = attrs['default']
         if (xdefault == null) {
             xdefault = new Date()
@@ -394,7 +395,7 @@ class FormTagLib {
             out.println "<select name=\"${name}_day\" id=\"${id}_day\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
@@ -413,7 +414,7 @@ class FormTagLib {
             out.println "<select name=\"${name}_month\" id=\"${id}_month\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
@@ -435,7 +436,7 @@ class FormTagLib {
             out.println "<select name=\"${name}_year\" id=\"${id}_year\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
@@ -454,7 +455,7 @@ class FormTagLib {
             out.println "<select name=\"${name}_hour\" id=\"${id}_hour\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
@@ -479,7 +480,7 @@ class FormTagLib {
             out.println "<select name=\"${name}_minute\" id=\"${id}_minute\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOption(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
@@ -495,7 +496,7 @@ class FormTagLib {
         }
     }
 
-    def renderNoSelectionOption(noSelectionKey, noSelectionValue, value) {
+    def renderNoSelectionOption(out, noSelectionKey, noSelectionValue, value) {
         // If a label for the '--Please choose--' first item is supplied, write it out
         out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
         if (noSelectionKey.equals(value)) {
