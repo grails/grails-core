@@ -163,7 +163,7 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
     	FormTagLib formTagLib = new FormTagLib()
-    	formTagLib.renderNoSelectionOption(pw, '', '', null)
+    	formTagLib.renderNoSelectionOptionImpl(pw, '', '', null)
     	assertEquals '<option value=""></option>', sw.toString() 
     }
 
