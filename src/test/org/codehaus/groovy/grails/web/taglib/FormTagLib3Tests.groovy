@@ -1,5 +1,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import java.io.StringWriter;
+
+import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib;
 import org.w3c.dom.Document
 import org.w3c.dom.Element;
 
@@ -159,14 +162,9 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     void testRenderingNoSelectionOption() {
     	final StringWriter sw = new StringWriter();
     	final PrintWriter pw = new PrintWriter(sw);
-
-        // This isn't really a tag...
-    	withTag("renderNoSelectionOption", pw) { tag ->
-    	    tag.call( '', '', null)
-
-	        println "SW: "+sw.toString()
-	        assertEquals '<option value=""></option>', sw.toString()                            
-        }
+    	FormTagLib formTagLib = new FormTagLib()
+    	formTagLib.renderNoSelectionOptionImpl(pw, '', '', null)
+    	assertEquals '<option value=""></option>', sw.toString() 
     }
 
     public void testNoHtmlEscapingTextAreaTag() throws Exception {

@@ -315,8 +315,8 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                     test "junit:junit:3.8.2"
 
                     runtime "apache-taglibs:standard:1.1.2",
-                            "aspectj:aspectjweaver:1.6.2",
-                            "aspectj:aspectjrt:1.6.2",
+                            "org.aspectj:aspectjweaver:1.6.2",
+                            "org.aspectj:aspectjrt:1.6.2",
                             "cglib:cglib-nodep:2.1_3",
                             "commons-beanutils:commons-beanutils:1.8.0",
                             "commons-collections:commons-collections:3.2.1",

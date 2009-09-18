@@ -1,3 +1,4 @@
+
 /* Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
+import org.springframework.context.MessageSourceResolvable;
 import groovy.xml.MarkupBuilder
 import java.beans.PropertyEditor
 import java.text.DecimalFormat
@@ -27,6 +28,7 @@ import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.MessageSource
 import org.springframework.context.MessageSourceAware
+import org.springframework.context.NoSuchMessageException;
 
 /**
 *  A  tag lib that provides tags to handle validation and errors
@@ -36,8 +38,8 @@ import org.springframework.context.MessageSourceAware
 */
 
 class ValidationTagLib {
-	static returnObjectForTags = ['message']
-	
+	static returnObjectForTags = ['message', 'fieldError', 'formatValue']
+
     /**
      * Renders an error message for the given bean and field
      *
@@ -49,9 +51,10 @@ class ValidationTagLib {
 
         if(bean && field) {
             if(bean.metaClass.hasProperty( bean,'errors')) {
-               out << message(error:bean.errors?.getFieldError(field), encodeAs:"HTML")
+               return messageImpl(error:bean.errors?.getFieldError(field), encodeAs:"HTML")
             }
         }
+        return ''
     }
 
    /**
@@ -215,23 +218,27 @@ class ValidationTagLib {
      * Resolves a message code for a given error or code from the resource bundle
      */
     def message = { attrs ->
+    	messageImpl(attrs)
+    }
+
+
+    def messageImpl(attrs) {
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
           def locale = attrs.locale ?: RCU.getLocale(request)
 
           def text
-
-          if(attrs['error'] || attrs['message']) {
-                def error = attrs['error'] ?: attrs['message']
-                def message = messageSource.getMessage( error,
-                                                        locale )
-                if(message) {
-                    text = message
+          def error = attrs['error'] ?: attrs['message']
+          if(error) {
+                try {
+                	text = messageSource.getMessage( error , locale )
+                } catch (NoSuchMessageException e) {
+                	if(error instanceof MessageSourceResolvable) {
+                		text = error?.code
+                	} else {
+                		text = error?.toString()
+                	}
                 }
-                else {
-                    text = error.code
-                }
-          }
-          if(attrs['code']) {
+          } else if(attrs['code']) {
                 def code = attrs['code']
                 def args = attrs['args']
                 def defaultMessage = ( attrs['default'] != null ? attrs['default'] : code )
@@ -250,7 +257,9 @@ class ValidationTagLib {
           if (text) {
                 return (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
           }
+          return ''
     }
+    
     // Maps out how Grails contraints map to Apache commons validators
     static CONSTRAINT_TYPE_MAP = [ email : 'email',
                                              creditCard : 'creditCard',
@@ -382,7 +391,7 @@ class ValidationTagLib {
                 value = decimalFormat.format(value)
             }
 
-            HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
+            return HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
         }
     }
 }

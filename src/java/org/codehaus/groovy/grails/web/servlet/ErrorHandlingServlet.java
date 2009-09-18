@@ -111,7 +111,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                         else {
                             final Factory factory = FactoryHolder.getFactory();
                             PageParser parser = getPageParser(factory, response);
-                            Page p = parser != null ? parser.parse(includeResult.getContent().toCharArray()) : null;
+                            Page p = parser != null ? parser.parse(includeResult.getContentAsCharArray()) : null;
                             String layout = p != null ? p.getProperty("meta.layout") : null;
                             if(layout != null && p != null) {
                                 final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
@@ -165,7 +165,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             catch (IllegalStateException e) {
                 printWriter = new PrintWriter(new OutputStreamWriter(response.getOutputStream()));
             }
-            printWriter.write(includeResult.getContent());
+            includeResult.writeTo(printWriter);
             printWriter.flush();
         }
         catch (IOException e) {
