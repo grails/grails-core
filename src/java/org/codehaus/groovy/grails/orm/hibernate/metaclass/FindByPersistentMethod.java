@@ -20,12 +20,11 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -67,6 +66,9 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
 						GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit,argMap);
+                        if(!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
+                            crit.setMaxResults(1);
+                        }
 					}
 				}
                 if(operator.equals(OPERATOR_OR)) {
@@ -75,21 +77,26 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
                         crit.add(expression.getCriterion());
                     }
                     Disjunction dis = Restrictions.disjunction();
-                    for (Iterator i = expressions.iterator(); i.hasNext();) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-                        dis.add( current.getCriterion() );
+                    for (Object expression : expressions) {
+                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                        dis.add(current.getCriterion());
                     }
                     crit.add(dis);
                 }
                 else {
-                    for (Iterator i = expressions.iterator(); i.hasNext();) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-                        crit.add( current.getCriterion() );
+                    for (Object expression : expressions) {
+                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                        crit.add(current.getCriterion());
 
                     }
                 }
-                crit.setMaxResults(1);
-                return crit.uniqueResult();
+
+
+                final List list = crit.list();
+                if(!list.isEmpty()) {
+                    return list.get(0);
+                }
+                return null;
             }
 		});
 	}

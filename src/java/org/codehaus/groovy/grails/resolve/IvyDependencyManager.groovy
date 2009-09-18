@@ -39,6 +39,12 @@ import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import grails.util.GrailsNameUtils
+import org.apache.ivy.plugins.parser.m2.PomReader
+import org.apache.ivy.plugins.repository.file.FileResource
+import org.apache.ivy.plugins.repository.file.FileRepository
+import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
+import org.apache.ivy.core.module.id.ModuleId
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -90,6 +96,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     static List<Configuration> ALL_CONFIGURATIONS = [BUILD_CONFIGURATION, COMPILE_CONFIGURATION, RUNTIME_CONFIGURATION, TEST_CONFIGURATION, PROVIDED_CONFIGURATION]
 
 
+    private Set<ModuleId> modules = [] as Set
     private Set<ModuleRevisionId> dependencies = [] as Set
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
     private orgToDepMap = [:]
@@ -112,6 +119,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     List repositoryData = []
     Set<String> configuredPlugins = [] as Set
     Set<String> usedConfigurations = [] as Set
+    boolean readPom = false
+
 
     private static managers = new ConcurrentHashMap()
     private static currentManager
@@ -354,6 +363,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      * Adds a dependency to the project
      */
     void addDependency(ModuleRevisionId revisionId) {
+        modules << revisionId.moduleId
         dependencies << revisionId
         if(orgToDepMap[revisionId.organisation]) {
             orgToDepMap[revisionId.organisation] << revisionId
@@ -469,6 +479,22 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
     }
 
+
+
+    /**
+     * Tests whether the given ModuleId is defined in the list of dependencies
+     */
+    boolean hasDependency(ModuleId mid) {
+       return modules.contains(mid)
+    }
+
+    /**
+     * Tests whether the given group and name are defined in the list of dependencies 
+     */
+    boolean hasDependency(String group, String name) {
+        return hasDependency(ModuleId.newInstance(group, name))
+    }
+
     /**
      * Parses the Ivy DSL definition
      */
@@ -491,7 +517,37 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             definition.resolveStrategy = Closure.DELEGATE_FIRST
             definition()
 
+            if(readPom && buildSettings) {
+                List dependencies = readDependenciesFromPOM()
+
+                if(dependencies!=null){
+                    for(PomDependencyMgt dep in dependencies) {
+                        final String scope = dep.scope ?: 'runtime'
+                        Message.debug("Read dependency [$dep.groupId:$dep.artifactId:$dep.version] (scope $scope) from Maven pom.xml") 
+
+                        def mrid = ModuleRevisionId.newInstance(dep.groupId, dep.artifactId, dep.version)
+                        def mid = mrid.getModuleId()
+                        if(!hasDependency(mid)) {
+                            def dd = new EnhancedDefaultDependencyDescriptor(mrid, false, true, scope)
+                            configureDependencyDescriptor(dd, scope)
+                            addDependencyDescriptor dd
+                        }
+                    }
+                }
+            }
+
         }
+    }
+
+    List readDependenciesFromPOM() {
+        def dependencies = null
+        def pom = new File("${buildSettings.baseDir.path}/pom.xml")
+        if (pom.exists()) {
+            def reader = new PomReader(pom.toURL(), new FileResource(new FileRepository(), pom))
+
+            dependencies = reader.getDependencies()
+        }
+        return dependencies
     }
 
 
@@ -527,6 +583,10 @@ class IvyDomainSpecificLanguageEvaluator {
 
     IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
         this.delegate = delegate
+    }
+
+    void pom(boolean b) {
+        delegate.readPom = b
     }
 
     void excludes(String... excludes) {

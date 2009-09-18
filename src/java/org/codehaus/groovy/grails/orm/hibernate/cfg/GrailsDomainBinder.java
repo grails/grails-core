@@ -1686,6 +1686,8 @@ public final class GrailsDomainBinder {
 
 
         GrailsDomainClass domainClass = property.getReferencedDomainClass() != null ? property.getReferencedDomainClass() : property.getComponent();
+        
+        evaluateMapping(domainClass);
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
         Table table = component.getOwner().getTable();
         PersistentClass persistentClass = component.getOwner();
@@ -1744,12 +1746,18 @@ public final class GrailsDomainBinder {
                 bindManyToOne(currentGrailsProp, (ManyToOne) value, path, mappings);
             }
         }
+        
         else {
             if (LOG.isDebugEnabled())
                 LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 
             value = new SimpleValue(table);
-            bindSimpleValue(currentGrailsProp,componentProperty, (SimpleValue) value, path, mappings);
+            if (currentGrailsProp.isEnum()) {
+                bindEnumType(currentGrailsProp, (SimpleValue) value, path, mappings);
+            }
+			else {
+            	bindSimpleValue(currentGrailsProp, componentProperty, (SimpleValue) value, path, mappings);
+			}
         }
 
         if (value != null) {
