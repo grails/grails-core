@@ -1,0 +1,23 @@
+
+<project name="grails-findbugs">
+	<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>
+	<target name="findbugs" depends="jar">
+		<mkdir dir="${grails.target}/findbugs-report"/>
+		<findbugs home="${findbugs.home}" output="xml:withMessages" outputFile="${grails.target}/findbugs-report/grails-fb.xml" jvmargs="-Xmx768M">
+			<auxClasspath>
+				<fileset dir="${grails.lib}">
+					<include name="*.jar"/>
+					<exclude name="jsp-api-2.1.jar"/>
+				</fileset>
+				<fileset dir="${env.JAVA_HOME}/lib">
+					<include name="tools.jar"/>
+				</fileset>
+			</auxClasspath>
+			<sourcePath path="${grails.src}" />
+			<auxAnalyzepath>
+				<fileset dir="${grails.dist}" includes="grails-*.jar"/>
+			</auxAnalyzepath>
+		</findbugs>
+		<xslt in="${grails.target}/findbugs-report/grails-fb.xml" out="${grails.target}/findbugs-report/grails-fb.html" style="${findbugs.home}/src/xsl/fancy.xsl"/>
+	</target>
+</project>
