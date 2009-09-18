@@ -28,7 +28,7 @@ import org.gparallelizer.Asynchronizer
  * that the user can change when running the Grails commands. Defaults
  * are provided for all settings, but the user can override those by
  * setting the appropriate system property or specifying a value for
- * it in the BuildSettings.groovy file.</p>
+ * it in the BuildConfig.groovy file.</p>
  * <p><b>Warning</b> The behaviour is poorly defined if you explicitly
  * set some of the project paths (such as {@link #projectWorkDir }),
  * but not others. If you set one of them explicitly, set all of them

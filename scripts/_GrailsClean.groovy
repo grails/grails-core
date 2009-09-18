@@ -22,6 +22,10 @@
  * @since 0.4
  */
 
+// No point doing this stuff more than once.
+if (getBinding().variables.containsKey("_grails_clean_called")) return
+_grails_clean_called = true
+
 includeTargets << grailsScript("_GrailsEvents")
 
 target ( cleanAll: "Cleans a Grails project" ) {
