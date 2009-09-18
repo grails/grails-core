@@ -187,11 +187,11 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 
 		appCtx = springConfig.getApplicationContext()
 
-        messageSource = appCtx.getBean("messageSource")
+        //messageSource = appCtx.getBean("messageSource")
         
 		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 		mockManager.applicationContext = appCtx
-		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
 		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
 		// Why are the TagLibClasses removed?
@@ -202,7 +202,7 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver()) 
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
-		
+
 		assert appCtx.grailsUrlMappingsHolder
     }
     

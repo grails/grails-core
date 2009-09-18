@@ -1,8 +1,3 @@
-package org.codehaus.groovy.grails.plugins.web.taglib
-
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import java.text.*
-
 /* Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +12,42 @@ import java.text.*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
+import java.text.DecimalFormatSymbols;
+import org.apache.commons.lang.time.FastDateFormat;
+import org.springframework.context.NoSuchMessageException;
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
  /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
  *
  * @author Jason Rudolph
+ * @author Lari Hotari
  * @since 0.6
  *
  * Created:17-Jan-2006
  */
 class FormatTagLib {
+	static returnObjectForTags = ['formatBoolean','formatDate','formatNumber','encodeAs']
 
+    String messageHelper(code, defaultMessage = null, args = null, locale = null) {
+    	if(locale==null) {
+    		locale=RCU.getLocale(request)
+    	}
+        def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+        def message
+        try {
+        	message = messageSource.getMessage( code, args == null ? null : args.toArray(), locale )
+        } catch (NoSuchMessageException e) {
+        	if(defaultMessage != null) {
+        		message = defaultMessage()
+        	}
+        }
+        return message
+    }
+	
     /**
       * Outputs the given boolean as the specified text label. If the
       * <code>true</code> and <code>false</code> option are not given,
@@ -53,17 +70,17 @@ class FormatTagLib {
 
          def b = attrs.get("boolean")
          if (b == null) {
-             return
+             return null
          }
          else if (!(b instanceof Boolean)) {
              b = Boolean.valueOf(b)
          }
 
          if (b) {
-             out << (attrs["true"] ?: message(code:"boolean.true", default: message(code:"default.boolean.true", default:"True")))
+             return attrs["true"] ?: messageHelper('boolean.true', { messageHelper('default.boolean.true', 'True') })
          }
          else {
-             out << (attrs["false"] ?: message(code:"boolean.false", default: message(code:"default.boolean.false", default:"False")))
+        	 return attrs["false"] ?: messageHelper('boolean.false', { messageHelper('default.boolean.false', 'False') })
          }
      }
 
@@ -82,7 +99,7 @@ class FormatTagLib {
     	def date
     	if (attrs.containsKey('date')) {
         	date = attrs.get('date')
-        	if(date == null) return
+        	if(date == null) return null
     	}
     	else {
             date = new Date()
@@ -92,19 +109,17 @@ class FormatTagLib {
         def format = attrs.get('format')
         
         if(!format && formatName) {
-            format = message(code:formatName, default:'')
+            format = messageHelper(formatName)
             if(!format) throwTagError("Attribute [formatName] of Tag [formatDate] specifies a format key [$formatName] that does not exist within a message bundle!")
         }
         else if (!format) {
-            format = message(code: "date.format", default: message(code: "default.date.format", default: "yyyy-MM-dd HH:mm:ss z"))
+            format = messageHelper('date.format', { messageHelper('default.date.format', 'yyyy-MM-dd HH:mm:ss z') })
         }
 
         def locale = RCU.getLocale(request)
-        def simpleDateFormat = locale ?
-        new SimpleDateFormat(format, locale) :
-        new SimpleDateFormat(format)
+        def dateFormat = locale ? FastDateFormat.getInstance(format, locale) : FastDateFormat.getInstance(format)
         
-        out << simpleDateFormat.format(date)
+        return dateFormat.format(date)
     }
 
     /**
@@ -122,7 +137,7 @@ class FormatTagLib {
 			throwTagError("Tag [formatNumber] is missing required attribute [number]")
 		
     	def number = attrs.get('number')
-    	if (number == null) return
+    	if (number == null) return null
         else if(!(number instanceof Number)) {
             number = number.toString().toInteger()
         }
@@ -131,27 +146,25 @@ class FormatTagLib {
         def format = attrs.get('format')
         
         if(!format && formatName) {
-            format = message(code:formatName)
+            format = messageHelper(formatName)
             if(!format) throwTagError("Attribute [formatName] of Tag [formatNumber] specifies a format key [$formatName] that does not exist within a message bundle!")
         }
         else if (!format) {
-            format = message(code: "number.format", default: message(code: "default.number.format", default: "0"))
+            format = messageHelper( "number.format", { messageHelper( "default.number.format", "0") })
         }
 
         final def locale = RCU.getLocale(request)
-        def dcfs = locale ?
-        new DecimalFormatSymbols( locale ) :
-        new DecimalFormatSymbols()
+        def dcfs = locale ? new DecimalFormatSymbols( locale ) : new DecimalFormatSymbols()
 
         def decimalFormat = new java.text.DecimalFormat( format, dcfs )
 
-        out << decimalFormat.format((Double)number)
+        return decimalFormat.format((Double)number)
     }
 
     def encodeAs = { attrs, body ->
         if (!attrs.codec)
             throwTagError("Tag [encodeAs] requires a codec name in the [codec] attribute")
 
-        out << body()."encodeAs${attrs.codec}"()
+        return body()?."encodeAs${attrs.codec}"()
     }
 }

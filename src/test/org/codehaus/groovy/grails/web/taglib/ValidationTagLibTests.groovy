@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.context.MessageSourceResolvable
+import org.springframework.context.i18n.LocaleContextHolder;
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
@@ -35,7 +36,8 @@ class Article {
 
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
         def domain = ga.getDomainClass("Book")
-
+        
+        LocaleContextHolder.setLocale(Locale.US)
         messageSource.addMessage("Book.label", Locale.US, "Reading Material")
         messageSource.addMessage("Book.title.label", Locale.US, "Subject")
         def b = domain.newInstance()
@@ -52,6 +54,7 @@ class Article {
    void testFieldValueWithShortClassAndPropertyNameLookupFromBundle() {
         def domain = ga.getDomainClass("Book")
 
+        LocaleContextHolder.setLocale(Locale.US)
         messageSource.addMessage("book.label", Locale.US, "Reading Material")
         messageSource.addMessage("book.title.label", Locale.US, "Subject")
         def b = domain.newInstance()
