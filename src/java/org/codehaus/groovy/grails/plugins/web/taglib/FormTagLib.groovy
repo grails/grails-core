@@ -606,7 +606,7 @@ class FormTagLib {
         writer.println()
 
         if (noSelection) {
-            renderNoSelectionOption(noSelection.key, noSelection.value, value)
+            renderNoSelectionOption(writer, noSelection.key, noSelection.value, value)
             writer.println()
         }
 
