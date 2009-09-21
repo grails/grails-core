@@ -82,7 +82,8 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
 
         assertEquals 2, pluginInfos.size()
 
-        assertEquals "hibernate", pluginInfos[0].name
+        assertNotNull "should contain hibernate", pluginInfos.find { it.name == 'hibernate' }
+        assertNotNull "should contain webflow", pluginInfos.find { it.name == 'webflow' }
         assertEquals "webflow", pluginInfos[1].name
     }
 

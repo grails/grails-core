@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.springframework.core.io.Resource
+import groovy.util.slurpersupport.GPathResult
 
 
 /**
@@ -36,8 +37,12 @@ public class PluginInfo {
         super();
         if(pluginDir)
         this.pluginDir = pluginDir
-        this.metadata = new XmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
+        this.metadata = parseMetadata(pluginDir)
         this.pluginBuildSettings = pluginBuildSettings
+    }
+
+    GPathResult parseMetadata(Resource pluginDir) {
+        return new XmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
     }
 
 
