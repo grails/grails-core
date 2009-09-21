@@ -120,6 +120,9 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     List repositoryData = []
     Set<String> configuredPlugins = [] as Set
     Set<String> usedConfigurations = [] as Set
+    Set moduleExcludes = [] as Set
+    Map pluginExcludes = [:]
+    
     boolean readPom = false
 
 
@@ -459,8 +462,10 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      */
     IvyNode[] listDependencies(String conf = null) {
         def options = new ResolveOptions()
-        if(conf)
+        if(conf) {
             options.confs = [conf] as String[]
+        }
+
 
 
         resolveEngine.getDependencies(moduleDescriptor, options, new ResolveReport(moduleDescriptor))
@@ -591,7 +596,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      * @param definition the Ivy DSL definition
      */
     void parseDependencies(String pluginName,Closure definition) {
-        if(!isPluginConfiguredByApplication(pluginName) && definition) {
+        if(definition) {
             if(moduleDescriptor == null) throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
 
             def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
@@ -612,7 +617,6 @@ class IvyDomainSpecificLanguageEvaluator {
     boolean inherited = false
     String plugin = null
     @Delegate IvyDependencyManager delegate
-    Set moduleExcludes = [] as Set
 
     IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
         this.delegate = delegate
@@ -623,8 +627,15 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     void excludes(String... excludes) {
-        for(name in excludes ) {            
-            moduleExcludes << name
+        if(plugin) {
+              for(name in excludes) {
+                  pluginExcludes[plugin] << name
+              }
+        }
+        else {
+            for(name in excludes ) {
+                moduleExcludes << name
+            }
         }
     }
 
@@ -660,6 +671,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
     void plugin(String name, Closure callable) {
         configuredPlugins << name
+        pluginExcludes[name] = new HashSet()
 
         try {
             plugin = name
@@ -763,7 +775,7 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
-    void resolver(DependencyResolver resolver) {
+    void resolver(org.apache.ivy.plugins.resolver.DependencyResolver resolver) {
         if(resolver) {
             chainResolver.add resolver
         }        
@@ -811,7 +823,7 @@ class IvyDomainSpecificLanguageEvaluator {
                     if (m.matches()) {
 
                         def name = m[0][2]
-                        if(!moduleExcludes.contains(name)) {
+                        if(!isExcluded(name)) {
                             def mrid = ModuleRevisionId.newInstance(m[0][1], name, m[0][3])
 
                             addDependency mrid
@@ -819,6 +831,7 @@ class IvyDomainSpecificLanguageEvaluator {
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
                             dependencyDescriptor.inherited = inherited
                             if(plugin) {
+                                pluginExcludes[plugin] << name
                                 dependencyDescriptor.plugin = plugin
                             }
                             configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
@@ -831,7 +844,7 @@ class IvyDomainSpecificLanguageEvaluator {
                 else if(dependency instanceof Map) {
                     def name = dependency.name
                     if(dependency.group && name && dependency.version) {
-                       if(!moduleExcludes.contains(name)) {
+                       if(!isExcluded(name)) {
                            def mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
 
                            addDependency mrid
@@ -854,6 +867,10 @@ class IvyDomainSpecificLanguageEvaluator {
             }          
     }
 
+    boolean isExcluded(name) {
+        return moduleExcludes.contains(name) ||
+                (plugin != null && pluginExcludes[plugin]?.contains(name) )
+    }
 
 
 }

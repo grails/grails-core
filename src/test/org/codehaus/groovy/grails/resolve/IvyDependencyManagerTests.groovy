@@ -10,6 +10,7 @@ import grails.util.BuildSettingsHolder
 import grails.util.GrailsUtil
 import groovy.xml.MarkupBuilder
 import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
+import org.apache.ivy.core.resolve.IvyNode
 
 /**
  * @author Graeme Rocher
@@ -24,6 +25,55 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
     protected void tearDown() {
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
+    }
+
+    void testOverridePluginDependencies() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
+            runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )
+            plugin("foo") {
+                build "junit:junit:3.8.4"
+            }
+        }
+
+        manager.parseDependencies("foo") {
+            build "org.grails:grails-test:1.2"
+            build "junit:junit:3.8.3"
+        }
+
+        final IvyNode[] buildDeps = manager.listDependencies("build")
+        assertEquals 2, buildDeps.size()
+        assertNotNull "grails-test should be a dependency", buildDeps.find { it.moduleId.name == "grails-test" }
+
+        def junit = buildDeps.find { it.moduleId.name == "junit" }
+        assertEquals "junit", junit.moduleId.name
+        assertEquals "3.8.4", junit.id.revision
+    }
+
+
+    void testConfigurePluginDependenciesWithExclude() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
+            runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )            
+            plugin("foo") {
+                excludes "junit"
+            }
+        }
+
+        manager.parseDependencies("foo") {
+            build "org.grails:grails-test:1.2"
+            build "junit:junit:3.8.3"
+        }
+
+        final IvyNode[] buildDeps = manager.listDependencies("build")
+        assertEquals 1, buildDeps.size()
+        assertEquals "grails-test", buildDeps[0].moduleId.name
     }
 
     void testResolveApplicationDependencies() {
