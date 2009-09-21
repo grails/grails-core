@@ -158,7 +158,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      */
     IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null) {
         ivySettings = new IvySettings()
+
         ivySettings.defaultInit()
+        // don't cache for snapshots
+        if(settings.grailsVersion.endsWith("-SNAPSHOT")) {
+            ivySettings.setDefaultUseOrigin(true) 
+        }
+
+        ivySettings.validate = false
         chainResolver.settings = ivySettings
         def eventManager = new EventManager()
         def sortEngine = new SortEngine(ivySettings)
