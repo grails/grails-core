@@ -831,6 +831,9 @@ class IvyDomainSpecificLanguageEvaluator {
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
                             dependencyDescriptor.inherited = inherited
                             if(plugin) {
+                                if(!pluginExcludes[plugin]) {
+                                    pluginExcludes[plugin] = new HashSet()
+                                }
                                 pluginExcludes[plugin] << name
                                 dependencyDescriptor.plugin = plugin
                             }
