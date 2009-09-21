@@ -183,9 +183,9 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         }
         else if(collection instanceof Map) {
             Map map = (Map)collection;
-            for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-                Object key = i.next();
-                cascadeValidationToOne(errors, bean,map.get(key), persistentProperty, propertyName);
+            for (Iterator i = map.values().iterator(); i.hasNext();) {
+                Object associatedObject = i.next();
+                cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName);
             }
         }
     }

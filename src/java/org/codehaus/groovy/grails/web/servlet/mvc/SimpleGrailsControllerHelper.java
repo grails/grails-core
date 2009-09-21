@@ -122,13 +122,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
      *
      * @param model The model as a map
      */
-    private void removeProxiesFromModelObjects(Map model) {
-
-        for (Iterator keyIter = model.keySet().iterator(); keyIter.hasNext();) {
-            Object current = keyIter.next();
-            Object modelObject = model.get(current);
-            if(modelObject instanceof Proxy) {
-                model.put( current, ((Proxy)modelObject).getAdaptee() );
+    private void removeProxiesFromModelObjects(Map<Object, Object> model) {
+        for (Map.Entry entry : model.entrySet()) {
+            if(entry.getValue() instanceof Proxy) {
+            	entry.setValue(((Proxy)entry.getValue()).getAdaptee());
             }
         }
     }
