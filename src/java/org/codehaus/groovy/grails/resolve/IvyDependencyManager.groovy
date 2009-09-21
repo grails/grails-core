@@ -124,7 +124,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     Map pluginExcludes = [:]
     
     boolean readPom = false
-
+    boolean inheritsAll = false
 
     private static managers = new ConcurrentHashMap()
     private static currentManager
@@ -161,7 +161,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
         ivySettings.defaultInit()
         // don't cache for snapshots
-        if(settings.grailsVersion.endsWith("-SNAPSHOT")) {
+        if(settings?.grailsVersion?.endsWith("-SNAPSHOT")) {
             ivySettings.setDefaultUseOrigin(true) 
         }
 
@@ -836,7 +836,7 @@ class IvyDomainSpecificLanguageEvaluator {
                             addDependency mrid
 
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
-                            dependencyDescriptor.inherited = inherited
+                            dependencyDescriptor.inherited = inherited || inheritsAll
                             if(plugin) {
                                 if(!pluginExcludes[plugin]) {
                                     pluginExcludes[plugin] = new HashSet()
@@ -860,7 +860,7 @@ class IvyDomainSpecificLanguageEvaluator {
                            addDependency mrid
 
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, dependency.containsKey('transitive') ? !!dependency.transitive : true, scope)
-                           dependencyDescriptor.inherited = inherited
+                           dependencyDescriptor.inherited = inherited || inheritsAll
                            if(plugin) {
                                dependencyDescriptor.plugin = plugin
                            }

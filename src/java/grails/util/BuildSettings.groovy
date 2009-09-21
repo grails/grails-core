@@ -569,9 +569,11 @@ class BuildSettings {
         config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
 
 
-        def dependencyConfig = config.grails.project.dependency.resolution ?:
-            config.grails.global.dependency.resolution
-
+        def dependencyConfig = config.grails.project.dependency.resolution
+        if(!dependencyConfig) {
+            dependencyConfig = config.grails.global.dependency.resolution
+            dependencyManager.inheritsAll = true
+        }
         if (dependencyConfig) {
             dependencyManager.parseDependencies dependencyConfig
             def pluginSlurper = createConfigSlurper()
