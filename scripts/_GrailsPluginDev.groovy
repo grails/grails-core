@@ -110,9 +110,11 @@ target(packagePlugin:"Implementation target") {
         }
     }
 
+    def dependencyInfoDir = new File("$projectWorkDir/plugin-info")
     ant.zip(destfile:pluginZip, filesonly:true) {
         fileset(dir:basedir, includes:includesList, excludes:excludesList)
-        fileset(dir:"$projectWorkDir/plugin-info")
+        if(dependencyInfoDir.exists())
+            fileset(dir:dependencyInfoDir)
         if(libsDir.exists()) {
             fileset(dir:libsDir)
         }
