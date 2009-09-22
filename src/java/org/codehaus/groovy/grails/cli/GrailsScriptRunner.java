@@ -659,11 +659,15 @@ public class GrailsScriptRunner {
     }
 
     private static void addDependenciesToURLs(Set excludes, List<URL> urls, List<File> runtimeDeps) throws MalformedURLException {
-        for (File file : runtimeDeps) {
-            if (urls.contains(file)) continue;
-            if (!excludes.contains(file.getName())) {
-                urls.add(file.toURI().toURL());
-                excludes.add(file.getName());
+        if(runtimeDeps!=null) {
+            for (File file : runtimeDeps) {
+                if(file!=null) {
+                    if (urls.contains(file)) continue;
+                    if (excludes!= null && !excludes.contains(file.getName())) {
+                        urls.add(file.toURI().toURL());
+                        excludes.add(file.getName());
+                    }
+                }
             }
         }
     }
