@@ -99,7 +99,7 @@ class WebMetaUtils {
         mc."$name" = {Map attrs, Closure body ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, RCH.currentRequestAttributes())
         }
-        mc."$name" = {Map attrs, String body ->
+        mc."$name" = {Map attrs, CharSequence body ->
             delegate."$name"(attrs, new GroovyPage.ConstantClosure(body))
         }
         mc."$name" = {Map attrs ->
