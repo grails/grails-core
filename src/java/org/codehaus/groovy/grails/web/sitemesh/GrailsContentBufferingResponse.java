@@ -46,7 +46,7 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
 
     public boolean isActive() {
         GrailsPageResponseWrapper superResponse= (GrailsPageResponseWrapper) getResponse();
-        return superResponse.isSitemeshActive();
+        return superResponse.isSitemeshActive() || superResponse.isGspSitemeshActive();
     }
 
     public Content getContent() throws IOException {

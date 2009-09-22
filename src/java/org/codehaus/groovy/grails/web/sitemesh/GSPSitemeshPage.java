@@ -35,6 +35,12 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	}
 
 	@Override
+	public void addProperty(String name, String value) {
+		super.addProperty(name, value);
+		this.used=true;		
+	}
+
+	@Override
 	public void writeHead(Writer out) throws IOException {
 		if(headBuffer != null) {
 			headBuffer.writeTo(out);

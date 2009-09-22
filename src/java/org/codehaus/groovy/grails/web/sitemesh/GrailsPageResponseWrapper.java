@@ -238,6 +238,10 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         return !isSitemeshNotActive();
     }
 
+	public boolean isGspSitemeshActive() {
+		return (gspSitemeshPage != null && gspSitemeshPage.isUsed());
+	}
+
     private boolean isSitemeshNotActive() {
         return aborted || !parseablePage;
     }
