@@ -87,7 +87,7 @@ class PluginBuildSettings {
    /**
      * Returns an array of PluginInfo objects
      */
-    PluginInfo[] getPluginInfos() {
+    PluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
         def pluginInfos = []
         for(dir in getPluginDirectories(pluginDirPath)) {
             pluginInfos << new PluginInfo(dir, this)
