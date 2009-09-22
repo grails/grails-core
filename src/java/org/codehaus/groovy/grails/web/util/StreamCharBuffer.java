@@ -1531,7 +1531,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}
 	}
 
-	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		String str=in.readUTF();
@@ -1541,7 +1540,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}		
 	}
 
-	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		String str=toString();
 		out.writeUTF(str);

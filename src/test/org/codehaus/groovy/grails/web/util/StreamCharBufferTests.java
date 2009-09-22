@@ -15,16 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Arrays;
-
+import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 
-import junit.framework.TestCase;
+import java.io.*;
+import java.util.Arrays;
 
 /**
  * Unit tests for StreamCharBuffer
@@ -33,7 +28,7 @@ import junit.framework.TestCase;
  * @author Lari Hotari, Sagire Software Oy
  *
  */
-public class StreamCharBufferTest extends TestCase {
+public class StreamCharBufferTests extends TestCase {
 	private static final int TESTROUNDS = 1;
 	static char[] testbuffer = new char[Short.MAX_VALUE];
 
@@ -47,6 +42,29 @@ public class StreamCharBufferTest extends TestCase {
 			}
 		}
 	}
+
+    public void testSerialization() throws Exception {
+        StreamCharBuffer charBuffer = new StreamCharBuffer();
+        Writer writer=charBuffer.getWriter();
+        writer.write("ABCDE");
+        writer.flush();
+
+        // Serialize to a byte array
+         ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
+         ObjectOutputStream out = new ObjectOutputStream(bos) ;
+         out.writeObject(charBuffer);
+         out.close();
+
+         byte[] bytes = bos.toByteArray();
+         ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes));
+
+         charBuffer = (StreamCharBuffer) in.readObject();
+
+
+         assertEquals("ABCDE", charBuffer.toString());
+        assertEquals(5, charBuffer.size());
+
+    }
 
 	public void testBufferedConnectedStringWriting() throws IOException {
 		StreamCharBuffer charBuffer = new StreamCharBuffer(10,0,10);

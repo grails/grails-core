@@ -82,8 +82,7 @@ public class GrailsScriptRunner {
         // Check that Grails' home actually exists.
         final File grailsHomeInSettings = build.getGrailsHome();
         if (grailsHomeInSettings == null || !grailsHomeInSettings.exists()) {
-            System.out.println("Grails' installation directory not found: " + build.getGrailsHome());
-            System.exit(1);
+            exitWithError("Grails' installation directory not found: " + build.getGrailsHome());
         }
 
         // Show a nice header in the console when running commands.
@@ -117,6 +116,11 @@ public class GrailsScriptRunner {
             System.out.println(msg);
             System.exit(1);
         }
+    }
+
+    private static void exitWithError(String error) {
+        System.out.println(error);
+        System.exit(1);
     }
 
     private static ScriptAndArgs processArgumentsAndReturnScriptName(String allArgs) {
@@ -641,7 +645,11 @@ public class GrailsScriptRunner {
         System.out.println("Resolving dependencies...");
         long now = System.currentTimeMillis();
         // add dependencies required by the build system
-        addDependenciesToURLs(excludes, urls, settings.getBuildDependencies());
+        final List<File> buildDependencies = settings.getBuildDependencies();
+        if(!settings.isDependenciesExternallyConfigured() && buildDependencies.isEmpty()) {
+            exitWithError("Required Grails build dependencies were not found. Either GRAILS_HOME is not set or your dependencies are misconfigured in grails-app/conf/BuildConfig.groovy");
+        }
+        addDependenciesToURLs(excludes, urls, buildDependencies);
         // add dependencies required at development time, but not at deployment time
         addDependenciesToURLs(excludes, urls, settings.getProvidedDependencies());                                                                                    
         // Add the project's test dependencies (which include runtime dependencies) because most of them
