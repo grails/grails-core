@@ -119,6 +119,11 @@ class BuildSettings {
     /** <code>true</code> if the default environment for a script should be used. */
     boolean defaultEnv
 
+    /**
+     * Whether the project required build dependencies are externally configured (by Maven for example) or not 
+     */
+    boolean dependenciesExternallyConfigured = false
+
     /** The location of the Grails working directory where non-project-specific temporary files are stored. */
     File grailsWorkDir
 
@@ -177,10 +182,15 @@ class BuildSettings {
 
     /** List containing the compile-time dependencies of the app as File instances. */
     List<File> getCompileDependencies() {
-        if(!this.compileDependencies) {
-           return defaultCompileDependencies
+        if(dependenciesExternallyConfigured) {
+            return this.compileDependencies
         }
-        return this.compileDependencies
+        else {
+            if(!this.compileDependencies) {
+               return defaultCompileDependencies
+            }
+            return this.compileDependencies
+        }
     }
 
     /**
@@ -205,10 +215,15 @@ class BuildSettings {
 
     /** List containing the test-time dependencies of the app as File instances. */
     List<File> getTestDependencies() {
-        if(!this.testDependencies) {
-           return defaultTestDependencies
+        if(dependenciesExternallyConfigured) {
+            return this.testDependencies
         }
-        return this.testDependencies
+        else {            
+            if(!this.testDependencies) {
+               return defaultTestDependencies
+            }
+            return this.testDependencies
+        }
     }
 
     /**
@@ -232,10 +247,15 @@ class BuildSettings {
 
     /** List containing the runtime dependencies of the app as File instances. */
     List<File> getRuntimeDependencies() {
-        if(!this.runtimeDependencies) {
-           return defaultRuntimeDependencies
+        if(dependenciesExternallyConfigured) {
+           return this.runtimeDependencies 
         }
-        return this.runtimeDependencies
+        else {
+            if(!this.runtimeDependencies) {
+               return defaultRuntimeDependencies
+            }
+            return this.runtimeDependencies
+        }
     }
 
     /**
@@ -257,26 +277,36 @@ class BuildSettings {
 
     /** List containing the dependencies needed at development time, but provided by the container at runtime **/
     @Lazy List<File> providedDependencies = {
-        def jarFiles = dependencyManager
-                       .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-                       .allArtifactsReports
-                       .localFile
+        if(dependenciesExternallyConfigured) {
+            return []
+        }
+        else {
+            def jarFiles = dependencyManager
+                           .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
+                           .allArtifactsReports
+                           .localFile
 
-        Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
-        return jarFiles
+            Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
+            return jarFiles
+        }
     }()
 
     /**
      * List containing the dependencies required for the build system only
      */
     @Lazy List<File> buildDependencies = {
-        def jarFiles = dependencyManager
-                           .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-                           .allArtifactsReports
-                           .localFile + applicationJars
+        if(dependenciesExternallyConfigured) {
+            return []
+        }
+        else {
+            def jarFiles = dependencyManager
+                               .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
+                               .allArtifactsReports
+                               .localFile + applicationJars
 
-        Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
-        return jarFiles
+            Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
+            return jarFiles
+        }
     }()
 
     /**
