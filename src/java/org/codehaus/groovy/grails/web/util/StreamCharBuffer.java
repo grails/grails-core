@@ -18,7 +18,11 @@ package org.codehaus.groovy.grails.web.util;
 import groovy.lang.Writable;
 
 import java.io.EOFException;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.SoftReference;
@@ -118,7 +122,7 @@ import java.util.Set;
  * @author Lari Hotari, Sagire Software Oy
  *
  */
-public class StreamCharBuffer implements Writable, CharSequence {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
 	private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
 	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent", 100);
@@ -1525,5 +1529,21 @@ public class StreamCharBuffer implements Writable, CharSequence {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		String str=in.readUTF();
+		reset();
+		if(str.length() > 0) {
+			addChunk(new StringChunk(str, 0, str.length()));
+		}		
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		String str=toString();
+		out.writeUTF(str);
 	}
 }
