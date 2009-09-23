@@ -18,6 +18,7 @@ import grails.util.BuildScope
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import grails.util.GrailsUtil
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
@@ -273,3 +274,43 @@ profile = {String name, Closure callable ->
     }
 }
 
+/**
+ * Exits the build immediately with a given exit code.
+ */
+exit = {
+    event("Exiting", [it])
+    // Prevent system.exit during unit/integration testing
+    if (System.getProperty("grails.cli.testing")) {
+        throw new RuntimeException("Gant script exited")
+    } else {
+        System.exit(it)
+    }
+}
+
+/**
+ * Interactive prompt that can be used by any part of the build. Echos
+ * the given message to the console and waits for user input that matches
+ * either 'y' or 'n'. Returns <code>true</code> if the user enters 'y',
+ * <code>false</code> otherwise.
+ */
+confirmInput = {String message, code="confirm.message" ->
+    if(!isInteractive) {
+        println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
+        exit(1)
+    }
+    ant.input(message: message, addproperty: code, validargs: "y,n")
+    def result = ant.antProject.properties[code]
+    (result == 'y')
+}
+
+// Note: the following only work if you also include _GrailsEvents.
+logError = { String message, Throwable t ->
+    GrailsUtil.deepSanitize(t)
+    t.printStackTrace()
+    event("StatusError", ["$message: ${t.message}"])
+}
+
+logErrorAndExit = { String message, Throwable t ->
+    logError(message, t)
+    exit(1)
+}
