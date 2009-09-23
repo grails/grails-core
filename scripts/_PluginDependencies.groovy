@@ -319,11 +319,11 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     // metadata. We only check on the plugins in the project's "plugins"
     // directory and the global "plugins" dir. Plugins loaded via an
     // explicit path should be left alone.
-    def pluginDirs = GrailsPluginUtils.getImplicitPluginDirectories(pluginsHome)
+    def pluginDirs = pluginSettings.implicitPluginDirectories
     def pluginsToUninstall = pluginDirs.findAll { Resource r -> !plugins.find { plugin -> r.filename == "$plugin.name-$plugin.version" }}
 
     for(Resource pluginDir in pluginsToUninstall) {
-        if(GrailsPluginUtils.isGlobalPluginLocation(pluginDir)) {
+        if(pluginSettings.isGlobalPluginLocation(pluginDir)) {
             registerMetadataForPluginLocation(pluginDir)
         }
         else {
@@ -338,7 +338,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 }
 
 private registerMetadataForPluginLocation(Resource pluginDir) {
-    def plugin = GrailsPluginUtils.getMetadataForPlugin(pluginDir.filename)
+    def plugin = pluginSettings.getMetadataForPlugin(pluginDir.filename)
     registerPluginWithMetadata(plugin.@name.text(), plugin.@version.text())
 }
 
@@ -375,7 +375,7 @@ generatePluginXml = { File descriptor ->
 
     // Write the content!
     def props = ['author','authorEmail','title','description','documentation']
-    def resourceList = GrailsPluginUtils.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
+    def resourceList = pluginSettings.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
 
     def rcComparator = [ compare: {a, b -> a.URI.compareTo(b.URI) } ] as Comparator
     Arrays.sort(resourceList, rcComparator)
@@ -446,7 +446,7 @@ target(loadPlugins:"Loads Grails' plugins") {
     if(!PluginManagerHolder.pluginManager) { // plugin manager already loaded?
 		compConfig.setTargetDirectory(classesDir)
 	    def unit = new CompilationUnit ( compConfig , null , new GroovyClassLoader(classLoader) )
-		def pluginFiles = getPluginDescriptors()
+		def pluginFiles = pluginSettings.pluginDescriptors
 
         for(plugin in pluginFiles) {
             def pluginFile = plugin.file
@@ -492,12 +492,13 @@ target(loadPlugins:"Loads Grails' plugins") {
                     pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
 
                     PluginManagerHolder.setPluginManager(pluginManager)
+                    pluginSettings.pluginManager = pluginManager
                 }
 	        }
 	        profile("loading plugins") {
 				event("PluginLoadStart", [pluginManager])
 	            pluginManager.loadPlugins()
-                def baseDescriptor = GrailsPluginUtils.getBasePluginDescriptor(grailsSettings.baseDir.absolutePath)
+                def baseDescriptor = pluginSettings.basePluginDescriptor
                 if(baseDescriptor) {                    
                     def baseName = FilenameUtils.getBaseName(baseDescriptor.filename)
                     def plugin = pluginManager.getGrailsPluginForClassName(baseName)
@@ -574,7 +575,7 @@ target(updatePluginsList:"Updates the plugin list from the remote plugin-list.xm
 
 
 def resetClasspathAndState() {
-    GrailsPluginUtils.clearCaches()
+    pluginSettings.clearCaches()
     classpathSet = false
     classpath()
     PluginManagerHolder.pluginManager = null
@@ -703,51 +704,62 @@ readPluginXmlMetadata = { String pluginName ->
  * Reads all installed plugin descriptors returning a list
  */
 readAllPluginXmlMetadata = {->
-    getPluginXmlMetadata().collect { new XmlSlurper().parse(it.file) }
+    pluginSettings.pluginXmlMetadata.collect { new XmlSlurper().parse(it.file) }
 }
 
+/**
+ * @deprecated Use "pluginSettings.pluginXmlMetadata" instead.
+ */
 getPluginXmlMetadata = {
-    GrailsPluginUtils.getPluginXmlMetadata(pluginsHome, resolveResources)
+    pluginSettings.pluginXmlMetadata
 }
 /**
  * Obtains the directory for the given plugin name
  */
 getPluginDirForName = { String pluginName ->
-    GrailsPluginUtils.getPluginDirForName(pluginsHome, pluginName)
+    pluginSettings.getPluginDirForName(pluginName)
 }
-/** Obtains all of the plugin directories */
+/**
+ * Obtains all of the plugin directories
+ * @deprecated Use "pluginSettings.pluginDirectories".
+ */
 getPluginDirectories = {->
-    GrailsPluginUtils.getPluginDirectories(pluginsHome)
+    pluginSettings.pluginDirectories
 }
 /**
  * Obtains an array of all plugin source files as Spring Resource objects
+ * @deprecated Use "pluginSettings.pluginSourceFiles".
  */
 getPluginSourceFiles = {
-    GrailsPluginUtils.getPluginSourceFiles(pluginsHome, resolveResources)
+    pluginSettings.pluginSourceFiles
 }
 /**
  * Obtains an array of all the plugin provides Gant scripts
+ * @deprecated Use "pluginSettings.pluginScripts".
  */
 getPluginScripts = {
-    GrailsPluginUtils.getPluginScripts(pluginsHome,resolveResources)
+    pluginSettings.pluginScripts
 }
 /**
  * Gets a list of all scripts known to the application (excluding private scripts starting with _)
+ * @deprecated Use "pluginSettings.availableScripts".
  */
 getAllScripts = {
-    GrailsPluginUtils.getAvailableScripts(grailsHome,pluginsHome, basedir, resolveResources)
+    pluginSettings.availableScripts
 }
 /**
  * Obtains a list of all Grails plugin descriptor classes
+ * @deprecated Use "pluginSettings.pluginDescriptors".
  */
 getPluginDescriptors = {
-    GrailsPluginUtils.getPluginDescriptors(basedir,pluginsHome,resolveResources)
+    pluginSettings.pluginDescriptors
 }
 /**
  * Gets the base plugin descriptor
+ * @deprecated Use "pluginSettings.basePluginDescriptor".
  */
 getBasePluginDescriptor = {
-    GrailsPluginUtils.getBasePluginDescriptor(basedir)
+    pluginSettings.basePluginDescriptor
 }
 /**
  * Runs a script contained within a plugin
@@ -919,7 +931,7 @@ installPluginForName = { String fullPluginName ->
         event("InstallPluginStart", [fullPluginName])
         def pluginInstallPath = "${globalInstall ? globalPluginsDirPath : pluginsHome}/${fullPluginName}"
 
-        Resource currentInstall = GrailsPluginUtils.getPluginDirForName(currentPluginName)
+        Resource currentInstall = getPluginDirForName(currentPluginName)
 
         if(currentInstall?.exists()) {            
             if(!isInteractive || confirmInput("You currently already have a version of the plugin installed [$currentInstall.filename]. Do you want to upgrade this version?", "upgrade.${fullPluginName}.plugin")) {

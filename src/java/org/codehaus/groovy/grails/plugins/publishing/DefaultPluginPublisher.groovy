@@ -16,7 +16,6 @@
 
 package org.codehaus.groovy.grails.plugins.publishing
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import org.springframework.core.io.Resource

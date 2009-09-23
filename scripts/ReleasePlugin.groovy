@@ -23,7 +23,6 @@ import org.tmatesoft.svn.core.*
 import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.*
 import org.codehaus.groovy.grails.documentation.MetadataGeneratingMetaClassCreationHandle
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.publishing.DefaultPluginPublisher
 import org.springframework.core.io.FileSystemResource
 

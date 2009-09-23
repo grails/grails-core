@@ -15,7 +15,6 @@
  */
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.springframework.core.io.FileSystemResource
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * Gant script containing the Grails classpath setup.
@@ -41,23 +40,25 @@ target(classpath: "Sets the Grails classpath") {
 
 /**
  * Obtains all of the plug-in Lib directories
+ * @deprecated Use "pluginSettings.pluginLibDirectories"
  */
 getPluginLibDirs = {
-    GrailsPluginUtils.getPluginLibDirectories(pluginsHome, resolveResources)
+    pluginSettings.pluginLibDirectories
 }
 
 /**
  * Obtains an array of all plug-in JAR files as Spring Resource objects
+ * @deprecated Use "pluginSettings.pluginJarFiles".
  */
 getPluginJarFiles = {
-    GrailsPluginUtils.getPluginJarFiles(pluginsHome, resolveResources)
+    pluginSettings.pluginJarFiles
 }
 
 getJarFiles = {->
     def jarFiles = resolveResources("file:${basedir}/lib/*.jar").toList()
     if(includePluginJarsOnClasspath) {
 
-        def pluginJars = getPluginJarFiles()
+        def pluginJars = pluginSettings.pluginJarFiles
 
         for (pluginJar in pluginJars) {
             boolean matches = jarFiles.any {it.file.name == pluginJar.file.name}
@@ -115,7 +116,7 @@ commonClasspath = {
         pathelement(location: "${d.file.absolutePath}")
     }
 
-    def pluginLibDirs = getPluginLibDirs().findAll { it.exists() }
+    def pluginLibDirs = pluginSettings.pluginLibDirectories.findAll { it.exists() }
     for (pluginLib in pluginLibDirs) {
         fileset(dir: pluginLib.file.absolutePath)
     }

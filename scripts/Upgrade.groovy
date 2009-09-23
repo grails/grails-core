@@ -23,7 +23,6 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import grails.util.Metadata
 
 includeTargets << grailsScript("_GrailsPlugins")
@@ -217,7 +216,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
     updateMetadata("app.name": "$grailsAppName", "app.grails.version": "$grailsVersion")
 
     // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
-    def plugins = GrailsPluginUtils.getPluginBaseDirectories(pluginsHome)
+    def plugins = pluginSettings.pluginBaseDirectories
     if (plugins) {
         for (pluginDir in plugins) {
             def f = new File(pluginDir)

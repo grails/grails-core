@@ -19,8 +19,6 @@ import grails.util.GrailsUtil
 
 import grails.web.container.EmbeddableServerFactory
 import grails.web.container.EmbeddableServer
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-
 
 /**
  * Gant script that executes Grails using an embedded server
@@ -95,7 +93,7 @@ private EmbeddableServerFactory loadServerFactory() {
         if(containerClass==defaultServer) {
             println "WARNING: No default container found, installing Tomcat.."
             doInstallPluginFromGrailsHomeOrRepository "tomcat", GrailsUtil.grailsVersion
-            GrailsPluginUtils.clearCaches()
+            pluginSettings.clearCaches()
             compilePlugins()
             serverFactory = load(containerClass)            
         }

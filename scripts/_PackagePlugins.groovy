@@ -14,7 +14,6 @@
 * limitations under the License.
 */
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginInfo
 
 /**
@@ -68,7 +67,7 @@ packageFiles = { String from ->
 
 target( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath )
-    def pluginInfos = GrailsPluginUtils.getPluginInfos(pluginsHome)
+    def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
     for(PluginInfo info in pluginInfos) {
         try {
             def pluginBase = info.pluginDir.file
@@ -83,7 +82,7 @@ target( packagePlugins : "Packages any Grails plugins that are installed for thi
 }
 
 packagePluginsForWar = { targetDir ->
-    def pluginInfos = GrailsPluginUtils.getPluginInfos(pluginsHome)
+    def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
     for(PluginInfo info in pluginInfos) {
         try {
 

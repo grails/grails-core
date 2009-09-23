@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
+import grails.util.PluginBuildSettings;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.StringUtils;
@@ -55,13 +56,22 @@ import java.util.Map;
 public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplicationAware, InitializingBean, ResourceLoaderAware {
 
     private static final Log LOG = LogFactory.getLog(DefaultPluginMetaManager.class);
+    private static final String PLUGINS_PATH = "/plugins/";
+
     private Map pluginInfo = new HashMap();
     private Map resourceToPluginMap = new HashMap();
     private GrailsPluginManager pluginManager;
-    private static final String PLUGINS_PATH = "/plugins/";
     private GrailsApplication grailsApplication;
     private String resourcePattern;
     private ResourceLoader resourceLoader;
+
+    /**
+     * The plugin settings for this application, which allows us to
+     * get access to the descriptors of the plugins used by the app.
+     * This is only used when the application is run from the command
+     * line, not when it's deployed as a WAR.
+     */
+    private PluginBuildSettings pluginSettings;
 
     public DefaultPluginMetaManager() {
         super();
@@ -81,6 +91,10 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
         this.grailsApplication = grailsApplication;
     }
 
+    public void setPluginSettings(PluginBuildSettings settings) {
+        this.pluginSettings = settings;
+    }
+
     public void afterPropertiesSet() throws Exception {
 
         PathMatchingResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver(resourceLoader);
@@ -90,11 +104,10 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
                 pluginDescriptors = patternResolver.getResources(resourcePattern);
             }
             else {
-                BuildSettings settings = BuildSettingsHolder.getSettings();
-                File pluginDir = settings != null ? settings.getProjectPluginsDir() : null;
-                if(pluginDir != null) {
-                    pluginDescriptors = GrailsPluginUtils.getPluginXmlMetadata(pluginDir.getPath());
+                if (pluginSettings == null) {
+                    throw new RuntimeException("Plugin meta manager has not been configured with the plugin settings");
                 }
+                pluginDescriptors = pluginSettings.getPluginXmlMetadata();
             }
         } catch (Throwable e) {
             LOG.debug("Error resolving plug-in descriptors: " + e.getMessage());

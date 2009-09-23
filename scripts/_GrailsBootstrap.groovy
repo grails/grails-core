@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.core.io.FileSystemResourceLoader
@@ -47,7 +46,7 @@ target(loadApp:"Loads the Grails application object") {
 		def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
 		beanDefinitions = builder.beans {
 			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-				resources = GrailsPluginUtils.getArtefactResources(basedir, resolveResources)
+				resources = pluginSettings.artefactResources
 			}
 			grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 				grailsResourceHolder = resourceHolder
@@ -55,6 +54,7 @@ target(loadApp:"Loads the Grails application object") {
 			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
 			pluginMetaManager(DefaultPluginMetaManager) {
                 grailsApplication = ref('grailsApplication')
+                pluginSettings = pluginSettings
             }
 		}
 	}

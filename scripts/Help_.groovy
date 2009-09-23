@@ -24,7 +24,7 @@
 
 import grails.util.GrailsNameUtils
 
-includeTargets << grailsScript("Init")
+includeTargets << grailsScript("_GrailsInit")
     
 class HelpEvaluatingCategory {
 
@@ -63,7 +63,7 @@ boolean shouldGenerateHelp(File script) {
 
 target ( 'default' : "Prints out the help for each script") {
 	ant.mkdir(dir:grailsTmp)    	
-	def scripts = getAllScripts().collect { it.file }
+	def scripts = pluginSettings.availableScripts.collect { it.file }
         
 	def helpText = ""
       

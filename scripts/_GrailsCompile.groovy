@@ -15,7 +15,6 @@
 */
 
 import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import grails.util.GrailsNameUtils
 
@@ -27,7 +26,7 @@ import grails.util.GrailsNameUtils
  * @since 0.4
  */
 
-includeTargets << grailsScript("_GrailsInit")
+includeTargets << grailsScript("_GrailsEvents")
 
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
 ant.path(id: "grails.compile.classpath", compileClasspath)
@@ -92,7 +91,7 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
         def classpathId = "grails.compile.classpath"
-        def pluginResources = getPluginSourceFiles()
+        def pluginResources = pluginSettings.pluginSourceFiles
         def excludedPaths = ["views", "i18n"] // conf gets special handling
         pluginResources = pluginResources.findAll {
             !excludedPaths.contains(it.file.name) && it.file.isDirectory()
@@ -174,7 +173,7 @@ target(compilegsp : "Compile GSP files") {
 
 	// compile views in plugins
 	loadPlugins()
-	def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
+	def pluginInfos = pluginSettings.supportedPluginInfos
 	if(pluginInfos) {
 		for(PluginInfo info in pluginInfos) {
             File pluginViews = new File(info.pluginDir.file, "grails-app/views")

@@ -149,6 +149,10 @@ public class GrailsPluginUtils {
         return INSTANCE
     }
 
+    static synchronized setPluginBuildSettings(PluginBuildSettings settings) {
+        INSTANCE = settings
+    }
+
     /**
      * Returns an array of PluginInfo objects
      */
@@ -167,7 +171,7 @@ public class GrailsPluginUtils {
         if(!settings.pluginManager) {
             settings.pluginManager = PluginManagerHolder.currentPluginManager()
         }
-        return settings.getSupportedPluginInfos(pluginDirPath)
+        return settings.getSupportedPluginInfos()
     }
 
 
@@ -175,7 +179,7 @@ public class GrailsPluginUtils {
      * Gets a list of all the known plugin base directories (directories where plugins are installed to)
      */
     static List<String> getPluginBaseDirectories(String pluginDirPath) {
-         getPluginBuildSettings().getPluginBaseDirectories(pluginDirPath)
+         getPluginBuildSettings().getPluginBaseDirectories()
     }
 
     /**
@@ -190,7 +194,7 @@ public class GrailsPluginUtils {
     }
 
     static Resource[] getPluginDirectories(String pluginDirPath) {
-        getPluginBuildSettings().getPluginDirectories(pluginDirPath)
+        getPluginBuildSettings().getPluginDirectories()
     }
 
     /**
@@ -198,7 +202,7 @@ public class GrailsPluginUtils {
      * and the global "plugins" directory together.
      */
     static List<Resource> getImplicitPluginDirectories(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
-        getPluginBuildSettings().getImplicitPluginDirectories(pluginDirPath)
+        getPluginBuildSettings().getImplicitPluginDirectories()
     }
 
     static boolean isGlobalPluginLocation(Resource pluginDir) {
@@ -209,7 +213,7 @@ public class GrailsPluginUtils {
      * Obtains a reference to all artefact resources (all Groovy files contained within the grails-app directory of plugins or applications)
      */
     static Resource[] getArtefactResources(String basedir, Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getArtefactResources(basedir)
+        getPluginBuildSettings().getArtefactResources()
     }
 
     /**
@@ -225,7 +229,7 @@ public class GrailsPluginUtils {
      */
     static Resource[] getPluginXmlMetadata( String pluginsDirPath,
                                             Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-         getPluginBuildSettings().getPluginXmlMetadata(pluginsDirPath)
+         getPluginBuildSettings().getPluginXmlMetadata()
     }
 
 
@@ -236,13 +240,13 @@ public class GrailsPluginUtils {
                                           String pluginDirPath,
                                           String basedir,
                                           Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getAvailableScripts(grailsHome, pluginDirPath,basedir)
+        getPluginBuildSettings().getAvailableScripts()
     }
     /**
      * Obtains an array of plug-in provided Gant scripts available to a Grails application
      */
     static Resource[] getPluginScripts(String pluginDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginScripts(pluginDirPath)
+        getPluginBuildSettings().getPluginScripts()
     }
 
 
@@ -250,21 +254,21 @@ public class GrailsPluginUtils {
      * Obtains an array of all plugin provided resource bundles
      */
     static Resource[] getPluginResourceBundles(String pluginDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginResourceBundles(pluginDirPath)
+        getPluginBuildSettings().getPluginResourceBundles()
     }
 
     /**
      * Obtains an array of all plug-in provided source files (Java and Groovy)
      */
     static Resource[] getPluginSourceFiles(String pluginsDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginSourceFiles(pluginsDirPath)
+        getPluginBuildSettings().getPluginSourceFiles()
     }
 
     /**
      * Obtains an array of all plug-in provided JAR files
      */
     static Resource[] getPluginJarFiles(String pluginsDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginJarFiles(pluginsDirPath)
+        getPluginBuildSettings().getPluginJarFiles()
     }
 
     /**
@@ -273,7 +277,7 @@ public class GrailsPluginUtils {
     static Resource[] getPluginDescriptors(String basedir,
                                                         String pluginsDirPath,
                                                         Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginDescriptors(basedir, pluginsDirPath)
+        getPluginBuildSettings().getPluginDescriptors()
     }
 
     static Resource getBasePluginDescriptor(String basedir) {
@@ -294,7 +298,7 @@ public class GrailsPluginUtils {
      */
     static Resource[] getPluginLibDirectories(String pluginsDirPath,
                                                             Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-         getPluginBuildSettings().getPluginLibDirectories(pluginsDirPath)
+         getPluginBuildSettings().getPluginLibDirectories()
     }
 
 
@@ -304,7 +308,7 @@ public class GrailsPluginUtils {
      */
     static Resource[] getPluginI18nDirectories(String pluginsDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path,
                                                             Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
-        getPluginBuildSettings().getPluginI18nDirectories(pluginsDirPath)
+        getPluginBuildSettings().getPluginI18nDirectories()
     }
 
     /**
@@ -341,7 +345,7 @@ public class GrailsPluginUtils {
      * Obtains a plugin directory for the given name
      */
     static Resource getPluginDirForName(String pluginsDirPath, String pluginName) {
-        getPluginBuildSettings().getPluginDirForName(pluginName, pluginsDirPath)
+        getPluginBuildSettings().getPluginDirForName(pluginName)
     }
 
     /**

@@ -16,37 +16,28 @@
 
 package org.codehaus.groovy.grails.plugins.web
 
-
-import groovy.lang.MetaClass;
-
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.request.RequestContextHolder as RCH
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-
-import org.codehaus.groovy.grails.plugins.web.taglib.*
-import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.springframework.core.io.FileSystemResource
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.util.BuildSettingsHolder
 import grails.util.Environment
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
-import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
-import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.util.PluginBuildSettings
+
+import groovy.lang.MetaClass
 import java.lang.reflect.Modifier
+
+import org.codehaus.groovy.grails.commons.GrailsClass
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.plugins.PluginMetaManager
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
 import org.springframework.beans.factory.config.PropertiesFactoryBean
-import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
+import org.springframework.context.ApplicationContext
+import org.springframework.core.io.FileSystemResource
+import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.web.pages.*
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -112,12 +103,14 @@ public class GroovyPagesGrailsPlugin {
             log.info "Configuring GSP views directory as '${viewsDir}'"
             groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
+                pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
             }
         }
         else {
             if (developmentMode) {
                 groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                     baseResource = new FileSystemResource(".")
+                    pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
                 }
             }
             else {
@@ -131,6 +124,7 @@ public class GroovyPagesGrailsPlugin {
                         else {
                             baseResource = "/WEB-INF"
                         }
+                        pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
                     }
                 }
             }
@@ -362,5 +356,9 @@ public class GroovyPagesGrailsPlugin {
 
         event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(event.ctx)
 
+    }
+
+    private PluginBuildSettings createPluginSettings() {
+        return new PluginBuildSettings(BuildSettingsHolder.settings);
     }
 }
