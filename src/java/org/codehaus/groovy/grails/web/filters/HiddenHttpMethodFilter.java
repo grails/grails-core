@@ -68,21 +68,13 @@ public class HiddenHttpMethodFilter extends OncePerRequestFilter{
 
     }
 
-    protected String getHttpMethodOverride(HttpServletRequest request) {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-        String httpMethod = null;
-        if(webRequest != null) {
-            final Object val = webRequest.getParams().get(methodParam);
-            if(val!=null)
-                httpMethod = val.toString();
-        }
-        else {
-            httpMethod = request.getParameter(methodParam);
-        }
+    protected String getHttpMethodOverride(HttpServletRequest request) {        
+        String httpMethod = request.getParameter(methodParam);
+        
         if(httpMethod == null) {
             httpMethod = request.getHeader(HEADER_X_HTTP_METHOD_OVERRIDE);
         }
-        return httpMethod;
+        return httpMethod != null ? httpMethod.toUpperCase() : null;
     }
 
     /**

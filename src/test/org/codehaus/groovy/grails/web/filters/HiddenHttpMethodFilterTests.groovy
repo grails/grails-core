@@ -44,23 +44,6 @@ public class HiddenHttpMethodFilterTests extends GroovyTestCase{
        assertEquals "DELETE", method
     }
 
-    void testWithParamsObject() {
-        def filter = new HiddenHttpMethodFilter()
-        def req = new MockHttpServletRequest()
-        def res = new MockHttpServletResponse()
-       	GrailsWebRequest webRequest = new GrailsWebRequest(req, res, new MockServletContext())
-        req.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest)
-        
-        webRequest.params['_method'] = 'DELETE'
-       // req.addParameter("_method", "DELETE")
-        req.setMethod("POST")
-        String method  
-        filter.doFilter(req, res, { req2, res2 ->
-             method = req2.method
-        } as FilterChain)
-
-        assertEquals "DELETE", method
-    }
 
     void testWithHeader() {
         def filter = new HiddenHttpMethodFilter()
