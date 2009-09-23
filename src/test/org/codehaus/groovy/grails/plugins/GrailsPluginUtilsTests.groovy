@@ -97,24 +97,15 @@ grails {
     }
 
     void testGetPluginDirForName() {
-        def searchableDir = new File("tmp/searchable-0.5-SNAPSHOT")
-        def jsecurityDir = new File("tmp/jsecurity-0.2.1")
-        searchableDir.mkdirs()
-        jsecurityDir.mkdirs()
+        assertNotNull GrailsPluginUtils.getPluginDirForName("jsecurity")
+        assertNotNull GrailsPluginUtils.getPluginDirForName("jsecurity-0.3")
+        assertNotNull GrailsPluginUtils.getPluginDirForName("logging")
+        assertNotNull GrailsPluginUtils.getPluginDirForName("logging-0.1")
 
-        try {
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "jsecurity")
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "jsecurity-0.2.1")
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "searchable")
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "searchable-0.5-SNAPSHOT")
-
-            assertNull GrailsPluginUtils.getPluginDirForName("tmp", "jsecurity-0.3")
-            assertNull GrailsPluginUtils.getPluginDirForName("tmp", "remoting")
-            assertNull GrailsPluginUtils.getPluginDirForName("tmp", "remoting-0.3")
-        }
-        finally {
-            FileUtils.deleteDirectory(new File("tmp"))
-        }
+        assertNull GrailsPluginUtils.getPluginDirForName("jsecurity-0.2.1")
+        assertNull GrailsPluginUtils.getPluginDirForName("logging-0.1.1")
+        assertNull GrailsPluginUtils.getPluginDirForName("remoting")
+        assertNull GrailsPluginUtils.getPluginDirForName("remoting-0.3")
     }
 
     void testGetPluginDirectories() {
