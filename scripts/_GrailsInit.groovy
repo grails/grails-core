@@ -29,6 +29,10 @@ import grails.util.GrailsNameUtils
 import groovy.grape.Grape
 import grails.util.Metadata
 
+// No point doing this stuff more than once.
+if (getBinding().variables.containsKey("_init_called")) return
+_init_called = true
+
 Grape.enableAutoDownload = true
 
 // add includes

@@ -26,7 +26,7 @@ import grails.util.GrailsNameUtils
  * @since 0.4
  */
 
-includeTargets << grailsScript("_GrailsInit")
+includeTargets << grailsScript("_GrailsEvents")
 
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
 ant.path(id: "grails.compile.classpath", compileClasspath)

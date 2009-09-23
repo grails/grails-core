@@ -24,7 +24,7 @@
 
 import grails.util.GrailsNameUtils
 
-includeTargets << grailsScript("Init")
+includeTargets << grailsScript("_GrailsInit")
     
 class HelpEvaluatingCategory {
 
