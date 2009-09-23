@@ -239,6 +239,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 // uncomment the below to enable remote dependency resolution
                 // from public Maven repositories
                 //mavenCentral()
+                //mavenLocal()
                 //mavenRepo "http://snapshots.repository.codehaus.org"
                 //mavenRepo "http://repository.codehaus.org"
                 //mavenRepo "http://download.java.net/maven/2/"
@@ -796,6 +797,19 @@ class IvyDomainSpecificLanguageEvaluator {
             mavenResolver.settings = ivySettings
             chainResolver.add mavenResolver
 
+        }
+    }
+
+    void mavenLocal(String repoPath = "${System.getProperty('user.home')}/.m2/repository") {
+        if (isResolverNotAlreadyDefined('mavenLocal')) {
+            repositoryData << ['type':'mavenLocal']
+            FileSystemResolver localMavenResolver = new FileSystemResolver(name:'localMavenResolver');
+            localMavenResolver.local = true
+            localMavenResolver.m2compatible = true
+            localMavenResolver.addArtifactPattern(
+                    "${repoPath}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]")
+            localMavenResolver.settings = ivySettings
+            chainResolver.add localMavenResolver
         }
     }
 
