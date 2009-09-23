@@ -10,9 +10,8 @@
     <content url="file://$MODULE_DIR$/src/jsp21">
       <sourceFolder url="file://$MODULE_DIR$/src/jsp21" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="groovy-1.6.3" level="application" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>

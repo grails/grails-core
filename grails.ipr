@@ -73,7 +73,7 @@
           <option name="LABEL_INDENT_SIZE" value="0" />
           <option name="LABEL_INDENT_ABSOLUTE" value="false" />
         </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="sql">
+        <ADDITIONAL_INDENT_OPTIONS fileType="txt">
           <option name="INDENT_SIZE" value="2" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
           <option name="TAB_SIZE" value="4" />
@@ -211,15 +211,20 @@
   <component name="IdProvider" IDEtalkID="094372AACB9649246F599517414513BF" />
   <component name="InspectionProjectProfileManager">
     <option name="PROJECT_PROFILE" value="Project Default" />
-    <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
-    <scopes />
+    <option name="USE_PROJECT_PROFILE" value="true" />
+    <version value="1.0" />
     <profiles>
       <profile version="1.0" is_locked="false">
         <option name="myName" value="Project Default" />
         <option name="myLocal" value="false" />
       </profile>
     </profiles>
-    <list size="0" />
+    <list size="4">
+      <item index="0" class="java.lang.String" itemvalue="INFO" />
+      <item index="1" class="java.lang.String" itemvalue="WARNING" />
+      <item index="2" class="java.lang.String" itemvalue="ERROR" />
+      <item index="3" class="java.lang.String" itemvalue="SERVER PROBLEM" />
+    </list>
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -399,7 +404,6 @@
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
       <module fileurl="file://$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" filepath="$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" filepath="$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
@@ -512,13 +516,6 @@
         <root url="file://$PROJECT_DIR$/../../../../hibernate-distribution-3.3.1.GA/project/core/src/main/java" />
       </SOURCES>
     </library>
-    <library name="SiteMesh">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/sitemesh-2.4.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
     <library name="Spring">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/org.springframework.js-2.0.3.RELEASE.jar!/" />
@@ -571,13 +568,6 @@
         <root url="jar://$PROJECT_DIR$/../../../../spring-framework-3.0.0.M4/src/org.springframework.integration-tests-sources-3.0.0.M4.jar!/" />
       </SOURCES>
     </library>
-    <library name="dom4j">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/dom4j-1.6.1.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
     <library name="Jetty">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/start.jar!/" />
@@ -595,20 +585,6 @@
         <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jstl-1.1.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/standard-1.1.2.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="JUnit">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/junit-3.8.2.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="HSQLDB">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/hsqldb-1.8.0.10.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
