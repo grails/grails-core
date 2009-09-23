@@ -356,7 +356,8 @@ Are you sure you wish to proceed?
 """)
     if(!result) exit(0)
 
-        checkInPluginZip()
+    println "Checking in plugin zip..."
+    checkInPluginZip()
 
 
     long r = updateDirectoryFromSVN(baseFile)

@@ -29,16 +29,14 @@ import org.springframework.context.ApplicationContextAware
  */
 
 public class DevelopmentShutdownHook implements ApplicationContextAware {
-    public static final Log log = LogFactory.getLog(DevelopmentShutdownHook.class);
 
     public void setApplicationContext(ApplicationContext applicationContext)
     {
       Runtime.runtime.addShutdownHook {
-        log.info("Application context shutting down...")
+        println("Application context shutting down...")
         applicationContext.close()
-        log.info("Application context shutdown.")
+        println("Application context shutdown.")
       }
-      log.info("Shutdown hook setup...")
     }
 
 }

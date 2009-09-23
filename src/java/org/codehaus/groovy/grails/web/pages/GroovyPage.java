@@ -362,22 +362,40 @@ public abstract class GroovyPage extends Script {
                 out.append("</").append(tagNamespace).append(':').append(tagName).append('>');
             }
 		}
-        catch(Exception e) {
+        catch(Throwable e) {
         	if(LOG.isTraceEnabled()) {
         		LOG.trace("Full exception for problem at " + getGroovyPageFileName() + ":" + lineNumber, e);
         	}
-           Throwable cause = GrailsExceptionResolver.getRootCause(e);
-           if(cause instanceof GrailsTagException) {
-               // catch and rethrow with context
-               throw new GrailsTagException(cause.getMessage(),getGroovyPageFileName(), lineNumber);
+
+           // The capture* tags are internal tags and not to be displayed to the user
+           // hence we don't wrap the exception and simple rethrow it
+           if(tagName.matches("capture(Body|Head|Meta|Title|Component)")) {
+               RuntimeException rte = GrailsExceptionResolver.getFirstRuntimeException(e);
+               if(rte == null) {
+                   throwRootCause(tagName, tagNamespace, lineNumber, e);                   
+               }
+               else {
+                   throw rte;
+               }
            }
            else {
-               throw new GrailsTagException("Error executing tag <"+tagNamespace+":"+tagName+">: " + e.getMessage(),e, getGroovyPageFileName(),lineNumber);
+               throwRootCause(tagName, tagNamespace, lineNumber, e);
            }
         }
     }
 
-	private static boolean resolvePreferSubChunk(String tagNamespace, String tagName) {
+    private void throwRootCause(String tagName, String tagNamespace, int lineNumber, Throwable e) {
+        Throwable cause = GrailsExceptionResolver.getRootCause(e);
+        if(cause instanceof GrailsTagException) {
+            // catch and rethrow with context
+            throw new GrailsTagException(cause.getMessage(),getGroovyPageFileName(), lineNumber);
+        }
+        else {
+            throw new GrailsTagException("Error executing tag <"+tagNamespace+":"+tagName+">: " + e.getMessage(),e, getGroovyPageFileName(),lineNumber);
+        }
+    }
+
+    private static boolean resolvePreferSubChunk(String tagNamespace, String tagName) {
 		boolean preferSubChunkWhenWritingToOtherBuffer=false;
 		if(DEFAULT_NAMESPACE.equals(tagNamespace) && tagName.startsWith("capture")) {
 			preferSubChunkWhenWritingToOtherBuffer=true;

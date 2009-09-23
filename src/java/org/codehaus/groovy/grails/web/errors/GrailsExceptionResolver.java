@@ -148,4 +148,14 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
         }
         return lineNumber;
     }
+
+    public static RuntimeException getFirstRuntimeException(Throwable e) {
+        if(e instanceof RuntimeException) return (RuntimeException) e;
+        Throwable ex = e;
+        while(ex.getCause() != null && !ex.equals(ex.getCause())) {
+            ex = ex.getCause();
+            if(ex instanceof RuntimeException) return (RuntimeException) ex;
+        }
+        return null;
+    }
 }
