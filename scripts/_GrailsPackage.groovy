@@ -19,7 +19,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.gparallelizer.Asynchronizer
 import org.springframework.core.io.Resource
 
@@ -115,7 +114,7 @@ target( packageApp : "Implementation of package target") {
 							 includes:"**/*.properties",
 							 encoding:"UTF-8")
 
-            def i18nPluginDirs = GrailsPluginUtils.getPluginI18nDirectories()
+            def i18nPluginDirs = pluginSettings.pluginI18nDirectories
             if(i18nPluginDirs) {
                 Asynchronizer.withAsynchronizer(5) {
                     i18nPluginDirs.eachAsync { Resource srcDir ->

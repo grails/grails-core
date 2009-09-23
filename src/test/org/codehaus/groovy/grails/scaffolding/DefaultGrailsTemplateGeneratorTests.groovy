@@ -4,8 +4,6 @@ import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDyna
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-
 
 /**
  * @author Graeme Rocher

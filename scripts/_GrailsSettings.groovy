@@ -14,17 +14,18 @@
 * limitations under the License.
 */
 
+import grails.util.BuildScope
 import grails.util.BuildSettings
+import grails.util.Environment
 import grails.util.GrailsNameUtils
+import grails.util.Metadata
+import grails.util.PluginBuildSettings
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.FileCopyUtils
-import grails.util.Environment
-import grails.util.Metadata
-import grails.util.BuildScope
 
 /**
  * Gant script containing build variables.
@@ -73,7 +74,13 @@ buildProps = buildConfig.toProperties()
 enableProfile = getPropertyValue("grails.script.profile", false).toBoolean()
 pluginsHome = grailsSettings.projectPluginsDir.path
 
+// Used to find out about plugins used by this app. The plugin manager
+// is configured later when its created (see _PluginDependencies).
+pluginSettings = new PluginBuildSettings(grailsSettings)
 
+// While some code still relies on GrailsPluginUtils, make sure it
+// uses the same PluginBuildSettings instance as the scripts.
+GrailsPluginUtils.pluginBuildSettings = pluginSettings
 
 // Load the application metadata (application.properties)
 grailsAppName = null

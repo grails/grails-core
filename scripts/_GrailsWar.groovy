@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.compiler.support.*
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import grails.util.BuildScope
-import grails.util.Metadata
 import grails.util.Environment
+import grails.util.Metadata
+import org.codehaus.groovy.grails.compiler.support.*
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -158,7 +157,7 @@ target (war: "The implementation target") {
 
 
         if(includeJars) {            
-        	def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
+        	def pluginInfos = pluginSettings.supportedPluginInfos
 
             GrailsPluginManager pm = pluginManager
             pluginInfos = pluginInfos.findAll { info -> pm.supportsCurrentBuildScope(info.name) }
@@ -229,7 +228,7 @@ target (war: "The implementation target") {
 
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
     def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
-    def pluginInfos = GrailsPluginUtils.getPluginInfos(pluginsHome)
+    def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
 
     new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
         def xml = new groovy.xml.MarkupBuilder(writer)
@@ -280,7 +279,7 @@ target(cleanUpAfterWar:"Cleans up after performing a WAR") {
 
 target(warPlugins:"Includes the plugins in the WAR") {
     ant.sequential {
-        def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
+        def pluginInfos = pluginSettings.supportedPluginInfos
         if(pluginInfos) {
             for(PluginInfo info in pluginInfos) {
                 def pluginBase = info.pluginDir.file

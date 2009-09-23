@@ -16,7 +16,6 @@
 
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * Gant script that handles the creation of Grails applications
@@ -58,7 +57,7 @@ def resetBaseDirectory(String basedir) {
     metadata = Metadata.getInstance(metadataFile)
 
     // Reset the plugin stuff.
-    GrailsPluginUtils.clearCaches()
+    pluginSettings.clearCaches()
     pluginsHome = grailsSettings.projectPluginsDir.path
 }
 

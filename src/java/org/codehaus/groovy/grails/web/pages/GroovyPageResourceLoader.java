@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.PluginBuildSettings;
+import java.io.IOException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,8 +25,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
 
 /**
  * A StaticResourceLoader that loads GSPs from a local grails-app folder instead of from WEB-INF in
@@ -39,17 +40,24 @@ import java.io.IOException;
  *        Time: 4:25:08 PM
  */
 public class GroovyPageResourceLoader extends StaticResourceLoader {
-    private static final Log LOG = LogFactory.getLog(GroovyPageResourceLoader.class);
     /**
      * The id of the instance of this bean to be used in the Spring context
      */
     public static final String BEAN_ID = "groovyPageResourceLoader";
-    private Resource localBaseResource;
+
+    private static final Log LOG = LogFactory.getLog(GroovyPageResourceLoader.class);
     private static final String PLUGINS_PATH = "plugins/";
+
+    private Resource localBaseResource;
+    private PluginBuildSettings pluginSettings;
 
     public void setBaseResource(Resource baseResource) {
         this.localBaseResource = baseResource;
         super.setBaseResource(baseResource);
+    }
+    
+    public void setPluginSettings(PluginBuildSettings settings) {
+        this.pluginSettings = settings;
     }
 
     public Resource getResource(String location) {
@@ -66,7 +74,8 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         Resource resource = super.getResource(location);
         if(!resource.exists() && location.startsWith(PLUGINS_PATH)) {
             if(location.equals(PLUGINS_PATH)) {
-                return new FileSystemResource(GrailsPluginUtils.getPluginBaseDirectories().get(0));
+                if (pluginSettings == null) throw new RuntimeException("'pluginsettings' has not been initialised.");
+                return new FileSystemResource(pluginSettings.getPluginBaseDirectories().get(0));
             }
             else {
                 final Resource pluginResource = lookupResourceForPluginPath(location);
@@ -87,7 +96,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         if(firstSlash > -1) {
             String pluginName = pluginPath.substring(0, firstSlash);
             String viewPath = pluginPath.substring(firstSlash+1, pluginPath.length());
-            Resource pluginBase = GrailsPluginUtils.getPluginDirForName(pluginName);
+            Resource pluginBase = pluginSettings.getPluginDirForName(pluginName);
             if(pluginBase != null) {
                 try {
                     Resource tmp = new FileSystemResource(pluginBase.getFile().getAbsolutePath() + '/' +viewPath);

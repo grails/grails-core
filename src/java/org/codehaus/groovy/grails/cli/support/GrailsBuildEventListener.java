@@ -17,10 +17,10 @@ package org.codehaus.groovy.grails.cli.support;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
+import grails.util.PluginBuildSettings;
 import groovy.lang.*;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
@@ -67,7 +67,8 @@ public class GrailsBuildEventListener implements BuildListener{
             loadEventsScript( findEventsScript(new File(buildSettings.getUserHome(),".grails/scripts")) );
             loadEventsScript( findEventsScript(new File(buildSettings.getBaseDir(), "scripts")) );
 
-            for (Resource pluginBase : GrailsPluginUtils.getPluginDirectories()) {
+            PluginBuildSettings pluginSettings = (PluginBuildSettings) binding.getVariable("pluginSettings");
+            for (Resource pluginBase : pluginSettings.getPluginDirectories()) {
                 try {
                     loadEventsScript( findEventsScript(new File(pluginBase.getFile(), "scripts")) );
                 }
