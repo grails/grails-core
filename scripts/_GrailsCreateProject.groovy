@@ -58,7 +58,7 @@ def resetBaseDirectory(String basedir) {
     metadata = Metadata.getInstance(metadataFile)
 
     // Reset the plugin stuff.
-    pluginSettings.clearCaches()
+    pluginSettings.clearCache()
     pluginsHome = grailsSettings.projectPluginsDir.path
 }
 
