@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.mapping;
 
 
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
+import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
@@ -52,6 +53,10 @@ class UrlMappingsGrailsPlugin {
         def filters = webXml.filter
         def lastFilter = filters[filters.size()-1]
         lastFilter + {
+        	filter {
+        		'filter-name'('hiddenHttpMethod')
+        		'filter-class'(HiddenHttpMethodFilter.name)
+        	}
             filter {
                 'filter-name'('urlMapping')
                 'filter-class'(org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter.getName())
@@ -105,11 +110,18 @@ class UrlMappingsGrailsPlugin {
 
         lastFilterMapping + {
             'filter-mapping' {
+                'filter-name'('hiddenHttpMethod')
+                'url-pattern'("/*")
+                'dispatcher'("FORWARD")
+                'dispatcher'("REQUEST")						                
+            }        	
+            'filter-mapping' {
                 'filter-name'('urlMapping')
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
                 'dispatcher'("REQUEST")						                
             }
+            
         }
     }
 	

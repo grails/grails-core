@@ -19,6 +19,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import java.text.DateFormat
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.springframework.beans.SimpleTypeConverter
+import org.springframework.http.HttpMethod;
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 
 /**
@@ -202,6 +203,7 @@ class FormTagLib {
         out << form(attrs, body)
     }
 
+    
     /**
      *  General linking to controllers, actions etc. Examples:
      *
@@ -215,8 +217,15 @@ class FormTagLib {
 
         writer << "<form action=\"${createLink(attrs)}\" "
         // default to post
-        if (!attrs['method']) {
+        def method = attrs.remove('method')?.toUpperCase() ?: 'POST'
+        def httpMethod = HttpMethod.valueOf(method)
+        boolean notGet = httpMethod != HttpMethod.GET
+        
+        if (notGet) {
             writer << 'method="post" '
+        }
+        else {
+        	writer << 'method="get" '
         }
         // process remaining attributes
         attrs.id = attrs.id ? attrs.id : attrs.name
@@ -229,6 +238,9 @@ class FormTagLib {
         if (request['flowExecutionKey']) {
             writer.println()
             hiddenFieldImpl(writer, [name: "execution", value: request['flowExecutionKey']])
+        }
+        if(notGet && httpMethod != HttpMethod.POST) {
+        	hiddenFieldImpl(writer, [name: "_method", value: httpMethod.toString()])
         }
         if(useToken) {            
             def token = SynchronizerToken.store(session)

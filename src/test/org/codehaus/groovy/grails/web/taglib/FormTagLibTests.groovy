@@ -19,6 +19,11 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = Collections.unmodifiableCollection(Arrays.asList(["month", "day", "hour", "minute", null] as String[] ))
 
 
+    void testFormTagWithAlternativeMethod() {
+    	def template = '<g:form url="/foo/bar" method="delete"></g:form>'
+        assertOutputEquals('<form action="/foo/bar" method="post" ><input type="hidden" name="_method" value="DELETE" id="_method" /></form>', template)    	
+    }
+    
     // test for GRAILS-3865
     void testHiddenFieldWithZeroValue() {
         def template = '<g:hiddenField name="index" value="${0}" />'
