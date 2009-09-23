@@ -46,7 +46,7 @@ target(loadApp:"Loads the Grails application object") {
 		def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
 		beanDefinitions = builder.beans {
 			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-				resources = pluginSettings.getArtefactResources(basedir)
+				resources = pluginSettings.artefactResources
 			}
 			grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 				grailsResourceHolder = resourceHolder

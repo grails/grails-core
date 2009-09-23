@@ -498,7 +498,7 @@ target(loadPlugins:"Loads Grails' plugins") {
 	        profile("loading plugins") {
 				event("PluginLoadStart", [pluginManager])
 	            pluginManager.loadPlugins()
-                def baseDescriptor = pluginSettings.basePluginDescriptor()
+                def baseDescriptor = pluginSettings.basePluginDescriptor
                 if(baseDescriptor) {                    
                     def baseName = FilenameUtils.getBaseName(baseDescriptor.filename)
                     def plugin = pluginManager.getGrailsPluginForClassName(baseName)

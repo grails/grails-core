@@ -67,9 +67,11 @@ class PluginBuildSettings {
     }
 
     PluginBuildSettings(BuildSettings buildSettings, GrailsPluginManager pluginManager) {
+        // We use null-safe navigation on buildSettings because otherwise
+        // lots of unit tests will fail.
         this.buildSettings = buildSettings
         this.pluginManager = pluginManager
-        this.pluginDirPath = buildSettings.getProjectPluginsDir().absolutePath
+        this.pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
         this.pluginLocations = buildSettings?.config?.grails?.plugin?.location
     }
 

@@ -91,7 +91,7 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
         this.grailsApplication = grailsApplication;
     }
 
-    public void setPluginBuildSettings(PluginBuildSettings settings) {
+    public void setPluginSettings(PluginBuildSettings settings) {
         this.pluginSettings = settings;
     }
 

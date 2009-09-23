@@ -103,14 +103,14 @@ public class GroovyPagesGrailsPlugin {
             log.info "Configuring GSP views directory as '${viewsDir}'"
             groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
-                pluginSettings = createPluginSettings()
+                pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
             }
         }
         else {
             if (developmentMode) {
                 groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                     baseResource = new FileSystemResource(".")
-                pluginSettings = createPluginSettings()
+                    pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
                 }
             }
             else {
@@ -124,7 +124,7 @@ public class GroovyPagesGrailsPlugin {
                         else {
                             baseResource = "/WEB-INF"
                         }
-                        pluginSettings = createPluginSettings()
+                        pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
                     }
                 }
             }
