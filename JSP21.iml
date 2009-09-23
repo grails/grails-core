@@ -23,6 +23,7 @@
     </orderEntry>
     <orderEntry type="module" module-name="Grails" />
     <orderEntry type="library" name="javax.servlet" level="project" />
+    <orderEntry type="library" name="Groovy" level="project" />
   </component>
 </module>
 

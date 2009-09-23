@@ -9,7 +9,6 @@
       <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
       <properties />
-      <executeOn event="beforeRun" target="jar" />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -585,6 +584,13 @@
         <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jstl-1.1.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/standard-1.1.2.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Groovy">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.6.4.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

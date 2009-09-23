@@ -28,15 +28,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.6.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="Groovy" level="project" />
     <orderEntry type="library" exported="" name="Apache Commons" level="project" />
     <orderEntry type="library" exported="" name="Spring" level="project" />
     <orderEntry type="library" exported="" name="Hibernate 3" level="project" />
@@ -66,11 +58,9 @@
     <orderEntry type="module-library" exported="">
       <library name="Apache Ant">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ant-trax.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-1.7.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-nodeps-1.7.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-junit-1.7.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-launcher-1.7.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-nodeps-1.7.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-trax-1.7.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-1.7.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
