@@ -33,21 +33,6 @@ import org.springframework.core.io.Resource
 includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
-target(checkVersion: "Stops build if app expects different Grails version") {
-    if (metadataFile.exists()) {
-        if (appGrailsVersion != grailsVersion) {
-            event("StatusFinal", ["Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
-                    "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails " +
-                    "version is newer than the version your application expects."])
-            exit(1)
-        }
-    } else {
-        // We know this is pre-0.5 application
-        event("StatusFinal", ["Application is pre-Grails 0.5, please run: grails upgrade"])
-        exit(1)
-    }
-}
-
 target( createConfig: "Creates the configuration object") {
    if(configFile.exists()) {
        def configClass

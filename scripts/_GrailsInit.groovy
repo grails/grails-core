@@ -114,6 +114,21 @@ target(createStructure: "Creates the application directory structure") {
     }
 }
 
+target(checkVersion: "Stops build if app expects different Grails version") {
+    if (metadataFile.exists()) {
+        if (appGrailsVersion != grailsVersion) {
+            event("StatusFinal", ["Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
+                    "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails " +
+                    "version is newer than the version your application expects."])
+            exit(1)
+        }
+    } else {
+        // We know this is pre-0.5 application
+        event("StatusFinal", ["Application is pre-Grails 0.5, please run: grails upgrade"])
+        exit(1)
+    }
+}
+
 target(updateAppProperties: "Updates default application.properties") {
     def entries = [ "app.name": "$grailsAppName", "app.grails.version": "$grailsVersion" ]
     if (grailsAppVersion) {
