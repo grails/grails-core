@@ -26,6 +26,7 @@ import grails.util.Metadata
  */
 
 includeTargets << grailsScript("_GrailsPlugins")
+includeTargets << grailsScript("_GrailsInit")
 
 grailsAppName = ""
 projectType = "app"
