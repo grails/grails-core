@@ -67,8 +67,10 @@ public class ClassPropertyFetcher {
 					if (method.getParameterTypes().length == 0) {
 						String name = method.getName();
 						if (name.indexOf('$') == -1) {
-							if (name.startsWith("get")) {
+							if (name.length() > 3 && name.startsWith("get") && Character.isUpperCase(name.charAt(3))) {
 								name = name.substring(3);
+							} else if (name.length() > 2 && name.startsWith("is") && Character.isUpperCase(name.charAt(2)) && (method.getReturnType()==Boolean.class || method.getReturnType()==boolean.class)) {
+								name = name.substring(2);
 							}
 							PropertyFetcher fetcher = new GetterPropertyFetcher(
 									method, true);

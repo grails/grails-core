@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.*;
 import org.springframework.core.JdkVersion;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Graeme Rocher
@@ -146,16 +147,25 @@ public class GrailsClassUtils {
         if(instance == null || propertyValue == null)
             return null;
 
-        BeanWrapper wrapper = new BeanWrapperImpl(instance);
-        PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
+        PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(instance.getClass());
 
         for (int i = 0; i < descriptors.length; i++) {
-            Object value = wrapper.getPropertyValue( descriptors[i].getName() );
-            if(propertyValue.equals(value))
-                return descriptors[i];
+        	PropertyDescriptor pd=descriptors[i];
+        	if(isAssignableOrConvertibleFrom(pd.getPropertyType(), propertyValue.getClass())) {
+        		Object value;
+				try {
+			   		ReflectionUtils.makeAccessible(pd.getReadMethod());
+			   		value = pd.getReadMethod().invoke(instance, (Object[]) null);					
+				} catch (Exception e) {
+					throw new FatalBeanException("Problem calling readMethod of " + pd, e);
+				}
+        		if(propertyValue.equals(value))
+        			return pd;
+        	}
         }
         return null;
     }
+    
     /**
      * Returns the type of the given property contained within the specified class
      *
@@ -1074,9 +1084,11 @@ public class GrailsClassUtils {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
         List<MetaProperty> metaProperties = mc.getProperties();
         for (MetaProperty metaProperty : metaProperties) {
-            Object val = metaProperty.getProperty(target);
-            if (val != null && val.equals(obj))
-                return metaProperty.getName();
+        	if(isAssignableOrConvertibleFrom(metaProperty.getType(), obj.getClass())) {
+	            Object val = metaProperty.getProperty(target);
+	            if (val != null && val.equals(obj))
+	                return metaProperty.getName();
+        	}
         }
         return null;
     }
