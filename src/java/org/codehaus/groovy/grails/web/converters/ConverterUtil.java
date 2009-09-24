@@ -200,13 +200,15 @@ public class ConverterUtil {
     	if(clazz.isInstance(delegate))
     		return delegate;
     	else if(delegate instanceof Collection && clazz.isArray()) {
+			int size=((Collection)delegate).size();
     		if(clazz.getComponentType() == Object.class) {
-    			int size=((Collection)delegate).size();
     			if(size==0) {
     				return EMPTY_OBJECT_ARRAY;
     			} else {
     				return ((Collection)delegate).toArray((Object[])Array.newInstance(clazz.getComponentType(), size));
     			}
+    		} else if (size==0) {
+    			return Array.newInstance(clazz.getComponentType(), 0);
     		} else {
     			return DefaultTypeTransformation.asArray(delegate, clazz);
     		}
