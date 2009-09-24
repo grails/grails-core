@@ -15,18 +15,21 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.util.*;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.validation.Validator;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.util.*;
 
 /**
  *
@@ -518,16 +521,16 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             PropertyDescriptor[] descriptors;
 
             try {
-                descriptors = java.beans.Introspector.getBeanInfo(type).getPropertyDescriptors();
-            } catch (IntrospectionException e) {
-                throw new GrailsDomainException("Failed to use class ["+type+"] as a component. Cannot introspect! " + e.getMessage());
+                descriptors = BeanUtils.getPropertyDescriptors(type);
+            } catch (BeansException e) {
+                throw new GrailsDomainException("Failed to use class ["+type+"] as a component. Cannot introspect! " + e.getMessage(), e);
             }
 
             List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.TRANSIENT, List.class);
             if(tmp!=null) this.transients = tmp;
             this.properties = createDomainClassProperties(this,descriptors);
             try {
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), properties);
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), properties);
                 DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
             } catch (IntrospectionException e) {
                 LOG.error("Error reading embedded component ["+getClazz()+"] constraints: " +e .getMessage(), e);
@@ -638,7 +641,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             try {
                 GrailsDomainClassProperty[] props = getPersistentProperties();
                 this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
-                        getReference().getWrappedInstance(),
+                        getReferenceInstance(),
                         props);
             } catch (IntrospectionException e) {
                 LOG.error("Error reading class [" + getClazz() + "] constraints: " + e.getMessage(), e);

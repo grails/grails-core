@@ -15,8 +15,17 @@
 package org.codehaus.groovy.grails.commons;
 
 
+import static java.util.Collections.EMPTY_LIST;
+import static java.util.Collections.EMPTY_MAP;
+import static java.util.Collections.unmodifiableMap;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
+import java.util.*;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -25,12 +34,6 @@ import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.Validator;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import static java.util.Collections.*;
 
 /**
  * @author Graeme Rocher
@@ -60,7 +63,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     public DefaultGrailsDomainClass(Class clazz) {
         super(clazz, "");
-        PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
+        PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
 
         if(!clazz.getSuperclass().equals( GroovyObject.class ) &&
            !clazz.getSuperclass().equals(Object.class) &&
@@ -106,7 +109,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         establishPersistentProperties();
         // process the constraints
         try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistentProperties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
         } catch (IntrospectionException e) {
             LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
         }
@@ -363,6 +366,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     }
 
+    
     /**
      * Finds a property type is an array of descriptors for the given property name
      *
@@ -370,7 +374,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      * @param propertyName The property name
      * @return The Class or null
      */
-	private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
+    private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
 		PropertyDescriptor d = null;
         for (PropertyDescriptor descriptor : descriptors) {
             if (descriptor.getName().equals(propertyName)) {
@@ -711,7 +715,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     public void refreshConstraints() {
         try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistentProperties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
 
             // Embedded components have their own ComponentDomainClass
             // instance which won't be refreshed by the application.

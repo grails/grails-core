@@ -142,7 +142,7 @@ class DomainClassGrailsPlugin {
         metaClass.clearErrors = {->
             delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
         }
-        if (!metaClass.respondsTo(dc.getReference(), "validate")) {
+        if (!dc.hasMetaMethod("validate")) {
             metaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
@@ -190,7 +190,7 @@ class DomainClassGrailsPlugin {
             }
             else if(prop.oneToOne || prop.manyToOne) {
                 def identifierPropertyName = "${prop.name}Id"
-                if(!metaClass.hasProperty(dc.reference.wrappedInstance,identifierPropertyName)) {
+                if(!dc.hasMetaProperty(identifierPropertyName)) {
                     def getterName = GrailsClassUtils.getGetterName(identifierPropertyName)
                     metaClass."$getterName" = {-> GrailsDomainConfigurationUtil.getAssociationIdentifier(delegate, prop.name, prop.referencedDomainClass) }
                 }
