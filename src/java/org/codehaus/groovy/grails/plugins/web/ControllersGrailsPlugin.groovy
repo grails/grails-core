@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
+import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter;
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.metaclass.ChainMethod
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
@@ -136,6 +137,11 @@ class ControllersGrailsPlugin {
 
         // add the Grails web request filter
         lastFilter + {
+        	filter {
+        		'filter-name'('hiddenHttpMethod')
+        		'filter-class'(HiddenHttpMethodFilter.name)
+        	}
+        	
             filter {
                 'filter-name'('grailsWebRequest')
                 'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
@@ -148,6 +154,12 @@ class ControllersGrailsPlugin {
             }
         }
         def grailsWebRequestFilter = {
+            'filter-mapping' {
+                'filter-name'('hiddenHttpMethod')
+                'url-pattern'("/*")
+                'dispatcher'("FORWARD")
+                'dispatcher'("REQUEST")                
+            }        	        		
             'filter-mapping'
             {
                 'filter-name'('grailsWebRequest')

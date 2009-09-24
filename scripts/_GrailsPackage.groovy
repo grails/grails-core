@@ -33,7 +33,6 @@ import org.springframework.core.io.Resource
 includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
-
 target( createConfig: "Creates the configuration object") {
    if(configFile.exists()) {
        def configClass

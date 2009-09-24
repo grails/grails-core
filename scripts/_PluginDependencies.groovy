@@ -575,7 +575,7 @@ target(updatePluginsList:"Updates the plugin list from the remote plugin-list.xm
 
 
 def resetClasspathAndState() {
-    pluginSettings.clearCaches()
+    pluginSettings.clearCache()
     classpathSet = false
     classpath()
     PluginManagerHolder.pluginManager = null

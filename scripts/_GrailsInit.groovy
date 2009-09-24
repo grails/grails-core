@@ -23,7 +23,6 @@
 * @since 0.4
 */
 
-import grails.util.GrailsUtil
 import org.springframework.core.io.FileSystemResource
 import grails.util.GrailsNameUtils
 import groovy.grape.Grape
@@ -38,17 +37,6 @@ Grape.enableAutoDownload = true
 // add includes
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << grailsScript("_PluginDependencies")
-
-
-exit = {
-    event("Exiting", [it])
-    // Prevent system.exit during unit/integration testing
-    if (System.getProperty("grails.cli.testing")) {
-        throw new RuntimeException("Gant script exited")
-    } else {
-        System.exit(it)
-    }
-}
 
 
 // Generates Eclipse .classpath entries for all the Grails dependencies,
@@ -96,16 +84,6 @@ eclipseClasspathGrailsJars = {args ->
     result
 }
 
-confirmInput = {String message, code="confirm.message" ->
-    if(!isInteractive) {
-        println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
-        exit(1)
-    }
-    ant.input(message: message, addproperty: code, validargs: "y,n")
-    def result = ant.antProject.properties[code]
-    (result == 'y')
-}
-
 target(createStructure: "Creates the application directory structure") {
     ant.sequential {
         mkdir(dir: "${basedir}/src")
@@ -150,7 +128,6 @@ target(checkVersion: "Stops build if app expects different Grails version") {
         exit(1)
     }
 }
-
 
 target(updateAppProperties: "Updates default application.properties") {
     def entries = [ "app.name": "$grailsAppName", "app.grails.version": "$grailsVersion" ]
@@ -202,15 +179,4 @@ target(init: "main init target") {
     updateMetadata(
             "app.version": grailsAppVersion ?: "0.1",
             "app.servlet.version": servletVersion)
-}
-
-logError = { String message, Throwable t ->
-    GrailsUtil.deepSanitize(t)
-    t.printStackTrace()
-    event("StatusError", ["$message: ${t.message}"])
-}
-
-logErrorAndExit = { String message, Throwable t ->
-    logError(message, t)
-    exit(1)
 }
