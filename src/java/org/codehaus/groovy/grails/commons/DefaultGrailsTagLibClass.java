@@ -16,11 +16,8 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
 import java.beans.PropertyDescriptor;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -56,7 +53,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
             }
         }
 
-        PropertyDescriptor[] props = getReference().getPropertyDescriptors();
+        PropertyDescriptor[] props = getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor prop = props[i];
             Closure tag = (Closure)getPropertyOrStaticPropertyOrFieldValue(prop.getName(),Closure.class);

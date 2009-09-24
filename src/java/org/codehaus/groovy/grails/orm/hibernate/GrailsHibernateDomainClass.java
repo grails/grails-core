@@ -17,15 +17,16 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
+
+import java.beans.IntrospectionException;
+import java.util.*;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodsInterceptor;
-import org.codehaus.groovy.grails.commons.metaclass.DynamicMethods;
-import org.codehaus.groovy.grails.commons.metaclass.Interceptor;
-import org.codehaus.groovy.grails.commons.metaclass.ProxyMetaClass;
+import org.codehaus.groovy.grails.commons.metaclass.*;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 import org.hibernate.EntityMode;
@@ -35,11 +36,7 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.validation.Validator;
-
-import java.beans.IntrospectionException;
-import java.util.*;
 
 /**
  * An implementation of the GrailsDomainClass interface that allows Classes
@@ -84,12 +81,11 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     public GrailsHibernateDomainClass(Class clazz, SessionFactory sessionFactory, ClassMetadata metaData) {
 	super(clazz, "");
 
-	BeanWrapper bean = getReference();
 	// configure identity property
 	String ident = metaData.getIdentifierPropertyName();
 
 	if (ident != null) {
-	    Class identType = bean.getPropertyType(ident);
+	    Class identType = getPropertyType(ident);
 	    this.identifier = new GrailsHibernateDomainClassProperty(this, ident);
 	    this.identifier.setIdentity(true);
 	    this.identifier.setType(identType);
@@ -103,7 +99,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 	    String propertyName = propertyNames[i];
 	    if (!propertyName.equals(ident)) {
 		GrailsHibernateDomainClassProperty prop = new GrailsHibernateDomainClassProperty(this, propertyName);
-		prop.setType(bean.getPropertyType(propertyName));
+		prop.setType(getPropertyType(propertyName));
 		Type hibernateType = metaData.getPropertyType(propertyName);
 		// if its an association type
 		if (hibernateType.isAssociationType()) {
@@ -149,7 +145,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     private void evaluateConstraints() {
 	Map existing = (Map) getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.CONSTRAINTS, Map.class);
 	if (existing == null) {
-	    Object instance = getReference().getWrappedInstance();
+	    Object instance = getReferenceInstance();
 	    try {
 		DynamicMethods interceptor = new AbstractDynamicMethodsInterceptor() {
 		};

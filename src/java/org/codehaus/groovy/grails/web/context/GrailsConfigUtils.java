@@ -58,7 +58,7 @@ public class GrailsConfigUtils {
             GrailsClass[] bootstraps =  application.getArtefacts(BootstrapArtefactHandler.TYPE);
             for (int i = 0; i < bootstraps.length; i++) {
                 final GrailsBootstrapClass bootstrapClass = (GrailsBootstrapClass) bootstraps[i];
-                final Object instance = bootstrapClass.getReference().getWrappedInstance();
+                final Object instance = bootstrapClass.getReferenceInstance();
                 webContext.getAutowireCapableBeanFactory()
                             .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
                 bootstrapClass.callInit(  servletContext );
