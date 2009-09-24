@@ -1,4 +1,4 @@
-/* Copyright 2004-2005 Graeme Rocher
+		/* Copyright 2004-2005 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -430,7 +431,8 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             }
         }
 
-        if (lastGroup != null) {
+        Map<String,Object> config = ConfigurationHolder.getFlatConfig();
+        if (lastGroup != null && config != null && Boolean.TRUE.equals(config.get("grails.mapping.legacyMapping"))) {
             String remainingUri = uri.substring(uri.lastIndexOf(lastGroup) + lastGroup.length());
             if (remainingUri.length() > 0) {
                 if (remainingUri.startsWith(SLASH)) remainingUri = remainingUri.substring(1);
