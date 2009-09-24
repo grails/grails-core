@@ -40,8 +40,7 @@ import org.springframework.webflow.engine.support.TransitionExecutingFlowExecuti
 import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.ViewFactory
-import java.beans.Introspector
-import java.beans.BeanInfo
+import org.springframework.beans.BeanUtils
 import java.beans.PropertyDescriptor
 
 /**
@@ -391,7 +390,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
      private String viewName
      private applicationContext
      private redirectUrl
-     private BeanInfo beanInfo = Introspector.getBeanInfo(ExpressionDelegate)
+     def propertyDescriptors = BeanUtils.getPropertyDescriptors(ExpressionDelegate)
 
      FlowInfoCapturer(FlowBuilder builder,ApplicationContext applicationContext) {
          this.builder = builder;
@@ -452,7 +451,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
      def propertyMissing(String name) {
 
-         if(beanInfo.propertyDescriptors.find { PropertyDescriptor pd -> pd.name == name}) {
+         if(propertyDescriptors.find { PropertyDescriptor pd -> pd.name == name}) {
              return new PropertyExpression(name)
          }
          else {

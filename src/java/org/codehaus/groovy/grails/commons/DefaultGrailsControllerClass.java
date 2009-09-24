@@ -18,12 +18,13 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.AntPathMatcher;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.AntPathMatcher;
 
 /**
  * A class that evaluates the conventions contained within controllers to perform auto-configuration
@@ -90,7 +91,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         this.controllerPath = uri + SLASH;
 
 
-        PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
+        PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
             Closure closure = (Closure)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName(), Closure.class);
@@ -118,7 +119,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             }
         }
 
-        if (!getReference().isReadableProperty(defaultActionName) && closureNames.size() == 1) {
+        if (!isReadableProperty(defaultActionName) && closureNames.size() == 1) {
             defaultActionName = ((String)closureNames.iterator().next());
         }
         configureDefaultActionIfSet();
@@ -254,14 +255,14 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 	}
 
 	public Closure getBeforeInterceptor(GroovyObject controller) {
-        if(getReference().isReadableProperty(BEFORE_INTERCEPTOR)) {
+        if(isReadableProperty(BEFORE_INTERCEPTOR)) {
             return getInterceptor(controller.getProperty(BEFORE_INTERCEPTOR));
         }
         return null;
 	}
 
 	public Closure getAfterInterceptor(GroovyObject controller) {
-        if(getReference().isReadableProperty(AFTER_INTERCEPTOR)) {
+        if(isReadableProperty(AFTER_INTERCEPTOR)) {
             return getInterceptor(controller.getProperty(AFTER_INTERCEPTOR));
         }
         return null;

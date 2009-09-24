@@ -1,8 +1,8 @@
 package org.codehaus.groovy.grails.commons;
 
-import javax.servlet.ServletContext;
-
 import groovy.lang.Closure;
+
+import javax.servlet.ServletContext;
 
 public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements GrailsBootstrapClass {
 
@@ -23,7 +23,7 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
 	}
 
 	public Closure getInitClosure() {
-		Object obj = getReference().getPropertyValue(INIT_CLOSURE);
+		Object obj = getPropertyValueObject(INIT_CLOSURE);
 		if(obj instanceof Closure) {
 			return (Closure)obj;
 		}
@@ -31,7 +31,7 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
 	}
 
 	public Closure getDestroyClosure() {
-		Object obj = getReference().getPropertyValue(DESTROY_CLOSURE);
+		Object obj = getPropertyValueObject(DESTROY_CLOSURE);
 		if(obj instanceof Closure) {
 			return (Closure)obj;
 		}
