@@ -166,6 +166,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     }
                     catch (Exception e) {
                         GrailsUtil.deepSanitize(e);
+                        if(e instanceof MultipartException) {
+                        	throw ((MultipartException)e);
+                        }
                         LOG.error("Error when matching URL mapping [" + info + "]:" + e.getMessage(), e);
                         continue;
                     }
