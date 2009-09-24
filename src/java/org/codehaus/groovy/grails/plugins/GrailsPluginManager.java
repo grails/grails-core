@@ -263,4 +263,12 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @return A list of TypeFilter definitions
      */
     List<TypeFilter> getTypeFilters();
+    
+    /**
+     * Returns the pluginContextPath for the given plugin
+     * 
+     * @param name The plugin name
+     * @return the context path
+     */
+    String getPluginPath(String name);
 }

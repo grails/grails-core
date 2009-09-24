@@ -38,12 +38,15 @@ import grails.util.BuildSettings
 import org.springframework.beans.factory.InitializingBean
 import grails.util.Environment
 import grails.util.Metadata
+
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.mapping.UrlCreator;
 
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
     ApplicationContext applicationContext
-
+    GrailsPluginManager pluginManager
+    
     def grailsUrlMappingsHolder
 
 
@@ -150,6 +153,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		} else {
 		    handleAbsolute(writer, attrs)
 	    }       
+		if(attrs.plugin) {
+			writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
+		}
         def dir = attrs['dir']
         if(dir) {
            writer << (dir.startsWith("/") ?  dir : "/${dir}")

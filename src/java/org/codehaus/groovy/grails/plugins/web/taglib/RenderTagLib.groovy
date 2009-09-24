@@ -569,8 +569,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def contextPath = attrs.contextPath ? attrs.contextPath : ""
         
         if(attrs.plugin) {
-            def plugin = pluginManager?.getGrailsPlugin(attrs.plugin)
-            if(plugin && !plugin.isBasePlugin()) contextPath = plugin.getPluginPath()
+            contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
         }
 
         Template t

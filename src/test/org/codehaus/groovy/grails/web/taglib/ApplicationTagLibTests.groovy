@@ -1,4 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib;
+import grails.util.GrailsUtil;
+
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import javax.servlet.http.Cookie
@@ -10,6 +12,17 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
+	void testResourceTagWithPluginAttribute() {
+		request.contextPath = '/test'
+        def template = '${resource(file:"images/foo.jpg", plugin:"controllers")}' 
+
+        	
+        	
+        assertOutputEquals "/test/plugins/controllers-${GrailsUtil.getGrailsVersion()}/images/foo.jpg", template
+
+        
+	}
+	
     void testResourceTag() {
         request.contextPath = '/test'
         def template = '${resource(file:"images/foo.jpg")}' 

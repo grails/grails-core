@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import grails.util.GrailsUtil;
+
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptProvider
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
@@ -44,6 +46,15 @@ class TestUrlMappings {
 
     }
 
+    void testJavascriptIncludeWithPluginAttribute() {
+        def template = '<g:javascript src="foo.js" plugin="controllers" />'
+
+        def grailsVersion = GrailsUtil.getGrailsVersion()
+
+        assertOutputContains "<script type=\"text/javascript\" src=\"/plugins/controllers-$grailsVersion/js/foo.js\"></script>", template
+    	
+    }
+    
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
 

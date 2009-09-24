@@ -26,6 +26,7 @@ import java.util.*;
  */
 public abstract class AbstractGrailsPluginManager implements GrailsPluginManager {
 
+	private static final String BLANK = "";
 	protected List<GrailsPlugin> pluginList = new ArrayList<GrailsPlugin>();
 	protected GrailsApplication application;
 	protected Resource[] pluginResources = new Resource[0];
@@ -257,4 +258,14 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             }
         }
     }
+
+	public String getPluginPath(String name) {
+		GrailsPlugin plugin = getGrailsPlugin(name);
+		if(plugin!=null && !plugin.isBasePlugin()) {
+			return plugin.getPluginPath();
+		}
+		return BLANK;
+	}
+    
+    
 }
