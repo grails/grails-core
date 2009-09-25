@@ -530,7 +530,7 @@ public class GrailsScriptRunner {
         binding.setVariable("testDirPath", settings.getTestClassesDir().getPath());
         final String resourcesDir = settings.getResourcesDir().getPath();
         binding.setVariable("resourcesDirPath", resourcesDir);
-        binding.setVariable("webXmlFile", new File(resourcesDir + "/web.xml"));
+        binding.setVariable("webXmlFile", settings.getWebXmlLocation());
         binding.setVariable("pluginsDirPath", settings.getProjectPluginsDir().getPath());
         binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
 
