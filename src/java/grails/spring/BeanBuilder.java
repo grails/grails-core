@@ -30,12 +30,14 @@ import org.springframework.beans.factory.parsing.*;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -95,6 +97,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     private Map<String, String> namespaces = new HashMap<String, String>();
     private Resource beanBuildResource = new ByteArrayResource(new byte[0]);
     private XmlReaderContext readerContext;
+    private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
 
     public BeanBuilder() {
 		this(null,null);
@@ -120,7 +123,13 @@ public class BeanBuilder extends GroovyObjectSupport {
         initializeSpringConfig();
     }
 
-    private void initializeSpringConfig() {
+    public void setResourcePatternResolver(ResourcePatternResolver resourcePatternResolver) {
+    	Assert.notNull(resourcePatternResolver, "The argument [resourcePatternResolver] cannot be null");
+		this.resourcePatternResolver = resourcePatternResolver;
+	}
+
+
+	private void initializeSpringConfig() {
         this.xmlBeanDefinitionReader = new XmlBeanDefinitionReader((GenericApplicationContext)springConfig.getUnrefreshedApplicationContext());
         initializeBeanBuilderForClassLoader(this.classLoader);        
     }
@@ -149,7 +158,37 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return LOG;
 	}
 
-
+    
+    /**
+     * Imports Spring bean definitions from either XML or Groovy sources into the current bean builder instance
+     * 
+     * @param resourcePattern The resource pattern
+     */
+    public void importBeans(String resourcePattern) {
+    	try {
+			Resource[] resources =resourcePatternResolver.getResources(resourcePattern);
+			for (int i = 0; i < resources.length; i++) {
+				Resource resource = resources[i];
+				if(resource.getFilename().endsWith(".groovy")) {
+					loadBeans(resource);
+				}
+				else if(resource.getFilename().endsWith(".xml")) {
+					SimpleBeanDefinitionRegistry beanRegistry = new SimpleBeanDefinitionRegistry();
+					XmlBeanDefinitionReader beanReader = new XmlBeanDefinitionReader(beanRegistry);
+					beanReader.loadBeanDefinitions(resource);
+					String[] beanNames = beanRegistry.getBeanDefinitionNames();
+					for (int j = 0; j < beanNames.length; j++) {
+						String beanName = beanNames[j];
+						springConfig.addBeanDefinition(beanName, beanRegistry.getBeanDefinition(beanName));
+					}
+				}
+			}
+			
+		} catch (IOException e) {
+			LOG.error("Error loading beans for resource pattern: " + resourcePattern, e);
+		}
+    }
+    
     /**
      * Defines an Spring namespace definition to use
      *
