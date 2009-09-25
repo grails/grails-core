@@ -614,7 +614,7 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
 
-        writer << "<select name=\"${attrs.remove('name')}\" "
+        writer << "<select name=\"${attrs.remove('name')?.encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
