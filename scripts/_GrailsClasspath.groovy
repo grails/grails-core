@@ -127,7 +127,8 @@ compileClasspath = {
     commonClasspath.call()
 
     grailsSettings.compileDependencies?.each { File f ->
-        pathelement(location: f.absolutePath)
+    	if(f)
+    		pathelement(location: f.absolutePath)
     }
 }
 
@@ -136,7 +137,9 @@ testClasspath = {
     commonClasspath.call()
 
     grailsSettings.testDependencies?.each { File f ->
-        pathelement(location: f.absolutePath)
+    	if(f) {
+    		pathelement(location: f.absolutePath)
+    	}        
     }
 
     pathelement(location: "${classesDir.absolutePath}")
@@ -147,7 +150,8 @@ runtimeClasspath = {
     commonClasspath.call()
 
     grailsSettings.runtimeDependencies?.each { File f ->
-        pathelement(location: f.absolutePath)
+    	if(f)
+    		pathelement(location: f.absolutePath)
     }
 
     pathelement(location: "${classesDir.absolutePath}")
