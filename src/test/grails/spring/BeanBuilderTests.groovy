@@ -31,6 +31,32 @@ import org.springframework.stereotype.Component
 
 class BeanBuilderTests extends GroovyTestCase {
 
+	void testImportSpringXml() {
+		def bb = new grails.spring.BeanBuilder()
+
+		bb.beans {
+			importBeans "classpath:grails/spring/test.xml"
+		}
+
+		def ctx = bb.createApplicationContext()
+
+		def foo = ctx.getBean("foo")
+		assertEquals "hello", foo
+	}
+
+	void testImportBeansFromGroovy() {
+		def bb = new grails.spring.BeanBuilder()
+
+		bb.beans {
+			importBeans "file:test/resources/spring/test.groovy"
+		}
+
+		def ctx = bb.createApplicationContext()
+
+		def foo = ctx.getBean("foo")
+		assertEquals "hello", foo		
+	}
+
     void testInheritPropertiesFromAbstractBean() {
         def bb = new grails.spring.BeanBuilder()
 
