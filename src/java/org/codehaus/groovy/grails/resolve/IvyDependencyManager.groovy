@@ -333,7 +333,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
                 // data source
                 runtime "commons-dbcp:commons-dbcp:1.2.2",
-                        "commons-pool:commons-pool:1.5.2",
+                        "commons-pool:commons-pool:1.5.3",
                         "hsqldb:hsqldb:1.8.0.10"
 
                 // caching
