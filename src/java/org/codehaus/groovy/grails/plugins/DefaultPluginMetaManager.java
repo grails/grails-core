@@ -96,6 +96,8 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
     }
 
     public void afterPropertiesSet() throws Exception {
+    	
+    	
 
         PathMatchingResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver(resourceLoader);
         Resource[] pluginDescriptors = new Resource[0];
@@ -105,7 +107,7 @@ public class DefaultPluginMetaManager implements PluginMetaManager, GrailsApplic
             }
             else {
                 if (pluginSettings == null) {
-                    throw new RuntimeException("Plugin meta manager has not been configured with the plugin settings");
+                    pluginSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
                 }
                 pluginDescriptors = pluginSettings.getPluginXmlMetadata();
             }
