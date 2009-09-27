@@ -71,6 +71,10 @@ class BuildSettings {
     public static final String PROJECT_RESOURCES_DIR = "grails.project.resource.dir"
 
     /**
+     * The name of the system property for {@link #webXmlFile}.
+     */
+    public static final String PROJECT_WEB_XML_FILE = "grails.project.web.xml"    	
+    /**
      * The name of the system property for {@link #classesDir}.
      */
     public static final String PROJECT_CLASSES_DIR = "grails.project.class.dir"
@@ -172,6 +176,11 @@ class BuildSettings {
      * A Set of plugin names and versions that represent the default set of plugins installed when creating Grails applications
      */    
     Map defaultPluginMap
+
+    /**
+     * Location of the generated web.xml file
+     */
+    File webXmlLocation
 
     /**
      * List of jars provided in the applications 'lib' directory
@@ -332,6 +341,7 @@ class BuildSettings {
     private boolean classesDirSet
     private boolean testClassesDirSet
     private boolean resourcesDirSet
+    private boolean webXmlFileSet
     private boolean projectPluginsDirSet
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
@@ -702,6 +712,10 @@ class BuildSettings {
             resourcesDir = new File(getPropertyValue(PROJECT_RESOURCES_DIR, props, "$projectWorkDir/resources"))
         }
 
+        if(!webXmlFileSet) {
+        	this.webXmlLocation = new File(getPropertyValue(PROJECT_WEB_XML_FILE, props, "$resourcesDir/web.xml"))
+        }
+
         if (!projectPluginsDirSet) {
             projectPluginsDir = new File(getPropertyValue(PLUGINS_DIR, props, "$projectWorkDir/plugins"))
         }
@@ -758,4 +772,13 @@ class BuildSettings {
         }
         return baseDir.canonicalFile
     }
+
+	File getWebXmlLocation() {
+		 this.webXmlLocation
+	}
+
+	void setWebXmlLocation(File location) {
+		this.webXmlLocation = location
+		this.webXmlFileSet=true
+	}
 }
