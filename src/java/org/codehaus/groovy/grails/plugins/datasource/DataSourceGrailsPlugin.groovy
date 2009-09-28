@@ -124,6 +124,9 @@ class DataSourceGrailsPlugin {
                     if(dataSourceProperties != null) {
                     	if(dataSourceProperties instanceof Map) {
                     		dataSourceProperties.each { entry ->
+                    			if(log.debugEnabled) {
+                    				log.debug("Setting property on dataSource bean ${entry.key} -> ${entry.value}")
+                    			}
                     			bean.setPropertyValue(entry.key.toString(), entry.value)
                     		}
                     	} else {
