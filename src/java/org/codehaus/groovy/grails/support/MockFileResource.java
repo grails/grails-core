@@ -30,7 +30,7 @@ public class MockFileResource extends ByteArrayResource{
     private String fileName;
 
     public MockFileResource(String fileName, String contents) {
-        super(contents.getBytes());
+        super(contents.getBytes("UTF-8"));
         this.fileName = fileName;
     }
 
