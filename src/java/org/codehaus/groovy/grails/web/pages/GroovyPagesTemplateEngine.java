@@ -283,7 +283,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         if(StringUtils.isBlank(txt)) throw new IllegalArgumentException("Argument [txt] cannot be null or blank");
         if(StringUtils.isBlank(pageName)) throw new IllegalArgumentException("Argument [pageName] cannot be null or blank");
         
-        return createTemplate(new ByteArrayResource(txt.getBytes(), pageName), pageName);
+        return createTemplate(new ByteArrayResource(txt.getBytes("UTF-8"), pageName), pageName);
     }
 
     private Template createTemplate(Resource resource, String pageName) throws IOException {

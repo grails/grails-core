@@ -325,7 +325,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
 
         public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(contents.getBytes());
+            return new ByteArrayInputStream(contents.getBytes("UTF-8"));
         }
 
     }
