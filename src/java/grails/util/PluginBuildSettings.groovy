@@ -237,9 +237,11 @@ class PluginBuildSettings {
 
             // Also add any explicit plugin locations specified by the
             // BuildConfig setting "grails.plugin.location.<name>"
-            def pluginLocations = buildSettings?.config?.grails.plugin.location
+            def pluginLocations = buildSettings?.config?.grails?.plugin?.location?.findAll { it.value }
             if (pluginLocations) {
-                dirList.addAll(pluginLocations.collect { key, value -> new FileSystemResource(value) })
+                dirList.addAll(pluginLocations.collect { key, value ->
+                    new FileSystemResource(value) }
+                )
             }
 
             pluginDirectoryResources = dirList as Resource[]
@@ -412,7 +414,7 @@ class PluginBuildSettings {
                     if(!pluginLoc) {
                        pluginLoc = pluginLocations.find { key, value -> pluginName.startsWith(key)  }
                     }
-                    if (pluginLoc) pluginFile = new File(pluginLoc.value)
+                    if (pluginLoc?.value) pluginFile = new File(pluginLoc.value.toString())
                 }
 
                 pluginResource =  pluginFile ? new FileSystemResource(pluginFile) : null
