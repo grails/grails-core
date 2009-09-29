@@ -655,7 +655,7 @@ class BuildSettings {
                 }
                 def pluginLocations = config?.grails?.plugin?.location
                 pluginLocations?.values().eachAsync {location ->
-                    pluginDirs << new File(location)
+                    pluginDirs << new File(location).canonicalFile
                 }
 
                 pluginDirs.eachAsync(handlePluginDirectory)
