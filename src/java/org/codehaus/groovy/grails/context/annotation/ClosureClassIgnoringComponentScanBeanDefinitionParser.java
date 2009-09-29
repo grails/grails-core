@@ -25,6 +25,7 @@ import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ComponentScanBeanDefinitionParser;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.AntPathMatcher;
@@ -59,10 +60,40 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
         return scanner;
     }
 
+    private static final class FilteringClassLoader extends ClassLoader {
+    	public FilteringClassLoader(ClassLoader parent) {
+    		super(parent);
+    	}
+
+    	@Override
+    	public Enumeration<URL> getResources(String name) throws IOException {
+    		return super.findResources(name);
+    	}
+
+		@Override
+		public URL getResource(String name) {
+			return super.findResource(name);
+		}
+    }
+    
     @Override
     protected ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, Element element) {
         final ClassPathBeanDefinitionScanner scanner = super.configureScanner(parserContext, element);
-        final PathMatchingResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver(parserContext.getReaderContext().getResourceLoader()) {
+        final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
+        final ResourceLoader originalResourceLoader = parserContext.getReaderContext().getResourceLoader();
+        final ResourceLoader filteringResourceLoader = (!warDeployed) ? originalResourceLoader : new ResourceLoader() {
+        	ClassLoader filteringClassLoader = new FilteringClassLoader(originalResourceLoader.getClassLoader());
+        	
+			public Resource getResource(String location) {
+				return originalResourceLoader.getResource(location);
+			}
+			
+			public ClassLoader getClassLoader() {
+				return filteringClassLoader;
+			}
+		};
+        
+        final PathMatchingResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver(filteringResourceLoader) {
             @Override
             protected Resource[] findAllClassPathResources(String location) throws IOException {
                 Set<Resource> result = new LinkedHashSet<Resource>(16);
@@ -70,7 +101,6 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
 
                 URL classesDir = null;
 
-                final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
                 if(!warDeployed) {
                     BuildSettings buildSettings = BuildSettingsHolder.getSettings();
                     if(buildSettings != null && buildSettings.getClassesDir()!=null) {
