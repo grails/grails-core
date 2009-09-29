@@ -326,6 +326,7 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         def w = t.make(params)
 
         MockHttpServletResponse mockResponse = new MockHttpServletResponse()
+        mockResponse.setCharacterEncoding("UTF-8")
         GSPResponseWriter writer = GSPResponseWriter.getInstance(mockResponse)
         webRequest.out = writer
         w.writeTo(writer)
