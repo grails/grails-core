@@ -12,9 +12,9 @@ class DefaultGrailsTestHelperTests extends GroovyTestCase {
 
     protected void setUp() {
         this.buildSettings = new BuildSettings()
-        this.testHelper = new DefaultGrailsTestHelper(this.buildSettings, getClass().classLoader) {
+        this.testHelper = new DefaultGrailsTestHelper(this.buildSettings, getClass().classLoader, {
             [] as Resource[]
-        }
+        })
     }
     void testFileToClassName() {
         // Basic test to ensure that the file path is correctly converted

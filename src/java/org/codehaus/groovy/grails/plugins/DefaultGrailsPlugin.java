@@ -339,7 +339,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                                 tmp = resolver.getResources(res);
                             }
                         }
-                        catch (IllegalArgumentException ex) {
+                        catch (Exception ex) {
                             // The pattern is invalid so we continue as if there
                             // are no matching files.
                             LOG.debug("Resource pattern [" + res + "] is not valid - maybe base directory does not exist?");
@@ -774,10 +774,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         }
                     }
                 }
-                catch (IllegalArgumentException e) {
-                    LOG.debug("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
-                }
-                catch (IOException e) {
+                catch (Exception e) {
                     LOG.debug("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
                 }
 

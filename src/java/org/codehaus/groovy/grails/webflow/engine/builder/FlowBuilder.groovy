@@ -241,7 +241,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
     }
 
     private State createViewState(String stateId, String viewName, Transition[] transitions, FlowArtifactFactory flowFactory) {
-         def renderAction = new ClosureInvokingAction() {
+         def renderAction = new ClosureInvokingAction( {
              for(entry in flash.asMap()) {
                  def key = entry.key
                   if(key.startsWith(GrailsApplicationAttributes.ERRORS)) {
@@ -266,7 +266,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                        }
                   }
              }
-         }
+         } )
 
 
         ViewFactory viewFactory = createViewFactory(viewName)

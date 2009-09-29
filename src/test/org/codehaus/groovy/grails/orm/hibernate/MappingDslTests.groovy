@@ -135,9 +135,9 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
              def result = statement.executeQuery()
              assert result.next()
              def metadata = result.getMetaData()
-             assertEquals "FIRST_NAME",metadata.getColumnLabel(3)
+             assertEquals "FIRST_NAME",metadata.getColumnLabel(4)
              // hsqldb returns -1 for text type, if it wasn't mapped as text it would be 12 so this is an ok test
-             assertEquals( -1, metadata.getColumnType(3) )
+             assertEquals( -1, metadata.getColumnType(4) )
 
 
          } finally {

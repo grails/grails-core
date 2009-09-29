@@ -74,8 +74,14 @@ target(processAuth:"Prompts user for login details to create authentication mana
 
     }
 }
+target(checkLicense:"Checks the license file for the plugin exists") {
+    if(!(new File("${basedir}/LICENSE").exists()) && !(new File("${basedir}/LICENSE.txt").exists())) {
+        println "No LICENSE.txt file for plugin found. Please provide a license file containing the appropriate software licensing information (eg. Apache 2.0, GPL etc.)"
+        exit(1)
+    }
+}
 target(releasePlugin: "The implementation target") {
-    depends(parseArguments)
+    depends(parseArguments,checkLicense)
    
     if(argsMap.skipMetadata != true) {
         println "Generating plugin project behavior metadata..."

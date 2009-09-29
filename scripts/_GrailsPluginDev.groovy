@@ -38,6 +38,8 @@ pluginIncludes = [
 	metadataFile.name,
 	"*GrailsPlugin.groovy",
     "plugin.xml",
+    "LICENSE",
+    "LICENSE.txt",
     "dependencies.groovy",
 	"grails-app/**",
 	"lib/**",

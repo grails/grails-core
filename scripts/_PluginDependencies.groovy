@@ -931,6 +931,14 @@ installPluginForName = { String fullPluginName ->
         event("InstallPluginStart", [fullPluginName])
         def pluginInstallPath = "${globalInstall ? globalPluginsDirPath : pluginsHome}/${fullPluginName}"
 
+
+        def pluginReference = grailsSettings.config.grails.plugin.location[currentPluginName]
+        if(pluginReference) {
+           cleanupPluginInstallAndExit("""\
+Plugin [$currentPluginName] is aliased as [grails.plugin.location.$currentPluginName] to the location [$pluginReference] in grails-app/conf/BuildConfig.groovy.
+You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove the configuration to continue.""" ); 
+        }
+
         Resource currentInstall = getPluginDirForName(currentPluginName)
 
         if(currentInstall?.exists()) {            

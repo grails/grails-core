@@ -99,24 +99,23 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
      *  domain classes
      */
     protected void secondPassCompile() throws MappingException {
-        if (configLocked) {
-            return;
-        }
-        if(LOG.isDebugEnabled()) {
-        	LOG.debug("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
-		}
-
-        // do Grails class configuration
-        for (GrailsDomainClass domainClass : this.domainClasses) {
-            GrailsDomainBinder.evaluateMapping(domainClass);
-        }
-
-        // do Grails class configuration
-        for (GrailsDomainClass domainClass : this.domainClasses) {          
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+        if (!configLocked) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
             }
-            GrailsDomainBinder.bindClass(domainClass, super.createMappings());
+
+            // do Grails class configuration
+            for (GrailsDomainClass domainClass : this.domainClasses) {
+                GrailsDomainBinder.evaluateMapping(domainClass);
+            }
+
+            // do Grails class configuration
+            for (GrailsDomainClass domainClass : this.domainClasses) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+                }
+                GrailsDomainBinder.bindClass(domainClass, super.createMappings());
+            }
         }
 
         // call super
