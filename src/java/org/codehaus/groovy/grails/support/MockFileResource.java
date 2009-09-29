@@ -29,7 +29,7 @@ import java.io.UnsupportedEncodingException;
 public class MockFileResource extends ByteArrayResource{
     private String fileName;
 
-    public MockFileResource(String fileName, String contents) {
+    public MockFileResource(String fileName, String contents) throws UnsupportedEncodingException {
         super(contents.getBytes("UTF-8"));
         this.fileName = fileName;
     }
