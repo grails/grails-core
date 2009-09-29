@@ -127,7 +127,7 @@ compilePluginDescriptor = { File descriptor ->
 
     if (descriptor.lastModified() > classFile.lastModified()) {
         ant.echo(message: "Compiling plugin descriptor...")
-		compConfig.setTargetDirectory(classesDir)
+        compConfig.setTargetDirectory(classesDir)
         def unit = new CompilationUnit(compConfig, null, new GroovyClassLoader(classLoader))
         unit.addSource(descriptor)
         unit.compile()
