@@ -49,7 +49,7 @@
 
 	<target name="build-test" depends="build,build-scripts">
 
-		<groovyc srcdir="${grails.test}" destdir="${grails.test.build}"  >
+		<groovyc srcdir="${grails.test}" destdir="${grails.test.build}" encoding="UTF-8">
             <javac debug="on" deprecation="on" encoding="UTF-8"/>
             <classpath refid="classpath" />
 			<classpath location="${grails.test.build}" />
