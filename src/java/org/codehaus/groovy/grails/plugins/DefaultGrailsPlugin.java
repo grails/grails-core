@@ -774,10 +774,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         }
                     }
                 }
-                catch (IllegalArgumentException e) {
-                    LOG.debug("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
-                }
-                catch (IOException e) {
+                catch (Exception e) {
                     LOG.debug("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
                 }
 
