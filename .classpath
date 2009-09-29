@@ -4,24 +4,23 @@
 	<classpathentry kind="src" path="scripts"/>
 	<classpathentry kind="src" output="target/eclipse/test-output" path="src/test"/>
 	<classpathentry kind="lib" path="lib/hibernate-core-3.3.1.GA.jar" sourcepath="/HIBERNATE_HOME/src"/>
-	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.aop-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.asm-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.asm-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.aspects-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.aspects-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.beans-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.beans-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.context-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.context-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.context.support-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.context.support-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.core-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.expression-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.instrument-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.instrument-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.instrument.classloading-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.instrument.classloading-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.integration-tests-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.integration-tests-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.jdbc-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.jdbc-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.jms-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.jms-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.orm-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.orm-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.test-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.test-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.transaction-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.transaction-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.web-sources-3.0.0.RC1.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.0.RC1.jar" sourcepath="/Developer/spring-framework-3.0.0.RC1/src/org.springframework.web.servlet-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.aop-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.asm-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.asm-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aspects-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.aspects-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.beans-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.beans-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.context-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context.support-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.context.support-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.core-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.expression-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.instrument-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.instrument-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.integration-tests-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.integration-tests-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jdbc-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.jdbc-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jms-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.jms-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.orm-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.orm-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.test-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.test-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.transaction-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.transaction-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.web-sources-3.0.0.RC1.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.web.servlet-sources-3.0.0.RC1.jar"/>
 	<classpathentry kind="lib" path="lib/ant-junit-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ant-nodeps-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ant-1.7.1.jar"/>
@@ -73,9 +72,9 @@
 	<classpathentry kind="lib" path="lib/javassist-3.4.GA.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations-3.4.0.GA.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-commons-annotations-3.3.0.ga.jar"/>
-	<classpathentry kind="lib" path="src/jar"/>
 	<classpathentry kind="lib" path="lib/jline-0.9.91.jar"/>
 	<classpathentry kind="lib" path="lib/ivy-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/GParallelizer-0.8.3.jar"/>
+	<classpathentry kind="var" path="SPRING_HOME"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>
