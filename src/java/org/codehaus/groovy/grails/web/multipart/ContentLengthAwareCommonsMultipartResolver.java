@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.web.multipart;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +36,9 @@ import java.util.Collections;
  */
 public class ContentLengthAwareCommonsMultipartResolver extends CommonsMultipartResolver {
 
-    static final Log LOG = LogFactory.getLog(ContentLengthAwareCommonsMultipartResolver.class );
+    private static final LinkedMultiValueMap<String, MultipartFile> EMPTY_MULTI_VALUE_MAP = new LinkedMultiValueMap<String, MultipartFile>();
+    
+	static final Log LOG = LogFactory.getLog(ContentLengthAwareCommonsMultipartResolver.class );
 
     protected MultipartParsingResult parseRequest(HttpServletRequest request) throws MultipartException {
         try {
@@ -42,7 +46,7 @@ public class ContentLengthAwareCommonsMultipartResolver extends CommonsMultipart
         } catch (MultipartException e) {
             if(e.getCause() != null && e.getCause().getClass().equals(FileUploadBase.UnknownSizeException.class)) {
                 LOG.warn(e.getMessage() );
-                return new MultipartParsingResult(Collections.EMPTY_MAP,Collections.EMPTY_MAP);
+                return new MultipartParsingResult(EMPTY_MULTI_VALUE_MAP,Collections.EMPTY_MAP);
             }
             else {
                 throw e;
