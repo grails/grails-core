@@ -86,9 +86,9 @@ class BeanBuilderTests extends GroovyTestCase {
         def bb = new BeanBuilder()
 
         bb.beans {
-            xmlns context:"http://www.springframework.org/schema/context"
+            xmlns grailsContext:"http://grails.org/schema/context"
 
-            context.'component-scan'( 'base-package' :"grails.spring" )
+            grailsContext.'component-scan'( 'base-package' :"**" )
         }
 
         def appCtx = bb.createApplicationContext()

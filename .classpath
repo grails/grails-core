@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="scripts"/>
 	<classpathentry kind="src" output="target/eclipse/test-output" path="src/test"/>
+	<classpathentry kind="src" path="src/jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-core-3.3.1.GA.jar" sourcepath="/HIBERNATE_HOME/src"/>
 	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.aop-sources-3.0.0.RC1.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.asm-3.0.0.RC1.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC1/src/org.springframework.asm-sources-3.0.0.RC1.jar"/>
@@ -75,6 +76,7 @@
 	<classpathentry kind="lib" path="lib/jline-0.9.91.jar"/>
 	<classpathentry kind="lib" path="lib/ivy-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/GParallelizer-0.8.3.jar"/>
-	<classpathentry kind="var" path="SPRING_HOME"/>
+	<classpathentry kind="lib" path="lib/aspectjrt-1.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/aspectjweaver-1.6.2.jar"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>
