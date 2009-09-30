@@ -22,8 +22,8 @@ public class GroovyPageBinding extends Binding {
 
 	@Override
 	public Object getProperty(String property) {
-        if(property.equals("variables")) {
-            return super.getVariables();
+        if(getMetaClass().hasProperty(this, property)!=null) {
+            return getMetaClass().getProperty(this, property);
         }
 		return getVariable(property);
 	}
