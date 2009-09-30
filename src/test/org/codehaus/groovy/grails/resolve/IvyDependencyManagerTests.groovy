@@ -246,14 +246,17 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def manager = new IvyDependencyManager("test", "0.1")
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
+
         assertEquals 51, manager.listDependencies('runtime').size()
         assertEquals 55, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
         assertEquals 3, manager.listDependencies('provided').size()
-        def report = manager.resolveDependencies()
 
-
-        assertFalse "dependency resolve should have no errors!",report.hasError()
+        // This should be a functional test since it relies on the Grails
+        // JAR files being built. It also runs Ivy, which isn't ideal
+        // in unit tests.
+//        def report = manager.resolveDependencies()
+//        assertFalse "dependency resolve should have no errors!",report.hasError()
     }
 
     def getCurrentGrailsVersion() {
