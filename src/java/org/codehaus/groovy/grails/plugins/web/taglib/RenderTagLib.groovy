@@ -271,7 +271,11 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
     def captureTagContent(writer, tagname, attrs, body) {
     	def content=null
     	if(body != null) {
-    		content = body()
+    		if(body instanceof Closure) {
+    			content = body()
+    		} else {
+    			content = body
+    		}
     	}
     	writer << "<" 
     	writer << tagname
@@ -293,6 +297,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
     }
 
     def wrapContentInBuffer(content) {
+		if(content instanceof Closure) {
+			content = content()
+		}
     	if(!(content instanceof StreamCharBuffer)) {
         	// the body closure might be a string constant, so wrap it in a StreamCharBuffer in that case
     		def newbuffer=new FastStringWriter()
@@ -328,11 +335,10 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
     }
 
     def captureContent = { attrs, body ->
-		def content=captureTagContent(out, 'content', attrs, body)
-		if(content != null) {
+		if(body != null) {
 			GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
 	        if(smpage && attrs.tag) {
-	        	smpage.setContentBuffer(attrs.tag, wrapContentInBuffer(content))
+	        	smpage.setContentBuffer(attrs.tag, wrapContentInBuffer(body))
 	        }
 		}
 	}
