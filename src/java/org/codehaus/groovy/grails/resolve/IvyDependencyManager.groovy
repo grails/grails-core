@@ -288,6 +288,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                          "commons-io:commons-io:1.4",
                          "commons-lang:commons-lang:2.4",
                          "javax.transaction:jta:1.1",
+                         "org.hibernate:ejb3-persistence:1.0.2.GA",
                          "opensymphony:sitemesh:2.4",
                          "org.grails:grails-bootstrap:$grailsVersion",
                          "org.grails:grails-core:$grailsVersion",
