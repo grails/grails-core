@@ -30,6 +30,7 @@ import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapt
 import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * A handler mapping that matches Grails' SimpleController class
@@ -88,6 +89,11 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
 
     }
 
+    @Override
+    protected void extendInterceptors(List interceptors) {
+        setInterceptors(establishInterceptors(getWebApplicationContext()));
+    }
+
     protected HandlerInterceptor[] lookupInterceptors(WebApplicationContext applicationContext) {
         HandlerInterceptor[] interceptors;
         if(Environment.getCurrent()==Environment.DEVELOPMENT) {
@@ -95,6 +101,7 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         }
         else {
             interceptors = this.getAdaptedInterceptors();
+
         }
         return interceptors;
     }
@@ -120,11 +127,11 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         // state if and when users access the database within their
         // filters.
         int j = 0;
-        for (int i = 0; i < webRequestInterceptors.length; i++) {
-            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor)webContext.getBean(webRequestInterceptors[i]));
+        for (String webRequestInterceptor : webRequestInterceptors) {
+            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor) webContext.getBean(webRequestInterceptor));
         }
-        for (int i = 0; i < interceptorNames.length; i++) {
-            interceptors[j++] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
+        for (String interceptorName : interceptorNames) {
+            interceptors[j++] = (HandlerInterceptor) webContext.getBean(interceptorName);
         }
         return interceptors;
     }
