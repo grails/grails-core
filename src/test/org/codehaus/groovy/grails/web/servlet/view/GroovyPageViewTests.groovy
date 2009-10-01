@@ -24,7 +24,8 @@ class GroovyPageViewTests extends GroovyTestCase {
 
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext(rl))
-
+        gpte.afterPropertiesSet()
+        
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
 

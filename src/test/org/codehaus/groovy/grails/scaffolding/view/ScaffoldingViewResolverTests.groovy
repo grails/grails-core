@@ -30,7 +30,8 @@ public class ScaffoldingViewResolverTests extends GroovyTestCase{
 
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())

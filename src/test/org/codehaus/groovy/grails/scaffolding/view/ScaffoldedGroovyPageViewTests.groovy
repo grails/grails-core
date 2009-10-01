@@ -16,7 +16,8 @@ class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
 
         def url = "/WEB-INF/grails-apps/views/test.gsp"
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
 
