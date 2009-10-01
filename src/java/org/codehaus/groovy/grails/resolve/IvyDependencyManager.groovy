@@ -321,7 +321,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 // dependencies needed for running tests
                 test "junit:junit:3.8.2",
                      "org.grails:grails-test:$grailsVersion",
-                     "org.springframework:org.springframework.integration-tests:3.0.0.RC1",
                      "org.springframework:org.springframework.test:3.0.0.RC1"
 
                 // dependencies needed at runtime only
