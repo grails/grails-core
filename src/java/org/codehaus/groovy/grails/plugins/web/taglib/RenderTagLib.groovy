@@ -52,7 +52,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
     ServletConfig servletConfig
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
-
+    static Map TEMPLATE_CACHE = new ConcurrentHashMap()
 
     protected getPage() {
     	return request[PAGE]
@@ -131,12 +131,11 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         	}
         }
 
-        def parser = getFactory().getPageParser(contentType)
-
         def page = null
         if(gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
         	page = gspSiteMeshPage
         } else {
+            def parser = getFactory().getPageParser(contentType)
         	page = parser.parse(content.toCharArray())
         }
         
@@ -371,7 +370,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
 
-		def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+		def messageSource = grailsAttributes.messageSource
 		def locale = RCU.getLocale(request)
 
 		def total = attrs.total.toInteger()
@@ -537,7 +536,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def titleKey = attrs.remove("titleKey")
 		if(titleKey) {
 			if(!title) title = titleKey
-			def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+			def messageSource = grailsAttributes.messageSource
 			def locale = RCU.getLocale(request)
 			title = messageSource.getMessage(titleKey, null, title, locale)
 		}
@@ -557,7 +556,6 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *  <g:render template="atemplate" model="[user:user,company:company]" />
      *  <g:render template="atemplate" bean="${user}" />
      */
-    static Map TEMPLATE_CACHE = new ConcurrentHashMap()
     def render = { attrs, body ->
         if(!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         if(!attrs.template)
@@ -572,13 +570,15 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
             contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
         }
 
-        Template t
-        if(TEMPLATE_CACHE.containsKey(uri) && !engine.isReloadEnabled()) {
-           t = TEMPLATE_CACHE[uri]
-        }
-        else {
-          t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
-          TEMPLATE_CACHE[uri] = t
+        Template t = TEMPLATE_CACHE[uri]
+        if(t==null) {
+			  t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
+			  if(!engine.isReloadEnabled()) {
+				  def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
+				  if(prevt != null) {
+					  t = prevt
+				  }
+			  }
         }
 
         if(attrs.containsKey('bean')) {

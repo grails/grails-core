@@ -110,7 +110,7 @@ public class ClosureInvokingAction extends AbstractAction  {
                 for(p in commandClasses) {
                     def instance = p.newInstance()
 
-                    applicationContext.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                    applicationContext.autowireCapableBeanFactory?.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
 
                     def params = noOfParams > 1 ? actionDelegate.params[GrailsNameUtils.getPropertyName(instance.class)] : actionDelegate.params
                     if(params) {

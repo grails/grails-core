@@ -125,7 +125,9 @@ class FiltersGrailsPlugin {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
             def bean = applicationContext.getBean(c.fullName)
             for(filterConfig in filterClass.getConfigs(bean)) {
-                handlers << new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
+                def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
+                handlerAdapter.afterPropertiesSet()
+                handlers <<  handlerAdapter
             }
         }
 

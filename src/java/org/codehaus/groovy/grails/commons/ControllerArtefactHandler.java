@@ -15,14 +15,16 @@
 */
 package org.codehaus.groovy.grails.commons;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @author Marc Palmer (marc@anyware.co.uk)
 */
 public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
-
     public static final String TYPE = "Controller";
-    private GrailsClass[] controllerClasses;
     public static final String PLUGIN_NAME = "controllers";
+    private GrailsClass[] controllerClasses;
+    private ConcurrentHashMap<String, GrailsClass> uriToControllerClassCache; 
 
 
     public ControllerArtefactHandler() {
@@ -33,6 +35,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
     public void initialize(ArtefactInfo artefacts) {
         controllerClasses = artefacts.getGrailsClasses();
+        uriToControllerClassCache = new ConcurrentHashMap<String, GrailsClass>();
     }
 
     @Override
@@ -43,11 +46,19 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
     public GrailsClass getArtefactForFeature(Object feature) {
         String uri = feature.toString();
         if(controllerClasses!=null) {
-            for (GrailsClass controllerClass : controllerClasses) {
-                if (((GrailsControllerClass) controllerClass).mapsToURI(uri)) {
-                    return controllerClass;
-                }
-            }
+        	GrailsClass controllerClass = uriToControllerClassCache.get(uri);
+        	if(controllerClass==null) {
+	            for (GrailsClass c : controllerClasses) {
+	                if (((GrailsControllerClass) c).mapsToURI(uri)) {
+	                	controllerClass = c;
+	                	break;
+	                }
+	            }
+	            if(controllerClass != null) {
+	            	uriToControllerClassCache.putIfAbsent(uri, controllerClass);
+	            }
+        	}
+        	return controllerClass;
         }
         return null;
     }

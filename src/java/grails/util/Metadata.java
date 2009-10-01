@@ -16,10 +16,7 @@
 package grails.util;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Represents the application Metadata and loading mechanics
@@ -60,8 +57,9 @@ public class Metadata extends Properties {
      */
     public static Metadata getCurrent() {
         if(!metadata.initialized) {
+        	InputStream input=null;
             try {
-                InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
+                input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
                 if(input == null) {
                     input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
                 }
@@ -73,6 +71,12 @@ public class Metadata extends Properties {
                 throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
             }
             finally {
+                try {
+                    if(input!=null) input.close();
+                }
+                catch (IOException e) {
+                    // ignore
+                }
                 metadata.initialized = true;
             }
 
@@ -194,7 +198,7 @@ public class Metadata extends Properties {
 
             try {
                 out = new FileOutputStream(metadataFile);
-                store(out, "utf-8");
+                store(out, "Grails Metadata file");
             }
             catch (Exception e) {
                 throw new RuntimeException("Error persisting metadata to file ["+metadataFile+"]: " + e.getMessage(),e );
@@ -215,8 +219,17 @@ public class Metadata extends Properties {
      */	
     public boolean propertiesHaveNotChanged(){
         Metadata transientMetadata = metadata;
+        
+        Metadata allStringValuesMetadata = new Metadata();
+        Map<Object,Object> transientMap = (Map<Object,Object>)transientMetadata;
+        for(Map.Entry<Object, Object> entry : transientMap.entrySet()) {
+        	if(entry.getValue() != null) {
+        		allStringValuesMetadata.put(entry.getKey().toString(), entry.getValue().toString());
+        	}
+        }
+
         Metadata persistedMetadata = Metadata.reload();	
-        boolean result = transientMetadata.equals(persistedMetadata);
+        boolean result = allStringValuesMetadata.equals(persistedMetadata);
         metadata = transientMetadata;
         return result;
     }	

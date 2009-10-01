@@ -56,11 +56,12 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     public static final String JSP_SUFFIX = ".jsp";
     
     private ResourceLoader resourceLoader;
-    private GroovyPagesTemplateEngine templateEngine;
+    protected GroovyPagesTemplateEngine templateEngine;
     private PluginMetaManager pluginMetaManager;
     
     private static final String GROOVY_PAGE_RESOURCE_LOADER = "groovyPageResourceLoader";
-    private static final Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
+    // no need for static cache since GrailsViewResolver is in app context
+    private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
     private static final char DOT = '.';
     private static final char SLASH = '/';
 
@@ -157,6 +158,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         gspSpringView.setServletContext(webRequest.getServletContext());
         gspSpringView.setUrl(gspView);
         gspSpringView.setApplicationContext(this.getApplicationContext());
+        gspSpringView.setTemplateEngine(templateEngine);
         return gspSpringView;
     }
 

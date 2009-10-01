@@ -25,12 +25,16 @@ import java.util.*;
 import java.lang.annotation.Annotation;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
-
 	Date startupDate = new Date();
 	Map beans = new HashMap();
 	List resources = new ArrayList();
     List ignoredClassLocations = new ArrayList();
     PathMatcher pathMatcher = new AntPathMatcher();
+    ServletContext servletContext = new MockServletContext();
+    
+    public MockApplicationContext() {
+    	
+    }
 
 	public void registerMockBean(String name, Object instance) {
 		beans.put(name,instance);
@@ -298,9 +302,13 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 	}
 
     public ServletContext getServletContext() {
-        return new MockServletContext();
+        return servletContext;
     }
 
+    public void setServletContext(ServletContext servletContext) {
+    	this.servletContext = servletContext;
+    }
+    
     public class MockResource extends AbstractResource {
 
         private String contents = "";
