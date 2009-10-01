@@ -14,40 +14,43 @@
 * limitations under the License.
 */
 
+import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
+
 import groovy.xml.DOMBuilder
 import groovy.xml.MarkupBuilder
 import groovy.xml.dom.DOMCategory
+
 import java.util.regex.Matcher
 import java.util.zip.ZipFile
 import java.util.zip.ZipEntry
+
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.Transformer
-import javax.xml.transform.OutputKeys
 import javax.xml.transform.stream.StreamResult
+
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.springframework.core.io.Resource
-import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.documentation.DocumentedProperty
-
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.springframework.core.io.Resource
+import org.tmatesoft.svn.core.*
+import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl
-import org.tmatesoft.svn.core.*
-import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
-import org.tmatesoft.svn.core.SVNAuthenticationException
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-import grails.util.BuildSettings
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -339,6 +342,8 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 }
 
 target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
+    depends(classpath)
+
     // Ensure that the "plugin.xml" is up-to-date for plugins
     // that haven't been installed, i.e. their path is declared
     // explicitly by the project.
@@ -350,7 +355,53 @@ target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plu
         return containingDir == null ||
                 (containingDir != pluginsDir && containingDir != globalDir)
     }.each { Resource r ->
+        compileInplacePlugin(r.file.parentFile)
         generatePluginXml(r.file)
+    }
+}
+
+/**
+ * Compiles the sources for a single in-place plugin. A bit of a hack,
+ * but any other solution would require too much refactoring to make it
+ * into the 1.2 release.
+ */
+compileInplacePlugin = { File pluginDir ->
+    def classesDirPath = grailsSettings.classesDir.path
+    ant.mkdir(dir: classesDirPath)
+
+    profile("Compiling inplace plugin sources to location [$classesDirPath]") {
+        // First compile the plugins so that we can exclude any
+        // classes that might conflict with the project's.
+        def classpathId = "grails.compile.classpath"
+        def pluginResources = pluginSettings.resourceResolver("file:${pluginDir.absolutePath}/grails-app/*")
+        pluginResources = ArrayUtils.addAll(
+                pluginResources,
+                pluginSettings.resourceResolver("file:${pluginDir.absolutePath}/src/groovy"))
+        pluginResources = ArrayUtils.addAll(
+                pluginResources,
+                pluginSettings.resourceResolver("file:${pluginDir.absolutePath}/src/java"))
+
+        if (pluginResources) {
+            // Only perform the compilation if there are some plugins
+            // installed or otherwise referenced.
+            ant.groovyc(
+                    destdir: classesDirPath,
+                    classpathref: classpathId,
+                    encoding:"UTF-8") {
+                for(dir in pluginResources.file) {
+                    if (dir.exists()) {
+                        src(path: dir.absolutePath)
+                    }
+                }
+                exclude(name: "**/BootStrap.groovy")
+                exclude(name: "**/BuildConfig.groovy")
+                exclude(name: "**/Config.groovy")
+                exclude(name: "**/*DataSource.groovy")
+                exclude(name: "**/UrlMappings.groovy")
+                exclude(name: "**/resources.groovy")
+                javac(classpathref: classpathId, encoding: "UTF-8", debug: "yes")
+            }
+        }
     }
 }
 
@@ -369,7 +420,13 @@ generatePluginXml = { File descriptor ->
     Class pluginClass
     def plugin
     try {
+        // Rather than compiling the descriptor via Ant, we just load
+        // the Groovy file into a GroovyClassLoader. We add the classes
+        // directory to the class loader in case it didn't exist before
+        // the associated plugin's sources were compiled.
         def gcl = new GroovyClassLoader(classLoader)
+        gcl.addURL(grailsSettings.classesDir.toURI().toURL())
+
         pluginClass = gcl.parseClass(descriptor)
         plugin = pluginClass.newInstance()
     }
