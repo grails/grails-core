@@ -95,7 +95,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     
 	public void afterPropertiesSet() throws Exception {
 		if(classLoader==null) {
-			classLoader = Thread.currentThread().getContextClassLoader();
+			//classLoader = Thread.currentThread().getContextClassLoader();
+			classLoader = new GroovyClassLoader();
 		}
 	}
 
