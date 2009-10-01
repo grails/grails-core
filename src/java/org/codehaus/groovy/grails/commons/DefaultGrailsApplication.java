@@ -9,6 +9,13 @@ import groovy.lang.GString;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
+
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,20 +28,14 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.documentation.DocumentationContext;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
-
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -66,7 +67,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private static final Pattern GETCLASS_PATTERN = Pattern.compile("(get)(\\w+)Class");
 
 
-    private GroovyClassLoader cl = null;
+    private ClassLoader cl = null;
 
     private Class[] allClasses = new Class[0];
     private static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
@@ -100,7 +101,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param classes     The classes that make up the GrailsApplication
      * @param classLoader The GroovyClassLoader to use
      */
-    public DefaultGrailsApplication(final Class[] classes, GroovyClassLoader classLoader) {
+    public DefaultGrailsApplication(final Class[] classes, ClassLoader classLoader) {
         if (classes == null) {
             throw new IllegalArgumentException("Constructor argument 'classes' cannot be null");
         }
@@ -140,7 +141,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private void loadGrailsApplicationFromResources(Resource[] resources) throws IOException {
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
         this.cl = configureClassLoader(resourceLoader);
-
+        GroovyClassLoader gcl = (GroovyClassLoader)cl;
+        
         Collection loadedResources = new ArrayList();
         this.loadedClasses = new HashSet();
 
@@ -153,7 +155,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         log.debug("Loading groovy file from resource loader :[" + resources[i].getFile().getAbsolutePath() + "] with name [" + className + "]");
                         if (!StringUtils.isBlank(className)) {
 
-                            Class c = cl.loadClass(className, true, false);
+                            Class c = gcl.loadClass(className, true, false);
                             Assert.notNull(c, "Groovy Bug! GCL loadClass method returned a null class!");
 
 
@@ -348,7 +350,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return resourceLoader;
     }
 
-    public GroovyClassLoader getClassLoader() {
+    public ClassLoader getClassLoader() {
         return this.cl;
     }
 
@@ -448,7 +450,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * Refreshes this GrailsApplication, rebuilding all of the artefact definitions as defined by the registered ArtefactHandler instances
      */
     public void refresh() {
-        configureLoadedClasses(this.cl.getLoadedClasses());
+    	if(this.cl instanceof GroovyClassLoader) {
+    		configureLoadedClasses(((GroovyClassLoader)this.cl).getLoadedClasses());
+    	}
     }
 
     public void rebuild() {

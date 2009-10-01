@@ -21,13 +21,11 @@ import grails.util.Metadata;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -42,8 +40,6 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ReflectionUtils;
 import org.w3c.dom.Element;
-
-import sun.misc.CompoundEnumeration;
 
 /**
  * Extends Spring's default &lt;context:component-scan/&gt; element to ignore Groovy's

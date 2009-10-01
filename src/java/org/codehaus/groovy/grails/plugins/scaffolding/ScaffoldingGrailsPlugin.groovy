@@ -70,7 +70,7 @@ class ScaffoldingGrailsPlugin {
 
     private configureScaffoldingController(ApplicationContext appCtx, application, GrailsControllerClass controllerClass) {
         GrailsTemplateGenerator generator = appCtx.getBean("scaffoldingTemplateGenerator")
-        GroovyClassLoader parentLoader = appCtx.getBean("classLoader")
+        ClassLoader parentLoader = appCtx.getBean("classLoader")
         Map scaffoldedActionMap = appCtx.getBean("scaffoldedActionMap")
         Map scaffoldedDomains = appCtx.getBean("controllerToScaffoldedDomainClassMap")
 
@@ -138,7 +138,7 @@ class ScaffoldingGrailsPlugin {
         return domainClass
     }
 
-    private createScaffoldedInstance(GroovyClassLoader parentLoader, String controllerSource) {
+    private createScaffoldedInstance(ClassLoader parentLoader, String controllerSource) {
         def classLoader = new GroovyClassLoader(parentLoader)
         def scaffoldedControllerClass = classLoader.parseClass(controllerSource)
         def scaffoldedInstance = scaffoldedControllerClass.newInstance()
