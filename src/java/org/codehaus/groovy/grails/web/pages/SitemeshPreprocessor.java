@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * 
  * This class is used to add GSP Sitemesh integration directly to compiled GSP.
  * 
- * head, meta, title, body and component tags are replaced with <g:capture*>...</g:capture*> taglibs
+ * head, meta, title, body and content tags are replaced with <g:capture*>...</g:capture*> taglibs
  * 
  * The taglib is used to capture the content of each tag. This prevents the need to parse the content output like Sitemesh normally does.
  *  
@@ -20,12 +20,12 @@ public class SitemeshPreprocessor {
 	Pattern titlePattern=Pattern.compile("<title(\\s[^>]*)?>(.*?)</title>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern headPattern=Pattern.compile("<head(\\s[^>]*)?>(.*?)</head>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern bodyPattern=Pattern.compile("<body(\\s[^>]*)?>(.*?)</body>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-	Pattern componentPattern=Pattern.compile("<component(\\s+tag[^>]+)>(.*?)</component>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	Pattern contentPattern=Pattern.compile("<content(\\s+tag[^>]+)>(.*?)</content>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	
 	public String addGspSitemeshCapturing(String gspSource) {
 		StringBuffer sb = addHeadCapturing(gspSource);
 		sb = addBodyCapturing(sb);
-		sb = addComponentCapturing(sb);
+		sb = addContentCapturing(sb);
 		return sb.toString();
 	}
 
@@ -94,14 +94,14 @@ public class SitemeshPreprocessor {
 		return sb2;
 	}
 
-	StringBuffer addComponentCapturing(StringBuffer sb) {
+	StringBuffer addContentCapturing(StringBuffer sb) {
 		StringBuffer sb2=new StringBuffer((int)(sb.length() * 1.2));
-		Matcher m=componentPattern.matcher(sb);
+		Matcher m=contentPattern.matcher(sb);
 		if(m.find()) {
 			m.appendReplacement(sb2, "");
-			sb2.append("<g:captureComponent").append(m.group(1)).append(">");
+			sb2.append("<g:captureContent").append(m.group(1)).append(">");
 			sb2.append(m.group(2));
-			sb2.append("</g:captureComponent>");
+			sb2.append("</g:captureContent>");
 		}
 		m.appendTail(sb2);
 		return sb2;

@@ -180,7 +180,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
             
             if(htmlPage instanceof GSPSitemeshPage) {
             	// check if there is an component content buffer
-            	propertyValue = htmlPage.getComponentBuffer(propertyName)
+            	propertyValue = htmlPage.getContentBuffer(propertyName)
             }
 
             if(!propertyValue)
@@ -327,12 +327,12 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		}
     }
 
-    def captureComponent = { attrs, body ->
-		def content=captureTagContent(out, 'component', attrs, body)
+    def captureContent = { attrs, body ->
+		def content=captureTagContent(out, 'content', attrs, body)
 		if(content != null) {
 			GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
 	        if(smpage && attrs.tag) {
-	        	smpage.setComponentBuffer(attrs.tag, wrapContentInBuffer(content))
+	        	smpage.setContentBuffer(attrs.tag, wrapContentInBuffer(content))
 	        }
 		}
 	}

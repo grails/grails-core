@@ -8,27 +8,27 @@ import org.springframework.web.context.request.RequestContextHolder
 class GSPSitemeshPageTests extends AbstractGrailsTagTests {
 
     void testCaptureContent() {
-        def template='<g:captureComponent tag=\"testtag\">this is the captured content</g:captureComponent>'
+        def template='<g:captureContent tag=\"testtag\">this is the captured content</g:captureContent>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
-        assertEquals 'this is the captured content', gspSiteMeshPage.getComponentBuffer('page.testtag').toString()
+        assertEquals 'this is the captured content', gspSiteMeshPage.getContentBuffer('page.testtag').toString()
     }
     
     void testCaptureContent2() {
-        def template='<g:captureComponent tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</g:captureComponent>'
+        def template='<g:captureContent tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</g:captureContent>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
-        assertEquals 'this is the captured content', gspSiteMeshPage.getComponentBuffer('page.testtag').toString()
+        assertEquals 'this is the captured content', gspSiteMeshPage.getContentBuffer('page.testtag').toString()
     }
 
     void testCaptureContent3() {
-        def template='<component tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</component>'
+        def template='<content tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</content>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
-        assertEquals 'this is the captured content', gspSiteMeshPage.getComponentBuffer('page.testtag').toString()
+        assertEquals 'this is the captured content', gspSiteMeshPage.getContentBuffer('page.testtag').toString()
     }
     
     void testCaptureTitleAndBody() {
@@ -78,8 +78,8 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         assertEquals '<body>body here</body>', result2
     }
 
-    void testLayoutComponent() {
-        def template='<html><head><title>This is the title</title></head><body onload="somejs();">body here</body><component tag="nav">Navigation component</component></html>'
+    void testLayoutcontent() {
+        def template='<html><head><title>This is the title</title></head><body onload="somejs();">body here</body><content tag="nav">Navigation content</content></html>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
@@ -91,7 +91,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         def template2='<body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/> <g:pageProperty name="page.nav"/></body>'
         def result2 = applyTemplate(template2, [:])
         	
-        assertEquals '<body onload="somejs();">body here Navigation component</body>', result2
+        assertEquals '<body onload="somejs();">body here Navigation content</body>', result2
     }
 
     
