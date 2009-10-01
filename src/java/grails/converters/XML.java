@@ -139,8 +139,8 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             if (o == null) {
                 // noop
             }
-            else if (o instanceof String) {
-                writer.characters((String) o);
+            else if (o instanceof CharSequence) {
+                writer.characters(o.toString());
             }
             else if (o instanceof Class) {
                 writer.characters(((Class) o).getName());

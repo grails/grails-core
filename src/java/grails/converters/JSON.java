@@ -174,7 +174,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         try {
             if (o == null || o.equals(JSONObject.NULL)) {
                 writer.value(null);
-            } else if (o instanceof String) {
+            } else if (o instanceof CharSequence) {
                 writer.value(o);
             } else if (o instanceof Class) {
                 writer.value(((Class) o).getName());
