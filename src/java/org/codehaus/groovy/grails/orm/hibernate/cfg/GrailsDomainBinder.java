@@ -1645,9 +1645,11 @@ public final class GrailsDomainBinder {
         } else if (typeObj != null) {
             String typeName = typeObj.toString();
             try {
-                userType = Class.forName(typeName);
+                userType = Class.forName(typeName, true, Thread.currentThread().getContextClassLoader());
             } catch (ClassNotFoundException e) {
-                // ignore
+            	if(LOG.isWarnEnabled()) {
+            		LOG.warn("UserType not found ", e);
+            	}
             }
         }
         return userType;

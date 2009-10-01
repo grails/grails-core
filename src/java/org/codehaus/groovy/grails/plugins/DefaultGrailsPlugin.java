@@ -753,7 +753,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                                 if(LOG.isDebugEnabled())
                                     LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, registering resource with class loader...");
 
-                                GroovyClassLoader classLoader = this.application.getClassLoader();
+                                ClassLoader classLoader = this.application.getClassLoader();
 
                                 GrailsResourceLoader resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
 
@@ -839,7 +839,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
 
     private Class attemptClassReload(String className) {
-        final GroovyClassLoader loader = application.getClassLoader();
+        final ClassLoader loader = application.getClassLoader();
         if(loader instanceof GrailsClassLoader) {
             GrailsClassLoader grailsLoader = (GrailsClassLoader)loader;
 

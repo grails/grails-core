@@ -42,6 +42,7 @@ import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.*;
@@ -67,10 +68,10 @@ import org.springframework.web.context.support.ServletContextResourceLoader;
  * 
  * Created: 12-Jan-2006
  */
-public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware{
+public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
-    private GroovyClassLoader classLoader = new GroovyClassLoader();
+    private ClassLoader classLoader;
     private int scriptNameCount;
     private ResourceLoader resourceLoader;
     
@@ -90,8 +91,13 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         if(servletContext == null) throw new IllegalArgumentException("Argument [servletContext] cannot be null");
         this.resourceLoader = new ServletContextResourceLoader(servletContext);
         this.servletContextLoader = new ServletContextResourceLoader(servletContext);
-
     }
+    
+	public void afterPropertiesSet() throws Exception {
+		if(classLoader==null) {
+			classLoader = Thread.currentThread().getContextClassLoader();
+		}
+	}
 
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
         this.tagLibraryLookup = tagLibraryLookup;
@@ -105,7 +111,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * Sets the ClassLoader that the TemplateEngine should use to
      * @param classLoader The ClassLoader to use when compilation of Groovy Pages occurs
      */
-    public void setClassLoader(GroovyClassLoader classLoader) {
+    public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
@@ -225,7 +231,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     		if(gspClassName != null) {
     			Class<GroovyPage> gspClass = null;
     			try {
-					gspClass = (Class<GroovyPage>)Class.forName(gspClassName);
+					gspClass = (Class<GroovyPage>)Class.forName(gspClassName, true, Thread.currentThread().getContextClassLoader());
 				} catch (ClassNotFoundException e) {
 					LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
 				}
@@ -568,11 +574,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return The compiled java.lang.Class, which is an instance of groovy.lang.Script
      */
     private Class compileGroovyPage(InputStream in, String name, String pageName, GroovyPageMetaInfo metaInfo) {
+    	if(!(classLoader instanceof GroovyClassLoader)) {
+    		throw new GroovyPagesException("Application default classloader is not GroovyClassLoader. Enable reloading in application settings.");
+    	}
+    	
         // Compile the script into an object
         Class scriptClass;
         try {
             scriptClass =
-                this.classLoader.parseClass(in, name);
+                ((GroovyClassLoader)this.classLoader).parseClass(in, name);
         } catch (CompilationFailedException e) {
         	LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
 
@@ -732,5 +742,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 	public void setPrecompiledGspMap(Map<String, String> precompiledGspMap) {
 		this.precompiledGspMap = precompiledGspMap;
 	}
+
 
 }

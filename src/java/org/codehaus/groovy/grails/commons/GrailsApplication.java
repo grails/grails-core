@@ -164,9 +164,9 @@ public interface GrailsApplication extends ApplicationContextAware {
     /**
      * <p>Returns the class loader instance for the Grails application</p>
      *
-     * @return The GroovyClassLoader instance
+     * @return The ClassLoader instance
      */
-    GroovyClassLoader getClassLoader();
+    ClassLoader getClassLoader();
 
 
 	/**

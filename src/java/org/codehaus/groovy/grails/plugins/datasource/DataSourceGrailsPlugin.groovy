@@ -80,7 +80,7 @@ class DataSourceGrailsPlugin {
                               def codecClass = application.codecClasses.find { it.name?.equalsIgnoreCase(encryptionCodec) || it.fullName == encryptionCodec}?.clazz
                               try {
                                 if(!codecClass) {
-                                    codecClass = application.classLoader.loadClass(encryptionCodec)
+                                    codecClass = Class.forName(encryptionCodec, true, application.classLoader)
                                 }
                                 if(codecClass) {
                                    password = codecClass.decode(thePassword)

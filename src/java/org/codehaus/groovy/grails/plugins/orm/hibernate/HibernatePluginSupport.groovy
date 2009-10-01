@@ -16,6 +16,14 @@
 
 package org.codehaus.groovy.grails.plugins.orm.hibernate
 
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.hibernate.SessionFactory;
+import org.hibernate.proxy.HibernateProxy;
+import org.springframework.context.ApplicationContext;
 import grails.orm.HibernateCriteriaBuilder
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
@@ -376,7 +384,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
     private static addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
         def mc = dc.metaClass
-        def GroovyClassLoader classLoader = application.classLoader
+        ClassLoader classLoader = application.classLoader
         def sessionFactory = ctx.getBean('sessionFactory')
 
         def dynamicMethods = [new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
@@ -432,7 +440,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         SessionFactory sessionFactory = ctx.getBean('sessionFactory')
         def Class domainClassType = dc.clazz
 
-        def GroovyClassLoader classLoader = application.classLoader
+        ClassLoader classLoader = application.classLoader
 
         metaClass.static.withTransaction = {Closure callable ->
             new TransactionTemplate(ctx.getBean('transactionManager')).execute({status ->
@@ -480,9 +488,9 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         def metaClass = dc.metaClass
         SessionFactory sessionFactory = ctx.getBean('sessionFactory')
         def template = new HibernateTemplate(sessionFactory)
-        def Class domainClassType = dc.clazz
+        Class domainClassType = dc.clazz
 
-        def GroovyClassLoader classLoader = application.classLoader
+        ClassLoader classLoader = application.classLoader
         def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
         metaClass.static.findAll = {String query ->
             findAllMethod.invoke(domainClassType, "findAll", [query] as Object[])

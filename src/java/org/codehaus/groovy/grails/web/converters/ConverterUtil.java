@@ -57,7 +57,7 @@ public class ConverterUtil {
     public static BeanWrapper createBeanWrapper(Object o) {
         BeanWrapper beanWrapper;
         try {
-            Class c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS);
+            Class c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS, true, Thread.currentThread().getContextClassLoader());
             Constructor init = c.getConstructor(new Class[]{Object.class});
             beanWrapper = (BeanWrapper)init.newInstance(new Object[]{o});
         } catch (Exception e) {

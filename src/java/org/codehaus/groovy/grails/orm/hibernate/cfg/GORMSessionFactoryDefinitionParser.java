@@ -15,7 +15,11 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.persistence.Entity;
-import groovy.lang.GroovyClassLoader;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -23,10 +27,7 @@ import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryB
 import org.codehaus.groovy.grails.orm.hibernate.support.SpringLobHandlerDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator;
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.config.*;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
@@ -39,10 +40,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A BeanDefinitionParser that will scan for GORM entities to configure and automatically setup an
@@ -128,8 +125,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         for(String beanName : simpleRegistry.getBeanDefinitionNames()) {
             BeanDefinition beanDef = simpleRegistry.getBeanDefinition(beanName);
             try {
-                Class entityClass = beanClassLoader
-                                        .loadClass(beanDef.getBeanClassName());
+                Class entityClass = Class.forName(beanDef.getBeanClassName(), true, beanClassLoader);
 
                 classes.add(entityClass);
 
@@ -141,7 +137,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         }
 
         constructorArgs.addGenericArgumentValue(classes.toArray(new Class[classes.size()]));
-        constructorArgs.addGenericArgumentValue(new GroovyClassLoader(beanClassLoader));
+        constructorArgs.addGenericArgumentValue(beanClassLoader);
         targetRegistry.registerBeanDefinition(GrailsApplication.APPLICATION_ID, grailsApplicationBean);
     }
 
