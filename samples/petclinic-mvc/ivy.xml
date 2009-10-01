@@ -8,9 +8,20 @@
         <conf name="runtime" extends="compile"/>
     </configurations>
     <dependencies>
-        <dependency org="org.grails" name="grails-bootstrap" rev="1.2-M1" conf="runtime"/>
-        <dependency org="org.grails" name="grails-gorm" rev="1.2-M1" conf="runtime"/>
-        <dependency org="org.grails" name="grails-web" rev="1.2-M1" conf="runtime"/>
+        <dependency org="org.grails" name="grails-bootstrap" rev="1.2-M3" conf="runtime">
+	            <exclude org="org.springframework" module="spring-instrument-classloading" name="*" type="*" ext="*" conf="" matcher="exact"/>
+	            <exclude org="javax.validation" module="com.springsource.javax.validation" name="*" type="*" ext="*" conf="" matcher="exact"/>
+	
+		</dependency>
+        <dependency org="org.grails" name="grails-gorm" rev="1.2-M3" conf="runtime">
+	            <exclude org="org.springframework" module="spring-instrument-classloading" name="*" type="*" ext="*" conf="" matcher="exact"/>
+	            <exclude org="javax.validation" module="com.springsource.javax.validation" name="*" type="*" ext="*" conf="" matcher="exact"/>	
+		</dependency>
+        <dependency org="org.grails" name="grails-web" rev="1.2-M3" conf="runtime">
+	            <exclude org="org.springframework" module="spring-instrument-classloading" name="*" type="*" ext="*" conf="" matcher="exact"/>
+	            <exclude org="javax.validation" module="com.springsource.javax.validation" name="*" type="*" ext="*" conf="" matcher="exact"/>
+	
+		</dependency>
         <dependency org="org.hibernate" name="hibernate-commons-annotations" rev="3.3.0.ga" conf="runtime"/>
         <dependency org="org.hibernate" name="hibernate-annotations" rev="3.3.0.ga" conf="runtime"/>
         <dependency org="taglibs" name="standard" rev="1.1.2" conf="runtime"/>
