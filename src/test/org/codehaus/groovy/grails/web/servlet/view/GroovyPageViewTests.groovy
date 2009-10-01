@@ -32,6 +32,7 @@ class GroovyPageViewTests extends GroovyTestCase {
         def view = new GroovyPageView()
         view.url = url
         view.applicationContext = ctx
+        view.templateEngine = gpte
 
         def model = [foo:"bar"]
         view.render(model, webRequest.currentRequest, webRequest.currentResponse)

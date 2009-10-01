@@ -19,6 +19,17 @@ import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
+
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,18 +48,6 @@ import org.springframework.core.io.*;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.ServletContextResourceLoader;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A GroovyPagesTemplateEngine based on (but not extending) the existing TemplateEngine implementations
@@ -154,6 +153,16 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             throw new GroovyPagesException("No Groovy page found for URI: " + getCurrentRequestUri(webRequest.getCurrentRequest()));
         }
         String name = establishPageName(resource, null);
+        
+        if(!isReloadEnabled()) {
+        	// presumably war deployed mode, but precompiled gsp isn't used, log this for debugging
+        	if(LOG.isDebugEnabled()) {
+        		LOG.debug("Creating template using resource " + resource, new Exception("Creating template using resource " + resource));
+        	} else if(LOG.isInfoEnabled()) {
+				LOG.info("Creating template using resource " + resource);
+			}        	
+        }
+        
         if(pageCache.containsKey(name)) {
             GroovyPageMetaInfo meta = pageCache.get(name);
 
@@ -216,7 +225,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     		if(gspClassName != null) {
     			Class<GroovyPage> gspClass = null;
     			try {
-					gspClass = (Class<GroovyPage>) this.getClass().getClassLoader().loadClass(gspClassName);
+					gspClass = (Class<GroovyPage>)Class.forName(gspClassName);
 				} catch (ClassNotFoundException e) {
 					LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
 				}

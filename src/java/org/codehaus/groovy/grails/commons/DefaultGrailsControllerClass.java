@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import groovy.lang.MetaProperty;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
@@ -232,19 +233,18 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 	public boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName) {
 		boolean isAllowed = true;
 		Object methodRestrictionsProperty = null;
-        if(controller.getMetaClass().hasProperty(controller, ALLOWED_HTTP_METHODS_PROPERTY) != null) {
-            methodRestrictionsProperty = controller.getProperty(ALLOWED_HTTP_METHODS_PROPERTY);
+        MetaProperty metaProp=controller.getMetaClass().getMetaProperty(ALLOWED_HTTP_METHODS_PROPERTY);
+        if(metaProp != null) {
+            methodRestrictionsProperty = metaProp.getProperty(controller);
         }
 		if(methodRestrictionsProperty instanceof Map) {
 			Map map = (Map)methodRestrictionsProperty;
-			if(map.containsKey(actionName)) {
-				Object value = map.get(actionName);
-				if(value instanceof List) {
-					List listOfMethods = (List) value;
-					isAllowed = listOfMethods.contains(httpMethod);
-				} else if(value instanceof String) {
-					isAllowed = value.equals(httpMethod);
-				}
+			Object value = map.get(actionName);
+			if(value instanceof List) {
+				List listOfMethods = (List) value;
+				isAllowed = listOfMethods.contains(httpMethod);
+			} else if(value instanceof String) {
+				isAllowed = value.equals(httpMethod);
 			}
 		}
 		return isAllowed;

@@ -28,6 +28,8 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
 import grails.util.Environment
+import grails.util.Metadata;
+
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 
 /**
@@ -64,7 +66,9 @@ class CoreGrailsPlugin {
 			targetObject = ref("grailsApplication", true)
 			targetMethod = "getClassLoader"
 		}
-        if(Environment.current == Environment.DEVELOPMENT)
+
+        // add shutdown hook if not running in war deployed mode
+        if(!Metadata.getCurrent().isWarDeployed() || Environment.currentEnvironment == Environment.DEVELOPMENT)
             shutdownHook(DevelopmentShutdownHook)
         
 		customEditors(CustomEditorConfigurer) {
