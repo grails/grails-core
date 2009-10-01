@@ -30,16 +30,16 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
 		assertEquals(gspBodyExpected, preprocessor.addGspSitemeshCapturing(gspBody))
 	}
 
-	void testComponentParse() {
+	void testContentParse() {
 		def gspBody='''
 <html>
 		<head><title>This is the title</title></head>
 		<body onload="test();">
 			body text
 		</body>
-		<component tag="nav">
-			component test
-		</component>
+		<content tag="nav">
+			content test
+		</content>
 </html>
 '''
 		def preprocessor=new SitemeshPreprocessor()
@@ -49,14 +49,48 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
 		<g:captureBody onload="test();">
 			body text
 		</g:captureBody>
-		<g:captureComponent tag="nav">
-			component test
-		</g:captureComponent>
+		<g:captureContent tag="nav">
+			content test
+		</g:captureContent>
 </html>
 '''
 		assertEquals(gspBodyExpected, preprocessor.addGspSitemeshCapturing(gspBody))
 	}
 
+
+	void testContentParse2() {
+		def gspBody='''
+<html>
+		<head><title>This is the title</title></head>
+		<body onload="test();">
+			body text
+		</body>
+		<content tag="nav">
+			content test
+		</content>
+		<content tag="nav">
+			content test
+		</content>
+</html>
+'''
+		def preprocessor=new SitemeshPreprocessor()
+		def gspBodyExpected='''
+<html>
+		<g:captureHead><g:captureTitle>This is the title</g:captureTitle></g:captureHead>
+		<g:captureBody onload="test();">
+			body text
+		</g:captureBody>
+		<g:captureContent tag="nav">
+			content test
+		</g:captureContent>
+		<g:captureContent tag="nav">
+			content test
+		</g:captureContent>
+</html>
+'''
+		assertEquals(gspBodyExpected, preprocessor.addGspSitemeshCapturing(gspBody))
+	}
+	
 	void testOtherParse() {
 		def gspBody='''
 <html>

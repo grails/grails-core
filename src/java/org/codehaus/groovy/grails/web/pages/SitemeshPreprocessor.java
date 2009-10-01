@@ -97,7 +97,7 @@ public class SitemeshPreprocessor {
 	StringBuffer addContentCapturing(StringBuffer sb) {
 		StringBuffer sb2=new StringBuffer((int)(sb.length() * 1.2));
 		Matcher m=contentPattern.matcher(sb);
-		if(m.find()) {
+		while(m.find()) {
 			m.appendReplacement(sb2, "");
 			sb2.append("<g:captureContent").append(m.group(1)).append(">");
 			sb2.append(m.group(2));
