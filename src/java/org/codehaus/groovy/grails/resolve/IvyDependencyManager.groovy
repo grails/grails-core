@@ -283,6 +283,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 }
 
                 compile( "aopalliance:aopalliance:1.0",
+                         "commons-codec:1.3",
                          "commons-collections:commons-collections:3.2.1",
                          "commons-io:commons-io:1.4",
                          "commons-lang:commons-lang:2.4",
@@ -320,7 +321,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 // dependencies needed for running tests
                 test "junit:junit:3.8.2",
                      "org.grails:grails-test:$grailsVersion",
-                     "org.springframework:org.springframework.integration-tests:3.0.0.RC1",
                      "org.springframework:org.springframework.test:3.0.0.RC1"
 
                 // dependencies needed at runtime only
