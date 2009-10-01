@@ -1052,6 +1052,7 @@ public class GroovyPageParser implements Tokens {
 	}
 
 	private void script(boolean gsp) {
+		flushTagBuffering();
 		if (!finalPass)
 			return;
 		if (LOG.isDebugEnabled())
