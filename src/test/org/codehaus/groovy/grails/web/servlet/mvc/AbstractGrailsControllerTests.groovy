@@ -17,6 +17,8 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 
 abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
 
@@ -73,26 +75,28 @@ abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
 
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         ctx.registerMockBean("messageSource", new StaticMessageSource())
+        ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx) 
-        servletContext = new MockServletContext()
-
+        servletContext = ctx.getServletContext()
+        
         springConfig.servletContext = servletContext
 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
         appCtx = springConfig.getApplicationContext()
+
+        dependentPlugins*.doWithApplicationContext(appCtx)
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        mockManager.applicationContext = appCtx
+        mockManager.doDynamicMethods()
+
         webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
-        response = webRequest.currentResponse
-        dependentPlugins*.doWithApplicationContext(appCtx)
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
-
-        mockManager.applicationContext = appCtx
-        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
-        mockManager.doDynamicMethods()
+        response = webRequest.currentResponse        
     }
 
     protected void tearDown() {

@@ -146,6 +146,11 @@ public class GroovyPagesGrailsPlugin {
 				location = "classpath:gsp/views.properties"
 			}
         }
+
+        // Setup the GroovyPagesUriService
+        groovyPagesUriService(org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService) {
+        	
+        }
         
         // Configure a Spring MVC view resolver
         jspViewResolver(GrailsViewResolver) {
@@ -351,11 +356,14 @@ public class GroovyPagesGrailsPlugin {
                 // so we need to update it now.
                 def lookup = event.ctx.getBean("gspTagLibraryLookup")
                 lookup.registerTagLib(taglibClass)
+
             }
         }
 
         event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(event.ctx)
 
+        // clear uri cache after changes
+        event.ctx.getBean("groovyPagesUriService").clear()
     }
 
     private PluginBuildSettings createPluginSettings() {

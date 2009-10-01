@@ -16,13 +16,16 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
-import org.codehaus.groovy.grails.web.pages.GroovyPageUtils;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
@@ -51,9 +54,19 @@ public class GroovyPageTagBody extends Closure {
         if(webRequest == null) throw new IllegalStateException("Argument [webRequest] cannot be null!");
 
         this.bodyClosure = bodyClosure;
-        this.binding = GroovyPageUtils.findPageScopeBinding(owner, webRequest);
+        this.binding = findPageScopeBinding(owner, webRequest);
         this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
     }
+    
+	private Binding findPageScopeBinding(Object owner, GrailsWebRequest webRequest) {
+		if(owner instanceof GroovyPage)
+            return ((GroovyPage) owner).getBinding();
+        else if(owner != null && owner.getClass().getName().endsWith(TagLibArtefactHandler.TYPE)) {
+        	return (Binding) ((GroovyObject)owner).getProperty(GroovyPage.PAGE_SCOPE);
+        } else {
+        	return (Binding)webRequest.getCurrentRequest().getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+        }
+	}
     
     public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
 		return preferSubChunkWhenWritingToOtherBuffer;

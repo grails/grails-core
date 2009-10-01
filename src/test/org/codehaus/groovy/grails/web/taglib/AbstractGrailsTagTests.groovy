@@ -32,14 +32,14 @@ import org.springframework.ui.context.ThemeSource
 import org.springframework.ui.context.Theme
 import org.springframework.ui.context.support.SimpleTheme
 import org.springframework.context.MessageSource
-import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.codehaus.groovy.grails.web.pages.*;
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 
 abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -131,16 +131,12 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         ApplicationHolder.application = ga
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)
-        webRequest = GrailsWebUtil.bindMockWebRequest()
-        onInit()
-
-        JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
 
 
 
         def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
-
+        ctx.servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
 
         grailsApplication.setApplicationContext(ctx);
 
@@ -157,6 +153,7 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean("manager", mockManager )
         ctx.registerMockBean("messageSource", messageSource )
         ctx.registerMockBean("grailsApplication",grailsApplication)
+        ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -175,7 +172,11 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
         mockManager.registerProvidedArtefacts(grailsApplication)
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
-
+        
+        webRequest = GrailsWebUtil.bindMockWebRequest(ctx)
+        onInit()
+        JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
+        
         servletContext =  webRequest.servletContext
         ServletContextHolder.servletContext = servletContext
 
@@ -191,7 +192,7 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         
 		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 		mockManager.applicationContext = appCtx
-		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
+
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
 		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
 		// Why are the TagLibClasses removed?
@@ -204,7 +205,9 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         response = webRequest.currentResponse
 
 		assert appCtx.grailsUrlMappingsHolder
-    }
+
+
+	 }
     
     void tearDown() {
         // Clear the page cache in the template engine since it's

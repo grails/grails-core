@@ -271,7 +271,7 @@ class ControllersGrailsPlugin {
 
                                 if (!commandObject) {
                                     commandObject = paramType.newInstance()
-                                    ctx.autowireCapableBeanFactory.autowireBeanProperties(commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                                    ctx.autowireCapableBeanFactory?.autowireBeanProperties(commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                                     commandObjects << commandObject
                                 }
                                 def params = RCH.currentRequestAttributes().params

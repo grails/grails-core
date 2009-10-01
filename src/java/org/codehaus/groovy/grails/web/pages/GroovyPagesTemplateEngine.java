@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -231,6 +232,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 					return new GroovyPageTemplate(meta);
 				}
     		}
+    		if(precompiledGspMap.size() > 0) {
+    			
+    		}
     		if(LOG.isDebugEnabled()) {
     			LOG.debug("No precompiled template found for uri '" + uri + "'");
     		}
@@ -261,6 +265,11 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             }
     	}
     	if(resource != null) {
+    		if(precompiledGspMap != null && precompiledGspMap.size() > 0) {
+    			if(LOG.isWarnEnabled()) {
+    				LOG.warn("Precompiled GSP not found for uri: " + Arrays.asList(uri) + ". Using resource " + resource);
+    			}
+    		}
     		return createTemplate(resource);
     	} else {
     		return null;
@@ -414,7 +423,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @param uri The URI to check
      * @return A Resource instance
      */
-    public Resource getResourceForUri(String uri) {
+    private Resource getResourceForUri(String uri) {
         Resource r;
         r = getResourceWithinContext(uri);
         if(r == null || !r.exists()) {
