@@ -22,6 +22,12 @@ class TagLibNamespaceTests extends AbstractGrailsTagTests {
         assertOutputEquals "<hello>barbar</hello>", '<t1:nested name="hello"><t1:foo /></t1:nested>'
     }
 
+    void testDynamicDispatch() {
+        def template = '<t1:condition><%println t1."${\'nested\'}"(name:\'hello\')%></t1:condition>'
+
+        assertOutputEquals ''.trim(),template 
+    }
+
     void onTearDown() {
         RequestContextHolder.setRequestAttributes(null)
     }
@@ -30,6 +36,9 @@ class TagLibNamespaceTests extends AbstractGrailsTagTests {
 class TestTagLib {
     static namespace = "t1"
 
+    def condition = { attrs, body ->
+        
+    }
     def foo = { attrs, body ->
         out << "bar"
         out << body?.call()
