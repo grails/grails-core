@@ -290,7 +290,7 @@ eachRepository =  { Closure callable ->
 }
 // Targets
 target(resolveDependencies:"Resolve plugin dependencies") {
-    depends(parseArguments)
+    depends(parseArguments, initInplacePlugins)
     def plugins = metadata.findAll { it.key.startsWith("plugins.")}.collect {
        [
         name:it.key[8..-1],
@@ -338,6 +338,22 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     }
 }
 
+target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
+    // Ensure that the "plugin.xml" is up-to-date for plugins
+    // that haven't been installed, i.e. their path is declared
+    // explicitly by the project.
+    File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
+    File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
+
+    pluginSettings.pluginDescriptors.findAll { Resource r ->
+        File containingDir = r.file.parentFile.parentFile?.canonicalFile?.absoluteFile
+        return containingDir == null ||
+                (containingDir != pluginsDir && containingDir != globalDir)
+    }.each { Resource r ->
+        generatePluginXml(r.file)
+    }
+}
+
 private registerMetadataForPluginLocation(Resource pluginDir) {
     def plugin = pluginSettings.getMetadataForPlugin(pluginDir.filename)
     registerPluginWithMetadata(plugin.@name.text(), plugin.@version.text())
@@ -353,7 +369,8 @@ generatePluginXml = { File descriptor ->
     Class pluginClass
     def plugin
     try {
-        pluginClass = classLoader.loadClass(descriptor.name[0..-8])
+        def gcl = new GroovyClassLoader(classLoader)
+        pluginClass = gcl.parseClass(descriptor)
         plugin = pluginClass.newInstance()
     }
     catch (Throwable t) {
@@ -463,20 +480,6 @@ target(loadPlugins:"Loads Grails' plugins") {
             profile("compiling plugins") {
 	    		unit.compile ()
 			}
-
-            // Ensure that the "plugin.xml" is up-to-date for plugins
-            // that haven't been installed, i.e. their path is declared
-            // explicitly by the project.
-            File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
-            File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
-
-            pluginFiles.findAll { Resource r ->
-                File containingDir = r.file.parentFile.parentFile?.canonicalFile?.absoluteFile
-                return containingDir == null ||
-                        (containingDir != pluginsDir && containingDir != globalDir)
-            }.each { Resource r ->
-                generatePluginXml(r.file)
-            }
 
 			def application
             def pluginClasses = []

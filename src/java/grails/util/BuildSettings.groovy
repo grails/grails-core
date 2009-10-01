@@ -644,7 +644,14 @@ class BuildSettings {
         def handlePluginDirectory = {File dir ->
             def pluginName = dir.name
             if (!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
-                def pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
+                // Try BuildConfig.groovy first, which should work
+                // work for in-place plugins.
+                def pluginDependencyDescriptor = new File("${dir.absolutePath}/grails-app/conf/BuildConfig.groovy")
+
+                if (!pluginDependencyDescriptor.exists()) {
+                    // OK, that doesn't exist, so try dependencies.groovy.
+                    pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
+                }
 
                 if (pluginDependencyDescriptor.exists()) {
                     def gcl = obtainGroovyClassLoader()

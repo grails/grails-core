@@ -66,7 +66,7 @@ packageFiles = { String from ->
 }
 
 target( packagePlugins : "Packages any Grails plugins that are installed for this project") {
-	depends( classpath )
+	depends( classpath, resolveDependencies )
     def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
     for(PluginInfo info in pluginInfos) {
         try {
