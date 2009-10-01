@@ -312,8 +312,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             if(value != null) {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
                 if(mc.hasProperty(value, CONSTRAINTS_PROPERTY) != null) {
-                    Map nestedConstrainedProperties = (Map)mc.getProperty(value, CONSTRAINTS_PROPERTY);
-                    return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
+                    final Object o = mc.getProperty(value, CONSTRAINTS_PROPERTY);
+                    if(o instanceof Map) {
+                        Map nestedConstrainedProperties = (Map) o;
+                        return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
+                    }
                 }
             }
 
