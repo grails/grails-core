@@ -283,7 +283,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 }
 
                 compile( "aopalliance:aopalliance:1.0",
-                         "commons-codec:1.3",
+                         "commons-codec:commons-codec:1.3",
                          "commons-collections:commons-collections:3.2.1",
                          "commons-io:commons-io:1.4",
                          "commons-lang:commons-lang:2.4",
