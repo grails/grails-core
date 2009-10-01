@@ -9,6 +9,8 @@
       <ibiblio name="codehaus-snapshots" root="http://snapshots.repository.codehaus.org" m2compatible="true" changingPattern=".*SNAPSHOT"/>
       <ibiblio name="codehaus" root="http://repository.codehaus.org" m2compatible="true"/>
       <ibiblio name="javanet" root="http://download.java.net/maven/2/" m2compatible="true"/>
+      <ibiblio name="spring-milestone" root="http://s3.amazonaws.com/maven.springframework.org/milestone" m2compatible="true"/>
+
       <resolver ref="public"/>
     </chain>
   </resolvers>
