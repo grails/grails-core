@@ -1,24 +1,23 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import grails.test.GrailsUnitTestCase
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.hibernate.Session
+import org.hibernate.SessionFactory
+import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.springframework.orm.hibernate3.SessionHolder
-import org.hibernate.SessionFactory
-import org.hibernate.Session
 import org.springframework.orm.hibernate3.SessionFactoryUtils
-import org.springframework.context.ApplicationContext
+import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.util.Log4jConfigurer
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * @author Graeme Rocher
@@ -104,7 +103,7 @@ hibernate {
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
-        def springConfig = new DefaultRuntimeSpringConfiguration(ctx, gcl)
+        def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
