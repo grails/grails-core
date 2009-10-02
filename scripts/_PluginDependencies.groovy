@@ -47,6 +47,7 @@ import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import org.tmatesoft.svn.core.SVNAuthenticationException
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import grails.util.BuildSettings
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -1028,6 +1029,30 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             for(jar in pluginJars) {
                 rootLoader.addURL(jar.URL)
             }
+            def pluginDependencyDescriptor = new File("$pluginInstallPath/dependencies.groovy")
+            if(pluginDependencyDescriptor.exists()) {
+                println "Resolving plugin JAR dependencies"
+                BuildSettings settings = grailsSettings
+                def callable = settings.pluginDependencyHandler()
+                callable.call(new File("$pluginInstallPath"))
+                IvyDependencyManager dependencyManager = settings.dependencyManager
+                def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
+                if(resolveReport.hasError()) {
+                    cleanupPluginInstallAndExit("Failed to install plugin [${fullPluginName}]. Plugin has missing JAR dependencies.")
+                }
+                else {
+                    List urls = rootLoader.URLs.toList()
+                    resolveReport.allArtifactsReports
+                                    .localFile.each { File dep ->
+                        def url = dep.toURI().toURL()
+                        if(!urls.contains(url)) {
+                            rootLoader.addURL(url)
+                        }
+                    }
+                }
+
+            }
+
             // proceed _Install.groovy plugin script if exists
             def installScript = new File("${pluginInstallPath}/scripts/_Install.groovy")
             runPluginScript(installScript, fullPluginName, "post-install script")

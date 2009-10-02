@@ -616,34 +616,7 @@ class BuildSettings {
         }
         if (dependencyConfig) {
             dependencyManager.parseDependencies dependencyConfig
-            def pluginSlurper = createConfigSlurper()
-
-            def handlePluginDirectory = {File dir ->
-                def pluginName = dir.name
-                if (!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
-                    def pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
-
-                    if (pluginDependencyDescriptor.exists()) {
-                        def gcl = obtainGroovyClassLoader()
-
-                        try {
-                            Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
-                            def pluginConfig = pluginSlurper.parse(script)
-                            def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
-                            if (pluginDependencyConfig instanceof Closure) {
-                                dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
-                            }
-                        }
-                        catch (e) {
-                            println "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}"
-                        }
-
-                    }
-                }
-                else {
-                    println "Plugin [$pluginName] dependencies are configured by application. Skipping.."
-                }
-            }
+            def handlePluginDirectory = pluginDependencyHandler()
 
             Asynchronizer.withAsynchronizer(5) {
                 Closure predicate = { it.directory && !it.hidden }
@@ -663,6 +636,38 @@ class BuildSettings {
             }
 
         }
+    }
+
+    Closure pluginDependencyHandler() {
+        def pluginSlurper = createConfigSlurper()
+
+        def handlePluginDirectory = {File dir ->
+            def pluginName = dir.name
+            if (!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
+                def pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
+
+                if (pluginDependencyDescriptor.exists()) {
+                    def gcl = obtainGroovyClassLoader()
+
+                    try {
+                        Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
+                        def pluginConfig = pluginSlurper.parse(script)
+                        def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
+                        if (pluginDependencyConfig instanceof Closure) {
+                            dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
+                        }
+                    }
+                    catch (e) {
+                        println "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}"
+                    }
+
+                }
+            }
+            else {
+                println "Plugin [$pluginName] dependencies are configured by application. Skipping.."
+            }
+        }
+        return handlePluginDirectory
     }
 
     ConfigSlurper createConfigSlurper() {
