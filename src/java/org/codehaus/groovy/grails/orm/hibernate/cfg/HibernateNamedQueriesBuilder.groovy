@@ -89,6 +89,7 @@ class NamedCriteriaProxy {
     def get(id) {
         def closureClone = criteriaClosure.clone()
         def getClosure = {
+            closureClone.delegate = delegate
             closureClone()
             eq 'id', id
             uniqueResult = true

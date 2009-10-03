@@ -72,6 +72,23 @@ class Publication {
         assertEquals 'Some New Book', publications[0].title
     }
 
+    void testGetWithIdOfObjectWhichDoesNotMatchCriteria() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        def hasBookInTitle = publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 10).save(flush: true)
+        assert hasBookInTitle
+        def doesNotHaveBookInTitle = publicationClass.newInstance(title: "Some Publication",
+                datePublished: now - 900).save(flush: true)
+        assert doesNotHaveBookInTitle
+
+        session.clear()
+
+        def result = publicationClass.publicationsWithBookInTitle.get(doesNotHaveBookInTitle.id)
+        assertNull result
+    }
+
     void testGetReturnsCorrectObject() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
@@ -88,10 +105,6 @@ class Publication {
         def publication = publicationClass.recentPublications.get(newPublication.id)
         assert publication
         assertEquals 'Some New Book', publication.title
-
-        publication = publicationClass.recentPublications.get(oldPublication.id)
-        assert publication
-        assertEquals 'Some Old Book', publication.title
     }
 
     void testGetReturnsNull() {
