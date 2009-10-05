@@ -1,3 +1,5 @@
+package org.codehaus.groovy.grails.web.converters.configuration
+
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import grails.converters.JSON
