@@ -17,6 +17,7 @@
 package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
+import gant.TargetExecutionException;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.GrailsNameUtils;
@@ -291,9 +292,11 @@ public class GrailsScriptRunner {
      */
     private void runInteractive() {
         String message = "Interactive mode ready, type your command name in to continue (hit ENTER to run the last command):\n";
-        //disable exiting
-//        System.metaClass.static.exit = {int code ->}
+
+        // Disable exiting
+        System.setProperty("grails.disable.exit", "true");
         System.setProperty("grails.interactive.mode", "true");
+
         int messageNumber = 0;
         ScriptAndArgs script = new ScriptAndArgs();
         while (true) {
@@ -310,10 +313,24 @@ public class GrailsScriptRunner {
             }
 
             long now = System.currentTimeMillis();
-            callPluginOrGrailsScript(script.name);
+            try {
+                callPluginOrGrailsScript(script.name);
+            }
+            catch (ScriptNotFoundException ex) {
+                out.println("No script found for " + script.name);
+            }
+            catch (TargetExecutionException ex) {
+                if (ex.getCause() instanceof ScriptExitException) {
+                    out.println("Script exited with code " + ((ScriptExitException) ex.getCause()).getExitCode());
+                }
+                else {
+                    out.println("Script threw exception");
+                    ex.printStackTrace(out);
+                }
+            }
             long end = System.currentTimeMillis();
             out.println("--------------------------------------------------------");
-            out.println("Command [" + script.name + " completed in " + (end - now) + "ms");
+            out.println("Command " + script.name + " completed in " + (end - now) + "ms");
         }
     }
 

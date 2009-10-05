@@ -21,6 +21,7 @@ import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
+import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
@@ -280,8 +281,8 @@ profile = {String name, Closure callable ->
 exit = {
     event("Exiting", [it])
     // Prevent system.exit during unit/integration testing
-    if (System.getProperty("grails.cli.testing")) {
-        throw new RuntimeException("Gant script exited")
+    if (System.getProperty("grails.cli.testing") || System.getProperty("grails.disable.exit")) {
+        throw new ScriptExitException(it)
     } else {
         System.exit(it)
     }
