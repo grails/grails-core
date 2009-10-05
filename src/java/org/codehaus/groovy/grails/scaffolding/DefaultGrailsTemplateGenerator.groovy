@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.scaffolding;
+package org.codehaus.groovy.grails.scaffolding
 
-import groovy.text.*;
-import org.apache.commons.logging.Log;
+import groovy.text.*
+import groovy.util.AntBuilder
+import org.apache.commons.logging.Log
 import org.springframework.core.io.*
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
+import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import grails.util.BuildSettingsHolder
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.ResourceLoaderAware
+
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
  * from the domain model
@@ -36,20 +38,30 @@ import org.springframework.context.ResourceLoaderAware;
  */
 class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, ResourceLoaderAware {
 
-    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class);
+    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class)
 
     String basedir = "."
     boolean overwrite = false
     def engine = new SimpleTemplateEngine()
     ResourceLoader resourceLoader
     Template renderEditorTemplate
+    AntBuilder ant
 
 
     /**
      * Creates an instance for the given class loader
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
+        this(classLoader, null)
+    }
+
+    /**
+     * Used by the scripts so that they can pass in their AntBuilder
+     * instance.
+     */
+    DefaultGrailsTemplateGenerator(ClassLoader classLoader, AntBuilder antBuilder) {
         engine = new SimpleTemplateEngine(classLoader)
+        ant = antBuilder
     }
 
     /**
@@ -212,11 +224,13 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     private canWrite(testFile) {
         if (!overwrite && testFile.exists()) {
             try {
-                def ant = new AntBuilder()
-                ant.input(message: "File ${testFile} already exists. Overwrite?", "y,n,a", addproperty: "overwrite.${testFile.name}")
-                overwrite = (ant.antProject.properties."overwrite.${testFile.name}" == "a") ? true : overwrite
-                return overwrite || ((ant.antProject.properties."overwrite.${testFile.name}" == "y") ? true : false)
-            } catch (Exception e) {
+                if (!ant) ant = new AntBuilder()
+                def prop = "overwrite.${testFile.name}"
+                ant.input(message: "File ${testFile} already exists. Overwrite?", "y,n,a", addproperty: prop)
+                overwrite = overwrite || ant.project.getProperty(prop) == "a"
+                return overwrite || ant.project.getProperty(prop) == "y"
+            }
+            catch (Exception e) {
                 // failure to read from standard in means we're probably running from an automation tool like a build server
                 return true
             }

@@ -123,6 +123,7 @@ target( packageApp : "Implementation of package target") {
                             def destDir = "$resourcesDirPath/plugins/${pluginDirName}/grails-app/i18n"
                             try {
                                 def ant = new AntBuilder()
+                                ant.project.defaultInputStream = System.in
                                 ant.mkdir(dir:destDir)
                                 ant.native2ascii(src:file,
                                              dest:destDir,
@@ -256,6 +257,8 @@ target(packageTlds:"packages tld definitions for the correct servlet version") {
 recompileCheck = { lastModified, callback ->
     try {
         def ant = new AntBuilder()
+        ant.project.defaultInputStream = System.in
+
         def classpathId = "grails.compile.classpath"
         ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
         ant.path(id:classpathId,compileClasspath)

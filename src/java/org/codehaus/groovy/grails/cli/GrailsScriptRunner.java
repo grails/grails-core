@@ -25,6 +25,7 @@ import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
+import groovy.util.AntBuilder;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -305,6 +306,13 @@ public class GrailsScriptRunner {
 
             if (enteredName != null && enteredName.trim().length() > 0) {
                 script = processArgumentsAndReturnScriptName(enteredName);
+
+                if (script.args != null) {
+                    System.setProperty("grails.cli.args", script.args);
+                }
+                else {
+                    System.setProperty("grails.cli.args", "");
+                }
             }
 
             if (script.name == null) {
@@ -376,6 +384,13 @@ public class GrailsScriptRunner {
         }
         else {
             binding = new GantBinding();
+
+            // Gant does not initialise the default input stream for
+            // the Ant project, so we manually do it here.
+            AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
+            antBuilder.getAntProject().setDefaultInputStream(System.in);
+
+            // Now find what scripts match the one requested by the user.
             List list = getAvailableScripts(settings);
 
             potentialScripts = new ArrayList();
