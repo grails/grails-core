@@ -133,7 +133,7 @@ public class GrailsScriptRunner {
 
         String[] splitArgs = processSystemArguments(allArgs).trim().split(" ");
         int currentParamIndex = 0;
-        if(Environment.isSystemSet()) {
+        if (Environment.isSystemSet()) {
             info.env = Environment.getCurrent().getName();
         }
         else if (isEnvironmentArgs(splitArgs[currentParamIndex])) {
@@ -292,7 +292,7 @@ public class GrailsScriptRunner {
      * Runs Grails in interactive mode.
      */
     private void runInteractive() {
-        String message = "Interactive mode ready, type your command name in to continue (hit ENTER to run the last command):\n";
+        String message = "Interactive mode ready. Enter a Grails command or type \"exit\" to quit interactive mode (hit ENTER to run the last command):\n";
 
         // Disable exiting
         System.setProperty("grails.disable.exit", "true");
@@ -301,23 +301,47 @@ public class GrailsScriptRunner {
         int messageNumber = 0;
         ScriptAndArgs script = new ScriptAndArgs();
         while (true) {
+            // Clear unhelpful system properties.
+            System.clearProperty("grails.env.set");
+            System.clearProperty(Environment.KEY);
+
             out.println("--------------------------------------------------------");
             String enteredName = userInput(message);
 
             if (enteredName != null && enteredName.trim().length() > 0) {
                 script = processArgumentsAndReturnScriptName(enteredName);
 
+                // Update the relevant system property, otherwise the
+                // arguments will be "remembered" from the previous run.
                 if (script.args != null) {
                     System.setProperty("grails.cli.args", script.args);
                 }
                 else {
                     System.setProperty("grails.cli.args", "");
                 }
+
+                // Make sure we run the command with the correct environment.
+                if (script.env != null) {
+                    settings.setGrailsEnv(script.env);
+                    settings.setDefaultEnv(false);
+                }
+                else {
+                    // This is a bit of an anachronism, but some of the
+                    // default environments are hard-coded in this class.
+                    String defaultEnv = (String) DEFAULT_ENVS.get(script.name);
+                    if (defaultEnv == null) defaultEnv = Environment.DEVELOPMENT.getName();
+
+                    settings.setGrailsEnv(defaultEnv);
+                    settings.setDefaultEnv(true);
+                }
             }
 
             if (script.name == null) {
                 out.println("You must enter a command.\n");
                 continue;
+            }
+            else if (script.name.equalsIgnoreCase("exit") || script.name.equalsIgnoreCase("quit")) {
+                return;
             }
 
             long now = System.currentTimeMillis();
