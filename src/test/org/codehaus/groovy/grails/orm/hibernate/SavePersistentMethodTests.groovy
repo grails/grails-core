@@ -6,9 +6,9 @@ import grails.validation.ValidationException
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFlush() {
-        def bookClass = ga.getDomainClass("SaveBook")
-        def authorClass = ga.getDomainClass("SaveAuthor")
-        def addressClass = ga.getDomainClass("SaveAddress")
+        def bookClass = ga.getDomainClass("grails.tests.SaveBook")
+        def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
+        def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
 
         def book = bookClass.newInstance()
         book.title = "Foo"
@@ -25,9 +25,9 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
 	void testToOneCascadingValidation() {
-        def bookClass = ga.getDomainClass("SaveBook")
-        def authorClass = ga.getDomainClass("SaveAuthor")
-        def addressClass = ga.getDomainClass("SaveAddress")
+        def bookClass = ga.getDomainClass("grails.tests.SaveBook")
+        def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
+        def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
 
         def book = bookClass.newInstance()
 
@@ -66,9 +66,9 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 	}
 
 	void testToManyCascadingValidation() {
-        def bookClass = ga.getDomainClass("SaveBook")
-        def authorClass = ga.getDomainClass("SaveAuthor")
-        def addressClass = ga.getDomainClass("SaveAddress")
+        def bookClass = ga.getDomainClass("grails.tests.SaveBook")
+        def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
+        def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
 
         def author = authorClass.newInstance()
 
@@ -100,7 +100,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 	}
 
     void testValidationAfterBindingErrors() {
-        def teamClass = ga.getDomainClass('Team')
+        def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'validation should have failed', team.save()
@@ -116,7 +116,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testFailOnErrorTrueWithValidationErrors() {
-        def teamClass = ga.getDomainClass('Team')
+        def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         def msg = shouldFail(ValidationException) {
@@ -126,7 +126,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testFailOnErrorFalseWithValidationErrors() {
-        def teamClass = ga.getDomainClass('Team')
+        def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'save should have returned null', team.save(failOnError: false)
@@ -137,7 +137,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
             def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
 
             ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('Team')
+            def teamClass = ga.getDomainClass('grails.tests.Team')
             def team = teamClass.newInstance()
             team.properties = [homePage: 'invalidurl']
             def msg = shouldFail(ValidationException) {
@@ -149,12 +149,43 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         }
     }
 
+    void testFailOnErrorConfigIncludesMatchingPackageWithValidationErrors() {
+        try {
+            def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']");
+
+            ConfigurationHolder.config = config
+            def teamClass = ga.getDomainClass('grails.tests.Team')
+            def team = teamClass.newInstance()
+            team.properties = [homePage: 'invalidurl']
+            def msg = shouldFail(ValidationException) {
+                team.save()
+            }
+            assertEquals 'Validation Error(s) Occurred During Save', msg
+        } finally {
+            ConfigurationHolder.config = null
+        }
+    }
+
+    void testFailOnErrorConfigDoesNotIncludeMatchingPackageWithValidationErrors() {
+        try {
+            def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']");
+
+            ConfigurationHolder.config = config
+            def teamClass = ga.getDomainClass('grails.tests.Team')
+            def team = teamClass.newInstance()
+            team.properties = [homePage: 'invalidurl']
+            assertNull 'save should have returned null', team.save()
+        } finally {
+            ConfigurationHolder.config = null
+        }
+    }
+
     void testFailOnErrorConfigFalseWithValidationErrors() {
         try {
             def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
 
             ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('Team')
+            def teamClass = ga.getDomainClass('grails.tests.Team')
             def team = teamClass.newInstance()
             team.properties = [homePage: 'invalidurl']
             assertNull 'save should have returned null', team.save()
@@ -168,7 +199,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
             def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
 
             ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('Team')
+            def teamClass = ga.getDomainClass('grails.tests.Team')
             def team = teamClass.newInstance()
             team.properties = [homePage: 'invalidurl']
             assertNull 'save should have returned null', team.save(failOnError: false)
@@ -182,7 +213,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
             def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
 
             ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('Team')
+            def teamClass = ga.getDomainClass('grails.tests.Team')
             def team = teamClass.newInstance()
             team.properties = [homePage: 'invalidurl']
             def msg = shouldFail(ValidationException) {
@@ -196,6 +227,8 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void onSetUp() {
 		this.gcl.parseClass('''
+package grails.tests
+
 import grails.persistence.*
 
 @Entity

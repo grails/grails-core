@@ -15,12 +15,12 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.validation.ValidationException;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
-import grails.validation.ValidationException;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -30,6 +30,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -94,7 +95,20 @@ public abstract class AbstractSavePersistentMethod extends
                     if(argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
                     } else if(config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
-                        shouldFail = Boolean.TRUE == config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
+                        Object configProperty = config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
+                        if (configProperty instanceof Boolean) {
+                            shouldFail = Boolean.TRUE == configProperty;
+                        }
+                        else if (configProperty instanceof List) {
+                            String domainClassName = domainClass.getClazz().getName();
+                            List packageList = (List) configProperty;
+                            for (Object packageName : packageList) {
+                                if (domainClassName.startsWith(packageName.toString())) {
+                                    shouldFail = true;
+                                    break;
+                                }
+                            }
+                        }
                     }
                     if(shouldFail) {
                         throw new ValidationException("Validation Error(s) Occurred During Save");
