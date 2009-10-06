@@ -11,8 +11,7 @@ import java.util.concurrent.locks.*
  * <ul>
  * <li><tt>grails.home</tt> - location of Grails distribution to test</li>
  * <li><tt>grails.version</tt> - version of Grails we're testing</li>
- * <li><tt>cli.test.dir</tt> - location of the base CLI test directory</li>
- * <li><tt>grails.work.dir</tt> - location of the Grails global working directory</li>
+ * <li><tt>grails.cli.work.dir</tt> - location of the test case's working directory</li>
  * </ul>
  */
 abstract class AbstractCliTestCase extends GroovyTestCase {
@@ -21,13 +20,9 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
     private final Condition waiting = lock.newCondition()
 
     private String commandOutput
-    private String grailsHome = SystemProperty.getProperty("grails.home") ?: BuildSettingsHolder.settings?.grailsHome?.absolutePath
-    private String grailsVersion = SystemProperty.getProperty("grails.version") ?: BuildSettingsHolder.settings?.grailsVersion
-
-    private File workDir = System.getProperty("grails.cli.work.dir") ?
-            new File(System.getProperty("grails.cli.work.dir")) :
-            BuildSettingsHolder.settings?.projectWorkDir
-
+    private String grailsHome = System.getProperty("grails.home") ?: BuildSettingsHolder.settings?.grailsHome?.absolutePath
+    private String grailsVersion = System.getProperty("grails.version") ?: BuildSettingsHolder.settings?.grailsVersion
+    private File workDir = new File(System.getProperty("grails.cli.work.dir") ?: ".")
     private Process process
     private boolean streamsProcessed
 
