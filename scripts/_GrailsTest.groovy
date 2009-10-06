@@ -37,7 +37,7 @@ includeTargets << grailsScript("_GrailsRun")
 unitTests = [ "unit" ]
 integrationTests = [ "integration" ]
 functionalTests = []
-otherTests = []
+otherTests = [ "cli" ]
 
 // The phases that we will run on this execution. Override this in your
 // own scripts to control the phases and their order.
