@@ -8,7 +8,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class GSPSitemeshPageTests extends AbstractGrailsTagTests {
 
     void testCaptureContent() {
-        def template='<g:captureContent tag=\"testtag\">this is the captured content</g:captureContent>'
+        def template='<sitemesh:captureContent tag=\"testtag\">this is the captured content</sitemesh:captureContent>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
@@ -16,7 +16,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
     }
     
     void testCaptureContent2() {
-        def template='<g:captureContent tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</g:captureContent>'
+        def template='<sitemesh:captureContent tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</sitemesh:captureContent>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])

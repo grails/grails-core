@@ -197,7 +197,7 @@ public class GroovyPageParser implements Tokens {
 
     private boolean isSitemeshPreprocessingEnabled(Map config, String filename) {
         Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
-        return !filename.contains("/layouts/") && (sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue()));
+        return /*!filename.contains("/layouts/") &&*/ (sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue()));
     }
 
     private void lookupCodec(Object o) {

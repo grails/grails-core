@@ -20,7 +20,7 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
 		def gspBodyExpected='''
 <html>
 		<sitemesh:captureHead>
-		<sitemesh:captureMeta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<sitemesh:captureMeta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 		<sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:captureHead>
 		<sitemesh:captureBody onload="test();">
 			body text
