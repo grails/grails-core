@@ -16,7 +16,8 @@ import java.util.regex.Pattern;
  *
  */
 public class SitemeshPreprocessor {
-	Pattern metaPattern=Pattern.compile("<meta(\\s[^>]+)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    Pattern parameterPattern=Pattern.compile("<parameter(\\s+name[^>]+?)(/*?)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	Pattern metaPattern=Pattern.compile("<meta(\\s[^>]+?)(/*?)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern titlePattern=Pattern.compile("<title(\\s[^>]*)?>(.*?)</title>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern headPattern=Pattern.compile("<head(\\s[^>]*)?>(.*?)</head>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern bodyPattern=Pattern.compile("<body(\\s[^>]*)?>(.*?)</body>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -34,76 +35,38 @@ public class SitemeshPreprocessor {
 		Matcher m=headPattern.matcher(gspSource);
 		if(m.find()) {
 			m.appendReplacement(sb, "");
-			sb.append("<g:captureHead");
+			sb.append("<sitemesh:captureHead");
 			if(m.group(1) != null)
 				sb.append(m.group(1));
 			sb.append(">");
 			sb.append(addMetaCapturing(addTitleCapturing(m.group(2))));
-			sb.append("</g:captureHead>");
+			sb.append("</sitemesh:captureHead>");
 		}
 		m.appendTail(sb);
 		return sb;
 	}
-	
+
+
 	String addMetaCapturing(String headContent) {
-		StringBuffer sb=new StringBuffer((int)(headContent.length() * 1.2));
 		Matcher m=metaPattern.matcher(headContent);
-		while(m.find()) {
-			m.appendReplacement(sb, "");
-			sb.append("<g:captureMeta");
-			String tagContent=m.group(1);
-			sb.append(tagContent);
-			if(!tagContent.endsWith("/")) {
-				sb.append("/");
-			}
-			sb.append(">");
-		}
-		m.appendTail(sb);
-		return sb.toString();
+        final String result = parameterPattern.matcher(
+                m.replaceAll("<sitemesh:captureMeta$1/>")
+                ).replaceAll("<sitemesh:parameter$1/>");
+        return result;
 	}
 
 	String addTitleCapturing(String headContent) {
-		StringBuffer sb=new StringBuffer((int)(headContent.length() * 1.2));
 		Matcher m=titlePattern.matcher(headContent);
-		if(m.find()) {
-			m.appendReplacement(sb, "");
-			sb.append("<g:captureTitle");
-			if(m.group(1) != null)
-				sb.append(m.group(1));
-			sb.append(">");
-			sb.append(m.group(2));
-			sb.append("</g:captureTitle>");
-		}
-		m.appendTail(sb);
-		return sb.toString();
+        return m.replaceAll("<sitemesh:captureTitle$1>$2</sitemesh:captureTitle>");
 	}
 
 	StringBuffer addBodyCapturing(StringBuffer sb) {
-		StringBuffer sb2=new StringBuffer((int)(sb.length() * 1.2));
 		Matcher m=bodyPattern.matcher(sb);
-		if(m.find()) {
-			m.appendReplacement(sb2, "");
-			sb2.append("<g:captureBody");
-			if(m.group(1) != null)
-				sb2.append(m.group(1));
-			sb2.append(">");
-			sb2.append(m.group(2));
-			sb2.append("</g:captureBody>");
-		}
-		m.appendTail(sb2);
-		return sb2;
+        return new StringBuffer(m.replaceAll("<sitemesh:captureBody$1>$2</sitemesh:captureBody>"));
 	}
 
 	StringBuffer addContentCapturing(StringBuffer sb) {
-		StringBuffer sb2=new StringBuffer((int)(sb.length() * 1.2));
 		Matcher m=contentPattern.matcher(sb);
-		while(m.find()) {
-			m.appendReplacement(sb2, "");
-			sb2.append("<g:captureContent").append(m.group(1)).append(">");
-			sb2.append(m.group(2));
-			sb2.append("</g:captureContent>");
-		}
-		m.appendTail(sb2);
-		return sb2;
+        return new StringBuffer(m.replaceAll("<sitemesh:captureContent$1>$2</sitemesh:captureContent>"));
 	}
 }

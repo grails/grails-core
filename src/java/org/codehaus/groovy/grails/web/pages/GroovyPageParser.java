@@ -177,9 +177,8 @@ public class GroovyPageParser implements Tokens {
 		}
 
 		String gspSource = readStream(in);
-		
-		Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
-		if(sitemeshPreprocessEnabled==null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean)sitemeshPreprocessEnabled).booleanValue())) {
+
+        if(isSitemeshPreprocessingEnabled(config, filename)) {
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("Preprocessing " + filename + " for sitemesh. Replacing head, title, meta and body elements with g:capture*.");
 			}
@@ -196,7 +195,12 @@ public class GroovyPageParser implements Tokens {
 
 	} // Parse()
 
-	private void lookupCodec(Object o) {
+    private boolean isSitemeshPreprocessingEnabled(Map config, String filename) {
+        Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
+        return !filename.contains("/layouts/") && (sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue()));
+    }
+
+    private void lookupCodec(Object o) {
 		if (o != null) {
 			this.codecName = o.toString();
 			GrailsApplication app = ApplicationHolder.getApplication();

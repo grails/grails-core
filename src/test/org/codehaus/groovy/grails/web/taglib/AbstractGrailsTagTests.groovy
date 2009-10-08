@@ -40,6 +40,9 @@ import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import com.opensymphony.module.sitemesh.RequestConstants
 
 abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -338,14 +341,14 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         assertEquals expected, transform(mockResponse.contentAsString)
     }	
 
-	def applyTemplate(template, params = [:], target = null ) {
+	def applyTemplate(template, params = [:], target = null, String filename = null ) {
 
         GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
 
         printCompiledSource(template)
 
         assert engine
-        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+        def t = engine.createTemplate(template, filename ?: "test_"+ System.currentTimeMillis())
 
         def w = t.make(params)
 
@@ -360,6 +363,29 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         return target.toString()
     }
 
+    /**
+     * Applies sitemesh preprocessing to a template
+     */
+    String sitemeshPreprocess(String template) {
+        def preprocessor=new SitemeshPreprocessor()
+        preprocessor.addGspSitemeshCapturing(template)
+    }
+
+    String applyLayout(String layout, String template, Map params=[:]) {
+        def page = new GSPSitemeshPage()
+        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, page)
+        applyTemplate(template, params)
+        request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+
+
+        try {
+            request.setAttribute(RequestConstants.PAGE, page)
+            return applyTemplate(layout, params,null, "/layouts/test_"+System.currentTimeMillis())
+        }
+        finally {
+            request.removeAttribute(RequestConstants.PAGE)
+        }
+    }
     /**
      * Parses the given XML text and creates a DOM document from it.
      */

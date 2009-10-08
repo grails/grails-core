@@ -69,7 +69,8 @@ public class GroovyPagesGrailsPlugin {
             JavascriptTagLib,
             RenderTagLib,
             ValidationTagLib,
-            PluginTagLib
+            PluginTagLib,
+            SitemeshTagLib
     ]
 
 

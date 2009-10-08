@@ -19,17 +19,6 @@ import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
-
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +38,18 @@ import org.springframework.core.io.*;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.ServletContextResourceLoader;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A GroovyPagesTemplateEngine based on (but not extending) the existing TemplateEngine implementations
@@ -263,23 +264,23 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 	}
     
     public Template createTemplateForUri(String[] uri)  {
-    	Template t=null;
+    	Template t;
     	if(!isReloadEnabled()) {
-	    	for(int i=0;i < uri.length;i++) {
-	    		t = createTemplateFromPrecompiled(uri[i]);
-	    		if (t != null) {
-	    			return t;
-	    		}
-	    	}
-    	}
-    	Resource resource=null;
-    	for(int i=0;i < uri.length;i++) {
-            Resource r = getResourceForUri(uri[i]);
-            if(r.exists()) {
-            	resource = r;
-            	break;
+            for (String anUri : uri) {
+                t = createTemplateFromPrecompiled(anUri);
+                if (t != null) {
+                    return t;
+                }
             }
     	}
+    	Resource resource=null;
+        for (String anUri : uri) {
+            Resource r = getResourceForUri(anUri);
+            if (r.exists()) {
+                resource = r;
+                break;
+            }
+        }
     	if(resource != null) {
     		if(precompiledGspMap != null && precompiledGspMap.size() > 0) {
     			if(LOG.isWarnEnabled()) {
