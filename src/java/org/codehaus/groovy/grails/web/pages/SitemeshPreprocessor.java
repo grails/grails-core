@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * 
  * This class is used to add GSP Sitemesh integration directly to compiled GSP.
  * 
- * head, meta, title, body and content tags are replaced with <g:capture*>...</g:capture*> taglibs
+ * head, meta, title, body and content tags are replaced with <sitemesh:capture*>...</sitemesh:capture*> taglibs
  * 
  * The taglib is used to capture the content of each tag. This prevents the need to parse the content output like Sitemesh normally does.
  *  

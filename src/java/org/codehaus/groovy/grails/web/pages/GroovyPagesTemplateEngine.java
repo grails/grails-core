@@ -576,15 +576,16 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return The compiled java.lang.Class, which is an instance of groovy.lang.Script
      */
     private Class compileGroovyPage(InputStream in, String name, String pageName, GroovyPageMetaInfo metaInfo) {
+        ClassLoader classLoader = this.classLoader;
     	if(!(classLoader instanceof GroovyClassLoader)) {
-    		throw new GroovyPagesException("Application default classloader is not GroovyClassLoader. Enable reloading in application settings.");
+            classLoader = new GroovyClassLoader(classLoader);
     	}
     	
         // Compile the script into an object
         Class scriptClass;
         try {
             scriptClass =
-                ((GroovyClassLoader)this.classLoader).parseClass(in, name);
+                ((GroovyClassLoader)classLoader).parseClass(in, name);
         } catch (CompilationFailedException e) {
         	LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
 
