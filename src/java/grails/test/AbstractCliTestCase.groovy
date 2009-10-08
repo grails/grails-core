@@ -145,6 +145,9 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
             lock.lock()
             streamsProcessed = true
             lock.unlock()
+
+            // Now kill the process since it appears to be stuck.
+            process.destroy()
         }
 
         // Now wait for the stream reader threads to finish.
