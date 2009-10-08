@@ -79,7 +79,7 @@ target(uberGenerate: "Generates controllers and views for all domain classes.") 
 
 
 def generateForDomainClass(domainClass) {
-    def templateGenerator = new DefaultGrailsTemplateGenerator(classLoader, ant)
+    def templateGenerator = new DefaultGrailsTemplateGenerator(classLoader)
     if(generateViews) {
         event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])
         templateGenerator.generateViews(domainClass, basedir)

@@ -187,6 +187,7 @@ public class GrailsScriptRunner {
 
     private BuildSettings settings;
     private PrintStream out = System.out;
+    private CommandLineHelper helper = new CommandLineHelper(out);
     private boolean isInteractive = true;
 
     public GrailsScriptRunner() {
@@ -207,6 +208,7 @@ public class GrailsScriptRunner {
 
     public void setOut(PrintStream outputStream) {
         this.out = outputStream;
+        this.helper = new CommandLineHelper(out);
     }
 
     public int executeCommand(String scriptName, String args) {
@@ -306,7 +308,7 @@ public class GrailsScriptRunner {
             System.clearProperty(Environment.KEY);
 
             out.println("--------------------------------------------------------");
-            String enteredName = userInput(message);
+            String enteredName = helper.userInput(message);
 
             if (enteredName != null && enteredName.trim().length() > 0) {
                 script = processArgumentsAndReturnScriptName(enteredName);
@@ -488,7 +490,7 @@ public class GrailsScriptRunner {
                     validArgs[i] = String.valueOf(i + 1);
                 }
 
-                String enteredValue = userInput("Enter #", validArgs);
+                String enteredValue = helper.userInput("Enter #", validArgs);
                 if (enteredValue == null) return 1;
 
                 int number = Integer.valueOf(enteredValue);
@@ -889,74 +891,7 @@ public class GrailsScriptRunner {
         }
     }
 
-    /**
-     * Replacement for AntBuilder.input() to eliminate dependency of
-     * GrailsScriptRunner on the Ant libraries. Prints a message and
-     * returns whatever the user enters (once they press &lt;return&gt;).
-     * @param message The message/question to display.
-     * @return The line of text entered by the user. May be a blank
-     * string.
-     */
-    private String userInput(String message) {
-        return userInput(message, null);
-    }
-
-    /**
-     * Replacement for AntBuilder.input() to eliminate dependency of
-     * GrailsScriptRunner on the Ant libraries. Prints a message and
-     * list of valid responses, then returns whatever the user enters
-     * (once they press &lt;return&gt;). If the user enters something
-     * that is not in the array of valid responses, the message is
-     * displayed again and the method waits for more input. It will
-     * display the message a maximum of three times before it gives up
-     * and returns <code>null</code>.
-     * @param message The message/question to display.
-     * @param validResponses An array of responses that the user is
-     * allowed to enter. Displayed after the message.
-     * @return The line of text entered by the user, or <code>null</code>
-     * if the user never entered a valid string.
-     */
-    private String userInput(String message, String[] validResponses) {
-        String responsesString = null;
-        if (validResponses != null) {
-            responsesString = DefaultGroovyMethods.join(validResponses, ",");
-        }
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
-        for (int it = 0; it < 3; it++) {
-            out.print(message);
-            if (responsesString != null) {
-                out.print(" [");
-                out.print(responsesString);
-                out.print("] ");
-            }
-
-            try {
-                String line = reader.readLine();
-
-                if (validResponses == null) return line;
-
-                for (String validResponse : validResponses) {
-                    if (line != null && line.equals(validResponse)) {
-                        return line;
-                    }
-                }
-
-                out.println();
-                out.println("Invalid option '" + line + "' - must be one of: [" + responsesString + "]");
-                out.println();
-            }
-            catch (IOException ex) {
-                ex.printStackTrace();
-                return null;
-            }
-        }
-
-        // No valid response given.
-        out.println("No valid response entered - giving up asking.");
-        return null;
-    }
+ 
 
     /**
      * Contains details about a Grails command invocation such as the
