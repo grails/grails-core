@@ -96,6 +96,11 @@ class BuildSettings {
     public static final String PROJECT_TARGET_DIR = "grails.project.target.dir"
 
     /**
+     * The name of the WAR file of the project
+     */
+    public static final String PROJECT_WAR_FILE = "grails.project.war.file"
+
+    /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
      * of a project, then this will be the current working directory
@@ -139,6 +144,11 @@ class BuildSettings {
 
     /** The location of the Grails WAR directory where exploded WAR is built. */
     File projectWarExplodedDir
+
+    /**
+     * The WAR file of the project
+     */
+    File projectWarFile
 
     /** The location to which Grails compiles a project's classes. */
     File classesDir
@@ -345,6 +355,7 @@ class BuildSettings {
     private boolean projectPluginsDirSet
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
+    private boolean projectWarFileSet
 
     BuildSettings() {
         this(null)
@@ -465,6 +476,15 @@ class BuildSettings {
     public void setProjectWorkDir(File dir) {
         this.projectWorkDir = dir
         this.projectWorkDirSet = true
+    }
+
+    public File getProjectWarFile() {
+        return this.projectWarFile
+    }
+
+    public void setProjectWarFile(File file) {
+        this.projectWarFile = file
+        this.projectWarFileSet = true
     }
 
     public File getProjectWarExplodedDir() {
@@ -686,7 +706,9 @@ class BuildSettings {
                 grailsHome: grailsHome?.path,
                 grailsVersion: grailsVersion,
                 userHome: userHome,
-                grailsSettings: this)
+                grailsSettings: this,
+                appName:Metadata.current.getApplicationName(),
+                appVersion:Metadata.current.getApplicationVersion())
         return slurper
     }
 
@@ -696,6 +718,7 @@ class BuildSettings {
         // null, a default value. This ensures that we don't override
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
+        Metadata metadata = Metadata.current
         if (!grailsWorkDirSet) {
             grailsWorkDir = new File(getPropertyValue(WORK_DIR, props, "${userHome}/.grails/${grailsVersion}"))
         }
@@ -705,7 +728,11 @@ class BuildSettings {
         }
 
         if (!projectTargetDirSet) {
-            projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
+            projectTargetDir = new File(getFirstPropertyValue([PROJECT_TARGET_DIR, 'grails.war.destFile'], props, "$baseDir/target"))
+        }
+
+        if(!projectWarFileSet) {
+            projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, "$baseDir/target/${metadata.getApplicationName()}-${metadata.getApplicationVersion()}.war"))
         }
 
         if (!projectWarExplodedDirSet) {
@@ -741,17 +768,31 @@ class BuildSettings {
         }
     }
 
+    private getFirstPropertyValue(List<String> propertyNames, Properties props, String defaultValue) {
+        def value
+        for(String p in propertyNames ) {
+            value = getValueFromSystemOrBuild(p, props)
+            if(value!=null) break
+        }
+        return value ?: defaultValue
+    }
+
     private getPropertyValue(String propertyName, Properties props, String defaultValue) {
         // First check whether we have a system property with the given name.
+        def value = getValueFromSystemOrBuild(propertyName, props)
+
+        // Return the BuildSettings value if there is one, otherwise
+        // use the default.
+        return value != null ? value : defaultValue
+    }
+
+    private getValueFromSystemOrBuild(String propertyName, Properties props) {
         def value = System.getProperty(propertyName)
         if (value != null) return value
 
         // Now try the BuildSettings config.
         value = props[propertyName]
-
-        // Return the BuildSettings value if there is one, otherwise
-        // use the default.
-        return value != null ? value : defaultValue
+        return value
     }
 
     private File establishBaseDir() {

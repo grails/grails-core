@@ -332,11 +332,13 @@ target(warPlugins:"Includes the plugins in the WAR") {
 }
 
 target(configureWarName: "Configuring WAR name") {
-    if(buildConfig.grails.war.destFile || argsMap["params"]) {
+    def warFileDest = grailsSettings.projectWarFile.absolutePath
+
+    if(warFileDest || argsMap["params"]) {
         // Pick up the name of the WAR to create from the command-line
         // argument or the 'grails.war.destFile' configuration option.
         // The command-line argument takes precedence.
-        warName = argsMap["params"] ? argsMap["params"][0] : buildConfig.grails.war.destFile
+        warName = argsMap["params"] ? argsMap["params"][0] : warFileDest
 
         // Find out whether WAR name is an absolute file path or a
         // relative one.
