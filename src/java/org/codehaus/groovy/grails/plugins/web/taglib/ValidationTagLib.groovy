@@ -152,10 +152,10 @@ class ValidationTagLib {
      * Loops through each error for either field or global errors
      */
     def eachError = { attrs, body ->
-    	eachErrorInternal(attrs,body)
+    	eachErrorInternal(attrs,body,true)
     }
     
-    def eachErrorInternal(attrs, body) {
+    def eachErrorInternal(attrs, body, outputResult=false) {
         def errorsList = extractErrors(attrs)
         def var = attrs.var
         def field = attrs['field']
@@ -172,11 +172,15 @@ class ValidationTagLib {
         }
 
         errorList.each { error ->
+        	def result
             if(var) {
-                out << body([(var):error])
+            	result=body([(var):error])
             } else {
-            	out << body(error)
+            	result=body(error)
             }
+        	if(outputResult) {
+        		out << result
+        	}
         }
 
         null
