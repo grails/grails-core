@@ -622,7 +622,7 @@ class BuildSettings {
         def appName = metadata.getApplicationName() ?: "grails"
         def appVersion = metadata.getApplicationVersion() ?: grailsVersion
 
-        this.dependencyManager = IvyDependencyManager.getInstance(appName,
+        this.dependencyManager = new IvyDependencyManager(appName,
                 appVersion,
                 this)
 

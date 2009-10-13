@@ -47,24 +47,6 @@ public class GrailsPluginUtils {
     }
 
 
-    static final COMPARATOR = [compare: { o1, o2 ->
-        def result = 0
-        if(o1 == '*') result = 1
-        else if(o2 == '*') result = -1
-        else {
-            def nums1 = o1.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            def nums2 = o2.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            for(i in 0..<nums1.size()) {
-                if(nums2.size() > i) {
-                    result = nums1[i].compareTo(nums2[i])
-                    if(result != 0)break
-                }
-            }
-        }
-            result
-        },
-        equals: { false }] as Comparator
-
     /**
      * Check if the required version is a valid for the given plugin version
      *
@@ -73,14 +55,14 @@ public class GrailsPluginUtils {
      * @return True if it is valid
      */
     static boolean isValidVersion(String pluginVersion, String requiredVersion) {
-
+    	def vc = new VersionComparator()
         pluginVersion = trimTag(pluginVersion);
 
        if(requiredVersion.indexOf('>')>-1) {
             def tokens = requiredVersion.split(">")*.trim()
             tokens = tokens.collect { trimTag(it) }
             tokens << pluginVersion
-            tokens = tokens.sort(COMPARATOR)
+            tokens = tokens.sort(vc)
 
             if(tokens[1] == pluginVersion) return true
 
@@ -126,20 +108,6 @@ public class GrailsPluginUtils {
     }
 
 
-    private static final PathMatchingResourcePatternResolver RESOLVER = new PathMatchingResourcePatternResolver()
-
-    /**
-     * A default resolve used if none is specified to the resource resolving methods in this class
-     */
-    static final DEFAULT_RESOURCE_RESOLVER = { pattern ->
-        try {
-                return RESOLVER.getResources(pattern)
-            }
-            catch(Throwable e) {
-                 return []  as Resource[]
-            }
-
-    }
 
     private static INSTANCE = null
     static synchronized grails.util.PluginBuildSettings  getPluginBuildSettings() {
@@ -212,7 +180,7 @@ public class GrailsPluginUtils {
     /**
      * Obtains a reference to all artefact resources (all Groovy files contained within the grails-app directory of plugins or applications)
      */
-    static Resource[] getArtefactResources(String basedir, Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getArtefactResources(String basedir) {
         getPluginBuildSettings().getArtefactResources()
     }
 
@@ -220,15 +188,14 @@ public class GrailsPluginUtils {
      * Returns an array of all artefacts in the given application or
      * plugin directory as Spring resources.
      */
-    static Resource[] getArtefactResourcesForOne(String projectDir, Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getArtefactResourcesForOne(String projectDir) {
        getPluginBuildSettings().getArtefactResourcesForOne(projectDir)
     }
 
     /**
      * Obtains a Resource array of the Plugin metadata XML files used to describe the plugins provided resources
      */
-    static Resource[] getPluginXmlMetadata( String pluginsDirPath,
-                                            Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginXmlMetadata( String pluginsDirPath) {
          getPluginBuildSettings().getPluginXmlMetadata()
     }
 
@@ -238,14 +205,13 @@ public class GrailsPluginUtils {
      */
     static Resource[] getAvailableScripts(String grailsHome,
                                           String pluginDirPath,
-                                          String basedir,
-                                          Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+                                          String basedir) {
         getPluginBuildSettings().getAvailableScripts()
     }
     /**
      * Obtains an array of plug-in provided Gant scripts available to a Grails application
      */
-    static Resource[] getPluginScripts(String pluginDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginScripts(String pluginDirPath) {
         getPluginBuildSettings().getPluginScripts()
     }
 
@@ -253,21 +219,21 @@ public class GrailsPluginUtils {
     /**
      * Obtains an array of all plugin provided resource bundles
      */
-    static Resource[] getPluginResourceBundles(String pluginDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginResourceBundles(String pluginDirPath) {
         getPluginBuildSettings().getPluginResourceBundles()
     }
 
     /**
      * Obtains an array of all plug-in provided source files (Java and Groovy)
      */
-    static Resource[] getPluginSourceFiles(String pluginsDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginSourceFiles(String pluginsDirPath) {
         getPluginBuildSettings().getPluginSourceFiles()
     }
 
     /**
      * Obtains an array of all plug-in provided JAR files
      */
-    static Resource[] getPluginJarFiles(String pluginsDirPath,Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginJarFiles(String pluginsDirPath) {
         getPluginBuildSettings().getPluginJarFiles()
     }
 
@@ -275,8 +241,7 @@ public class GrailsPluginUtils {
      * Obtains an array of all plug-in descriptors (the root classes that end with *GrailsPlugin.groovy)
      */
     static Resource[] getPluginDescriptors(String basedir,
-                                                        String pluginsDirPath,
-                                                        Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+                                                        String pluginsDirPath) {
         getPluginBuildSettings().getPluginDescriptors()
     }
 
@@ -296,8 +261,7 @@ public class GrailsPluginUtils {
     /**
      * Obtains an array of all plug-in lib directories
      */
-    static Resource[] getPluginLibDirectories(String pluginsDirPath,
-                                                            Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginLibDirectories(String pluginsDirPath) {
          getPluginBuildSettings().getPluginLibDirectories()
     }
 
@@ -306,8 +270,7 @@ public class GrailsPluginUtils {
     /**
      * Obtains an array of all plugin i18n directories
      */
-    static Resource[] getPluginI18nDirectories(String pluginsDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path,
-                                                            Closure resourceResolver = DEFAULT_RESOURCE_RESOLVER) {
+    static Resource[] getPluginI18nDirectories(String pluginsDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
         getPluginBuildSettings().getPluginI18nDirectories()
     }
 
@@ -353,9 +316,30 @@ public class GrailsPluginUtils {
      */
     static synchronized clearCaches() {
         getPluginBuildSettings().clearCache()
+		INSTANCE = null
     }
 
 
 
+}
+class VersionComparator implements Comparator{
+	int compare( o1, o2 ) {
+        def result = 0
+        if(o1 == '*') result = 1
+        else if(o2 == '*') result = -1
+        else {
+            def nums1 = o1.split(/\./).findAll { it.trim() != ''}*.toInteger()
+            def nums2 = o2.split(/\./).findAll { it.trim() != ''}*.toInteger()
+            for(i in 0..<nums1.size()) {
+                if(nums2.size() > i) {
+                    result = nums1[i].compareTo(nums2[i])
+                    if(result != 0)break
+                }
+            }
+        }
+        result
+    }
+
+    boolean equals(obj) { false }
 }
 

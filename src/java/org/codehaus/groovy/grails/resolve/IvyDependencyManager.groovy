@@ -126,32 +126,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     boolean readPom = false
     boolean inheritsAll = false
 
-    private static managers = new ConcurrentHashMap()
-    private static currentManager
-
-    /**
-     * Obtain an Ivy dependency manager instance for the given application name and version
-     */
-    static IvyDependencyManager getInstance(String applicationName, String applicationVersion, BuildSettings settings = null) {
-        if(!applicationName) throw new IllegalArgumentException("Cannot supply a null application name to Ivy dependency manager")
-        if(!applicationVersion) throw new IllegalArgumentException("Cannot supply a null application version to Ivy dependency manager")
-
-        def cacheKey = [version:applicationVersion, name:applicationName]
-        def manager = managers[cacheKey]
-        if(!manager) {
-            manager = new IvyDependencyManager(applicationName, applicationVersion, settings)
-            managers[cacheKey] = manager
-        }
-        currentManager = manager
-        return manager
-    }
-
-
-
-    /**
-     * Get the current (last one obtained via getInstance) ivy dependency manager 
-     */
-    static IvyDependencyManager getCurrent() { currentManager }
 
     /**
      * Creates a new IvyDependencyManager instance
@@ -226,6 +200,12 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
     }
 
+    /**
+     * Obtains the default dependency definitions when using GRAILS_HOME or the Spring Bundle Repository
+     */
+    static Closure getBundleRepositoryDependencies(String grailsVersion) {
+
+    }
     /**
      * Obtains the default dependency definitions for the given Grails version
      */
@@ -562,6 +542,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             definition.delegate = evaluator
             definition.resolveStrategy = Closure.DELEGATE_FIRST
             definition()
+			evaluator = null
 
             if(readPom && buildSettings) {
                 List dependencies = readDependenciesFromPOM()
