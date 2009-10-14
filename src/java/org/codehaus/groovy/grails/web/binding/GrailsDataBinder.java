@@ -91,6 +91,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final String IDENTIFIER_SUFFIX = ".id";
     private List transients = Collections.EMPTY_LIST;
     private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+    
+    private GrailsDomainClass domainClass;    
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -116,6 +118,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             else {
                 disallowed = DOMAINCLASS_DISALLOWED;
             }
+            domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
         }
         else if (target instanceof GroovyObject) {
             disallowed = GROOVY_DISALLOWED;
@@ -289,37 +292,32 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private void filterBlankValuesWhenTargetIsNullable(MutablePropertyValues mpvs) {
         Object target = getTarget();
-        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
-        if(mc.hasProperty(target, CONSTRAINTS_PROPERTY) != null) {
-            Map constrainedProperties = (Map)mc.getProperty(target, CONSTRAINTS_PROPERTY);
+        Map constrainedProperties = resolveConstrainedProperties(target, domainClass);
+        if(constrainedProperties != null) {
             PropertyValue[] valueArray = mpvs.getPropertyValues();
             for (PropertyValue propertyValue : valueArray) {
-                ConstrainedProperty cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
-                if (shouldNullifyBlankString(propertyValue, cp)) {
-                    propertyValue.setConvertedValue(null);
-                }
+            	if(BLANK.equals(propertyValue.getValue())) {
+	                ConstrainedProperty cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
+	                if (shouldNullifyBlankString(propertyValue, cp)) {
+	                    propertyValue.setConvertedValue(null);
+	                }
+            	}
             }
         }
     }
-
+    
     private ConstrainedProperty getConstrainedPropertyForPropertyValue(Map constrainedProperties, PropertyValue propertyValue) {
-
         final String propertyName = propertyValue.getName();
         if(propertyName.indexOf(PATH_SEPARATOR) > -1) {
             String[] propertyNames = propertyName.split("\\.");
             Object target = getTarget();
             Object value = getPropertyValueForPath(target, propertyNames);
             if(value != null) {
-                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
-                if(mc.hasProperty(value, CONSTRAINTS_PROPERTY) != null) {
-                    final Object o = mc.getProperty(value, CONSTRAINTS_PROPERTY);
-                    if(o instanceof Map) {
-                        Map nestedConstrainedProperties = (Map) o;
-                        return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
-                    }
+            	Map nestedConstrainedProperties=resolveConstrainedProperties(value);
+            	if(nestedConstrainedProperties != null) {
+            		return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
                 }
             }
-
         }
         else {
             return (ConstrainedProperty)constrainedProperties.get(propertyName);
@@ -327,7 +325,30 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return null;
     }
 
-    private Object getPropertyValueForPath(Object target, String[] propertyNames) {
+    private Map resolveConstrainedProperties(Object object) {
+    	GrailsApplication grailsApplication = ApplicationHolder.getApplication();
+    	return resolveConstrainedProperties(object, (grailsApplication != null)?((GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, object.getClass().getName())):null);
+    }
+
+	private Map resolveConstrainedProperties(Object object, GrailsDomainClass domainClass) {
+		Map constrainedProperties = null;
+        if(domainClass != null) {
+        	constrainedProperties = domainClass.getConstrainedProperties();
+        } else {
+        	// is this dead code? , didn't remove in case it's used somewhere
+        	MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
+        	MetaProperty metaProp = mc.getMetaProperty(CONSTRAINTS_PROPERTY);
+        	if(metaProp != null) {
+        		Object constrainedPropsObj = metaProp.getProperty(object);
+        		if(constrainedPropsObj instanceof Map) {
+        			constrainedProperties = (Map)constrainedPropsObj;
+        		}
+        	}
+        }
+		return constrainedProperties;
+	}
+
+	private Object getPropertyValueForPath(Object target, String[] propertyNames) {
         BeanWrapper bean = new BeanWrapperImpl(target);
         Object obj = target;
         for (int i = 0; i < propertyNames.length-1; i++) {
@@ -723,14 +744,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Class getReferencedTypeForCollection(String name, Object target) {
-        final GrailsApplication grailsApplication = ApplicationHolder.getApplication();
-        if(grailsApplication!=null) {
-            GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
-            if(domainClass!=null) {
-                GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
-                if(domainProperty!=null) {
-                    return domainProperty.getReferencedPropertyType();
-                }
+        if(domainClass!=null) {
+            GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
+            if(domainProperty!=null) {
+                return domainProperty.getReferencedPropertyType();
             }
         }
         return null;
