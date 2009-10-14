@@ -761,14 +761,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Class getReferencedTypeForCollection(String name, Object target) {
-        if(domainClass!=null) {
-            GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
-            if(domainProperty!=null) {
-                return domainProperty.getReferencedPropertyType();
-            }
-        }
-        return null;
-    }
+		final GrailsApplication grailsApplication = ApplicationHolder.getApplication();
+		if (grailsApplication != null) {
+			GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(
+					DomainClassArtefactHandler.TYPE, target.getClass().getName());
+			if (domainClass != null) {
+				GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
+				if (domainProperty != null) {
+					return domainProperty.getReferencedPropertyType();
+				}
+			}
+		}
+		return null;
+	}
 
     private String getNameOf(PropertyValue propertyValue) {
         String name = propertyValue.getName();
