@@ -127,6 +127,7 @@ target(packagePlugin:"Implementation target") {
 }
 
 private generateDependencyDescriptor() {
+    ant.delete(dir:"$projectWorkDir/plugin-info", failonerror:false)
     if(grailsSettings.dependencyManager.hasApplicationDependencies()) {
         ant.mkdir(dir:"$projectWorkDir/plugin-info")
         ant.copy(file:"$basedir/grails-app/conf/BuildConfig.groovy", tofile:"$projectWorkDir/plugin-info/dependencies.groovy", failonerror:false)
