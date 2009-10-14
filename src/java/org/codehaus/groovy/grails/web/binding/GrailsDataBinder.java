@@ -29,6 +29,8 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.MetaClassHelper;
+import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
 import org.springframework.beans.*;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -339,13 +341,28 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         	MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
         	MetaProperty metaProp = mc.getMetaProperty(CONSTRAINTS_PROPERTY);
         	if(metaProp != null) {
-        		Object constrainedPropsObj = metaProp.getProperty(object);
+        		Object constrainedPropsObj = getMetaPropertyValue(metaProp, object);
         		if(constrainedPropsObj instanceof Map) {
         			constrainedProperties = (Map)constrainedPropsObj;
         		}
         	}
         }
 		return constrainedProperties;
+	}
+	
+	/**
+	 * Hack because of bug in ThreadManagedMetaBeanProperty, http://jira.codehaus.org/browse/GROOVY-3723 , fixed since 1.6.5
+	 * 
+	 * @param metaProperty
+	 * @param delegate
+	 * @return
+	 */
+	private Object getMetaPropertyValue(MetaProperty metaProperty, Object delegate) {
+	   if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
+	       return ((ThreadManagedMetaBeanProperty)metaProperty).getGetter().invoke(delegate, MetaClassHelper.EMPTY_ARRAY);
+	   } else {
+	       return metaProperty.getProperty(delegate);
+	   }
 	}
 
 	private Object getPropertyValueForPath(Object target, String[] propertyNames) {
