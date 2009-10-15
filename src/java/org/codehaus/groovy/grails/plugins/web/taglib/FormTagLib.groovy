@@ -19,6 +19,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import java.text.DateFormat
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.springframework.beans.SimpleTypeConverter
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.springframework.http.HttpMethod;
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 
@@ -603,6 +604,9 @@ class FormTagLib {
         def value = attrs.remove('value')
         if (value instanceof Collection && attrs.multiple == null) {
             attrs.multiple = 'multiple'
+        }
+        if (value instanceof StreamCharBuffer) {
+        	value = value.toString()
         }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
         def noSelection = attrs.remove('noSelection')

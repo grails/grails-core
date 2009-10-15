@@ -32,4 +32,27 @@ public class StreamCharBufferGroovyTests extends GroovyTestCase {
 		assertEquals('ABC', charBuffer.trim())
 	}
 
+	void testAsInteger() {
+		def charBuffer = new StreamCharBuffer()
+		charBuffer.writer.write('123')
+		assertEquals(123, charBuffer as Integer)
+	}
+
+	void testAsLong() {
+		def charBuffer = new StreamCharBuffer()
+		charBuffer.writer.write('123456789101112')
+		assertEquals(123456789101112L, charBuffer as Long)
+	}	
+
+	void testAsCharArray() {
+		def charBuffer = new StreamCharBuffer()
+		charBuffer.writer.write('ABC')
+		assertEquals('ABC' as char[], charBuffer as char[])
+	}
+
+	void testAsString() {
+		def charBuffer = new StreamCharBuffer()
+		charBuffer.writer.write('ABC')
+		assertEquals('ABC', charBuffer as String)
+	}
 }

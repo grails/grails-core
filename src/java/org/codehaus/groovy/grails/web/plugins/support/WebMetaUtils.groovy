@@ -126,6 +126,16 @@ class WebMetaUtils {
 			StreamCharBuffer.metaClass."$name" = { Object[] varArgs -> delegate.toString().invokeMethod(name,varArgs) }
 			retval
 		}
+
+		StreamCharBuffer.metaClass.asType = { Class clazz ->
+			if(clazz == String) {
+				delegate.toString()
+			} else if (clazz == char[]) {
+				delegate.toCharArray()
+			} else {
+				delegate.toString().asType(clazz)
+			}
+		}
     }
 
 }
