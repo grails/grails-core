@@ -21,6 +21,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.Mappings;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -108,13 +109,20 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
             for (GrailsDomainClass domainClass : this.domainClasses) {
                 GrailsDomainBinder.evaluateMapping(domainClass);
             }
+            
+            for (GrailsDomainClass domainClass : this.domainClasses) {
+                GrailsDomainBinder.evaluateNamedQueries(domainClass);
+            }
 
             // do Grails class configuration
             for (GrailsDomainClass domainClass : this.domainClasses) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
                 }
-                GrailsDomainBinder.bindClass(domainClass, super.createMappings());
+                final Mappings mappings = super.createMappings();
+                Mapping m = GrailsDomainBinder.getMapping(domainClass);
+                mappings.setAutoImport(m== null || m.getAutoImport());
+                GrailsDomainBinder.bindClass(domainClass, mappings);
             }
         }
 
