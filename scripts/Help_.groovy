@@ -62,55 +62,15 @@ boolean shouldGenerateHelp(File script) {
                                 
 
 target ( 'default' : "Prints out the help for each script") {
+    depends(parseArguments)
+
 	ant.mkdir(dir:grailsTmp)    	
 	def scripts = pluginSettings.availableScripts.collect { it.file }
         
 	def helpText = ""
       
-	
-	if(args) {  
-		def fileName = GrailsNameUtils.getNameFromScript(args)
-		def file = scripts.find {
-            def scriptFileName = it.name[0..-8]
-            if(scriptFileName.endsWith("_")) scriptFileName = scriptFileName[0..-2]
-            scriptFileName == fileName
-        }
-
-        if(file) {            
-            println """
-    Usage (optionals marked with *):
-    grails [environment]*
-            """
-            def gcl = new GroovyClassLoader()
-            use(HelpEvaluatingCategory.class) {
-                if (shouldGenerateHelp(file)) {
-                    try {
-                        def script = gcl.parseClass(file).newInstance()
-                        script.binding = binding
-                        script.run()
-
-                        def scriptName = GrailsNameUtils.getScriptName(file.name)
-
-                        helpText = "grails ${scriptName} -- ${getDefaultDescription()}"
-                        File helpFile = getHelpFile(file)
-                        if(!helpFile.exists())
-                            helpFile.createNewFile()
-                        helpFile.write(helpText)
-                    }
-                    catch(Throwable t) {
-                        println "Warning: Error caching created help for ${file}: ${t.message}"
-                        println helpText
-                    }
-                } else {
-                    helpText = getHelpFile(file).text
-                }
-                println helpText
-            }
-        }
-        else {
-            println "No script found for name: $args"
-        }
-
+	if(argsMap["params"]) {  
+        showHelp(argsMap["params"][0], scripts)
 	}
 	else {
 			println """
@@ -130,29 +90,63 @@ Available Targets (type grails help 'target-name' for more info):"""
 	}  
 }                                               
 
-target( showHelp: "Show help for a particular command") {
-	def gcl = new GroovyClassLoader()    				
-	use(HelpEvaluatingCategory.class) {    
-		if (shouldGenerateHelp(file)) {
-			try {
-				def script = gcl.parseClass(file).newInstance()			
-				script.binding = binding
-				script.run()
+showHelp = { String cmd, scripts ->
+    def fileName = GrailsNameUtils.getNameFromScript(cmd)
+    def file = scripts.find {
+        def scriptFileName = it.name[0..-8]
+        if(scriptFileName.endsWith("_")) scriptFileName = scriptFileName[0..-2]
+        scriptFileName == fileName
+    }
 
-				def scriptName = GrailsNameUtils.getScriptName(file.name)
+    if(file) {            
+        def gcl = new GroovyClassLoader()
+        use(HelpEvaluatingCategory.class) {
+            if (shouldGenerateHelp(file)) {
+                try {
+                    def script = gcl.parseClass(file).newInstance()
+                    script.binding = binding
+                    script.run()
 
-				helpText = "grails ${scriptName} -- ${getDefaultDescription()}"
-				getHelpFile(file).write(helpText) 		  		
-			}                                                      
-			catch(Throwable t) {
-				println "Error creating help for ${file}: ${t.message}"
-				t.printStackTrace(System.out)
-			}
-		} else {
-			helpText = getHelpFile(file).text
-		}
-		println helpText  
-	}	   		
-	
+                    def scriptName = GrailsNameUtils.getScriptName(file.name)
+                    helpText = """
+    grails ${scriptName} -- ${getDefaultDescription()}
+"""
+                    helpText += getUsage(cmd, binding)
+                    File helpFile = getHelpFile(file)
+                    if(!helpFile.exists())
+                        helpFile.createNewFile()
+                    helpFile.write(helpText)
+                }
+                catch(Throwable t) {
+                    println "Warning: Error caching created help for ${file}: ${t.message}"
+                    println helpText
+                }
+            }
+            else {
+                helpText = getHelpFile(file).text
+            }
+            println helpText
+        }
+    }
+    else {
+        println "No script found for name: $cmd"
+    }
 }
-    
+
+/**
+ * Gets the usage string from the given binding. If no usage string can
+ * be found, a default is returned.
+ */
+private getUsage(cmd, b) {
+    if (b.variables.containsKey("USAGE")) {
+        return """
+Usage (optionals in square brackets):
+${binding.USAGE}"""
+    }
+    else {
+        return """
+Usage (optionals marked with *):
+    grails [environment]* ${cmd}
+"""
+    }
+}
