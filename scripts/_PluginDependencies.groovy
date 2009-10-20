@@ -349,11 +349,12 @@ target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plu
     // explicitly by the project.
     File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
     File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
+    Resource basePluginDescriptor = pluginSettings.basePluginDescriptor
 
     pluginSettings.pluginDescriptors.findAll { Resource r ->
         File containingDir = r.file.parentFile.parentFile?.canonicalFile?.absoluteFile
         return containingDir == null ||
-                (containingDir != pluginsDir && containingDir != globalDir)
+                (containingDir != pluginsDir && containingDir != globalDir && r != basePluginDescriptor)
     }.each { Resource r ->
         compileInplacePlugin(r.file.parentFile)
         generatePluginXml(r.file)
