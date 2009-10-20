@@ -139,19 +139,45 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @param domainClass The owning domain class
 	 * @return A list of transient properties
 	 */
+	@SuppressWarnings("unchecked")
 	private List getTransients(GrailsDomainClass domainClass) {
-		List transientProps;
-		transientProps= (List)domainClass.getPropertyValue( TRANSIENT, List.class );
+		List allTransientProps = new ArrayList();
+		List<GrailsDomainClass> allClasses = resolveAllDomainClassesInHierarchy(domainClass);
 
-        // Undocumented feature alert! Steve insisted on this :-)
-        List evanescent = (List)domainClass.getPropertyValue(EVANESCENT, List.class );
-        if(evanescent != null) {
-            if(transientProps == null)
-                transientProps = new ArrayList();
+		for(GrailsDomainClass currentDomainClass : allClasses) {
+			List transientProps = (List)currentDomainClass.getPropertyValue( TRANSIENT, List.class );
+			if(transientProps != null) {
+				allTransientProps.addAll(transientProps);
+			}
+	
+	        // Undocumented feature alert! Steve insisted on this :-)
+	        List evanescent = (List)currentDomainClass.getPropertyValue(EVANESCENT, List.class );
+	        if(evanescent != null) {
+	        	allTransientProps.addAll(evanescent);
+	        }
+		}
+		return allTransientProps;
+	}
 
-            transientProps.addAll(evanescent);
-        }
-		return transientProps;
+	/**
+	 * returns list of current domainclass and all of it's superclasses
+	 * 
+	 * @param domainClass
+	 * @return
+	 */
+	private List<GrailsDomainClass> resolveAllDomainClassesInHierarchy(GrailsDomainClass domainClass) {
+		List<GrailsDomainClass> allClasses = new ArrayList<GrailsDomainClass>();
+		GrailsApplication application = ApplicationHolder.getApplication();
+		GrailsDomainClass currentDomainClass=domainClass;		
+		while(currentDomainClass != null) {
+			allClasses.add(currentDomainClass);
+			if(application != null) {
+				currentDomainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, currentDomainClass.getClazz().getSuperclass().getName());
+			} else {
+				currentDomainClass = null;
+			}
+		}
+		return allClasses;
 	}
 
 

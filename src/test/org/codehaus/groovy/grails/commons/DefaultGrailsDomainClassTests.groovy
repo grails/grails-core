@@ -274,13 +274,24 @@ class OneToOneTest2 {
                 "int id\n" +
                 "int version\n" +
                 "String topString\n" +
+                "String transientString\n" +
+                "static transients=['transientString']\n"+ 
                 "}");
         Class middleClass = gcl.parseClass("class Middle extends Top {\n" +
                 "String middleString\n" +
+                "String transientString2\n" +
+                "static transients=['transientString2']\n"+ 
         "}");
         Class bottomClass = gcl.parseClass("class Bottom extends Middle {\n" +
                 "String bottomString\n" +
+                "String transientString3\n" +
+                "static transients=['transientString3']\n"+ 
         "}");
+
+		def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		ApplicationHolder.setApplication(ga)
+		ga.initialise()        
+
 
         DefaultGrailsDomainClass topDomainClass = new DefaultGrailsDomainClass(topClass);
         DefaultGrailsDomainClass middleDomainClass = new DefaultGrailsDomainClass(middleClass);
@@ -412,4 +423,5 @@ class Tag {
         assertTrue "Property 'tags' of class Bookmark should have type many-to-many", bookmarkTags.isManyToMany()
         assertTrue "Property 'tags' of class BookmarkSubclass should have type many-to-many", bookmarkSubclassTags.isManyToMany()
     }
+
 }
