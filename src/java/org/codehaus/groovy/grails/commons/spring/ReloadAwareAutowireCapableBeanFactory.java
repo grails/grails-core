@@ -141,21 +141,25 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
     @Override
 	public void autowireBeanProperties(Object existingBean, int autowireMode,
 			boolean dependencyCheck) throws BeansException {
-    	try {
-        	autowiringBeanPropertiesFlag.set(Boolean.TRUE);
-        	if(!Environment.getCurrent().isReloadEnabled()) {
-	        	Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(existingBean.getClass()));
-	        	if(beanProps != null && beanProps.size()==0) {
-	        		// nothing to autowire
-					if (logger.isDebugEnabled()) {
-						logger.debug("Nothing to autowire for bean of class " + existingBean.getClass().getName());
-					}
-	        		return;
+    	if(autowireMode==AUTOWIRE_BY_NAME) {
+	    	try {
+	        	autowiringBeanPropertiesFlag.set(Boolean.TRUE);
+	        	if(!Environment.getCurrent().isReloadEnabled()) {
+		        	Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(existingBean.getClass()));
+		        	if(beanProps != null && beanProps.size()==0) {
+		        		// nothing to autowire
+						if (logger.isDebugEnabled()) {
+							logger.debug("Nothing to autowire for bean of class " + existingBean.getClass().getName());
+						}
+		        		return;
+		        	}
 	        	}
-        	}
+	    		super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
+	    	} finally {
+	    		autowiringBeanPropertiesFlag.remove();
+	    	}
+    	} else {
     		super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-    	} finally {
-    		autowiringBeanPropertiesFlag.remove();
     	}
 	}
     
