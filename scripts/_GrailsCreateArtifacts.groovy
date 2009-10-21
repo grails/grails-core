@@ -41,9 +41,8 @@ createArtifact = { Map args = [:] ->
 
     // Convert the package into a file path.
     def pkgPath = ''
-    if (pkg || 'Script' == type) {
-
-        pkgPath = pkg ? pkg.replace('.' as char, '/' as char) : ''
+    if (pkg) {
+        pkgPath = pkg.replace('.' as char, '/' as char)
 
         // Make sure that the package path exists! Otherwise we won't
         // be able to create a file there.
@@ -52,7 +51,7 @@ createArtifact = { Map args = [:] ->
         // Future use of 'pkgPath' requires a trailing slash.
         pkgPath += '/'
     }
-    else {
+    else if('Script' != type) {
         if(!confirmInput("WARNING: You have not specified a package. It is good practise to place classes in packages (eg. mycompany.Book). Do you want to continue?", "no.package.warning")) {
             exit(1)
         }
