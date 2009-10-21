@@ -41,8 +41,9 @@ createArtifact = { Map args = [:] ->
 
     // Convert the package into a file path.
     def pkgPath = ''
-    if (pkg) {
-        pkgPath = pkg.replace('.' as char, '/' as char)
+    if (pkg || 'Script' == type) {
+
+        pkgPath = pkg ? pkg.replace('.' as char, '/' as char) : ''
 
         // Make sure that the package path exists! Otherwise we won't
         // be able to create a file there.
