@@ -115,6 +115,11 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="GParallelizer" level="project" />
+    <orderEntry type="library" name="DOM4J" level="project" />
+    <orderEntry type="library" name="JPA" level="project" />
+    <orderEntry type="library" name="Sitemesh" level="project" />
+    <orderEntry type="library" name="Radeox" level="project" />
     <javadoc-paths>
       <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
       <root url="file://$MODULE_DIR$/../hibernate-3.2/doc/api" />
