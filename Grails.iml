@@ -10,8 +10,8 @@
     <output-test url="file://$MODULE_DIR$/idea-target/test-classes" />
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src/jsp21" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/jsp21" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/META-INF" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
@@ -120,6 +120,8 @@
     <orderEntry type="library" name="JPA" level="project" />
     <orderEntry type="library" name="Sitemesh" level="project" />
     <orderEntry type="library" name="Radeox" level="project" />
+    <orderEntry type="library" name="Ivy" level="project" />
+    <orderEntry type="library" name="JUnit" level="project" />
     <javadoc-paths>
       <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
       <root url="file://$MODULE_DIR$/../hibernate-3.2/doc/api" />
