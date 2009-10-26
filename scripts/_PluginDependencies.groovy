@@ -124,7 +124,12 @@ public Map tokenizeUrl(String url) throws SVNException {
 			aHashMap[KEY_USER_PASS] = userInfoArray[1]
 		}
 	}
-	aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}:${aURL.port}${aURL.path}".toString()
+    if(aURL.port == 443) {
+        aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}${aURL.path}".toString()
+    } else {
+        aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}:${aURL.port}${aURL.path}".toString()
+    }
+	
 	return aHashMap
 }
 
