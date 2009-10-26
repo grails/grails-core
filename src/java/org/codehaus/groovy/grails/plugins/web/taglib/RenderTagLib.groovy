@@ -14,44 +14,37 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.RequestConstants
+import grails.util.GrailsNameUtils
+import groovy.text.Template
+import java.util.concurrent.ConcurrentHashMap
+import javax.servlet.ServletConfig
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.codehaus.groovy.grails.web.util.WebUtils
+
 /**
  * An tag library that contains tags to help rendering of views and layouts
  *
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
-import org.springframework.validation.Errors;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import com.opensymphony.module.sitemesh.PageParserSelector
-import com.opensymphony.module.sitemesh.Factory
-import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.springframework.web.context.ServletConfigAware
-import javax.servlet.ServletConfig
-import org.springframework.beans.factory.InitializingBean;
-import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
-import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-import org.codehaus.groovy.grails.web.util.WebUtils
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import java.util.concurrent.ConcurrentHashMap
-import groovy.text.Template
-
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
 	def out // to facilitate testing
 
     ServletConfig servletConfig
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
+    
     static Map TEMPLATE_CACHE = new ConcurrentHashMap()
 
     protected getPage() {
@@ -479,9 +472,10 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         }
 
         Template t = TEMPLATE_CACHE[uri]
+
         if(t==null) {
 			  t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
-			  if(!engine.isReloadEnabled()) {
+			  if(!engine.isReloadEnabled() && t!=null) {
 				  def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
 				  if(prevt != null) {
 					  t = prevt
