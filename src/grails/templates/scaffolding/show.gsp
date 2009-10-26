@@ -22,32 +22,57 @@
                 <table>
                     <tbody>
                     <%  excludedProps = Event.allEvents.toList() << 'version'
-                        props = domainClass.properties.findAll { !excludedProps.contains(it.name) }
+						      //Three types of things we are tracking - properties, short property names, and natural property names - all need to combine normal properties and embedded
+                        props = domainClass.properties.findAll { !excludedProps.contains(it.name) && (!it.isEmbedded())}
+                        propNames = props.name
+                        propNaturalNames = props.naturalName
+
+                        allEmbeddedTopLevelProps = domainClass.properties.findAll { it.isEmbedded() }
+
+						embeddedProps = allEmbeddedTopLevelProps.component*.properties.flatten().findAll { !(excludedProps<<'id').contains(it.name) }
+                        embeddedPropNames = []
+                        embeddedNaturalPropNames = []
+                        allEmbeddedTopLevelProps.each { topLevelProp ->
+                          topLevelProp.component.properties.each {
+                             if (!(excludedProps<<'id').contains(it.name)) {
+                                embeddedPropNames << "${topLevelProp.name}.${it.name}"
+                                embeddedNaturalPropNames << "${topLevelProp.naturalName} ${it.naturalName}"
+                             }
+                          }
+                        }
+
+  						props.addAll(embeddedProps)
+  					    propNames.addAll(embeddedPropNames)
+						propNaturalNames.addAll(embeddedNaturalPropNames)
+
                         Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-                        props.each { p -> %>
+                        props.eachWithIndex { p, i -> %>
                         <tr class="prop">
-                            <td valign="top" class="name"><g:message code="${domainClass.propertyName}.${p.name}.label" default="${p.naturalName}" /></td>
+                            <td valign="top" class="name"><g:message code="${domainClass.propertyName}.${propNames[i]}.label" default="${propNaturalNames[i]}" /></td>
                             <%  if (p.isEnum()) { %>
-                            <td valign="top" class="value">\${${propertyName}?.${p.name}?.encodeAsHTML()}</td>
+                            <td valign="top" class="value">\${${propertyName}?.${propNames[i]}?.encodeAsHTML()}</td>
                             <%  } else if (p.oneToMany || p.manyToMany) { %>
                             <td valign="top" style="text-align: left;" class="value">
                                 <ul>
-                                <g:each in="\${${propertyName}.${p.name}}" var="${p.name[0]}">
-                                    <li><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${p.name[0]}.id}">\${${p.name[0]}?.encodeAsHTML()}</g:link></li>
+                                <g:each in="\${${propertyName}.${propNames[i]}}" var="${propNames[i][0]}">
+                                    <li><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${propNames[i][0]}.id}">\${${propNames[i][0]}?.encodeAsHTML()}</g:link></li>
                                 </g:each>
                                 </ul>
                             </td>
                             <%  } else if (p.manyToOne || p.oneToOne) { %>
-                            <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${propertyName}?.${p.name}?.id}">\${${propertyName}?.${p.name}?.encodeAsHTML()}</g:link></td>
+                            <td valign="top" class="value"><g:link controller="${p.referencedDomainClass?.propertyName}" action="show" id="\${${propertyName}?.${propNames[i]}?.id}">\${${propertyName}?.${propNames[i]}?.encodeAsHTML()}</g:link></td>
                             <%  } else if (p.type == Boolean.class || p.type == boolean.class) { %>
-                            <td valign="top" class="value"><g:formatBoolean boolean="\${${propertyName}?.${p.name}}" /></td>
+                            <td valign="top" class="value"><g:formatBoolean boolean="\${${propertyName}?.${propNames[i]}}" /></td>
                             <%  } else if (p.type == Date.class || p.type == java.sql.Date.class || p.type == java.sql.Time.class || p.type == Calendar.class) { %>
-                            <td valign="top" class="value"><g:formatDate date="\${${propertyName}?.${p.name}}" /></td>
+                            <td valign="top" class="value"><g:formatDate date="\${${propertyName}?.${propNames[i]}}" /></td>
                             <%  } else { %>
-                            <td valign="top" class="value">\${fieldValue(bean: ${propertyName}, field: "${p.name}")}</td>
-                            <%  } %>
+                            <td valign="top" class="value">\${fieldValue(bean: ${propertyName}, field: "${propNames[i]}")}</td>
+                            <%  } %> 
+
+
                         </tr>
-                    <%  } %>
+                    <%  } 
+%>
                     </tbody>
                 </table>
             </div>
