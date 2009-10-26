@@ -236,7 +236,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                        "org.apache.ant:ant-nodeps:1.7.1",
                        "org.apache.ant:ant-trax:1.7.1",
                        "radeox:radeox:1.0-b2",
-                       "apache-tomcat:jasper-compiler:5.5.15",
                        "jline:jline:0.9.91",
                        "xalan:serializer:2.7.1",
                        "org.grails:grails-bootstrap:$grailsVersion",
