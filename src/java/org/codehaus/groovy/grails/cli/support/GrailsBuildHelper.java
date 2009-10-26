@@ -193,7 +193,7 @@ public class GrailsBuildHelper {
     }
 
     public void setDependenciesExternallyConfigured(boolean b) {
-        invokeMethod(this.settings, "setDependenciesExternallyConfigured", new Class[] { Boolean.class }, new Object[] { b });
+        invokeMethod(this.settings, "setDependenciesExternallyConfigured", new Class[] { boolean.class }, new Object[] { b });
     }
 
     public List getTestDependencies() {
