@@ -849,7 +849,14 @@ class IvyDomainSpecificLanguageEvaluator {
                     def name = dependency.name
                     if(dependency.group && name && dependency.version) {
                        if(!isExcluded(name)) {
-                           def mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
+
+                           def mrid
+                           if(dependency.branch) {
+                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version)
+                           }
+                           else {
+                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
+                           }
 
                            addDependency mrid
 

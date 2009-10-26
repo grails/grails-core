@@ -27,6 +27,19 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testUseBranch() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"] )
+        }
+
+        ModuleRevisionId dep = manager.dependencies.iterator().next()
+
+        assertEquals "jdk14",dep.branch
+    }
+
     void testOverridePluginDependencies() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
@@ -249,7 +262,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertEquals 53, manager.listDependencies('runtime').size()
         assertEquals 56, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
+        assertEquals 18, manager.listDependencies('build').size()
         assertEquals 3, manager.listDependencies('provided').size()
 
         // This should be a functional test since it relies on the Grails
