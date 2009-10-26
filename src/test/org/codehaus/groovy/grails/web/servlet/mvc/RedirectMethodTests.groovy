@@ -18,6 +18,9 @@ class RedirectController {
     def toAction = {
         redirect(action:'foo')
     }
+    def toRoot = {
+        redirect(controller:'default')
+    }
     def toController = {
         redirect(controller:'test')
     }
@@ -52,6 +55,7 @@ class NewsSignupController {
 
 class UrlMappings {
     static mappings = {
+        "/"(controller:'default')
         "/little-brown-bottle/$action?" {
         	controller = "newsSignup"
         }
@@ -66,6 +70,13 @@ class UrlMappings {
         ''')
     }
 
+    void testRedirectToRoot() {
+
+       def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+        c.toRoot.call()
+        assertEquals "/", response.redirectedUrl
+    }
     void testRedirectWithFragment() {
        def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'

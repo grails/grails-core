@@ -194,7 +194,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
      * Figures out the action name from the specified action reference (either a string or closure)
      */
     private String establishActionName(Object actionRef, Object target, GrailsWebRequest webRequest) {
-        String actionName = "";
+        String actionName = null;
         if(actionRef instanceof String) {
            actionName = (String)actionRef;
         }
