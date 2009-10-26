@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.test.DefaultGrailsTestRunner
 import org.codehaus.groovy.grails.test.GrailsIntegrationTestHelper
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
+import grails.util.GrailsUtil
 
 
 /**
@@ -196,8 +197,8 @@ compileTests = { String type ->
         }
     }
     catch (Exception e) {
-        event("StatusFinal", ["Compilation Error: ${e.message}"])
-        return 1
+        event("StatusFinal", ["Compilation error compiling [$type] tests: ${e.message}"])
+        exit 1
     }
 
     event("TestCompileEnd", [type])
@@ -242,6 +243,7 @@ runTests = { String type ->
     }
     catch (Exception e) {
         event("StatusFinal", ["Error running $type tests: ${e.toString()}"])
+        GrailsUtil.deepSanitize(e)
         e.printStackTrace()
         testsFailed = true
         return null
