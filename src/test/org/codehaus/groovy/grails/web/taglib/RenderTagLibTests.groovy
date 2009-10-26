@@ -19,7 +19,8 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import com.opensymphony.module.sitemesh.RequestConstants
 import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
-import com.opensymphony.module.sitemesh.html.util.CharArray;
+import com.opensymphony.module.sitemesh.html.util.CharArray
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * Tests for the RenderTagLib.groovy file which contains tags for rendering
@@ -63,6 +64,18 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
     }
 
+
+    void testRenderWithNonExistantTemplate() {
+        def template = '<g:render template="bad" />'
+
+        try {
+            applyTemplate(template)
+            fail "Should have thrown exception"
+        }
+        catch (GrailsTagException e) {
+            assert e.message.contains("Template not found for name [bad]") : "error message should have contained template name"
+        }
+    }
 
     void testRenderTagWithBody() {
         def resourceLoader = new MockStringResourceLoader()

@@ -483,47 +483,53 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 			  }
         }
 
-        if(attrs.containsKey('bean')) {
-        	def b = [body: body]
-            if (attrs.model instanceof Map) {
-                b += attrs.model
-            }
-        	if (var) {
-        		b.put(var, attrs.bean)
-        	}
-        	else {
-        		b.put('it', attrs.bean)
-	        }
-        	t.make(b).writeTo(out)
+        if(!t) {
+            throwTagError("Template not found for name [$attrs.template]")            
         }
-        else if(attrs.containsKey('collection')) {
-            def collection = attrs.collection
-            def key = 'it'
-            if(collection) {
-                def first = collection.iterator().next()
-                key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
-            }
-            collection.each {
-            	def b = [body:body]
+        else {
+            if(attrs.containsKey('bean')) {
+                def b = [body: body]
                 if (attrs.model instanceof Map) {
                     b += attrs.model
                 }
-            	if (var) {
-            		b.put(var, it)
-            	}
-            	else {
-                    b.put('it', it)
-            		b.put(key, it)
-            	}
-            	t.make(b).writeTo(out)
+                if (var) {
+                    b.put(var, attrs.bean)
+                }
+                else {
+                    b.put('it', attrs.bean)
+                }
+                t.make(b).writeTo(out)
+            }
+            else if(attrs.containsKey('collection')) {
+                def collection = attrs.collection
+                def key = 'it'
+                if(collection) {
+                    def first = collection.iterator().next()
+                    key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
+                }
+                collection.each {
+                    def b = [body:body]
+                    if (attrs.model instanceof Map) {
+                        b += attrs.model
+                    }
+                    if (var) {
+                        b.put(var, it)
+                    }
+                    else {
+                        b.put('it', it)
+                        b.put(key, it)
+                    }
+                    t.make(b).writeTo(out)
+                }
+            }
+            else if(attrs.model instanceof Map) {
+                t.make( [body:body] + attrs.model ).writeTo(out)
+            }
+            else if(attrs.template) {
+                t.make([body:body]).writeTo(out)
             }
         }
-        else if(attrs.model instanceof Map) {
-            t.make( [body:body] + attrs.model ).writeTo(out)
-        }
-		else if(attrs.template) {
-			t.make([body:body]).writeTo(out)
-		}
+
     }
 
 }
