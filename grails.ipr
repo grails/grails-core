@@ -72,6 +72,15 @@
           <option name="LABEL_INDENT_SIZE" value="0" />
           <option name="LABEL_INDENT_ABSOLUTE" value="false" />
         </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="sql">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="txt">
           <option name="INDENT_SIZE" value="2" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
@@ -210,8 +219,8 @@
   <component name="IdProvider" IDEtalkID="094372AACB9649246F599517414513BF" />
   <component name="InspectionProjectProfileManager">
     <option name="PROJECT_PROFILE" value="Project Default" />
-    <option name="USE_PROJECT_PROFILE" value="true" />
-    <version value="1.0" />
+    <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
+    <scopes />
     <profiles>
       <profile version="1.0" is_locked="false">
         <option name="myName" value="Project Default" />
@@ -403,6 +412,7 @@
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
       <module fileurl="file://$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" filepath="$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" filepath="$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
@@ -578,7 +588,7 @@
     </library>
     <library name="Groovy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.6.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.6.5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

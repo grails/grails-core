@@ -26,14 +26,13 @@
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Groovy" level="project" />
     <orderEntry type="library" exported="" name="Apache Commons" level="project" />
     <orderEntry type="library" exported="" name="Spring" level="project" />
     <orderEntry type="library" exported="" name="Hibernate 3" level="project" />
     <orderEntry type="library" exported="" name="javax.servlet" level="project" />
-    <orderEntry type="library" exported="" name="Jetty" level="project" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
@@ -122,6 +121,17 @@
     <orderEntry type="library" name="Radeox" level="project" />
     <orderEntry type="library" name="Ivy" level="project" />
     <orderEntry type="library" name="JUnit" level="project" />
+    <orderEntry type="module-library">
+      <library name="Apache Ivy">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ivy-2.0.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../../../apache/ivy-2.0.0/src/java" />
+        </SOURCES>
+      </library>
+    </orderEntry>
     <javadoc-paths>
       <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
       <root url="file://$MODULE_DIR$/../hibernate-3.2/doc/api" />
