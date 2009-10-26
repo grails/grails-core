@@ -100,10 +100,10 @@ class ScaffoldingGrailsPlugin {
                                 propertyValue.resolveStrategy = Closure.DELEGATE_FIRST
                                 propertyValue
                             }
-                            controllerClass.registerMapping(propertyName)
-                            if(propertyName == GrailsControllerClass.INDEX_ACTION) {
-                                controllerClass.defaultActionName = propertyName
-                            }
+                        }
+                        controllerClass.registerMapping(propertyName)
+                        if (propertyName == GrailsControllerClass.INDEX_ACTION) {
+                            controllerClass.defaultActionName = propertyName
                         }
                     }
                 }
