@@ -93,7 +93,7 @@ private EmbeddableServerFactory loadServerFactory() {
         if(containerClass==defaultServer) {
             println "WARNING: No default container found, installing Tomcat.."
             doInstallPluginFromGrailsHomeOrRepository "tomcat", GrailsUtil.grailsVersion
-            pluginSettings.clearCaches()
+            pluginSettings.clearCache()
             compilePlugins()
             serverFactory = load(containerClass)            
         }
