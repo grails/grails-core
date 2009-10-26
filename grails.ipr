@@ -583,6 +583,56 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="GParallelizer">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/GParallelizer-0.8.3.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="DOM4J">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/dom4j-1.6.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="JPA">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/ejb3-persistence-1.0.2.GA.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Sitemesh">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/sitemesh-2.4.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Radeox">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/radeox-1.0-b2.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="Ivy">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/ivy-2.0.0.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="JUnit">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/junit-3.8.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/ant-junit-1.7.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
 </project>
 

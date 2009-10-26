@@ -51,7 +51,7 @@ createArtifact = { Map args = [:] ->
         // Future use of 'pkgPath' requires a trailing slash.
         pkgPath += '/'
     }
-    else {
+    else if('Script' != type) {
         if(!confirmInput("WARNING: You have not specified a package. It is good practise to place classes in packages (eg. mycompany.Book). Do you want to continue?", "no.package.warning")) {
             exit(1)
         }
