@@ -107,18 +107,16 @@ target(allTests: "Runs the project's tests.") {
             // is easier to distinguish
             println()
 
-            event("StatusUpdate", ["Starting $phase tests"])
+            event("StatusUpdate", ["Starting $phase test phase"])
             event("TestPhaseStart", [phase])
 
-            // Do whatever preparation is needed to run the tests in this
-            // phase. The method/closure should return a test helper.
-            testHelper = this."${phase}TestsPreparation"()
+            "${phase}TestPhasePreparation"()
 
             // Now run all the tests registered for this phase.
             testTypes.each(processTests)
 
             // Perform any clean up required.
-            this."${phase}TestsCleanUp"()
+            this."${phase}TestPhaseCleanUp"()
 
             event("TestPhaseEnd", [phase])
         }
@@ -163,7 +161,7 @@ def loadTestRunner() {
  */
 processTests = { String type ->
     if (new File("${basedir}/test/$type").exists()) {
-        println "Running tests of type '$type'"
+        println "\nRunning tests of type '$type'"
     
         // First compile the test classes.
         compileTests(type)
@@ -215,8 +213,9 @@ compileTests = { String type ->
 runTests = { String type ->
     def prevContextClassLoader = Thread.currentThread().contextClassLoader
     try {
-        // Get all the test files to run for this test type.
+        testHelper = "${type}TestsPreparation"()
         def testSuite = testHelper.createTests(testNames, type)
+        
         if (testSuite.testCount() == 0) {
             event("StatusUpdate", ["No tests found in test/$type to execute"])
             return
@@ -258,6 +257,7 @@ runTests = { String type ->
     }
     finally {
         Thread.currentThread().contextClassLoader = prevContextClassLoader
+        "${type}TestsCleanUp"()
     }
 }
 
@@ -265,18 +265,13 @@ createReports = { String type ->
     // Reports are not currently done on a per-type basis.
 }
 
-/**
- * Prepare for the unit tests. Simply sets up the default test helper.
- */
-unitTestsPreparation = {
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
+unitTestPhasePreparation = {}
+unitTestPhaseCleanUp = {}
 
 /**
- * Prepare for the integration tests. Packages the tests and then
- * bootstraps the application.
+ * Initialises a persistence context and bootstraps the application.
  */
-integrationTestsPreparation = {
+integrationTestPhasePreparation = {
     packageTests()
     bootstrap()
 
@@ -293,39 +288,12 @@ integrationTestsPreparation = {
     def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext );
-
-    // We use a specialist test helper for integration tests.
-    return new GrailsIntegrationTestHelper(grailsSettings, app.classLoader, resolveResources, appCtx)
 }
 
 /**
- * Prepare for the functional tests. Starts up the test server.
+ * Shuts down the bootstrapped Grails application.
  */
-functionalTestsPreparation = {
-    packageApp()
-    runApp()
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
-
-/**
- * Prepare for the unit tests. Intentionally does nothing because unit
- * tests require no special preparation.
- */
-otherTestsPreparation = {
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
-
-/**
- * Clean up after the unit tests. Nothing to do.
- */
-unitTestsCleanUp = {
-}
-
-/**
- * Clean up after the integration tests. Shuts down the bootstrapped
- * Grails application.
- */
-integrationTestsCleanUp = {
+integrationTestPhaseCleanUp = {
     // Kill any context interceptor we might have.
     def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
     if (beanNames.size() > 0) appCtx.getBean(beanNames[0]).destroy()
@@ -334,17 +302,49 @@ integrationTestsCleanUp = {
 }
 
 /**
- * Clean up after the functional tests. Shuts down the test server.
+ * Starts up the test server.
  */
-functionalTestsCleanUp = {
-    stopServer()
+functionalTestPhasePreparation = {
+    packageApp()
+    runApp()
 }
 
 /**
- * Clean up after the "other" tests. Nothing to do.
+ * Shuts down the test server.
  */
-otherTestsCleanUp = {
+functionalTestPhaseCleanUp = {
+    stopServer()
 }
+
+otherTestPhasePreparation = {}
+otherTestPhaseCleanUp = {}
+
+
+unitTestsPreparation = { 
+    new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources) 
+}
+
+unitTestsCleanUp = {}
+
+integrationTestsPreparation = {
+    // We use a specialist test helper for integration tests.
+    def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
+    return new GrailsIntegrationTestHelper(grailsSettings, app.classLoader, resolveResources, appCtx)
+}
+
+integrationTestsCleanUp = {}
+
+functionalTestsPreparation = {
+    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
+}
+
+functionalTestsCleanUp = {}
+
+otherTestsPreparation = {
+    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
+}
+
+otherTestsCleanUp = {}
 
 resolveTestFiles = { Closure filter ->
     def testFiles = resolveTestResources {"file:${basedir}/test/unit/${it}.groovy"}
