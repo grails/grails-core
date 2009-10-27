@@ -177,6 +177,10 @@ target(startPluginScanner: "Starts the plugin manager's scanner that detects cha
     PluginManagerHolder.pluginManager.startPluginChangeScanner()
 }
 
+target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
+    PluginManagerHolder.pluginManager.stopPluginChangeScanner()
+}
+
 /**
  * Keeps the server alive and checks for changes in domain classes or
  * source files under "src". If any changes are detected, the servlet
@@ -299,6 +303,15 @@ target(stopServer: "Stops the Grails servlet container") {
             GrailsUtil.deepSanitize(e)
             e.printStackTrace()
             println "Error stopping server: ${e.message}"
+        }
+        
+        try {
+            stopPluginScanner()
+        }
+        catch (Throwable e) {
+            GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
+            println "Error stopping plugin change scanner: ${e.message}"
         }
     }
     event("StatusFinal", ["Server stopped"])
