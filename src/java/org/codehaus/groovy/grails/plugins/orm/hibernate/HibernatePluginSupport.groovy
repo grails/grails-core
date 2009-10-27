@@ -41,6 +41,8 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.hibernate.Query
 import org.hibernate.Session
 import org.hibernate.SessionFactory
+import org.hibernate.criterion.Projections
+import org.hibernate.criterion.Restrictions
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.factory.config.BeanDefinition
@@ -539,23 +541,16 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams, paginateParams] as Object[])
         }
 
-        metaClass.static.executeUpdate = {String query ->
-            template.bulkUpdate(query)
+        def executeUpdateMethod = new ExecuteUpdatePersistentMethod(sessionFactory, classLoader)
+        metaClass.static.executeUpdate = { String query ->
+            executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query] as Object[])
         }
-        metaClass.static.executeUpdate = {String query, Collection args ->           
-            template.bulkUpdate(query, GrailsClassUtils.collectionToObjectArray(args))
+        metaClass.static.executeUpdate = { String query, Collection args ->           
+            executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, args] as Object[])
         }
-        metaClass.static.executeUpdate = {String query, Map argMap ->
-            template.executeWithNativeSession(  { Session session ->
-                                    Query queryObject = session.createQuery(query)
-                                    SessionFactoryUtils.applyTransactionTimeout(queryObject, template.sessionFactory);
-                                    for (entry in argMap) {
-                                        queryObject.setParameter(entry.key, entry.value)
-                                    }
-                                    queryObject.executeUpdate()
-                                } as HibernateCallback);
+        metaClass.static.executeUpdate = { String query, Map argMap ->
+            executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, argMap] as Object[])
         }
-
 
         def listMethod = new ListPersistentMethod(sessionFactory, classLoader)
         metaClass.static.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
@@ -587,7 +582,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 def identityType = dc.identifier.type
                 ids = ids.collect {convertToType(it, identityType)}
                 def criteria = session.createCriteria(domainClassType)
-                criteria.add(org.hibernate.criterion.Restrictions.'in'(dc.identifier.name, ids))
+                criteria.add(Restrictions.'in'(dc.identifier.name, ids))
                 def results = criteria.list()
                 def idsMap = [:]
                 for (object in results) {
@@ -604,7 +599,12 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         metaClass.static.exists = {id ->
             def identityType = dc.identifier.type
             id = convertToType(id, identityType)
-            template.get(domainClassType, id) != null
+            template.execute({ Session session ->
+                session.createCriteria(dc.clazz)
+                    .add(Restrictions.idEq(id))
+                    .setProjection(Projections.rowCount())
+                    .uniqueResult()
+            } as HibernateCallback) == 1
         }
 
         metaClass.static.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType, sessionFactory)}
@@ -780,7 +780,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         metaClass.static.count = {->
             template.execute({Session session ->
                 def criteria = session.createCriteria(dc.clazz)
-                criteria.setProjection(org.hibernate.criterion.Projections.rowCount())
+                criteria.setProjection(Projections.rowCount())
                 criteria.uniqueResult()
             } as HibernateCallback)
         }
