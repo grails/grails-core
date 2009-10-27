@@ -209,7 +209,12 @@ target (war: "The implementation target") {
         warPlugins()
         createDescriptor()
     	event("CreateWarStart", [warName, stagingDir])
-        if (!buildExplodedWar) ant.jar(destfile:warName, basedir:stagingDir, manifest:manifestFile)
+        if (!buildExplodedWar) {
+            def warFile = new File(warName)
+            def dir = warFile.parentFile
+            if(!dir.exists()) ant.mkdir(dir:dir)
+            ant.jar(destfile:warName, basedir:stagingDir, manifest:manifestFile)
+        }
     	event("CreateWarEnd", [warName, stagingDir])
     }
     finally {
