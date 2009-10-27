@@ -101,7 +101,7 @@ target(allTests: "Runs the project's tests.") {
         for( phase in phasesToRun) {
             // Skip this phase if there are no test types registered for it.
             def testTypes = this."${phase}Tests"
-            if (!testTypes) return
+            if (!testTypes) continue
 
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
