@@ -404,8 +404,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValue[] valueArray = propertyValues.getPropertyValues();
         MutablePropertyValues newValues = new MutablePropertyValues();
         for (PropertyValue propertyValue : valueArray) {
-            if (propertyValue.getName().startsWith(prefix + PREFIX_SEPERATOR)) {
-                newValues.addPropertyValue(propertyValue.getName().replaceFirst(prefix + PREFIX_SEPERATOR, ""), propertyValue.getValue());
+            String name = propertyValue.getName();
+            final String prefixWithDot = prefix + PREFIX_SEPERATOR;
+            if (name.startsWith(prefixWithDot)) {
+                name = name.substring(prefixWithDot.length(),name.length());
+                newValues.addPropertyValue(name, propertyValue.getValue());
             }
         }
         return newValues;
