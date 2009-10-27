@@ -22,6 +22,10 @@ class Customer {
 }
 '''
 
+
+    }
+
+    def init() {
         custClass = ga.getDomainClass("Customer").clazz
 
         for (name in names) {
@@ -32,6 +36,8 @@ class Customer {
     }
 
     void testExecuteUpdate() {
+        init()
+
         assertEquals 3, custClass.count()
 
         custClass.executeUpdate("delete from Customer")
@@ -40,6 +46,8 @@ class Customer {
     }
 
     void testExecuteUpdatePositionalParams() {
+        init()
+
         assertEquals 3, custClass.count()
 
         custClass.executeUpdate("delete from Customer c where c.name=?", ['Fred'])
@@ -48,6 +56,8 @@ class Customer {
     }
 
     void testExecuteUpdateOrdinalParams() {
+        init()
+
         assertEquals 3, custClass.count()
 
         custClass.executeUpdate("delete from Customer c where c.name=:name", [name:'Fred'])
@@ -56,6 +66,7 @@ class Customer {
     }
 
     void testExecuteUpdateListParams() {
+        init()
 
         assertEquals 3, custClass.count()
 
@@ -65,6 +76,8 @@ class Customer {
     }
 
     void testExecuteUpdateArrayParams() {
+        init()
+
         assertEquals 3, custClass.count()
 
         Object[] deleteIds = [ids[0], ids[1]]
