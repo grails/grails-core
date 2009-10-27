@@ -38,14 +38,16 @@ class ExistsTests extends AbstractGrailsHibernateTests {
 		foobar.foo = foo
 		foobar.bar = bar
 		foobar.d = new Date()
-		foobar.save()
-		assertNotNull foobar
+
+		assertNotNull "should have saved foobar",foobar.save(flush:true)
+
+        session.clear()
 		
 		def foobarPk = foobarClass.newInstance()
 		foobarPk.foo = foo
 		foobarPk.bar = bar
 
-		assertTrue fooClass.exists(foobarPk)
+		assertTrue foobarClass.exists(foobarPk)
 
 		def bar2 = barClass.newInstance()
 		bar2.name = 'bar 2';
@@ -55,7 +57,7 @@ class ExistsTests extends AbstractGrailsHibernateTests {
 		foobarPk.foo = foo
 		foobarPk.bar = bar2
 
-		assertFalse fooClass.exists(foobarPk2)
+		assertFalse foobarClass.exists(foobarPk2)
 	}
 	
 	protected void onSetUp() {
