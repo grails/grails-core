@@ -162,16 +162,20 @@ def loadTestRunner() {
  * For example, "unit", "jsunit", "webtest", etc.
  */
 processTests = { String type ->
-    println "Running tests of type '$type'"
+    if (new File("${basedir}/test/$type").exists()) {
+        println "Running tests of type '$type'"
     
-    // First compile the test classes.
-    compileTests(type)
+        // First compile the test classes.
+        compileTests(type)
 
-    // Run them.
-    runTests(type)
+        // Run them.
+        runTests(type)
 
-    // Process the results.
-    createReports(type)
+        // Process the results.
+        createReports(type)
+    } else {
+        println "Skipping '$type' tests (test/$type doesn't exist)"
+    }
 }
 
 /**
