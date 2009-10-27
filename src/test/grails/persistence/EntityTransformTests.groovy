@@ -8,6 +8,39 @@ package grails.persistence
 
 public class EntityTransformTests extends GroovyShellTestCase{
 
+    // test for http://jira.codehaus.org/browse/GRAILS-5238
+    void testGRAILS_5238() {
+        def p = evaluate('''
+import grails.persistence.*
+
+@Entity
+class Permission {
+    String permission
+                       
+    static belongsTo = [ user: User ]
+
+    void setOwner(User owner) {
+        this.user = owner
+    }
+
+    User getOwner() {
+        return this.user
+    }
+}
+
+@Entity
+class User {
+    String username
+}
+
+u = new User(username:"bob")
+p = new Permission(user:u, permission:"uber")
+''')
+
+        assertEquals "User", p.user.class.name
+        assertEquals "User", p.class.methods.find { it.name == 'getUser' }.returnType.name
+    }
+
     void testAnnotatedEntity() {
         def entity = evaluate("""
           import grails.persistence.*

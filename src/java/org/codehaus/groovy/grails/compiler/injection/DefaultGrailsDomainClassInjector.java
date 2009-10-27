@@ -132,9 +132,16 @@ public class DefaultGrailsDomainClassInjector implements
             for (Object mapEntry : mapEntries) {
                 MapEntryExpression mme = (MapEntryExpression) mapEntry;
                 String key = mme.getKeyExpression().getText();
-                String type = mme.getValueExpression().getText();
+                final Expression expression = mme.getValueExpression();
+                ClassNode type;
+                if(expression instanceof ClassExpression) {
+                    type = expression.getType();
+                }
+                else {
+                    type = ClassHelper.make(expression.getText());
+                }
 
-                properties.add(new PropertyNode(key, Modifier.PUBLIC, ClassHelper.make(type), classNode, null, null, null));
+                properties.add(new PropertyNode(key, Modifier.PUBLIC, type, classNode, null, null, null));
             }
         }
 
