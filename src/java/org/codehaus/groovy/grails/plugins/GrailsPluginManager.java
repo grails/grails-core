@@ -75,6 +75,12 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
     GrailsPlugin[] getAllPlugins();
 
     /**
+     * Gets plugin installed by the user and not provided by the framework
+     * @return A list of user plugins
+     */
+    GrailsPlugin[] getUserPlugins();
+
+    /**
      * @return An array of plugins that failed to load due to dependency resolution errors
      */
     GrailsPlugin[] getFailedLoadPlugins();

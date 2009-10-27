@@ -107,6 +107,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private long configLastModified;
     private PluginFilter pluginFilter;
     private static final String GRAILS_PLUGIN_SUFFIX = "GrailsPlugin";
+    private List<GrailsPlugin> userPlugins = new ArrayList<GrailsPlugin>();
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
         super(application);
@@ -166,6 +167,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         this.pluginResources = pluginFiles;
         this.application = application;
         setPluginFilter();
+    }
+
+    public GrailsPlugin[] getUserPlugins() {
+        return this.userPlugins.toArray(new GrailsPlugin[userPlugins.size()]);
     }
 
     private void setPluginFilter() {
@@ -300,6 +305,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         // retrieve load core plugins first
         List<GrailsPlugin>  grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
         List<GrailsPlugin>  grailsUserPlugins = findUserPlugins(gcl);
+        this.userPlugins = grailsUserPlugins;
 
         List<GrailsPlugin>  allPlugins = new ArrayList<GrailsPlugin> (grailsCorePlugins);
         allPlugins.addAll(grailsUserPlugins);
