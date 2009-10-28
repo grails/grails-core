@@ -173,6 +173,9 @@ public class GrailsParameterMap implements Map {
 			if(valueArray.length == 1) {
 				returnValue = valueArray[0];
 			}
+            else {
+                returnValue = valueArray;
+            }
 		}
         else {
             returnValue = parameterMap.get(key);
