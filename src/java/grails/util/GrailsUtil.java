@@ -18,16 +18,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Writable;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +34,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  *
@@ -71,6 +70,9 @@ public class GrailsUtil {
             "org.codehaus.gant.",
             "groovy.",
             "org.mortbay.",
+            "org.apache.catalina.",
+            "org.apache.coyote.",
+            "org.apache.tomcat.",
             "sun.",
             "java.lang.reflect.",
             "org.springframework.",
