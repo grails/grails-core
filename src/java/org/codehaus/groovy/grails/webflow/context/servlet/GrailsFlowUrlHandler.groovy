@@ -49,14 +49,26 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
         UrlMappingsHolder holder = applicationContext.getBean(UrlMappingsHolder.BEAN_ID)
         def controllerName = request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
         Map params = GrailsWebRequest.lookup(request).params
-        params.execution=flowExecutionKey
+        def newParams = [execution:flowExecutionKey]
+        for(entry in params) {
+            def key = entry.key
+            if(key instanceof String) {
+                if(key.startsWith("_event") || key == 'execution') continue
+
+                newParams[key] = entry.value
+            }                
+            else {
+                newParams[key] = entry.value
+            }
+        }
+
 	
 
-        UrlCreator creator =holder.getReverseMapping(controllerName, flowId, params)
+        UrlCreator creator =holder.getReverseMapping(controllerName, flowId, newParams)
 
 	    String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
 
-        return creator.createURL(controllerName, actionName, params, 'utf-8')
+        return creator.createURL(controllerName, actionName, newParams, 'utf-8')
     }
 
     public String createFlowDefinitionUrl(String flowId, AttributeMap input, HttpServletRequest request) {

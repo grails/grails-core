@@ -19,19 +19,17 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.webflow.context.ExternalContext;
+import org.springframework.webflow.context.ExternalContextHolder;
 import org.springframework.webflow.core.FlowException;
 import org.springframework.webflow.definition.registry.FlowDefinitionLocator;
+import org.springframework.webflow.execution.FlowExecution;
 import org.springframework.webflow.execution.FlowExecutionFactory;
+import org.springframework.webflow.execution.FlowExecutionKey;
 import org.springframework.webflow.execution.repository.FlowExecutionRepository;
 import org.springframework.webflow.execution.repository.FlowExecutionRestorationFailureException;
 import org.springframework.webflow.execution.repository.snapshot.SnapshotUnmarshalException;
 import org.springframework.webflow.executor.FlowExecutionResult;
 import org.springframework.webflow.executor.FlowExecutorImpl;
-import org.springframework.webflow.execution.FlowExecution;
-import org.springframework.webflow.execution.FlowExecutionKey;
-import org.springframework.webflow.execution.repository.FlowExecutionLock;
-import org.springframework.webflow.context.ExternalContextHolder;
-import org.springframework.webflow.execution.repository.FlowExecutionRepository;
 
 /**
  * @author Graeme Rocher
@@ -51,7 +49,7 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
      */
     public GrailsFlowExecutorImpl(FlowDefinitionLocator definitionLocator, FlowExecutionFactory executionFactory, FlowExecutionRepository executionRepository) {
         super(definitionLocator, executionFactory, executionRepository);
-	this.executionRepository=executionRepository;
+	    this.executionRepository=executionRepository;
     }
 
     FlowExecutionRepository executionRepository;
@@ -60,18 +58,20 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
     public FlowExecutionResult resumeExecution(String flowExecutionKey, ExternalContext context) throws FlowException {
 
 
- 	 //Check if FlowExecutions Flowid matches flowId
-	try {
-	    ExternalContextHolder.setExternalContext(context);
+         //Check if FlowExecutions Flowid matches flowId
+        try {
+            ExternalContextHolder.setExternalContext(context);
             FlowExecutionKey key = executionRepository.parseFlowExecutionKey(flowExecutionKey);
             FlowExecution flowExecution = executionRepository.getFlowExecution(key);
             GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-	    if(!(webRequest.getControllerName()+"/"+webRequest.getActionName()).equals(flowExecution.getDefinition().getId())) {
-	                return super.launchExecution(webRequest.getControllerName()+"/"+webRequest.getActionName(), context.getRequestMap(), context);
-	    }
-        } finally {
-                ExternalContextHolder.setExternalContext(null);
-	}
+
+            if(isNotValidFlowDefinitionId(flowExecution, webRequest)) {
+                 return super.launchExecution(webRequest.getControllerName()+"/"+webRequest.getActionName(), context.getRequestMap(), context);
+            }
+        }
+        finally {
+            ExternalContextHolder.setExternalContext(null);
+        }
 
 
         try {
@@ -86,5 +86,9 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
                 throw e;
             }
         }
+    }
+
+    private boolean isNotValidFlowDefinitionId(FlowExecution flowExecution, GrailsWebRequest webRequest) {
+        return !(webRequest.getControllerName()+"/"+webRequest.getActionName()).equals(flowExecution.getDefinition().getId());
     }
 }
