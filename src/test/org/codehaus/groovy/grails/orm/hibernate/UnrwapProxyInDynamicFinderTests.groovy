@@ -11,21 +11,21 @@ public class UnrwapProxyInDynamicFinderTests extends AbstractGrailsHibernateTest
 import grails.persistence.*
 
 @Entity
-class Project {
+class UnrwapProxyInDynamicFinderProject {
 
 	String         name
-	ProjectStatus  projectStatus
+	UnrwapProxyInDynamicFinderProjectStatus  projectStatus
 
 }
 @Entity
-class ProjectStatus {
+class UnrwapProxyInDynamicFinderProjectStatus {
 
 	String name
 	String description
 
 	static getSigned()
 	{
-		ProjectStatus.findByName("signed")
+		UnrwapProxyInDynamicFinderProjectStatus.findByName("signed")
 	}
 
 }
@@ -34,8 +34,8 @@ class ProjectStatus {
 
 
     void testReturnNonProxiedInstanceInFinder() {
-        def Project = ga.getDomainClass("Project").clazz
-        def ProjectStatus = ga.getDomainClass("ProjectStatus").clazz
+        def Project = ga.getDomainClass("UnrwapProxyInDynamicFinderProject").clazz
+        def ProjectStatus = ga.getDomainClass("UnrwapProxyInDynamicFinderProjectStatus").clazz
 
         def status = ProjectStatus.newInstance(name:"signed", description:"foo")
 
@@ -54,7 +54,7 @@ class ProjectStatus {
 
         assert !(ProjectStatus.read(status.id) instanceof org.hibernate.proxy.HibernateProxy) : "Should not return proxy from finder!"
 
-        assert !(ProjectStatus.find("from ProjectStatus as p where p.name='signed'") instanceof org.hibernate.proxy.HibernateProxy) : "Should not return proxy from finder!"
+        assert !(ProjectStatus.find("from UnrwapProxyInDynamicFinderProjectStatus as p where p.name='signed'") instanceof org.hibernate.proxy.HibernateProxy) : "Should not return proxy from finder!"
 
         assert !(ProjectStatus.findWhere(name:'signed') instanceof org.hibernate.proxy.HibernateProxy) : "Should not return proxy from finder!"
 
