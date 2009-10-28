@@ -70,8 +70,12 @@ public class GrailsScriptRunner {
         // to pass to the script. This also evaluates arguments of the
         // form "-Dprop=value" and creates system properties from each
         // one.
-        String allArgs = args.length > 0 ? args[0].trim() : "";
-        ScriptAndArgs script = processArgumentsAndReturnScriptName(allArgs);
+        StringBuilder allArgs = new StringBuilder("");
+        for(String arg : args) {
+      	   allArgs.append( " " + arg);
+        }
+
+        ScriptAndArgs script = processArgumentsAndReturnScriptName(allArgs.toString().trim());
 
         // Get hold of the GRAILS_HOME environment variable if it is
         // available.
