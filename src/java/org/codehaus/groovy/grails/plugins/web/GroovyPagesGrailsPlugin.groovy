@@ -38,6 +38,7 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
+import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -70,7 +71,8 @@ public class GroovyPagesGrailsPlugin {
             RenderTagLib,
             ValidationTagLib,
             PluginTagLib,
-            SitemeshTagLib
+            SitemeshTagLib,
+            JavascriptLibraryFilters
     ]
 
 
