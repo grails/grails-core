@@ -282,8 +282,7 @@ integrationTestPhasePreparation = {
         app.applicationContext = appCtx
     }
 
-    def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
-    if (beanNames.size() > 0) appCtx.getBean(beanNames[0]).init()
+    appCtx.getBean('persistenceInterceptor')?.init()
 
     def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
@@ -295,8 +294,7 @@ integrationTestPhasePreparation = {
  */
 integrationTestPhaseCleanUp = {
     // Kill any context interceptor we might have.
-    def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
-    if (beanNames.size() > 0) appCtx.getBean(beanNames[0]).destroy()
+    appCtx.getBean('persistenceInterceptor')?.destroy()
 
     shutdownApp()
 }
