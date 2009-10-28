@@ -98,7 +98,7 @@ target(allTests: "Runs the project's tests.") {
 
     try {
         // Process the tests in each phase that is configured to run.
-        for( phase in phasesToRun) {
+        for(phase in phasesToRun) {
             // Skip this phase if there are no test types registered for it.
             def testTypes = this."${phase}Tests"
             if (!testTypes) continue
@@ -139,7 +139,7 @@ target(allTests: "Runs the project's tests.") {
 }
 
 def loadTestRunner() {
-    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner";
+    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner"
     def testRunner = null
     if (testRunnerClassName) {
         try {
@@ -286,7 +286,7 @@ integrationTestPhasePreparation = {
 
     def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
-    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext );
+    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext)
 }
 
 /**
