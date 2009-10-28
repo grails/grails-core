@@ -930,7 +930,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 }
             }
             else {
-                result = this.criteria.uniqueResult();
+                result = GrailsHibernateUtil.unwrapIfProxy(this.criteria.uniqueResult());
             }
             if(!this.participate) {
                 this.hibernateSession.close();

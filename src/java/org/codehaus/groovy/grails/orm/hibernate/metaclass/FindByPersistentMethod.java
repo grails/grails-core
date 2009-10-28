@@ -94,7 +94,7 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
 
                 final List list = crit.list();
                 if(!list.isEmpty()) {
-                    return list.get(0);
+                    return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
                 }
                 return null;
             }

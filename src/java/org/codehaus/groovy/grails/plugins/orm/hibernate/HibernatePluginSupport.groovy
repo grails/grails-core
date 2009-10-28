@@ -560,7 +560,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
                 def criteria = session.createCriteria(domainClassType)
                 criteria.add(org.hibernate.criterion.Expression.allEq(query))
                 criteria.setMaxResults(1)
-                criteria.uniqueResult()
+                GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult())
             } as HibernateCallback)
         }
         metaClass.static.findAllWhere = {Map query ->
@@ -757,20 +757,19 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
             id = convertToType(id, identityType)
             if(id != null) {
-                return template.get(dc.clazz, id)
+                final Object result = template.get(dc.clazz, id)
+                return GrailsHibernateUtil.unwrapIfProxy(result)
             }
         }
 
         metaClass.static.read = {id ->
-            def identityType = dc.identifier.type
-
-            id = convertToType(id, identityType)
 
             if(id != null) {
                 return template.execute({ Session session ->
-                    def o = session.get(dc.clazz, id)
-                    if(o && session.contains(o))
+                    def o = get(id)
+                    if(o && session.contains(o)) {
                         session.setReadOnly( o, true )
+                    }
                     return o
                 } as HibernateCallback)
             }

@@ -402,4 +402,13 @@ public class GrailsHibernateUtil {
 
         return proxyFactory;
     }
+
+    public static Object unwrapIfProxy(Object instance) {
+        if(instance instanceof HibernateProxy) {
+            return unwrapProxy((HibernateProxy)instance);
+        }
+        else {
+            return instance;
+        }
+    }
 }

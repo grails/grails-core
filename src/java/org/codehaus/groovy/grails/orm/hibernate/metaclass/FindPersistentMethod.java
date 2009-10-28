@@ -14,9 +14,11 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.util.GrailsNameUtils;
 import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
@@ -28,8 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import grails.util.GrailsNameUtils;
 
 /**
  * <p>
@@ -134,7 +134,7 @@ public class FindPersistentMethod
 					q.setMaxResults(1);
 					List results = q.list();
 					if (results.size() > 0)
-						return results.get(0);
+						return GrailsHibernateUtil.unwrapIfProxy(results.get(0));
 					return null;
 				}
 			});
