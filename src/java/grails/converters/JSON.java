@@ -273,7 +273,14 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     public static JSONElement parse(String source) throws ConverterException {
         // TODO: Migrate to new javacc based parser
         try {
-            return (JSONElement) new JSONTokener(source).nextValue();
+            final Object value = new JSONTokener(source).nextValue();
+            if(value instanceof JSONElement)
+                return (JSONElement) value;
+            else {
+                // return empty object
+                return new JSONObject();
+            }
+
         }
         catch (JSONException e) {
             throw new ConverterException("Error parsing JSON", e);

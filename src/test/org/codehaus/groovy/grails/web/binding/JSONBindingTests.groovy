@@ -56,6 +56,9 @@ class SiteController {
         s.properties = params['site']
         return s
     }
+
+    def simple = {
+    }
 }
 ''')
     }
@@ -67,6 +70,21 @@ class SiteController {
         MimeType.reset()
     }
 
+    void testSimpleJSONBinding() {
+        def controller = ga.getControllerClass("SiteController").newInstance()
+
+        controller.request.contentType = "application/json"
+        controller.request.content = '''\
+ {"foo": { "bar": "baz" } }
+'''.bytes
+
+		webRequest.informParameterCreationListeners()
+
+        controller.simple()
+
+        assertEquals "baz", controller.params.foo.bar
+        assertEquals "baz", controller.params['foo.bar']
+    }
 
     void testJSONBindingWithAssociation() {
         def controller = ga.getControllerClass("SiteController").newInstance()

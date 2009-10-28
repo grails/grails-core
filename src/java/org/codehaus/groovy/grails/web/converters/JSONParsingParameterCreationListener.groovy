@@ -39,19 +39,28 @@ class JSONParsingParameterCreationListener extends AbstractParsingParameterCreat
         if(request.format == 'json') {
             try {
                 JSONObject map = JSON.parse(request)
+                def flattenedMap = map
                 if(map['class']) {
                     params[GrailsClassUtils.getPropertyName(map['class'])] = map
 
-                    def target = [:]
-                    createFlattenedKeys(map, map, target)
-                    for(entry in target) {
-                        if(!map[entry.key]) {
-                            map[entry.key] = entry.value
-                        }
+                }
+                else if(map) {
+                    for(entry in map) {
+                        params[entry.key] = entry.value
+                    }
+                    flattenedMap = params
+                }
+
+                def target = [:]
+                createFlattenedKeys(map, map, target)
+                for(entry in target) {
+                    if(!map[entry.key]) {
+                        flattenedMap[entry.key] = entry.value
                     }
                 }
+                
             } catch (Exception e) {
-                LOG.debug "Error parsing incoming JSON request: ${e.message}", e
+                LOG.error "Error parsing incoming JSON request: ${e.message}", e
             }
         }
     }
