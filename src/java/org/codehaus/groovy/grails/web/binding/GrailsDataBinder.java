@@ -92,7 +92,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final char PATH_SEPARATOR = '.';
     private static final String IDENTIFIER_SUFFIX = ".id";
     private List transients = Collections.EMPTY_LIST;
-    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
     
     private GrailsDomainClass domainClass;    
 

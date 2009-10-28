@@ -18,12 +18,18 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.GString;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
+import org.codehaus.groovy.grails.web.binding.StructuredDateEditor;
+import org.codehaus.groovy.grails.web.binding.StructuredPropertyEditor;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
@@ -59,6 +65,7 @@ public class GrailsParameterMap implements Map {
         for (Object o : requestMap.keySet()) {
             String key = (String) o;
             Object paramValue = getParameterValue(requestMap, key);
+
             parameterMap.put(key, paramValue);
             processNestedKeys(request, requestMap, key, key, parameterMap);
         }
@@ -156,6 +163,7 @@ public class GrailsParameterMap implements Map {
 	public Object get(Object key) {
 		// removed test for String key because there
 		// should be no limitations on what you shove in or take out
+        Object returnValue = null;
 		if (parameterMap.get(key) instanceof String []){
 			String[] valueArray = (String[])parameterMap.get(key);
 			if(valueArray == null){
@@ -163,12 +171,41 @@ public class GrailsParameterMap implements Map {
 			}
 			
 			if(valueArray.length == 1) {
-				return valueArray[0];
+				returnValue = valueArray[0];
 			}
 		}
-		return parameterMap.get(key);
-		
+        else {
+            returnValue = parameterMap.get(key);
+        }
+
+        if("date.struct".equals(returnValue)) {
+            return lazyEvaluateDateParam(key);
+        }        
+        return returnValue;
+
 	}
+
+    private Date lazyEvaluateDateParam(Object key) {
+        // parse date structs automatically
+        Map dateParams = new HashMap();
+        for(Object o: entrySet()) {
+            Entry entry = (Entry)o;
+            final Object entryKey = entry.getKey();
+            if(entryKey instanceof String) {
+                String paramName = (String) entryKey;
+                final String prefix = key + "_";
+                if(paramName.startsWith(prefix)) {
+                    dateParams.put(paramName.substring(prefix.length(), paramName.length()), entry.getValue());
+                }
+            }
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat(GrailsDataBinder.DEFAULT_DATE_FORMAT, LocaleContextHolder.getLocale());
+        StructuredPropertyEditor editor = new StructuredDateEditor(dateFormat,true);
+        Date d = (Date) editor.assemble(Date.class,dateParams);
+        put(key, d);
+        return d;
+    }
 
     public Object put(Object key, Object value) {
         if(value instanceof GString) value = value.toString();

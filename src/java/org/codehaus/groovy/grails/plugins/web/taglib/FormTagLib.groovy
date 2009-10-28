@@ -401,7 +401,7 @@ class FormTagLib {
             years = (tempyear - 100)..(tempyear + 100)
         }
 
-        out << "<input type=\"hidden\" name=\"${name}\" value=\"struct\" />"
+        out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
@@ -413,11 +413,7 @@ class FormTagLib {
             }
 
             for (i in 1..31) {
-                out.println "<option value=\"${i}\""
-                if (i == day) {
-                    out.println " selected=\"selected\""
-                }
-                out.println ">${i}</option>"
+                out.println "<option value=\"${i}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -434,11 +430,7 @@ class FormTagLib {
             dfs.months.eachWithIndex {m, i ->
                 if (m) {
                     def monthIndex = i + 1
-                    out << "<option value=\"${monthIndex}\""
-                    if (month == i) out << " selected=\"selected\""
-                    out << '>'
-                    out << m
-                    out.println '</option>'
+                    out.println "<option value=\"${monthIndex}\"${i == month ? ' selected="selected"' : ''}>$m</option>"
                 }
             }
             out.println '</select>'
@@ -454,11 +446,7 @@ class FormTagLib {
             }
 
             for (i in years) {
-                out.println "<option value=\"${i}\""
-                if (i == year) {
-                    out.println " selected=\"selected\""
-                }
-                out.println ">${i}</option>"
+                out.println "<option value=\"${i}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -475,10 +463,7 @@ class FormTagLib {
             for (i in 0..23) {
                 def h = '' + i
                 if (i < 10) h = '0' + h
-                out << "<option value=\"${h}\" "
-                if (hour == h.toInteger()) out << "selected=\"selected\""
-                out << '>' << h << '</option>'
-                out.println()
+                out.println "<option value=\"${h}\"${i == hour ? ' selected="selected"' : ''}>$h</option>"                
             }
             out.println '</select> :'
 
@@ -500,10 +485,7 @@ class FormTagLib {
             for (i in 0..59) {
                 def m = '' + i
                 if (i < 10) m = '0' + m
-                out << "<option value=\"${m}\" "
-                if (minute == m.toInteger()) out << "selected=\"selected\""
-                out << '>' << m << '</option>'
-                out.println()
+                out.println "<option value=\"${m}\"${i == minute ? ' selected="selected"' : ''}>$m</option>"
             }
             out.println '</select>'
         }
@@ -515,11 +497,7 @@ class FormTagLib {
 
     def renderNoSelectionOptionImpl(out, noSelectionKey, noSelectionValue, value) {
         // If a label for the '--Please choose--' first item is supplied, write it out
-        out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
-        if (noSelectionKey.equals(value)) {
-            out << ' selected="selected" '
-        }
-        out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
+        out << "<option value=\"${(noSelectionKey == null ? '' : noSelectionKey)}\"${noSelectionKey == value ? ' selected="selected"' : ''}>${noSelectionValue.encodeAsHTML()}</option>"
     }
 
     /**
@@ -737,12 +715,7 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
         def checked = (attrs.remove('checked') ? true : false)
-        out << '<input type="radio" '
-        out << "name=\"${name}\" "
-        if (checked) {
-            out << 'checked="checked" '
-        }
-        out << "value=\"${value.toString().encodeAsHTML()}\" "
+        out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
