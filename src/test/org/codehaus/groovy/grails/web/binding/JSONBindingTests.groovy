@@ -80,7 +80,7 @@ class SiteController {
 
 		webRequest.informParameterCreationListeners()
 
-        controller.simple()
+        controller.simple()   
 
         assertEquals "baz", controller.params.foo.bar
         assertEquals "baz", controller.params['foo.bar']
