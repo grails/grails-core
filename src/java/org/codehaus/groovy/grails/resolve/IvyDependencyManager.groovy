@@ -229,7 +229,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
                 // dependencies needed by the Grails build system
                  build "org.gparallelizer:GParallelizer:0.8.3",
-                       "org.tmatesoft.svnkit:svnkit:1.2.0",
+                       "org.tmatesoft.svnkit:svnkit:1.3.1",
                        "org.apache.ant:ant:1.7.1",
                        "org.apache.ant:ant-launcher:1.7.1",
                        "org.apache.ant:ant-junit:1.7.1",
@@ -608,6 +608,10 @@ class IvyDomainSpecificLanguageEvaluator {
 
     IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
         this.delegate = delegate
+    }
+
+    void useOrigin(boolean b) {
+        ivySettings.setDefaultUseOrigin(b)
     }
 
     void pom(boolean b) {
