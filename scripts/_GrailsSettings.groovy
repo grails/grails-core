@@ -1,4 +1,4 @@
-/*
+s/*
 * Copyright 2004-2005 the original author or authors.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,7 +89,13 @@ grailsAppName = null
 grailsAppVersion = null
 appGrailsVersion = null
 servletVersion = getPropertyValue("servlet.version", "2.5")
+
 // server port options
+// these are legacy settings
+serverPort = getPropertyValue("server.port", 8080).toInteger()
+serverPortHttps = getPropertyValue("server.port.https", 8443).toInteger()
+serverHost = getPropertyValue("server.host", null)
+// which are superceded by these
 serverPort = getPropertyValue("grails.server.port.http", 8080)?.toInteger()
 serverPortHttps = getPropertyValue("grails.server.port.https", 8443)?.toInteger()
 serverHost = getPropertyValue("grails.server.host", null)
