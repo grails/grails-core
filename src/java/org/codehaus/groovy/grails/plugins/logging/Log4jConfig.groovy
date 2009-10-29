@@ -33,6 +33,8 @@ import org.apache.log4j.Appender
 import org.apache.log4j.RollingFileAppender
 import org.apache.commons.beanutils.BeanUtils
 import grails.util.Environment
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
 
 /**
  * Encapsulates the configuration of Log4j
@@ -155,7 +157,14 @@ class Log4jConfig {
         }
         else {
             def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
-            fileAppender.file = "stacktrace.log"
+            if(Environment.current == Environment.DEVELOPMENT) {
+                BuildSettings settings = BuildSettingsHolder.getSettings()
+                def targetDir = settings.getProjectTargetDir()
+                fileAppender.file = "${targetDir.absolutePath}/stacktrace.log"
+            }
+            else {
+                fileAppender.file = "stacktrace.log"
+            }
             fileAppender.activateOptions()
             appenders.stacktrace = fileAppender
             return fileAppender

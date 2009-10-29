@@ -478,6 +478,18 @@ class BuildSettings {
         this.projectWorkDirSet = true
     }
 
+    public File getProjectTargetDir() {
+        if(!projectTargetDir?.exists()) {
+            projectTargetDir?.mkdirs()
+        }
+        return this.projectTargetDir
+    }
+
+    public void setProjectTargetDir(File dir) {
+        this.projectTargetDir = dir
+        this.projectTargetDirSet = true
+    }
+
     public File getProjectWarFile() {
         return this.projectWarFile
     }
