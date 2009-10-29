@@ -4,7 +4,7 @@ package org.codehaus.groovy.grails.orm.hibernate
  * @since 1.1
  */
 
-public class UnrwapProxyInDynamicFinderTests extends AbstractGrailsHibernateTests{
+public class UnwrapProxyInDynamicFinderTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
         gcl.parseClass('''

@@ -159,8 +159,8 @@ class Log4jConfig {
             def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
             if(Environment.current == Environment.DEVELOPMENT) {
                 BuildSettings settings = BuildSettingsHolder.getSettings()
-                def targetDir = settings.getProjectTargetDir()
-                fileAppender.file = "${targetDir.absolutePath}/stacktrace.log"
+                def targetDir = settings?.getProjectTargetDir()
+                fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
             }
             else {
                 fileAppender.file = "stacktrace.log"
