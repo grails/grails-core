@@ -130,6 +130,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private ResultTransformer resultTransformer;
     private int aliasCount;
 
+	private boolean paginationEnabledList = false;
+	private ArrayList<Order> orderEntries;	
 
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
         super();
@@ -689,8 +691,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 throwRuntimeException( new IllegalArgumentException("Call to [order] with propertyName ["+propertyName+"]not allowed here."));
         propertyName = calculatePropertyName(propertyName);
         Order o = Order.asc(propertyName);
-        this.criteria.addOrder(o);
-
+		if (this.paginationEnabledList) {
+			orderEntries.add(o);
+		} else {
+			this.criteria.addOrder(o);
+		}
         return o;
     }
 
@@ -713,8 +718,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         else {
             o = Order.asc(propertyName);
         }
-        this.criteria.addOrder(o);
-
+		if (this.paginationEnabledList) {
+			orderEntries.add(o);
+		} else {
+			this.criteria.addOrder(o);
+		}
         return o;
     }
     /**
@@ -880,13 +888,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
-            boolean paginationEnabledList = false;
-
             createCriteriaInstance();
 
             // Check for pagination params
             if(name.equals(LIST_CALL) && args.length == 2) {
-                paginationEnabledList = true;
+            	paginationEnabledList = true;
+				orderEntries = new ArrayList<Order>();
                 invokeClosureNode(args[1]);
             } else {
                 invokeClosureNode(args[0]);
@@ -917,6 +924,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     // Drop the projection, add settings for the pagination parameters,
                     // and then execute the query.
                     this.criteria.setProjection(null);
+					for(Iterator<Order> it = orderEntries.iterator();it.hasNext();){
+						this.criteria.addOrder(it.next());
+					}
                     this.criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
                     GrailsHibernateUtil.populateArgumentsForCriteria(targetClass, this.criteria, (Map)args[0]);
                     PagedResultList pagedRes = new PagedResultList(this.criteria.list());
@@ -930,7 +940,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 }
             }
             else {
-                result = GrailsHibernateUtil.unwrapIfProxy(this.criteria.uniqueResult());
+                result = this.criteria.uniqueResult();
             }
             if(!this.participate) {
                 this.hibernateSession.close();
