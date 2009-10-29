@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import grails.util.GrailsUtil
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 
 /**
  * Gant script that runs the Grails unit tests
@@ -261,6 +262,14 @@ runTests = { String type ->
 unitTestPhasePreparation = {}
 unitTestPhaseCleanUp = {}
 
+getPersistenceInterceptor = {
+    try { 
+        appCtx.getBean('persistenceInterceptor')
+    } catch (NoSuchBeanDefinitionException) {
+        null
+    }
+}
+
 /**
  * Initialises a persistence context and bootstraps the application.
  */
@@ -275,7 +284,7 @@ integrationTestPhasePreparation = {
         app.applicationContext = appCtx
     }
 
-    appCtx.getBean('persistenceInterceptor')?.init()
+    getPersistenceInterceptor()?.init()
 
     def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
@@ -287,7 +296,7 @@ integrationTestPhasePreparation = {
  */
 integrationTestPhaseCleanUp = {
     // Kill any context interceptor we might have.
-    appCtx.getBean('persistenceInterceptor')?.destroy()
+    getPersistenceInterceptor()?.destroy()
 
     shutdownApp()
 }
