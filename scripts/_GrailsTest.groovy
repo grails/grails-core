@@ -15,14 +15,14 @@
 */
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.test.DefaultGrailsTestHelper
-import org.codehaus.groovy.grails.test.DefaultGrailsTestRunner
-import org.codehaus.groovy.grails.test.GrailsIntegrationTestHelper
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import grails.util.GrailsUtil
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+
+import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeRunnerFactory
+import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsIntegrationTestTypeRunnerFactory
 
 /**
  * Gant script that runs the Grails unit tests
@@ -94,9 +94,6 @@ target(allTests: "Runs the project's tests.") {
     
     event("TestPhasesStart", [phasesToRun])
 
-    // This runs the tests and generates the formatted result files.
-    testRunner = loadTestRunner()
-
     try {
         // Process the tests in each phase that is configured to run.
         for(phase in phasesToRun) {
@@ -137,21 +134,6 @@ target(allTests: "Runs the project's tests.") {
 
 
     return testsFailed ? 1 : 0
-}
-
-def loadTestRunner() {
-    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner"
-    def testRunner = null
-    if (testRunnerClassName) {
-        try {
-            testRunner = Class.forName(testRunnerClassName).getConstructor(File, List).newInstance(testReportsDir, reportFormats)
-        }
-        catch (Throwable e) {
-            println "Cannot load test runner class '${testRunnerClassName}'. Reason: ${e.message}"
-            testRunner = new DefaultGrailsTestRunner(testReportsDir, reportFormats)
-        }
-    }
-    return testRunner
 }
 
 /**
@@ -211,51 +193,47 @@ compileTests = { String type ->
 runTests = { String type ->
     def prevContextClassLoader = Thread.currentThread().contextClassLoader
     try {
-        testHelper = "${type}TestsPreparation"()
-        def testSuite = testHelper.createTests(testNames, type)
         
-        if (testSuite.testCount() == 0) {
+        def preparer = binding.variables."${type}TestsPreparation"
+        def runner = (preparer) ? preparer() : JUnit3GrailsTestTypeRunnerFactory.createRunner(type, binding)
+        
+        if (runner.testCount == 0) {
             event("StatusUpdate", ["No tests found in test/$type to execute"])
             return
         }
 
         // Set the context class loader to the one used to load the tests.
-        Thread.currentThread().contextClassLoader = testHelper.currentClassLoader
+        Thread.currentThread().contextClassLoader = runner.testClassLoader
 
         event("TestSuiteStart", [type])
-        int testCases = testSuite.countTestCases()
         println "-------------------------------------------------------"
-        println "Running ${testCases} $type test${testCases > 1 ? 's' : ''}..."
+        println "Running ${runner.testCount} $type test${runner.testCount > 1 ? 's' : ''}..."
 
         def start = new Date()
-        def result = testRunner.runTests(testSuite)
+        def result = runner.run()
         def end = new Date()
 
-        event("TestSuiteEnd", [type, testSuite])
+        event("TestSuiteEnd", [type])
         event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
 
-        def failedTestCount = result.errorCount() + result.failureCount()
         println "-------------------------------------------------------"
-        println "Tests passed: ${result.runCount() - failedTestCount}"
-        println "Tests failed: ${failedTestCount}"
+        println "Tests passed: ${result.passCount}"
+        println "Tests failed: ${result.failCount}"
         println "-------------------------------------------------------"
 
         // If any of the tests fail, we register the whole test run as
         // a failure.
-        if (failedTestCount > 0) testsFailed = true
-
-        return result
+        if (result.failCount > 0) testsFailed = true
     }
     catch (Exception e) {
         event("StatusFinal", ["Error running $type tests: ${e.toString()}"])
         GrailsUtil.deepSanitize(e)
         e.printStackTrace()
         testsFailed = true
-        return null
     }
     finally {
         Thread.currentThread().contextClassLoader = prevContextClassLoader
-        "${type}TestsCleanUp"()
+        binding.variables."${type}TestsCleanUp"?.call()
     }
 }
 
@@ -319,32 +297,12 @@ functionalTestPhaseCleanUp = {
 otherTestPhasePreparation = {}
 otherTestPhaseCleanUp = {}
 
-
-unitTestsPreparation = { 
-    new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources) 
+_defaultTestsPreparation = {
+    
 }
-
-unitTestsCleanUp = {}
-
 integrationTestsPreparation = {
-    // We use a specialist test helper for integration tests.
-    def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
-    return new GrailsIntegrationTestHelper(grailsSettings, app.classLoader, resolveResources, appCtx)
+    JUnit3GrailsIntegrationTestTypeRunnerFactory.createRunner('integration', binding)
 }
-
-integrationTestsCleanUp = {}
-
-functionalTestsPreparation = {
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
-
-functionalTestsCleanUp = {}
-
-otherTestsPreparation = {
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
-
-otherTestsCleanUp = {}
 
 target(packageTests: "Puts some useful things on the classpath for integration tests.") {
     ant.copy(todir: new File(grailsSettings.testClassesDir, "integration").path) {
