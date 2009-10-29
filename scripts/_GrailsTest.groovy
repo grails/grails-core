@@ -344,11 +344,6 @@ otherTestsPreparation = {
 
 otherTestsCleanUp = {}
 
-resolveTestFiles = { Closure filter ->
-    def testFiles = resolveTestResources {"file:${basedir}/test/unit/${it}.groovy"}
-    testFiles.addAll(resolveTestResources {"file:${basedir}/test/unit/${it}.java"})
-}
-
 target(packageTests: "Puts some useful things on the classpath for integration tests.") {
     ant.copy(todir: new File(grailsSettings.testClassesDir, "integration").path) {
         fileset(dir: "${basedir}", includes: metadataFile.name)
