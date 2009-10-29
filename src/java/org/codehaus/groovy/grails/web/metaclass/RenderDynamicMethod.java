@@ -15,22 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import grails.converters.JSON;
 import grails.util.GrailsWebUtil;
 import grails.util.JSonBuilder;
 import grails.util.OpenRicoBuilder;
+import grails.web.JSONBuilder;
 import groovy.lang.*;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.*;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
@@ -46,6 +38,16 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Allows rendering of text, views, and templates to the response
@@ -77,6 +79,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
     private static final String TEXT_HTML = "text/html";
     private String gspEncoding;
+    private boolean useLegacyJSONBuilder = false;
     private static final String DEFAULT_ENCODING = "utf-8";
     private Object ARGUMENT_PLUGIN = "plugin";
 
@@ -91,6 +94,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             this.gspEncoding = gspEnc.toString();
         } else {
             gspEncoding = DEFAULT_ENCODING;
+        }
+
+        Object o = config.get("grails.json.legacy.builder");
+        if(o instanceof Boolean) {
+            useLegacyJSONBuilder = (Boolean) o;
         }
 
     }
@@ -285,8 +293,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private void renderTemplateForCollection(Template template, Map binding, Object colObject, String var, Writer out) throws IOException {
         if (colObject instanceof Collection) {
             Collection c = (Collection) colObject;
-            for (Iterator i = c.iterator(); i.hasNext();) {
-                Object o = i.next();
+            for (Object o : c) {
                 if (StringUtils.isBlank(var))
                     binding.put(DEFAULT_ARGUMENT, o);
                 else
@@ -332,16 +339,25 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private boolean renderJSON(Closure callable, HttpServletResponse response) {
-        boolean renderView;
-        JSonBuilder jsonBuilder;
-        try {
-            jsonBuilder = new JSonBuilder(response);
+        boolean renderView = true;
+        if(!useLegacyJSONBuilder) {
+            JSONBuilder builder = new JSONBuilder();
+            JSON json = builder.build(  callable);
+            json.render(response);
             renderView = false;
-        } catch (IOException e) {
-            throw new ControllerExecutionException("I/O error executing render method for arguments [" + callable + "]: " + e.getMessage(), e);
         }
-        jsonBuilder.invokeMethod("json", new Object[]{callable});
+        else {
+            JSonBuilder jsonBuilder;
+            try {
+                jsonBuilder = new JSonBuilder(response);
+                renderView = false;
+            } catch (IOException e) {
+                throw new ControllerExecutionException("I/O error executing render method for arguments [" + callable + "]: " + e.getMessage(), e);
+            }
+            jsonBuilder.invokeMethod("json", new Object[]{callable});
+        }
         return renderView;
+
     }
 
     private boolean renderRico(Closure callable, HttpServletResponse response) {

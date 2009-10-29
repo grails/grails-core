@@ -77,10 +77,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      */
     public JSON() {
         config = initConfig();
-        if (config == null) throw new RuntimeException("Error: JSON Configuration could not be retrieved!!");
-        this.encoding = this.config.getEncoding();
-        this.circularReferenceBehaviour = this.config.getCircularReferenceBehaviour();
-        this.prettyPrint = this.config.isPrettyPrint();
+        this.encoding = config!= null ? this.config.getEncoding() : "UTF-8";
+        this.circularReferenceBehaviour = config!= null ? this.config.getCircularReferenceBehaviour() : CircularReferenceBehaviour.DEFAULT;
+        this.prettyPrint = config != null && this.config.isPrettyPrint();
         this.target = null;
     }
 

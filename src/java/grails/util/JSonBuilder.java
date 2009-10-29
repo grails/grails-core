@@ -48,6 +48,8 @@ import java.util.Stack;
  * @author Michał Kłujszo
  * @author Graeme Rocher
  * @since 0.2
+ * 
+ * @deprecated Use {@link grails.web.JSONBuilder} instead 
  *
  * Date Created: May, 18, 2006
  */

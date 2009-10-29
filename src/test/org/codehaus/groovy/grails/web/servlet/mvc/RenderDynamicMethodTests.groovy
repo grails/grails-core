@@ -36,9 +36,7 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
             def renderJSON = {
                 render(contentType:"application/json") {
-                    foo {
-                        bar("hello")
-                    }
+                    foo = [ { bar = "hello" } ]                    
                 }
             }
             def renderView ={
@@ -94,7 +92,7 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderJSON()
-        assertEquals "application/json;charset=utf-8", response.contentType
+        assertEquals "application/json;charset=UTF-8", response.contentType
         assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
     }
 }
