@@ -168,9 +168,6 @@ processTests = { String type ->
 
         // Run them.
         runTests(type)
-
-        // Process the results.
-        createReports(type)
     } else {
         println "Skipping '$type' tests (test/$type doesn't exist)"
     }
@@ -259,10 +256,6 @@ runTests = { String type ->
         Thread.currentThread().contextClassLoader = prevContextClassLoader
         "${type}TestsCleanUp"()
     }
-}
-
-createReports = { String type ->
-    // Reports are not currently done on a per-type basis.
 }
 
 unitTestPhasePreparation = {}
