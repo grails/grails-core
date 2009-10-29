@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.Environment;
 import groovy.lang.Closure;
 
 import javax.servlet.ServletContext;
@@ -40,11 +41,16 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
 
 	public void callInit(ServletContext servletContext) {
 		Closure init = getInitClosure();
-		init.call( new Object[] { servletContext } );
+        if(init != null) {
+            init = init.curry(new Object[]{servletContext});
+            Environment.executeForCurrentEnvironment(init);
+        }
 	}
 
 	public void callDestroy() {
 		Closure destroy = getDestroyClosure();
-		destroy.call();
+        if(destroy!=null) {
+            Environment.executeForCurrentEnvironment(destroy);
+        }
 	}
 }
