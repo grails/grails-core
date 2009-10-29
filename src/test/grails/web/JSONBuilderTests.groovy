@@ -96,4 +96,57 @@ public class JSONBuilderTests extends GroovyTestCase{
 
         assertEquals '{"foo":[{"bar":"hello"}]}', result.toString()
     }
+
+    void testRootElementList() {
+        def initializer = new ConvertersConfigurationInitializer()
+        initializer.initialize()
+        def builder = new JSONBuilder()
+
+        def results = ['one', 'two', 'three']
+
+        def result = builder.build {
+
+           for(b in results) {
+               element b
+           }
+        }
+
+        assertEquals '["one","two","three"]', result.toString()
+    }
+
+    void testExampleFromReferenceGuide() {
+        def initializer = new ConvertersConfigurationInitializer()
+        initializer.initialize()
+        def builder = new JSONBuilder()
+
+        def results = ['one', 'two', 'three']
+
+        def result = builder.build {
+           for(b in results) {
+               element title:b
+           }
+        }
+
+        assertEquals '[{"title":"one"},{"title":"two"},{"title":"three"}]', result.toString()
+
+
+
+        result = builder.build {
+           books = results.collect {
+               [title:it]
+           }
+        }
+
+        assertEquals '{"books":[{"title":"one"},{"title":"two"},{"title":"three"}]}', result.toString()
+
+        result = builder.build {
+           books = array {
+                for(b in results) {
+                    book title:b
+                }
+           }
+        }
+
+        assertEquals '{"books":[{"title":"one"},{"title":"two"},{"title":"three"}]}', result.toString()
+    }
 }

@@ -184,7 +184,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
                 value(o.toString());
             } else {
 
-                if (referenceStack.contains(o)) {
+                if (referenceStack.contains(o) ) {
                     handleCircularRelationship(o);
                 } else {
                     referenceStack.push(o);
@@ -358,15 +358,17 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         switch (circularReferenceBehaviour) {
             case DEFAULT:
                 {
-                    Map<String, Object> props = new HashMap<String, Object>();
-                    props.put("class", o.getClass());
-                    StringBuilder ref = new StringBuilder();
-                    int idx = referenceStack.indexOf(o);
-                    for (int i = referenceStack.size() - 1; i > idx; i--) {
-                        ref.append("../");
+                    if(!(Map.class.isAssignableFrom(o.getClass())||Collection.class.isAssignableFrom(o.getClass()))) {
+                        Map<String, Object> props = new HashMap<String, Object>();
+                        props.put("class", o.getClass());
+                        StringBuilder ref = new StringBuilder();
+                        int idx = referenceStack.indexOf(o);
+                        for (int i = referenceStack.size() - 1; i > idx; i--) {
+                            ref.append("../");
+                        }
+                        props.put("_ref", ref.substring(0, ref.length() - 1));
+                        value(props);
                     }
-                    props.put("_ref", ref.substring(0, ref.length() - 1));
-                    value(props);
                 }
                 break;
             case EXCEPTION:

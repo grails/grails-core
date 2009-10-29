@@ -35,11 +35,11 @@ class JSONBuilder {
     def nestingStack = []
 
     JSON build(Closure c) {
-        Map root = buildRoot(c)
-        return root as JSON // requires deep
+        def result = buildRoot(c)
+        return result as JSON // requires deep
     }
 
-    private Map buildRoot(Closure c) {
+    private buildRoot(Closure c) {
         c.delegate = this
         //c.resolveStrategy = Closure.DELEGATE_FIRST
         root = [:]
@@ -50,6 +50,20 @@ class JSONBuilder {
 
     def invokeMethod(String methodName) {
         current[methodName] = []
+    }
+
+    List array(Closure c) {
+        def prev = current
+        def list = []
+        try {
+
+            current = list
+            c.call()
+        }
+        finally {
+            current = prev
+        }
+        return list
     }
 
     def invokeMethod(String methodName, Object args) {
@@ -66,9 +80,6 @@ class JSONBuilder {
                 }
                 def n = [:]
                 if (current instanceof List) {
-                    if (methodName != NODE_ELEMENT) {
-                        throw new IllegalArgumentException('Array elements must be defined with the "element" method call eg: element(value)')
-                    }
                     current << n
                 } else {
                     current[methodName] = n
@@ -83,9 +94,9 @@ class JSONBuilder {
                 }
                 // switch root to an array if elements used at top level
                 if (current == root) {
-                    if (root.size()) {
+                    if (root.size() && methodName != NODE_ELEMENT) {
                         throw new IllegalArgumentException('Cannot have array elements in root node if properties of root have already been set')
-                    } else {
+                    } else if(!(root instanceof List)) {                        
                         root = []
                         current = root
                     }
@@ -123,7 +134,7 @@ class JSONBuilder {
         if(value instanceof Closure) {
             handleClosureNode(propName, value)
         }
-        if(value instanceof List) {
+        else if(value instanceof List) {
             value = value.collect {
                 if(it instanceof Closure) {
                     def callable = it
