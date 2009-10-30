@@ -20,16 +20,20 @@ import gant.Gant;
 import gant.TargetExecutionException;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
-import grails.util.GrailsNameUtils;
 import grails.util.Environment;
+import grails.util.GrailsNameUtils;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -722,11 +726,13 @@ public class GrailsScriptRunner {
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
             for (File dir : listKnownPluginDirs(settings)) {
-                addPluginLibs(dir, urls);
+                addPluginLibs(dir, urls, settings);
             }
         }
         return urls.toArray(new URL[urls.size()]);
     }
+
+
 
     private static void addDependenciesToURLs(Set excludes, List<URL> urls, List<File> runtimeDeps) throws MalformedURLException {
         if(runtimeDeps!=null) {
@@ -775,8 +781,9 @@ public class GrailsScriptRunner {
      * Adds all the libraries in a plugin to the given list of URLs.
      * @param pluginDir The directory containing the plugin.
      * @param urls The list of URLs to add the plugin JARs to.
+     * @param settings
      */
-    private static void addPluginLibs(File pluginDir, List urls) throws MalformedURLException {
+    private static void addPluginLibs(File pluginDir, List urls, BuildSettings settings) throws MalformedURLException {
         if (!pluginDir.exists()) return;
 
         // let Ivy deal with resolving dependencies
@@ -785,7 +792,21 @@ public class GrailsScriptRunner {
 
         // otherwise just add them
         File libDir = new File(pluginDir, "lib");
-        if (libDir.exists()) addLibs(libDir, urls, Collections.EMPTY_SET);
+        if (libDir.exists()) {
+            final IvyDependencyManager dependencyManager = settings.getDependencyManager();
+            final Map pluginExcludes = dependencyManager.getPluginExcludes();
+            String pluginName = pluginDir.getName();
+            int i = pluginName.lastIndexOf('-');
+            if(i>-1) {
+                Collection excludes = null;
+                while(i>-1 && excludes == null) {
+                    pluginName = pluginName.substring(0,i);
+                    excludes = (Collection) pluginExcludes.get(pluginName);
+                    i = pluginName.indexOf('-');                    
+                }
+                addLibs(libDir, urls, excludes!=null ? excludes : Collections.emptyList());
+            }
+        }
     }
 
     /**
@@ -795,16 +816,20 @@ public class GrailsScriptRunner {
      * on the servlet version of the app and so need to be treated
      * specially.
      */
-    private static void addLibs(File dir, List urls, Set excludes) throws MalformedURLException {
+    private static void addLibs(File dir, List urls, Collection excludes) throws MalformedURLException {
         if (dir.exists()) {
             File[] files = dir.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                if (file.getName().matches("^.*\\.jar$")
-                        && !excludes.contains(file.getName())
-                        && !file.getName().matches("^(standard|jstl)-\\d.*$")) {
-                    urls.add(file.toURI().toURL());
+
+            for (File file : files) {
+                boolean include = true;
+                for (Object me : excludes) {
+                    String exclude = me.toString();
+                    if(file.getName().contains(exclude)) {
+                        include = false; break;
+                    }
                 }
+                if(include)
+                    urls.add(file.toURI().toURL());
             }
         }
     }

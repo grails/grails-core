@@ -14,11 +14,8 @@
  */
 package org.codehaus.groovy.grails.resolve
 
-import grails.util.BuildSettingsHolder
-import java.util.concurrent.ConcurrentHashMap
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Configuration
-import org.apache.ivy.core.module.descriptor.Configuration.Visibility
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleRevisionId
@@ -43,7 +40,6 @@ import org.apache.ivy.plugins.parser.m2.PomReader
 import org.apache.ivy.plugins.repository.file.FileResource
 import org.apache.ivy.plugins.repository.file.FileRepository
 import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
-import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 
