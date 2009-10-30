@@ -12,9 +12,16 @@ import org.springframework.validation.*
 import org.springframework.web.servlet.*
 
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
-	
-	
-	void onSetUp() {
+
+    protected void tearDown() {
+        super.tearDown();
+        ConfigurationHolder.config = null
+    }
+
+
+    void onSetUp() {
+        def config = gcl.parseClass("grails.json.legacy.builder=false")
+        ConfigurationHolder.config = new ConfigSlurper().parse(config)
 				gcl.parseClass(
 		"""
 		class TestController {
