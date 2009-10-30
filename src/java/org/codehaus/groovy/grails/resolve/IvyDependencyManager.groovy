@@ -625,6 +625,11 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
 
+    boolean getBooleanValue(dependency, String name) {
+        return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
+    }
+    
+
 
 }
 class IvyDomainSpecificLanguageEvaluator {
@@ -931,9 +936,6 @@ class IvyDomainSpecificLanguageEvaluator {
             }          
     }
 
-    private boolean getBooleanValue(dependency, String name) {
-        return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
-    }
 
     boolean isExcluded(name) {
         return moduleExcludes.contains(name) ||
