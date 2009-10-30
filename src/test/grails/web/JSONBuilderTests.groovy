@@ -155,4 +155,23 @@ public class JSONBuilderTests extends GroovyTestCase{
 
         assertEquals '{"books":[{"title":"one"},{"title":"two"},{"title":"three"}]}', result.toString()
     }
+
+    void testAppendToArray() {
+        def initializer = new ConvertersConfigurationInitializer()
+        initializer.initialize()
+        def builder = new JSONBuilder()
+
+        def results = ['one', 'two', 'three']
+
+        def result = builder.build {
+           books = array { list ->
+                for(b in results) {
+                    list << [title:b]
+                }
+           }
+        }
+
+        assertEquals '{"books":[{"title":"one"},{"title":"two"},{"title":"three"}]}', result.toString()
+
+    }
 }
