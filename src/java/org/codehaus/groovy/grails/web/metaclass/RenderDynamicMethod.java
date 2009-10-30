@@ -79,7 +79,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
     private static final String TEXT_HTML = "text/html";
     private String gspEncoding;
-    private boolean useLegacyJSONBuilder = false;
+    private boolean useLegacyJSONBuilder = true;
     private static final String DEFAULT_ENCODING = "utf-8";
     private Object ARGUMENT_PLUGIN = "plugin";
 
