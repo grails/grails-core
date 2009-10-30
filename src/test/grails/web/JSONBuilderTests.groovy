@@ -112,6 +112,13 @@ public class JSONBuilderTests extends GroovyTestCase{
         }
 
         assertEquals '["one","two","three"]', result.toString()
+
+        result = builder.build {
+            results
+        }
+
+        assertEquals '["one","two","three"]', result.toString()
+
     }
 
     void testExampleFromReferenceGuide() {
@@ -128,7 +135,6 @@ public class JSONBuilderTests extends GroovyTestCase{
         }
 
         assertEquals '[{"title":"one"},{"title":"two"},{"title":"three"}]', result.toString()
-
 
 
         result = builder.build {

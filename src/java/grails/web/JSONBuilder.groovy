@@ -44,7 +44,10 @@ class JSONBuilder {
         //c.resolveStrategy = Closure.DELEGATE_FIRST
         root = [:]
         current = root
-        c.call()
+        def returnValue = c.call()
+        if(!root) {
+            return returnValue
+        }
         return root
     }
 
