@@ -3,13 +3,19 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 import java.sql.*
 import org.hibernate.*
 import org.hibernate.usertype.UserType
+import org.hibernate.usertype.ParameterizedType
 
 /**
  * Example single-column Hibernate user type for use in testing.
  */
-public class MyUserType implements UserType {
+public class MyUserType implements UserType, ParameterizedType {
 
     private static final int[] SQL_TYPES = [ Types.VARCHAR ] as int[];
+
+    /** Parameter for testing ParameterizedType. */
+    private String param1
+    /** Parameter for testing ParameterizedType. */
+    private String param2
 
     public int[] sqlTypes() { return SQL_TYPES }
     public Class returnedClass() { return MyType }
@@ -50,4 +56,9 @@ public class MyUserType implements UserType {
     public Object replace(Object original, Object target, Object owner) throws HibernateException {
         return original;
     } 
+
+    public void setParameterValues(Properties params) {
+        param1 = params.param1
+        param2 = params.param2
+    }
 }

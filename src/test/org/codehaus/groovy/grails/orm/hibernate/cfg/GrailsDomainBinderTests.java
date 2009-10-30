@@ -96,7 +96,7 @@ public class GrailsDomainBinderTests extends TestCase {
         "    MonetaryAmount price \n" +
         "    static mapping = {\n" +
         "        name column: 's_name', sqlType: 'text'\n" +
-        "        other type: MyUserType, sqlType: 'wrapper-characters'\n" +
+        "        other type: MyUserType, sqlType: 'wrapper-characters', params:[param1: 'myParam1', param2: 'myParam2']\n" +
         "        price type: MonetaryAmountUserType, {\n" +
         "            column name: 'value'\n" +
         "            column name: 'currency_code', sqlType: 'text'\n" +
@@ -223,6 +223,11 @@ public class GrailsDomainBinderTests extends TestCase {
         column = (Column) otherProperty.getColumnIterator().next();
         assertEquals("other", column.getName());
         assertEquals("wrapper-characters", column.getSqlType());
+	assertEquals(MyUserType.class.getName(), column.getValue().getType().getName());
+	assertTrue(column.getValue() instanceof SimpleValue);
+	SimpleValue v = (SimpleValue)column.getValue();
+	assertEquals("myParam1", v.getTypeParameters().get("param1"));
+	assertEquals("myParam2", v.getTypeParameters().get("param2"));
 
         // And now for the "price" property, which should have two
         // columns.

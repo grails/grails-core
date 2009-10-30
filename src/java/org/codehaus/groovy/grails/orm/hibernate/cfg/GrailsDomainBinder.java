@@ -2240,6 +2240,7 @@ public final class GrailsDomainBinder {
             } else {
                 simpleValue.setTypeName(type.toString());
             }
+            simpleValue.setTypeParameters(config.getTypeParams());
         } else {
             simpleValue.setTypeName(grailsProp.getType().getName());
         }

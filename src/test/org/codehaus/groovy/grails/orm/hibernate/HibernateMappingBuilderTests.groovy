@@ -687,4 +687,29 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         shouldFail { mapping.columns.amount.column }
         shouldFail { mapping.columns.amount.sqlType }
     }
+
+    void testPropertyWithUserTypeAndNoParams() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            amount type: MyUserType
+        }
+		
+        assertEquals MyUserType.class,mapping.getPropertyConfig('amount').type
+        assertNull mapping.getPropertyConfig('amount').typeParams
+    }
+	
+    void testPropertyWithUserTypeAndTypeParams() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            amount type: MyUserType, params : [ param1 : "amountParam1", param2 : 65 ]
+            value type: MyUserType, params : [ param1 : "valueParam1", param2 : 21 ]
+        }
+		
+        assertEquals MyUserType.class,mapping.getPropertyConfig('amount').type
+        assertEquals "amountParam1",mapping.getPropertyConfig('amount').typeParams.param1
+        assertEquals 65,mapping.getPropertyConfig('amount').typeParams.param2
+        assertEquals MyUserType.class,mapping.getPropertyConfig('value').type
+        assertEquals "valueParam1",mapping.getPropertyConfig('value').typeParams.param1
+        assertEquals 21,mapping.getPropertyConfig('value').typeParams.param2
+	}
 }

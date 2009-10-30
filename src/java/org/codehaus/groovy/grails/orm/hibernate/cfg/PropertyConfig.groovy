@@ -33,6 +33,12 @@ class PropertyConfig {
     def type
 
     /**
+     * The parameters for the property that can be used to
+     * configure a Hibernate ParameterizedType implementation.
+     */
+    Properties typeParams
+
+    /**
      * The default sort order 
      */
     String sort

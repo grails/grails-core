@@ -352,6 +352,7 @@ class HibernateMappingBuilder {
             property.sort = namedArgs.sort ?: null
             property.batchSize = namedArgs.batchSize instanceof Integer ? namedArgs.batchSize : null
             property.ignoreNotFound = namedArgs.ignoreNotFound != null ? namedArgs.ignoreNotFound : false
+            property.typeParams = namedArgs.params
             if(namedArgs.fetch) {
                 switch(namedArgs.fetch) {
                     case ~/(join|JOIN)/:
