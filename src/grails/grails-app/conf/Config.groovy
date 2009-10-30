@@ -30,7 +30,7 @@ grails.views.gsp.encoding="UTF-8"
 grails.converters.encoding="UTF-8"
 
 // Set to false to use the new Grails 1.2 JSONBuilder in the render method
-grails.json.legacy.builder=true
+grails.json.legacy.builder=false
 
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
