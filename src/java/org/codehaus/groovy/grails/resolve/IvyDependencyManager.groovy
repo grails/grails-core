@@ -361,6 +361,13 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
     /**
+     * Returns all the dependency descriptors for dependencies of a plugin that have been exported for use in the application
+     */
+    Set<DependencyDescriptor> getExportedDependencyDescriptors(String scope = null) {
+        getApplicationDependencyDescriptors(scope).findAll { it.exported }
+    }
+
+    /**
     * Obtains a list of dependency descriptors defined in the project
      */
     Set<DependencyDescriptor> getDependencyDescriptors() { dependencyDescriptors }
@@ -407,10 +414,12 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         // do nothing if the dependencies of the plugin are configured by the application
         if(isPluginConfiguredByApplication(pluginName)) return
         if(args?.group && args?.name && args?.version) {
-             def transitive = !!args.transitive
+             def transitive = getBooleanValue(args, 'transitive')
+             def exported = getBooleanValue(args, 'export')
              def scope = args.conf ?: 'runtime'
              def mrid = ModuleRevisionId.newInstance(args.group, args.name, args.version)
              def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, transitive, scope)
+             dd.exported = exported
              dd.inherited=true
              dd.plugin = pluginName
              configureDependencyDescriptor(dd, scope)
@@ -479,6 +488,18 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
         def descriptors = getApplicationDependencyDescriptors(conf)
         report.allArtifactsReports.findAll { ArtifactDownloadReport downloadReport ->
+            def mrid = downloadReport.artifact.moduleRevisionId
+            descriptors.any { DependencyDescriptor dd -> mrid == dd.dependencyRevisionId}
+        }
+    }
+
+    /**
+     * Resolves only plugin dependencies that should be exported to the application
+     */
+    public List<ArtifactDownloadReport> resolveExportedDependencies(String conf='') {
+
+        def descriptors = getExportedDependencyDescriptors(conf)
+        resolveApplicationDependencies(conf)?.findAll { ArtifactDownloadReport downloadReport ->
             def mrid = downloadReport.artifact.moduleRevisionId
             descriptors.any { DependencyDescriptor dd -> mrid == dd.dependencyRevisionId}
         }
@@ -829,13 +850,22 @@ class IvyDomainSpecificLanguageEvaluator {
             dependencies = dependencies[0..-2]
         }
 
-        parseDependenciesInternal(dependencies, name, callable)
+        if(dependencies) {
+
+            parseDependenciesInternal(dependencies, name, callable)
+        }
     }
 
     private parseDependenciesInternal(dependencies, String scope, Closure dependencyConfigurer) {
 
+        boolean usedArgs = false
         def parseDep = { dependency ->
                 if ((dependency instanceof String) || (dependency instanceof GString)) {
+                    def args = [:]
+                    if(dependencies[-1] instanceof Map) {
+                        args = dependencies[-1]
+                        usedArgs = true
+                    }
                     def depDefinition = dependency.toString()
 
                     def m = depDefinition =~ /([a-zA-Z0-9\-\/\._+=]*?):([a-zA-Z0-9\-\/\._+=]+?):([a-zA-Z0-9\-\/\._+=]+)/
@@ -848,8 +878,10 @@ class IvyDomainSpecificLanguageEvaluator {
 
                             addDependency mrid
 
-                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, scope)
+                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
+                            dependencyDescriptor.exported = getBooleanValue(args, 'export')
                             dependencyDescriptor.inherited = inherited || inheritsAll || plugin
+
                             if(plugin) {
                                 if(!pluginExcludes[plugin]) {
                                     pluginExcludes[plugin] = new HashSet()
@@ -879,7 +911,8 @@ class IvyDomainSpecificLanguageEvaluator {
 
                            addDependency mrid
 
-                           def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, dependency.containsKey('transitive') ? !!dependency.transitive : true, scope)
+                           def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(dependency, 'transitive'), scope)
+                           dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
                            dependencyDescriptor.inherited = inherited || inheritsAll
                            if(plugin) {
                                dependencyDescriptor.plugin = plugin
@@ -894,7 +927,12 @@ class IvyDomainSpecificLanguageEvaluator {
 
             for(dep in dependencies) {
                 parseDep dep
+                if((dependencies[-1] == dep) && usedArgs) break
             }          
+    }
+
+    private boolean getBooleanValue(dependency, String name) {
+        return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
     }
 
     boolean isExcluded(name) {

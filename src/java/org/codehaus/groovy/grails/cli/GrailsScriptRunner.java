@@ -779,9 +779,11 @@ public class GrailsScriptRunner {
     private static void addPluginLibs(File pluginDir, List urls) throws MalformedURLException {
         if (!pluginDir.exists()) return;
 
+        // let Ivy deal with resolving dependencies
         File dependencyDefinition = new File(pluginDir, "dependencies.groovy");
         if(dependencyDefinition.exists()) return;
 
+        // otherwise just add them
         File libDir = new File(pluginDir, "lib");
         if (libDir.exists()) addLibs(libDir, urls, Collections.EMPTY_SET);
     }

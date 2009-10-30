@@ -49,6 +49,12 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
      */
     boolean inherited
 
+    /**
+     * Whether a plugin dependencies is 'exported' to the application or not 
+     */
+    boolean exported = true
+
+
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
         super(mrid, force);
         this.scope = scope
@@ -59,7 +65,9 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
         setTransitive(transitive) 
     }
 
-
+    void setExport(boolean b) {
+        this.exported = b
+    }
 
     void excludes(Object... args) {
         for(arg in args) {

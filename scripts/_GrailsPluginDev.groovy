@@ -107,7 +107,7 @@ target(packagePlugin:"Implementation target") {
     }
     if(!supportsAtLeastVersion) {
         IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-        def deps = dependencyManager.resolveApplicationDependencies()
+        def deps = dependencyManager.resolveExportedDependencies()
 
         if(deps) {
             ant.mkdir(dir:"${libsDir}/lib")

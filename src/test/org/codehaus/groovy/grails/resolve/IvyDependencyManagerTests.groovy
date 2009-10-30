@@ -41,6 +41,40 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertEquals "jdk14",dep.branch
     }
 
+    void testExportedDependenciesAndResolvers() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime group:"opensymphony", name:"oscache", version:"2.4.1"
+            runtime group:"opensymphony", name:"oscache2", version:"2.4.2", export:true
+            runtime group:"opensymphony", name:"oscache3", version:"2.4.3", export:false
+            runtime "opensymphony:oscache4:2.4.5", [export: false]
+        }
+
+        def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'oscache' }
+
+
+        assert dd.exported : "should be an exported dependency"
+
+        dd = manager.dependencyDescriptors.find { DependencyDescriptor d -> d.dependencyRevisionId.name == 'oscache2' }
+
+        assert dd.exported : "should be an exported dependency"
+
+        dd = manager.dependencyDescriptors.find { DependencyDescriptor d -> d.dependencyRevisionId.name == 'oscache3' }
+
+        assert !dd.exported : "should be an exported dependency"
+
+        dd = manager.dependencyDescriptors.find { DependencyDescriptor d -> d.dependencyRevisionId.name == 'oscache4' }
+
+        assert !dd.exported : "should be an exported dependency"
+
+
+        def list = manager.getExportedDependencyDescriptors('runtime')
+
+        assertEquals 2, list.size()
+    }
+
     void testOverridePluginDependencies() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
