@@ -152,6 +152,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
     /**
+     * Resets the Grails plugin resolver if it is used
+     */
+    void resetGrailsPluginsResolver() {
+       def resolver = chainResolver.resolvers.find { it.name == 'grailsPlugins' }
+       chainResolver.resolvers.remove(resolver)
+       chainResolver.resolvers.add(new GrailsPluginsDirectoryResolver(buildSettings, ivySettings))
+    }
+    /**
      * Returns true if the application has any dependencies that are not inherited
      * from the framework or other plugins
      */
@@ -732,8 +740,15 @@ class IvyDomainSpecificLanguageEvaluator {
     }
     
 
+    void grailsPlugins() {
+       repositoryData << ['type':'grailsPlugins', name:"grailsPlugins"]
+       def pluginResolver = new GrailsPluginsDirectoryResolver(buildSettings, ivySettings)
+
+       chainResolver.add pluginResolver
+    }
+
     void grailsHome() {
-        def grailsHome = BuildSettingsHolder.settings?.grailsHome?.absolutePath ?: System.getenv("GRAILS_HOME")
+        def grailsHome = buildSettings?.grailsHome?.absolutePath ?: System.getenv("GRAILS_HOME")
         if(grailsHome) {
             flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
             flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")

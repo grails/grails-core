@@ -5,7 +5,8 @@ grails.project.war.file = "target/${appName}-${appVersion}.war"
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
-    repositories {
+    repositories {        
+        grailsPlugins()
         grailsHome()
 
         // uncomment the below to enable remote dependency resolution
