@@ -9,11 +9,6 @@ The following libraries are included in Grails because they are required either 
 - ANTLR 2.7.6 (http://www.antlr.org) BSD License
 - required for running Grails applications (Hibernate)
 
-* backport-util-concurrent-3.0
-- backport-util-concurrent 3.0 (http://backport-jsr166.sourceforge.net/) Public Domain License (http://creativecommons.org/licenses/publicdomain/)
-- required for running Grails applications that use Ehcache
-- optional otherwise
-
 * cglib-nodep-2.1_3.jar
 - CGLIB 2.1_3 with ObjectWeb ASM 1.5.3 (http://cglib.sourceforge.net) Apache 1.1 License
 - required for running Grails applications (Spring AOP & Hibernate)
