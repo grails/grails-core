@@ -97,7 +97,14 @@ target(packagePlugin:"Implementation target") {
     ant.delete(dir:libsDir, failonerror:false)
     def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
 
-    if(!GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")) {
+    try {
+        final boolean supportsAtLeastVersion = GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")
+    }
+    catch (e) {
+        println "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
+        exit 1 
+    }
+    if(!supportsAtLeastVersion) {
         IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
         def deps = dependencyManager.resolveApplicationDependencies()
 

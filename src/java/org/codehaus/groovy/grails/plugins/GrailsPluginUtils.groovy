@@ -328,8 +328,20 @@ class VersionComparator implements Comparator{
         if(o1 == '*') result = 1
         else if(o2 == '*') result = -1
         else {
-            def nums1 = o1.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            def nums2 = o2.split(/\./).findAll { it.trim() != ''}*.toInteger()
+            def nums1
+            try {
+                nums1 = o1.split(/\./).findAll { it.trim() != ''}*.toInteger()
+            }
+            catch (NumberFormatException  e) {
+                throw new InvalidVersionException("Cannot compare versions, left side [$o1] is invalid: ${e.message}")
+            }
+            def nums2
+            try {
+                nums2 = o2.split(/\./).findAll { it.trim() != ''}*.toInteger()
+            }
+            catch (java.lang.NumberFormatException e) {
+                throw new InvalidVersionException("Cannot compare versions, right side [$o2] is invalid: ${e.message}")
+            }
             for(i in 0..<nums1.size()) {
                 if(nums2.size() > i) {
                     result = nums1[i].compareTo(nums2[i])
