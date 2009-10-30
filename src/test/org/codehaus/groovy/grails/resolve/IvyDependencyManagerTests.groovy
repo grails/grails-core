@@ -11,6 +11,7 @@ import grails.util.GrailsUtil
 import groovy.xml.MarkupBuilder
 import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 import org.apache.ivy.core.resolve.IvyNode
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 
 /**
  * @author Graeme Rocher
@@ -64,6 +65,10 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def junit = buildDeps.find { it.moduleId.name == "junit" }
         assertEquals "junit", junit.moduleId.name
         assertEquals "3.8.4", junit.id.revision
+
+        def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'junit' }
+
+        assert dd.inherited : "should be an inherited dependency"
     }
 
 
