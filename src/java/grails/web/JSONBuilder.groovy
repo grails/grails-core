@@ -61,7 +61,7 @@ class JSONBuilder {
         try {
 
             current = list
-            c.call()
+            c.call(list)
         }
         finally {
             current = prev
