@@ -126,20 +126,28 @@ compileClasspath = {
     commonClasspath.delegate = delegate
     commonClasspath.call()
 
-    grailsSettings.compileDependencies?.each { File f ->
-    	if(f)
-    		pathelement(location: f.absolutePath)
+    def dependencies = grailsSettings.compileDependencies
+    if(dependencies) {
+        for(File f in dependencies) {
+            if(f)
+                pathelement(location: f.absolutePath)
+        }
     }
+
 }
 
 testClasspath = {
     commonClasspath.delegate = delegate
     commonClasspath.call()
 
-    grailsSettings.testDependencies?.each { File f ->
-    	if(f) {
-    		pathelement(location: f.absolutePath)
-    	}        
+    def dependencies = grailsSettings.testDependencies
+    if(dependencies) {
+
+        for(File f in dependencies) {
+            if(f) {
+                pathelement(location: f.absolutePath)
+            }
+        }
     }
 
     pathelement(location: "${classesDir.absolutePath}")
@@ -149,9 +157,12 @@ runtimeClasspath = {
     commonClasspath.delegate = delegate
     commonClasspath.call()
 
-    grailsSettings.runtimeDependencies?.each { File f ->
-    	if(f)
-    		pathelement(location: f.absolutePath)
+    def dependencies = grailsSettings.runtimeDependencies
+    if(dependencies) {        
+        for(File f in dependencies) {
+            if(f)
+                pathelement(location: f.absolutePath)
+        }
     }
 
     pathelement(location: "${classesDir.absolutePath}")
