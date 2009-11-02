@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib;
-import grails.util.GrailsUtil;
+
+import grails.util.GrailsUtil;
 
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
@@ -176,85 +177,55 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testCreateLinkTo() {
-		StringWriter sw = new StringWriter();
-		withTag("createLinkTo", sw) { tag ->
-			def attrs = [dir:'test']
-			tag.call( attrs )
-			assertEquals '/test', sw.toString()
 
-			sw.getBuffer().delete(0,sw.getBuffer().length());
-			attrs = [dir:'test',file:'file']
-			tag.call( attrs )
-			assertEquals '/test/file', sw.toString()
+        def template = '<g:resource dir="test" />'
+        assertOutputEquals '/test', template
+        
+        template = '<g:resource dir="test" file="file" />'
+        assertOutputEquals '/test/file', template
 
-			sw.getBuffer().delete(0,sw.getBuffer().length());
-			attrs = [dir:'']
-			tag.call( attrs )
-			println sw.toString()
-			assertEquals '', sw.toString()
-		}
+        template = '<g:resource dir="" />'
+        assertOutputEquals '', template
+
 	}
 
     void testCreateLinkToFilesInRoot() {
-		StringWriter sw = new StringWriter();
-		withTag("createLinkTo", sw) { tag ->
-			def attrs = [dir:'/', file:'test.gsp']
-			tag.call( attrs )
-			assertEquals '/test.gsp', sw.toString()
-		}
+        def template = '<g:resource dir="/" file="test.gsp" />'
+        assertOutputEquals '/test.gsp', template
     }
 
-    void testCreateLinkToFilesInRootWithContext() {
-		StringWriter sw = new StringWriter();
+    void testResourceFilesInRootWithContext() {
+        def template = '<g:resource dir="/" file="test.gsp" />'
         request.contextPath = "/foo"
-        withTag("createLinkTo", sw) { tag ->
-			def attrs = [dir:'/', file:'test.gsp']
-			tag.call( attrs )
-			assertEquals '/foo/test.gsp', sw.toString()
-		}
+        assertOutputEquals '/foo/test.gsp', template
     }
 
     void testCreateLinkWithZeroId() {
-        // test case for GRAILS-1123
-        StringWriter sw = new StringWriter();
-        withTag("createLink", sw) { tag ->
-            def attrs = [action:'testAction', controller: 'testController', id:0]
-            tag.call( attrs )
-            assertEquals '/testController/testAction/0', sw.toString()
-        }
+        def template = '<g:createLink action="testAction" controller="testController" id="${id}"  />'
+        assertOutputEquals '/testController/testAction/0', template, [id:0]
     }
 
 	void testCreateLinkURLEncoding() {
-		StringWriter sw = new StringWriter();
-		withTag("createLink", sw) { tag ->
-			// test URL encoding. Params unordered to have to try one test at a time
-			def attrs = [action:'testAction', controller: 'testController',
-			    params:['name':'Marc Palmer']]
-			tag.call( attrs )
-			assertEquals '/testController/testAction?name=Marc+Palmer', sw.toString()
-		}
+        def template = '<g:createLink action="testAction" controller="testController" params="[name:\'Marc Palmer\']"  />'
+        assertOutputEquals '/testController/testAction?name=Marc+Palmer', template
 	}
 
 	void testCreateLinkURLEncodingWithHTMLChars() {
-		StringWriter sw = new StringWriter();
-		withTag("createLink", sw) { tag ->
-			// test URL encoding is done but HTML encoding isn't, only want the one here.
-			def attrs = [action:'testAction', controller: 'testController',
-			    params:['email':'<marc@anyware.co.uk>']]
-			tag.call( attrs )
-			assertEquals '/testController/testAction?email=%3Cmarc%40anyware.co.uk%3E', sw.toString()
-		}
+        def template = '<g:createLink action="testAction" controller="testController" params="[email:email]" />'
+        assertOutputEquals '/testController/testAction?email=%3Cmarc%40anyware.co.uk%3E', template, [email:'<marc@anyware.co.uk>']
 	}
 
 	void testCreateLinkWithBase() {
-		StringWriter sw = new StringWriter();
-		withTag("createLink", sw) { tag ->
-			// test URL encoding. Params unordered to have to try one test at a time
-			def attrs = [base:"http://www128.myhost.com:3495", action:'testAction', controller: 'testController']
-			tag.call( attrs )
-			assertEquals 'http://www128.myhost.com:3495/testController/testAction', sw.toString()
-		}
+        def template = '<g:createLink base="http://www128.myhost.com:3495" action="testAction" controller="testController" />'
+        assertOutputEquals 'http://www128.myhost.com:3495/testController/testAction', template
 	}
+
+    void testCreateLinkWithContextPath() {
+        request.contextPath = "/foo"
+        def template = '<g:createLink action="testAction" controller="testController" />'
+
+        assertOutputEquals '/foo/testController/testAction', template
+    }
 
     void testAbsoluteWithContextPath() {
         request.contextPath = "/foo"
@@ -273,22 +244,13 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
      * if "base" is set to an empty string.
      */
     void testCreateLinkWithNoContextPath() {
-        StringWriter sw = new StringWriter();
-        withTag("createLink", sw) { tag ->
-            def attrs = [base: "", action:'testAction', controller: 'testController']
-            tag.call( attrs )
-            assertEquals '/testController/testAction', sw.toString()
-        }
+        def template = '<g:createLink base="" action="testAction" controller="testController" />'
+        assertOutputEquals '/testController/testAction', template
     }
 
 	void testCreateLinkWithAbsolute() {
-		StringWriter sw = new StringWriter();
-		withTag("createLink", sw) { tag ->
-			// test URL encoding. Params unordered to have to try one test at a time
-			def attrs = [absolute:"true", action:'testAction', controller: 'testController']
-			tag.call( attrs )
-			assertEquals 'http://localhost:8080/testController/testAction', sw.toString()
-		}
+        def template = '<g:createLink absolute="true" action="testAction" controller="testController" />'
+        assertOutputEquals 'http://localhost:8080/testController/testAction', template
 	}
 
 }
