@@ -12,6 +12,7 @@ import groovy.xml.MarkupBuilder
 import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
+import org.apache.ivy.util.url.CredentialsStore
 
 /**
  * @author Graeme Rocher
@@ -26,6 +27,28 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
     protected void tearDown() {
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
+    }
+
+    void testCredentials() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            credentials {
+                realm = 'foo'
+                host = 'bar'
+                username = 'test'
+                password = 'pass'
+            }
+        }
+
+        def store = CredentialsStore.INSTANCE
+
+        def creds = store.getCredentials('foo', 'bar')
+
+        assertEquals 'test', creds.userName
+        assertEquals 'pass', creds.passwd
+
     }
 
     void testUseBranch() {

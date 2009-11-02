@@ -42,6 +42,7 @@ import org.apache.ivy.plugins.repository.file.FileRepository
 import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
+import org.apache.ivy.util.url.CredentialsStore
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -96,6 +97,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     private Set<ModuleId> modules = [] as Set
     private Set<ModuleRevisionId> dependencies = [] as Set
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
+
     private orgToDepMap = [:]
     private hasApplicationDependencies = false
 
@@ -644,6 +646,17 @@ class IvyDomainSpecificLanguageEvaluator {
         ivySettings.setDefaultUseOrigin(b)
     }
 
+    void credentials(Closure c) {
+        def creds = [:]
+        c.delegate = creds
+        c.resolveStrategy = Closure.DELEGATE_FIRST
+        c.call()
+
+        if(creds) {
+            CredentialsStore.INSTANCE.addCredentials(creds.realm ?: null, creds.host ?: 'localhost', creds.username ?: '', creds.password ?: '')
+        }
+    }
+
     void pom(boolean b) {
         delegate.readPom = b
     }
@@ -763,17 +776,22 @@ class IvyDomainSpecificLanguageEvaluator {
     
 
     void grailsPlugins() {
-       repositoryData << ['type':'grailsPlugins', name:"grailsPlugins"]
-       def pluginResolver = new GrailsPluginsDirectoryResolver(buildSettings, ivySettings)
+        if(isResolverNotAlreadyDefined('grailsPlugins')) {            
+           repositoryData << ['type':'grailsPlugins', name:"grailsPlugins"]
+           def pluginResolver = new GrailsPluginsDirectoryResolver(buildSettings, ivySettings)
 
-       chainResolver.add pluginResolver
+           chainResolver.add pluginResolver
+        }
+
     }
 
     void grailsHome() {
-        def grailsHome = buildSettings?.grailsHome?.absolutePath ?: System.getenv("GRAILS_HOME")
-        if(grailsHome) {
-            flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
-            flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
+        if(isResolverNotAlreadyDefined('grailsHome')) {
+            def grailsHome = buildSettings?.grailsHome?.absolutePath ?: System.getenv("GRAILS_HOME")
+            if(grailsHome) {
+                flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
+                flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
+            }
         }
     }
 
