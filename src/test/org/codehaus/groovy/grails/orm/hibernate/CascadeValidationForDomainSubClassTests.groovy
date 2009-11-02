@@ -11,28 +11,28 @@ public class CascadeValidationForDomainSubClassTests extends AbstractGrailsHiber
 import grails.persistence.*
 
 @Entity
-class Book {
+class CascadeValidationForDomainSubClassBook {
    String title
    Integer pages
-   static belongsTo = [Author]
+   static belongsTo = [CascadeValidationForDomainSubClassAuthor]
    static constraints = { pages(range: 0..100) }
 }
 
 @Entity
-class Author {
+class CascadeValidationForDomainSubClassAuthor {
    String name
-   Book book
+   CascadeValidationForDomainSubClassBook book
 }
 
 @Entity
-class Novelist extends Author {
+class CascadeValidationForDomainSubClassNovelist extends CascadeValidationForDomainSubClassAuthor {
 }
 ''')
     }
 
     void testCascadingValidation() {
-      def Book = ga.getDomainClass("Book").clazz
-      def Novelist = ga.getDomainClass("Novelist").clazz
+      def Book = ga.getDomainClass("CascadeValidationForDomainSubClassBook").clazz
+      def Novelist = ga.getDomainClass("CascadeValidationForDomainSubClassNovelist").clazz
 
       def b = Book.newInstance(title:'War & Peace', pages:9999) // pages violates range constraint
       def a = Novelist.newInstance(name:'Tolstoy', book:b)
