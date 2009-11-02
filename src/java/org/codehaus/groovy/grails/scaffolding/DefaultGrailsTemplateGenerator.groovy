@@ -30,6 +30,7 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.codehaus.groovy.grails.cli.CommandLineHelper
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
@@ -47,7 +48,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     def engine = new SimpleTemplateEngine()
     ResourceLoader resourceLoader
     Template renderEditorTemplate
-
+    String domainSuffix = 'Instance'
 
 
     /**
@@ -56,6 +57,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
         engine = new SimpleTemplateEngine(classLoader)
+        domainSuffix = ConfigurationHolder.config.grails?.scaffolding?.templates?.domainSuffix ?: 'Instance'        
     }
 
     /**
@@ -211,8 +213,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         t.make(binding).writeTo(out)
     }
 
-    private def getPropertyName(GrailsDomainClass domainClass) {
-        return domainClass.propertyName + 'Instance'
+    private String getPropertyName(GrailsDomainClass domainClass) {
+        return "${domainClass.propertyName}${domainSuffix}"
     }
 
     private helper = new CommandLineHelper()
