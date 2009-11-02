@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletRequest;
@@ -70,7 +71,12 @@ public class DefaultUrlCreator implements UrlCreator {
             id = parameterValues.get(ARGUMENT_ID).toString();
         }
 
-        StringBuilder actualUriBuf = includeContextPath ? new StringBuilder(webRequest.getAttributes().getApplicationUri(request)) : new StringBuilder();
+
+
+        FastStringWriter actualUriBuf = new FastStringWriter();
+        if(includeContextPath) {
+            actualUriBuf.append(webRequest.getContextPath());
+        }
         if(actionName != null) {
 
             if(actionName.indexOf(SLASH) > -1) {
@@ -150,7 +156,7 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends all the request parameters to the URI buffer
      */
-    private void appendRequestParams(StringBuilder actualUriBuf, Map<Object,Object> params, HttpServletRequest request) {
+    private void appendRequestParams(FastStringWriter actualUriBuf, Map<Object,Object> params, HttpServletRequest request) {
 
 
         boolean querySeparator = false;
@@ -200,7 +206,7 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends a request parameters for the given aname and value
      */
-    private void appendRequestParam(StringBuilder actualUriBuf, Object name, Object value, HttpServletRequest request) {
+    private void appendRequestParam(FastStringWriter actualUriBuf, Object name, Object value, HttpServletRequest request) {
         if (value==null)
             value = "";
 
@@ -222,7 +228,7 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends a URL token to the buffer
      */
-    private void appendUrlToken(StringBuilder actualUriBuf, Object token, ServletRequest request) {
+    private void appendUrlToken(FastStringWriter actualUriBuf, Object token, ServletRequest request) {
         actualUriBuf.append(SLASH).append(urlEncode(token, request));
     }
 }
