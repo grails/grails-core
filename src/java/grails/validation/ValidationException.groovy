@@ -12,15 +12,16 @@ import org.springframework.validation.Errors
 class ValidationException extends GrailsException {
 
     Errors errors
+    String fullMessage
 
     public ValidationException(String msg, Errors e) {
-        super(ValidationException.formatErrors(e, msg))
+        super(msg)
         this.errors = e
+        this.fullMessage = formatErrors(e, msg)
     }
 
-    public ValidationException(Errors e) {
-        super(ValidationException.formatErrors(e))
-        this.errors = e
+    public String getMessage() {
+        return fullMessage
     }
 
     public static String formatErrors(Errors errors, String msg = null) {
