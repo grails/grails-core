@@ -15,11 +15,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.persistence.Entity;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -27,7 +22,10 @@ import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryB
 import org.codehaus.groovy.grails.orm.hibernate.support.SpringLobHandlerDetectorFactoryBean;
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator;
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.factory.config.*;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
@@ -40,6 +38,10 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A BeanDefinitionParser that will scan for GORM entities to configure and automatically setup an
@@ -73,6 +75,8 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
     private static final String LOB_HANDLER_ATTRIBUTE = "lob-handler-ref";
     private static final String BASE_PACKAGE_ATTRIBUTE = "base-package";
     private static final String TRANSACTION_MANAGER_ATTRIBUTE = "transaction-manager-ref";
+    private static final String CONFIG_CLASS_ATTRIBUTE = "config-class";
+    private static final String CONFIG_LOCATION_ATTRIBUTE = "config-location";
 
     public BeanDefinition parse(Element element, ParserContext parserContext) {
 
@@ -171,7 +175,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
 
     }
 
-    private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId, BeanDefinitionRegistry targetRegistry, ParserContext parserContext) {
+    private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId, BeanDefinitionRegistry targetRegistry, ParserContext parserContext)  {
         String sessionFactoryId = StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)) ? element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
         AbstractBeanDefinition sessionFactoryBean = new GenericBeanDefinition();
         sessionFactoryBean.setBeanClass(ConfigurableLocalSessionFactoryBean.class);
@@ -180,7 +184,15 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         MutablePropertyValues propertyValues = sessionFactoryBean.getPropertyValues();
         final RuntimeBeanReference dataSourceRef = new RuntimeBeanReference(dataSourceId);
         propertyValues.addPropertyValue("dataSource", dataSourceRef);
-        propertyValues.addPropertyValue("configClass", GrailsAnnotationConfiguration.class);
+
+        Class configClass = lookupConfigClass(element, parserContext);
+        propertyValues.addPropertyValue("configClass", configClass);
+
+        final String configLocation = element.getAttribute(CONFIG_LOCATION_ATTRIBUTE);
+        if(StringUtils.hasText(configLocation)) {
+            propertyValues.addPropertyValue("configLocation", configLocation);    
+        }
+
         propertyValues.addPropertyValue(GrailsApplication.APPLICATION_ID, new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
 
         targetRegistry.registerBeanDefinition(sessionFactoryId,sessionFactoryBean);
@@ -215,7 +227,22 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         return sessionFactoryBean;
     }
 
-    
+    private Class lookupConfigClass(Element element, ParserContext parserContext)  {
+        Class configClass = GrailsAnnotationConfiguration.class;
+        final ClassLoader classLoader = parserContext.getReaderContext().getBeanClassLoader();
+        final String configClassName = element.getAttribute(CONFIG_CLASS_ATTRIBUTE);
+        if(StringUtils.hasText(configClassName)) {
+            try {
+                configClass = classLoader.loadClass(configClassName);
+            }
+            catch (ClassNotFoundException e) {
+               throw new BeanDefinitionParsingException(new Problem("Unable to load specified SessionFactory configClass implementation: " + e.getMessage(), new Location(parserContext.getReaderContext().getResource()),null, e)); 
+            }
+        }
+        return configClass;
+    }
+
+
     private ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, BeanDefinitionRegistry registry) {
 		XmlReaderContext readerContext = parserContext.getReaderContext();
         // Delegate bean definition registration to scanner class.
