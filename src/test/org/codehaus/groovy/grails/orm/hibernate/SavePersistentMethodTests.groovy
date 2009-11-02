@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.codehaus.groovy.grails.commons.*
 import grails.validation.ValidationException
+import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor
 
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
@@ -172,6 +173,32 @@ Validation Error(s) occurred during save():
 
         team = teamClass.get(1)
         team.name = ''
+        shouldFail(ValidationException) {
+            session.flush()
+        }
+    }
+
+    void testFailOnErrorConfigWithPackagesAndAutoFlush() {
+        ClosureEventTriggeringInterceptor interceptor = appCtx.getBean("eventTriggeringInterceptor")
+        interceptor.failOnError=true
+        interceptor.failOnErrorPackages = ['foo.bar']
+        def teamClass = ga.getDomainClass('grails.tests.Team').clazz
+        def team = teamClass.newInstance(name:"Manchester United", homePage:new URL("http://www.manutd.com/"))
+        assertNotNull "should have saved", team.save(flush:true)
+
+        session.clear()
+
+        team = teamClass.get(1)
+        team.name = ''
+        // should not throw exception for the grails.test package
+        session.flush()
+
+        interceptor.failOnErrorPackages = ['grails.tests']
+
+        session.clear()
+        team = teamClass.get(1)
+        team.name = ''
+        // should not throw exception for the grails.test package
         shouldFail(ValidationException) {
             session.flush()
         }

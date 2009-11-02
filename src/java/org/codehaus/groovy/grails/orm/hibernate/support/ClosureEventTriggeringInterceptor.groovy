@@ -51,10 +51,18 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     ConfigObject config
     boolean failOnError = false
+    List failOnErrorPackages = []
 
     public void setConfiguration(ConfigObject co) {
         this.config = co
-        failOnError = co?.grails?.gorm?.failOnError ?: false
+        def failOnErrorConfig = co?.grails?.gorm?.failOnError
+        if(failOnErrorConfig instanceof List)  {
+            failOnError = true
+            failOnErrorPackages = failOnErrorConfig
+        }
+        else {
+            failOnError = failOnErrorConfig ?: false
+        }
     }
 
     public void onSaveOrUpdate(SaveOrUpdateEvent event) {
@@ -149,7 +157,13 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         if(!entity.validate(deepValidate:false)) {
             evict = true
             if(failOnError) {
-                throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+                if(failOnErrorPackages) {
+                    if(failOnErrorPackages.contains(entity.class.getPackage().name))
+                        throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+                }
+                else {
+                    throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+                }
             }
         }
 
