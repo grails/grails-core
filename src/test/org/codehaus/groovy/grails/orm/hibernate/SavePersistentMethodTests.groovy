@@ -145,7 +145,6 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigTrueWithValidationErrors() {
-        try {
             def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
 
             ConfigurationHolder.config = config
@@ -155,86 +154,91 @@ Validation Error(s) occurred during save():
             def msg = shouldFail(ValidationException) {
                 team.save()
             }
-            assertEquals 'Validation Error(s) Occurred During Save', msg
-        } finally {
-            ConfigurationHolder.config = null
+            assertEquals '''\
+Validation Error(s) occurred during save():
+- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+''', msg
+    }
+
+   void testFailOnErrorConfigTrueWithValidationErrorsAndAutoFlush() {
+        def interceptor = appCtx.getBean("eventTriggeringInterceptor")
+        interceptor.failOnError=true
+        def teamClass = ga.getDomainClass('grails.tests.Team').clazz
+        def team = teamClass.newInstance(name:"Manchester United", homePage:new URL("http://www.manutd.com/"))
+        assertNotNull "should have saved", team.save(flush:true)
+
+        session.clear()
+
+        team = teamClass.get(1)
+        team.name = ''
+        shouldFail(ValidationException) {
+            session.flush()
         }
     }
 
     void testFailOnErrorConfigIncludesMatchingPackageWithValidationErrors() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']");
 
-            ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('grails.tests.Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'invalidurl']
-            def msg = shouldFail(ValidationException) {
-                team.save()
-            }
-            assertEquals 'Validation Error(s) Occurred During Save', msg
-        } finally {
-            ConfigurationHolder.config = null
+        ConfigurationHolder.config = config
+        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        def msg = shouldFail(ValidationException) {
+            team.save()
         }
+        assertEquals '''\
+Validation Error(s) occurred during save():
+- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+''', msg
     }
 
     void testFailOnErrorConfigDoesNotIncludeMatchingPackageWithValidationErrors() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']");
 
-            ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('grails.tests.Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'invalidurl']
-            assertNull 'save should have returned null', team.save()
-        } finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        assertNull 'save should have returned null', team.save()
     }
 
     void testFailOnErrorConfigFalseWithValidationErrors() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
 
-            ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('grails.tests.Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'invalidurl']
-            assertNull 'save should have returned null', team.save()
-        } finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        assertNull 'save should have returned null', team.save()
     }
 
     void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
 
-            ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('grails.tests.Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'invalidurl']
-            assertNull 'save should have returned null', team.save(failOnError: false)
-        } finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        assertNull 'save should have returned null', team.save(failOnError: false)
     }
 
     void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
 
-            ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('grails.tests.Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'invalidurl']
-            def msg = shouldFail(ValidationException) {
-                team.save(failOnError: true)
-            }
-            assertEquals 'Validation Error(s) Occurred During Save', msg
-        } finally {
-            ConfigurationHolder.config = null
+        ConfigurationHolder.config = config
+        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        def msg = shouldFail(ValidationException) {
+            team.save(failOnError: true)
         }
+        assertEquals '''\
+Validation Error(s) occurred during save():
+- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+''', msg
     }
 
     void onSetUp() {
@@ -247,6 +251,10 @@ import grails.persistence.*
 class Team {
     String name
     URL homePage
+
+    static constraints = {
+        name blank:false
+    }
 }
 
 @Entity
@@ -286,6 +294,6 @@ class SaveAddress {
 	}
 
 	void onTearDown() {
-
+        ConfigurationHolder.config = null
 	}
 }

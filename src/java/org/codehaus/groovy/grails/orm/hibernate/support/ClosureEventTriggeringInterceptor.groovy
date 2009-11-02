@@ -28,6 +28,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.hibernate.event.*
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
+import grails.validation.ValidationException
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -38,6 +40,7 @@ import org.hibernate.event.*
  * @since 1.0
  */
 class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implements  ApplicationContextAware,
+                                                                                      GrailsConfigurationAware,
                                                                                         PreLoadEventListener,
                                                                                         PostLoadEventListener,
                                                                                         PostInsertEventListener,
@@ -45,6 +48,14 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                                                                                         PostDeleteEventListener,
                                                                                         PreDeleteEventListener,
                                                                                         PreUpdateEventListener{
+
+    ConfigObject config
+    boolean failOnError = false
+
+    public void setConfiguration(ConfigObject co) {
+        this.config = co
+        failOnError = co?.grails?.gorm?.failOnError ?: false
+    }
 
     public void onSaveOrUpdate(SaveOrUpdateEvent event) {
 
@@ -137,7 +148,11 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
         if(!entity.validate(deepValidate:false)) {
             evict = true
+            if(failOnError) {
+                throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+            }
         }
+
         return evict
     }
 
@@ -226,6 +241,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         return result
 
     }
+
 
 
 
