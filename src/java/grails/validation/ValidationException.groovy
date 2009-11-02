@@ -1,6 +1,7 @@
 package grails.validation
 
 import org.codehaus.groovy.grails.exceptions.GrailsException
+import org.springframework.validation.Errors
 
 /**
  * An exception thrown when validation fails during a .save()
@@ -10,8 +11,27 @@ import org.codehaus.groovy.grails.exceptions.GrailsException
  */
 class ValidationException extends GrailsException {
 
-    public ValidationException(String msg) {
-        super(msg)
+    Errors errors
+
+    public ValidationException(String msg, Errors e) {
+        super(formatErrors(e, msg))
+        this.errors = e
     }
 
+    public ValidationException(Errors e) {
+        super(formatErrors(e))
+        this.errors = e
+    }
+
+    static String formatErrors(Errors errors, String msg = null) {
+       StringBuilder b = new StringBuilder(msg ? """$msg:
+""" : '')
+        
+       for(error in errors.allErrors) {
+          b.append("""\
+- ${error}
+""")
+       }
+       return b.toString()
+    }
 }

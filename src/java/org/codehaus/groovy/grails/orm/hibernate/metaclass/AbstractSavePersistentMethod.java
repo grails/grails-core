@@ -111,7 +111,7 @@ public abstract class AbstractSavePersistentMethod extends
                         }
                     }
                     if(shouldFail) {
-                        throw new ValidationException("Validation Error(s) Occurred During Save");
+                        throw new ValidationException("Validation Error(s) occurred during save()", errors);
                     }
                     return null;
                 }
