@@ -57,7 +57,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
         engine = new SimpleTemplateEngine(classLoader)
-        domainSuffix = ConfigurationHolder.config.grails?.scaffolding?.templates?.domainSuffix ?: 'Instance'        
+        domainSuffix = ConfigurationHolder.config?.grails?.scaffolding?.templates?.domainSuffix ?: 'Instance'        
     }
 
     /**
