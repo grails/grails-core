@@ -40,7 +40,8 @@ import grails.util.Environment
 import grails.util.Metadata
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.web.mapping.UrlCreator;
+import org.codehaus.groovy.grails.web.mapping.UrlCreator
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
@@ -57,7 +58,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 						   flash:'flash']
 
 
-    private boolean useJsessionId = false
+    boolean useJsessionId = false
 
     public void afterPropertiesSet() {
       def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
@@ -116,18 +117,24 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     /**
      * Check for "absolute" attribute and render server URL if available from Config or deducible in non-production
      */
-    private handleAbsolute(out, attrs) {
-        def abs = attrs.remove("absolute")
-        if (Boolean.valueOf(abs)) {
-            def u = makeServerURL()
-            if (u) {
-                out << u
-            } else {
-                throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
-            }
+    private handleAbsolute(attrs) {
+        def base = attrs.remove('base')
+        if(base) {
+            return base
         }
         else {
-           out << grailsAttributes.getApplicationUri(request)
+            def abs = attrs.remove("absolute")
+            if (Boolean.valueOf(abs)) {
+                def u = makeServerURL()
+                if (u) {
+                    return u
+                } else {
+                    throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
+                }
+            }
+            else {
+               return GrailsWebRequest.lookup(request).contextPath
+            }
         }
     }
 
@@ -148,11 +155,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      */
     def resource = { attrs ->
 		def writer = out
-		if (attrs.base) {
-		    writer << attrs.remove('base')
-		} else {
-		    handleAbsolute(writer, attrs)
-	    }       
+		writer << handleAbsolute(attrs)
 		if(attrs.plugin) {
 			writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
 		}
@@ -230,16 +233,19 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             if(id != null) params.id = id
             def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
             UrlCreator mapping = urlMappings.getReverseMapping(controller,action,params)
-            url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
-            if (attrs.base != null) {
-                writer << attrs.remove('base')
-            } else {
-                handleAbsolute(writer, attrs)
+            
+            // cannot use jsessionid with absolute links
+            if(useJsessionId && !attrs.absolute) {
+                url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
+                def base = attrs.remove('base')
+                if(base) writer << base
+                writer << response.encodeURL(url)
             }
-            if(useJsessionId)
-               writer << response.encodeURL(url)
-            else
-               writer << url
+            else {
+                url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
+                out << handleAbsolute(attrs)
+                writer << url
+            }
         }
 
     }

@@ -220,6 +220,18 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals 'http://www128.myhost.com:3495/testController/testAction', template
 	}
 
+    void testCreateLinkWithUseJSessionIdAndContextPapth() {
+
+        request.contextPath = "/foo"
+        def taglib = appCtx.getBean(ApplicationTagLib.name)
+        
+        taglib.useJsessionId = true
+        def template = '<g:createLink action="testAction" controller="testController" />'
+
+        assertOutputEquals '/foo/testController/testAction', template
+
+    }
+
     void testCreateLinkWithContextPath() {
         request.contextPath = "/foo"
         def template = '<g:createLink action="testAction" controller="testController" />'
