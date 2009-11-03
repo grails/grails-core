@@ -14,6 +14,8 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import groovy.lang.Closure;
+import groovy.util.Eval;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
@@ -84,14 +86,8 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         // set the class loader to load Groovy classes
         if(this.grailsApplication != null)
             Thread.currentThread().setContextClassLoader( this.grailsApplication.getClassLoader() );
-        // do Grails class configuration
-        for (GrailsDomainClass domainClass : this.domainClasses) {
-            GrailsDomainBinder.evaluateMapping(domainClass);
-        }
 
-        for (GrailsDomainClass domainClass : this.domainClasses) {
-            GrailsDomainBinder.evaluateNamedQueries(domainClass);
-        }
+        configureDomainBinder(this.grailsApplication,this.domainClasses);
 
         for (GrailsDomainClass domainClass : this.domainClasses) {
             final Mappings mappings = super.createMappings();
@@ -103,5 +99,22 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         // call super
         super.secondPassCompile();
         this.configLocked = true;
+    }
+
+    public static void configureDomainBinder(GrailsApplication grailsApplication, Set<GrailsDomainClass> domainClasses) {
+        Object defaultMapping = Eval.x(grailsApplication, "x.config?.grails?.gorm?.default?.mapping");
+        // do Grails class configuration
+        for (GrailsDomainClass domainClass : domainClasses) {
+            if(defaultMapping instanceof Closure) {
+                GrailsDomainBinder.evaluateMapping(domainClass, (Closure)defaultMapping);                
+            }
+            else {
+                GrailsDomainBinder.evaluateMapping(domainClass);
+            }
+        }
+
+        for (GrailsDomainClass domainClass : domainClasses) {
+            GrailsDomainBinder.evaluateNamedQueries(domainClass);
+        }
     }
 }

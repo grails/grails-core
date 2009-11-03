@@ -84,6 +84,7 @@ public final class GrailsDomainBinder {
     private static final String DEFAULT_ENUM_TYPE = "default";
 
 
+
     /**
      * A Collection type, for the moment only Set is supported
      *
@@ -1035,12 +1036,23 @@ public final class GrailsDomainBinder {
      * @param domainClass The domain class
      */
     public static Mapping evaluateMapping(GrailsDomainClass domainClass) {
+        return evaluateMapping(domainClass,null);
+    }
 
-        try {
+    public static Mapping evaluateMapping(GrailsDomainClass domainClass, Closure defaultMapping) {
+       try {
             Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.MAPPING);
-            if (o instanceof Closure) {
+            if (o != null || defaultMapping != null) {
                 HibernateMappingBuilder builder = new HibernateMappingBuilder(domainClass.getFullName());
-                Mapping m = builder.evaluate((Closure) o);
+                Mapping m = null;
+                if(defaultMapping != null) {
+                    m = builder.evaluate(defaultMapping);
+                }
+
+                if(o instanceof Closure) {
+                    m = builder.evaluate((Closure) o);
+                }
+
                 MAPPING_CACHE.put(domainClass.getClazz(), m);
                 return m;
             }
@@ -1051,6 +1063,7 @@ public final class GrailsDomainBinder {
         }
         return null;
     }
+
 
     /**
      * Evaluates a Mapping object from the domain class if it has a namedQueries closure

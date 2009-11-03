@@ -106,13 +106,7 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
             }
 
             // do Grails class configuration
-            for (GrailsDomainClass domainClass : this.domainClasses) {
-                GrailsDomainBinder.evaluateMapping(domainClass);
-            }
-            
-            for (GrailsDomainClass domainClass : this.domainClasses) {
-                GrailsDomainBinder.evaluateNamedQueries(domainClass);
-            }
+            DefaultGrailsDomainConfiguration.configureDomainBinder(grailsApplication,domainClasses);
 
             // do Grails class configuration
             for (GrailsDomainClass domainClass : this.domainClasses) {

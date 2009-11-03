@@ -15,16 +15,27 @@
 */
 package org.codehaus.groovy.grails.commons;
 
+import grails.persistence.Entity;
+import grails.util.ClosureToMapPopulator;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import grails.persistence.Entity;
+import groovy.util.Eval;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+
+import java.util.Map;
 
 /**
+ * Evaluates the conventions that define a domain class in Grails
+ *
+ * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
 
     public static final String TYPE = "Domain";
+    private GrailsApplication grailsApplication;
+    private Map defaultConstraints;
+
 
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null);
@@ -32,6 +43,9 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
 
 
     public GrailsClass newArtefactClass(Class artefactClass) {
+        if(grailsApplication!=null) {
+            return new DefaultGrailsDomainClass(artefactClass,defaultConstraints);
+        }
         return new DefaultGrailsDomainClass(artefactClass);
     }
 
@@ -81,4 +95,15 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
         }
         return result;
     }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+        Object constraints = Eval.x(grailsApplication, "x?.config?.grails?.gorm?.default?.constraints");
+        if(constraints instanceof Closure) {
+            ClosureToMapPopulator populator = new ClosureToMapPopulator();
+            this.defaultConstraints = populator.populate((Closure)constraints);
+        }
+    }
+
+    
 }

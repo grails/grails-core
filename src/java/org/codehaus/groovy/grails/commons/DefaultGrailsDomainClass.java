@@ -15,17 +15,8 @@
 package org.codehaus.groovy.grails.commons;
 
 
-import static java.util.Collections.EMPTY_LIST;
-import static java.util.Collections.EMPTY_MAP;
-import static java.util.Collections.unmodifiableMap;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
-import java.util.*;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -34,6 +25,12 @@ import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.Validator;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import static java.util.Collections.*;
 
 /**
  * @author Graeme Rocher
@@ -61,7 +58,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private Set subClasses = new HashSet();
     private Collection embedded;
 
-    public DefaultGrailsDomainClass(Class clazz) {
+    public DefaultGrailsDomainClass(Class clazz, Map<String, Object> defaultConstraints) {
         super(clazz, "");
         PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
 
@@ -109,12 +106,18 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         establishPersistentProperties();
         // process the constraints
         try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+            if(defaultConstraints != null) {
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+            }
+            else {
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+            }
         } catch (IntrospectionException e) {
             LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
         }
-
-
+    }
+    public DefaultGrailsDomainClass(Class clazz) {
+        this(clazz, null);
     }
 
 

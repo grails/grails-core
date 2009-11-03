@@ -24,7 +24,6 @@ import org.springframework.beans.InvalidPropertyException;
 import java.beans.PropertyDescriptor;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -37,7 +36,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 
 	private Object target;
 	private BeanWrapper bean;
-	private Map constrainedProperties = new HashMap();
+	private Map<String, ConstrainedProperty> constrainedProperties = new HashMap<String, ConstrainedProperty>();
 	private int order = 1;
 	
 	public ConstrainedPropertyBuilder(Object target) {
@@ -55,7 +54,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 			String property = (String)name;
 			ConstrainedProperty cp;
 			if(constrainedProperties.containsKey(property)) {
-				cp = (ConstrainedProperty)constrainedProperties.get(property);				
+				cp = constrainedProperties.get(property);
 			}
 			else {
 				PropertyDescriptor pd = this.bean.getPropertyDescriptor(property);
@@ -63,14 +62,15 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 				cp.setOrder(order++);
 				constrainedProperties.put( property, cp );
 			}
-			for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
-				String constraintName = (String) i.next();
-				if(cp.supportsContraint(constraintName)) {
-					cp.applyConstraint(constraintName, attributes.get(constraintName));
-				} else {
-                    if( ConstrainedProperty.hasRegisteredConstraint( constraintName ) ) {
+            for (Object o : attributes.keySet()) {
+                String constraintName = (String) o;
+                if (cp.supportsContraint(constraintName)) {
+                    cp.applyConstraint(constraintName, attributes.get(constraintName));
+                }
+                else {
+                    if (ConstrainedProperty.hasRegisteredConstraint(constraintName)) {
                         // constraint is registered but doesn't support this property's type
-                        GrailsUtil.warn( "Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation." );
+                        GrailsUtil.warn("Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation.");
                     }
                     else {
                         // in the case where the constraint is not supported we still retain meta data
@@ -78,7 +78,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                         cp.addMetaConstraint(constraintName, attributes.get(constraintName));
                     }
                 }
-			}				
+            }
 			return cp;
 		}
 		catch(InvalidPropertyException ipe) {
@@ -101,7 +101,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 		return createNode(name,Collections.EMPTY_MAP,value);
 	}	
 	
-	public Map getConstrainedProperties() {
+	public Map<String, ConstrainedProperty> getConstrainedProperties() {
 		return this.constrainedProperties;
 	}
 

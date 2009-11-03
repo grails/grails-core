@@ -55,12 +55,14 @@ class HibernateMappingBuilder {
      * @param mappingClosure The closure that defines the ORM DSL 
      */
     Mapping evaluate(Closure mappingClosure) {
-        mapping = new Mapping()
+        if(mapping==null)
+            mapping = new Mapping()
         mappingClosure.resolveStrategy = Closure.DELEGATE_ONLY
         mappingClosure.delegate = this
         mappingClosure.call()
         mapping
     }
+
 
     /**
     * <p>Configures the table name. Example:
