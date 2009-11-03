@@ -27,7 +27,6 @@ grails.gorm.default.mapping = {
    id generator:'sequence'
    'user-type'( type:org.hibernate.type.YesNoType, class:Boolean )
 
-   '*'(type:"text")
 }
 grails.gorm.default.constraints = {
    '*'(nullable:true, size:1..20)
@@ -78,9 +77,8 @@ class MappingDefaults {
         ConstrainedProperty cp = domain.constrainedProperties['name']
 
         assert cp.nullable : "should have been nullable"
-        assert !cp.blank : "should have not have been blank"
+        assert !cp.blank : "should have inherited blank from shared constraint"
         assert 1..20 == cp.size : "size should have been in the specified range"
-        assert "foo" == cp.matches : "should have inherited matches from shared [test] constraint"
         assert !cp.email : "should not have inherited matches from [another] shared constraint"
     }
 
