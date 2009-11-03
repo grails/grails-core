@@ -65,6 +65,21 @@ class HibernateMappingBuilder {
 
 
     /**
+     * Include another config in this one
+     */
+    void includes(Closure callable) {
+        if(callable) {
+            callable.resolveStrategy = Closure.DELEGATE_ONLY
+            callable.delegate = this
+            callable.call()
+        }
+    }
+
+    void hibernateCustomUserType(Map args) {
+        if(args.type && (args['class'] instanceof Class))
+            mapping.userTypes[args['class']] = args.type
+    }
+    /**
     * <p>Configures the table name. Example:
     * <code> { table 'foo' }
     *
@@ -347,14 +362,14 @@ class HibernateMappingBuilder {
     private handleMethodMissing = { String name, args ->
         if(args && args[0] instanceof Map) {
             def namedArgs = args[0]
-            def property = new PropertyConfig()
-            property.type = namedArgs.type
-            property.lazy = namedArgs.lazy != null ? namedArgs.lazy : true
-            property.cascade = namedArgs.cascade ?: null
-            property.sort = namedArgs.sort ?: null
-            property.batchSize = namedArgs.batchSize instanceof Integer ? namedArgs.batchSize : null
-            property.ignoreNotFound = namedArgs.ignoreNotFound != null ? namedArgs.ignoreNotFound : false
-            property.typeParams = namedArgs.params
+            PropertyConfig property = mapping.columns[name] ?: new PropertyConfig()
+            property.type = namedArgs.type ?: property.type
+            property.lazy = namedArgs.lazy != null ? namedArgs.lazy : property.lazy
+            property.cascade = namedArgs.cascade ?: property.cascade
+            property.sort = namedArgs.sort ?: property.sort
+            property.batchSize = namedArgs.batchSize instanceof Integer ? namedArgs.batchSize : property.batchSize
+            property.ignoreNotFound = namedArgs.ignoreNotFound != null ? namedArgs.ignoreNotFound : property.ignoreNotFound
+            property.typeParams = namedArgs.params ?: property.typeParams
             if(namedArgs.fetch) {
                 switch(namedArgs.fetch) {
                     case ~/(join|JOIN)/:
@@ -378,7 +393,14 @@ class HibernateMappingBuilder {
                 // There is no sub-closure containing multiple column
                 // definitions, so pick up any column settings from
                 // the argument map.
-                def cc = new ColumnConfig()
+                def cc
+                if(property.columns) {
+                    cc = property.columns[0]
+                }
+                else {
+                    cc= new ColumnConfig()
+                    property.columns << cc
+                }
 
                 if (namedArgs["column"]) cc.name = namedArgs["column"]
                 if (namedArgs["sqlType"]) cc.sqlType = namedArgs["sqlType"]
@@ -389,7 +411,7 @@ class HibernateMappingBuilder {
                 cc.precision = namedArgs["precision"] ?: -1
                 cc.scale = namedArgs["scale"] ?: -1
 
-                property.columns << cc
+
             }
 
             if(namedArgs.cache instanceof String) {
@@ -488,7 +510,11 @@ class HibernateMappingBuilder {
     }
 
     void methodMissing(String name, args) {
-        if(args && args[0] instanceof Map) {
+        if('user-type' == name && args && (args[0] instanceof Map)) {
+
+           hibernateCustomUserType(args[0])
+        }
+        else if(args && args[0] instanceof Map) {
             handleMethodMissing(name, args)
         }
         else {

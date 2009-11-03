@@ -263,7 +263,7 @@ public final class GrailsDomainBinder {
             SimpleValue elt = new SimpleValue(map.getCollectionTable());
             map.setElement(elt);
 
-            String typeName = getTypeName(getPropertyConfig(property));
+            String typeName = getTypeName(property,getPropertyConfig(property), getMapping(property.getDomainClass()));
             if(typeName == null) {
                 if(property.isBasicCollectionType()) {
                     typeName = property.getReferencedPropertyType().getName();
@@ -547,7 +547,7 @@ public final class GrailsDomainBinder {
             }
             else {
 
-                String typeName = getTypeName(config);
+                String typeName = getTypeName(property, config, getMapping(property.getDomainClass()));
                 if(typeName == null) {
                     Type type = TypeFactory.basic(className);
                     if(type != null) {
@@ -593,17 +593,21 @@ public final class GrailsDomainBinder {
         return (Column)element.getColumnIterator().next();
     }
 
-    private static String getTypeName(PropertyConfig config) {
+    private static String getTypeName(GrailsDomainClassProperty property, PropertyConfig config, Mapping mapping) {
+        String typeName = null;
         if(config !=null && config.getType()!=null) {
             final Object typeObj = config.getType();
             if(typeObj instanceof Class) {
-                return ((Class)typeObj).getName();
+                typeName = ((Class)typeObj).getName();
             }
             else {
-                return typeObj.toString();
+                typeName = typeObj.toString();
             }
         }
-        return null;
+        else if(mapping!=null){
+            typeName = mapping.getTypeName(property.getType());
+        }
+        return typeName;
     }
 
     private static void bindColumnConfigToColumn(Column column, ColumnConfig columnConfig) {
@@ -2246,14 +2250,11 @@ public final class GrailsDomainBinder {
     }
 
     private static void setTypeForPropertyConfig(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, PropertyConfig config) {
-        if (config != null && config.getType() != null) {
-            Object type = config.getType();
-            if (type instanceof Class) {
-                simpleValue.setTypeName(((Class) type).getName());
-            } else {
-                simpleValue.setTypeName(type.toString());
-            }
-            simpleValue.setTypeParameters(config.getTypeParams());
+        final String typeName = getTypeName(grailsProp, getPropertyConfig(grailsProp), getMapping(grailsProp.getDomainClass()));
+        if (typeName != null) {
+            simpleValue.setTypeName(typeName);
+            if(config!=null)
+                simpleValue.setTypeParameters(config.getTypeParams());
         } else {
             simpleValue.setTypeName(grailsProp.getType().getName());
         }
@@ -2511,7 +2512,7 @@ public final class GrailsDomainBinder {
     private static String getIndexColumnType(GrailsDomainClassProperty property, String defaultType) {
         PropertyConfig pc = getPropertyConfig(property);
         if(pc != null && pc.getIndexColumn() != null && pc.getIndexColumn().getType() != null) {
-            return getTypeName(pc.getIndexColumn());
+            return getTypeName(property, pc.getIndexColumn(), getMapping(property.getDomainClass()));
         }
         return defaultType;
     }

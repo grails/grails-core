@@ -26,6 +26,27 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 class Mapping {
 
     /**
+     * Custom hibernate user types
+     */    
+    Map userTypes = [:]
+
+    /**
+     * Return a type name of the known custom user types
+     */
+    String getTypeName ( Class theClass ) {
+        def type = userTypes[theClass]
+        if(type!=null) {
+            if(type instanceof Class) {
+                return type.name 
+            }
+            else {
+                return type.toString()
+            }
+        }
+        return null
+    }
+
+    /**
      * The table
      */
     Table table = new Table()

@@ -32,6 +32,21 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 //
 //    }
 
+    void testIncludes() {
+        def callable = {
+            foos lazy:false
+        }
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            includes callable
+            foos ignoreNotFound:true
+        }
+
+        def pc = mapping.getPropertyConfig("foos")
+        assert pc.ignoreNotFound : "should have ignoreNotFound enabled"
+        assert !pc.lazy : "should not be lazy"
+    }
+
     void testIgnoreNotFound() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
