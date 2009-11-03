@@ -101,7 +101,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         Object constraints = Eval.x(grailsApplication, "x?.config?.grails?.gorm?.default?.constraints");
         if(constraints instanceof Closure) {
             ClosureToMapPopulator populator = new ClosureToMapPopulator();
-            this.defaultConstraints = populator.populate((Closure)constraints);
+            this.defaultConstraints = populator.populate((Closure) constraints);
         }
     }
 

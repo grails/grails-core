@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -349,7 +350,7 @@ public class GrailsDomainConfigurationUtil {
                     constrainedProperties.put(propertyName, cp);
                 }
                 // Make sure all fields are required by default, unless specified otherwise by the constraints
-                applyDefaultConstraints(propertyName, p, cp, defaultConstraints);
+                applyDefaultConstraints(propertyName, p, cp, defaultConstraints, delegate.getSharedConstraints());
             }
         }
 
@@ -370,22 +371,27 @@ public class GrailsDomainConfigurationUtil {
         return evaluateConstraints(instance, properties,null);
     }
 
-    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints) {
+    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
         if(defaultConstraints != null && !defaultConstraints.isEmpty()) {
 
-            for(Map.Entry<String, Object> entry : defaultConstraints.entrySet()) {
-                String constraintName = entry.getKey();
-                Object constrainingValue = entry.getValue();
-                if(!cp.hasAppliedConstraint(constraintName) && cp.supportsContraint(constraintName)) {
-                    if(ConstrainedProperty.NULLABLE_CONSTRAINT.equals(constraintName)) {
-                        if(isConstrainableProperty(p,propertyName))
-                           cp.applyConstraint(constraintName, constrainingValue);
+            if(sharedConstraints!=null && !sharedConstraints.isEmpty()) {
+                for (String sharedConstraintReference : sharedConstraints) {
+                    final Object o = defaultConstraints.get(sharedConstraintReference);
+                    if(o instanceof Map) {
+                        applyMapOfConstraints((Map) o,propertyName, p, cp);
                     }
                     else {
-                        cp.applyConstraint(constraintName,constrainingValue);
+                        throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
                     }
                 }
+            }
+            if(defaultConstraints.containsKey("*")) {
+                final Object o = defaultConstraints.get("*");
+                if(o instanceof Map) {
+                    Map<String, Object> globalConstraints = (Map) o;
+                    applyMapOfConstraints(globalConstraints, propertyName, p, cp);
 
+                }
             }
 
         }
@@ -395,6 +401,23 @@ public class GrailsDomainConfigurationUtil {
                     Collection.class.isAssignableFrom(p.getType()) ||
                     Map.class.isAssignableFrom(p.getType())
             );
+        }
+    }
+
+    private static void applyMapOfConstraints(Map<String, Object> constraints, String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp) {
+        for(Map.Entry<String, Object> entry : constraints.entrySet()) {
+            String constraintName = entry.getKey();
+            Object constrainingValue = entry.getValue();
+            if(!cp.hasAppliedConstraint(constraintName) && cp.supportsContraint(constraintName)) {
+                if(ConstrainedProperty.NULLABLE_CONSTRAINT.equals(constraintName)) {
+                    if(isConstrainableProperty(p,propertyName))
+                       cp.applyConstraint(constraintName, constrainingValue);
+                }
+                else {
+                    cp.applyConstraint(constraintName,constrainingValue);
+                }
+            }
+
         }
     }
 

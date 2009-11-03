@@ -22,9 +22,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
 
 import java.beans.PropertyDescriptor;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances 
@@ -37,17 +35,22 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 	private Object target;
 	private BeanWrapper bean;
 	private Map<String, ConstrainedProperty> constrainedProperties = new HashMap<String, ConstrainedProperty>();
+    private List<String> sharedConstraints = new ArrayList<String>();
 	private int order = 1;
-	
-	public ConstrainedPropertyBuilder(Object target) {
+    private static final String SHARED_CONSTRAINT = "shared";
+
+    public ConstrainedPropertyBuilder(Object target) {
 		super();
 		this.target = target;
 		this.bean = new BeanWrapperImpl(target);
 	}
 
 
+    public List<String> getSharedConstraints() {
+        return Collections.unmodifiableList(sharedConstraints);
+    }
 
-	protected Object createNode(Object name, Map attributes) {
+    protected Object createNode(Object name, Map attributes) {
 		// we do this so that missing property exception is throw if it doesn't exist
 
         try {
@@ -64,8 +67,14 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 			}
             for (Object o : attributes.keySet()) {
                 String constraintName = (String) o;
+                final Object value = attributes.get(constraintName);
+                if(SHARED_CONSTRAINT.equals(constraintName)) {
+                    if(value != null)
+                        sharedConstraints.add(value.toString());
+                    continue;
+                }
                 if (cp.supportsContraint(constraintName)) {
-                    cp.applyConstraint(constraintName, attributes.get(constraintName));
+                    cp.applyConstraint(constraintName, value);
                 }
                 else {
                     if (ConstrainedProperty.hasRegisteredConstraint(constraintName)) {
@@ -75,7 +84,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                     else {
                         // in the case where the constraint is not supported we still retain meta data
                         // about the constraint in case its needed for other things
-                        cp.addMetaConstraint(constraintName, attributes.get(constraintName));
+                        cp.addMetaConstraint(constraintName, value);
                     }
                 }
             }

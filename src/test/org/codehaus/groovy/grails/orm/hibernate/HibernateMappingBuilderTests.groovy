@@ -18,6 +18,20 @@ import org.hibernate.FetchMode
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
+//    void testWildcardApplyToAllProperties() {
+//        def builder = new HibernateMappingBuilder("Foo")
+//        def mapping = builder.evaluate {
+//            '*'(column:"foo")
+//            '*-1'(column:"foo")
+//            '1-1'(column:"foo")
+//            '1-*'(column:"foo")
+//            '*-*'(column:"foo")
+//            one cache:true
+//            two ignoreNoteFound:false
+//        }
+//
+//    }
+
     void testIgnoreNotFound() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
