@@ -34,7 +34,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
 import java.util.Map
 import grails.util.GrailsUtil
-import grails.util.GrailsNameUtils;
+import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 
 /**
  * Invokes a closure as a Webflow action placing the returned model within the flow scope
@@ -70,8 +71,7 @@ public class ClosureInvokingAction extends AbstractAction  {
                      RCH.currentRequestAttributes().setAttribute("${co.name}_${delegate.hashCode()}_errors",errors,0)
                 }
                 co.metaClass.hasErrors = {-> errors?.hasErrors() ? true : false }
-                def cp = new ConstraintsEvaluatingDynamicProperty()
-                def constrainedProperties = cp.get(co.newInstance())
+                def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(co.newInstance())
                 co.metaClass.getConstraints = {-> constrainedProperties }
                 co.metaClass.validate = {->
                     errors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)

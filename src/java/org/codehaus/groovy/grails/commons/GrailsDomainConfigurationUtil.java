@@ -316,7 +316,7 @@ public class GrailsDomainConfigurationUtil {
      *          When the bean cannot be introspected
      */
     public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
-        LinkedList classChain = getSuperClassChain(instance);
+        LinkedList classChain = getSuperClassChain(instance.getClass());
         Class clazz;
 
         ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(instance);
@@ -369,6 +369,18 @@ public class GrailsDomainConfigurationUtil {
      */
     public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties) throws IntrospectionException {
         return evaluateConstraints(instance, properties,null);
+    }
+
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param instance   The instance to evaluate constraints for
+     * @return A Map of constraints
+     * @throws java.beans.IntrospectionException
+     *          When the bean cannot be introspected
+     */
+    public static Map evaluateConstraints(Object instance) throws IntrospectionException {
+        return evaluateConstraints(instance, null,null);
     }
 
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
@@ -427,9 +439,9 @@ public class GrailsDomainConfigurationUtil {
                 && !((p.isOneToOne() || p.isManyToOne()) && p.isCircular());
     }
 
-    private static LinkedList getSuperClassChain(Object instance) {
+    private static LinkedList getSuperClassChain(Class theClass) {
         LinkedList<Class> classChain = new LinkedList<Class>();
-        Class clazz = instance.getClass();
+        Class clazz = theClass;
         while (clazz != Object.class)
         {
             classChain.addFirst( clazz);
