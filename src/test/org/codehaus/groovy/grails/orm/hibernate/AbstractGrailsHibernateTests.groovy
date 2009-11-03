@@ -31,7 +31,7 @@ public class AbstractGrailsHibernateTests extends GroovyTestCase {
     GroovyClassLoader gcl = new GroovyClassLoader(this.getClass().classLoader)
     GrailsApplication ga;
     GrailsApplication grailsApplication;
-    def mockManager
+    GrailsPluginManager mockManager
     MockApplicationContext ctx;
     ApplicationContext appCtx
     ApplicationContext applicationContext

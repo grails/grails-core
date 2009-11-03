@@ -685,6 +685,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                             config = slurper.parse(configURL);
                             ConfigurationHolder.setConfig(config);
                             configLastModified = lastModified;
+                            application.configChanged();
                             informPluginsOfConfigChange();
 
                         }
@@ -708,7 +709,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
     }
 
-    private void informPluginsOfConfigChange() {
+    public void informPluginsOfConfigChange() {
         LOG.info("Informing plug-ins of configuration change..");
         for (Iterator i = pluginList.iterator(); i.hasNext();) {
             GrailsPlugin plugin = (GrailsPlugin) i.next();

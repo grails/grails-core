@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -441,8 +442,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public void refreshConstraints() {
         ArtefactInfo info = getArtefactInfo(DomainClassArtefactHandler.TYPE, true);
         GrailsClass[] domainClasses = info.getGrailsClasses();
-        for (int i = 0; i < domainClasses.length; i++) {
-            ((GrailsDomainClass) domainClasses[i]).refreshConstraints();
+        for (GrailsClass domainClass : domainClasses) {
+            ((GrailsDomainClass) domainClass).refreshConstraints();
         }
     }
 
@@ -841,6 +842,16 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(artefact)) {
                 addOverridableArtefact(artefactHandler.getType(), artefact);
+            }
+        }
+    }
+
+    public void configChanged() {
+        ConfigObject co = getConfig();
+        final ArtefactHandler[] handlers = getArtefactHandlers();
+        for (ArtefactHandler handler : handlers) {
+            if(handler instanceof GrailsConfigurationAware) {
+                ((GrailsConfigurationAware)handler).setConfiguration(co);
             }
         }
     }

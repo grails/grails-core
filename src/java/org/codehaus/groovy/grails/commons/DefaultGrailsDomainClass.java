@@ -57,6 +57,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private boolean root = true;
     private Set subClasses = new HashSet();
     private Collection embedded;
+    private Map<String, Object> defaultConstraints;
 
     public DefaultGrailsDomainClass(Class clazz, Map<String, Object> defaultConstraints) {
         super(clazz, "");
@@ -107,6 +108,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // process the constraints
         try {
             if(defaultConstraints != null) {
+                this.defaultConstraints = defaultConstraints;
                 this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
             }
             else {
@@ -718,7 +720,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     public void refreshConstraints() {
         try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+            if(defaultConstraints!=null) {
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+            }
+            else {
+                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+            }
 
             // Embedded components have their own ComponentDomainClass
             // instance which won't be refreshed by the application.

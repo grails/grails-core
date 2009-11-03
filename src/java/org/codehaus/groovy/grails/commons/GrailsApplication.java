@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
-import groovy.lang.GroovyClassLoader;
 import groovy.util.ConfigObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -381,4 +380,9 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param artefact An overridable artefact
      */
     void addOverridableArtefact(Class artefact);
+
+    /**
+     * Fired to inform the application when the Config.groovy file changes
+     */
+    void configChanged();
 }

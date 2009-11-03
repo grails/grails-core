@@ -4,6 +4,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
 
 /**
  * @author Graeme Rocher
@@ -57,5 +58,25 @@ class MappingDefaults {
         assert 1..20 == cp.size : "size should have been in the specified range"
         assert "foo" == cp.matches : "should have inherited matches from shared [test] constraint"
         assert !cp.email : "should not have inherited matches from [another] shared constraint"
+    }
+
+    void testReloadMappings() {
+        testMappingDefaults()
+
+        ga.config.grails.gorm.default.constraints = {
+           '*'(nullable:true, blank:true, size:1..20)
+           test matches:/foo/
+           another email:true
+        }
+
+        ga.configChanged()
+        
+        mockManager.getGrailsPlugin("domainClass").notifyOfEvent(GrailsPlugin.EVENT_ON_CONFIG_CHANGE, ga.config)
+
+        GrailsDomainClass domain = ga.getDomainClass("MappingDefaults")
+        ConstrainedProperty cp = domain.constrainedProperties['name']
+        assert cp.nullable : "should have been nullable"
+        assert cp.blank : "should have not have been blank"
+
     }
 }

@@ -66,6 +66,10 @@ class DomainClassGrailsPlugin {
            enhanceDomainClasses(application, ctx)
 	}
 
+    def onConfigChange = {
+        application.domainClasses*.refreshConstraints()   
+    }
+
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
         for(GrailsDomainClass dc in application.domainClasses) {
