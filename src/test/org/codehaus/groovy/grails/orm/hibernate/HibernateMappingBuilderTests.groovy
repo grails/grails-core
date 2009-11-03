@@ -150,6 +150,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertTrue mapping.dynamicUpdate
         assertTrue mapping.dynamicInsert
 
+        builder = new HibernateMappingBuilder("Foo")
         mapping = builder.evaluate {
 
         }
