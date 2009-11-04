@@ -57,7 +57,7 @@
                 def version = params.version.toLong()
                 if (${propertyName}.version > version) {
                     <% def lowerCaseName = grails.util.GrailsNameUtils.getPropertyName(className) %>
-                    ${propertyName}.errors.rejectValue("version", "default.optimistic.locking.failure", [message(code: '${domainClass.propertyName}.label', default: '${className}')], "Another user has updated this ${className} while you were editing")
+                    ${propertyName}.errors.rejectValue("version", "default.optimistic.locking.failure", [message(code: '${domainClass.propertyName}.label', default: '${className}')] as Object[], "Another user has updated this ${className} while you were editing")
                     render(view: "edit", model: [${propertyName}: ${propertyName}])
                     return
                 }
