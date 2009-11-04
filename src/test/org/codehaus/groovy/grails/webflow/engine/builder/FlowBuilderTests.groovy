@@ -27,6 +27,96 @@ class FlowBuilderTests extends GroovyTestCase{
         ExpandoMetaClass.disableGlobally()
     }
 
+    void testCustomEntryAndExitActions() {
+        def flow = new FlowBuilder("myFlow",flowBuilderServices, new FlowDefinitionRegistryImpl()).flow {
+            displaySearchForm {
+                onEntry {
+                    "enterview"
+                }
+                onExit {
+                    "exitview"
+                }
+                on("submit") {
+                    error()
+                }.to "displayResults"
+
+            }
+            displayResults {
+                onEntry {
+                    "end state entry"
+                }
+                redirect url:"blah"
+            }
+        }
+
+        assert flow : "flow should not be null"
+
+
+        def state = flow.getState('displaySearchForm')
+
+        assertTrue state instanceof ViewState
+
+        ViewState vs = state
+
+        assert vs.entryActionList.size() == 1 : "should have 1 entry action!"
+        assert vs.exitActionList.size() == 1 : "should have 1 exit action!"
+
+        state = flow.getState('displayResults')
+
+        assert state instanceof EndState : "should be an end state"
+
+        EndState es = state
+        assert es.entryActionList.size() == 1 : "should have 1 entry action!"
+
+    }
+    void testOnStartAndOnEndFlowEvents() {
+        def flow = new FlowBuilder("myFlow",flowBuilderServices, new FlowDefinitionRegistryImpl()).flow {
+            onStart {
+                "started"
+            }
+            onEnd {
+                "ended"
+            }
+            displaySearchForm {
+                on("submit") {
+                    error()
+                }.to "displayResults"
+
+            }
+            displayResults()
+        }
+
+        assert flow : "should have created a flow"
+        assert flow.startActionList.size() == 1 : "should have a start action"
+        assert flow.endActionList.size() == 1 : "should have a end action"
+    }
+
+    void testOnRenderEventInViewFlow() {
+        def flow = new FlowBuilder("myFlow",flowBuilderServices, new FlowDefinitionRegistryImpl()).flow {
+            displaySearchForm {
+                onRender {
+                    "good"
+                }
+                on("submit") {
+                    error()
+                }.to "displayResults"
+
+            }
+            displayResults()
+        }
+
+        def state = flow.getState('displaySearchForm')
+
+        assertTrue state instanceof ViewState
+
+        ViewState vs = state
+
+        assert vs.renderActionList.size() == 2 : "should have 2 render actions!"
+
+        def lastAction = vs.renderActionList.toArray()[-1]
+        assert lastAction.callable() == "good" : "should have returned 'good' from custom render action"
+
+    }
     void testFlowWithTransitionCriteria() {
         def flow = new FlowBuilder("myFlow",flowBuilderServices, new FlowDefinitionRegistryImpl()).flow {
             displaySearchForm {

@@ -48,10 +48,10 @@ import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
  *        Time: 12:00:23 PM
  */
 public class ClosureInvokingAction extends AbstractAction  {
-    private Closure callable;
     private static final Log LOG = LogFactory.getLog(ClosureInvokingAction.class);
     private static final String RESULT = "result";
 
+    Closure callable;
     def commandClasses
     def noOfParams
     boolean hasCommandObjects
@@ -87,6 +87,8 @@ public class ClosureInvokingAction extends AbstractAction  {
             }
         }
     }
+
+
 
     def checkAppContext() {
         if(!applicationContext) {
