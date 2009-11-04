@@ -319,6 +319,16 @@ target(resolveDependencies:"Resolve plugin dependencies") {
             doInstallPluginFromGrailsHomeOrRepository name, version
             installedPlugins = true
         }
+        else if(pluginLoc) {
+            def dirName = pluginLoc.filename
+            if(!dirName.endsWith(version)) {
+                println "Upgrading plugin [$dirName] to [${fullName}], resolving.."
+
+                doInstallPluginFromGrailsHomeOrRepository name, version
+                installedPlugins = true
+            }
+        }
+
     }
     if(installedPlugins) {
         resetClasspathAndState()
@@ -329,7 +339,9 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     // directory and the global "plugins" dir. Plugins loaded via an
     // explicit path should be left alone.
     def pluginDirs = pluginSettings.implicitPluginDirectories
-    def pluginsToUninstall = pluginDirs.findAll { Resource r -> !plugins.find { plugin -> r.filename == "$plugin.name-$plugin.version" }}
+    def pluginsToUninstall = pluginDirs.findAll { Resource r -> !plugins.find { plugin ->
+        r.filename ==~ "$plugin.name-.+" 
+    }}
 
     for(Resource pluginDir in pluginsToUninstall) {
         if(pluginSettings.isGlobalPluginLocation(pluginDir)) {
