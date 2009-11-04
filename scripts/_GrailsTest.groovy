@@ -185,20 +185,24 @@ processTests = { String type ->
 compileTests = { String type ->
     event("TestCompileStart", [type])
 
-    def destDir = new File(grailsSettings.testClassesDir, type)
-    ant.mkdir(dir: destDir.path)
-    try {
-        def classpathId = "grails.test.classpath"
-        ant.groovyc(destdir: destDir,
-                encoding:"UTF-8",
-                classpathref: classpathId) {
-            javac(classpathref:classpathId, debug:"yes")
-            src(path:"${basedir}/test/${type}")
+    srcdir = new File("${basedir}/test/${type}")
+    if(srcdir.exists()) {        
+        def destDir = new File(grailsSettings.testClassesDir, type)
+        ant.mkdir(dir: destDir.path)
+        try {
+            def classpathId = "grails.test.classpath"
+            ant.groovyc(destdir: destDir,
+                    encoding:"UTF-8",
+                    classpathref: classpathId) {
+                javac(classpathref:classpathId, debug:"yes")
+
+                src(path:srcdir)
+            }
         }
-    }
-    catch (Exception e) {
-        event("StatusFinal", ["Compilation error compiling [$type] tests: ${e.message}"])
-        exit 1
+        catch (Exception e) {
+            event("StatusFinal", ["Compilation error compiling [$type] tests: ${e.message}"])
+            exit 1
+        }
     }
 
     event("TestCompileEnd", [type])
