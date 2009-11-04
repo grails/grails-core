@@ -32,6 +32,7 @@ class HelpEvaluatingCategory {
     static helpText = [:]
 	static target(Object obj, Map args, Closure callable) {
         def entry = args.entrySet().iterator().next()
+        obj[entry.key] = entry.key
         helpText[(entry.key)] = entry.value
 
         if (entry.key == "default") {
@@ -119,7 +120,7 @@ showHelp = { String cmd, scripts ->
                 }
                 catch(Throwable t) {
                     println "Warning: Error caching created help for ${file}: ${t.message}"
-                    println helpText
+                    exit 1
                 }
             }
             else {
