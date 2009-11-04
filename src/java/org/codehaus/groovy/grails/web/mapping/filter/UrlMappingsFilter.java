@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -87,7 +88,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         List<String> excludePatterns = holder.getExcludePatterns();
 
         String uri = urlHelper.getPathWithinApplication(request);
-        
+        checkForCompilationErrors();
+
         GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
         if((controllers == null || controllers.length == 0 || holder == null) && !"/".equals(uri)) {
             processFilterChain(request, response, filterChain);
@@ -209,6 +211,19 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             processFilterChain(request, response, filterChain);
         }
 
+    }
+
+    private void checkForCompilationErrors() {
+        if(!application.isWarDeployed()) {
+
+            ClassLoader classLoader = application.getClassLoader();
+            if(classLoader instanceof GrailsClassLoader) {
+                GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
+                if(gcl.hasCompilationErrors()) {
+                    throw gcl.getCompilationError();
+                }
+            }
+        }
     }
 
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {

@@ -88,6 +88,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         	if(message instanceof SyntaxErrorMessage) {
         		SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
         		this.lineNumber = sem.getCause().getLine();
+                this.className = sem.getCause().getSourceLocator();
                 sem.write(pw);
         	}
         	
