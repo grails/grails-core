@@ -77,15 +77,16 @@ class JavascriptTagLib  {
 		else if(attrs.library) {
 
 			if(LIBRARY_MAPPINGS.containsKey(attrs.library)) {
-				if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-					LIBRARY_MAPPINGS[attrs.library].each {
-						if(!request[INCLUDED_JS].contains(it)) {
-							request[INCLUDED_JS] << it
-							def newattrs = [:] + attrs
-							newattrs.src = it+'.js'
-							javascriptInclude(newattrs)
-					    }
-					}
+
+                LIBRARY_MAPPINGS[attrs.library].each {
+                    if(!request[INCLUDED_JS].contains(it)) {
+                        request[INCLUDED_JS] << it
+                        def newattrs = [:] + attrs
+                        newattrs.src = it+'.js'
+                        javascriptInclude(newattrs)
+                    }
+                }
+                if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
 					request[INCLUDED_LIBRARIES] << attrs.library
 				}
 			}
