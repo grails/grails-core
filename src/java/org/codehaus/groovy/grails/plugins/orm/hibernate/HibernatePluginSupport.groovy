@@ -71,6 +71,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.springframework.dao.DataAccessException
 import org.hibernate.FlushMode
+import org.codehaus.groovy.grails.orm.support.FlushOnRedirectEventListener
 
 
 /**
@@ -203,6 +204,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             }
 
             if (manager?.hasGrailsPlugin("controllers")) {
+                flushingRedirectEventListener(FlushOnRedirectEventListener, sessionFactory)
                 openSessionInViewInterceptor(GrailsOpenSessionInViewInterceptor) {
 
                     if(hibConfig.flush.mode instanceof String) {

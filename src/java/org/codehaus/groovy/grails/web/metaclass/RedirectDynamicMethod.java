@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlCreator;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
@@ -71,6 +71,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
     private UrlMappingsHolder urlMappingsHolder;
     private boolean useJessionId = false;
+    private ApplicationContext applicationContext;
 
     public RedirectDynamicMethod(ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
@@ -82,6 +83,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         if(o instanceof Boolean) {
             useJessionId = (Boolean) o;
         }
+        this.applicationContext = applicationContext;
 
     }
 
@@ -192,10 +194,15 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
             String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
             response.sendRedirect(redirectUrl);
+            Map<String, RedirectEventListener> redirectListeners = applicationContext.getBeansOfType(RedirectEventListener.class);
+            for (RedirectEventListener redirectEventListener : redirectListeners.values()) {
+                redirectEventListener.responseRedirected(redirectUrl);    
+            }
+
             request.setAttribute(GRAILS_REDIRECT_ISSUED, true);
 
         } catch (IOException e) {
-            throw new ControllerExecutionException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);
+            throw new CannotRedirectException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);
         }
         return null;
     }

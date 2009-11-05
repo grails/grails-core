@@ -19,6 +19,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 
 abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
 
@@ -30,7 +31,7 @@ abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
     GrailsApplication ga;
     def mockManager
     MockApplicationContext ctx;
-    def appCtx;
+    GrailsApplicationContext appCtx;
     def originalHandler
 
     protected void onSetUp() {

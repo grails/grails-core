@@ -9,6 +9,9 @@
  * 
  */
 package org.codehaus.groovy.grails.web.servlet.mvc
+
+import org.springframework.beans.MutablePropertyValues
+
 class RedirectMethodTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
@@ -80,6 +83,22 @@ class UrlMappings {
         ''')
     }
 
+    void testRedirectEventListeners() {
+        def fired = false
+        def callable = { fired = true }
+
+        ctx.registerMockBean("testRedirect", callable)
+        def pv = new MutablePropertyValues()
+        pv.addPropertyValue("callable", callable)
+        appCtx.registerSingleton("testDirect",TestRedirectListener, pv )
+
+        def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+
+        c.toAction.call()
+
+        assert fired : "redirect event should have been fired"
+    }
     void testRedirectAlreadyCalledException() {
 
         def c = ga.getControllerClass("RedirectController").newInstance()
@@ -176,5 +195,12 @@ class UrlMappings {
         webRequest.controllerName = 'newsSignup'
         c.testNoController.call()
         assertEquals "/little-brown-bottle/thankyou", response.redirectedUrl
+    }
+}
+class TestRedirectListener implements RedirectEventListener  {
+
+    def callable
+    public void responseRedirected(String url) {
+        callable(url)
     }
 }
