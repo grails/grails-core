@@ -18,6 +18,8 @@ class RedirectMethodTests extends AbstractGrailsControllerTests {
         gcl.parseClass('''
 class RedirectController {
 
+    static defaultAction = 'toAction'
+
     def redirectTwice = {
 
         redirect(action:'one')
@@ -58,8 +60,15 @@ class RedirectController {
 }
 
 class NewsSignupController {
+
+    static defaultAction = "thankyou"
+
     def testNoController = {
         redirect(action: 'thankyou')
+    }
+
+    def redirectToDefaultAction = {
+        redirect(controller:"redirect")
     }
 
     def thankyou = {
@@ -81,6 +90,13 @@ class UrlMappings {
 	}
 }
         ''')
+    }
+
+    void testRedirectToDefaultActionOfAnotherController() {
+        def c = ga.getControllerClass("NewsSignupController").newInstance()
+        webRequest.controllerName = 'newsSignup'
+        c.redirectToDefaultAction.call()
+        assertEquals "/redirect", response.redirectedUrl
     }
 
     void testRedirectEventListeners() {

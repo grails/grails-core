@@ -157,8 +157,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                     LOG.debug( "Dynamic method [redirect] no URL mapping found for params [" + params + "]" );
                 }
 
-                String action = actionName != null ? actionName : webRequest.getActionName();
-                actualUri = urlMapping.createURL( controllerName, action, params, request.getCharacterEncoding(), frag );
+                actualUri = urlMapping.createURL( controllerName, actionName, params, request.getCharacterEncoding(), frag );
 
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug( "Dynamic method [redirect] mapped to URL [" + actualUri + "]" );
