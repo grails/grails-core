@@ -1992,6 +1992,8 @@ public final class GrailsDomainBinder {
             manyToOne.setFetchMode(FetchMode.DEFAULT);
         }
 
+        manyToOne.setLazy(getLazyiness(property));
+
         if (config != null) {
            manyToOne.setIgnoreNotFound(config.getIgnoreNotFound());
         }
@@ -2105,8 +2107,7 @@ public final class GrailsDomainBinder {
                              grailsProperty.isPersistent() && !grailsProperty.isAssociation() && !grailsProperty.isIdentity();
 
         if(isLazyable) {
-            PropertyConfig config = getPropertyConfig(grailsProperty);
-            final boolean isLazy = config!=null ? config.getLazy() : true;
+            final boolean isLazy = getLazyiness(grailsProperty);
             prop.setLazy(isLazy);
 
             if(isLazy && (grailsProperty.isManyToOne() || grailsProperty.isOneToOne())) {
@@ -2115,6 +2116,12 @@ public final class GrailsDomainBinder {
 
         }
 
+    }
+
+    private static boolean getLazyiness(GrailsDomainClassProperty grailsProperty) {
+        PropertyConfig config = getPropertyConfig(grailsProperty);
+        final boolean isLazy = config!=null ? config.getLazy() : true;
+        return isLazy;
     }
 
     private static boolean isBidirectionalManyToOneWithListMapping(GrailsDomainClassProperty grailsProperty, Property prop) {
