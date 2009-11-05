@@ -395,17 +395,8 @@ long updateDirectoryFromSVN(baseFile) {
 
 
 
-target(importToSVN:"Imports a plug-in project to Grails' remote SVN repository") {
+target(importToSVN:"Imports a plugin project to Grails' remote SVN repository") {
     File checkOutDir = new File("${baseFile.parentFile.absolutePath}/checkout/${baseFile.name}")
-
-    def result = confirmInput("""
-This plug-in project is not currently in the repository, this command will now:
-* Perform an SVN import into the repository
-* Checkout the imported version of the project from SVN to '${checkOutDir}'
-* Tag the plug-in project as the LATEST_RELEASE
-Are you sure you wish to proceed?
-    """)
-    if(!result) exit(0)
 
     ant.unzip(src:pluginZip, dest:"${basedir}/unzipped")
     ant.copy(file:pluginZip, todir:"${basedir}/unzipped")
@@ -414,10 +405,29 @@ Are you sure you wish to proceed?
 
     File importBaseDirectory = new File("${basedir}/unzipped")
 
-    SVNURL svnURL = importBaseToSVN(importBaseDirectory)
+    String testsDir = "${importBaseDirectory}/test"
+    ant.mkdir(dir:testsDir)
+    ant.copy(todir:testsDir) {
+        fileset(dir:"${basedir}/test")
+    }
 
-    ant.delete(dir:"${basedir}/unzipped")
-
+    try {
+        def result = confirmInput("""
+    This plug-in project is not currently in the repository, this command will now:
+    * Perform an SVN import into the repository
+    * Checkout the imported version of the project from SVN to '${checkOutDir}'
+    * Tag the plug-in project as the LATEST_RELEASE
+    Are you sure you wish to proceed?
+        """)
+        if(!result) {
+            ant.delete(dir:importBaseDirectory, failonerror:false)
+            exit(0)
+        }
+        SVNURL svnURL = importBaseToSVN(importBaseDirectory)
+    }
+    finally {
+        ant.delete(dir:importBaseDirectory, failonerror:false)
+    }
     checkOutDir.parentFile.mkdirs()
 
     checkoutFromSVN(checkOutDir, svnURL)
