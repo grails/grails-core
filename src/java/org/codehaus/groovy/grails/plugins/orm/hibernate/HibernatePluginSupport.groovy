@@ -255,6 +255,32 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     public static void enhanceProxyClass ( Class proxyClass ) {
     	def mc = proxyClass.metaClass
     	if(! mc.pickMethod('grailsEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY) ) {
+            // hasProperty
+            mc.hasProperty = { String name ->
+                if(delegate instanceof HibernateProxy) {
+                    return GrailsHibernateUtil.unwrapProxy(delegate).hasProperty(name)
+                }
+                else {
+                    throw new MissingPropertyException(name, delegate.class)
+                }                
+            }
+            // respondsTo
+            mc.respondsTo = { String name ->
+                if(delegate instanceof HibernateProxy) {
+                    return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name)
+                }
+                else {
+                    throw new MissingPropertyException(name, delegate.class)
+                }
+            }
+            mc.respondsTo = { String name, Object[] args ->
+                if(delegate instanceof HibernateProxy) {
+                    return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name, args)
+                }
+                else {
+                    throw new MissingPropertyException(name, delegate.class)
+                }
+            }
 	    	// getter
     		mc.propertyMissing = { String name ->
 		        if(delegate instanceof HibernateProxy) {
