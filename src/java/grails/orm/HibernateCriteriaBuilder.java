@@ -1132,7 +1132,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private void invokeClosureNode(Object args) {
         Closure callable = (Closure)args;
         callable.setDelegate(this);
-        callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();
     }
 

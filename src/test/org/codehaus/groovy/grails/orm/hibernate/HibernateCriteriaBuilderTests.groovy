@@ -41,6 +41,35 @@ class CriteriaBuilderTestClass2 {
 ''')
     }
 
+
+    List retrieveListOfNames() {
+        ['bart']
+    }
+
+    // test for GRAILS-4377
+    void testResolveOrder() {
+        def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
+
+        assertNotNull(domainClass)
+
+        def obj = domainClass.newInstance()
+        obj.firstName = "bart"
+        obj.lastName="simpson"
+        obj.age=11
+
+        assertNotNull obj.save(flush:true)
+
+
+        def action = {
+            domainClass.createCriteria().list {
+                            'in'('firstName',retrieveListOfNames())
+            }
+        }
+
+        def results = action()
+        assertEquals(1 , results.size())
+    }
+
     // test for GRAILS-3174
     void testDuplicateAlias() {
 

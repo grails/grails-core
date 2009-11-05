@@ -153,8 +153,6 @@ hibernate {
     }
 
 
-
-
 	protected MockApplicationContext createMockApplicationContext() {
 		return new MockApplicationContext();
 	}
