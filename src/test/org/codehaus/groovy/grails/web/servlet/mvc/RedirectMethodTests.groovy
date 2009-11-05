@@ -15,6 +15,16 @@ class RedirectMethodTests extends AbstractGrailsControllerTests {
         gcl.parseClass('''
 class RedirectController {
 
+    def redirectTwice = {
+
+        redirect(action:'one')
+        redirect(action:'two')
+    }
+    def responseCommitted = {
+        response.outputStream << "write data"
+        response.outputStream.flush()
+        redirect(action:'one')
+    }
     def toAction = {
         redirect(action:'foo')
     }
@@ -68,6 +78,37 @@ class UrlMappings {
 	}
 }
         ''')
+    }
+
+    void testRedirectAlreadyCalledException() {
+
+        def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+
+
+        try {
+            c.redirectTwice.call()
+            fail "should have thrown an exception"
+        }
+        catch (org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException e) {
+            assert e.message == "Cannot issue a redirect(..) here. A previous call to redirect(..) has already redirected the response." : "incorrect error message for response redirect"
+        }
+
+    }
+
+    void testRedirectWhenResponseCommitted() {
+        def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+
+
+        try {
+            c.responseCommitted.call()
+            fail "should have thrown an exception"
+        }
+        catch (org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException e) {
+            assert e.message == "Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response." : "incorrect error message for response redirect when already written to"
+        }
+
     }
 
     void testRedirectToRoot() {

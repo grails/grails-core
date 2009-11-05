@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -60,16 +61,16 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_ACTION = "action";
     public static final String ARGUMENT_ID = "id";
     public static final String ARGUMENT_PARAMS = "params";
-    private static final String ARGUMENT_FRAGMENT = "fragment";
+    public static final String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
+    public static final String GRAILS_REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";
 
+    private static final String ARGUMENT_FRAGMENT = "fragment";
     public static final String ARGUMENT_ERRORS = "errors";
 
+
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
-
-
     private UrlMappingsHolder urlMappingsHolder;
     private boolean useJessionId = false;
-    private static final String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
 
     public RedirectDynamicMethod(ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
@@ -91,6 +92,18 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         Map argMap = arguments[0] instanceof Map ? (Map)arguments[0] : Collections.EMPTY_MAP;
         if(argMap.size() == 0){
             throw new MissingMethodException(METHOD_SIGNATURE,target.getClass(),arguments);
+        }
+
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+
+        HttpServletRequest request = webRequest.getCurrentRequest();
+        HttpServletResponse response = webRequest.getCurrentResponse();
+
+        if(request.getAttribute(GRAILS_REDIRECT_ISSUED)!=null) {
+            throw new CannotRedirectException("Cannot issue a redirect(..) here. A previous call to redirect(..) has already redirected the response.");
+        }
+        if(response.isCommitted()) {
+            throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
         }
 
 
@@ -116,11 +129,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         String actualUri;
-        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        
         GrailsApplicationAttributes attrs = webRequest.getAttributes();
-        HttpServletRequest request = webRequest.getCurrentRequest();
-        HttpServletResponse response = webRequest.getCurrentResponse();
 
         if(uri != null) {
             actualUri = attrs.getApplicationUri(request) + uri.toString();
@@ -159,7 +168,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
         }
 
-        return redirectResponse(actualUri, response);
+        return redirectResponse(actualUri, request,response);
     }
 
     private String getControllerName(Object target, Map argMap) {
@@ -170,7 +179,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     /*
      * Redirects the response the the given URI
      */
-    private Object redirectResponse(String actualUri, HttpServletResponse response) {
+    private Object redirectResponse(String actualUri, HttpServletRequest request, HttpServletResponse response) {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
         }
@@ -183,6 +192,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
             String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
             response.sendRedirect(redirectUrl);
+            request.setAttribute(GRAILS_REDIRECT_ISSUED, true);
 
         } catch (IOException e) {
             throw new ControllerExecutionException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);

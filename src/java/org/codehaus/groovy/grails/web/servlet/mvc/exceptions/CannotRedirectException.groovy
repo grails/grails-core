@@ -13,33 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
-
+package org.codehaus.groovy.grails.web.servlet.mvc.exceptions
 /**
- * Throw when an exception occurs during controller execution
+ *
+ * Thrown when the request cannot be redirected
  *
  * @author Graeme Rocher
- * @since 0.2
- *
- * Created Oct 27, 2005
+ * @since 1.2
  */
+public class CannotRedirectException extends ControllerExecutionException {
 
-public class ControllerExecutionException extends GrailsMVCException {
-
-	public ControllerExecutionException() {
-		super();
-	}
-
-	public ControllerExecutionException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
-
-	public ControllerExecutionException(String arg0) {
-		super(arg0);
-	}
-
-	public ControllerExecutionException(Throwable arg0) {
-		super(arg0);
-	}
-
+    CannotRedirectException() {
+    }
+    CannotRedirectException(String message, Throwable t) {
+        super(message, t);
+    }
+    CannotRedirectException(String message) {
+        super(message);
+    }
 }
