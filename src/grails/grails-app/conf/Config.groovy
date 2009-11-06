@@ -37,7 +37,8 @@ grails.scaffolding.templates.domainSuffix = 'Instance'
 grails.json.legacy.builder=false
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
-
+// whether to install the java.util.logging bridge for sl4j. Disable fo AppEngine!
+grails.logging.jul.usebridge = true
 
 // set per-environment serverURL stem for creating absolute links
 environments {
