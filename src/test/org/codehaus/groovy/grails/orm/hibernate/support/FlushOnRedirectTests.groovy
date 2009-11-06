@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.orm.support
+package org.codehaus.groovy.grails.orm.hibernate.support
 
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
