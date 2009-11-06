@@ -18,13 +18,14 @@ public class FlushOnRedirectTests extends AbstractGrailsHibernateTests {
 import grails.persistence.*
 
 @Entity
-class FlushOnRedirect {
+class RedirectFlushTestDomain {
    String name
-}
+}     ''')
 
+       gcl.parseClass('''
 class FlushOnRedirectController {
     def test = {
-        def f = FlushOnRedirect.get(1)
+        def f = RedirectFlushTestDomain.get(1)
         f.name = "changed"
         redirect(action:"two")
     }
@@ -36,7 +37,7 @@ class FlushOnRedirectController {
 
 
     void testFlushOnRedirect() {
-        def FlushOnRedirect = ga.getDomainClass("FlushOnRedirect").clazz
+        def FlushOnRedirect = ga.getDomainClass("RedirectFlushTestDomain").clazz
 
         assert FlushOnRedirect.newInstance(name:"Bob").save(flush:true) : "should have saved instance"
 
