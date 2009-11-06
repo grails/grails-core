@@ -439,6 +439,8 @@ class BuildSettings {
      */
     public void setBaseDir(File newBaseDir) {
         this.baseDir = newBaseDir ?: establishBaseDir()
+        // Initialize Metadata
+        Metadata.getInstance(new File(this.baseDir, "application.properties"))
 
         // Set up the project paths, using an empty config for now. The
         // paths will be updated if and when a BuildConfig configuration
@@ -447,8 +449,6 @@ class BuildSettings {
         establishProjectStructure()
 
         if (grailsHome) {
-            // Initialize Metadata
-            Metadata.getInstance(new File(this.baseDir, "application.properties"))
             // Add the application's libraries.
             def appLibDir = new File(this.baseDir, "lib")
             if (appLibDir.exists()) {

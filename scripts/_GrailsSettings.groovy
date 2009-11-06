@@ -101,7 +101,8 @@ serverPortHttps = getPropertyValue("grails.server.port.https", 8443)?.toInteger(
 serverHost = getPropertyValue("grails.server.host", null)
 
 metadataFile = new File("${basedir}/application.properties")
-metadata = Metadata.getInstance(metadataFile)
+
+metadata = metadataFile.exists() ? Metadata.getInstance(metadataFile) : Metadata.current
 
 grailsAppName = metadata.getApplicationName()
 grailsAppVersion = metadata.getApplicationVersion()
