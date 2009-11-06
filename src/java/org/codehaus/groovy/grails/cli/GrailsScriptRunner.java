@@ -708,11 +708,13 @@ public class GrailsScriptRunner {
         }
 
         // Add build-only dependencies to the project
-        System.out.println("Resolving dependencies...");
+        final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
+        if(!dependenciesExternallyConfigured)
+            System.out.println("Resolving dependencies...");
         long now = System.currentTimeMillis();
         // add dependencies required by the build system
         final List<File> buildDependencies = settings.getBuildDependencies();
-        if(!settings.isDependenciesExternallyConfigured() && buildDependencies.isEmpty()) {
+        if(!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
             exitWithError("Required Grails build dependencies were not found. Either GRAILS_HOME is not set or your dependencies are misconfigured in grails-app/conf/BuildConfig.groovy");
         }
         addDependenciesToURLs(excludes, urls, buildDependencies);
@@ -721,7 +723,8 @@ public class GrailsScriptRunner {
         // Add the project's test dependencies (which include runtime dependencies) because most of them
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
-        System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
+        if(!dependenciesExternallyConfigured)
+            System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
 
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
