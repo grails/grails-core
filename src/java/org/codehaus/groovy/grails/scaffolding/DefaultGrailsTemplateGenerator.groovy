@@ -60,6 +60,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 	    def suffix = ConfigurationHolder.config?.grails?.scaffolding?.templates?.domainSuffix
 	    if (suffix != [:]) {
 	        domainSuffix = suffix
+		}
     }
 
     /**
