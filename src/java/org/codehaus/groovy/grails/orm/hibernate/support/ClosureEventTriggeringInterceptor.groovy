@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContextAware
 import org.hibernate.event.*
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
 import grails.validation.ValidationException
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -158,7 +159,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
             evict = true
             if(failOnError) {
                 if(failOnErrorPackages) {
-                    if(failOnErrorPackages.contains(entity.class.getPackage().name))
+                    if(GrailsClassUtils.isClassBelowPackage(entity.class, failOnErrorPackages))
                         throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
                 }
                 else {

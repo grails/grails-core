@@ -16,18 +16,17 @@ package org.codehaus.groovy.grails.commons;
 
 
 import groovy.lang.*;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.*;
+import org.springframework.core.JdkVersion;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.*;
-import org.springframework.core.JdkVersion;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Graeme Rocher
@@ -1091,5 +1090,25 @@ public class GrailsClassUtils {
         	}
         }
         return null;
+    }
+
+    /**
+     * Returns whether the specified class is either within one of the specified packages or
+     * within a subpackage of one of the packages
+     *
+     * @param theClass The class
+     * @param packageList The list of packages
+     * @return True if it is within the list of specified packages
+     */
+    public static boolean isClassBelowPackage(Class theClass, List packageList) {
+        String classPackage = theClass.getPackage().getName();
+        for (Object packageName : packageList) {
+            if(packageName!=null) {
+                if (classPackage.startsWith(packageName.toString())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

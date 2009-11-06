@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -46,6 +47,10 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
 
     public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
         super(METHOD_PATTERN,sessionFactory, classLoader, application);
+    }
+
+    public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
+        super(METHOD_PATTERN,sessionFactory, classLoader, application, domainClass);
     }
 
 	protected Object performSave(final Object target, final boolean flush) {

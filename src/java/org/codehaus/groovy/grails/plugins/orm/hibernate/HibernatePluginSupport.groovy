@@ -729,7 +729,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         def template = new HibernateTemplate(sessionFactory)
 
 
-        def saveMethod = new SavePersistentMethod(sessionFactory, classLoader, application)
+        def saveMethod = new SavePersistentMethod(sessionFactory, classLoader, application, dc)
         def metaClass = dc.metaClass
 
         metaClass.save = {Boolean validate ->
@@ -742,7 +742,7 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             saveMethod.invoke(delegate, "save", [] as Object[])
         }
 
-        def mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, application)
+        def mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, application, dc)
         metaClass.merge = {Map args ->
             mergeMethod.invoke(delegate, "merge", [args] as Object[])
         }
