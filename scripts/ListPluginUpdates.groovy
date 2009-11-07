@@ -16,7 +16,7 @@
 import groovy.xml.dom.DOMCategory
 
 includeTargets << grailsScript("_GrailsInit")
-includeTargets << grailsScript("_GrailsPlugins")
+includeTargets << grailsScript("_PluginDependencies")
 
 def getAvailablePluginVersions = {
     def plugins = [:]
@@ -54,7 +54,7 @@ def getInstalledPluginVersions = {
 }
 
 target('default': "Checks installed plugin versions against latest releases on repositories") {
-    depends(updatePluginsList)
+    depends(resolveDependencies)
 
     def availablePluginVersions = getAvailablePluginVersions()
     def installedPluginVersions = getInstalledPluginVersions()
