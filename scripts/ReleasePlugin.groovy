@@ -64,10 +64,19 @@ target(processAuth:"Prompts user for login details to create authentication mana
                 usr = usr+".default"
                 psw = psw+".default"
             }
-            ant.input(message:"Please enter your SVN username:", addproperty:usr)
-            ant.input(message:"Please enter your SVN password:", addproperty:psw)
-            def username = ant.antProject.getProperty(usr)
-            def password = ant.antProject.getProperty(psw)
+
+			def (username, password) = [argsMap.username, argsMap.password]
+			
+			if (!username) {
+				ant.input(message:"Please enter your SVN username:", addproperty:usr)
+				username = ant.antProject.getProperty(usr)
+			}
+			
+			if (!password) {
+				ant.input(message:"Please enter your SVN password:", addproperty:psw)
+	            password = ant.antProject.getProperty(psw)
+			}
+						
             authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
 	        authManagerMap.put(authKey,authManager)
         }
@@ -106,6 +115,10 @@ target(releasePlugin: "The implementation target") {
     }
     processAuth()
 
+	if (argsMap.message) {
+		commitMessage = argsMap.message
+	}
+	
     if(argsMap.repository) {
       configureRepositoryForName(argsMap.repository, "distribution")
     }
