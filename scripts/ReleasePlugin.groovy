@@ -487,9 +487,6 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
     // Get remote URL for this working copy.
     def wcClient = new SVNWCClient((ISVNAuthenticationManager) authManager, null)
     def copyFromUrl = trunk
-    if (new File(grailsSettings.baseDir, ".svn").exists()) {
-        copyFromUrl = wcClient.doInfo(new File("."), SVNRevision.WORKING).URL
-    }
 
     // First tag this release with the version number.
     try {
