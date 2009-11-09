@@ -68,7 +68,7 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
         def scripts = pluginSettings.getAvailableScripts()
 
-        assertEquals 40, scripts.size()
+        assertEquals 41, scripts.size()
     }
 
     void testGetPluginScripts() {
