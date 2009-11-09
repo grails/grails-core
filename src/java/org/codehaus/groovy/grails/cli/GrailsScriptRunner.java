@@ -798,17 +798,9 @@ public class GrailsScriptRunner {
         if (libDir.exists()) {
             final IvyDependencyManager dependencyManager = settings.getDependencyManager();
             final Map pluginExcludes = dependencyManager.getPluginExcludes();
-            String pluginName = pluginDir.getName();
-            int i = pluginName.lastIndexOf('-');
-            if(i>-1) {
-                Collection excludes = null;
-                while(i>-1 && excludes == null) {
-                    pluginName = pluginName.substring(0,i);
-                    excludes = (Collection) pluginExcludes.get(pluginName);
-                    i = pluginName.indexOf('-');                    
-                }
-                addLibs(libDir, urls, excludes!=null ? excludes : Collections.emptyList());
-            }
+            String pluginName = getPluginName(pluginDir);
+            Collection excludes = (Collection) pluginExcludes.get(pluginName);
+            addLibs(libDir, urls, excludes != null ? excludes : Collections.emptyList());
         }
     }
 
@@ -925,7 +917,28 @@ public class GrailsScriptRunner {
         }
     }
 
- 
+    /**
+     * Gets the name of a plugin based on its directory. The method
+     * basically finds the plugin descriptor and uses the name of the
+     * class to determine the plugin name. To be honest, this class
+     * shouldn't be plugin-aware in my view, so hopefully this will
+     * only be a temporary method.
+     * @param pluginDir The directory containing the plugin.
+     * @return The name of the plugin contained in the given directory.
+     */
+    private static String getPluginName(File pluginDir) {
+    	// Get the plugin descriptor from the given directory and use
+    	// it to infer the name of the plugin.
+        File desc = getPluginDescriptor(pluginDir);
+        
+        if (desc == null) {
+        	throw new RuntimeException("Cannot find plugin descriptor in plugin directory '" + pluginDir + "'.");
+        }
+        else {
+	        int pos = desc.getName().indexOf("GrailsPlugin.groovy");
+        	return GrailsNameUtils.getScriptName(desc.getName().substring(0, pos));
+        }
+    }
 
     /**
      * Contains details about a Grails command invocation such as the
