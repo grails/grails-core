@@ -54,7 +54,6 @@ target(loadApp:"Loads the Grails application object") {
 			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
 			pluginMetaManager(DefaultPluginMetaManager) {
                 grailsApplication = ref('grailsApplication')
-                pluginSettings = pluginSettings
             }
 		}
 	}
