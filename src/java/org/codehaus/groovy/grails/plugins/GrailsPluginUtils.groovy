@@ -36,7 +36,6 @@ import java.util.regex.Pattern
 public class GrailsPluginUtils {
 
     static final String WILDCARD = "*";
-    static final Pattern VERSION_PATTERN = Pattern.compile(/foo/)
     public static final GRAILS_HOME
     static {
         try {
