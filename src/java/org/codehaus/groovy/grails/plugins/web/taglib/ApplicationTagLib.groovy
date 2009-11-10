@@ -1,5 +1,19 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import grails.util.Environment
+import grails.util.GrailsUtil
+import grails.util.Metadata
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.mapping.UrlCreator
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.factory.InitializingBean
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+
 /* Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,27 +36,6 @@ package org.codehaus.groovy.grails.plugins.web.taglib
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
-import org.springframework.validation.Errors;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.springframework.context.ApplicationContextAware
-import org.springframework.context.ApplicationContext;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
-import grails.util.BuildSettings
-import org.springframework.beans.factory.InitializingBean
-import grails.util.Environment
-import grails.util.Metadata
-
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.web.mapping.UrlCreator
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
     ApplicationContext applicationContext
@@ -159,6 +152,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		if(attrs.plugin) {
 			writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
 		}
+        else {
+            writer << pageScope.pluginContextPath ?: ''
+        }
         def dir = attrs['dir']
         if(dir) {
            writer << (dir.startsWith("/") ?  dir : "/${dir}")

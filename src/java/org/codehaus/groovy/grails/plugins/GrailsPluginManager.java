@@ -27,8 +27,8 @@ import org.springframework.web.context.ServletContextAware;
 import java.io.File;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>A class that handles the loading and management of plug-ins in the Grails system.
@@ -277,4 +277,32 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @return the context path
      */
     String getPluginPath(String name);
+
+    /**
+     * Returns the pluginContextPath for the given instance
+     * @param instance The instance
+     * @return The pluginContextPath
+     */
+    String getPluginPathForInstance(Object instance);
+
+    /**
+     * Returns the plugin path for the given class
+     * @param theClass The class
+     * @return The pluginContextPath
+     */
+    String getPluginPathForClass(Class<? extends Object> theClass);
+
+    /**
+     * Returns the plugin views directory for the given instance
+     * @param instance The instance
+     * @return The pluginContextPath
+     */
+    String getPluginViewsPathForInstance(Object instance);
+
+    /**
+     * Returns the plugin views directory path for the given class
+     * @param theClass The class
+     * @return The pluginContextPath
+     */
+    String getPluginViewsPathForClass(Class<? extends Object> theClass);
 }

@@ -31,6 +31,8 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.springframework.context.ApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Writer;
@@ -95,6 +97,7 @@ public abstract class GroovyPage extends Script {
     private GrailsPrintWriter out;
     private GroovyPageOutputStack outputStack;
     private GrailsWebRequest webRequest;
+    private String pluginContextPath;
     
     public static final class ConstantClosure extends Closure {
 		private static final long serialVersionUID = 1L;
@@ -145,15 +148,28 @@ public abstract class GroovyPage extends Script {
 		this.outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
 		this.out = outputStack.getProxyWriter();
 		this.webRequest = webRequest;
-		if(webRequest != null) {
+        final Map map = getBinding().getVariables();
+        if(map.containsKey(APPLICATION_CONTEXT)) {
+            final ApplicationContext applicationContext = (ApplicationContext) map.get(APPLICATION_CONTEXT);
+            if(applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
+                final GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+                this.pluginContextPath = pluginManager.getPluginPathForInstance(this);
+            }
+        }
+        if(webRequest != null) {
 			this.webRequest.setOut(this.out);
 		}
 		getBinding().setVariable(OUT, this.out);
 	}
 
-	public void cleanup() {
+    public String getPluginContextPath() {
+        return pluginContextPath;
+    }
+
+    public void cleanup() {
 		outputStack.pop(true);
 	}
+
 
 	protected Closure createClosureForHtmlPart(int partNumber) {
     	final String htmlPart = htmlParts[partNumber];

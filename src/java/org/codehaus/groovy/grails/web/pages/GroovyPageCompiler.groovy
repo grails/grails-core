@@ -121,7 +121,7 @@ public class GroovyPageCompiler {
             gspgroovyfile.getParentFile().mkdirs()
 
             gspfile.withInputStream { InputStream gspinput ->
-                GroovyPageParser gpp = new GroovyPageParser(viewuri - '.gsp', viewuri, gspinput)
+                GroovyPageParser gpp = new GroovyPageParser(viewuri - '.gsp', viewuri, gspfile.absolutePath, gspinput)
                 gpp.packageName = packageName
                 gpp.className = className
                 gpp.lastModified = gspfile.lastModified()

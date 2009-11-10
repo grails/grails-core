@@ -16,11 +16,14 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.Environment;
+import grails.util.PluginBuildSettings;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.PluginInfo;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -106,6 +109,7 @@ public class GroovyPageParser implements Tokens {
 
 	private final String pageName;
 	public static final String[] DEFAULT_IMPORTS = new String[] {
+            "org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin",
 			"org.codehaus.groovy.grails.web.pages.GroovyPage",
 			"org.codehaus.groovy.grails.web.taglib.*",
 			"org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException",
@@ -124,13 +128,15 @@ public class GroovyPageParser implements Tokens {
 
 	private static final String TAGLIB_DIRECTIVE = "taglib";
 	private String gspEncoding;
+    private String pluginAnnotation;
 	public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
 	private Map jspTags = new HashMap();
 	private long lastModified;
 	private boolean precompileMode;
 	private boolean sitemeshPreprocessMode=false;
+    private PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
-	public String getContentType() {
+    public String getContentType() {
 		return this.contentType;
 	}
 
@@ -159,11 +165,15 @@ public class GroovyPageParser implements Tokens {
 		}
 	}
 
-	public GroovyPageParser(String name, String filename, InputStream in)
+	public GroovyPageParser(String name, String uri, String filename, InputStream in)
 			throws IOException {
 		Map config = ConfigurationHolder.getFlatConfig();
+        PluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+        if(info!=null) {
+            pluginAnnotation = "@GrailsPlugin(name='"+info.getName()+"', version='"+info.getVersion()+"')";
+        }
 
-		// Get the GSP file encoding from Config, or fall back to system
+        // Get the GSP file encoding from Config, or fall back to system
 		// file.encoding if none set
 		Object gspEnc = config.get(CONFIG_PROPERTY_GSP_ENCODING);
 		if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
@@ -178,16 +188,16 @@ public class GroovyPageParser implements Tokens {
 
 		String gspSource = readStream(in);
 
-        if(isSitemeshPreprocessingEnabled(config, filename)) {
+        if(isSitemeshPreprocessingEnabled(config, uri)) {
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("Preprocessing " + filename + " for sitemesh. Replacing head, title, meta and body elements with g:capture*.");
+				LOG.debug("Preprocessing " + uri + " for sitemesh. Replacing head, title, meta and body elements with g:capture*.");
 			}
 			// GSP preprocessing for direct sitemesh integration: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
 			gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);
 			sitemeshPreprocessMode=true;
 		}
 		scan = new GroovyPageScanner(gspSource);
-		this.pageName = filename;
+		this.pageName = uri;
 		this.environment = Environment.getCurrent();
 		makeName(name);
 		Object o = config.get(CONFIG_PROPERTY_DEFAULT_CODEC);
@@ -649,6 +659,9 @@ public class GroovyPageParser implements Tokens {
 			LOG.debug("parse: page");
 		if (finalPass) {
 			out.println();
+            if(pluginAnnotation!=null) {
+                out.println(pluginAnnotation);
+            }
 			out.print("class ");
 			out.print(className);
 			out.println(" extends GroovyPage {");

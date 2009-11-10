@@ -8,7 +8,8 @@ import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.springframework.web.util.WebUtils;
+import org.springframework.web.util.WebUtils
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 
 
 public class JavascriptTagLibTests extends AbstractGrailsTagTests {
@@ -62,20 +63,16 @@ class TestUrlMappings {
     }
 
     void testJavascriptIncludeWithPlugin() {
-        def controllerClass = ga.getControllerClass("TestController").clazz
         def template = '<g:javascript src="foo.js" />'
 
-        controllerClass.metaClass.getPluginContextPath = {-> "/plugin/one"}
-        request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
     }
 
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
-        def controllerClass = ga.getControllerClass("TestController").clazz
         def template = '<g:javascript src="foo.js" />'
 
-        controllerClass.metaClass.getPluginContextPath = {-> "plugin/one"}
-        request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugin/one"))
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
@@ -367,10 +364,8 @@ class TestUrlMappings {
     }
 
     def setupPluginController(tag) {
-        GroovyObject tagLibrary = (GroovyObject) tag.getOwner()
-        def request = tagLibrary.getProperty("request")
         setRequestContext()
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, new Expando(pluginContextPath: "plugins/myplugin"));
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugins/myplugin"))
     }
 
     public void testEscapeJavascript() throws Exception {

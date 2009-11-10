@@ -70,7 +70,6 @@ class JavascriptTagLib  {
 	 **/
 	def javascript = { attrs, body ->
 		setUpRequestAttributes();
-        def requestPluginContext = request[CONTROLLER]?.pluginContextPath
 		if(attrs.src) {
             javascriptInclude(attrs)
 		}
@@ -108,7 +107,14 @@ class JavascriptTagLib  {
 	}
 
 	private javascriptInclude(attrs) {
-    	def requestPluginContext = attrs.plugin ? pluginManager.getPluginPath(attrs.remove('plugin')) ?: '' : request[CONTROLLER]?.pluginContextPath
+    	def requestPluginContext
+        if(attrs.plugin) {
+            requestPluginContext = pluginManager.getPluginPath(attrs.remove('plugin')) ?: ''
+        }
+        else {
+            requestPluginContext = pageScope.pluginContextPath ?: ''
+        }
+        
         def writer = out
 		writer << '<script type="text/javascript" src="'
 		if (!attrs.base) {

@@ -27,7 +27,6 @@ import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -39,6 +38,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -161,7 +161,6 @@ public class GroovyPagesGrailsPlugin {
             prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
             suffix = ".jsp"
             templateEngine = groovyPagesTemplateEngine
-            pluginMetaManager = ref("pluginMetaManager", true)
             if (developmentMode) {
                 resourceLoader = groovyPageResourceLoader
             }
@@ -209,6 +208,7 @@ public class GroovyPagesGrailsPlugin {
     	WebMetaUtils.registerStreamCharBufferMetaClass()
 
         TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
+        GrailsPluginManager pluginManager = getManager()
 
         if(manager?.hasGrailsPlugin("controllers")) {
             for(namespace in gspTagLibraryLookup.availableNamespaces) {
@@ -253,9 +253,7 @@ public class GroovyPagesGrailsPlugin {
                 throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
             }
             mc.getPluginContextPath = {->
-                PluginMetaManager metaManager = ctx.pluginMetaManager
-                String path = metaManager.getPluginPathForResource(delegate.class.name)
-                path ? path : ""
+                pluginManager.getPluginPathForInstance(delegate) ?: ""
             }
 
             mc.getPageScope = {->

@@ -20,9 +20,7 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 
 import grails.util.GrailsUtil
 import java.lang.reflect.Modifier
-import org.codehaus.groovy.grails.beans.factory.UrlMappingFactoryBean
 import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
@@ -33,14 +31,10 @@ import org.codehaus.groovy.grails.web.metaclass.ChainMethod
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsUrlHandlerMapping
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
-import org.springframework.aop.framework.ProxyFactoryBean
-import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BindException
@@ -56,6 +50,7 @@ import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMa
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
 /**
  * A plug-in that handles the configuration of controllers for Grails
@@ -200,6 +195,7 @@ class ControllersGrailsPlugin {
 
         // add common objects and out variable for tag libraries
         def registry = GroovySystem.getMetaClassRegistry()
+        GrailsPluginManager pluginManager = getManager()
 
         for (domainClass in application.domainClasses) {
             GrailsDomainClass dc = domainClass
@@ -231,9 +227,7 @@ class ControllersGrailsPlugin {
             Class superClass = controller.clazz.superclass
 
             mc.getPluginContextPath = {->
-                PluginMetaManager metaManager = ctx.pluginMetaManager
-                String path = metaManager.getPluginPathForResource(delegate.class.name)
-                path ? path : ""
+                pluginManager.getPluginPathForInstance(delegate) ?: ''
             }
 
             // deal with abstract super classes

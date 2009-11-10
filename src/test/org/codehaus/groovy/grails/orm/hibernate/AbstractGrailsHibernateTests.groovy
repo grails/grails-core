@@ -72,7 +72,7 @@ hibernate {
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl);
         grailsApplication = ga
         mockManager = new MockGrailsPluginManager(ga)
-        ctx.registerMockBean("manager", mockManager)
+        ctx.registerMockBean("pluginManager", mockManager)
         PluginManagerHolder.setPluginManager(mockManager)
 
         def dependantPluginClasses = []

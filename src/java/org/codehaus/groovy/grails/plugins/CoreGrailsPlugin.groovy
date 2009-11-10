@@ -31,6 +31,7 @@ import grails.util.Environment
 import grails.util.Metadata;
 
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.plugins.support.aware.PluginManagerAwareBeanPostProcessor
 
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
@@ -61,6 +62,8 @@ class CoreGrailsPlugin {
 
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
+        if(getParentCtx()?.containsBean('pluginManager'))
+            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager', true))
 
         classLoader(MethodInvokingFactoryBean) {
 			targetObject = ref("grailsApplication", true)

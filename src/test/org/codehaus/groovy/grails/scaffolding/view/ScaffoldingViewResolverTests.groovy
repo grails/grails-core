@@ -40,7 +40,6 @@ public class ScaffoldingViewResolverTests extends GroovyTestCase{
         viewResolver.applicationContext = ctx
         viewResolver.templateEngine = gpte
         viewResolver.servletContext = webRequest.getServletContext()
-        viewResolver.pluginMetaManager = new DefaultPluginMetaManager()
         viewResolver.resourceLoader = new DefaultResourceLoader()
         viewResolver.templateGenerator = new DefaultGrailsTemplateGenerator()
         webRequest.actionName = "list"

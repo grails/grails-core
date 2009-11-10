@@ -74,7 +74,6 @@ public class DefaultGrailsDomainClassInjector implements
     }
 
     protected boolean isDomainClass(ClassNode classNode, SourceUnit sourceNode) {
-        String clsName = classNode.getNameWithoutPackage();
         String sourcePath = sourceNode.getName();
         File sourceFile = new File(sourcePath);
         File parent = sourceFile.getParentFile();

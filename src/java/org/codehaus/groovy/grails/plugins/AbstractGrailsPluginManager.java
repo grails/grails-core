@@ -8,6 +8,7 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
@@ -266,6 +267,37 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 		}
 		return BLANK;
 	}
-    
-    
+
+    public String getPluginPathForInstance(Object instance) {
+        if(instance!=null) {
+            final Class<? extends Object> theClass = instance.getClass();
+            return getPluginPathForClass(theClass);
+        }
+        return null;
+    }
+
+    public String getPluginPathForClass(Class<? extends Object> theClass) {
+        if(theClass!=null) {
+            org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin ann = theClass.getAnnotation(org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin.class);
+            if(ann != null) {
+                return getPluginPath(ann.name());
+            }
+        }
+        return null;
+    }
+
+    public String getPluginViewsPathForInstance(Object instance) {
+        if(instance!=null)
+            return getPluginViewsPathForClass(instance.getClass());
+        return null;
+    }
+
+    public String getPluginViewsPathForClass(Class<? extends Object> theClass) {
+        if(theClass!=null) {
+            final String path = getPluginPathForClass(theClass);
+            if(path!=null)
+                return path +'/'+GrailsResourceUtils.GRAILS_APP_DIR+"/views";
+        }
+        return null;  
+    }
 }

@@ -32,6 +32,8 @@ public class PluginInfo {
     Resource pluginDir
     grails.util.PluginBuildSettings pluginBuildSettings
     def metadata
+    String name
+    String version
 
     public PluginInfo(Resource pluginDir, grails.util.PluginBuildSettings pluginBuildSettings) {
         super();
@@ -50,14 +52,20 @@ public class PluginInfo {
      * Returns the plugin's version
      */
     String getVersion() {
-       return metadata.@version.text()
+        if(!version) {
+            version = metadata.@version.text()
+        }
+        return version
     }
 
     /**
      * Returns the plugin's name
      */
     String getName() {
-        return metadata.@name.text()
+        if(!name) {
+            name = metadata.@name.text()
+        }
+        return name
     }
 
     /**

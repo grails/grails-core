@@ -526,7 +526,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-            parser = new GroovyPageParser(name, path, inputStream);
+            parser = new GroovyPageParser(name, path, path, inputStream);
         } catch (IOException e) {
             throw new GroovyPagesException("I/O parsing Groovy page ["+(res != null ? res.getDescription() : name)+"]: " + e.getMessage(),e);
         }

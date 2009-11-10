@@ -8,7 +8,9 @@ import groovy.lang.Binding;
 import java.util.Map;
 
 public class GroovyPageBinding extends Binding {
-	public GroovyPageBinding() {
+    private String pluginContextPath;
+
+    public GroovyPageBinding() {
 		super();
 	}
 
@@ -20,7 +22,19 @@ public class GroovyPageBinding extends Binding {
 		super(args);
 	}
 
-	@Override
+    public GroovyPageBinding(String pluginContextPath) {
+        this.pluginContextPath = pluginContextPath;
+    }
+
+    public String getPluginContextPath() {
+        return pluginContextPath;
+    }
+
+    public void setPluginContextPath(String pluginContextPath) {
+        this.pluginContextPath = pluginContextPath;
+    }
+
+    @Override
 	public Object getProperty(String property) {
         if(getMetaClass().hasProperty(this, property)!=null) {
             return getMetaClass().getProperty(this, property);

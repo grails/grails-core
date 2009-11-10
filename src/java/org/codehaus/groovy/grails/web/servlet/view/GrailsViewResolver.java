@@ -20,7 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -48,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Created: 11-Jan-2006
  */
-public class GrailsViewResolver extends InternalResourceViewResolver implements ResourceLoaderAware, ApplicationContextAware {
+public class GrailsViewResolver extends InternalResourceViewResolver implements ResourceLoaderAware, ApplicationContextAware, PluginManagerAware {
     private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
 
@@ -57,13 +58,13 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     
     private ResourceLoader resourceLoader;
     protected GroovyPagesTemplateEngine templateEngine;
-    private PluginMetaManager pluginMetaManager;
-    
+
     private static final String GROOVY_PAGE_RESOURCE_LOADER = "groovyPageResourceLoader";
     // no need for static cache since GrailsViewResolver is in app context
     private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
     private static final char DOT = '.';
     private static final char SLASH = '/';
+    private GrailsPluginManager pluginManager;
 
 
     public GrailsViewResolver() {
@@ -83,9 +84,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
          this.resourceLoader = resourceLoader;
     }
 
-    public void setPluginMetaManager(PluginMetaManager pluginMetaManager) {
-        this.pluginMetaManager = pluginMetaManager;
-    }
 
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
@@ -93,7 +91,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     protected View loadView(String viewName, Locale locale) throws Exception {
         if(this.templateEngine == null) throw new IllegalStateException("Property [templateEngine] cannot be null");
-        if(this.pluginMetaManager == null) throw new IllegalStateException("Property [pluginMetaManager] cannot be null");
 
         if(VIEW_CACHE.containsKey(viewName) && !templateEngine.isReloadEnabled()) {
              return VIEW_CACHE.get(viewName);           
@@ -174,8 +171,8 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected String resolveViewForController(GroovyObject controller, GrailsApplication application, String viewName, ResourceLoader resourceLoader) {
         String gspView;// try to resolve the view relative to the controller first, this allows us to support
         // views provided by plugins
-        if(controller != null && application != null) {            
-            String pathToView = this.pluginMetaManager.getPluginViewsPathForResource(controller.getClass().getName());
+        if(controller != null && application != null) {
+            String pathToView = pluginManager != null ? pluginManager.getPluginViewsPathForInstance(controller) : null;
             if(pathToView!= null) {
                 gspView = GrailsResourceUtils.WEB_INF +pathToView +viewName+GSP_SUFFIX;
 
@@ -202,4 +199,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         return this.resourceLoader;
     }
 
+    public void setPluginManager(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
+    }
 }

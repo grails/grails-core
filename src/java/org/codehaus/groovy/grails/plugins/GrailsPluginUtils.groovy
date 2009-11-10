@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import java.util.regex.Pattern
 
 /**
  * Utility class containing methods that aid in loading and evaluating plug-ins
@@ -35,6 +36,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 public class GrailsPluginUtils {
 
     static final String WILDCARD = "*";
+    static final Pattern VERSION_PATTERN = Pattern.compile(/foo/)
     public static final GRAILS_HOME
     static {
         try {

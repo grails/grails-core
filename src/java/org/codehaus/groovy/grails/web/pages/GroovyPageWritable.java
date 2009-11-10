@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.GrailsUtil;
+import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.GroovyObject;
 import groovy.lang.Writable;
@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -35,7 +35,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -60,17 +62,26 @@ class GroovyPageWritable implements Writable {
     private ServletContext context;
     private Map additionalBinding = new HashMap();
     private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
+    private GrailsPluginManager pluginManager;
 
     public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        this.webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        final ApplicationContext applicationContext = webRequest.getApplicationContext();
+        if(applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME))
+            this.pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
         this.request = webRequest.getCurrentRequest();
         HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
         this.response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
-
-
         this.context = webRequest.getServletContext();
-        this.showSource = request.getParameter("showSource") != null && GrailsUtil.isDevelopmentEnv() && metaInfo.getGroovySource() != null;
+        this.showSource = shouldShowGroovySource(metaInfo);
+
         this.metaInfo = metaInfo;
+    }
+
+    private boolean shouldShowGroovySource(GroovyPageMetaInfo metaInfo) {
+        return request.getParameter("showSource") != null &&
+                           (Environment.getCurrent() == Environment.DEVELOPMENT) &&
+                            metaInfo.getGroovySource() != null;
     }
 
     /**
@@ -120,18 +131,19 @@ class GroovyPageWritable implements Writable {
             }
 
             // Set up the script context
-            Binding binding = (Binding)request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-            Binding oldBinding = null;
+            GroovyPageBinding binding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+            GroovyPageBinding oldBinding = null;
 
             if(binding == null) {
-                binding = createBinding();
+                binding = createBinding(metaInfo.getPageClass(), pluginManager);
                 formulateBinding(request, response, binding, out);
             }
             else {
                 // if the Binding already exists then we're a template being included/rendered as part of a larger template
                 // in this case we need our own Binding and the old Binding needs to be restored after rendering
                 oldBinding = binding;
-                binding = createBinding();
+                binding = createBinding(metaInfo.getPageClass(), pluginManager);
+                binding.setPluginContextPath(oldBinding.getPluginContextPath());
                 formulateBinding(request, response, binding, out);
             }
 
@@ -165,8 +177,8 @@ class GroovyPageWritable implements Writable {
         }
 	}
 
-    private Binding createBinding() {
-        Binding binding = new GroovyPageBinding();
+    private GroovyPageBinding createBinding(Class pageClass, GrailsPluginManager pluginManager) {
+        GroovyPageBinding binding = pluginManager != null ? new GroovyPageBinding(pluginManager.getPluginPathForClass(pageClass)) : new GroovyPageBinding(); 
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
         binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
         return binding;
@@ -323,8 +335,6 @@ class GroovyPageWritable implements Writable {
         binding.setVariable(GroovyPage.CONTROLLER_NAME, webRequest.getControllerName());
         if(controller!= null) {
             binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
-            binding.setVariable(GroovyPage.PLUGIN_CONTEXT_PATH, controller.getProperty(GroovyPage.PLUGIN_CONTEXT_PATH));
-
         }
         
         binding.setVariable(GroovyPage.OUT, out);

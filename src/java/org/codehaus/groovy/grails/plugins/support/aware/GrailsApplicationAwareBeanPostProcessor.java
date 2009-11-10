@@ -28,7 +28,7 @@ public class GrailsApplicationAwareBeanPostProcessor extends BeanPostProcessorAd
         if (bean instanceof GrailsApplicationAware) {
             ((GrailsApplicationAware)bean).setGrailsApplication(grailsApplication);
         }
-        else if(bean instanceof GrailsConfigurationAware) {
+        if(bean instanceof GrailsConfigurationAware) {
             ((GrailsConfigurationAware)bean).setConfiguration(grailsApplication.getConfig());
         }
     }

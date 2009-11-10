@@ -167,6 +167,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
     String TYPE_FILTERS = "typeFilters";
 
     /**
+     * The name of the plugin
+     */
+    String NAME = "name";
+
+    /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
      * to the {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}.</p>
      *

@@ -60,6 +60,8 @@ class PluginBuildSettings {
     private Map cache = new ConcurrentHashMap()
     private Map pluginToDirNameMap = new ConcurrentHashMap()
     private Map pluginMetaDataMap = new ConcurrentHashMap()
+    private Map<String, PluginInfo> pluginInfosMap = new ConcurrentHashMap<String, PluginInfo>()
+    private Map<String, PluginInfo> pluginInfoToSourceMap = new ConcurrentHashMap<String, PluginInfo>()
     private pluginLocations
     
     PluginBuildSettings(BuildSettings buildSettings) {
@@ -84,17 +86,64 @@ class PluginBuildSettings {
         this.cache.clear()
         this.pluginToDirNameMap.clear()
         this.pluginMetaDataMap.clear()
+        this.pluginInfosMap.clear()
+        this.pluginInfoToSourceMap.clear()
     }
 
    /**
      * Returns an array of PluginInfo objects
      */
     PluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
-        def pluginInfos = []
-        for(dir in getPluginDirectories()) {
-            pluginInfos << new PluginInfo(dir, this)
+        def pluginInfos
+        if(pluginInfosMap) {
+            pluginInfos = pluginInfosMap.values()
+        }
+        else {
+            pluginInfos = []
+            for(dir in getPluginDirectories()) {
+                try {
+                    PluginInfo info = new PluginInfo(dir, this)
+                    pluginInfos << info
+                    pluginInfosMap.put(dir.filename, info)
+                }
+                catch (e) {
+                    // ignore, not a valid plugin directory
+                }
+
+            }
         }
         return pluginInfos as PluginInfo[]
+    }
+
+
+
+    /**
+     * Obtains a PluginInfo for the installed plugin directory
+     */
+    PluginInfo getPluginInfo(String pluginBaseDir) {
+        if(!pluginInfosMap) getPluginInfos() // initialize the infos
+        def dir = new FileSystemResource(pluginBaseDir)
+        return pluginInfosMap[dir.filename]
+    }
+
+    /**
+     * Gets a PluginInfo for a particular source file if its contained within that plugin
+     */
+    PluginInfo getPluginInfoForSource(String sourceFile) {
+        if(pluginInfoToSourceMap[sourceFile]) {
+            return pluginInfoToSourceMap[sourceFile]
+        }
+        else {
+          def pluginDirs = getPluginDirectories()
+          if(pluginDirs) {              
+              for(Resource pluginDir in pluginDirs) {
+                def pluginPath = pluginDir.file.canonicalPath
+                if(sourceFile.startsWith(pluginPath)) {
+                    return getPluginInfo(pluginPath)
+                }
+              }
+          }
+        }
     }
 
 
@@ -290,7 +339,11 @@ class PluginBuildSettings {
      * Gets a list of all the known plugin base directories (directories where plugins are installed to)
      */
     List<String> getPluginBaseDirectories() {
-         [ pluginDirPath, buildSettings.globalPluginsDir.path ]
+        def list = []
+        if(pluginDirPath) list << pluginDirPath
+        String globalPluginPath = buildSettings?.globalPluginsDir?.path
+        if(globalPluginPath) list << globalPluginPath
+        return list
     }
 
     /**

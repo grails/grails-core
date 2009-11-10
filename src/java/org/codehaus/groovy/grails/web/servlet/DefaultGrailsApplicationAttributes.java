@@ -20,7 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
@@ -63,9 +63,9 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     // Beans used very often
     private GroovyPagesTemplateEngine pagesTemplateEngine;
     private GrailsApplication grailsApplication;
-    private PluginMetaManager metaManager;
     private GroovyPagesUriService groovyPagesUriService;
     private MessageSource messageSource;
+    private GrailsPluginManager pluginManager;
 
     public DefaultGrailsApplicationAttributes(ServletContext context) {
         this.context = context;
@@ -82,8 +82,8 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     private void initBeans() {
     	if(appContext != null) {
 	   		this.pagesTemplateEngine=(GroovyPagesTemplateEngine)fetchBeanFromAppCtx(GroovyPagesTemplateEngine.BEAN_ID);
+            this.pluginManager=(GrailsPluginManager)fetchBeanFromAppCtx(GrailsPluginManager.BEAN_NAME);
 	   		this.grailsApplication=(GrailsApplication)fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
-	   		this.metaManager = (PluginMetaManager)fetchBeanFromAppCtx(PluginMetaManager.BEAN_ID);
 	   		this.groovyPagesUriService = (GroovyPagesUriService)fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
 	   		this.messageSource = (MessageSource)fetchBeanFromAppCtx("messageSource");
     	} else {
@@ -106,8 +106,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     public String getPluginContextPath(HttpServletRequest request) {
         GroovyObject controller = getController(request);
         if(controller != null) {
-            final Class controllerClass = controller.getClass();
-            String path = metaManager.getPluginPathForResource(controllerClass.getName());
+            String path = pluginManager.getPluginPathForInstance(controller);
             return path == null ? "" : path;
         }
         else {

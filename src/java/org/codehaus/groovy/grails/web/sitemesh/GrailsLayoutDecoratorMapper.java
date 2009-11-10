@@ -15,24 +15,21 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.DecoratorMapper;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
+import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -45,12 +42,12 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.DecoratorMapper;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
-import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
@@ -69,14 +66,14 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 	private Map<String, Decorator> decoratorMap = new ConcurrentHashMap<String, Decorator>();
 	private ServletContext servletContext;
     private WebApplicationContext applicationContext;
-    private PluginMetaManager pluginMetaManager;
+    private GrailsPluginManager pluginManager;
 
     public void init(Config config, Properties properties, DecoratorMapper parent) throws InstantiationException {
 		super.init(config,properties,parent);
 		this.servletContext = config.getServletContext();
         this.applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        this.pluginMetaManager = (PluginMetaManager)applicationContext.getBean(PluginMetaManager.BEAN_ID);
-
+        if(applicationContext.containsBean(GrailsPluginManager.BEAN_NAME))
+            this.pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
     }
 
 	public Decorator getDecorator(HttpServletRequest request, Page page) {
@@ -146,7 +143,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 		if(StringUtils.isBlank(name))return null;
 
 		if(Environment.getCurrent()!= Environment.DEVELOPMENT && decoratorMap.containsKey(name)) {
-			return (Decorator)decoratorMap.get(name);
+			return decoratorMap.get(name);
 		}
 		else {
 			String decoratorName = name;
@@ -208,9 +205,9 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                     .getAttributes()
                     .getController(request);
 
-            if(controller != null) {
-                String pathToView = this.pluginMetaManager.getPluginViewsPathForResource(controller.getClass().getName());
-                return GrailsResourceUtils.WEB_INF +pathToView + "/layouts/" + viewName;
+            if(controller != null && pluginManager != null) {
+                String pathToView = pluginManager.getPluginViewsPathForInstance(controller);
+                return GrailsResourceUtils.WEB_INF + (pathToView != null ? pathToView : "") + "/layouts/" + viewName;
             }
 
         }
