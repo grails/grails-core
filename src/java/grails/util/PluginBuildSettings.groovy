@@ -139,7 +139,11 @@ class PluginBuildSettings {
               for(Resource pluginDir in pluginDirs) {
                 def pluginPath = pluginDir.file.canonicalPath
                 if(sourceFile.startsWith(pluginPath)) {
-                    return getPluginInfo(pluginPath)
+                    PluginInfo info = getPluginInfo(pluginPath)
+                    if(info) {
+                       pluginInfoToSourceMap[sourceFile] = info
+                    }
+                    return info
                 }
               }
           }
