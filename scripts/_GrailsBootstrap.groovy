@@ -19,13 +19,11 @@ import org.codehaus.groovy.grails.support.CommandLineResourceLoader
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.core.io.FileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.support.CommandLineResourceLoader
 import org.springframework.mock.jndi.SimpleNamingContextBuilder
 
 
@@ -52,10 +50,6 @@ target(loadApp:"Loads the Grails application object") {
 				grailsResourceHolder = resourceHolder
 			}
 			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
-			pluginMetaManager(DefaultPluginMetaManager) {
-                grailsApplication = ref('grailsApplication')
-                pluginSettings = pluginSettings
-            }
 		}
 	}
 
