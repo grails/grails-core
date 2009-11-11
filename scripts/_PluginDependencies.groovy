@@ -1119,6 +1119,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                     List urls = rootLoader.URLs.toList()
                     resolveReport.allArtifactsReports
                                     .localFile.each { File dep ->
+
+                        if(!settings.runtimeDependencies.contains(dep)) {
+                            settings.runtimeDependencies << dep
+                        }
                         def url = dep.toURI().toURL()
                         if(!urls.contains(url)) {
                             rootLoader.addURL(url)

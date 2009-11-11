@@ -206,7 +206,7 @@ class BuildSettings {
         }
         else {
             if(!this.compileDependencies) {
-               return defaultCompileDependencies
+               this.compileDependencies = defaultCompileDependencies
             }
             return this.compileDependencies
         }
@@ -239,7 +239,7 @@ class BuildSettings {
         }
         else {            
             if(!this.testDependencies) {
-               return defaultTestDependencies
+               this.testDependencies = defaultTestDependencies
             }
             return this.testDependencies
         }
@@ -271,7 +271,7 @@ class BuildSettings {
         }
         else {
             if(!this.runtimeDependencies) {
-               return defaultRuntimeDependencies
+               this.runtimeDependencies = defaultCompileDependencies
             }
             return this.runtimeDependencies
         }
