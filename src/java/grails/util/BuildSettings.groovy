@@ -177,7 +177,7 @@ class BuildSettings {
     URLClassLoader rootLoader
 
     /** The settings stored in the project's BuildConfig.groovy file if there is one. */
-    ConfigObject config
+    ConfigObject config = new ConfigObject()
 
     /** Implementation of the "grailsScript()" method used in Grails scripts. */
     Closure grailsScriptClosure;
@@ -594,49 +594,56 @@ class BuildSettings {
      * returns an empty config.
      */
     public ConfigObject loadConfig(File configFile) {
-
-        try {
+        if (configFile.exists()) {
             // To avoid class loader issues, we make sure that the
             // Groovy class loader used to parse the config file has
             // the root loader as its parent. Otherwise we get something
             // like NoClassDefFoundError for Script.
             GroovyClassLoader gcl = obtainGroovyClassLoader();
             ConfigSlurper slurper = createConfigSlurper()
+            
+            URL configUrl = configFile.toURI().toURL()
+            Script script = gcl.parseClass(configFile)?.newInstance();
 
-            // Find out whether the file exists, and if so parse it.
+            config.setConfigFile(configUrl)
+            loadConfig(slurper.parse(script))
+        } else {
+            loadSettingsFile()
+            postLoadConfig()
+        }
+    }
+    
+    ConfigObject loadConfig(ConfigObject config) {
+        this.config.merge(config)
+        postLoadConfig()
+    }
+
+    protected void postLoadConfig() {
+        establishProjectStructure()
+        parseGrailsBuildListeners()
+        if(config.grails.default.plugin.set instanceof List) {
+            defaultPluginSet = config.grails.default.plugin.set
+        }
+        configureDependencyManager(config)
+    }
+    
+    protected boolean settingsFileLoaded = false
+    protected ConfigObject loadSettingsFile() {
+        if (!settingsFileLoaded) {
+            def gcl = obtainGroovyClassLoader()
+            def slurper = createConfigSlurper()
+            
             def settingsFile = new File("$userHome/.grails/settings.groovy")
             if (settingsFile.exists()) {
-                Script script = gcl.parseClass(settingsFile)?.newInstance();
+                Script script = gcl.parseClass(settingsFile)?.newInstance()
                 if(script)
                     config = slurper.parse(script)
             }
-
-            if (configFile.exists()) {
-                URL configUrl = configFile.toURI().toURL()
-                Script script = gcl.parseClass(configFile)?.newInstance();
-
-                if (!config && script)
-                   config = slurper.parse(script)
-                else if(script)
-                   config.merge(slurper.parse(script))
-
-                config.setConfigFile(configUrl)
-
-            }
-            establishProjectStructure()
-            parseGrailsBuildListeners()
-            if(config.grails.default.plugin.set instanceof List) {
-                defaultPluginSet = config.grails.default.plugin.set
-            }
+            settingsFileLoaded = true
         }
-        finally {
-            configureDependencyManager(config)
-        }
-
-
-        return config
+        config
     }
-
+    
     private GroovyClassLoader gcl
     GroovyClassLoader obtainGroovyClassLoader() {
         if(gcl == null) {            
