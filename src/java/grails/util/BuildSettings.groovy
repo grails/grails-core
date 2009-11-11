@@ -744,7 +744,11 @@ class BuildSettings {
         }
 
         if(!projectWarFileSet) {
-            projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, "$baseDir/target/${metadata.getApplicationName()}-${metadata.getApplicationVersion()}.war"))
+            def version = metadata.getApplicationVersion()
+            def appName = metadata.getApplicationName() ?: baseDir.name
+            def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
+            
+            projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
         }
 
         if (!projectWarExplodedDirSet) {
