@@ -149,13 +149,15 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     def resource = { attrs ->
 		def writer = out
 		writer << handleAbsolute(attrs)
+        def dir = attrs['dir']
 		if(attrs.plugin) {
 			writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
 		}
         else {
-            writer << pageScope.pluginContextPath ?: ''
+            def pluginContextPath = pageScope.pluginContextPath
+            if(dir != pluginContextPath)
+                writer << pluginContextPath ?: ''
         }
-        def dir = attrs['dir']
         if(dir) {
            writer << (dir.startsWith("/") ?  dir : "/${dir}")
         }
