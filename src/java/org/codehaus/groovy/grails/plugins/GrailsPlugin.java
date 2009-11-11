@@ -381,6 +381,12 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
     String getFileSystemName();
 
     /**
+     * Returns the name of the plugin as represented on the file system without the version. For example TagLibGrailsPlugin would result in "tag-lib"
+     * @return The file system name
+     */
+    String getFileSystemShortName();
+
+    /**
      * Returns the underlying class that represents this plugin
      * @return The plugin class
      */

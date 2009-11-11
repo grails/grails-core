@@ -70,6 +70,10 @@ target(createPlugin: "The implementation target")  {
 
     // Rename the plugin descriptor.
     pluginName = GrailsNameUtils.getNameFromScript(grailsAppName)
+    if(!(pluginName ==~ /[a-zA-Z-]+/)) {
+        println "Error: Specified plugin name [$grailsAppName] is invalid. Plugin names can only contain word characters separated by hyphens."
+        exit 1
+    }
     ant.move(
             file: "${basedir}/GrailsPlugin.groovy",
             tofile: "${basedir}/${pluginName}GrailsPlugin.groovy",

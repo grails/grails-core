@@ -15,6 +15,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -295,7 +296,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public String getPluginViewsPathForClass(Class<? extends Object> theClass) {
         if(theClass!=null) {
             final String path = getPluginPathForClass(theClass);
-            if(path!=null)
+            if(StringUtils.hasText(path))
                 return path +'/'+GrailsResourceUtils.GRAILS_APP_DIR+"/views";
         }
         return null;  

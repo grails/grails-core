@@ -25,6 +25,10 @@ public class GrailsPluginMetadataTests extends GroovyTestCase{
         assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}", pluginManager.getPluginPathForInstance(new Test2())
         assertNull pluginManager.getPluginPathForInstance(new Test3())
 
+
+        assertEquals "/plugins/controllers-${GrailsUtil.grailsVersion}/grails-app/views", pluginManager.getPluginViewsPathForClass(Test1)
+        assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}/grails-app/views", pluginManager.getPluginViewsPathForClass(Test2)
+        assertNull pluginManager.getPluginViewsPathForClass(Test3)
     }
 
 }
