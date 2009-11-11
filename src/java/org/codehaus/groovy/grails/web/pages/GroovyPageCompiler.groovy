@@ -125,7 +125,7 @@ public class GroovyPageCompiler {
                 gpp.packageName = packageName
                 gpp.className = className
                 gpp.lastModified = gspfile.lastModified()
-                gspgroovyfile.withWriter { Writer gsptarget ->
+                gspgroovyfile.withWriter(encoding) { Writer gsptarget ->
                     // generate gsp groovy source
                     gpp.generateGsp(gsptarget)
                 }
