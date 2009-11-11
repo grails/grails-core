@@ -28,26 +28,30 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.grails.cli.GrailsCliEventReceiver;
+import grails.util.GrailsBuildListener;
+
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 public class GrailsBuildEventListener implements BuildListener{
-    public static final String EXTERNAL_EVENT_RECEIVER_CLASS_PROPERTY = "grails.cli.event.receiver";
     private static final Pattern EVENT_NAME_PATTERN = Pattern.compile("event([A-Z]\\w*)");
     private GroovyClassLoader classLoader;
     private Binding binding;
     protected Map<String, List<Closure>> globalEventHooks = new HashMap<String, List<Closure>>();
     private BuildSettings buildSettings;
-    
-    protected GrailsCliEventReceiver externalEventReceiver;
 
+    /**
+     * The objects that are listening for build events
+     */
+    private List<GrailsBuildListener> buildListeners = new LinkedList<GrailsBuildListener>();
+    
     public GrailsBuildEventListener(GroovyClassLoader scriptClassLoader, Binding binding, BuildSettings buildSettings) {
         super();
         this.classLoader = scriptClassLoader;
@@ -57,7 +61,7 @@ public class GrailsBuildEventListener implements BuildListener{
 
     public void initialize() {
         loadEventHooks(buildSettings);
-        loadExternalEventReceiver();
+        loadGrailsBuildListeners();
     }
 
     public void setClassLoader(GroovyClassLoader classLoader) {
@@ -85,30 +89,14 @@ public class GrailsBuildEventListener implements BuildListener{
         }
     }
 
-    /**
-     * Instantiates the specified external event receiver, and checks that it is valid.
-     * 
-     * The external event receiver is configured by setting the system property {@value EXTERNAL_EVENT_RECEIVER_CLASS_PROPERTY}
-     * to the name of a class that implements {@link GrailsCliEventReceiver}. The class MUST have a default constructor.
-     * 
-     * @throws RuntimeException if the system property is present, but is not a valid event receiver.
-     */
-    protected void loadExternalEventReceiver() {
-        String externalEventReceiverClassName = System.getProperty(EXTERNAL_EVENT_RECEIVER_CLASS_PROPERTY);
-        if (externalEventReceiverClassName != null) {
-            Class externalEventReceiverClass;
-            try {
-                externalEventReceiverClass = classLoader.loadClass(externalEventReceiverClassName);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Could not find specified CLI event receiver class", e);
-            }
-            if (!GrailsCliEventReceiver.class.isAssignableFrom(externalEventReceiverClass)) {
-                throw new RuntimeException("Specified CLI Event receiever class of " + externalEventReceiverClassName + " does not implement " + GrailsCliEventReceiver.class.getName());
-            }
-            try {
-                externalEventReceiver = (GrailsCliEventReceiver) externalEventReceiverClass.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Could not instantiate " + externalEventReceiverClassName, e);
+    public void loadGrailsBuildListeners() {
+        for (Object listener : buildSettings.getBuildListeners()) {
+            if (listener instanceof String) {
+                addGrailsBuildListener((String)listener);
+            } else if (listener instanceof Class) {
+                addGrailsBuildListener((Class)listener);
+            } else {
+                throw new IllegalStateException("buildSettings.getBuildListeners() returned a " + listener.getClass().getName());
             }
         }
     }
@@ -204,8 +192,9 @@ public class GrailsBuildEventListener implements BuildListener{
                 }
             }
         }
-        if (externalEventReceiver != null) {
-            externalEventReceiver.receiveGrailsCliEvent(eventName, arguments);
+
+        for (GrailsBuildListener buildListener : buildListeners) {
+            buildListener.receiveGrailsBuildEvent(eventName, arguments);
         }
     }
 
@@ -226,5 +215,32 @@ public class GrailsBuildEventListener implements BuildListener{
 
     public void messageLogged(BuildEvent buildEvent) {
         // do nothing
+    }
+    
+    protected void addGrailsBuildListener(String listenerClassName) {
+        Class listenerClass;
+        try {
+            listenerClass = classLoader.loadClass(listenerClassName);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load grails build listener class", e);
+        }
+        addGrailsBuildListener(listenerClass);
+    }
+    
+    protected void addGrailsBuildListener(Class listenerClass) {
+        if (!GrailsBuildListener.class.isAssignableFrom(listenerClass)) {
+            throw new RuntimeException("Intended grails build listener class of " + listenerClass.getName() + " does not implement " + GrailsBuildListener.class.getName());
+        }
+        GrailsBuildListener listener;
+        try {
+            listener = (GrailsBuildListener)listenerClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not instantiate " + listenerClass.getName(), e);
+        }
+        addGrailsBuildListener(listener);
+    }
+
+    void addGrailsBuildListener(GrailsBuildListener listener) {
+        buildListeners.add(listener);
     }
 }

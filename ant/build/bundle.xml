@@ -86,6 +86,7 @@
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/util/BuildSettings*"/>
+                <include name="grails/util/GrailsBuildListener*"/>
                 <include name="grails/util/GrailsNameUtils*"/>
                 <include name="grails/util/Environment*"/>
                 <include name="grails/util/Metadata*"/>

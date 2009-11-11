@@ -101,6 +101,11 @@ class BuildSettings {
     public static final String PROJECT_WAR_FILE = "grails.project.war.file"
 
     /**
+     * The name of the system property for multiple {@link #buildListeners}.
+     */
+    public static final String BUILD_LISTENERS = "grails.build.listeners"
+
+    /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
      * of a project, then this will be the current working directory
@@ -198,7 +203,9 @@ class BuildSettings {
     List applicationJars = []
 
     private List<File> compileDependencies = []
-
+    
+    List buildListeners = []
+    
     /** List containing the compile-time dependencies of the app as File instances. */
     List<File> getCompileDependencies() {
         if(dependenciesExternallyConfigured) {
@@ -356,6 +363,7 @@ class BuildSettings {
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
     private boolean projectWarFileSet
+    private boolean buildListenersSet
 
     BuildSettings() {
         this(null)
@@ -562,6 +570,15 @@ class BuildSettings {
         this.testReportsDirSet = true
     }
 
+    void setBuildListeners(buildListeners) {
+        this.buildListeners = buildListeners.toList()
+        buildListenersSet = true
+    }
+    
+    Object[] getBuildListeners() {
+        buildListeners.toArray()
+    }
+
     /**
      * Loads the application's BuildSettings.groovy file if it exists
      * and returns the corresponding config object. If the file does
@@ -607,6 +624,7 @@ class BuildSettings {
 
             }
             establishProjectStructure()
+            parseGrailsBuildListeners()
             if(config.grails.default.plugin.set instanceof List) {
                 defaultPluginSet = config.grails.default.plugin.set
             }
@@ -784,6 +802,26 @@ class BuildSettings {
         }
     }
 
+    protected void parseGrailsBuildListeners() {
+        if (!buildListenersSet) {
+            def listenersValue = System.getProperty(BUILD_LISTENERS) ?: config.grails.build.listeners // Anyway to use the constant to do this?
+            if (listenersValue) {
+                def add = {
+                    if (it instanceof String) {
+                        it.split(',').each { this.@buildListeners << it }
+                    } else if (it instanceof Class) {
+                        this.@buildListeners << it
+                    } else {
+                        throw new IllegalArgumentException("$it is not a valid value for $BUILD_LISTENERS")
+                    }
+                }
+
+                (listenersValue instanceof Collection) ? listenersValue.each(add) : add(listenersValue)
+            }
+            buildListenersSet = true
+        }
+    }
+    
     private getFirstPropertyValue(List<String> propertyNames, Properties props, String defaultValue) {
         def value
         for(String p in propertyNames ) {

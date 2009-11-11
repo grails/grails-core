@@ -226,4 +226,8 @@ class BuildSettingsTests extends GroovyTestCase {
 
         System.setProperty(name, value)
     }
+    
+    void testBuildListeners() {
+        
+    }
 }

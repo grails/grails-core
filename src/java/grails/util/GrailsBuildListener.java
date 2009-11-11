@@ -13,18 +13,16 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.cli;
+package grails.util;
 
 /**
  * An interface that classes can implement to receive events raised by the Grails build system.
- * 
- * @see org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener#loadExternalEventReceiver()
  */
-public interface GrailsCliEventReceiver {
+public interface GrailsBuildListener {
     
     /**
      * Responds to the event.
      */
-    void receiveGrailsCliEvent(String name, Object... args);
+    void receiveGrailsBuildEvent(String name, Object... args);
     
 }
