@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -96,9 +97,14 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     
 	public void afterPropertiesSet() throws Exception {
 		if(classLoader==null) {
-			//classLoader = Thread.currentThread().getContextClassLoader();
-			classLoader = new GroovyClassLoader();
+			this.classLoader = initGroovyClassLoader(Thread.currentThread().getContextClassLoader());
 		}
+	}
+
+	private GroovyClassLoader initGroovyClassLoader(ClassLoader parent) {
+		CompilerConfiguration compConfig = new CompilerConfiguration();
+		compConfig.setSourceEncoding(GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
+		return new GroovyClassLoader(parent, compConfig);
 	}
 
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
@@ -576,16 +582,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return The compiled java.lang.Class, which is an instance of groovy.lang.Script
      */
     private Class compileGroovyPage(InputStream in, String name, String pageName, GroovyPageMetaInfo metaInfo) {
-        ClassLoader classLoader = this.classLoader;
-    	if(!(classLoader instanceof GroovyClassLoader)) {
-            classLoader = new GroovyClassLoader(classLoader);
-    	}
+    	GroovyClassLoader groovyClassLoader = findOrInitGroovyClassLoader();
     	
         // Compile the script into an object
         Class scriptClass;
         try {
-            scriptClass =
-                ((GroovyClassLoader)classLoader).parseClass(in, name);
+            scriptClass = groovyClassLoader.parseClass(in, name);
         } catch (CompilationFailedException e) {
         	LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
 
@@ -599,6 +601,13 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         }
         return scriptClass;
     }
+
+	private synchronized GroovyClassLoader findOrInitGroovyClassLoader() {
+    	if(!(this.classLoader instanceof GroovyClassLoader)) {
+            this.classLoader = initGroovyClassLoader(this.classLoader);
+    	}
+		return (GroovyClassLoader)this.classLoader;
+	}
 
     /**
      * Creates a GroovyPageMetaInfo instance from the given Parse object, and initialises it with the the specified
