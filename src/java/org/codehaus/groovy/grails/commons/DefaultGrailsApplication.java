@@ -1,5 +1,18 @@
-
-
+/*
+* Copyright 2004-2005 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
@@ -76,18 +89,16 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private ApplicationContext parentContext;
     private ApplicationContext mainContext;
 
-    private Set loadedClasses = new HashSet();
+    private List<Class> loadedClasses = new ArrayList<Class>();
     private GrailsResourceLoader resourceLoader;
     private ArtefactHandler[] artefactHandlers;
-    private Map artefactHandlersByName = new HashMap();
-    private Set allArtefactClasses = new HashSet();
-    private Map artefactInfo = new HashMap();
-    private boolean suspectArtefactInit;
+    private Map<String, ArtefactHandler> artefactHandlersByName = new HashMap<String, ArtefactHandler>();
+    private List<Class> allArtefactClasses = new ArrayList<Class>();
+    private Map<String, ArtefactInfo> artefactInfo = new HashMap<String, ArtefactInfo>();
     private Class[] allArtefactClassesArray;
     private Map applicationMeta;
     private Resource[] resources;
     private boolean initialised = false;
-    private ClassLoader beanClassLoader;
 
     /**
      * Creates a new empty Grails application
@@ -108,10 +119,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             throw new IllegalArgumentException("Constructor argument 'classes' cannot be null");
         }
 
-        for (int i = 0; i < classes.length; i++) {
-            Class aClass = classes[i];
-            loadedClasses.add(aClass);
-        }
+        loadedClasses.addAll(Arrays.asList(classes));
         this.allClasses = classes;
         this.cl = classLoader;
         this.applicationMeta = Metadata.getCurrent();
@@ -146,7 +154,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         GroovyClassLoader gcl = (GroovyClassLoader)cl;
         
         Collection loadedResources = new ArrayList();
-        this.loadedClasses = new HashSet();
+        this.loadedClasses = new ArrayList<Class>();
 
         try {
             for (int i = 0; resources != null && i < resources.length; i++) {
@@ -160,8 +168,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                             Class c = gcl.loadClass(className, true, false);
                             Assert.notNull(c, "Groovy Bug! GCL loadClass method returned a null class!");
 
-
-                            loadedClasses.add(c);
+                            if(!loadedClasses.contains(c))
+                                loadedClasses.add(c);
                             log.debug("Added Groovy class [" + c + "] to loaded classes");
                             loadedResources = resourceLoader.getLoadedResources();
                         }
@@ -213,8 +221,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         registerArtefactHandler(new UrlMappingsArtefactHandler());
 
         // Cache the list as an array
-        this.artefactHandlers = ((ArtefactHandler[]) this.artefactHandlersByName.values().toArray(
-                new ArtefactHandler[artefactHandlersByName.size()]));
+        this.artefactHandlers = this.artefactHandlersByName.values().toArray(
+                new ArtefactHandler[artefactHandlersByName.size()]);
     }
 
     /**
@@ -268,7 +276,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     private Class[] populateAllClasses() {
-        this.allClasses = (Class[]) loadedClasses.toArray(new Class[loadedClasses.size()]);
+        this.allClasses = loadedClasses.toArray(new Class[loadedClasses.size()]);
         return allClasses;
     }
 
@@ -286,49 +294,41 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         allArtefactClassesArray = null;
         this.allClasses = classes;
 
-        suspectArtefactInit = true;
+        // first load the domain classes
+        log.debug("Going to inspect artefact classes.");
+        for (final Class theClass : classes) {
+            log.debug("Inspecting [" + theClass.getName() + "]");
+            if (Modifier.isAbstract(theClass.getModifiers())) {
+                log.debug("[" + theClass.getName() + "] is abstract.");
+                continue;
+            }
+            if (allArtefactClasses.contains(theClass))
+                continue;
 
-        try {
+            // check what kind of artefact it is and add to corrent data structure
+            for (ArtefactHandler artefactHandler : artefactHandlers) {
+                if (artefactHandler.isArtefact(theClass)) {
+                    log.debug("Adding artefact " + theClass + " of kind " + artefactHandler.getType());
+                    GrailsClass gclass = addArtefact(artefactHandler.getType(), theClass);
+                    // Also maintain set of all artefacts (!= all classes loaded)
+                    allArtefactClasses.add(theClass);
 
-            // first load the domain classes
-            log.debug("Going to inspect artefact classes.");
-            for (int i = 0; i < classes.length; i++) {
-                final Class theClass = classes[i];
-                log.debug("Inspecting [" + theClass.getName() + "]");
-                if (Modifier.isAbstract(theClass.getModifiers())) {
-                    log.debug("[" + theClass.getName() + "] is abstract.");
-                    continue;
-                }
-                if (allArtefactClasses.contains(theClass))
-                    continue;
-
-                // check what kind of artefact it is and add to corrent data structure
-                for (int j = 0; j < artefactHandlers.length; j++) {
-                    if (artefactHandlers[j].isArtefact(theClass)) {
-                        log.debug("Adding artefact " + theClass + " of kind " + artefactHandlers[j].getType());
-                        GrailsClass gclass = addArtefact(artefactHandlers[j].getType(), theClass);
-                        // Also maintain set of all artefacts (!= all classes loaded)
-                        allArtefactClasses.add(theClass);
-
-                        // Update per-artefact cache
-                        DefaultArtefactInfo info = getArtefactInfo(artefactHandlers[j].getType(), true);
-                        info.addGrailsClass(gclass);
-                        break;
-                    }
+                    // Update per-artefact cache
+                    DefaultArtefactInfo info = getArtefactInfo(artefactHandler.getType(), true);
+                    info.addGrailsClass(gclass);
+                    break;
                 }
             }
-
-            refreshArtefactGrailsClassCaches();
-
-        } finally {
-            suspectArtefactInit = false;
         }
 
-        allArtefactClassesArray = (Class[]) allArtefactClasses.toArray(new Class[allArtefactClasses.size()]);
+        refreshArtefactGrailsClassCaches();
+
+
+        allArtefactClassesArray = allArtefactClasses.toArray(new Class[allArtefactClasses.size()]);
 
         // Tell all artefact handlers to init now we've worked out which classes are which artefacts
-        for (int j = 0; j < artefactHandlers.length; j++) {
-            initializeArtefacts(artefactHandlers[j]);
+        for (ArtefactHandler artefactHandler : artefactHandlers) {
+            initializeArtefacts(artefactHandler);
         }
     }
 
@@ -336,8 +336,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * <p>Tell all our artefact info objects to update their internal state after we've added a bunch of classes</p>
      */
     private void refreshArtefactGrailsClassCaches() {
-        for (Iterator it = artefactInfo.values().iterator(); it.hasNext();) {
-            DefaultArtefactInfo info = (DefaultArtefactInfo) it.next();
+        for (Object o : artefactInfo.values()) {
+            DefaultArtefactInfo info = (DefaultArtefactInfo) o;
             info.updateComplete();
         }
     }
@@ -426,8 +426,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         if (StringUtils.isBlank(className)) {
             return null;
         }
-        for (int i = 0; i < allClasses.length; i++) {
-            Class c = allClasses[i];
+        for (Class c : allClasses) {
             if (c.getName().equals(className)) {
                 return c;
             }
@@ -497,8 +496,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     public boolean isArtefact(Class theClazz) {
         String className = theClazz.getName();
-        for (Iterator i = allArtefactClasses.iterator(); i.hasNext();) {
-            Class artefactClass = (Class) i.next();
+        for (Object allArtefactClass : allArtefactClasses) {
+            Class artefactClass = (Class) allArtefactClass;
             if (className.equals(artefactClass.getName())) {
                 return true;
             }
@@ -515,7 +514,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @see org.codehaus.groovy.grails.commons.ArtefactHandler
      */
     public boolean isArtefactOfType(String artefactType, Class theClazz) {
-        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler == null)
             throw new GrailsConfigurationException("Unable to locate arefact handler for specified type: " + artefactType);
 
@@ -576,7 +575,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     // This is next call is equiv to getControllerByURI / getTagLibForTagName
     public GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
-        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         return handler.getArtefactForFeature(featureID);
     }
 
@@ -595,7 +594,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             return null;
         }
 
-        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler.isArtefact(artefactClass)) {
             GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);
 
@@ -632,7 +631,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             return null;
         }
 
-        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler.isArtefactGrailsClass(artefactGrailsClass)) {
             // Store the GrailsClass in cache
             DefaultArtefactInfo info = getArtefactInfo(artefactType, true);
@@ -669,7 +668,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param artefactType The type of artefact to init
      */
     private void initializeArtefacts(String artefactType) {
-        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         initializeArtefacts(handler);
     }
 
@@ -724,7 +723,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param methodName The name of the method
      * @param args       The arguments to the method
      * @return The return value of the method
-     * @todo this is REALLY ugly
      * @todo Need to add matches for add<Artefact>Class(java.lang.Class) and add<Artefact>Class(GrailsClass)
      */
     public Object invokeMethod(String methodName, Object args) {
@@ -757,7 +755,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                     throw new IllegalArgumentException("Dynamic method is<Artefact>Class(artefactClass) requires a " +
                             "single Class parameter");
                 } else {
-                    return Boolean.valueOf(isArtefactOfType(match.group(2), (Class) argsv[0]));
+                    return isArtefactOfType(match.group(2), (Class) argsv[0]);
                 }
             } else {
                 // look for getXXXXClasses
@@ -836,7 +834,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public void setBeanClassLoader(ClassLoader classLoader) {
-        this.beanClassLoader = classLoader;
+        ClassLoader beanClassLoader = classLoader;
     }
 
     public void addOverridableArtefact(Class artefact) {
@@ -873,7 +871,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             return null;
         }
 
-        ArtefactHandler handler = (ArtefactHandler) artefactHandlersByName.get(artefactType);
+        ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler.isArtefact(artefactClass)) {
             GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);
 
