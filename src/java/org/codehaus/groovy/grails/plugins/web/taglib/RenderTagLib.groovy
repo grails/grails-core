@@ -470,6 +470,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         if(attrs.plugin) {
             contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
         }
+        else if (!contextPath) {
+            contextPath = pageScope.pluginContextPath ?: ""
+        }
 
         Template t = TEMPLATE_CACHE[uri]
 

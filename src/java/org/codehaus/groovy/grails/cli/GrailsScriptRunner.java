@@ -932,11 +932,10 @@ public class GrailsScriptRunner {
         File desc = getPluginDescriptor(pluginDir);
         
         if (desc == null) {
-        	throw new RuntimeException("Cannot find plugin descriptor in plugin directory '" + pluginDir + "'.");
+            throw new RuntimeException("Cannot find plugin descriptor in plugin directory '" + pluginDir + "'.");
         }
         else {
-	        int pos = desc.getName().indexOf("GrailsPlugin.groovy");
-        	return GrailsNameUtils.getScriptName(desc.getName().substring(0, pos));
+            return GrailsNameUtils.getPluginName(desc.getName());
         }
     }
 

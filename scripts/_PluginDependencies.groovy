@@ -454,9 +454,9 @@ generatePluginXml = { File descriptor ->
         ant.fail("Cannot instantiate plugin file")
     }
 
-    // Work out what the name of the plugin is from the class name of
-    // the descriptor.
-    pluginName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(pluginClass, "GrailsPlugin"))
+    // Work out what the name of the plugin is from the name of the
+    // descriptor file.
+    pluginName = GrailsNameUtils.getPluginName(descriptor.name)
 
     // Remove the existing 'plugin.xml' if there is one.
     def pluginXml = new File(descriptor.parentFile, "plugin.xml")
