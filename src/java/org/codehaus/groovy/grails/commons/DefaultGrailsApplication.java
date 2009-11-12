@@ -2,6 +2,7 @@
 
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
@@ -186,7 +187,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             }
         }
         catch (CompilationFailedException e) {
-            if (GrailsUtil.isDevelopmentEnv()) {
+            if (Environment.getCurrent() == Environment.DEVELOPMENT) {
                 // if we're in the development environement then there is no point in this exception propagating up the stack as it
                 // just clouds the actual error so log it as fatal and kill the server
                 log.fatal("Compilation error loading Grails application: " + e.getMessage(), e);
