@@ -46,6 +46,24 @@ class CriteriaBuilderTestClass2 {
         ['bart']
     }
 
+    void testOrderByProjection() {
+         createDomainData()
+
+         def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
+
+        def results = domainClass.withCriteria {
+            projections {
+                property 'firstName', 'name'
+            }
+            order 'name', 'desc'
+
+        }
+
+        assertEquals "maggie", results[0]
+        assertEquals "lisa", results[1]
+        assertEquals "homer", results[2]
+        assertEquals "bart", results[3]
+    }
     // test for GRAILS-4377
     void testResolveOrder() {
         def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
@@ -167,35 +185,7 @@ class CriteriaBuilderTestClass2 {
     }
 
     public void testNestedAssociations() throws Exception {
-        def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
-
-        assertNotNull(domainClass)
-
-        def obj = domainClass.newInstance()
-        obj.setProperty( "firstName", "homer" )
-        obj.setProperty( "lastName", "simpson" )
-        obj.setProperty( "age", 45)
-        obj.save()
-
-        def obj2 = domainClass.newInstance()
-        obj2.setProperty( "firstName", "bart" )
-        obj2.setProperty( "lastName", "simpson" )
-        obj2.setProperty( "age", 11)
-        obj2.setProperty( "parent", obj)
-        obj2.save()
-
-        def obj3 = domainClass.newInstance()
-        obj3.setProperty( "firstName", "lisa" )
-        obj3.setProperty( "lastName", "simpson" )
-        obj3.setProperty( "age", 9)
-        obj3.setProperty( "parent", obj2)
-        obj3.save()
-
-        def obj4 = domainClass.newInstance()
-        obj4.setProperty( "firstName", "maggie" )
-        obj4.setProperty( "lastName", "simpson" )
-        obj4.setProperty( "age", 9)
-        obj4.save()
+        createDomainData()
 
         List results = domainClass.createCriteria().list {
                     children {
@@ -210,6 +200,37 @@ class CriteriaBuilderTestClass2 {
         
     }
 
+    private createDomainData() {
+        def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
+
+        assertNotNull(domainClass)
+
+        def obj = domainClass.newInstance()
+        obj.setProperty("firstName", "homer")
+        obj.setProperty("lastName", "simpson")
+        obj.setProperty("age", 45)
+        obj.save()
+
+        def obj2 = domainClass.newInstance()
+        obj2.setProperty("firstName", "bart")
+        obj2.setProperty("lastName", "simpson")
+        obj2.setProperty("age", 11)
+        obj2.setProperty("parent", obj)
+        obj2.save()
+
+        def obj3 = domainClass.newInstance()
+        obj3.setProperty("firstName", "lisa")
+        obj3.setProperty("lastName", "simpson")
+        obj3.setProperty("age", 9)
+        obj3.setProperty("parent", obj2)
+        obj3.save()
+
+        def obj4 = domainClass.newInstance()
+        obj4.setProperty("firstName", "maggie")
+        obj4.setProperty("lastName", "simpson")
+        obj4.setProperty("age", 9)
+        obj4.save()
+    }
 
     // TODO: The remaining tests in this test suite were migrated from a Java class and hence don't use very idiomatic Groovy
     // TODO: Need to tidy them up into more elegant Groovy code at some point
