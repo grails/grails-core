@@ -232,7 +232,7 @@ target (war: "The implementation target") {
 
 
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
-    def resourceList = GrailsResourceLoaderHolder.resourceLoader.getResources()
+    def resourceList = pluginSettings.getArtefactResources()
     def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
 
     new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->

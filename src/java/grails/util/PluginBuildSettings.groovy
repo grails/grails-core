@@ -369,11 +369,15 @@ class PluginBuildSettings {
         def basedir = this.buildSettings.baseDir.absolutePath
         def allArtefactResources = cache['allArtefactResources']
         if(!allArtefactResources) {
-            def resources = getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath)
+            def resources = [] as Resource[]
 
+            // first scan plugin sources. These need to be loaded first
             resources = resolvePluginResourcesAndAdd(resources) { String pluginDir ->
                 getArtefactResourcesForOne(pluginDir)
             }
+
+            // now build of application resources so that these can override plugin resources
+            resources = ArrayUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))            
 
             allArtefactResources = resources
             cache['allArtefactResources'] = resources
