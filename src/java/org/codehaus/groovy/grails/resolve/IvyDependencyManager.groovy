@@ -322,11 +322,13 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                         "hsqldb:hsqldb:1.8.0.10"
 
                 // logging
-                runtime  "log4j:log4j:1.2.15",
+                runtime( "log4j:log4j:1.2.15",
                          "org.slf4j:jcl-over-slf4j:1.5.6",
                          "org.slf4j:jul-to-slf4j:1.5.6",
 
-                         "org.slf4j:slf4j-log4j12:1.5.6"
+                         "org.slf4j:slf4j-log4j12:1.5.6" ) {
+                    excludes 'mail', 'jms', 'jmxtools', 'jmxri'
+                }
 
                 // JSP support
                 runtime "apache-taglibs:standard:1.1.2",
