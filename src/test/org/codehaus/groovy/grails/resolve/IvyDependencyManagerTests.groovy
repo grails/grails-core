@@ -322,8 +322,8 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-        assertEquals 53, manager.listDependencies('runtime').size()
-        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 51, manager.listDependencies('runtime').size()
+        assertEquals 54, manager.listDependencies('test').size()
         assertEquals 18, manager.listDependencies('build').size()
         assertEquals 3, manager.listDependencies('provided').size()
 
