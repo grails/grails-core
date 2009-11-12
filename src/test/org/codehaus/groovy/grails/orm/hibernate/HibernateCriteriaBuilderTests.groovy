@@ -187,6 +187,7 @@ class CriteriaBuilderTestClass2 {
     public void testNestedAssociations() throws Exception {
         createDomainData()
 
+        def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
         List results = domainClass.createCriteria().list {
                     children {
                         eq('firstName','bart')
