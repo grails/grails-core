@@ -18,6 +18,7 @@ package grails.util
 import grails.util.BuildScope
 import grails.util.BuildSettings
 import grails.util.Environment
+import grails.util.GrailsNameUtils
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -104,7 +105,7 @@ class PluginBuildSettings {
                 try {
                     PluginInfo info = new PluginInfo(dir, this)
                     pluginInfos << info
-                    pluginInfosMap.put(dir.filename, info)
+                    pluginInfosMap.put(info.name, info)
                 }
                 catch (e) {
                     // ignore, not a valid plugin directory
@@ -123,7 +124,8 @@ class PluginBuildSettings {
     PluginInfo getPluginInfo(String pluginBaseDir) {
         if(!pluginInfosMap) getPluginInfos() // initialize the infos
         def dir = new FileSystemResource(pluginBaseDir)
-        return pluginInfosMap[dir.filename]
+        def pluginName = GrailsNameUtils.getPluginName(getDescriptorForPlugin(dir).filename)
+        return pluginInfosMap[pluginName]
     }
 
     /**
@@ -138,7 +140,8 @@ class PluginBuildSettings {
           if(pluginDirs) {              
               for(Resource pluginDir in pluginDirs) {
                 def pluginPath = pluginDir.file.canonicalPath
-                if(sourceFile.startsWith(pluginPath)) {
+                def sourcePath = new File(sourceFile).canonicalPath
+                if(sourcePath.startsWith(pluginPath)) {
                     PluginInfo info = getPluginInfo(pluginPath)
                     if(info) {
                        pluginInfoToSourceMap[sourceFile] = info
