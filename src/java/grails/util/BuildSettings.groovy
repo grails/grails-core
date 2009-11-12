@@ -271,7 +271,7 @@ class BuildSettings {
         }
         else {
             if(!this.runtimeDependencies) {
-               this.runtimeDependencies = defaultCompileDependencies
+               this.runtimeDependencies = defaultRuntimeDependencies
             }
             return this.runtimeDependencies
         }

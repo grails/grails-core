@@ -21,6 +21,17 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
         // runtime 'mysql:mysql-connector-java:5.1.5'
+
+        // caching
+        //
+        // Remove these lines if you don't want caching. Otherwise, the
+        // default is OSCache, but you can uncomment the 'ehcache' line
+        // and remove the 'oscache' one if you'd prefer to use EhCache.
+//        runtime ("net.sf.ehcache:ehcache:1.6.1") {
+        runtime ("opensymphony:oscache:2.4.1") {
+            excludes 'jms', 'commons-logging', 'servlet-api'
+        }
+
     }
 
 }
