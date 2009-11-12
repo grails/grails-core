@@ -21,8 +21,10 @@ import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
+import org.hibernate.LockMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.TransientObjectException;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -139,12 +141,30 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                                     .add( Restrictions.eq( constraintPropertyName, propertyValue ) );
                             if( uniquenessGroup != null ) {
                                 for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
-                                    String propertyName = (String) it.next();
-                                    criteria.add(Restrictions.eq( propertyName,
-                                            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, propertyName)));
+                                    String uniquenessGroupPropertyName = (String) it.next();
+                                    Object uniquenessGroupPropertyValue = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, uniquenessGroupPropertyName);
+                                
+                                    if (DomainClassArtefactHandler.isDomainClass(uniquenessGroupPropertyValue.getClass())) {
+                                        try {
+                                            // We are merely verifying that the object is not transient here
+                                            session.lock(uniquenessGroupPropertyValue, LockMode.NONE);
+                                        } catch (TransientObjectException e) {
+                                            shouldValidate = false;
+                                        }
+                                    } 
+                                    if (shouldValidate) {
+                                        criteria.add(Restrictions.eq(uniquenessGroupPropertyName, uniquenessGroupPropertyValue));
+                                    } else {
+                                        break; // we aren't validating, so no point continuing
+                                    }
                                 }
                             }
-                            return criteria.list();
+                            
+                            if (shouldValidate) {
+                                return criteria.list();
+                            } else {
+                                return Collections.EMPTY_LIST;
+                            }
                         }
                         else {
                             return Collections.EMPTY_LIST;
