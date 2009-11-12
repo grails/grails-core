@@ -321,12 +321,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                         "commons-pool:commons-pool:1.5.3",
                         "hsqldb:hsqldb:1.8.0.10"
 
-                // caching
-                runtime ("net.sf.ehcache:ehcache:1.6.1",
-                         "opensymphony:oscache:2.4.1") {
-                    excludes 'jms', 'commons-logging', 'servlet-api'
-                }
-
                 // logging
                 runtime  "log4j:log4j:1.2.15",
                          "org.slf4j:jcl-over-slf4j:1.5.6",
