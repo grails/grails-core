@@ -224,7 +224,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
 
 
-        new File("${docResources}/style/guideItem.html").withReader {reader ->
+        new File("${docResources}/style/guideItem.html").withReader("UTF-8") {reader ->
             template = templateEngine.createTemplate(reader)
 
             for (entry in book) {
@@ -261,7 +261,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
                 fullContents << header << body
                 chapterContents << header << body
 
-                new File("${refPagesDir}/${title}.html").withWriter {
+                new File("${refPagesDir}/${title}.html").withWriter("UTF-8") {
                     template.make(title: title, content: body).writeTo(it)
                 }
             }
@@ -283,21 +283,21 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
                 body: fullContents.toString()
         ]
 
-        new File("${docResources}/style/layout.html").withReader {reader ->
+        new File("${docResources}/style/layout.html").withReader("UTF-8") {reader ->
             template = templateEngine.createTemplate(reader)
-            new File("${refGuideDir}/single.html").withWriter {out ->
+            new File("${refGuideDir}/single.html").withWriter("UTF-8") {out ->
                 template.make(vars).writeTo(out)
             }
             vars.toc = soloToc
             vars.body = ""
-            new File("${refGuideDir}/index.html").withWriter {out ->
+            new File("${refGuideDir}/index.html").withWriter("UTF-8") {out ->
                 template.make(vars).writeTo(out)
             }
         }
 
-        new File("${docResources}/style/index.html").withReader {reader ->
+        new File("${docResources}/style/index.html").withReader("UTF-8") {reader ->
             template = templateEngine.createTemplate(reader)
-            new File("${refDocsDir}/index.html").withWriter {out ->
+            new File("${refDocsDir}/index.html").withWriter("UTF-8") {out ->
                 template.make(vars).writeTo(out)
             }
         }
@@ -306,7 +306,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         menu = new StringBuilder()
         files = new File("${srcDocs}/ref").listFiles()?.toList()?.sort() ?: []
         reference = [:]
-        new File("${docResources}/style/referenceItem.html").withReader {reader ->
+        new File("${docResources}/style/referenceItem.html").withReader("UTF-8") {reader ->
             template = templateEngine.createTemplate(reader)
             for (f in files) {
                 if (f.directory && !f.name.startsWith(".")) {
@@ -322,7 +322,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
                         context.set(DocEngine.SOURCE_FILE, usageFile.name)
                         context.set(DocEngine.CONTEXT_PATH, "../..")
                         def contents = engine.render(data, context)
-                        new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter {out ->
+                        new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter("UTF-8") {out ->
                             template.make(content: contents).writeTo(out)
                         }
                         menu << "<div class=\"menuUsageItem\"><a href=\"${f.name}/Usage.html\" target=\"mainFrame\">Usage</a></div>"
@@ -336,7 +336,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
                         context.set(DocEngine.CONTEXT_PATH, "../..")
                         def contents = engine.render(data, context)
                         //println "Generating reference item: ${name}"
-                        new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter {out ->
+                        new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter("UTF-8") {out ->
                             template.make(content: contents).writeTo(out)
                         }
                     }
@@ -345,9 +345,9 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
         }
         vars.menu = menu
-        new File("${docResources}/style/menu.html").withReader {reader ->
+        new File("${docResources}/style/menu.html").withReader("UTF-8") {reader ->
             template = templateEngine.createTemplate(reader)
-            new File("${refDocsDir}/ref/menu.html").withWriter {out ->
+            new File("${refDocsDir}/ref/menu.html").withWriter("UTF-8") {out ->
                 template.make(vars).writeTo(out)
             }
         }
@@ -362,7 +362,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
 
 void writeChapter(String title, StringBuffer content) {
-        new File("${refGuideDir}/${title}.html").withWriter {
+        new File("${refGuideDir}/${title}.html").withWriter("UTF-8") {
             template.make(title: title, content: content.toString()).writeTo(it)
         }
         content.delete(0, content.size()) // clear buffer
