@@ -251,7 +251,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                        "org.grails:grails-web:$grailsVersion",
                        "org.slf4j:slf4j-api:1.5.6",
                        "org.slf4j:slf4j-log4j12:1.5.6",
-                       "org.springframework:org.springframework.test:3.0.0.RC1"
+                       "org.springframework:org.springframework.test:3.0.0.RC2"
 
                 // dependencies needed during development, but not for deployment
                 provided "javax.servlet:servlet-api:2.5",
@@ -283,14 +283,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                          "org.grails:grails-resources:$grailsVersion",
                          "org.grails:grails-spring:$grailsVersion",
                          "org.grails:grails-web:$grailsVersion",
-                         "org.springframework:org.springframework.core:3.0.0.RC1",
-                         "org.springframework:org.springframework.aop:3.0.0.RC1",
-                         "org.springframework:org.springframework.aspects:3.0.0.RC1",
-                         "org.springframework:org.springframework.asm:3.0.0.RC1",
-                         "org.springframework:org.springframework.beans:3.0.0.RC1",
-                         "org.springframework:org.springframework.context:3.0.0.RC1",
-                         "org.springframework:org.springframework.context.support:3.0.0.RC1",
-                         "org.springframework:org.springframework.expression:3.0.0.RC1",
+                         "org.springframework:org.springframework.core:3.0.0.RC2",
+                         "org.springframework:org.springframework.aop:3.0.0.RC2",
+                         "org.springframework:org.springframework.aspects:3.0.0.RC2",
+                         "org.springframework:org.springframework.asm:3.0.0.RC2",
+                         "org.springframework:org.springframework.beans:3.0.0.RC2",
+                         "org.springframework:org.springframework.context:3.0.0.RC2",
+                         "org.springframework:org.springframework.context.support:3.0.0.RC2",
+                         "org.springframework:org.springframework.expression:3.0.0.RC2",
                          "org.springframework:org.springframework.instrument:3.0.0.RC2",
                          "org.springframework:org.springframework.jdbc:3.0.0.RC2",
                          "org.springframework:org.springframework.jms:3.0.0.RC2",
