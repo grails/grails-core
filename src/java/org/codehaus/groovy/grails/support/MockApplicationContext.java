@@ -189,6 +189,14 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return (T) beans.get(name);
     }
 
+    public <T> T getBean(Class<T> tClass) throws BeansException {
+        final Map<String, T> map = getBeansOfType(tClass);
+        if(map.isEmpty()) {
+            throw new NoSuchBeanDefinitionException(tClass, "No bean found for type: "  + tClass.getName());
+        }
+        return map.values().iterator().next();
+    }
+
 
     public Object getBean(String name, Object[] args) throws BeansException {
         return getBean(name);

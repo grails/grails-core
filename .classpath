@@ -14,7 +14,6 @@
 	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.core-sources-3.0.0.RC2.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.expression-sources-3.0.0.RC2.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.instrument-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.instrument-sources-3.0.0.RC2.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.integration-tests-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.integration-tests-sources-3.0.0.RC2.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.jdbc-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.jdbc-sources-3.0.0.RC2.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.jms-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.jms-sources-3.0.0.RC2.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.orm-3.0.0.RC2.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RC2/src/org.springframework.orm-sources-3.0.0.RC2.jar"/>
