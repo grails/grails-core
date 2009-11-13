@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.util.BuildSettings
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -112,8 +113,9 @@ public class GroovyPagesGrailsPlugin {
         else {
             if (developmentMode) {
                 groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
-                    baseResource = new FileSystemResource(".")
-                    pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
+                    BuildSettings settings = BuildSettingsHolder.settings
+                    baseResource = new FileSystemResource(settings?.baseDir ?: new File('.'))                    
+                    pluginSettings = new PluginBuildSettings(settings)
                 }
             }
             else {
