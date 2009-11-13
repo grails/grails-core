@@ -9,13 +9,13 @@
 		</delete>
 
 
-
+        <!-- Files to integrate Grails with IDEs and build systems. -->
+        <jar destfile="${grails.target}/grails-integration-files.jar">
+            <fileset dir="${basedir}/src/grails/templates/ide-support"/>
+            <fileset dir="${basedir}/src/grails/ant"/>
+        </jar>
         <!-- Package up the files that are shared by both applications and plugins. -->
         <jar destfile="${grails.target}/grails-shared-files.jar">
-            <fileset dir="${basedir}/src/grails/templates/ide-support/eclipse"/>
-            <fileset dir="${basedir}/src/grails/templates/ide-support/intellij"/>
-            <fileset dir="${basedir}/src/grails/templates/ide-support/textmate" includes="project.tmproj"/>
-            <fileset dir="${basedir}/src/grails/ant"/>
             <zipfileset dir="${basedir}/src/war" prefix="web-app">
                 <include name="WEB-INF/applicationContext.xml"/>
                 <include name="WEB-INF/applicationContext.xml"/>

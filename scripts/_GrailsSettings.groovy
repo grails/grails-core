@@ -225,19 +225,25 @@ grailsUnpack = {Map args ->
 
     // Can't unjar a file from within a JAR, so we copy it to
     // the destination directory first.
-    ant.copy(todir: dir) {
-        javaresource(name: src)
-    }
-
-    // Now unjar it, excluding the META-INF directory.
-    ant.unjar(dest: dir, src: "${dir}/${src}", overwrite: overwriteOption) {
-        patternset {
-            exclude(name: "META-INF/**")
+    try {
+        ant.copy(todir: dir) {
+            javaresource(name: src)
         }
+
+        // Now unjar it, excluding the META-INF directory.
+        ant.unjar(dest: dir, src: "${dir}/${src}", overwrite: overwriteOption) {
+            patternset {
+                exclude(name: "META-INF/**")
+            }
+        }
+
+
+    }
+    finally {
+        // Don't need the JAR file any more, so remove it.
+        ant.delete(file: "${dir}/${src}", failonerror:false)        
     }
 
-    // Don't need the JAR file any more, so remove it.
-    ant.delete(file: "${dir}/${src}")
 }
 
 /**

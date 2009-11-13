@@ -54,35 +54,6 @@ eclipseClasspathLibs = {
     result
 }
 
-intellijClasspathLibs = {
-    def builder = new StringBuilder()
-    if (grailsHome) {
-        (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) {file ->
-            if (!file.name.startsWith("gant-")) {
-                builder << "<root url=\"jar://${grailsHome}/lib/${file.name}!/\" />\n\n"
-            }
-        }
-        (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
-            builder << "<root url=\"jar://${grailsHome}/dist/${file.name}!/\" />\n\n"
-        }
-
-    }
-
-    return builder.toString()
-}
-
-
-// Generates Eclipse .classpath entries for the Grails distribution
-// JARs. This only works if $GRAILS_HOME is set.
-eclipseClasspathGrailsJars = {args ->
-    result = ''
-    if (grailsHome) {
-        (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
-            result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/dist/${file.name}\" />\n\n"
-        }
-    }
-    result
-}
 
 target(createStructure: "Creates the application directory structure") {
     ant.sequential {
@@ -141,26 +112,8 @@ target(updateAppProperties: "Updates default application.properties") {
 }
 
 target( launderIDESupportFiles: "Updates the IDE support files (Eclipse, TextMate etc.), changing file names and replacing tokens in files where appropriate.") {
-    ant.move(file: "${basedir}/.launch", tofile: "${basedir}/${grailsAppName}.launch", overwrite: true)
-    ant.move(file: "${basedir}/test.launch", tofile: "${basedir}/${grailsAppName}-test.launch", overwrite: true)
-    ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
+    // do nothing. deprecated target
 
-
-    ant.move(file: "${basedir}/ideaGrailsProject.iml", tofile: "${basedir}/${grailsAppName}.iml", overwrite: true)
-    ant.move(file: "${basedir}/ideaGrailsProject.ipr", tofile: "${basedir}/${grailsAppName}.ipr", overwrite: true)
-    ant.move(file: "${basedir}/ideaGrailsProject.iws", tofile: "${basedir}/${grailsAppName}.iws", overwrite: true)
-
-    
-
-    def appKey = grailsAppName.replaceAll( /\s/, '.' ).toLowerCase()
-    ant.replace(dir:"${basedir}", includes:"*.*") {
-        replacefilter(token:"@grails.intellij.libs@", value: intellijClasspathLibs())
-        replacefilter(token: "@grails.libs@", value: eclipseClasspathLibs())
-        replacefilter(token: "@grails.jar@", value: eclipseClasspathGrailsJars())
-        replacefilter(token: "@grails.version@", value: grailsVersion)
-        replacefilter(token: "@grails.project.name@", value: grailsAppName)
-        replacefilter(token: "@grails.project.key@", value: appKey)
-    }
 }
 
 target(init: "main init target") {
@@ -168,7 +121,6 @@ target(init: "main init target") {
 
     grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
     grailsUnpack(dest: basedir, src: "grails-app-files.jar")
-    launderIDESupportFiles()
 
     classpath()
 
