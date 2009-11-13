@@ -198,18 +198,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
             fileset(dir: "${grailsHome}/src/war/WEB-INF/tld", includes: "grails.tld")
         }
         touch(file: "${basedir}/grails-app/i18n/messages.properties")
-
-        replaceregexp(match: "^.*GRAILS_HOME.*\$", replace: "", flags: "gm") {
-            fileset(dir: "${basedir}", includes: ".classpath")
-        }
-        replace(dir: "${basedir}",
-                includes: ".classpath",
-                token: "</classpath>",
-                value: "<classpathentry kind=\"var\" path=\"GRAILS_HOME/ant/lib/ant.jar\"/>\n${eclipseClasspathLibs()}${eclipseClasspathGrailsJars()}\n</classpath>")
-        replaceregexp(match: "^\\s*", replace: "", flags: "gm") {
-            fileset(dir: "${basedir}", includes: ".classpath")
-        }
-
     }
 
     // Add the app name and Grails version to the metadata.
