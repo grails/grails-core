@@ -291,14 +291,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                          "org.springframework:org.springframework.context:3.0.0.RC1",
                          "org.springframework:org.springframework.context.support:3.0.0.RC1",
                          "org.springframework:org.springframework.expression:3.0.0.RC1",
-                         "org.springframework:org.springframework.instrument:3.0.0.RC1",
-                         "org.springframework:org.springframework.jdbc:3.0.0.RC1",
-                         "org.springframework:org.springframework.jms:3.0.0.RC1",
-                         "org.springframework:org.springframework.orm:3.0.0.RC1",
-                         "org.springframework:org.springframework.oxm:3.0.0.RC1",
-                         "org.springframework:org.springframework.transaction:3.0.0.RC1",
-                         "org.springframework:org.springframework.web:3.0.0.RC1",
-                         "org.springframework:org.springframework.web.servlet:3.0.0.RC1",
+                         "org.springframework:org.springframework.instrument:3.0.0.RC2",
+                         "org.springframework:org.springframework.jdbc:3.0.0.RC2",
+                         "org.springframework:org.springframework.jms:3.0.0.RC2",
+                         "org.springframework:org.springframework.orm:3.0.0.RC2",
+                         "org.springframework:org.springframework.oxm:3.0.0.RC2",
+                         "org.springframework:org.springframework.transaction:3.0.0.RC2",
+                         "org.springframework:org.springframework.web:3.0.0.RC2",
+                         "org.springframework:org.springframework.web.servlet:3.0.0.RC2",
                          "org.slf4j:slf4j-api:1.5.6") {
                         transitive = false
                 }
@@ -307,7 +307,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 // dependencies needed for running tests
                 test "junit:junit:3.8.2",
                      "org.grails:grails-test:$grailsVersion",
-                     "org.springframework:org.springframework.test:3.0.0.RC1"
+                     "org.springframework:org.springframework.test:3.0.0.RC2"
 
                 // dependencies needed at runtime only
                 runtime "org.aspectj:aspectjweaver:1.6.2",
