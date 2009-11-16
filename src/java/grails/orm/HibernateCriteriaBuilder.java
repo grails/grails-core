@@ -120,7 +120,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private boolean participate;
     private boolean scroll;
     private boolean count;
-    private ProjectionList projectionList;
+    private ProjectionList projectionList = Projections.projectionList();
     private BeanWrapper targetBean;
     private List<String> aliasStack = new ArrayList<String>();
     private List<Criteria> aliasInstanceStack = new ArrayList<Criteria>();
@@ -179,13 +179,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void property(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [property] must be within a [projections] node"));
-        }
-        else {
-            final PropertyProjection propertyProjection = Projections.property(calculatePropertyName(propertyName));
-            addProjectionToList(propertyProjection, alias);
-        }
+        final PropertyProjection propertyProjection = Projections.property(calculatePropertyName(propertyName));
+        addProjectionToList(propertyProjection, alias);
     }
 
     /**
@@ -217,13 +212,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void distinct(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [distinct] must be within a [projections] node"));
-        }
-        else {
-            final Projection proj = Projections.distinct(Projections.property(calculatePropertyName(propertyName)));
-            addProjectionToList(proj,alias);
-        }
+        final Projection proj = Projections.distinct(Projections.property(calculatePropertyName(propertyName)));
+        addProjectionToList(proj,alias);
     }
 
     /**
@@ -242,17 +232,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void distinct(Collection propertyNames, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [distinct] must be within a [projections] node"));
+        ProjectionList list = Projections.projectionList();
+        for (Object o : propertyNames) {
+            list.add(Projections.property(calculatePropertyName(o.toString())));
         }
-        else {
-            ProjectionList list = Projections.projectionList();
-            for (Object o : propertyNames) {
-                list.add(Projections.property(calculatePropertyName(o.toString())));
-            }
-            final Projection proj = Projections.distinct(list);
-            addProjectionToList(proj, alias);
-        }
+        final Projection proj = Projections.distinct(list);
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -271,13 +256,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *  @param alias The alias to use
      */
     public void avg(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [avg] must be within a [projections] node"));
-        }
-        else {
-            final AggregateProjection aggregateProjection = Projections.avg(calculatePropertyName(propertyName));
-            addProjectionToList(aggregateProjection, alias);
-        }
+        final AggregateProjection aggregateProjection = Projections.avg(calculatePropertyName(propertyName));
+        addProjectionToList(aggregateProjection, alias);
     }
 
 
@@ -383,13 +363,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void count(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [count] must be within a [projections] node"));
-        }
-        else {
-            final CountProjection proj = Projections.count(calculatePropertyName(propertyName));
-            addProjectionToList(proj, alias);
-        }
+        final CountProjection proj = Projections.count(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -408,13 +383,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void countDistinct(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [countDistinct] must be within a [projections] node"));
-        }
-        else {
-            final CountProjection proj = Projections.countDistinct(calculatePropertyName(propertyName));
-            addProjectionToList(proj, alias);
-        }
+        final CountProjection proj = Projections.countDistinct(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -433,13 +403,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void groupProperty(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [groupProperty] must be within a [projections] node"));
-        }
-        else {
-            final PropertyProjection proj = Projections.groupProperty(calculatePropertyName(propertyName));
-            addProjectionToList(proj, alias);
-        }
+        final PropertyProjection proj = Projections.groupProperty(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -458,13 +423,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void max(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [max] must be within a [projections] node"));
-        }
-        else {
-            final AggregateProjection proj = Projections.max(calculatePropertyName(propertyName));
-            addProjectionToList(proj, alias);
-        }
+        final AggregateProjection proj = Projections.max(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -482,13 +442,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void min(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [min] must be within a [projections] node"));
-        }
-        else {
-            final AggregateProjection aggregateProjection = Projections.min(calculatePropertyName(propertyName));
-            addProjectionToList(aggregateProjection, alias);
-        }
+        final AggregateProjection aggregateProjection = Projections.min(calculatePropertyName(propertyName));
+        addProjectionToList(aggregateProjection, alias);
     }
 
     /**
@@ -505,13 +460,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void rowCount(String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [rowCount] must be within a [projections] node"));
-        }
-        else {
-            final Projection proj = Projections.rowCount();
-            addProjectionToList(proj, alias);
-        }
+        final Projection proj = Projections.rowCount();
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -530,13 +480,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias to use
      */
     public void sum(String propertyName, String alias) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [sum] must be within a [projections] node"));
-        }
-        else {
-            final AggregateProjection proj = Projections.sum(calculatePropertyName(propertyName));
-            addProjectionToList(proj, alias);
-        }
+        final AggregateProjection proj = Projections.sum(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
