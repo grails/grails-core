@@ -141,7 +141,7 @@ class TagLibTestController {
             assertEquals "org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader", beanDef.beanClassName
             assertNotNull beanDef.getPropertyValues().getPropertyValue('baseResource')
 
-            assertEquals new FileSystemResource("."), beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
+            assertEquals "file:.", beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
 
             beanDef = bb.getBeanDefinition("groovyPagesTemplateEngine")
             assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
