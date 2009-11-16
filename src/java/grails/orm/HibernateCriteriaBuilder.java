@@ -933,10 +933,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
 
     private boolean validateSimpleExpression() {
-        if(this.criteria == null) {
-            return false;
-        }
-        return true;
+        return this.criteria != null;
     }
 
 
@@ -1026,10 +1023,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
         }
         else {
-
             if(criteria==null) createCriteriaInstance();
 
-           MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
+            MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
             if(metaMethod != null) {
                  return metaMethod.invoke(this, args);
             }
@@ -1140,8 +1136,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             }
         }
 
-
-        closeSessionFollowingException();
         throw new MissingMethodException(name, getClass(), args) ;
     }
 
@@ -1209,6 +1203,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private void invokeClosureNode(Object args) {
         Closure callable = (Closure)args;
         callable.setDelegate(this);
+        callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();
     }
 
