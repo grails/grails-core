@@ -114,7 +114,8 @@ public class GroovyPagesGrailsPlugin {
             if (developmentMode) {
                 groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                     BuildSettings settings = BuildSettingsHolder.settings
-                    baseResource = new FileSystemResource(settings?.baseDir ?: new File('.'))                    
+                    def location = settings?.baseDir ? GroovyPagesGrailsPlugin.transformToValidLocation(settings.baseDir.absolutePath) : '.'
+                    baseResource = "file:$location"
                     pluginSettings = new PluginBuildSettings(settings)
                 }
             }
@@ -122,8 +123,7 @@ public class GroovyPagesGrailsPlugin {
                 if (warDeployedWithReload) {
                     groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                         if(env.hasReloadLocation()) {
-                            def location = env.reloadLocation
-                            if(!location.endsWith(File.separator)) location = "${location}${File.separator}"
+                            def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)                             
                             baseResource = "file:${location}"
                         }
                         else {
@@ -177,6 +177,12 @@ public class GroovyPagesGrailsPlugin {
             }
         }
 
+    }
+
+    static String transformToValidLocation(String location) {
+        if(location == '.') return location
+        if (!location.endsWith(File.separator)) return "${location}${File.separator}"
+        return location
     }
 
     /**
