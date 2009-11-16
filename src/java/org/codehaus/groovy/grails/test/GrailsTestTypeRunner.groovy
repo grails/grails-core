@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.test
 
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+
 /**
  * Describes the contract that a test type must support to be 
  * runnable by `grails test-app`.
@@ -40,5 +42,5 @@ interface GrailsTestTypeRunner {
     /**
      * Runs the tests.
      */
-    GrailsTestTypeResult run()
+    GrailsTestTypeResult run(GrailsTestEventPublisher eventPublisher)
 }

@@ -22,6 +22,8 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeRunnerFactory
 import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsIntegrationTestTypeRunnerFactory
 
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+
 /**
  * Gant script that runs the Grails unit tests
  *
@@ -42,6 +44,9 @@ otherTests = [ "cli" ]
 // The phases that we will run on this execution. Override this in your
 // own scripts to control the phases and their order.
 phasesToRun = []
+
+// Passed to the test runners to facilitate event publishing
+testEventPublisher = new GrailsTestEventPublisher(event)
 
 // A list of test names. These can be of any of this forms:
 //
@@ -208,7 +213,7 @@ runTests = { String type ->
         println "Running ${runner.testCount} $type test${runner.testCount > 1 ? 's' : ''}..."
 
         def start = new Date()
-        def result = runner.run()
+        def result = runner.run(testEventPublisher)
         def end = new Date()
 
         event("TestSuiteEnd", [type])

@@ -16,6 +16,9 @@ import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper;
 import org.codehaus.groovy.grails.test.report.junit.JUnitReports;
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory;
 
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher;
+import org.codehaus.groovy.grails.test.junit3.JUnit3ListenerEventPublisherAdapter;
+
 /**
  * <p>Runs a JUnit test suite, printing the results to the console and
  * also generating reports in selected formats.</p>
@@ -33,13 +36,16 @@ public class DefaultGrailsTestRunner implements GrailsTestRunner {
         this.reportsFactory = reportsFactory;
     }
 
-    public TestResult runTests(TestSuite suite) {
+    public TestResult runTests(TestSuite suite, GrailsTestEventPublisher eventPublisher) {
         TestResult result = new TestResult();
+        
+        JUnit3ListenerEventPublisherAdapter eventPublisherAdapter = new JUnit3ListenerEventPublisherAdapter(eventPublisher);
+        result.addListener(eventPublisherAdapter);
         
         GrailsConsoleResultFormatter consoleFormatter = new GrailsConsoleResultFormatter();
         consoleFormatter.setOutput(System.out);
         result.addListener(consoleFormatter);
-
+        
         for (Enumeration tests = suite.tests(); tests.hasMoreElements();) {
             TestSuite test = (TestSuite) tests.nextElement();
 
@@ -47,11 +53,13 @@ public class DefaultGrailsTestRunner implements GrailsTestRunner {
             JUnitReports reports = (JUnitReports)reportsFactory.createReports(test.getName());
             
             try {
+                outAndErrSwapper.swapIn();
                 
                 result.addListener(reports);
                 
                 consoleFormatter.startTestSuite(junitTest);
                 reports.startTestSuite(junitTest);
+                eventPublisherAdapter.startTestSuite(junitTest);
                 
                 // Starting...now!
                 long start = System.currentTimeMillis();
@@ -59,8 +67,6 @@ public class DefaultGrailsTestRunner implements GrailsTestRunner {
                 int failureCount = result.failureCount();
                 int errorCount = result.errorCount();
 
-                outAndErrSwapper.swapIn();
-                
                 for (int i = 0; i < test.testCount(); i++) {
                     TestCase t = (TestCase) test.testAt(i);
                     System.out.println("--Output from " + t.getName() + "--");
@@ -77,13 +83,16 @@ public class DefaultGrailsTestRunner implements GrailsTestRunner {
             }
             finally {
                 List<OutputStream> outAndErr = outAndErrSwapper.swapOut();
-
-                reports.setSystemOutput(outAndErr.get(0).toString());
-                reports.setSystemError(outAndErr.get(1).toString());
+                String out = outAndErr.get(0).toString();
+                String err = outAndErr.get(1).toString();
+                
+                reports.setSystemOutput(out);
+                reports.setSystemError(err);
                 reports.endTestSuite(junitTest);
                 
                 consoleFormatter.endTestSuite(junitTest);
                 
+                eventPublisherAdapter.endTestSuite(junitTest, out, err);
             }
             
             result.removeListener(reports);

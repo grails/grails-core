@@ -28,6 +28,8 @@ import grails.util.BuildSettings
 
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
 
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+
 /**
  * Adapts the new GrailsTestTypeRunner to the pre Grails 1.2 test running API.
  */
@@ -62,8 +64,8 @@ class JUnit3GrailsTestTypeRunner implements GrailsTestTypeRunner {
         suite.testCount()
     }
     
-    GrailsTestTypeResult run() {
-        new JUnit3GrailsTestTypeResult(runner.runTests(suite))
+    GrailsTestTypeResult run(GrailsTestEventPublisher eventPublisher) {
+        new JUnit3GrailsTestTypeResult(runner.runTests(suite, eventPublisher))
     }
     
 }
