@@ -17,6 +17,7 @@
 package org.codehaus.groovy.grails.test.junit3
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
 
 /**
  * Convenience factory for creating JUnit3 based integration test runners.
@@ -32,8 +33,7 @@ class JUnit3GrailsIntegrationTestTypeRunnerFactory {
                 grailsSettings, 
                 classLoader, 
                 resolveResources,
-                testReportsDir, 
-                reportFormats,
+                JUnitReportsFactory.createFromBuildBinding(buildBinding),
                 appCtx,
             )
         }

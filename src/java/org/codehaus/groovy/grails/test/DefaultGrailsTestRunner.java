@@ -13,6 +13,9 @@ import java.util.List;
 
 import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper;
 
+import org.codehaus.groovy.grails.test.report.junit.JUnitReports;
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory;
+
 /**
  * <p>Runs a JUnit test suite, printing the results to the console and
  * also generating reports in selected formats.</p>
@@ -24,45 +27,40 @@ import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper;
  */
 public class DefaultGrailsTestRunner implements GrailsTestRunner {
     private SystemOutAndErrSwapper outAndErrSwapper = new SystemOutAndErrSwapper();
-    private List<FormattedOutput> formattedOutputs;
-
-    private File reportsDir;
-    private List<String> formats;
-
-    public DefaultGrailsTestRunner(File reportsDir, List<String> formats) {
-        this.reportsDir = reportsDir;
-
-        // Defensive copy.
-        this.formats = new ArrayList<String>(formats);
+    private JUnitReportsFactory reportsFactory;
+    
+    public DefaultGrailsTestRunner(JUnitReportsFactory reportsFactory) {
+        this.reportsFactory = reportsFactory;
     }
 
     public TestResult runTests(TestSuite suite) {
-        GrailsConsoleResultFormatter consoleFormatter = new GrailsConsoleResultFormatter();
         TestResult result = new TestResult();
+        
+        GrailsConsoleResultFormatter consoleFormatter = new GrailsConsoleResultFormatter();
+        consoleFormatter.setOutput(System.out);
         result.addListener(consoleFormatter);
 
         for (Enumeration tests = suite.tests(); tests.hasMoreElements();) {
             TestSuite test = (TestSuite) tests.nextElement();
-            reset();
 
             JUnitTest junitTest = new JUnitTest(test.getName());
+            JUnitReports reports = (JUnitReports)reportsFactory.createReports(test.getName());
+            
             try {
-                prepareReports(test);
                 
-                consoleFormatter.setOutput(System.out);
-                outAndErrSwapper.swapIn();
+                result.addListener(reports);
+                
                 consoleFormatter.startTestSuite(junitTest);
-                for (FormattedOutput output : formattedOutputs) {
-                    result.addListener(output.getFormatter());
-                    output.start(junitTest);
-                }
-
+                reports.startTestSuite(junitTest);
+                
                 // Starting...now!
                 long start = System.currentTimeMillis();
                 int runCount = result.runCount();
                 int failureCount = result.failureCount();
                 int errorCount = result.errorCount();
 
+                outAndErrSwapper.swapIn();
+                
                 for (int i = 0; i < test.testCount(); i++) {
                     TestCase t = (TestCase) test.testAt(i);
                     System.out.println("--Output from " + t.getName() + "--");
@@ -79,43 +77,19 @@ public class DefaultGrailsTestRunner implements GrailsTestRunner {
             }
             finally {
                 List<OutputStream> outAndErr = outAndErrSwapper.swapOut();
-                String out = outAndErr.get(0).toString();
-                String err = outAndErr.get(1).toString();
-                for (FormattedOutput output : formattedOutputs) {
-                    output.end(junitTest, out, err);
-                }
+
+                reports.setSystemOutput(outAndErr.get(0).toString());
+                reports.setSystemError(outAndErr.get(1).toString());
+                reports.endTestSuite(junitTest);
+                
                 consoleFormatter.endTestSuite(junitTest);
+                
             }
+            
+            result.removeListener(reports);
         }
 
         return result;
-    }
-
-    public void reset() {
-        this.formattedOutputs = null;
-    }
-
-    public void prepareReports(TestSuite test) {
-        formattedOutputs = new ArrayList<FormattedOutput>(formats.size());
-        for (String format : formats) {
-            formattedOutputs.add(createFormatter(format, test));
-        }
-    }
-
-    public FormattedOutput createFormatter(String type, TestSuite test) {
-        if (type.equals("xml")) {
-            return new FormattedOutput(
-                    new File(reportsDir, "TEST-" + test.getName() + ".xml"),
-                    new XMLFormatter());
-        }
-        else if (type.equals("plain")) {
-            return new FormattedOutput(
-                    new File(reportsDir, "plain/TEST-" + test.getName() + ".txt"),
-                    new PlainFormatter());
-        }
-        else {
-            throw new RuntimeException("Unknown formatter type: $type");
-        }
     }
 
 }

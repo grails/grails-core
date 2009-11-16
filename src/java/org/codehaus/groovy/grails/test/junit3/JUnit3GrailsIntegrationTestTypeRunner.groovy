@@ -26,17 +26,19 @@ import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 
 import grails.util.BuildSettings
 
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
+
 /**
  * Adapts the new GrailsTestTypeRunner to the pre Grails 1.2 test running API.
  */
 class JUnit3GrailsIntegrationTestTypeRunner extends JUnit3GrailsTestTypeRunner {
     
-    JUnit3GrailsIntegrationTestTypeRunner(String type, List<String> testNames, BuildSettings settings, ClassLoader classLoader, Closure resourceResolver, File reportsDir, List<String> formats, GrailsWebApplicationContext appContext) {
+    JUnit3GrailsIntegrationTestTypeRunner(String type, List<String> testNames, BuildSettings settings, ClassLoader classLoader, Closure resourceResolver, JUnitReportsFactory reportsFactory, GrailsWebApplicationContext appContext) {
         super(
             type,
             testNames,
             new GrailsIntegrationTestHelper(settings, classLoader, resourceResolver, appContext),
-            new DefaultGrailsTestRunner(reportsDir, formats)
+            new DefaultGrailsTestRunner(reportsFactory)
         )
     }
 

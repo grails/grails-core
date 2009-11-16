@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.test.DefaultGrailsTestRunner
 
 import grails.util.BuildSettings
 
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
+
 /**
  * Adapts the new GrailsTestTypeRunner to the pre Grails 1.2 test running API.
  */
@@ -36,12 +38,12 @@ class JUnit3GrailsTestTypeRunner implements GrailsTestTypeRunner {
     protected suite
     protected type 
     
-    JUnit3GrailsTestTypeRunner(String type, List<String> testNames, BuildSettings settings, ClassLoader classLoader, Closure resourceResolver, File reportsDir, List<String> formats) {
+    JUnit3GrailsTestTypeRunner(String type, List<String> testNames, BuildSettings settings, ClassLoader classLoader, Closure resourceResolver, JUnitReportsFactory reportsFactory) {
         this(
             type,
             testNames,
             new DefaultGrailsTestHelper(settings, classLoader, resourceResolver),
-            new DefaultGrailsTestRunner(reportsDir, formats)
+            new DefaultGrailsTestRunner(reportsFactory)
         )
     }
     
