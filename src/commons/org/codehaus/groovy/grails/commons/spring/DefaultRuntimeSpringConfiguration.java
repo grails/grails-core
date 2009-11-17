@@ -85,7 +85,7 @@ public class DefaultRuntimeSpringConfiguration implements
             }
         }
         else {
-            return new GrailsApplicationContext();
+            return parent != null ? new GrailsApplicationContext(parent) : new GrailsApplicationContext();
         }
     }
 

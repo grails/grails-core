@@ -220,33 +220,36 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     }
 
     public static void enhanceProxy ( HibernateProxy proxy ) {
-        
-        proxy.metaClass {
-            propertyMissing { String name, val ->
-                if(delegate instanceof HibernateProxy) {
-                    def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-                    if(val != null) {
-                        obj?."$name" = value
-                    }
-                    return obj."$name"
-                }
-                else {
-                    throw new MissingPropertyException(name, delegate.class)
-                }
-             }
 
-            methodMissing { String name, args ->
-                if(delegate instanceof HibernateProxy) {
-                    def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-                    return obj."$name"(*args)
-                }
-                else {
-                    throw new MissingMethodException(name, delegate.class, args)
-                }
-
+        // getter
+        proxy.metaClass.propertyMissing = { String name ->
+            if(delegate instanceof HibernateProxy) {
+                return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
+            }
+            else {
+                throw new MissingPropertyException(name, delegate.class)
             }
         }
 
+        // setter
+        proxy.metaClass.propertyMissing { String name, val ->
+              if(delegate instanceof HibernateProxy) {
+                  GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
+              }
+              else {
+                  throw new MissingPropertyException(name, delegate.class)
+              }
+        }
+
+        proxy.metaClass.methodMissing { String name, args ->
+            if(delegate instanceof HibernateProxy) {
+                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                return obj."$name"(*args)
+            }
+            else {
+                throw new MissingMethodException(name, delegate.class, args)
+            }
+        }
 
     }
 
