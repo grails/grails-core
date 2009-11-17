@@ -1113,7 +1113,8 @@ class MockUtils {
         // For each object in the collection that is an instance of
         // "clazz", we manually change its metaclass to "clazz"'s.
         instances?.eachWithIndex { obj, i ->
-            if (obj.metaClass.hasProperty(obj, "id") && !obj.id && obj.id instanceof Number) {
+            def prop = obj.metaClass.hasProperty(obj, "id")
+            if (prop && !obj.id && Number.isAssignableFrom(prop.type)) {
                 obj.id = i + 1
             }
 
