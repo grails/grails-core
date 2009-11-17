@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.context.ServletContextHolder;
+import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.*;
@@ -340,10 +341,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private void filterNestedParameterMaps(MutablePropertyValues mpvs) {
         PropertyValue[] values = mpvs.getPropertyValues();
         for (PropertyValue pv : values) {
-            if (pv.getValue() instanceof GrailsParameterMap) {
+            final Object value = pv.getValue();
+            if (isNotCandidateForBinding(value)) {
                 mpvs.removePropertyValue(pv);
             }
         }
+    }
+
+    private boolean isNotCandidateForBinding(Object value) {
+        return value instanceof GrailsParameterMap || value instanceof JSONObject;
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
