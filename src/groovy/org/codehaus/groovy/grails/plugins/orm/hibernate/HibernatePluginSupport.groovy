@@ -220,39 +220,46 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
     }
 
     public static void enhanceProxy ( HibernateProxy proxy ) {
+            MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(proxy.getClass())
+            proxy.metaClass = emc
+    }    
 
-        // getter
-        proxy.metaClass.propertyMissing = { String name ->
-            if(delegate instanceof HibernateProxy) {
-                return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
-            }
-            else {
-                throw new MissingPropertyException(name, delegate.class)
-            }
-        }
+   public static void enhanceProxyClass ( Class proxyClass ) {
+       def mc = proxyClass.metaClass
+       if(! mc.pickMethod('grailsEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY) ) {
+           // getter
+           mc.propertyMissing = { String name ->
+               if(delegate instanceof HibernateProxy) {
+                   return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
+               }
+               else {
+                   throw new MissingPropertyException(name, delegate.class)
+               }
+           }
 
-        // setter
-        proxy.metaClass.propertyMissing { String name, val ->
-              if(delegate instanceof HibernateProxy) {
-                  GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
-              }
-              else {
-                  throw new MissingPropertyException(name, delegate.class)
-              }
-        }
+           // setter
+           mc.propertyMissing = { String name, val ->
+               if(delegate instanceof HibernateProxy) {
+                   GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
+               }
+               else {
+                   throw new MissingPropertyException(name, delegate.class)
+               }
+             }
 
-        proxy.metaClass.methodMissing { String name, args ->
-            if(delegate instanceof HibernateProxy) {
-                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-                return obj."$name"(*args)
-            }
-            else {
-                throw new MissingMethodException(name, delegate.class, args)
-            }
-        }
+           mc.methodMissing = { String name, args ->
+                if(delegate instanceof HibernateProxy) {
+                    def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                    return obj."$name"(*args)
+                }
+                else {
+                    throw new MissingPropertyException(name, delegate.class)
+                }
 
+           }
+           mc.grailsEnhanced = { true }
+       }
     }
-
 
     private static DOMAIN_INITIALIZERS = [:]
     static initializeDomain(Class c) {
