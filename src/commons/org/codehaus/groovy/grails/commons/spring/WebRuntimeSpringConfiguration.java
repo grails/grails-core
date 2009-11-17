@@ -58,7 +58,7 @@ public class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfigura
             }
         }
         else {
-            return new GrailsWebApplicationContext();
+            return parent != null ? new GrailsWebApplicationContext(parent) : new GrailsWebApplicationContext(parent);
         }
         
     }
