@@ -10,6 +10,7 @@
         <dependency org="org.grails" name="grails-bootstrap" rev="@grails.version@" conf="build"/>
         <dependency org="org.grails" name="grails-scripts" rev="@grails.version@" conf="build"/>
         <dependency org="org.grails" name="grails-gorm" rev="@grails.version@" conf="compile"/>
+        <dependency org="org.grails" name="grails-crud" rev="@grails.version@" conf="compile"/>        
         <dependency org="org.grails" name="grails-web" rev="@grails.version@" conf="compile"/>
         <dependency org="org.grails" name="grails-test" rev="@grails.version@" conf="test"/>
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.5" conf="runtime"/>
