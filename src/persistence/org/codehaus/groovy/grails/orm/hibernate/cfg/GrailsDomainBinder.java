@@ -390,7 +390,20 @@ public final class GrailsDomainBinder {
 
             if (referenced != null && !referenced.isRoot() && !tablePerSubclass) {
                 // NOTE: Work around for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
-                collection.setWhere(RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME + " = '" + referenced.getFullName() + "'");
+                Mapping referencedMapping = getMapping(referenced);
+                Mapping rootMapping = getRootMapping(referenced);
+                String discriminatorColumnName = RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME;
+                String discriminator = referenced.getFullName();
+                if(rootMapping != null) {
+                    final ColumnConfig discriminatorColumn = rootMapping.getDiscriminatorColumn();
+                    if(discriminatorColumn!=null) {
+                        discriminatorColumnName = discriminatorColumn.getName();
+                    }
+                }
+                if(referencedMapping != null && referencedMapping.getDiscriminator()!=null) {
+                    discriminator = referencedMapping.getDiscriminator();
+                }
+                collection.setWhere(discriminatorColumnName + " = '" + discriminator + "'");
             }
 
             OneToMany oneToMany = (OneToMany) collection.getElement();
