@@ -722,10 +722,11 @@ class MockUtils {
                 // The object passes validation, so to confirm that it
                 // has been saved we add it to the list of test instances.
                 // Note that if the instance is already in the list, we
-                // don't add it again! We also give it an ID.
+                // don't add it again! We also give it an ID, unless one
+                // has been assigned.
                 if (!testInstances.contains(delegate)) {
                     testInstances << delegate
-                    delegate.id = testInstances.size()
+                    if (!delegate.id) testInstances.size()
                 }
                 return delegate
             }
@@ -1112,7 +1113,8 @@ class MockUtils {
         // For each object in the collection that is an instance of
         // "clazz", we manually change its metaclass to "clazz"'s.
         instances?.eachWithIndex { obj, i ->
-            if (obj.metaClass.hasProperty(obj, "id") && !obj.id) {
+            def prop = obj.metaClass.hasProperty(obj, "id")
+            if (prop && !obj.id && Number.isAssignableFrom(prop.type)) {
                 obj.id = i + 1
             }
 
