@@ -223,12 +223,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private void establishRelationships() {
         for(Iterator i = this.propertyMap.values().iterator();i.hasNext();  ) {
             DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty)i.next();
+            if(!currentProp.isPersistent()) continue;
+
             Class currentPropType = currentProp.getType();
             // establish if the property is a one-to-many
             // if it is a Set and there are relationships defined
             // and it is defined as persistent
-            if(	Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType) &&
-                currentProp.isPersistent() ) {
+            if(	Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
 
                 establishRelationshipForCollection( currentProp);
             }
