@@ -59,26 +59,25 @@
 
     </target>
 
-    <property name="bundlor.version" value="1.0.0.M6" />
+    <property name="bundlor.version" value="1.0.0.CI-230" />
     <property name="bundlor.home" location="${user.home}/.grails/bundlor-${bundlor.version}" />
     <available file="${bundlor.home}" property="bundlor.installed" />
 
-	<target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
-        <copy file="${basedir}/maven/grails-${bundle.name}.mf.in" tofile="${grails.target}/grails-${bundle.name}.mf" overwrite="true" />
-        <replace file="${grails.target}/grails-${bundle.name}.mf" token="@grails.version@" value="${grails.version}" />
-		<bundlor:bundlor bundlePath="${jar.file}"
+    
+    <target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
+		<bundlor:bundlor inputPath="${jar.file}"
                          outputPath="${jar.file}"
 				         bundleVersion="${grails.version}"
-				         manifestTemplatePath="${grails.target}/grails-${bundle.name}.mf"
-                         failOnWarnings="false">
-			<!--<propertyset refid="bundlor.properties"/>-->
-			<propertyset>
-				<propertyref builtin="all"/>
-			</propertyset>
+				         manifestTemplatePath="${basedir}/maven/grails-${bundle.name}.mf"
+                         failOnWarnings="true">
+            <propertyset>
+                <propertyref prefix="bundlor."/>
+                <mapper type="glob" from="bundlor.*" to="*" />
+            </propertyset>
 		</bundlor:bundlor>
 	</target>
 
-	<target name="bundlor.init">
+	<target name="bundlor.init" depends="bundlor.download">
 		<taskdef resource="com/springsource/bundlor/ant/antlib.xml"
                  uri="antlib:com.springsource.bundlor.ant">
             <classpath id="bundlor.classpath">
@@ -89,7 +88,7 @@
 	</target>
 
     <target name="bundlor.download" unless="bundlor.installed">
-        <get src="http://s3.amazonaws.com/dist.springframework.org/milestone/BNDLR/bundlor-${bundlor.version}.zip"
+        <get src="http://s3.amazonaws.com/dist.springframework.org/snapshot/BNDLR/bundlor-${bundlor.version}.zip"
              dest="${user.home}/.grails/bundlor.zip"
              usetimestamp="true"/>
 
