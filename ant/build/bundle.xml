@@ -106,6 +106,7 @@
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/test/**" />
+                <include name="**/groovy/grails/test/**" />
             </fileset>
         </jar>
         <antcall target="--bundlor-jar">
@@ -221,6 +222,10 @@
                 <include name="**/groovy/grails/plugins/scaffolding/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="crud" />
+        </antcall>
+
         <jar destfile="${grails.dist}/grails-resources-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.target}" includes="*.jar"/>
             <fileset dir="${basedir}">
@@ -231,6 +236,10 @@
                 <include name="src/war/WEB-INF/tld/*/*.tld"/>
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="resources" />
+        </antcall>
+
     	
     	<mkdir dir="${grails.build}/META-INF/services"/>
     	<copy todir="${grails.build}/META-INF/services">
@@ -260,6 +269,8 @@
                 <exclude name="grails/util/Metadata*"/>
                 <exclude name="grails/util/BuildScope*"/>
                 <exclude name="grails/util/GrailsMain*"/>
+                <exclude name="grails/test/**"/>
+                <exclude name="**/groovy/grails/test/**" />
                 <exclude name="**/groovy/grails/commons/spring/**" />
                 <exclude name="**/groovy/grails/plugins/orm/hibernate**" />
                 <exclude name="**/groovy/grails/plugins/web/**" />
@@ -269,6 +280,10 @@
                 <exclude name="**/groovy/grails/validation/Hibernate**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="core" />
+        </antcall>
+
     	<delete dir="${grails.build}/META-INF/services"></delete>
     </target>
 
