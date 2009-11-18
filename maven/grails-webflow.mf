@@ -22,6 +22,7 @@ Import-Template:
   org.springframework.transaction.*;version="${spring.version:[=.=.=, +1.0.0)}",
   org.springframework.util.*;version="${spring.version:[=.=.=, +1.0.0)}",
   org.springframework.web.*;version="${spring.version:[=.=.=, +1.0.0)}",
+  org.springframework.validation.*;version="${spring.version:[=.=.=, +1.0.0)}",
   org.springframework.webflow.*;version="${webflow.version:[=.=.=, +1.0.0)}",
   org.springframework.binding.*;version="${webflow.version:[=.=.=, +1.0.0)}"
 
