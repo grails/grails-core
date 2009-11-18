@@ -60,13 +60,18 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
                         PluginInfo info = pluginBuildSettings.getPluginInfoForSource(absolutePath);
 
                         if(info!=null) {
-                            final AnnotationNode annotationNode = new AnnotationNode(new ClassNode(GrailsPlugin.class));
-                            annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.NAME, new ConstantExpression(info.getName()));
-                            annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.VERSION, new ConstantExpression(info.getVersion()));
-                            annotationNode.setRuntimeRetention(true);
-                            annotationNode.setClassRetention(true);
+                            final ClassNode annotation = new ClassNode(GrailsPlugin.class);
+                            final List list = classNode.getAnnotations(annotation);
+                            if(list.size()==0) {
+                                final AnnotationNode annotationNode = new AnnotationNode(annotation);
+                                annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.NAME, new ConstantExpression(info.getName()));
+                                annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.VERSION, new ConstantExpression(info.getVersion()));
+                                annotationNode.setRuntimeRetention(true);
+                                annotationNode.setClassRetention(true);
 
-                            classNode.addAnnotation(annotationNode);
+
+                                classNode.addAnnotation(annotationNode);
+                            }
                         }
                     }
                 }
