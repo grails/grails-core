@@ -288,95 +288,115 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void evaluateOnChangeListener() {
-        if(this.pluginBean.isReadableProperty(ON_CONFIG_CHANGE)) {
-            this.onConfigChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CONFIG_CHANGE);
-        }
-        if(this.pluginBean.isReadableProperty(ON_SHUTDOWN)) {
-            this.onShutdownListener= (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_SHUTDOWN);
-        }
-        if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
-            this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
-            Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
+        if(Environment.getCurrent().isReloadEnabled()) {
+            if(this.pluginBean.isReadableProperty(ON_CONFIG_CHANGE)) {
+                this.onConfigChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CONFIG_CHANGE);
+            }
+            if(this.pluginBean.isReadableProperty(ON_SHUTDOWN)) {
+                this.onShutdownListener= (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_SHUTDOWN);
+            }
+            if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
+                this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
+                Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
 
 
-            try {
-                List resourceList = null;
-                if(referencedResources instanceof String) {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Configuring plugin "+this+" to watch resources with pattern: " + referencedResources);
-                    }
-                    resourceList = new ArrayList();
-                    resourceList.add(referencedResources.toString());
-                }
-                else if(referencedResources instanceof List) {
-                    resourceList = (List)referencedResources;
-                }
-
-                if(resourceList!=null) {
-
-                    this.resourcesReferences = new String[resourceList.size()];
-                    this.resourceCount = new int[resourceList.size()];
-                    for (int i = 0; i < resourcesReferences.length; i++) {
-                        String resRef = resourceList.get(i).toString();
-                        resourcesReferences[i]=resRef;
-                    }
-                    for (int i = 0; i < resourcesReferences.length; i++) {
-                        String res = resourcesReferences[i];
-
-                        // Try to load the resources that match the "res" pattern.
-                        Resource[] tmp = new Resource[0];
-                        try {
-                            final Environment env = Environment.getCurrent();
-                            if(Metadata.getCurrent().isWarDeployed() && env.isReloadEnabled()) {
-                                String location = env.getReloadLocation();
-                                if(!location.endsWith(File.separator)) location = location + File.separator;
-                                if(res.startsWith(".")) res = res.substring(1);
-                                else if(res.startsWith("file:./")) res = res.substring(7);
-                                res = "file:"+location + res;
-                                tmp = resolver.getResources(res);
-                            }
-                            else {
-                                tmp = resolver.getResources(res);
-                            }
-                        }
-                        catch (Exception ex) {
-                            // The pattern is invalid so we continue as if there
-                            // are no matching files.
-                            LOG.debug("Resource pattern [" + res + "] is not valid - maybe base directory does not exist?");
-                        }
-                        resourceCount[i] = tmp.length;
-                        
+                try {
+                    List resourceList = null;
+                    if(referencedResources instanceof String) {
                         if(LOG.isDebugEnabled()) {
-                            LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
+                            LOG.debug("Configuring plugin "+this+" to watch resources with pattern: " + referencedResources);
                         }
-                        if(tmp.length == 0)
-                            tmp = resolver.getResources("classpath*:" + res);
+                        resourceList = new ArrayList();
+                        resourceList.add(referencedResources.toString());
+                    }
+                    else if(referencedResources instanceof List) {
+                        resourceList = (List)referencedResources;
+                    }
 
-                        if(tmp.length > 0){
-                            watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
+                    if(resourceList!=null) {
+
+                        this.resourcesReferences = new String[resourceList.size()];
+                        this.resourceCount = new int[resourceList.size()];
+                        for (int i = 0; i < resourcesReferences.length; i++) {
+                            String resRef = resourceList.get(i).toString();
+                            resourcesReferences[i]=resRef;
+                        }
+                        final Resource[] pluginDirs = GrailsPluginUtils.getPluginDirectories();
+                        for (int i = 0; i < resourcesReferences.length; i++) {
+                            String res = resourcesReferences[i];
+
+                            // Try to load the resources that match the "res" pattern.
+                            Resource[] tmp = new Resource[0];
+                            try {
+                                final Environment env = Environment.getCurrent();
+                                if(Metadata.getCurrent().isWarDeployed() && env.isReloadEnabled()) {
+                                    res = getResourcePatternForBaseLocation(env.getReloadLocation(), res);
+                                    tmp = resolver.getResources(res);
+                                }
+                                else {
+                                    for (Resource pluginDir : pluginDirs) {
+                                        if(pluginDir !=null) {
+                                            String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), res);
+                                            try {
+                                                final Resource[] pluginResourceInstances = resolver.getResources(pluginResources);
+                                                tmp = (Resource[]) ArrayUtils.addAll(tmp, pluginResourceInstances);
+                                            }
+                                            catch (IOException e) {
+                                                // ignore. Plugin has no resources of the type
+                                            }
+                                        }
+                                    }
+                                    tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
+                                }
+                            }
+                            catch (Exception ex) {
+                                // The pattern is invalid so we continue as if there
+                                // are no matching files.
+                                LOG.debug("Resource pattern [" + res + "] is not valid - maybe base directory does not exist?");
+                            }
+                            resourceCount[i] = tmp.length;
+
+                            if(LOG.isDebugEnabled()) {
+                                LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
+                            }
+                            if(tmp.length == 0)
+                                tmp = resolver.getResources("classpath*:" + res);
+
+                            if(tmp.length > 0){
+                                watchedResources = (Resource[])ArrayUtils.addAll(this.watchedResources, tmp);
+                            }
                         }
                     }
+
+                }
+                catch (IllegalArgumentException e) {
+                    if(GrailsUtil.isDevelopmentEnv())
+                        LOG.debug("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+                }
+                catch (IOException e) {
+                    if(GrailsUtil.isDevelopmentEnv())
+                        LOG.debug("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+                }
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
+                }
+                try {
+                    initializeModifiedTimes();
+                } catch (IOException e) {
+                    LOG.warn("I/O exception initializing modified times for watched resources: " + e.getMessage(), e);
                 }
 
             }
-            catch (IllegalArgumentException e) {
-            	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.debug("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
-            }
-            catch (IOException e) {
-            	if(GrailsUtil.isDevelopmentEnv())
-            		LOG.debug("Cannot load plug-in resource watch list from ["+ ArrayUtils.toString(resourcesReferences) +"]. This means that the plugin "+this+", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
-            }
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
-            }
-            try {
-                initializeModifiedTimes();
-            } catch (IOException e) {
-                LOG.warn("I/O exception initializing modified times for watched resources: " + e.getMessage(), e);
-            }
-
         }
+    }
+
+    private String getResourcePatternForBaseLocation(String baseLocation, String resourcePath) {
+        String location = baseLocation;
+        if(!location.endsWith(File.separator)) location = location + File.separator;
+        if(resourcePath.startsWith(".")) resourcePath = resourcePath.substring(1);
+        else if(resourcePath.startsWith("file:./")) resourcePath = resourcePath.substring(7);
+        resourcePath = "file:"+location + resourcePath;
+        return resourcePath;
     }
 
     private void evaluatePluginInfluencePolicy() {
