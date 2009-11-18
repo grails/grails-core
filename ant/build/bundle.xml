@@ -197,6 +197,10 @@
                 <include name="**/groovy/grails/webflow/executor/support/GrailsConventionsFlowExecutorArgumentHandler*" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="web" />
+        </antcall>
+
         <jar destfile="${grails.dist}/grails-webflow-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -204,6 +208,11 @@
                 <include name="**/groovy/grails/plugins/webflow/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="webflow" />
+        </antcall>
+
+
         <jar destfile="${grails.dist}/grails-crud-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
