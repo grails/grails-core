@@ -1,0 +1,26 @@
+<ivy-settings>
+		<conf defaultResolver="grails"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-public.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-shared.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-local.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-main-chain.xml"/>
+		<include url="${ivy.default.conf.dir}/ivyconf-default-chain.xml"/>   
+		 
+        <resolvers>       
+ 			<ibiblio pattern="[organisation]/[type]s/[artifact]-[revision].[ext]"
+	                  name="ibiblio-retry"  />       
+			<chain name="grails" dual="true">
+				<resolver ref="shared"/>
+				<resolver ref="public"/>
+				<resolver ref="ibiblio-retry"/>  				
+			</chain>
+            <chain name="spring-portfolio-lookup" returnFirst="true">
+                <s3repo name="bundle-release-repository"	bucket="repository.springsource.com" artifact.type="bundles" release.type="release"/>
+                <s3repo name="bundle-milestone-repository"	bucket="repository.springsource.com" artifact.type="bundles" release.type="milestone"/>
+                <s3repo name="bundle-snapshot-repository"	bucket="repository.springsource.com" artifact.type="bundles" release.type="snapshot"/>
+                <s3repo name="library-release-repository"	bucket="repository.springsource.com" artifact.type="libraries" release.type="release"/>
+                <s3repo name="library-milestone-repository"	bucket="repository.springsource.com" artifact.type="libraries" release.type="milestone"/>
+                <s3repo name="library-snapshot-repository"	bucket="repository.springsource.com" artifact.type="libraries" release.type="snapshot"/>
+            </chain>
+		</resolvers>     	   	
+</ivy-settings>                     

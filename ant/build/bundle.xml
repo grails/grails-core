@@ -1,6 +1,9 @@
-<project name="grails-bundle">
+<project name="grails-bundle"
+         xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:bundlor="antlib:com.springsource.bundlor.ant">
     <property name="targetDistDirectory" value="${grails.dist}"/>
     <import file="maven.xml"/>
+    <import file="resolve.xml"/>
 
     <target name="-jar-app-files" description="Bundles all the template files for applications and plugins into a JAR files.">
         <!-- Clear the old JAR files out. -->
@@ -56,6 +59,45 @@
 
     </target>
 
+    <property name="bundlor.version" value="1.0.0.M6" />
+    <property name="bundlor.home" location="${user.home}/.grails/bundlor-${bundlor.version}" />
+    <available file="${bundlor.home}" property="bundlor.installed" />
+
+	<target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
+        <copy file="${basedir}/maven/grails-${bundle.name}.mf.in" tofile="${grails.target}/grails-${bundle.name}.mf" overwrite="true" />
+        <replace file="${grails.target}/grails-${bundle.name}.mf" token="@grails.version@" value="${grails.version}" />
+		<bundlor:bundlor bundlePath="${jar.file}"
+                         outputPath="${jar.file}"
+				         bundleVersion="${grails.version}"
+				         manifestTemplatePath="${grails.target}/grails-${bundle.name}.mf"
+                         failOnWarnings="true">
+			<!--<propertyset refid="bundlor.properties"/>-->
+			<propertyset>
+				<propertyref builtin="all"/>
+			</propertyset>
+		</bundlor:bundlor>
+	</target>
+
+	<target name="bundlor.init">
+		<taskdef resource="com/springsource/bundlor/ant/antlib.xml"
+                 uri="antlib:com.springsource.bundlor.ant">
+            <classpath id="bundlor.classpath">
+                <fileset dir="${bundlor.home}/dist"/>
+                <fileset dir="${bundlor.home}/lib"/>
+            </classpath>
+        </taskdef>
+	</target>
+
+    <target name="bundlor.download" unless="bundlor.installed">
+        <get src="http://s3.amazonaws.com/dist.springframework.org/milestone/BNDLR/bundlor-${bundlor.version}.zip"
+             dest="${user.home}/.grails/bundlor.zip"
+             usetimestamp="true"/>
+
+        <unzip src="${user.home}/.grails/bundlor.zip"
+               dest="${user.home}/.grails" />
+
+    </target>
+    
     <target name="jar" depends="build,build-scripts,-jar-app-files" description="Build the entire source, run all tests and create the Grails JAR file.">
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
@@ -97,6 +139,10 @@
             </fileset>
             <file file="${basedir}/build.properties"/>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="jar.file" value="${grails.dist}/grails-bootstrap-${grails.version}.jar" />
+            <param name="bundle.name" value="bootstrap" />
+        </antcall>
         <jar destfile="${grails.dist}/grails-scripts-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.target}/compiled-scripts"/>
             <file file="${basedir}/scripts/log4j.properties"/>            
