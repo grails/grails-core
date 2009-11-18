@@ -65,11 +65,11 @@
 
     
     <target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
-		<bundlor:bundlor inputPath="${jar.file}"
-                         outputPath="${jar.file}"
+		<bundlor:bundlor inputPath="${grails.dist}/grails-${bundle.name}-${grails.version}.jar"
+                         outputPath="${grails.dist}/grails-${bundle.name}-${grails.version}.jar"
 				         bundleVersion="${grails.version}"
 				         manifestTemplatePath="${basedir}/maven/grails-${bundle.name}.mf"
-                         failOnWarnings="true">
+                         failOnWarnings="false">
             <propertyset>
                 <propertyref prefix="bundlor."/>
                 <mapper type="glob" from="bundlor.*" to="*" />
@@ -108,6 +108,10 @@
                 <include name="grails/test/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="test" />
+        </antcall>
+
         <jar destfile="${grails.dist}/grails-docs-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -139,7 +143,6 @@
             <file file="${basedir}/build.properties"/>
         </jar>
         <antcall target="--bundlor-jar">
-            <param name="jar.file" value="${grails.dist}/grails-bootstrap-${grails.version}.jar" />
             <param name="bundle.name" value="bootstrap" />
         </antcall>
         <jar destfile="${grails.dist}/grails-scripts-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
