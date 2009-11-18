@@ -33,7 +33,9 @@ includeTargets << grailsScript("_GrailsPlugins")
 SCHEME_HTTP="http"
 SCHEME_HTTPS="https"
 
-
+// Keep track of whether we're running in HTTPS mode in case we need
+// to restart the server.
+usingSecureServer = false
 
 grailsServer = null
 grailsContext = null
@@ -146,6 +148,7 @@ runServer = { Map args ->
 
         profile("start server") {
             if(args.scheme == 'https') {
+                usingSecureServer = true
                 server.startSecure args.host, args.httpPort, args.httpsPort
 
                 // Update the message to reflect the fact we are running HTTPS as well.
@@ -242,7 +245,13 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
                     PluginManagerHolder.pluginManager = null
                     // reload plugins
                     loadPlugins()
-                    runApp()
+
+                    if (usingSecureServer) {
+                        runAppHttps()
+                    }
+                    else {
+                        runApp()
+                    }
                 } catch (Throwable e) {
                     logError("Error restarting container",e)
                     exit(1)
