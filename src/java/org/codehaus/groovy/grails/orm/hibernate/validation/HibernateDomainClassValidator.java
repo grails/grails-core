@@ -15,10 +15,13 @@
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.hibernate.SessionFactory;
 import org.hibernate.FlushMode;
+import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.classic.Session;
 import org.hibernate.collection.PersistentCollection;
 import org.springframework.beans.BeanWrapper;
@@ -52,6 +55,15 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
     };
     private ApplicationContext applicationContext;
     private SessionFactory sessionFactory;
+
+    @Override
+    protected GrailsDomainClass getAssociatedDomainClassFromApplication(Object associatedObject) {
+        String associatedObjectType = associatedObject.getClass().getName();
+        if (associatedObject instanceof HibernateProxy) {
+            associatedObjectType = ((HibernateProxy) associatedObject).getHibernateLazyInitializer().getEntityName();
+        }
+        return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObjectType);
+    }
 
     @Override
     public void validate(Object obj, Errors errors, boolean cascade) {

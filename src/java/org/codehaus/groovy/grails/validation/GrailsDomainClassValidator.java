@@ -15,19 +15,18 @@
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyObject;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.Validator;
 
 import java.util.*;
 
@@ -49,10 +48,10 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             add(GrailsDomainClassProperty.VERSION);
     }};
 
-    private Class targetClass;
-    private GrailsDomainClass domainClass;
-    private MessageSource messageSource;
-    private GrailsApplication grailsApplication;
+    protected Class targetClass;
+    protected GrailsDomainClass domainClass;
+    protected MessageSource messageSource;
+    protected GrailsApplication grailsApplication;
     private static final String ERRORS_PROPERTY = "errors";
 
     public boolean supports(Class clazz) {
@@ -271,15 +270,16 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         }
         else {
             if(grailsApplication!=null) {
-                String associatedObjectType = associatedObject.getClass().getName();
-                if (associatedObject instanceof HibernateProxy) {
-                    associatedObjectType = ((HibernateProxy) associatedObject).getHibernateLazyInitializer().getEntityName();
-                }
-                return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObjectType);
+                return getAssociatedDomainClassFromApplication(associatedObject);
             }
             else
                 return persistentProperty.getReferencedDomainClass();
         }
+    }
+
+    protected GrailsDomainClass getAssociatedDomainClassFromApplication(Object associatedObject) {
+        String associatedObjectType = associatedObject.getClass().getName();
+        return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObjectType);
     }
 
     private boolean isOwningInstance(BeanWrapper bean, GrailsDomainClass associatedDomainClass) {
