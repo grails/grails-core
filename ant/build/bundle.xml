@@ -70,7 +70,7 @@
                          outputPath="${jar.file}"
 				         bundleVersion="${grails.version}"
 				         manifestTemplatePath="${grails.target}/grails-${bundle.name}.mf"
-                         failOnWarnings="true">
+                         failOnWarnings="false">
 			<!--<propertyset refid="bundlor.properties"/>-->
 			<propertyset>
 				<propertyref builtin="all"/>
