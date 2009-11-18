@@ -119,6 +119,10 @@
                 <include name="**/groovy/grails/documentation/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="docs" />
+        </antcall>
+
 
         <jar destfile="${grails.dist}/grails-spring-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
@@ -127,6 +131,11 @@
                 <include name="**/groovy/grails/commons/spring/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="spring" />
+        </antcall>
+
+
         <jar destfile="${grails.dist}/grails-bootstrap-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -149,6 +158,10 @@
             <fileset dir="${grails.target}/compiled-scripts"/>
             <file file="${basedir}/scripts/log4j.properties"/>            
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="scripts" />
+        </antcall>
+        
 
 
         <jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
@@ -160,6 +173,10 @@
                 <include name="**/groovy/grails/validation/Hibernate**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="gorm" />
+        </antcall>
+
         <delete>
             <fileset dir="${grails.build}/META-INF">
                 <include name="*.handlers" />
