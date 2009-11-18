@@ -83,9 +83,6 @@ target(integrateEclipse:"Integrates Eclipse STS with Grails") {
         fileset(dir:"${integrationFiles}/eclipse")
     }
 
-    ant.move(file: "${basedir}/.launch", tofile: "${basedir}/${grailsAppName}.launch", overwrite: true)
-    ant.move(file: "${basedir}/test.launch", tofile: "${basedir}/${grailsAppName}-test.launch", overwrite: true)
-
     replaceTokens()
     println "Created Eclipse project files."
 }

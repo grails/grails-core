@@ -27,6 +27,7 @@ import grails.util.Metadata
 
 includeTargets << grailsScript("_GrailsPlugins")
 includeTargets << grailsScript("_GrailsInit")
+includeTargets << grailsScript("IntegrateWith")
 
 grailsAppName = ""
 projectType = "app"
@@ -100,6 +101,7 @@ target(initProject: "Initialise an application or plugin project") {
 
     grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
     grailsUnpack(dest: basedir, src: "grails-$projectType-files.jar")
+    integrateEclipse()
 }
 
 target ( appName : "Evaluates the application name") {
