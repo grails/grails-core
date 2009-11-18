@@ -1075,7 +1075,12 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                     event("StatusUpdate", ["Plugin dependency [$depName] not found. Attempting to resolve..."])
                     // recursively install dependent plugins
                     def upperVersion =  GrailsPluginUtils.getUpperVersion(depVersion)
-                    def release = cacheKnownPlugin(depDirName, upperVersion == '*' ? null : upperVersion)
+                    def installVersion = upperVersion
+                    if(installVersion == '*') {
+                        installVersion = grailsSettings.defaultPluginSet.contains(depDirName) ? GrailsUtil.getGrailsVersion() : null
+                    }
+
+                    def release = cacheKnownPlugin(depDirName, installVersion)
 
                     ant.copy(file:"${pluginsBase}/grails-${release}.zip",tofile:"${pluginsDirPath}/grails-${release}.zip")
 
