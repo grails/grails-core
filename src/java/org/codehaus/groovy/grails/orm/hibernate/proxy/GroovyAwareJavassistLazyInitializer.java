@@ -19,6 +19,7 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;
@@ -27,7 +28,6 @@ import org.hibernate.proxy.pojo.BasicLazyInitializer;
 import org.hibernate.proxy.pojo.javassist.SerializableProxy;
 import org.hibernate.type.AbstractComponentType;
 import org.hibernate.util.ReflectHelper;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -109,7 +109,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 			return proxy;
 		}
 		catch ( Throwable t ) {
-			LoggerFactory.getLogger( BasicLazyInitializer.class ).error(
+			LogFactory.getLog( BasicLazyInitializer.class ).error(
 					"Javassist Enhancement failed: " + entityName, t
 			);
 			throw new HibernateException(
@@ -170,7 +170,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 	        return proxyClass;
 		}
 		catch ( Throwable t ) {
-			LoggerFactory.getLogger( BasicLazyInitializer.class ).error(
+			LogFactory.getLog( BasicLazyInitializer.class ).error(
 					"Javassist Enhancement failed: "
 					+ persistentClass.getName(), t
 			);
