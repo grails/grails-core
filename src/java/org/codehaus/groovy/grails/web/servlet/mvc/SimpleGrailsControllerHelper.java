@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -243,7 +244,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
             catch (Throwable t) {
                 GrailsUtil.deepSanitize(t);
-                throw new ControllerExecutionException("Error executing action ["+actionName+"] on controller ["+controller.getClass().getName()+"]: " + t.getMessage(), t);
+                String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());
+                pluginName = pluginName != null ? "in plugin ["+pluginName+"]" : "";  
+                throw new ControllerExecutionException("Executing action ["+actionName+"] of controller ["+controller.getClass().getName()+"] "+pluginName+" caused exception: " + t.getMessage(), t);
             }
 
 

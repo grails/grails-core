@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils
 import grails.util.BuildSettingsHolder
 import grails.util.BuildSettings
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 
 class GrailsPluginUtilsTests extends GroovyTestCase {
     BuildSettings settings
@@ -55,6 +56,18 @@ grails {
         assertFalse "version with SNAPSHOT should not match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.3 > *")
     }
 
+    void testGetPluginName() {
+        assertEquals "foo", GrailsPluginUtils.getPluginName(TestPluginAnnotation)
+        assertNull GrailsPluginUtils.getPluginName(null)
+        assertNull GrailsPluginUtils.getPluginName(String)
+    }
+
+    void testGetPluginVersion() {
+        assertEquals "1.0", GrailsPluginUtils.getPluginVersion(TestPluginAnnotation)
+        assertNull GrailsPluginUtils.getPluginVersion(null)
+        assertNull GrailsPluginUtils.getPluginName(String)
+
+    }
     void testVersionValidity() {
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1-SNAPSHOT","1.0 > *")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0 > *")
@@ -142,4 +155,9 @@ grails {
         assertNotNull scripts.find { it.filename == "DoSomething.groovy" }
         assertNotNull scripts.find { it.filename == "RunDebug.groovy" }
     }
+}
+
+@GrailsPlugin(name="foo", version="1.0")
+class TestPluginAnnotation {
+
 }

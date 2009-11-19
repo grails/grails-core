@@ -19,11 +19,11 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
+import org.codehaus.groovy.grails.plugins.InvalidVersionException
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import java.util.regex.Pattern
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 
 /**
  * Utility class containing methods that aid in loading and evaluating plug-ins
@@ -48,6 +48,25 @@ public class GrailsPluginUtils {
     }
 
 
+    /**
+     * Get the name of the a plugin for a particular class
+     */
+    static String getPluginName(Class clazz) {
+        if(clazz!=null) {
+            GrailsPlugin plugin = clazz.getAnnotation(GrailsPlugin)
+            if(plugin!=null) return plugin.name()
+        }
+    }
+
+    /**
+     * Get the version of the a plugin for a particular class
+     */
+    static String getPluginVersion(Class clazz) {
+        if(clazz!=null) {
+            GrailsPlugin plugin = clazz.getAnnotation(GrailsPlugin)
+            if(plugin!=null) return plugin.version()
+        }
+    }
     /**
      * Check if the required version is a valid for the given plugin version
      *
