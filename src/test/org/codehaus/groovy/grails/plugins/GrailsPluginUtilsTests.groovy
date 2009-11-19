@@ -48,6 +48,13 @@ grails {
 //        new File("tmp").deleteDir()
     }
 
+    void testOsgiFormatVersionNumbers() {
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.1-SNAPSHOT")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.2", "1.2.0.BUILD-SNAPSHOT > *")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.2 > *")
+        assertFalse "version with SNAPSHOT should not match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.3 > *")
+    }
+
     void testVersionValidity() {
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1-SNAPSHOT","1.0 > *")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0 > *")

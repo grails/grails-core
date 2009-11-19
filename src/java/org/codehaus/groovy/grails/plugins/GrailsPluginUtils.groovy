@@ -331,14 +331,18 @@ class VersionComparator implements Comparator{
         else {
             def nums1
             try {
-                nums1 = o1.split(/\./).findAll { it.trim() != ''}*.toInteger()
+                def tokens = o1.split(/\./)
+                tokens = tokens.findAll { it.trim() ==~ /\d+/ }
+                nums1 = tokens*.toInteger()
             }
             catch (NumberFormatException  e) {
                 throw new InvalidVersionException("Cannot compare versions, left side [$o1] is invalid: ${e.message}")
             }
             def nums2
             try {
-                nums2 = o2.split(/\./).findAll { it.trim() != ''}*.toInteger()
+                def tokens = o2.split(/\./)
+                tokens = tokens.findAll { it.trim() ==~ /\d+/ }
+                nums2 = tokens*.toInteger()
             }
             catch (java.lang.NumberFormatException e) {
                 throw new InvalidVersionException("Cannot compare versions, right side [$o2] is invalid: ${e.message}")
