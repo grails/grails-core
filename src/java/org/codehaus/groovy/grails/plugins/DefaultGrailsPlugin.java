@@ -288,15 +288,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void evaluateOnChangeListener() {
+        if(this.pluginBean.isReadableProperty(ON_SHUTDOWN)) {
+            this.onShutdownListener= (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_SHUTDOWN);
+        }
+        if(this.pluginBean.isReadableProperty(ON_CONFIG_CHANGE)) {
+            this.onConfigChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CONFIG_CHANGE);
+        }
+        if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
+            this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
+        }
         if(Environment.getCurrent().isReloadEnabled()) {
-            if(this.pluginBean.isReadableProperty(ON_CONFIG_CHANGE)) {
-                this.onConfigChangeListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CONFIG_CHANGE);
-            }
-            if(this.pluginBean.isReadableProperty(ON_SHUTDOWN)) {
-                this.onShutdownListener= (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_SHUTDOWN);
-            }
-            if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
-                this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
+            if(this.onChangeListener!=null) {
                 Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
 
 
