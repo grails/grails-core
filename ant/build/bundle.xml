@@ -60,7 +60,7 @@
     </target>
 
     <property name="bundlor.version" value="1.0.0.CI-230" />
-    <property name="bundlor.home" location="${user.home}/.grails/bundlor-${bundlor.version}" />
+    <property name="bundlor.home" location="${grails.target}/bundlor-${bundlor.version}" />
     <available file="${bundlor.home}" property="bundlor.installed" />
 
     
@@ -89,11 +89,11 @@
 
     <target name="bundlor.download" unless="bundlor.installed">
         <get src="http://s3.amazonaws.com/dist.springframework.org/snapshot/BNDLR/bundlor-${bundlor.version}.zip"
-             dest="${user.home}/.grails/bundlor.zip"
+             dest="${grails.target}/bundlor.zip"
              usetimestamp="true"/>
 
-        <unzip src="${user.home}/.grails/bundlor.zip"
-               dest="${user.home}/.grails" />
+        <unzip src="${grails.target}/bundlor.zip"
+               dest="${grails.target}" />
 
     </target>
     
