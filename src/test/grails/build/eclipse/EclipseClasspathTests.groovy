@@ -29,25 +29,5 @@ class EclipseClasspathTests extends GroovyTestCase {
         }
     }
 
-    /**
-     * This test ensures that the launch file refers to the correct
-     * version of Groovy.
-     */
-    void testLaunchTemplate() {
-        if(Boolean.getBoolean("groovy.grails.joint")) return;
-        // Extract the classpath entry for Groovy from the .launch file.
-        def result = new XmlSlurper().parse(new File('src/grails/templates/ide-support/eclipse/.launch'))
-        def classpathEntries = result.listAttribute.find {it.'@key' == 'org.eclipse.jdt.launching.CLASSPATH'}
-        def groovyPath = classpathEntries.listEntry.find {it.@value.text().contains("groovy-all")}?.@value?.text()
 
-        assertNotNull groovyPath
-
-        // Now extract the path to the Groovy JAR using a regular expression.
-        def m = groovyPath =~ /GRAILS_HOME\/(lib\/groovy-all-[\w-\.]+\.jar)/
-        assertTrue m.find()
-
-        // Now make sure that the Groovy JAR referred to exists!
-        File file = new File(m[0][1])
-        assertTrue "Eclipse .launch template refers to '$file', which doesn't exist!", file.exists()
-    }
 }
