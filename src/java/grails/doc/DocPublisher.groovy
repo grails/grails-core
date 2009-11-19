@@ -19,14 +19,20 @@ import org.radeox.engine.context.BaseInitialRenderContext
 import groovy.text.Template
 
 /**
+ * Coordinated the DocEngine the produce documentation based on the gdoc format.
+ *
+ * @see DocEngine
+ *
  * @author Graeme Rocher
  * @since 1.2
  */
-
 public class DocPublisher {
 
+    /** The source directory of the documentation */
     File src
+    /** The target directory to publish to */
     File target
+    /** The temporary work directory */
     File workDir
     /** The directory containing any images to use (will override defaults) **/
     File images
@@ -34,19 +40,26 @@ public class DocPublisher {
     File css
     /** The directory cotnaining any templates to use (will override defaults) **/
     File style
+    /** The AntBuilder instance to use */
     AntBuilder ant
+    /** The encoding to use (default is UTF-8) */
     String encoding = "UTF-8"
+    /** The title of the documentation */
     String title
-    String subtitle = "" 
+    /** The subtitle of the documentation */
+    String subtitle = ""
+    /** The version of the documentation */
     String version
+    /** The authors of the documentation */
     String authors = ""
+    /** The documentation license */
     String license = ""
+    /** The copyright message */
     String copyright = ""
+    /** The footer to include */
     String footer = ""
+    /** Properties used to configure the DocEngine */
     Properties engineProperties
-
-
-
 
     DocPublisher() {
     }
