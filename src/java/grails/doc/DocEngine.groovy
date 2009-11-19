@@ -28,8 +28,6 @@ import org.radeox.macro.MacroLoader
 import org.radeox.macro.parameter.MacroParameter
 import org.radeox.regex.MatchResult
 import org.radeox.filter.*
-import grails.util.BuildSettingsHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 
 /**
@@ -45,37 +43,14 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static EXTERNAL_DOCS = 	[:]
 	static ALIAS = [:]
 
-    static {
-        def props = new Properties()
-        def settings = BuildSettingsHolder.getSettings()
-        try {
-            props.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
-            ConfigObject docConfig = ConfigurationHolder.config?.grails?.doc
-
-            if(docConfig) {
-                props.putAll docConfig.toProperties()
-            }
-        }
-        catch (e) {
-            // ignore
-        }
-        props.findAll { it.key.startsWith("api.")}.each {
-            EXTERNAL_DOCS[it.key[4..-1]] = it.value
-        }
-        props.findAll { it.key.startsWith("alias.")}.each {
-            ALIAS[it.key[6..-1]] = it.value
-        }
-
-    }
-
-
     private basedir
+
+    Properties engineProperties
 
     DocEngine(InitialRenderContext context) {
         super(context)
         this.basedir = context.get("base.dir") ?: "."
     }
-
 
     boolean exists(String name) {
         int barIndex = name.indexOf('|')
@@ -134,6 +109,23 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     boolean showCreate() { false }
 
     protected void init() {
+        def props = new Properties()
+        try {
+            props.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
+            if(engineProperties) {
+                props.putAll engineProperties
+            }
+        }
+        catch (e) {
+            // ignore
+        }
+        props.findAll { it.key.startsWith("api.")}.each {
+            EXTERNAL_DOCS[it.key[4..-1]] = it.value
+        }
+        props.findAll { it.key.startsWith("alias.")}.each {
+            ALIAS[it.key[6..-1]] = it.value
+        }
+
         if (null == fp) {
           fp = new FilterPipe(initialContext);
 

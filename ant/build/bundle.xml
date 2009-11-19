@@ -114,6 +114,7 @@
         </antcall>
 
         <jar destfile="${grails.dist}/grails-docs-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+            <fileset dir="${grails.target}" includes="grails-doc-files.jar" />
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/doc/**" />
@@ -227,7 +228,7 @@
         </antcall>
 
         <jar destfile="${grails.dist}/grails-resources-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
-            <fileset dir="${grails.target}" includes="*.jar"/>
+            <fileset dir="${grails.target}" includes="*.jar" excludes="grails-doc-files.jar"/>
             <fileset dir="${basedir}">
                 <include name="conf/webdefault.xml"/>
                 <include name="src/grails/templates/artifacts/**"/>

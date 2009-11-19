@@ -114,7 +114,7 @@ fi
 if [ -z "$GROOVY_CONF" ]; then
     GROOVY_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
-STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-all-1.6.5.jar:$GRAILS_HOME/dist/grails-bootstrap-1.2-SNAPSHOT.jar"
+STARTER_CLASSPATH="$GRAILS_HOME/lib/groovy-all-1.6.5.jar:$GRAILS_HOME/dist/grails-bootstrap-1.2.0.SNAPSHOT.jar"
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then

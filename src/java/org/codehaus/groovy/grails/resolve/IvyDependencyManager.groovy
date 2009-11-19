@@ -133,7 +133,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
         ivySettings.defaultInit()
         // don't cache for snapshots
-        if(settings?.grailsVersion?.endsWith("-SNAPSHOT")) {
+        if(settings?.grailsVersion?.endsWith("SNAPSHOT")) {
             ivySettings.setDefaultUseOrigin(true) 
         }
 
