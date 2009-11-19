@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
@@ -45,7 +46,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -237,7 +237,15 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
             
             // Step 7: process the action
-            Object returnValue = handleAction( controller,action,request,response,params );
+            Object returnValue = null;
+            try {
+                returnValue = handleAction( controller,action,request,response,params );
+            }
+            catch (Throwable t) {
+                GrailsUtil.deepSanitize(t);
+                throw new ControllerExecutionException("Error executing action ["+actionName+"] on controller ["+controller.getClass().getName()+"]: " + t.getMessage(), t);
+            }
+
 
             // Step 8: determine return value type and handle accordingly
             initChainModel(controller);
