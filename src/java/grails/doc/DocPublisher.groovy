@@ -309,10 +309,19 @@ public class DocPublisher {
         // Can't unjar a file from within a JAR, so we copy it to
         // the destination directory first.
         try {
-            ant.copy(todir: dir) {
-                javaresource(name: src)
-            }
+            URL url = getClass().getClassLoader().getResource(src)
+            if(url) {
 
+                url.withInputStream { InputStream input ->
+                    new File("$dir/$src").withOutputStream { out ->
+                        def buffer = new byte[1024]
+                        int len;
+                        while ((len = input.read(buffer)) != -1) {
+                            out.write(buffer, 0, len)
+                        }
+                    }
+                }
+            }
             // Now unjar it, excluding the META-INF directory.
             ant.unjar(dest: dir, src: "${dir}/${src}", overwrite: overwriteOption) {
                 patternset {
