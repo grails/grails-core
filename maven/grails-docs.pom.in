@@ -27,6 +27,22 @@
     <description>Grails library required for generating Grails documentation.</description>
     <url>http://grails.org/</url>
 
+   <distributionManagement>
+        <repository>
+            <id>codehaus.org</id>
+            <name>Grails Central Repository</name>
+            <url>dav:https://dav.codehaus.org/repository/grails/</url>
+        </repository>
+        <snapshotRepository>
+            <!-- Don't create timestamped snapshots - simply replace the one that's already there. -->
+            <uniqueVersion>false</uniqueVersion>
+
+            <id>codehaus.org</id>
+            <name>Grails Central Development Repository</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/grails/</url>
+        </snapshotRepository>
+    </distributionManagement>    
+
     <dependencies>
         <!-- Required for the documentation generating engine -->
         <dependency>
