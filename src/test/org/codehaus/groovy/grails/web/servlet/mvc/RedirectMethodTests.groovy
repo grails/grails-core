@@ -1,12 +1,12 @@
 /**
  * Tests the behaviour of the redirect method
- 
+
  * @author Graeme Rocher
  * @since 1.0
   *
  * Created: Sep 13, 2007
  * Time: 10:10:45 AM
- * 
+ *
  */
 package org.codehaus.groovy.grails.web.servlet.mvc
 
@@ -32,6 +32,10 @@ class RedirectController {
     }
     def toAction = {
         redirect(action:'foo')
+    }
+    def toActionWithGstring = {
+        def prefix = 'f'
+        redirect(action:"${prefix}oo")
     }
     def toRoot = {
         redirect(controller:'default')
@@ -167,6 +171,13 @@ class UrlMappings {
         assertEquals "/redirect/foo", response.redirectedUrl
     }
 
+    void testRedirectToActionWithGstring() {
+        def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+        c.toActionWithGstring.call()
+        assertEquals "/redirect/foo", response.redirectedUrl
+    }
+
     void testRedirectToController() {
         def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'
@@ -179,7 +190,6 @@ class UrlMappings {
         webRequest.controllerName = 'redirect'
         c.toControllerAndAction.call()
         assertEquals "/test/foo", response.redirectedUrl
-
     }
 
     void testRedirectToControllerWithParams() {
