@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
@@ -271,6 +272,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private void bindWithRequestAndPropertyValues(ServletRequest request, MutablePropertyValues mpvs) {
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup((HttpServletRequest) request);
+        if(webRequest!=null) {
+            final Map<String, BindEventListener> bindEventListenerMap = webRequest.getApplicationContext().getBeansOfType(BindEventListener.class);
+            for (BindEventListener bindEventListener : bindEventListenerMap.values()) {
+                bindEventListener.doBind(getTarget(), mpvs, getTypeConverter());
+            }
+        }
         preProcessMutablePropertyValues(mpvs);
 
         if (request instanceof MultipartHttpServletRequest) {
