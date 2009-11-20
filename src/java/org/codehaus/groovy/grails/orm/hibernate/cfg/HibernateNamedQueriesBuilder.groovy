@@ -53,6 +53,8 @@ class HibernateNamedQueriesBuilder {
     void methodMissing(String name, args) {
         if(args && args[0] instanceof Closure) {
             handleMethodMissing(name, args)
+        } else {
+            throw new MissingMethodException(name, HibernateNamedQueriesBuilder, args)
         }
     }
 }
