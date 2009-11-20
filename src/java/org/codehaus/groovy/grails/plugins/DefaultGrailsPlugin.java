@@ -331,8 +331,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                             Resource[] tmp = new Resource[0];
                             try {
                                 final Environment env = Environment.getCurrent();
+                                final String baseLocation = env.getReloadLocation();
                                 if(Metadata.getCurrent().isWarDeployed() && env.isReloadEnabled()) {
-                                    res = getResourcePatternForBaseLocation(env.getReloadLocation(), res);
+                                    res = getResourcePatternForBaseLocation(baseLocation, res);
                                     tmp = resolver.getResources(res);
                                 }
                                 else {
@@ -348,7 +349,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                                             }
                                         }
                                     }
-                                    tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
+                                    try {
+                                        tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
+                                    }
+                                    catch (IOException e) {
+                                        // ignore, no resources at default location
+                                    }
+                                    if(baseLocation!=null) {
+                                        final String reloadLocationResourcePattern = getResourcePatternForBaseLocation(baseLocation, res);
+                                        try {
+                                            final Resource[] reloadLocationResources = resolver.getResources(reloadLocationResourcePattern);
+                                            tmp = (Resource[]) ArrayUtils.addAll(tmp, reloadLocationResources);
+                                        }
+                                        catch (IOException e) {
+                                            // ignore, no resources at base location
+                                        }
+                                    }
                                 }
                             }
                             catch (Exception ex) {
