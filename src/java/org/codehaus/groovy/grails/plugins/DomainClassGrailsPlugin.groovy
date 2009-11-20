@@ -146,7 +146,7 @@ class DomainClassGrailsPlugin {
         metaClass.clearErrors = {->
             delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
         }
-        if (!dc.hasMetaMethod("validate")) {
+        if (!domainClass.hasMetaMethod("validate")) {
             metaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
