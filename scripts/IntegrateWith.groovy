@@ -33,14 +33,12 @@ target(integrateWith:"Integrates ") {
 
     def keys = argsMap.keySet()
     try {
-        event("IntegrateWithStart", keys.toList())
+        event("IntegrateWithInit", keys.toList())
         for(key in keys) {
             if(key == 'params') continue
             try {
                 def name = GrailsNameUtils.getClassNameRepresentation(key)
-                event("IntegrateWith${name}Start", [])
                 "integrate${name}"()
-                event("IntegrateWith${name}End", [])
             }
             catch (e) {
                 println "Error: failed to integrate [${key}] with Grails: ${e.message}"
@@ -49,7 +47,6 @@ target(integrateWith:"Integrates ") {
         }
     }
     finally {
-        event("IntegrateWithEnd", [])
         ant.delete(dir:integrationFiles, failonerror:false)
     }
 
