@@ -218,7 +218,6 @@
         <jar destfile="${grails.dist}/grails-crud-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
-                <include name="grails/util/Generate**" />
                 <include name="**/groovy/grails/scaffolding/**" />
                 <include name="**/groovy/grails/plugins/scaffolding/**" />
             </fileset>

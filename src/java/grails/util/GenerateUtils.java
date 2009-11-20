@@ -34,6 +34,8 @@ import org.springframework.mock.web.MockServletContext;
  * the template generation.
  *
  * @author Graeme Rocher
+ * @deprecated This class is deprecated and will be removed in a future version of Grails
+ * 
  * @since 10-Feb-2006
  */
 public class GenerateUtils {

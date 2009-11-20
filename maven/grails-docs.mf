@@ -5,6 +5,7 @@ Bundle-Vendor: SpringSource Inc.
 Bundle-SymbolicName: org.grails.docs
 Import-Template:
  org.radeox.*;version="${radeox.version:[=.=.=, +1.0.0)}",
+ org.apache.tools.ant.*;version="${ant.version:[=.=.=, +1.0.0)}",
  groovy.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  org.codehaus.groovy.runtime.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  org.codehaus.groovy.control.*;version="${groovy.version:[=.=.=, =.+1.0)}",
