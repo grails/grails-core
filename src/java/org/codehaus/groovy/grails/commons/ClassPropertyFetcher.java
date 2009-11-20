@@ -3,15 +3,18 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.*;
-import java.util.*;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * 
@@ -62,6 +65,7 @@ public class ClassPropertyFetcher {
 		MethodCallback methodCallback = new ReflectionUtils.MethodCallback() {
 			public void doWith(Method method) throws IllegalArgumentException,
 					IllegalAccessException {
+                if(!Modifier.isPublic(method.getModifiers())) return;
 				if (Modifier.isStatic(method.getModifiers())
 						&& method.getReturnType() != Void.class) {
 					if (method.getParameterTypes().length == 0) {

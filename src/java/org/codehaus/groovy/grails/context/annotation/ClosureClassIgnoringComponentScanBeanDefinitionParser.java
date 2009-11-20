@@ -17,12 +17,6 @@ package org.codehaus.groovy.grails.context.annotation;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.*;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +34,11 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ReflectionUtils;
 import org.w3c.dom.Element;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Extends Spring's default &lt;context:component-scan/&gt; element to ignore Groovy's
@@ -74,18 +73,16 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
      *
      */
     private static final class ParentOnlyGetResourcesClassLoader extends ClassLoader {
-    	private static final Method findResourcesMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResources", String.class);
-    	private static final Method findResourceMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResource", String.class);
-    	static {
-    		ReflectionUtils.makeAccessible(findResourceMethod);
-    		ReflectionUtils.makeAccessible(findResourcesMethod);
-    	}
+    	private final Method findResourcesMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResources", String.class);
+    	private final Method findResourceMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResource", String.class);
     	
     	private ClassLoader rootLoader;
     	
     	public ParentOnlyGetResourcesClassLoader(ClassLoader parent) {
     		super(parent);
     		this.rootLoader = DefaultGroovyMethods.getRootLoader(parent);
+            ReflectionUtils.makeAccessible(findResourceMethod);
+            ReflectionUtils.makeAccessible(findResourcesMethod);
     	}
 
     	@Override
@@ -148,19 +145,26 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
         if(LOG.isDebugEnabled()) {
         	LOG.debug("Scanning only this classloader:" + originalResourceLoader.getClassLoader());
         }
-        
-        final ResourceLoader parentOnlyResourceLoader = new ResourceLoader() {
-        	ClassLoader parentOnlyGetResourcesClassLoader = new ParentOnlyGetResourcesClassLoader(originalResourceLoader.getClassLoader());
-        	
-			public Resource getResource(String location) {
-				return originalResourceLoader.getResource(location);
-			}
-			
-			public ClassLoader getClassLoader() {
-				return parentOnlyGetResourcesClassLoader;
-			}
-		};
-        
+
+        ResourceLoader parentOnlyResourceLoader;
+        try {
+            parentOnlyResourceLoader = new ResourceLoader() {
+                ClassLoader parentOnlyGetResourcesClassLoader = new ParentOnlyGetResourcesClassLoader(originalResourceLoader.getClassLoader());
+
+                public Resource getResource(String location) {
+                    return originalResourceLoader.getResource(location);
+                }
+
+                public ClassLoader getClassLoader() {
+                    return parentOnlyGetResourcesClassLoader;
+                }
+            };
+        }
+        catch (Throwable t) {
+            // restrictive classloading environment, use the original
+            parentOnlyResourceLoader = originalResourceLoader;
+        }
+
         final PathMatchingResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver(parentOnlyResourceLoader) {
             @Override
             protected Resource[] findAllClassPathResources(String location) throws IOException {
