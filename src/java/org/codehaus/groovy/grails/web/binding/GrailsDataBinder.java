@@ -46,6 +46,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
+import org.springframework.context.ApplicationContext;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -274,9 +275,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private void bindWithRequestAndPropertyValues(ServletRequest request, MutablePropertyValues mpvs) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup((HttpServletRequest) request);
         if(webRequest!=null) {
-            final Map<String, BindEventListener> bindEventListenerMap = webRequest.getApplicationContext().getBeansOfType(BindEventListener.class);
-            for (BindEventListener bindEventListener : bindEventListenerMap.values()) {
-                bindEventListener.doBind(getTarget(), mpvs, getTypeConverter());
+            final ApplicationContext applicationContext = webRequest.getApplicationContext();
+            if(applicationContext!=null) {
+                final Map<String, BindEventListener> bindEventListenerMap = applicationContext.getBeansOfType(BindEventListener.class);
+                for (BindEventListener bindEventListener : bindEventListenerMap.values()) {
+                    bindEventListener.doBind(getTarget(), mpvs, getTypeConverter());
+                }
             }
         }
         preProcessMutablePropertyValues(mpvs);
