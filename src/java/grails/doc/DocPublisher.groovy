@@ -146,6 +146,7 @@ public class DocPublisher {
             def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
             def context = new BaseInitialRenderContext()
             context.set(DocEngine.CONTEXT_PATH, "..")
+            context.set(DocEngine.BASE_DIR, src.absolutePath) 
 
             def engine = new DocEngine(context)
             engine.engineProperties = engineProperties

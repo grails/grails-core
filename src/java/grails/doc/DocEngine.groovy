@@ -39,6 +39,7 @@ import org.radeox.filter.*
 class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static final CONTEXT_PATH = "contextPath"
     static final SOURCE_FILE = "sourceFile"
+    static final BASE_DIR = "base.dir"
 
     static EXTERNAL_DOCS = 	[:]
 	static ALIAS = [:]
@@ -49,7 +50,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     DocEngine(InitialRenderContext context) {
         super(context)
-        this.basedir = context.get("base.dir") ?: "."
+        this.basedir = context.get(BASE_DIR) ?: "."
     }
 
     boolean exists(String name) {
@@ -67,7 +68,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 				if(ALIAS[alias]) {
 					alias = ALIAS[alias]
 				}
-                def ref = "${basedir}/src/doc/guide/${alias}.gdoc"
+                def ref = "${basedir}/guide/${alias}.gdoc"
                 def file = new File(ref)
                 if(file.exists()) {
                     return true
@@ -87,7 +88,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 			}
             else {
                 String dir = getNaturalName(refCategory)
-                def ref = "${basedir}/src/doc/ref/${dir}/${refItem}.gdoc"
+                def ref = "${basedir}/ref/${dir}/${refItem}.gdoc"
                 File file = new File(ref)
                 if(file.exists()) {
                     return true
