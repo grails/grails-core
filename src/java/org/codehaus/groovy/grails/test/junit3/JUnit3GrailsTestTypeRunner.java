@@ -1,4 +1,20 @@
-package org.codehaus.groovy.grails.test;
+/*
+ * Copyright 2009 the original author or authors.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+package org.codehaus.groovy.grails.test.junit3;
 
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -19,24 +35,20 @@ import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory;
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher;
 import org.codehaus.groovy.grails.test.junit3.JUnit3ListenerEventPublisherAdapter;
 
-/**
- * <p>Runs a JUnit test suite, printing the results to the console and
- * also generating reports in selected formats.</p>
- * <p><b>Note</b> This class is currently written in Java because the
- * Groovy compiler can't cope with "ant-junit.jar" in ANT_HOME and
- * "junit.jar" in the "lib" directory.</p>
- *
- * @author Peter Ledbrook
- */
-public class DefaultGrailsTestRunner implements GrailsTestRunner {
+import org.codehaus.groovy.grails.test.GrailsConsoleResultFormatter;
+
+public class JUnit3GrailsTestTypeRunner {
+    
     private SystemOutAndErrSwapper outAndErrSwapper = new SystemOutAndErrSwapper();
     private JUnitReportsFactory reportsFactory;
+    private GrailsTestEventPublisher eventPublisher;
     
-    public DefaultGrailsTestRunner(JUnitReportsFactory reportsFactory) {
+    public JUnit3GrailsTestTypeRunner(JUnitReportsFactory reportsFactory, GrailsTestEventPublisher eventPublisher) {
         this.reportsFactory = reportsFactory;
+        this.eventPublisher = eventPublisher;
     }
 
-    public TestResult runTests(TestSuite suite, GrailsTestEventPublisher eventPublisher) {
+    public TestResult runTests(TestSuite suite) {
         TestResult result = new TestResult();
         
         JUnit3ListenerEventPublisherAdapter eventPublisherAdapter = new JUnit3ListenerEventPublisherAdapter(eventPublisher);
@@ -95,10 +107,10 @@ public class DefaultGrailsTestRunner implements GrailsTestRunner {
                 eventPublisherAdapter.endTestSuite(junitTest, out, err);
             }
             
+            result.removeListener(consoleFormatter);
             result.removeListener(reports);
         }
 
         return result;
     }
-
 }

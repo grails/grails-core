@@ -8,7 +8,6 @@ import junit.framework.TestSuite
 import org.apache.commons.logging.LogFactory
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.test.GrailsTestSuite
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.transaction.support.TransactionCallback

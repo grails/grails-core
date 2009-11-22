@@ -19,9 +19,12 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeRunnerFactory
-import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsIntegrationTestTypeRunnerFactory
+import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestType
+import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeMode
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
 
+import org.codehaus.groovy.grails.test.GrailsTestType
+import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 
 /**
@@ -34,6 +37,7 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
+includeTargets << grailsScript("_GrailsSettings")
 
 // The four test phases that we can run.
 unitTests = [ "unit" ]
@@ -58,6 +62,7 @@ testEventPublisher = new GrailsTestEventPublisher(event)
 //
 // The default pattern runs all tests.
 testNames = buildConfig.grails.testing.patterns ?: ['**.*']
+testTargetPatterns = null // created in allTests()
 
 // Controls which result formats are generated. By default both XML
 // and plain text files are created. You can override this in your
@@ -91,19 +96,34 @@ target(allTests: "Runs the project's tests.") {
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
-
+    
+    testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
+    
     // If no phases are explicitly configured, run them all.
     if (!phasesToRun) phasesToRun = [ "unit", "integration", "functional", "other" ]
     
     event("TestPhasesStart", [phasesToRun])
+    
+    // Handle pre 1.2 style testing configuration
+    def convertedPhases = [:]
+    phasesToRun.each { phaseName ->
+        def types = binding."${phaseName}Tests"
+        if (types) {
+            convertedPhases[phaseName] = types.collect { rawType ->
+                if (rawType instanceof CharSequence) {
+                    def mode = (phaseName == 'integration') ? JUnit3GrailsTestTypeMode.WITH_GRAILS_ENVIRONMENT : JUnit3GrailsTestTypeMode.NOT_WITH_GRAILS_ENVIRONMENT
+                    def rawTypeString = rawType.toString()
+                    new JUnit3GrailsTestType(rawTypeString, rawTypeString, mode)
+                } else {
+                    rawType
+                }
+            }
+        }
+    }
 
     try {
         // Process the tests in each phase that is configured to run.
-        for(phase in phasesToRun) {
-            // Skip this phase if there are no test types registered for it.
-            def testTypes = this."${phase}Tests"
-            if (!testTypes) continue
-
+        convertedPhases.each { phase, types ->
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
             println()
@@ -114,7 +134,7 @@ target(allTests: "Runs the project's tests.") {
             "${phase}TestPhasePreparation"()
 
             // Now run all the tests registered for this phase.
-            testTypes.each(processTests)
+            types.each(processTests)
 
             // Perform any clean up required.
             this."${phase}TestPhaseCleanUp"()
@@ -145,18 +165,18 @@ target(allTests: "Runs the project's tests.") {
  * @param type The type of the tests to compile (not the test phase!)
  * For example, "unit", "jsunit", "webtest", etc.
  */
-processTests = { String type ->
-    if (new File("${basedir}/test/$type").exists()) {
-        println "\nRunning tests of type '$type'"
-    
-        // First compile the test classes.
-        compileTests(type)
+processTests = { GrailsTestType type ->
+    def relativePathToSource = type.relativeSourcePath
+    def dest = null
+    if (relativePathToSource) {
+        def source = new File("${basedir}/test", relativePathToSource)
+        if (!source.exists()) return // no source, no point continuing
 
-        // Run them.
-        runTests(type)
-    } else {
-        println "Skipping '$type' tests (test/$type doesn't exist)"
+        dest = new File(grailsSettings.testClassesDir, relativePathToSource)
+        compileTests(type, source, dest)
     }
+    
+    runTests(type, dest)
 }
 
 /**
@@ -167,76 +187,55 @@ processTests = { String type ->
  * @param type The type of the tests to compile (not the test phase!)
  * For example, "unit", "jsunit", "webtest", etc.
  */
-compileTests = { String type ->
+compileTests = { GrailsTestType type, File source, File dest ->
     event("TestCompileStart", [type])
 
-    srcdir = new File("${basedir}/test/${type}")
-    if(srcdir.exists()) {        
-        def destDir = new File(grailsSettings.testClassesDir, type)
-        ant.mkdir(dir: destDir.path)
-        try {
-            def classpathId = "grails.test.classpath"
-            ant.groovyc(destdir: destDir,
-                    encoding:"UTF-8",
-                    classpathref: classpathId) {
-                javac(classpathref:classpathId, debug:"yes")
-
-                src(path:srcdir)
-            }
+    ant.mkdir(dir: dest.path)
+    try {
+        def classpathId = "grails.test.classpath"
+        ant.groovyc(destdir: dest, encoding:"UTF-8", classpathref: classpathId) {
+            javac(classpathref: classpathId, debug: "yes")
+            src(path: source)
         }
-        catch (Exception e) {
-            event("StatusFinal", ["Compilation error compiling [$type] tests: ${e.message}"])
-            exit 1
-        }
+    } catch (Exception e) {
+        event("StatusFinal", ["Compilation error compiling [$type.name] tests: ${e.message}"])
+        exit 1
     }
 
     event("TestCompileEnd", [type])
 }
 
-runTests = { String type ->
-    def prevContextClassLoader = Thread.currentThread().contextClassLoader
-    try {
-        
-        def preparer = binding.variables."${type}TestsPreparation"
-        def runner = (preparer) ? preparer() : JUnit3GrailsTestTypeRunnerFactory.createRunner(type, binding)
-        
-        if (runner.testCount == 0) {
-            event("StatusUpdate", ["No tests found in test/$type to execute"])
-            return
+runTests = { GrailsTestType type, File compiledClassesDir ->
+    def testCount = type.prepare(testTargetPatterns, compiledClassesDir, binding)
+    
+    if (testCount) {
+        try {
+            event("TestSuiteStart", [type])
+            println ""
+            println "-------------------------------------------------------"
+            println "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
+
+            def start = new Date()
+            def result = type.run(testEventPublisher)
+            def end = new Date()
+            
+            event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
+
+            if (result.failCount > 0) testsFailed = true
+            
+            println "-------------------------------------------------------"
+            println "Tests passed: ${result.passCount}"
+            println "Tests failed: ${result.failCount}"
+            println "-------------------------------------------------------"
+            event("TestSuiteEnd", [type])
+        } catch (Exception e) {
+            event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
+            GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
+            testsFailed = true
+        } finally {
+            type.cleanup()
         }
-
-        // Set the context class loader to the one used to load the tests.
-        Thread.currentThread().contextClassLoader = runner.testClassLoader
-
-        event("TestSuiteStart", [type])
-        println "-------------------------------------------------------"
-        println "Running ${runner.testCount} $type test${runner.testCount > 1 ? 's' : ''}..."
-
-        def start = new Date()
-        def result = runner.run(testEventPublisher)
-        def end = new Date()
-
-        event("TestSuiteEnd", [type])
-        event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
-
-        println "-------------------------------------------------------"
-        println "Tests passed: ${result.passCount}"
-        println "Tests failed: ${result.failCount}"
-        println "-------------------------------------------------------"
-
-        // If any of the tests fail, we register the whole test run as
-        // a failure.
-        if (result.failCount > 0) testsFailed = true
-    }
-    catch (Exception e) {
-        event("StatusFinal", ["Error running $type tests: ${e.toString()}"])
-        GrailsUtil.deepSanitize(e)
-        e.printStackTrace()
-        testsFailed = true
-    }
-    finally {
-        Thread.currentThread().contextClassLoader = prevContextClassLoader
-        binding.variables."${type}TestsCleanUp"?.call()
     }
 }
 
@@ -292,12 +291,6 @@ functionalTestPhaseCleanUp = {
 otherTestPhasePreparation = {}
 otherTestPhaseCleanUp = {}
 
-_defaultTestsPreparation = {
-    
-}
-integrationTestsPreparation = {
-    JUnit3GrailsIntegrationTestTypeRunnerFactory.createRunner('integration', binding)
-}
 
 target(packageTests: "Puts some useful things on the classpath for integration tests.") {
     ant.copy(todir: new File(grailsSettings.testClassesDir, "integration").path) {

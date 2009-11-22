@@ -14,26 +14,9 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.test
+package org.codehaus.groovy.grails.test.junit3
 
-/**
- * Describes the outcome of running a test type.
- * 
- * The information provided by results is only used for display,
- * so is not required to be exact when that is impossible.
- * 
- * @see GrailsTestTypeRunner#run()
- */
-interface GrailsTestTypeResult {
-
-    /**
-     * The number of tests that can be considered to have passed
-     */
-    int getPassCount()
-    
-    /**
-     * The number of tests that can be considered to have not passed
-     */
-    int getFailCount()
-
+enum JUnit3GrailsTestTypeMode {
+    NOT_WITH_GRAILS_ENVIRONMENT,
+    WITH_GRAILS_ENVIRONMENT
 }
