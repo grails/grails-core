@@ -45,15 +45,16 @@ class HibernateNamedQueriesBuilder {
         def propertyName = name[0].toUpperCase() + name[1..-1]
         def proxy = new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz)
         domainClass.metaClass.static."get${propertyName}" = { ->
-            proxy   
+            proxy
         }
 
     }
 
-    void methodMissing(String name, args) {
+    def methodMissing(String name, args) {
         if(args && args[0] instanceof Closure) {
-            handleMethodMissing(name, args)
+            return handleMethodMissing(name, args)
         }
+        throw new MissingMethodException(name, HibernateNamedQueriesBuilder, args)
     }
 }
 

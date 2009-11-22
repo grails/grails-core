@@ -30,6 +30,11 @@ class Publication {
            eq 'title', title
        }
 
+       latestBooks {
+ 			maxResults(10)
+ 			order("datePublished", "desc")
+       }
+
        publishedBetween { start, end ->
            between 'datePublished', start, end
        }
@@ -149,6 +154,17 @@ class Publication {
         }
 
         def pubs = publicationClass.recentPublications(max: 10)
+        assertEquals 10, pubs?.size()
+    }
+
+    void testMaxResults() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        (1..25).each {num ->
+            publicationClass.newInstance(title: 'Book Title',
+                    datePublished: new Date() + num).save(flush: true)
+        }
+
+        def pubs = publicationClass.latestBooks()
         assertEquals 10, pubs?.size()
     }
 
