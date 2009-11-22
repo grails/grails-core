@@ -165,6 +165,18 @@ public class DocPublisher {
             def fullContents = new StringBuffer()
             def chapterContents = new StringBuffer()
             def chapterTitle = null
+            def vars = [
+                    title: title,
+                    subtitle: subtitle,
+                    footer: footer, // TODO - add a way to specify footer
+                    authors: authors,
+                    version: version,
+                    copyright: copyright,
+
+                    toc: toc.toString(),
+                    body: fullContents.toString()
+            ]
+
 
             new File("${docResources}/style/guideItem.html").withReader(encoding) {reader ->
                 def template = templateEngine.createTemplate(reader)
@@ -180,7 +192,7 @@ public class DocPublisher {
 
                     if (level == 0) {
                         if (chapterTitle) // initially null, to collect sections
-                            writeChapter(template,refGuideDir, chapterTitle, chapterContents)
+                            writeChapter(template,refGuideDir, chapterTitle, chapterContents, vars)
 
                         chapterTitle = title // after previous used to write prev chapter
 
@@ -203,26 +215,15 @@ public class DocPublisher {
                     chapterContents << header << body
 
                     new File("${refPagesDir}/${title}.html").withWriter(encoding) {
-                        template.make(title: title, content: body).writeTo(it)
+                        Map args = [content: body] + vars
+                        args.title = title
+                        template.make(args).writeTo(it)
                     }
                 }
                 if (chapterTitle) // write final chapter collected (if any seen)
-                    writeChapter(template,refGuideDir ,chapterTitle, chapterContents)
+                    writeChapter(template,refGuideDir ,chapterTitle, chapterContents, vars)
             }
 
-
-
-            def vars = [
-                    title: title,
-                    subtitle: subtitle,
-                    footer: footer, // TODO - add a way to specify footer
-                    authors: authors,
-                    version: version,
-                    copyright: copyright,
-
-                    toc: toc.toString(),
-                    body: fullContents.toString()
-            ]
 
             new File("${docResources}/style/layout.html").withReader(encoding) {reader ->
                 def template = templateEngine.createTemplate(reader)
@@ -264,7 +265,7 @@ public class DocPublisher {
                             context.set(DocEngine.CONTEXT_PATH, "../..")
                             def contents = engine.render(data, context)
                             new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
-                                template.make(content: contents).writeTo(out)
+                                template.make([content: contents] + vars).writeTo(out)
                             }
                             menu << "<div class=\"menuUsageItem\"><a href=\"${f.name}/Usage.html\" target=\"mainFrame\">Usage</a></div>"
                         }
@@ -278,7 +279,7 @@ public class DocPublisher {
                             def contents = engine.render(data, context)
                             //println "Generating reference item: ${name}"
                             new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
-                                template.make(content: contents).writeTo(out)
+                                template.make([content: contents] + vars).writeTo(out)
                             }
                         }
                     }
@@ -297,9 +298,11 @@ public class DocPublisher {
         }
     }
 
-    void writeChapter(Template template, String targetDir, String title, StringBuffer content) {
+    void writeChapter(Template template, String targetDir, String title, StringBuffer content, Map vars) {
             new File("${targetDir}/${title}.html").withWriter(encoding) {
-                template.make(title: title, content: content.toString()).writeTo(it)
+                Map args = [content: content.toString()] + vars
+                args.title = title
+                template.make(args).writeTo(it)
             }
             content.delete(0, content.size()) // clear buffer
     }
