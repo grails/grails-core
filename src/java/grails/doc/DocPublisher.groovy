@@ -58,6 +58,11 @@ public class DocPublisher {
     String copyright = ""
     /** The footer to include */
     String footer = ""
+    /** HTML markup that renders the left logo */
+    String logo
+    /** HTML markup that renders the right logo */
+    String sponsorLogo
+    
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
@@ -67,6 +72,23 @@ public class DocPublisher {
     DocPublisher(File src, File target) {
         this.src = src;
         this.target = target;
+    }
+
+
+
+    /**
+     * Returns the engine properties
+     */
+    Properties getEngineProperties() {  engineProperties }
+    /**
+     * Sets the engine properties
+     */
+    void setEngineProperties(Properties p) {
+        def props = DocEngine.getDefaultProps()
+        if(p) {
+            props.putAll p
+        }
+        this.engineProperties = props
     }
 
     void publish() {
@@ -172,9 +194,10 @@ public class DocPublisher {
                     authors: authors,
                     version: version,
                     copyright: copyright,
-
                     toc: toc.toString(),
-                    body: fullContents.toString()
+                    body: fullContents.toString(),
+                    logo: logo,
+                    sponsorLogo: sponsorLogo
             ]
 
 
@@ -315,6 +338,17 @@ public class DocPublisher {
         if (!ant) {
             ant = new AntBuilder()
         }
+        def metaProps = DocPublisher.metaClass.properties
+        def props = engineProperties
+        for (MetaProperty mp in metaProps) {
+            if (mp.type == String) {
+                def value = props[mp.name]
+                if(value) {
+                    this[mp.name] = value
+                }
+            }
+        }
+
     }
 
     private unpack(Map args) {

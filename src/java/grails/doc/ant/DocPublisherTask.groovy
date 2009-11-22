@@ -95,16 +95,6 @@ public class DocPublisherTask extends Task {
      */
     void setProperties(Properties props) {
         publisher.engineProperties = props
-
-        def metaProps = DocPublisher.metaClass.properties
-        for (MetaProperty mp in metaProps) {
-            if (mp.type == String) {
-                def value = props[mp.name]
-                if(value) {
-                    publisher[mp.name] = value
-                }
-            }
-        }
     }
 
     public void execute() {

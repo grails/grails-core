@@ -109,17 +109,27 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     boolean showCreate() { false }
 
+    static private Properties defaultPropsInternal
+    static Properties getDefaultProps() {
+       if(!defaultPropsInternal) {
+           defaultPropsInternal = new Properties()
+           try {
+               defaultPropsInternal.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
+           }
+           catch (e) {
+               // ignore
+           }
+
+       }
+       return defaultPropsInternal
+    }
+    
     protected void init() {
-        def props = new Properties()
-        try {
-            props.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
-            if(engineProperties) {
-                props.putAll engineProperties
-            }
+        def props = DocEngine.getDefaultProps()
+        if(engineProperties) {
+            props.putAll engineProperties
         }
-        catch (e) {
-            // ignore
-        }
+        
         props.findAll { it.key.startsWith("api.")}.each {
             EXTERNAL_DOCS[it.key[4..-1]] = it.value
         }
