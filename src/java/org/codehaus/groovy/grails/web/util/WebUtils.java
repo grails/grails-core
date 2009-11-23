@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import com.opensymphony.module.sitemesh.util.FastByteArrayOutputStream;
 import grails.util.GrailsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -23,7 +22,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
@@ -248,9 +246,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
             }
 
-            if(info.getParameters()!=null && includeParams) {
+            final Map parameters = info.getParameters();
+            if(parameters !=null && !parameters.isEmpty()  && includeParams) {
                 try {
-                    forwardUrl.append(toQueryString(info.getParameters()));
+                    forwardUrl.append(toQueryString(parameters));
                 }
                 catch (UnsupportedEncodingException e) {
                     throw new ControllerExecutionException("Unable to include ");

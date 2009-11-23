@@ -40,7 +40,7 @@ class ForwardingController {
         webRequest.controllerName = "fowarding"
         assertEquals "/grails/fowarding/two.dispatch",testController.one()
         assertEquals "/grails/next/go.dispatch",testController.three()
-        testController.four()
+        assertEquals "/grails/next/go.dispatch?id=10",testController.four()
         assertEquals "bar", request.foo
     }
 
