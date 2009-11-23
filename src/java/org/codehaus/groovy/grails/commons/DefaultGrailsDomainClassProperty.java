@@ -15,11 +15,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
-
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.util.*;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -30,6 +25,9 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.validation.Validator;
+
+import java.beans.PropertyDescriptor;
+import java.util.*;
 
 /**
  *
@@ -555,12 +553,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.TRANSIENT, List.class);
             if(tmp!=null) this.transients = tmp;
             this.properties = createDomainClassProperties(this,descriptors);
-            try {
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), properties);
-                DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
-            } catch (IntrospectionException e) {
-                LOG.error("Error reading embedded component ["+getClazz()+"] constraints: " +e .getMessage(), e);
-            }
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), properties);
+            DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(ComponentDomainClass type, PropertyDescriptor[] descriptors) {
@@ -664,14 +658,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public void refreshConstraints() {
-            try {
-                GrailsDomainClassProperty[] props = getPersistentProperties();
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
-                        getReferenceInstance(),
-                        props);
-            } catch (IntrospectionException e) {
-                LOG.error("Error reading class [" + getClazz() + "] constraints: " + e.getMessage(), e);
-            }
+            GrailsDomainClassProperty[] props = getPersistentProperties();
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
+                    getReferenceInstance(),
+                    props);
         }
 
         public boolean hasSubClasses() {

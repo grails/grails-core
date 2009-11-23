@@ -26,7 +26,6 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.Validator;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -106,16 +105,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         // set persistent properties
         establishPersistentProperties();
         // process the constraints
-        try {
-            if(defaultConstraints != null) {
-                this.defaultConstraints = defaultConstraints;
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
-            }
-            else {
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
-            }
-        } catch (IntrospectionException e) {
-            LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
+        if(defaultConstraints != null) {
+            this.defaultConstraints = defaultConstraints;
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+        }
+        else {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
         }
     }
     public DefaultGrailsDomainClass(Class clazz) {
@@ -720,24 +715,20 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     public void refreshConstraints() {
-        try {
-            if(defaultConstraints!=null) {
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
-            }
-            else {
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
-            }
+        if(defaultConstraints!=null) {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+        }
+        else {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+        }
 
-            // Embedded components have their own ComponentDomainClass
-            // instance which won't be refreshed by the application.
-            // So, we have to do it here.
-            for (GrailsDomainClassProperty property : this.persistentProperties) {
-                if (property.isEmbedded()) {
-                    property.getComponent().refreshConstraints();
-                }
+        // Embedded components have their own ComponentDomainClass
+        // instance which won't be refreshed by the application.
+        // So, we have to do it here.
+        for (GrailsDomainClassProperty property : this.persistentProperties) {
+            if (property.isEmbedded()) {
+                property.getComponent().refreshConstraints();
             }
-        } catch (IntrospectionException e) {
-            LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
         }
     }
 
