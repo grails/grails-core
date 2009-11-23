@@ -19,11 +19,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -312,8 +311,6 @@ public class GrailsDomainConfigurationUtil {
      * @param defaultConstraints A map that defines the default constraints
      * 
      * @return A Map of constraints
-     * @throws java.beans.IntrospectionException
-     *          When the bean cannot be introspected
      */
     public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
         LinkedList classChain = getSuperClassChain(instance.getClass());
@@ -364,10 +361,9 @@ public class GrailsDomainConfigurationUtil {
      * @param instance   The instance to evaluate constraints for
      * @param properties The properties of the instance
      * @return A Map of constraints
-     * @throws java.beans.IntrospectionException
      *          When the bean cannot be introspected
      */
-    public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties) throws IntrospectionException {
+    public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties)  {
         return evaluateConstraints(instance, properties,null);
     }
 
@@ -376,10 +372,9 @@ public class GrailsDomainConfigurationUtil {
      *
      * @param instance   The instance to evaluate constraints for
      * @return A Map of constraints
-     * @throws java.beans.IntrospectionException
      *          When the bean cannot be introspected
      */
-    public static Map evaluateConstraints(Object instance) throws IntrospectionException {
+    public static Map evaluateConstraints(Object instance)  {
         return evaluateConstraints(instance, null,null);
     }
 

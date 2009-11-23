@@ -20,7 +20,7 @@ import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.EntityMode;
@@ -36,8 +36,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
-import java.util.Map;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 
 /**
@@ -53,7 +53,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     private static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
     private ClassLoader classLoader = null;
     private GrailsApplication grailsApplication;
-    private Class configClass = DefaultGrailsDomainConfiguration.class;
+    private Class configClass = GrailsAnnotationConfiguration.class;
     private ApplicationContext applicationContext;
     private Class currentSessionContextClass;
 

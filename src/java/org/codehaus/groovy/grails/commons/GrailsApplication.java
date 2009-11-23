@@ -385,4 +385,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Fired to inform the application when the Config.groovy file changes
      */
     void configChanged();
+
+    /**
+     * Returns the ArtefactHandler for the given type
+     * @param type The artefact handler type
+     * @return The artefact handler
+     */
+    ArtefactHandler getArtefactHandler(String type);
 }

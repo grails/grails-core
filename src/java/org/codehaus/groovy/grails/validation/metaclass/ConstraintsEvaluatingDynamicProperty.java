@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.validation.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
 
 /**
@@ -31,10 +32,12 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
 
     public static final String PROPERTY_NAME = "constraints";
+    private GrailsDomainClassProperty[] properties;
 
 
     public ConstraintsEvaluatingDynamicProperty(GrailsDomainClassProperty[] properties) {
         super(PROPERTY_NAME);
+        this.properties = properties;
     }
     
     public ConstraintsEvaluatingDynamicProperty() {
@@ -43,7 +46,7 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
 
     public Object get(Object object) {
-        return null;
+         return GrailsDomainConfigurationUtil.evaluateConstraints(object,properties );
     }
 
     public void set(Object object, Object newValue) {
