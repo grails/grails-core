@@ -468,6 +468,14 @@ class MockUtilsTests extends GroovyTestCase {
 
         def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: "Ms.")
         assertEquals domain, domain.save()
+        assertEquals 1, domain.id
+        assertNotNull domain.dateCreated
+        assertNull domain.lastUpdated
+
+        /* Save again and lastUpdated should be set. */
+        domain.save()
+        assertNotNull domain.lastUpdated
+        
     }
 
     /**
@@ -1390,6 +1398,9 @@ class TestDomain {
     Long notOdd
     String title
     Set relations
+    Date dateCreated
+    Date lastUpdated
+
 
     static constraints = {
         id(nullable: true, unique: true)

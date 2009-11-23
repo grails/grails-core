@@ -722,11 +722,21 @@ class MockUtils {
                 // The object passes validation, so to confirm that it
                 // has been saved we add it to the list of test instances.
                 // Note that if the instance is already in the list, we
-                // don't add it again! We also give it an ID, unless one
-                // has been assigned.
+                // don't add it again! We also give it an ID. lastUpdated
+                // is set if the object already has an ID, dateCreated is
+                // set if it does'nt.
+                def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
+
+                if(properties.find { it.name == "lastUpdated" } && delegate.id != null) {
+                    delegate.lastUpdated = new Date()
+                }
                 if (!testInstances.contains(delegate)) {
                     testInstances << delegate
-                    if (!delegate.id) testInstances.size()
+                    // If dateCreated exists and id is still null, set it
+                    if(properties.find { it.name == "dateCreated" } && delegate.id == null) {
+                        delegate.dateCreated = new Date()
+                    }
+                    if (!delegate.id) delegate.id = testInstances.size()
                 }
                 return delegate
             }
