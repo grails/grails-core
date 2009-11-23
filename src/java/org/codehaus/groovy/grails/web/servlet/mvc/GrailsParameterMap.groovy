@@ -256,7 +256,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The integer value or null if there isn't one
      */
-    Integer 'byte'(String name) {
+    private Byte 'byte'(String name) {
         def o = get(name)
         if(o instanceof Number) {
            return ((Number)o).byteValue()
@@ -274,7 +274,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The integer value or null if there isn't one
      */
-    Integer 'int'(String name) {
+    private Integer 'int'(String name) {
         def o = get(name)
         if(o instanceof Number) {
            return o.intValue()
@@ -293,7 +293,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The long value or null if there isn't one
      */    
-    Long 'long'(String name) {
+    private Long 'long'(String name) {
         def o = get(name)
         if(o instanceof Number) {
            return ((Number)o).longValue()
@@ -312,7 +312,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The short value or null if there isn't one
      */
-    Short 'short'(String name) {
+    private Short 'short'(String name) {
         def o = get(name)
         if(o instanceof Number) {
            return ((Number)o).shortValue()
@@ -332,7 +332,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
-    Double 'double'(String name) {
+    private Double 'double'(String name) {
         def o = get(name)
         if(o instanceof Number) {
            return ((Number)o).doubleValue()
@@ -351,7 +351,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
-    Float 'float'(String name) {
+    private Float 'float'(String name) {
         def o = get(name)
         if(o instanceof Number) {
            return ((Number)o).floatValue()
@@ -370,7 +370,7 @@ class GrailsParameterMap implements Map  {
      * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
-    Boolean 'boolean'(String name) {
+    private Boolean 'boolean'(String name) {
         def o = get(name)
         if(o instanceof Boolean) {
            return o
