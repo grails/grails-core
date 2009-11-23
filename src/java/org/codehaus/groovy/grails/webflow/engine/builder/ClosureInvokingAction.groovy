@@ -78,9 +78,11 @@ public class ClosureInvokingAction extends AbstractAction  {
                     def localErrors = errors
 
                     checkAppContext()
-                    for(prop in constrainedProperties.values()) {
-                        prop.messageSource = applicationContext.getBean("messageSource")
-                        prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                    if(constrainedProperties) {                        
+                        for(prop in constrainedProperties.values()) {
+                            prop.messageSource = applicationContext.getBean("messageSource")
+                            prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                        }
                     }
                     !localErrors.hasErrors()
                 }
