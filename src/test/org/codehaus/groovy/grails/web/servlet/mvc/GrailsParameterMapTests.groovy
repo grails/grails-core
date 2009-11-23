@@ -11,6 +11,59 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest = new MockHttpServletRequest();
     }
 
+    void testConversionHelperMethods() {
+        def map = new GrailsParameterMap(mockRequest)
+
+        map.one = "1"
+        map.bad = "foo"
+        map.decimals = "1.4"
+        map.bool = "true"
+        map.aList = [1,2]
+        map.array = ["one", "two" ] as String[]
+        map.longNumber = 1234567890
+
+        assertEquals( ["1"], map.list("one") )
+        assertEquals( [1,2], map.list("aList") )
+        assertEquals( ["one","two"], map.list("array") )
+        assertEquals( [], map.list("nonexistant") )
+
+        assertEquals 1, map.byte('one')
+        assertEquals( -46,map.byte('longNumber') ) // overflows
+        assertNull map.byte("test")
+        assertNull map.byte("bad")
+        assertNull map.byte("nonexistant")
+
+        assertEquals 1, map.int('one')
+        assertNull map.int("test")
+        assertNull map.int("bad")
+        assertNull map.int("nonexistant")
+        
+        assertEquals 1L, map.long('one')
+        assertNull map.long("test")
+        assertNull map.long("bad")
+        assertNull map.long("nonexistant")
+
+        assertEquals 1, map.short('one')
+        assertNull map.short("test")
+        assertNull map.short("bad")
+        assertNull map.short("nonexistant")
+
+        assertEquals 1.0, map.double('one')
+        assertEquals 1.4, map.double('decimals')
+        assertNull map.double("bad")
+        assertNull map.double("nonexistant")
+
+        assertEquals 1.0, map.float('one')
+        assertEquals 1.399999976158142, map.float('decimals')
+        assertNull map.float("bad")
+        assertNull map.float("nonexistant")
+
+        assertEquals false, map.boolean('one')
+        assertEquals true, map.boolean('bool')
+        assertNull map.boolean("nonexistant")
+
+    }
+
     void testAutoEvaluateDates() {
         mockRequest.addParameter("foo", "date.struct")
         mockRequest.addParameter("foo_year", "2007")

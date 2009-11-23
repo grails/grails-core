@@ -40,7 +40,7 @@ import java.text.SimpleDateFormat;
  * 
  * @since Oct 24, 2005
  */
-public class GrailsParameterMap implements Map {
+class GrailsParameterMap implements Map  {
 
 	private Map parameterMap;
 	private HttpServletRequest request;
@@ -49,21 +49,20 @@ public class GrailsParameterMap implements Map {
      * Creates a GrailsParameterMap populating from the given request object
      * @param request The request object
      */
-    public GrailsParameterMap(HttpServletRequest request) {
+    GrailsParameterMap(HttpServletRequest request) {
 		super();
 
-		this.request = request;
-		this.parameterMap = new HashMap();
-        final Map requestMap = new LinkedHashMap(request.getParameterMap());
+		this.request = request
+		this.parameterMap = [:]
+        final Map requestMap = new LinkedHashMap(request.getParameterMap())
         if(request instanceof MultipartHttpServletRequest) {
-            MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
-            Map fileMap = multipartRequest.getFileMap();
-            for (Object fileName : fileMap.keySet()) {
-                requestMap.put(fileName, multipartRequest.getFile((String) fileName));
+            def multipartRequest = (MultipartHttpServletRequest)request;
+            def fileMap = multipartRequest.fileMap
+            for (fileName in fileMap.keySet()) {
+                requestMap.put(fileName, multipartRequest.getFile(fileName))
             }
         }
-        for (Object o : requestMap.keySet()) {
-            String key = (String) o;
+        for (key in requestMap.keySet()) {
             Object paramValue = getParameterValue(requestMap, key);
 
             parameterMap.put(key, paramValue);
@@ -140,41 +139,31 @@ public class GrailsParameterMap implements Map {
     /**
 	 * @return Returns the request.
 	 */
-	public HttpServletRequest getRequest() {
-		return request;
-	}
+	HttpServletRequest getRequest() { request }
 
-	public int size() {
-		return parameterMap.size();
-	}
+	int size() { parameterMap.size() }
 
-	public boolean isEmpty() {			
-		return parameterMap.isEmpty();
-	}
+	boolean isEmpty() { parameterMap.empty }
 
-	public boolean containsKey(Object key) {
-		return parameterMap.containsKey(key);
-	}
+	boolean containsKey(Object key) { parameterMap.containsKey(key) }
 
-	public boolean containsValue(Object value) {
-		return parameterMap.containsValue(value);
-	}
+	boolean containsValue(Object value) { parameterMap.containsValue(value)	}
 
 	public Object get(Object key) {
 		// removed test for String key because there
 		// should be no limitations on what you shove in or take out
-        Object returnValue = null;
-		if (parameterMap.get(key) instanceof String []){
-			String[] valueArray = (String[])parameterMap.get(key);
+        def returnValue
+		if (parameterMap.get(key) instanceof String[]){
+			String[] valueArray = parameterMap.get(key)
 			if(valueArray == null){
 				return null;
 			}
 			
 			if(valueArray.length == 1) {
-				returnValue = valueArray[0];
+				returnValue = valueArray[0]
 			}
             else {
-                returnValue = valueArray;
+                returnValue = valueArray
             }
 		}
         else {
@@ -182,7 +171,7 @@ public class GrailsParameterMap implements Map {
         }
 
         if("date.struct".equals(returnValue)) {
-            return lazyEvaluateDateParam(key);
+            return lazyEvaluateDateParam(key)
         }        
         return returnValue;
 
@@ -190,12 +179,11 @@ public class GrailsParameterMap implements Map {
 
     private Date lazyEvaluateDateParam(Object key) {
         // parse date structs automatically
-        Map dateParams = new HashMap();
-        for(Object o: entrySet()) {
-            Entry entry = (Entry)o;
-            final Object entryKey = entry.getKey();
+        def dateParams = [:]
+        for(entry in entrySet()) {
+            final entryKey = entry.key
             if(entryKey instanceof String) {
-                String paramName = (String) entryKey;
+                String paramName = entryKey
                 final String prefix = key + "_";
                 if(paramName.startsWith(prefix)) {
                     dateParams.put(paramName.substring(prefix.length(), paramName.length()), entry.getValue());
@@ -203,16 +191,16 @@ public class GrailsParameterMap implements Map {
             }
         }
 
-        DateFormat dateFormat = new SimpleDateFormat(GrailsDataBinder.DEFAULT_DATE_FORMAT, LocaleContextHolder.getLocale());
-        StructuredPropertyEditor editor = new StructuredDateEditor(dateFormat,true);
-        Date d = (Date) editor.assemble(Date.class,dateParams);
+        def dateFormat = new SimpleDateFormat(GrailsDataBinder.DEFAULT_DATE_FORMAT, LocaleContextHolder.getLocale())
+        def editor = new StructuredDateEditor(dateFormat,true)
+        def d = editor.assemble(Date.class,dateParams)
         put(key, d);
         return d;
     }
 
     public Object put(Object key, Object value) {
-        if(value instanceof GString) value = value.toString();
-        return parameterMap.put(key, value);
+        if(value instanceof CharSequence) value = value.toString()
+        return parameterMap.put(key, value)
 	}
 
 	public Object remove(Object key) {
@@ -220,25 +208,25 @@ public class GrailsParameterMap implements Map {
 	}
 
 	public void putAll(Map map) {
-        for (Map.Entry<Object, Object> entry : ((Map<Object,Object>)map).entrySet()) {
-            put(entry.getKey(), entry.getValue());
+        for (entry in map) {
+            put entry.key, entry.value
         }
 	}
 
 	public void clear() {
-		parameterMap.clear();
+		parameterMap.clear()
 	}
 
 	public Set keySet() {
-		return parameterMap.keySet();
+		return parameterMap.keySet()
 	}
 
 	public Collection values() {
-		return parameterMap.values();
+		return parameterMap.values()
 	}
 
 	public Set entrySet() {
-		return parameterMap.entrySet();
+		return parameterMap.entrySet()
 	}
 
     /**
@@ -249,9 +237,9 @@ public class GrailsParameterMap implements Map {
      */
     public String toQueryString() {
 
-        String encoding = request.getCharacterEncoding();
+        String encoding = request.characterEncoding
         try {
-            return WebUtils.toQueryString(this,encoding);
+            return WebUtils.toQueryString(this,encoding)
         }
         catch (UnsupportedEncodingException e) {
             throw new ControllerExecutionException("Unable to convert parameter map ["+this+"] to a query string: " + e.getMessage(),e);
@@ -262,4 +250,158 @@ public class GrailsParameterMap implements Map {
         return DefaultGroovyMethods.inspect(this.parameterMap);
     }
 
+
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Integer 'byte'(String name) {
+        def o = get(name)
+        if(o instanceof Number) {
+           return ((Number)o).byteValue()
+        }
+        else if(o != null) {
+            try {
+                return Byte.parseByte(o.toString())
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+    }
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Integer 'int'(String name) {
+        def o = get(name)
+        if(o instanceof Number) {
+           return o.intValue()
+        }
+        else if(o != null) {
+            try {
+                return Integer.parseInt(o.toString())
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+    }
+
+    /**
+     * Helper method for obtaining long value from parameter
+     * @param name The name of the parameter
+     * @return The long value or null if there isn't one
+     */    
+    Long 'long'(String name) {
+        def o = get(name)
+        if(o instanceof Number) {
+           return ((Number)o).longValue()
+        }
+        else if(o != null) {
+            try {
+                return Long.parseLong(o.toString())
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+    }
+
+    /**
+     * Helper method for obtaining short value from parameter
+     * @param name The name of the parameter
+     * @return The short value or null if there isn't one
+     */
+    Short 'short'(String name) {
+        def o = get(name)
+        if(o instanceof Number) {
+           return ((Number)o).shortValue()
+        }
+        else if(o != null) {
+            try {
+                return Short.parseShort(o.toString())
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+
+    }
+
+    /**
+     * Helper method for obtaining double value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Double 'double'(String name) {
+        def o = get(name)
+        if(o instanceof Number) {
+           return ((Number)o).doubleValue()
+        }
+        else if(o != null) {
+            try {
+                return Double.parseDouble(o.toString())
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+    }
+
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Float 'float'(String name) {
+        def o = get(name)
+        if(o instanceof Number) {
+           return ((Number)o).floatValue()
+        }
+        else if(o != null) {
+            try {
+                return Float.parseFloat(o.toString())
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+    }
+
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Boolean 'boolean'(String name) {
+        def o = get(name)
+        if(o instanceof Boolean) {
+           return o
+        }
+        else if(o != null) {
+            try {
+                return Boolean.parseBoolean(o.toString())
+            }
+            catch (e) {
+            }
+        }
+    }
+
+   /**
+     * Helper method for obtaining a list of values from parameter
+     * @param name The name of the parameter
+     * @return A list of values
+     */
+    List list(String name) {
+        def paramValues = get(name)        
+        if(paramValues == null) {
+            return []
+        }
+        else if(paramValues?.getClass().isArray()) {
+            return Arrays.asList(paramValues)
+        }
+        else if(paramValues instanceof Collection) {
+            return new ArrayList(paramValues)
+        }
+        else {
+            return [paramValues]
+        }
+    }
 }
