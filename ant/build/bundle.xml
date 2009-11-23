@@ -148,6 +148,7 @@
                 <include name="grails/util/BuildScope*"/>
                 <include name="grails/util/GrailsMain*"/>
                 <include name="grails/ant/**/*"/>
+                <include name="grails/build/**"/>
                 <include name="**/groovy/grails/cli/**/*" />
                 <include name="**/groovy/grails/resolve/**/*" />
             </fileset>
