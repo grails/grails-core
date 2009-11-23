@@ -1,5 +1,7 @@
 package grails.util
 
+import grails.build.GrailsBuildListener
+
 /**
  * Test case for {@link BuildSettings}.
  */

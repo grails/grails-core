@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package grails.util;
+package grails.build;
 
 /**
  * An interface that classes can implement to receive events raised by the Grails build system.

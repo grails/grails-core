@@ -86,13 +86,13 @@
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/util/BuildSettings*"/>
-                <include name="grails/util/GrailsBuildListener*"/>
                 <include name="grails/util/GrailsNameUtils*"/>
                 <include name="grails/util/Environment*"/>
                 <include name="grails/util/Metadata*"/>
                 <include name="grails/util/BuildScope*"/>
                 <include name="grails/util/GrailsMain*"/>
                 <include name="grails/ant/**/*"/>
+                <include name="grails/build/**"/>
                 <include name="**/groovy/grails/cli/**/*" />
                 <include name="**/groovy/grails/resolve/**/*" />
             </fileset>
