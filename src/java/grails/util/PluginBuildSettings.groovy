@@ -458,16 +458,9 @@ class PluginBuildSettings {
         if(!pluginResource) {
 
             try {
-                def directoryNamePredicate = {
-                    it.isDirectory() && (it.name == pluginName || it.name.startsWith("$pluginName-"))
-                }
 
-                List<String> pluginDirs = getPluginBaseDirectories()
-                File pluginFile
-                for(pluginDir in pluginDirs) {
-                    pluginFile = new File("${pluginDir}").listFiles().find(directoryNamePredicate)
-                    if(pluginFile) break
-                }
+                def pluginInfos = getPluginInfos()
+                File pluginFile = pluginInfos.find { PluginInfo info -> info.name == pluginName }?.pluginDir?.file
 
                 // If the plugin can't be found in one of the standard
                 // locations, check whether it's an in-place plugin.
