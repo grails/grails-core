@@ -23,7 +23,6 @@ import groovy.util.ConfigObject;
 import groovy.util.Eval;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -36,7 +35,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
 
     public static final String TYPE = "Domain";
 
-    private Map defaultConstraints = Collections.emptyMap();
+    private Map defaultConstraints = null;
 
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null);

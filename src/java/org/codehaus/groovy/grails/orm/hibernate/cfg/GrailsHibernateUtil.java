@@ -77,7 +77,9 @@ public class GrailsHibernateUtil {
         ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
         Map defaultContraints = Collections.emptyMap();
         if(artefactHandler instanceof DomainClassArtefactHandler) {
-            defaultContraints = ((DomainClassArtefactHandler)artefactHandler).getDefaultConstraints();
+            final Map map = ((DomainClassArtefactHandler) artefactHandler).getDefaultConstraints();
+            if(map != null)
+                defaultContraints = map;
         }
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
