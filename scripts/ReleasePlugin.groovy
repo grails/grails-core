@@ -436,7 +436,7 @@ target(importToSVN:"Imports a plugin project to Grails' remote SVN repository") 
             ant.delete(dir:importBaseDirectory, failonerror:false)
             exit(0)
         }
-        SVNURL svnURL = importBaseToSVN(importBaseDirectory)
+        svnURL = importBaseToSVN(importBaseDirectory)
     }
     finally {
         ant.delete(dir:importBaseDirectory, failonerror:false)
