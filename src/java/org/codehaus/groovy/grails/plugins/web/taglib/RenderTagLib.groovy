@@ -283,10 +283,12 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		if(!offset) offset = (attrs.int('offset') ?: 0)
 		if(!max) max = (attrs.int('max') ?: 10)
 
-		def linkParams = [offset:offset - max, max:max]
+		def linkParams = [:]
+		if(attrs.params) linkParams.putAll(attrs.params)
+        linkParams.offset = offset - max
+        linkParams.max = max
 		if(params.sort) linkParams.sort = params.sort
 		if(params.order) linkParams.order = params.order
-        if(attrs.params) linkParams.putAll(attrs.params)
 
 		def linkTagAttrs = [action:action]
 		if(attrs.controller) {
