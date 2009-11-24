@@ -106,6 +106,7 @@ class PluginBuildSettings {
                     PluginInfo info = new PluginInfo(dir, this)
                     pluginInfos << info
                     pluginInfosMap.put(info.name, info)
+                    pluginInfosMap.put("${info.name}-${info.version}".toString(), info)
                 }
                 catch (e) {
                     // ignore, not a valid plugin directory
@@ -125,6 +126,14 @@ class PluginBuildSettings {
         if(!pluginInfosMap) getPluginInfos() // initialize the infos
         def dir = new FileSystemResource(pluginBaseDir)
         def pluginName = GrailsNameUtils.getPluginName(getDescriptorForPlugin(dir).filename)
+        return pluginInfosMap[pluginName]
+    }
+
+    /**
+     * Obtains a PluginInfo for the installed plugin directory
+     */
+    PluginInfo getPluginInfoForName(String pluginName) {
+        if(!pluginInfosMap) getPluginInfos() // initialize the infos
         return pluginInfosMap[pluginName]
     }
 
@@ -459,8 +468,7 @@ class PluginBuildSettings {
 
             try {
 
-                def pluginInfos = getPluginInfos()
-                PluginInfo pluginInfo = pluginInfos.find {PluginInfo info -> info.name == pluginName || "${info.name}-${info.version}" == pluginName }
+                PluginInfo pluginInfo = getPluginInfoForName(pluginName)
                 File pluginFile = pluginInfo?.pluginDir?.file
 
                 // If the plugin can't be found in one of the standard
