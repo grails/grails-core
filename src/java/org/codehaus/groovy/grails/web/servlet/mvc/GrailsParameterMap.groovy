@@ -41,7 +41,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  * 
  * @since Oct 24, 2005
  */
-
+@Mixin(TypeConvertingMap)
 class GrailsParameterMap implements Map  {
 
 	private Map parameterMap;
@@ -54,7 +54,6 @@ class GrailsParameterMap implements Map  {
     GrailsParameterMap(HttpServletRequest request) {
 		super();
 
-        getMetaClass().mixin TypeConvertingMap 
 		this.request = request
 		this.parameterMap = [:]
         final Map requestMap = new LinkedHashMap(request.getParameterMap())
@@ -251,5 +250,64 @@ class GrailsParameterMap implements Map  {
 
     public String toString() {
         return DefaultGroovyMethods.inspect(this.parameterMap);
-    } 
+    }
+
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Byte 'byte'(String name) { getByte(name) }
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Integer 'int'(String name) { getInt(name) }
+
+    /**
+     * Helper method for obtaining long value from parameter
+     * @param name The name of the parameter
+     * @return The long value or null if there isn't one
+     */
+    Long 'long'(String name) { getLong(name) }
+
+    /**
+     * Helper method for obtaining short value from parameter
+     * @param name The name of the parameter
+     * @return The short value or null if there isn't one
+     */
+    Short 'short'(String name) { getShort(name) }
+
+    /**
+     * Helper method for obtaining double value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Double 'double'(String name) { getDouble(name) }
+
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Float 'float'(String name) { getFloat(name) }
+
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Boolean 'boolean'(String name) {
+        getBoolean(name)
+    }
+
+  /**
+     * Helper method for obtaining a list of values from parameter
+     * @param name The name of the parameter
+     * @return A list of values
+     */
+    List list(String name) {
+        getList(name)
+    }
 }

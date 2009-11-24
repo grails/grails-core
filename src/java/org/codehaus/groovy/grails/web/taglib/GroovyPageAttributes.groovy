@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
  * @since 1.2
  */
 
-@Mixin(org.codehaus.groovy.grails.web.util.TypeConvertingMap)
+@Mixin(TypeConvertingMap)
 public class GroovyPageAttributes extends LinkedHashMap{
 
     GroovyPageAttributes() {
@@ -37,4 +37,63 @@ public class GroovyPageAttributes extends LinkedHashMap{
         super(map);
         getMetaClass().mixin TypeConvertingMap
     }
+
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Byte 'byte'(String name) { getByte(name) }
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Integer 'int'(String name) { getInt(name) }
+
+    /**
+     * Helper method for obtaining long value from parameter
+     * @param name The name of the parameter
+     * @return The long value or null if there isn't one
+     */
+    Long 'long'(String name) { getLong(name) }
+
+    /**
+     * Helper method for obtaining short value from parameter
+     * @param name The name of the parameter
+     * @return The short value or null if there isn't one
+     */
+    Short 'short'(String name) { getShort(name) }
+
+    /**
+     * Helper method for obtaining double value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Double 'double'(String name) { getDouble(name) }
+
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Float 'float'(String name) { getFloat(name) }
+
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    Boolean 'boolean'(String name) {
+        getBoolean(name)
+    }
+
+  /**
+     * Helper method for obtaining a list of values from parameter
+     * @param name The name of the parameter
+     * @return A list of values
+     */
+    List list(String name) {
+        getList(name)
+    }    
 }
