@@ -404,7 +404,7 @@ public class GrailsDomainConfigurationUtil {
         }
         if (!cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)
                 && isConstrainableProperty(p, propertyName)) {
-            cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, p.isOptional() ||
+            cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, 
                     Collection.class.isAssignableFrom(p.getType()) ||
                     Map.class.isAssignableFrom(p.getType())
             );

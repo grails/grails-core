@@ -154,6 +154,12 @@
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
 			    <fileset dir="${grails.test.build}">
+                    <include name="**/UniqueConstraint*" />
+				</fileset>
+            </batchtest>
+
+            <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
+			    <fileset dir="${grails.test.build}">
                     <include name="**/webflow/**${test}Tests.class" />                    
                     <exclude name="**/Abstract*" />
 				</fileset>

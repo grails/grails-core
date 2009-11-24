@@ -48,7 +48,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private Map relationshipMap;
     private Map hasOneMap;
 
-    private Map constraints = new HashMap();
+    private Map constraints;
     private Map mappedBy;
     private Validator validator;
     private String mappingStrategy = GrailsDomainClass.GORM;
@@ -70,6 +70,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         this.propertyMap = new LinkedHashMap<String, GrailsDomainClassProperty>();
         this.relationshipMap = getAssociationMap();
         this.embedded = getEmbeddedList();
+        this.defaultConstraints = defaultConstraints;         
+
 
         // get mapping strategy by setting
         if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class) != null)
@@ -104,14 +106,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
         // set persistent properties
         establishPersistentProperties();
-        // process the constraints
-        if(defaultConstraints != null) {
-            this.defaultConstraints = defaultConstraints;
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
-        }
-        else {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
-        }
+
     }
     public DefaultGrailsDomainClass(Class clazz) {
         this(clazz, null);
@@ -683,11 +678,25 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
       * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getConstraints()
       */
     public Map getConstrainedProperties() {
+        if(this.constraints==null) {
+            initializeConstraints();
+        }
         return unmodifiableMap(this.constraints);
     }
+
+    private void initializeConstraints() {
+        // process the constraints
+        if(defaultConstraints != null) {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+        }
+        else {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+        }
+    }
+
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
-      */
+    * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
+    */
     public Validator getValidator() {
         return this.validator;
     }

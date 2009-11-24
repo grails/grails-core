@@ -453,7 +453,13 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         Validator validator = ctx.containsBean("${dc.fullName}Validator") ? ctx.getBean("${dc.fullName}Validator") : null
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
         metaClass.validate = {->
-            validateMethod.invoke(delegate, "validate", [] as Object[])
+            try {
+                validateMethod.invoke(delegate, "validate", [] as Object[])
+            }
+            catch (Throwable e) {
+                e.printStackTrace()
+                throw e
+            }
         }
         metaClass.validate = {Map args ->
             validateMethod.invoke(delegate, "validate", [args] as Object[])

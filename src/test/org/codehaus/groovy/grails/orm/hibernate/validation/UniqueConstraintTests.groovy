@@ -49,7 +49,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
         def id = user.id
 
-        // instance with same id shouldn't fire unique constraint 
+        // instance with same id shouldn't fire unique constraint
         user = userClass.newInstance()
         user.id = id
         user.code = "123"
@@ -60,7 +60,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         user.validate()
         assertFalse user.hasErrors()
 
-        // but instance with different id should 
+        // but instance with different id should
         user.id = 123L
         user.validate()
         assertTrue user.hasErrors()
@@ -118,18 +118,19 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 			class User {
 			    Long id
 			    Long version
-			
+
 			    String login
 			    String grp
 			    String department
 			    String code
-			
+
 			    static constraints = {
 			        login(unique:1L)
 			    }
 			}
 			''')
-            new DefaultGrailsDomainClass(userClass);
+            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
+            domain.constrainedProperties
             fail("Exception expected")
         } catch (Exception e) {
             // Greate
@@ -141,18 +142,20 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 			class User {
 			    Long id
 			    Long version
-			
+
 			    String login
 			    String grp
 			    String department
 			    String code
-			
+
 			    static constraints = {
 			        login(unique:['grp',new Long(1)])
 			    }
 			}
 			''')
-            new DefaultGrailsDomainClass(userClass);
+            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
+            domain.constrainedProperties
+
             fail("Exception expected")
         } catch (Exception e) {
             // Greate
@@ -164,18 +167,20 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				class User {
 				    Long id
 				    Long version
-				
+
 				    String login
 				    String grp
 				    String department
 				    String code
-				
+
 				    static constraints = {
 				        login(unique:'test')
 				    }
 				}
 				''')
-            new DefaultGrailsDomainClass(userClass);
+            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
+            domain.constrainedProperties
+
             fail("Exception expected")
         } catch (Exception e) {
             // Greate
@@ -187,18 +192,20 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				class User {
 				    Long id
 				    Long version
-				
+
 				    String login
 				    String grp
 				    String department
 				    String code
-				
+
 				    static constraints = {
 				        login(unique:['grp','test'])
 				    }
 				}
 				''')
-            new DefaultGrailsDomainClass(userClass);
+            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
+            domain.constrainedProperties
+
             fail("Exception expected")
         } catch (Exception e) {
             // Greate
@@ -210,18 +217,21 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 				class User {
 				    Long id
 				    Long version
-				
+
 				    String login
 				    String grp
 				    String department
 				    String code
-				
+
 				    static constraints = {
 				        login(unique:['grp'])
 				    }
 				}
 				''')
-            new DefaultGrailsDomainClass(userClass);
+            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
+            domain.constrainedProperties
+
+
         } catch (Exception e) {
             fail("Exception isn't expected")
         }
@@ -276,37 +286,35 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
     void onSetUp() {
         gcl.parseClass('''
-            class User {
-                Long id
-                Long version
+import grails.persistence.*
 
-                String login
-                String grp
-                String department
-                String organization
-                String code
+@Entity
+class User {
+    String login
+    String grp
+    String department
+    String organization
+    String code
 
-                static belongsTo = LinkedUser
+    static belongsTo = LinkedUser
 
-                static constraints = {
-                    login(unique:['grp','department'])
-                    department(unique:"organization")
-                    code(unique:true)
-                }
-            }
+    static constraints = {
+        login(unique:['grp','department'])
+        department(unique:"organization")
+        code(unique:true)
+    }
+}
 
-            class LinkedUser {
-                Long id
-                Long version
+@Entity
+class LinkedUser {
 
-                User user1
-                User user2
+    User user1
+    User user2
 
-
-                static constraints = {
-                    user2(unique:'user1')
-                }
-            }
+    static constraints = {
+        user2(unique:'user1')
+    }
+}
             '''
                 )
 
