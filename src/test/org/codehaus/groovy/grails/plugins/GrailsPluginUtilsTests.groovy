@@ -16,8 +16,13 @@ class GrailsPluginUtilsTests extends GroovyTestCase {
     BuildSettings settings
 
     void setUp() {
+        System.setProperty("disable.grails.plugin.transform","true")
         settings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = settings
+        def resourceDir = "test/resources/grails-plugin-utils"
+        settings.projectPluginsDir = new File("$resourceDir/plugins")
+        settings.globalPluginsDir = new File("$resourceDir/global-plugins")
+
 
 //        new File("tmp/plugins/searchable-0.5").mkdirs()
 //        new File("tmp/plugins/jsecurity-0.3").mkdirs()
@@ -28,7 +33,7 @@ class GrailsPluginUtilsTests extends GroovyTestCase {
 //        new File("tmp/grails-dummy").mkdirs()
         
 
-        def resourceDir = "test/resources/grails-plugin-utils"
+
         settings.config = new ConfigSlurper().parse("""\
 grails {
     plugin {
@@ -39,11 +44,10 @@ grails {
     }
 }
 """)
-        settings.projectPluginsDir = new File("$resourceDir/plugins")
-        settings.globalPluginsDir = new File("$resourceDir/global-plugins")
     }
 
     void tearDown() {
+        System.setProperty("disable.grails.plugin.transform","false")
         BuildSettingsHolder.settings = null
 
 //        new File("tmp").deleteDir()

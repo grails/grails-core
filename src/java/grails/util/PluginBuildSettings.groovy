@@ -460,7 +460,8 @@ class PluginBuildSettings {
             try {
 
                 def pluginInfos = getPluginInfos()
-                File pluginFile = pluginInfos.find { PluginInfo info -> info.name == pluginName }?.pluginDir?.file
+                PluginInfo pluginInfo = pluginInfos.find {PluginInfo info -> info.name == pluginName || "${info.name}-${info.version}" == pluginName }
+                File pluginFile = pluginInfo?.pluginDir?.file
 
                 // If the plugin can't be found in one of the standard
                 // locations, check whether it's an in-place plugin.

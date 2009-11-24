@@ -127,9 +127,17 @@ public class GrailsPluginUtils {
         pluginVersion
     }
 
-
+    /**
+     * Returns a new PluginBuildSettings instance
+     */
+    static grails.util.PluginBuildSettings newPluginBuildSettings() {
+        new PluginBuildSettings(BuildSettingsHolder.settings, PluginManagerHolder.getPluginManager())
+    }
 
     private static INSTANCE = null
+    /**
+     * Returns a cached PluginBuildSettings instance
+     */
     static synchronized grails.util.PluginBuildSettings  getPluginBuildSettings() {
         if(!INSTANCE) {
             INSTANCE = new PluginBuildSettings(BuildSettingsHolder.settings, PluginManagerHolder.getPluginManager())
