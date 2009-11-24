@@ -22,7 +22,7 @@ package org.codehaus.groovy.grails.web.util
  */
 
 @Category(Map.class)
-abstract class TypeConvertingMap {
+class TypeConvertingMap {
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
