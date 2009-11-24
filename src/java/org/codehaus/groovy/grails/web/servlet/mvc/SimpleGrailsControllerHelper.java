@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * <p>This is a helper class that does the main job of dealing with Grails web requests
@@ -411,12 +412,15 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
         } else if (returnValue instanceof Map) {
             // remove any Proxy wrappers and set the adaptee as the value
-            Map returnModel = (Map)returnValue;
-            removeProxiesFromModelObjects(returnModel);
+            Map finalModel = new LinkedHashMap();
             if(!this.chainModel.isEmpty()) {
-                returnModel.putAll(this.chainModel);
+                finalModel.putAll(this.chainModel);
             }
-            return new ModelAndView(viewName, returnModel);
+            Map returnModel = (Map)returnValue;
+            finalModel.putAll(returnModel);
+
+            removeProxiesFromModelObjects(finalModel);
+            return new ModelAndView(viewName, finalModel);
 
         } else if (returnValue instanceof ModelAndView) {
             ModelAndView modelAndView = (ModelAndView)returnValue;
