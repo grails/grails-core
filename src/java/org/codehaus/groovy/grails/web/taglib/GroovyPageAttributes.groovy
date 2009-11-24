@@ -15,6 +15,9 @@
  */
 
 package org.codehaus.groovy.grails.web.taglib
+
+import org.codehaus.groovy.grails.web.util.TypeConvertingMap
+
 /**
  * Class used to define attributes passed to a GSP tag. Mixes in
  * TypeConvertingMap for ease of type conversion
@@ -27,9 +30,11 @@ package org.codehaus.groovy.grails.web.taglib
 public class GroovyPageAttributes extends LinkedHashMap{
 
     GroovyPageAttributes() {
+        getMetaClass().mixin TypeConvertingMap
     }
 
     GroovyPageAttributes(Map map) {
         super(map);
+        getMetaClass().mixin TypeConvertingMap
     }
 }

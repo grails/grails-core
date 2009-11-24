@@ -29,7 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat
+import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
@@ -40,7 +41,7 @@ import java.text.SimpleDateFormat;
  * 
  * @since Oct 24, 2005
  */
-@Mixin(org.codehaus.groovy.grails.web.util.TypeConvertingMap)
+
 class GrailsParameterMap implements Map  {
 
 	private Map parameterMap;
@@ -53,6 +54,7 @@ class GrailsParameterMap implements Map  {
     GrailsParameterMap(HttpServletRequest request) {
 		super();
 
+        getMetaClass().mixin TypeConvertingMap 
 		this.request = request
 		this.parameterMap = [:]
         final Map requestMap = new LinkedHashMap(request.getParameterMap())
