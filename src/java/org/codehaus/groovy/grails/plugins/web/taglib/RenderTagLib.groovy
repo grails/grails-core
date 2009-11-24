@@ -270,23 +270,25 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def writer = out
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
-
+                                    
 		def messageSource = grailsAttributes.messageSource
 		def locale = RCU.getLocale(request)
 
-		def total = attrs.total.toInteger()
+		def total = attrs.int('total') ?: 0
 		def action = (attrs.action ? attrs.action : (params.action ? params.action : "list"))
-		def offset = params.offset?.toInteger()
-		def max = params.max?.toInteger()
-		def maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
+		def offset = params.int('offset') ?: 0
+		def max = params.int('max')
+		def maxsteps = (attrs.int('maxsteps') ?: 10)
 
-		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
-		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
+		if(!offset) offset = (attrs.int('offset') ?: 0)
+		if(!max) max = (attrs.int('max') ?: 10)
 
-		def linkParams = [offset:offset - max, max:max]
+		def linkParams = [:]
+		if(attrs.params) linkParams.putAll(attrs.params)
+        linkParams.offset = offset - max
+        linkParams.max = max
 		if(params.sort) linkParams.sort = params.sort
 		if(params.order) linkParams.order = params.order
-        if(attrs.params) linkParams.putAll(attrs.params)
 
 		def linkTagAttrs = [action:action]
 		if(attrs.controller) {

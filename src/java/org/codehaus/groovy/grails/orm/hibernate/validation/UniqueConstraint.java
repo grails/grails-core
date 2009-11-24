@@ -15,16 +15,10 @@
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import groovy.lang.GString;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.hibernate.Criteria;
-import org.hibernate.FlushMode;
-import org.hibernate.LockMode;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.TransientObjectException;
+import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -32,7 +26,6 @@ import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -84,14 +77,14 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         }
 
         if( constraintParameter instanceof List ) {
-        	for( Iterator it = ((List)constraintParameter).iterator(); it.hasNext(); ) {
-        		Object parameter = it.next();
-                if(!(parameter instanceof String || parameter instanceof GString) ) {
-                    throw new IllegalArgumentException("Parameter for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean or string value");
-                } else {
-                	this.uniquenessGroup.add(parameter.toString());
+            for (Object parameter : ((List) constraintParameter)) {
+                if (!(parameter instanceof String || parameter instanceof GString)) {
+                    throw new IllegalArgumentException("Parameter for constraint [" + UNIQUE_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a boolean or string value");
                 }
-        	}
+                else {
+                    this.uniquenessGroup.add(parameter.toString());
+                }
+            }
         } else if( constraintParameter instanceof String || constraintParameter instanceof GString ) {
         	this.uniquenessGroup.add(constraintParameter.toString());
         	this.unique = true;
@@ -100,12 +93,12 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         }
     	if( uniquenessGroup.size() > 0 ) {
             unique = true;
-            for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
-    			String propertyName = (String) it.next();
-    			if( GrailsClassUtils.getPropertyType(constraintOwningClass, propertyName) == null ) {
-    				throw new IllegalArgumentException("Scope for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a valid property name of same class"); 
-    			}
-    		}
+            for (Object anUniquenessGroup : uniquenessGroup) {
+                String propertyName = (String) anUniquenessGroup;
+                if (GrailsClassUtils.getPropertyType(constraintOwningClass, propertyName) == null) {
+                    throw new IllegalArgumentException("Scope for constraint [" + UNIQUE_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a valid property name of same class");
+                }
+            }
     	} 
 
         super.setParameter(constraintParameter);
@@ -133,28 +126,44 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
 
                     try {
                         boolean shouldValidate = true;
+                        Class constraintClass = constraintOwningClass;
                         if(propertyValue != null && DomainClassArtefactHandler.isDomainClass(propertyValue.getClass())) {
                             shouldValidate = session.contains(propertyValue);
                         }
                         if(shouldValidate) {
-                            Criteria criteria = session.createCriteria( constraintOwningClass )
+	                         GrailsApplication application  = (GrailsApplication) applicationContext.getBean(GrailsApplication.APPLICATION_ID);
+ 	 	 	                 GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,constraintClass.getName());
+ 	 	 		             if(domainClass!=null && !domainClass.isRoot() ) {
+ 	 	 	                        GrailsDomainClassProperty property = domainClass.getPropertyByName(constraintPropertyName);
+                                    while(property.isInherited() && domainClass!=null) {
+                                        domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,domainClass.getClazz().getSuperclass().getName());
+                                        if(domainClass!=null) {
+                                            property = domainClass.getPropertyByName(constraintPropertyName);
+                                        }
+                                    }
+	                                constraintClass = domainClass != null ? domainClass.getClazz() : constraintClass;
+
+                            }
+                            Criteria criteria = session.createCriteria( constraintClass )
                                     .add( Restrictions.eq( constraintPropertyName, propertyValue ) );
                             if( uniquenessGroup != null ) {
-                                for( Iterator it = uniquenessGroup.iterator(); it.hasNext(); ) {
-                                    String uniquenessGroupPropertyName = (String) it.next();
+                                for (Object anUniquenessGroup : uniquenessGroup) {
+                                    String uniquenessGroupPropertyName = (String) anUniquenessGroup;
                                     Object uniquenessGroupPropertyValue = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, uniquenessGroupPropertyName);
-                                
+
                                     if (DomainClassArtefactHandler.isDomainClass(uniquenessGroupPropertyValue.getClass())) {
                                         try {
                                             // We are merely verifying that the object is not transient here
                                             session.lock(uniquenessGroupPropertyValue, LockMode.NONE);
-                                        } catch (TransientObjectException e) {
+                                        }
+                                        catch (TransientObjectException e) {
                                             shouldValidate = false;
                                         }
-                                    } 
+                                    }
                                     if (shouldValidate) {
                                         criteria.add(Restrictions.eq(uniquenessGroupPropertyName, uniquenessGroupPropertyValue));
-                                    } else {
+                                    }
+                                    else {
                                         break; // we aren't validating, so no point continuing
                                     }
                                 }
@@ -179,7 +188,13 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 boolean reject = false;
                 if(id != null) {
                     Object existing = results.get(0);
-                    Object existingId = InvokerHelper.invokeMethod(existing, "ident", null);
+                    Object existingId = null;
+                    try {
+                        existingId = InvokerHelper.invokeMethod(existing, "ident", null);
+                    }
+                    catch (Exception e) {
+                        // result is not a domain class
+                    }
                     if(!id.equals(existingId)) {
                         reject = true;
                     }

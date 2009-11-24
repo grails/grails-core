@@ -29,7 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat
+import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
@@ -40,6 +41,7 @@ import java.text.SimpleDateFormat;
  * 
  * @since Oct 24, 2005
  */
+@Mixin(TypeConvertingMap)
 class GrailsParameterMap implements Map  {
 
 	private Map parameterMap;
@@ -250,120 +252,46 @@ class GrailsParameterMap implements Map  {
         return DefaultGroovyMethods.inspect(this.parameterMap);
     }
 
-
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
      * @return The integer value or null if there isn't one
      */
-    private Byte 'byte'(String name) {
-        def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).byteValue()
-        }
-        else if(o != null) {
-            try {
-                return Byte.parseByte(o.toString())
-            }
-            catch (NumberFormatException e) {
-            }
-        }
-    }
+    private Byte 'byte'(String name) { getByte(name) }
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
      * @return The integer value or null if there isn't one
      */
-    private Integer 'int'(String name) {
-        def o = get(name)
-        if(o instanceof Number) {
-           return o.intValue()
-        }
-        else if(o != null) {
-            try {
-                return Integer.parseInt(o.toString())
-            }
-            catch (NumberFormatException e) {
-            }
-        }
-    }
+    private Integer 'int'(String name) { getInt(name) }
 
     /**
      * Helper method for obtaining long value from parameter
      * @param name The name of the parameter
      * @return The long value or null if there isn't one
-     */    
-    private Long 'long'(String name) {
-        def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).longValue()
-        }
-        else if(o != null) {
-            try {
-                return Long.parseLong(o.toString())
-            }
-            catch (NumberFormatException e) {
-            }
-        }
-    }
+     */
+    private Long 'long'(String name) { getLong(name) }
 
     /**
      * Helper method for obtaining short value from parameter
      * @param name The name of the parameter
      * @return The short value or null if there isn't one
      */
-    private Short 'short'(String name) {
-        def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).shortValue()
-        }
-        else if(o != null) {
-            try {
-                return Short.parseShort(o.toString())
-            }
-            catch (NumberFormatException e) {
-            }
-        }
-
-    }
+    private Short 'short'(String name) { getShort(name) }
 
     /**
      * Helper method for obtaining double value from parameter
      * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
-    private Double 'double'(String name) {
-        def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).doubleValue()
-        }
-        else if(o != null) {
-            try {
-                return Double.parseDouble(o.toString())
-            }
-            catch (NumberFormatException e) {
-            }
-        }
-    }
+    private Double 'double'(String name) { getDouble(name) }
 
     /**
      * Helper method for obtaining float value from parameter
      * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
-    private Float 'float'(String name) {
-        def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).floatValue()
-        }
-        else if(o != null) {
-            try {
-                return Float.parseFloat(o.toString())
-            }
-            catch (NumberFormatException e) {
-            }
-        }
-    }
+    private Float 'float'(String name) { getFloat(name) }
 
     /**
      * Helper method for obtaining float value from parameter
@@ -371,37 +299,15 @@ class GrailsParameterMap implements Map  {
      * @return The double value or null if there isn't one
      */
     private Boolean 'boolean'(String name) {
-        def o = get(name)
-        if(o instanceof Boolean) {
-           return o
-        }
-        else if(o != null) {
-            try {
-                return Boolean.parseBoolean(o.toString())
-            }
-            catch (e) {
-            }
-        }
+        getBoolean(name)
     }
 
-   /**
+  /**
      * Helper method for obtaining a list of values from parameter
      * @param name The name of the parameter
      * @return A list of values
      */
     List list(String name) {
-        def paramValues = get(name)        
-        if(paramValues == null) {
-            return []
-        }
-        else if(paramValues?.getClass().isArray()) {
-            return Arrays.asList(paramValues)
-        }
-        else if(paramValues instanceof Collection) {
-            return new ArrayList(paramValues)
-        }
-        else {
-            return [paramValues]
-        }
+        getList(name)
     }
 }

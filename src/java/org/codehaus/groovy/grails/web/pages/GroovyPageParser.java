@@ -989,7 +989,7 @@ public class GroovyPageParser implements Tokens {
 					if (i.hasNext())
 						buffer.print(',');
 					else
-						buffer.print(']');
+						buffer.print("] as GroovyPageAttributes");
 				}
 				attrsVarsMapDefinition.put(tagIndex, buffer.toString());
 			}

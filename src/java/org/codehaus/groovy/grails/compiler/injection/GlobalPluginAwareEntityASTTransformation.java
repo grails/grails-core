@@ -41,9 +41,9 @@ import java.util.List;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class GlobalPluginAwareEntityASTTransformation implements ASTTransformation {
-    private PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
-
+    private boolean disableTransformation = Boolean.getBoolean("disable.grails.plugin.transform");
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
+        if(disableTransformation) return;
         ASTNode astNode = astNodes[0];
 
         if(astNode instanceof ModuleNode) {
@@ -55,6 +55,7 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
                 File sourcePath = new File(sourceUnit.getName());
                 try {
                     String absolutePath = sourcePath.getCanonicalPath();
+                    PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
                     if(pluginBuildSettings!=null) {
 
                         PluginInfo info = pluginBuildSettings.getPluginInfoForSource(absolutePath);
