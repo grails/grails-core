@@ -72,6 +72,9 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.springframework.dao.DataAccessException
 import org.hibernate.FlushMode
 import org.codehaus.groovy.grails.orm.hibernate.support.FlushOnRedirectEventListener
+import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
+import org.codehaus.groovy.grails.exceptions.GrailsDomainException
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM
@@ -411,8 +414,22 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         addTransactionalMethods(dc, application, ctx)
         addValidationMethods(dc, application, ctx,sessionFactory)
         addDynamicFinderSupport(dc, application, ctx)
+        addNamedQuerySupport(dc, application, ctx)
     }
 
+    private static addNamedQuerySupport(dc, application, ctx) {
+        try {
+            def property = GrailsClassUtils.getStaticPropertyValue(dc.clazz, GrailsDomainClassProperty.NAMED_QUERIES)
+            if (property instanceof Closure) {
+                def builder = new HibernateNamedQueriesBuilder(dc, application, ctx)
+                builder.evaluate(property)
+            }
+        } catch (Exception e) {
+            GrailsUtil.deepSanitize(e)
+            throw new GrailsDomainException("Error evaluating named queries block for domain [${dc.fullName}]:  " + e.message, e)
+        }
+
+    }
     private static addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
         def mc = dc.metaClass
         ClassLoader classLoader = application.classLoader
@@ -453,7 +470,13 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         Validator validator = ctx.containsBean("${dc.fullName}Validator") ? ctx.getBean("${dc.fullName}Validator") : null
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
         metaClass.validate = {->
-            validateMethod.invoke(delegate, "validate", [] as Object[])
+            try {
+                validateMethod.invoke(delegate, "validate", [] as Object[])
+            }
+            catch (Throwable e) {
+                e.printStackTrace()
+                throw e
+            }
         }
         metaClass.validate = {Map args ->
             validateMethod.invoke(delegate, "validate", [args] as Object[])

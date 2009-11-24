@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -22,8 +23,8 @@ import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -46,7 +47,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
 	}
 
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			final Object[] arguments) {
+			final Object[] arguments, Closure additionalCriteria) {
         // and list up to the max
         return super.getHibernateTemplate()
             .executeFind( new HibernateCallback() {

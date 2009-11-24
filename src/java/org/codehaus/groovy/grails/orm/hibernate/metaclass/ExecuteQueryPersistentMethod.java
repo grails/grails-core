@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.MissingMethodException;
 import groovy.lang.GString;
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.HibernateException;
@@ -52,7 +53,7 @@ public class ExecuteQueryPersistentMethod
         super( sessionFactory, classLoader, METHOD_PATTERN );
     }
 
-    protected Object doInvokeInternal( Class clazz, String methodName, Object[] arguments ) {
+    protected Object doInvokeInternal( Class clazz, String methodName, Object[] arguments, Closure additionalCriteria ) {
         checkMethodSignature( clazz, methodName, arguments );
 
         final String query = arguments[0].toString();

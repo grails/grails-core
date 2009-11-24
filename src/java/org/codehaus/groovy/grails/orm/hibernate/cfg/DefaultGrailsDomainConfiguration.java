@@ -112,9 +112,5 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
                 GrailsDomainBinder.evaluateMapping(domainClass);
             }
         }
-
-        for (GrailsDomainClass domainClass : domainClasses) {
-            GrailsDomainBinder.evaluateNamedQueries(domainClass);
-        }
     }
 }

@@ -1068,27 +1068,6 @@ public final class GrailsDomainBinder {
         return null;
     }
 
-
-    /**
-     * Evaluates a Mapping object from the domain class if it has a namedQueries closure
-     *
-     * @param domainClass The domain class
-     */
-    public static void evaluateNamedQueries(GrailsDomainClass domainClass) {
-
-        try {
-            Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.NAMED_QUERIES);
-            if (o instanceof Closure) {
-                HibernateNamedQueriesBuilder builder = new HibernateNamedQueriesBuilder(domainClass);
-                builder.evaluate((Closure) o);
-            }
-        } catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
-            throw new GrailsDomainException("Error evaluating named queries block for domain ["+domainClass.getFullName()+"]:  " + e.getMessage(), e);
-
-        }
-    }
-
     /**
      * Obtains a mapping object for the given domain class nam
      *

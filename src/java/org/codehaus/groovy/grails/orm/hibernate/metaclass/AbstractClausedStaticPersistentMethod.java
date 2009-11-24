@@ -15,12 +15,16 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.orm.RlikeExpression;
+import grails.orm.HibernateCriteriaBuilder;
+import groovy.lang.Closure;
 import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.SessionFactory;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.SimpleTypeConverter;
@@ -396,7 +400,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			Object[] arguments) {
+			Object[] arguments, Closure additionalCriteria) {
 		List expressions = new ArrayList();
         if(arguments == null) arguments = new Object[0];
         Matcher match = super.getPattern().matcher( methodName );
@@ -501,9 +505,10 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		if(LOG.isTraceEnabled())
 			LOG.trace("Calculated expressions: " + expressions);
 		
-		return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse);
+		return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse, additionalCriteria);
 	}
-	
-	protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse);
+    
+
+	protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse, Closure additionalCriteria);
 
 }
