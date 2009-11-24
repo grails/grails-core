@@ -30,6 +30,12 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 class RenderTagLibTests extends AbstractGrailsTagTests {
 
+    // test for GRAILS-5376
+    void testPaginateTag() {
+        def template = '<g:paginate controller="book" total="" offset="" />'
+
+        applyTemplate(template)
+    }
     void testPageProperty() {
 
         def template = '<g:pageProperty name="foo.bar" />'
