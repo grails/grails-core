@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -72,7 +71,7 @@ public class FindPersistentMethod
 		super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));
 	}
 
-	protected Object doInvokeInternal(final Class clazz, String methodName, final Object[] arguments, Closure additionalCriteria) {
+	protected Object doInvokeInternal(final Class clazz, String methodName, Closure additionalCriteria, final Object[] arguments) {
 
 		if (arguments.length == 0)
 			throw new MissingMethodException(methodName, clazz, arguments);

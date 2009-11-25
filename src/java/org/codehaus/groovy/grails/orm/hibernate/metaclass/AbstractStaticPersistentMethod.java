@@ -54,14 +54,14 @@ public abstract class AbstractStaticPersistentMethod extends
     }
     
 	public Object invoke(Class clazz, String methodName, Object[] arguments) {
-        return invoke(clazz, methodName, arguments, null);
+        return invoke(clazz, methodName, null, arguments);
     }
 
-	public Object invoke(Class clazz, String methodName, Object[] arguments, Closure additionalCriteria) {
+	public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(this.classLoader);
-			return doInvokeInternal(clazz, methodName, arguments, additionalCriteria);
+			return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
 		}   
 		finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);      			
@@ -79,6 +79,6 @@ public abstract class AbstractStaticPersistentMethod extends
         return crit;
     }
 
-	protected abstract Object doInvokeInternal(Class clazz, String methodName, Object[] arguments, Closure additionalCriteria);
+	protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
 
 }

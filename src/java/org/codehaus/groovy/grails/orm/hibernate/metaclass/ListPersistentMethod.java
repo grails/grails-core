@@ -47,7 +47,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
 	}
 
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			final Object[] arguments, Closure additionalCriteria) {
+                                      Closure additionalCriteria, final Object[] arguments) {
         // and list up to the max
         return super.getHibernateTemplate()
             .executeFind( new HibernateCallback() {
