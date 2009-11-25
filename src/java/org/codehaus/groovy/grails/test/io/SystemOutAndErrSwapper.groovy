@@ -32,14 +32,25 @@ class SystemOutAndErrSwapper {
     protected OutputStream swappedInErrStream
     
     protected boolean swapped = false
-    
+
+
+    /**
+     * Replaces System.out and System.err with PrintStream's wrapping outStream and errStream
+     *
+     * @return [outStream, errStream]
+     * @throws IllegalStateException if a swap is already on
+     */
+    List<OutputStream> swapIn() {
+        swapIn(new ByteArrayOutputStream(), new ByteArrayOutputStream())
+    }
+
     /**
      * Replaces System.out and System.err with PrintStream's wrapping outStream and errStream
      * 
      * @return [outStream, errStream]
      * @throws IllegalStateException if a swap is already on
      */
-    List<OutputStream> swapIn(outStream = new ByteArrayOutputStream(), errStream = new ByteArrayOutputStream()) {
+    List<OutputStream> swapIn(OutputStream outStream, OutputStream errStream) {
         if (swapped) throw new IllegalStateException("swapIn() called during a swap")
         
         swappedOutOut = System.out
