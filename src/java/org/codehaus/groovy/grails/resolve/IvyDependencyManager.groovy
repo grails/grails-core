@@ -846,8 +846,12 @@ class IvyDomainSpecificLanguageEvaluator {
             FileSystemResolver localMavenResolver = new FileSystemResolver(name:'localMavenResolver');
             localMavenResolver.local = true
             localMavenResolver.m2compatible = true
+            localMavenResolver.addIvyPattern(
+                                "${repoPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).pom")
+
             localMavenResolver.addArtifactPattern(
-                    "${repoPath}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]")
+                    "${repoPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]")
+            
             localMavenResolver.settings = ivySettings
             chainResolver.add localMavenResolver
         }
