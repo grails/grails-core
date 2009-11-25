@@ -182,7 +182,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                          state = createActionState(name, action, trans, flowFactory, flowInfo.entryAction, flowInfo.exitAction)
                      }
                      else if(flowInfo.subflow) {
-                         FlowBuilder subFlowBuilder = new FlowBuilder(name, flowBuilderServices, getContext().getFlowDefinitionLocator())
+                         def i = flowId.indexOf('/')
+                         def subflowId = i>-1 ? "${flowId[0..i-1]}/$name" : "${flowId}/$name"
+                         FlowBuilder subFlowBuilder = new FlowBuilder(subflowId, flowBuilderServices, getContext().getFlowDefinitionLocator())
                          subFlowBuilder.viewPath = this.viewPath
                          Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
                          state = createSubFlow(name, subflow, trans, flowFactory)
