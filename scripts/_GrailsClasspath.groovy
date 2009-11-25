@@ -212,7 +212,7 @@ void setClasspath() {
         //rootLoader?.addURL(dir.URL)
     }
     cpath << classesDirPath << File.pathSeparator
-    cpath << "${basedir}/web-app/WEB-INF"
+    cpath << "${basedir}/web-app/WEB-INF" << File.pathSeparator
     for (jar in jarFiles) {
         cpath << jar.file.absolutePath << File.pathSeparator
     }
