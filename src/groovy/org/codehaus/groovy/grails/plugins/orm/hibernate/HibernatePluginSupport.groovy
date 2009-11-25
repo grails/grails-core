@@ -55,6 +55,9 @@ import org.hibernate.proxy.LazyInitializer
 import org.apache.commons.beanutils.PropertyUtils
 import org.hibernate.Hibernate
 import org.springframework.validation.Validator
+import org.springframework.dao.DataAccessException
+import org.hibernate.FlushMode
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 
 /**
@@ -694,15 +697,29 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
 
         metaClass.delete = {->
             def obj = delegate
-            template.execute({Session session ->
-                session.delete obj
-            } as HibernateCallback)
+            try {
+                template.execute({Session session ->
+                    session.delete obj
+                    if(this.shouldFlush()) {
+                        session.flush()
+                    }
+                } as HibernateCallback)
+            }
+            catch (DataAccessException e) {
+                handleDataAccessException(template, e)
+            }
         }
         metaClass.delete = { Map args ->
             def obj = delegate
             template.delete obj
-            if(args?.flush)
-                template.flush()
+            if(shouldFlush(args)) {
+                try {
+                    template.flush()
+                }
+                catch (DataAccessException e) {
+                    handleDataAccessException(template, e)
+                }
+            }
         }
         metaClass.refresh = {-> template.refresh(delegate); delegate }
         metaClass.discard = {->template.evict(delegate); delegate }
@@ -742,6 +759,32 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
             } as HibernateCallback)
         }
     }
+
+    static shouldFlush(Map map = [:]) {
+        def shouldFlush
+
+        if(map?.containsKey('flush')) {
+            shouldFlush = Boolean.TRUE == map.flush
+        } else {
+            def config = ConfigurationHolder.flatConfig
+            shouldFlush = Boolean.TRUE == config?.get('grails.gorm.autoFlush')
+        }
+        return shouldFlush
+    }
+    /**
+      * Session should no longer be flushed after a data access exception occurs (such a constriant violation)
+      */
+     static void handleDataAccessException(HibernateTemplate template, DataAccessException e) {
+         try {
+             template.execute({Session session ->
+                 session.setFlushMode(FlushMode.MANUAL)
+             } as HibernateCallback)
+         }
+         finally {
+             throw e
+         }
+     }
+    
 
     private static convertToType(value, targetType) {
         SimpleTypeConverter typeConverter = new SimpleTypeConverter()
