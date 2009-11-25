@@ -19,7 +19,6 @@ import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
-import groovy.lang.GString;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
@@ -738,7 +737,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         match.find();
         if (match.matches()) {
             if (argsv.length > 0) {
-                if(argsv[0] instanceof GString) argsv[0] = argsv[0].toString();
+                if(argsv[0] instanceof CharSequence) argsv[0] = argsv[0].toString();
                 if ((argsv.length != 1) || !(argsv[0] instanceof String)) {
                     throw new IllegalArgumentException("Dynamic method get<Artefact>Class(artefactName) requires a " +
                             "single String parameter");

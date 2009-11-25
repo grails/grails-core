@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.Closure;
-import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.HibernateException;
@@ -63,7 +62,7 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
 					else if (parameterValue.getClass().isArray()) {
 						q.setParameterList(parameterName, (Object[])parameterValue);
 					}
-					else if (parameterValue instanceof GString) {
+					else if (parameterValue instanceof CharSequence) {
 						q.setParameter(parameterName, parameterValue.toString());
 					}
 					else {

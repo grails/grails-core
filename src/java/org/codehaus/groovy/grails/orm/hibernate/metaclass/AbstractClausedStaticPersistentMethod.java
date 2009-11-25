@@ -118,7 +118,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			for (int i = 0; i < args.length; i++) {
                 if(args[i] == null) continue;
                 // convert GStrings to strings
-				if(prop.getType() == String.class && (args[i] instanceof GString)) {
+				if(prop.getType() == String.class && (args[i] instanceof CharSequence)) {
 					args[i] = args[i].toString();
 				}
 				else if(!prop.getType().isAssignableFrom( args[i].getClass() ) && !(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass()))) {

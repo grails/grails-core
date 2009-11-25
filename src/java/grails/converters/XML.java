@@ -17,7 +17,6 @@ package grails.converters;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
-import groovy.lang.GString;
 import groovy.util.BuilderSupport;
 import groovy.util.XmlSlurper;
 import org.apache.commons.logging.Log;
@@ -39,7 +38,10 @@ import org.codehaus.groovy.grails.web.xml.XMLStreamWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.Map;
 import java.util.Stack;
 
@@ -148,9 +150,6 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class))
                     || o instanceof Number || o instanceof Boolean) {
                 writer.characters(String.valueOf(o));
-            }
-            else if (o instanceof GString) {
-                writer.characters(o.toString());
             }
             else {
                 if (referenceStack.contains(o)) {
