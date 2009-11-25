@@ -170,23 +170,6 @@ class Publication {
 
     }
 
-    void testInvokingDirectly() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
-
-        def now = new Date()
-        assert publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save(flush: true)
-        assert publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save(flush: true)
-
-        session.clear()
-
-        def publications = publicationClass.recentPublications()
-
-        assertEquals 1, publications?.size()
-        assertEquals 'Some New Book', publications[0].title
-    }
-
     void testGetWithIdOfObjectWhichDoesNotMatchCriteria() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
@@ -256,6 +239,21 @@ class Publication {
         assertEquals 1, publicationClass.recentPublications.count()
     }
 
+    void testCountWithParameterizedNamedQuery() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        assert publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 10).save(flush: true)
+        assert publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 10).save(flush: true)
+        assert publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 900).save(flush: true)
+
+        session.clear()
+        assertEquals 2, publicationClass.recentPublicationsByTitle('Some Book').count()
+    }
+
     void testMaxParam() {
         def publicationClass = ga.getDomainClass("Publication").clazz
         (1..25).each {num ->
@@ -263,7 +261,7 @@ class Publication {
                     datePublished: new Date()).save(flush: true)
         }
 
-        def pubs = publicationClass.recentPublications(max: 10)
+        def pubs = publicationClass.recentPublications.list(max: 10)
         assertEquals 10, pubs?.size()
     }
 
@@ -274,7 +272,7 @@ class Publication {
                     datePublished: new Date() + num).save(flush: true)
         }
 
-        def pubs = publicationClass.latestBooks()
+        def pubs = publicationClass.latestBooks.list()
         assertEquals 10, pubs?.size()
     }
 
@@ -285,7 +283,7 @@ class Publication {
                     datePublished: new Date()).save(flush: true)
         }
 
-        def pubs = publicationClass.recentPublications(max: 10, offset: 5)
+        def pubs = publicationClass.recentPublications.list(max: 10, offset: 5)
         assertEquals 10, pubs?.size()
 
         (6..15).each {num ->
@@ -308,6 +306,22 @@ class Publication {
         assertEquals 3, pubs?.size()
     }
 
+    void testGetWithParameterizedNamedQuery() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        def recentPub = publicationClass.newInstance(title: "Some Title",
+                            datePublished: now).save(flush: true)
+        def oldPub = publicationClass.newInstance(title: "Some Title",
+                            datePublished: now - 900).save(flush: true)
+
+        def pub = publicationClass.recentPublicationsByTitle('Some Title').get(oldPub.id)
+        session.clear()
+        assertNull pub
+        pub = publicationClass.recentPublicationsByTitle('Some Title').get(recentPub.id)
+        assertEquals recentPub.id, pub?.id
+    }
+
     void testNamedQueryWithOneParameter() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
@@ -319,7 +333,7 @@ class Publication {
             }
         }
 
-        def pubs = publicationClass.recentPublicationsByTitle('Book Number 2')
+        def pubs = publicationClass.recentPublicationsByTitle('Book Number 2').list()
         assertEquals 3, pubs?.size()
     }
 
@@ -332,8 +346,23 @@ class Publication {
                     datePublished: ++now).save(flush: true)
         }
 
-        def pubs = publicationClass.publishedBetween(now-2, now)
+        def pubs = publicationClass.publishedBetween(now-2, now).list()
         assertEquals 3, pubs?.size()
+    }
+
+    void testNamedQueryWithMultipleParametersAndDynamicFinder() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        (1..5).each {num ->
+            assert publicationClass.newInstance(title: "Book Number ${num}",
+                    datePublished: now + num).save(flush: true)
+            assert publicationClass.newInstance(title: "Another Book Number ${num}",
+                    datePublished: now + num).save(flush: true)
+        }
+
+        def pubs = publicationClass.publishedBetween(now, now + 2).findAllByTitleLike('Book%')
+        assertEquals 2, pubs?.size()
     }
 
     void testNamedQueryWithMultipleParametersAndMap() {
@@ -345,7 +374,7 @@ class Publication {
                     datePublished: ++now).save(flush: true)
         }
 
-        def pubs = publicationClass.publishedBetween(now-8, now-2, [offset:2, max: 4])
+        def pubs = publicationClass.publishedBetween(now-8, now-2).list(offset:2, max: 4)
         assertEquals 4, pubs?.size()
     }
 

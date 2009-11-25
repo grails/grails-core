@@ -59,11 +59,11 @@ class HibernateNamedQueriesBuilder {
 
     private handleMethodMissing = {String name, args ->
         def propertyName = name[0].toUpperCase() + name[1..-1]
-        def proxy = new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz, dynamicMethods: dynamicMethods)
         domainClass.metaClass.static."get${propertyName}" = {->
-            proxy
+            // creating a new proxy each time because the proxy class has
+            // some state that cannot be shared across requests (namedCriteriaParams)
+            new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz, dynamicMethods: dynamicMethods)
         }
-
     }
 
     def methodMissing(String name, args) {
@@ -79,10 +79,10 @@ class NamedCriteriaProxy {
     private criteriaClosure
     private domainClass
     private dynamicMethods
-
+    private namedCriteriaParams
 
     def list(Object[] params) {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def listClosure = {
             closureClone.delegate = delegate
             def paramsMap
@@ -102,11 +102,12 @@ class NamedCriteriaProxy {
     }
 
     def call(Object[] params) {
-        list(params)
+        namedCriteriaParams = params
+        this
     }
 
     def get(id) {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def getClosure = {
             closureClone.delegate = delegate
             closureClone()
@@ -117,7 +118,7 @@ class NamedCriteriaProxy {
     }
 
     def count() {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def countClosure = {
             closureClone.delegate = delegate
             closureClone()
@@ -155,8 +156,17 @@ class NamedCriteriaProxy {
         def method = dynamicMethods.find {it.isMethodMatch(methodName)}
 
         if (method) {
-            return method.invoke(domainClass, methodName, criteriaClosure, args)
+            def preparedClosure = getPreparedCriteriaClosure()
+            return method.invoke(domainClass, methodName, preparedClosure, args)
         }
         throw new MissingMethodException(methodName, NamedCriteriaProxy, args)
+    }
+
+    private getPreparedCriteriaClosure() {
+        def closureClone = criteriaClosure.clone()
+        if (namedCriteriaParams) {
+            closureClone = closureClone.curry(namedCriteriaParams)
+        }
+        closureClone
     }
 }
