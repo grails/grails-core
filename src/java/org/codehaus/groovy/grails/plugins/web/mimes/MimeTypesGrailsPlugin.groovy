@@ -94,8 +94,7 @@ class MimeTypesGrailsPlugin {
             result
         }
 
-        // TODO: Remove toList() here when bug in Groovy related to arrays and spreadlists is fixed. (GROOVY-2333)
-        addWithFormatMethod(application.controllerClasses.toList())
+        addWithFormatMethod(application.controllerClasses)
 
     }
 
