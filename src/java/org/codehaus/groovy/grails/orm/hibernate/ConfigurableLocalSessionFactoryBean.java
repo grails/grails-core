@@ -22,11 +22,11 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cache.CacheException;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.metadata.ClassMetadata;
@@ -36,7 +36,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
+import javax.persistence.Entity;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 
@@ -119,11 +122,17 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
         try {
-            SessionFactory sf = super.newSessionFactory(config);
-            GrailsApplication application = getGrailsApplication();
-            if(application!=null)
-            GrailsHibernateUtil.configureHibernateDomainClasses(sf, application);
-            return sf;
+            if(applicationContext!= null && (config instanceof AnnotationConfiguration)) {
+                Collection entityBeans = new ArrayList(applicationContext.getBeansWithAnnotation(Entity.class).values());
+                if(applicationContext.getParent()!=null) {
+                    entityBeans.addAll(applicationContext.getParent().getBeansWithAnnotation(Entity.class).values());
+                }
+                AnnotationConfiguration ac = (AnnotationConfiguration) config;
+                for (Object entityBean : entityBeans) {
+                    ac.addAnnotatedClass(entityBean.getClass());    
+                }
+            }
+            return super.newSessionFactory(config);
         }
         catch (HibernateException e) {
             Throwable cause = e.getCause();
