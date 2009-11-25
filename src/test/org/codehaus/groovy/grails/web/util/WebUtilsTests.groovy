@@ -19,7 +19,19 @@ class WebUtilsTests extends GroovyTestCase {
     protected void setUp() {
         def config = new ConfigSlurper().parse( """
 grails.mime.file.extensions=false
-        """)
+grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+                      xml: ['text/xml', 'application/xml'],
+                      text: 'text-plain',
+                      js: 'text/javascript',
+                      rss: 'application/rss+xml',
+                      atom: 'application/atom+xml',
+                      css: 'text/css',
+                      csv: 'text/csv',
+                      all: '*/*',
+                      json: ['application/json','text/json'],
+                      form: 'application/x-www-form-urlencoded',
+                      multipartForm: 'multipart/form-data'
+                    ]        """)
 
         ConfigurationHolder.setConfig config
 
@@ -36,7 +48,7 @@ grails.mime.file.extensions=false
 
         def config = new ConfigSlurper().parse( """
 grails.mime.file.extensions=true
-        """)
+       """)
          ConfigurationHolder.config = config
          
          assert WebUtils.areFileExtensionsEnabled()

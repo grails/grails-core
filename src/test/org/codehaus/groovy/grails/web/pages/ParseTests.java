@@ -88,7 +88,7 @@ public class ParseTests extends TestCase {
             "def out = binding.out\n"+
             "registerSitemeshPreprocessMode(request)\n"+
 
-            "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }],null)\n"+
+            "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,null)\n"+
 			"}\n" + GSP_FOOTER;
 
 		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));

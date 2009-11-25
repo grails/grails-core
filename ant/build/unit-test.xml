@@ -154,7 +154,7 @@
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
 			    <fileset dir="${grails.test.build}">
-                    <include name="**/UniqueConstraint*" />
+                    <include name="**/UniqueConstraintTests.class" />
 				</fileset>
             </batchtest>
 

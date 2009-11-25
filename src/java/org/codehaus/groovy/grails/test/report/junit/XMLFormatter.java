@@ -1,7 +1,8 @@
-package org.codehaus.groovy.grails.test;
+package org.codehaus.groovy.grails.test.report.junit;
 
-import grails.util.GrailsUtil;
+import java.io.*;
 import junit.framework.Test;
+import grails.util.GrailsUtil;
 import org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter;
 
 /**
@@ -9,6 +10,20 @@ import org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter;
  * tests.
  */
 public class XMLFormatter extends XMLJUnitResultFormatter {
+
+    public XMLFormatter(File file) {
+        try {
+            super.setOutput(new BufferedOutputStream(new FileOutputStream(file)));
+        }
+        catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setOutput(OutputStream out) {
+        throw new IllegalStateException("This should not be called");
+    }
+
     public void addFailure(Test test, Throwable throwable) {
         GrailsUtil.deepSanitize(throwable);
         super.addFailure(test, (Throwable)throwable);

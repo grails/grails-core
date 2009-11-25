@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
@@ -570,7 +571,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             String lastToken = uri.substring(idx+1, uri.length());
             idx = lastToken.lastIndexOf('.');
             if(idx > -1 && idx != lastToken.length() - 1) {
-                return lastToken.substring(idx+1);
+                String extension =  lastToken.substring(idx+1, lastToken.length());
+                MimeType[] mimeTypes = MimeType.getConfiguredMimeTypes();
+                for (MimeType mimeType : mimeTypes) {
+                    if (mimeType.getExtension().equals(extension)) return extension;
+                }
             }
         }
         return null;
