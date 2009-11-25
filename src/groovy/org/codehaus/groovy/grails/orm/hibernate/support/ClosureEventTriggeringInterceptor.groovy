@@ -65,7 +65,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     public void onSaveOrUpdate(SaveOrUpdateEvent event) {
 
         def entity = event.getObject()
-        if(entity) {
+        if(entity && entity.metaClass) {
             boolean newEntity = !event.session.contains(entity)
             if(newEntity) {
                 triggerEvent(BEFORE_INSERT_EVENT, entity, null)
@@ -104,10 +104,12 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     public void onPreLoad(PreLoadEvent event) {
         def entity = event.getEntity()
-        if(entity.metaClass.hasProperty(entity, ONLOAD_EVENT))
-            triggerEvent(ONLOAD_EVENT, event.entity, event)
-        else if(entity.metaClass.hasProperty(entity, BEFORE_LOAD_EVENT))
-            triggerEvent(BEFORE_LOAD_EVENT, event.entity, event)
+        if (entity.metaClass) {
+            if(entity.metaClass.hasProperty(entity, ONLOAD_EVENT))
+                triggerEvent(ONLOAD_EVENT, event.entity, event)
+            else if(entity.metaClass.hasProperty(entity, BEFORE_LOAD_EVENT))
+                triggerEvent(BEFORE_LOAD_EVENT, event.entity, event)
+        }
     }
 
     public void onPostLoad(PostLoadEvent event) {
@@ -125,15 +127,18 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
         def result = triggerEvent(BEFORE_UPDATE_EVENT, event.entity, event)
 
-        Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
-        boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
-        MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
-        if(property && shouldTimestamp) {
+        if (entity?.metaClass) {
+            Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
+            boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
+            MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
+            if(property && shouldTimestamp) {
 
-            def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
-            event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now; 
-            entity."$property.name" = now
+                def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
+                event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now;
+                entity."$property.name" = now
+            }
         }
+
 
         if(!entity.validate(deepValidate:false)) {
             result = true
@@ -162,51 +167,52 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     private boolean triggerEvent(String event, entity, Object eventObject) {
         def result = false
-        if(entity.metaClass.hasProperty(entity, event)) {
-             def callable = entity."$event"
-             if(callable instanceof Closure) {
-                 callable.resolveStrategy = Closure.DELEGATE_FIRST
-                 callable.delegate = entity
-                 result = callable.call()
-                 if(result instanceof Boolean) result = !result
-                 else {
-                     result = false
-                 }
-             }
+        if (entity?.metaClass) {
+            if(entity.metaClass.hasProperty(entity, event)) {
+                def callable = entity."$event"
+                if(callable instanceof Closure) {
+                    callable.resolveStrategy = Closure.DELEGATE_FIRST
+                    callable.delegate = entity
+                    result = callable.call()
+                    if(result instanceof Boolean) result = !result
+                    else {
+                        result = false
+                    }
+                }
 
-             if(eventObject instanceof PreUpdateEvent) {
-                 PreUpdateEvent updateEvent = eventObject
-                 EntityPersister persister = updateEvent.persister
-                 def propertyNames = persister.propertyNames.toList()
-                 def state = updateEvent.state
-                 for(p in propertyNames) {
-                     if(['version','id'].contains(p)) continue
-                    def i = propertyNames.indexOf(p)
-                    def value = entity."$p"
-                    state[i] = value                     
-                    persister.setPropertyValue(entity,i,value,EntityMode.POJO)
-                 }
-             }
-             else if(eventObject instanceof SaveOrUpdateEvent) {
-                 SaveOrUpdateEvent updateEvent = eventObject
+                if(eventObject instanceof PreUpdateEvent) {
+                    PreUpdateEvent updateEvent = eventObject
+                    EntityPersister persister = updateEvent.persister
+                    def propertyNames = persister.propertyNames.toList()
+                    def state = updateEvent.state
+                    for(p in propertyNames) {
+                        if(['version','id'].contains(p)) continue
+                        def i = propertyNames.indexOf(p)
+                        def value = entity."$p"
+                        state[i] = value
+                        persister.setPropertyValue(entity,i,value,EntityMode.POJO)
+                    }
+                }
+                else if(eventObject instanceof SaveOrUpdateEvent) {
+                    SaveOrUpdateEvent updateEvent = eventObject
 
-                 if(updateEvent.session.contains(entity)) {
-                     EntityEntry entry = updateEvent.getEntry()
-                     if(entry) {
-                         def propertyNames = entry.persister.propertyNames.toList()
-                         def state = entry.loadedState
-                         for(p in propertyNames) {
-                            if(['version','id'].contains(p)) continue
-                            def i = propertyNames.indexOf(p)
-                            def value = entity."$p"
-                            state[i] = value
-                            entry.persister.setPropertyValue(entity,i,value,EntityMode.POJO)
-                         }
-
-                     }
-                 }
-             }
-         }
+                    if(updateEvent.session.contains(entity)) {
+                        EntityEntry entry = updateEvent.getEntry()
+                        if(entry) {
+                            def propertyNames = entry.persister.propertyNames.toList()
+                            def state = entry.loadedState
+                            for(p in propertyNames) {
+                                if(['version','id'].contains(p)) continue
+                                def i = propertyNames.indexOf(p)
+                                def value = entity."$p"
+                                state[i] = value
+                                entry.persister.setPropertyValue(entity,i,value,EntityMode.POJO)
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return result
 
     }
