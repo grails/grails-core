@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.web.binding;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import groovy.lang.GString;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
@@ -243,7 +242,7 @@ public class DataBindingUtils {
 	}
 
     private static Object unwrapGString(Object value) {
-		if(value instanceof GString) {
+		if(value instanceof CharSequence) {
 			return value.toString();
 		}
 		return value;

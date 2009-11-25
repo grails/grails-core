@@ -591,17 +591,21 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         metaClass.static.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
         metaClass.static.list = {Map args -> listMethod.invoke(domainClassType, "list", [args] as Object[])}
         metaClass.static.findWhere = {Map query ->
+            if(!query) return null
             template.execute({Session session ->
+                Map queryArgs = filterQueryArgumentMap(query)
                 def criteria = session.createCriteria(domainClassType)
-                criteria.add(org.hibernate.criterion.Expression.allEq(query))
+                criteria.add(org.hibernate.criterion.Expression.allEq(queryArgs))
                 criteria.setMaxResults(1)
                 GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult())
             } as HibernateCallback)
         }
         metaClass.static.findAllWhere = {Map query ->
+            if(!query) return null
             template.execute({Session session ->
+                Map queryArgs = filterQueryArgumentMap(query)
                 def criteria = session.createCriteria(domainClassType)
-                criteria.add(org.hibernate.criterion.Expression.allEq(query))
+                criteria.add(org.hibernate.criterion.Expression.allEq(queryArgs))
                 criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
                 criteria.list()
             } as HibernateCallback)
@@ -725,6 +729,20 @@ Try using Grails' default cache provider: 'org.hibernate.cache.OSCacheProvider'"
         }
         //
     }
+
+    static Map filterQueryArgumentMap(Map query) {
+        def queryArgs = [:]
+        for (entry in query) {
+            if (entry.value instanceof CharSequence) {
+                queryArgs[entry.key] = entry.value.toString()
+            }
+            else {
+                queryArgs[entry.key] = entry.value
+            }
+        }
+        return queryArgs
+    }
+
     /**
      * Adds the basic methods for performing persistence such as save, get, delete etc.
      */

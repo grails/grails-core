@@ -16,7 +16,6 @@ package grails.converters;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
-import groovy.lang.GString;
 import groovy.util.BuilderSupport;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -180,8 +179,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
             } else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class))
                     || o instanceof Number || o instanceof Boolean) {
                 writer.value(o);
-            } else if (o instanceof GString) {
-                value(o.toString());
             } else {
 
                 if (referenceStack.contains(o) ) {

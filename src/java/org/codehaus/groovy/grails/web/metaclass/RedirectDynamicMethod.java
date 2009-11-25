@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
-import groovy.lang.GString;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
@@ -214,7 +213,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         String actionName = null;
         if(actionRef instanceof String) {
            actionName = (String)actionRef;
-        } else if(actionRef instanceof GString) {
+        } else if(actionRef instanceof CharSequence) {
             actionName = actionRef.toString();
         }
         else if(actionRef instanceof Closure) {

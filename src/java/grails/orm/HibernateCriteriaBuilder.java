@@ -341,7 +341,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return The calculated property value
      */
     private Object calculatePropertyValue(Object propertyValue) {
-        if(propertyValue instanceof GString) {
+        if(propertyValue instanceof CharSequence) {
             return propertyValue.toString();
         }
         return propertyValue;

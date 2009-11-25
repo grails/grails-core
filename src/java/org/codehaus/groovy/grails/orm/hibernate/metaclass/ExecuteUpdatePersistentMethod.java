@@ -1,18 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -20,6 +8,10 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Allows the executing of abituary HQL updates.
@@ -69,7 +61,7 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
 					else if (parameterValue.getClass().isArray()) {
 						q.setParameterList(parameterName, (Object[])parameterValue);
 					}
-					else if (parameterValue instanceof GString) {
+					else if (parameterValue instanceof CharSequence) {
 						q.setParameter(parameterName, parameterValue.toString());
 					}
 					else {

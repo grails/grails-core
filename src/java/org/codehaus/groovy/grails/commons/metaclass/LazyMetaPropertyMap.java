@@ -15,7 +15,6 @@
 */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import groovy.lang.GString;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
@@ -64,7 +63,7 @@ public class LazyMetaPropertyMap implements Map {
      * @see java.util.Map#containsKey(Object)
      */
     public boolean containsKey(Object propertyName) {
-        if(propertyName instanceof GString) propertyName = propertyName.toString();
+        if(propertyName instanceof CharSequence) propertyName = propertyName.toString();
         if(!(propertyName instanceof String)) throw new IllegalArgumentException("This map implementation only supports String based keys!");
 
         if(EXCLUDES.contains(propertyName)) return false;
@@ -89,7 +88,7 @@ public class LazyMetaPropertyMap implements Map {
      * @return The property value or null
      */
     public Object get(Object propertyName) {
-        if(propertyName instanceof GString) propertyName = propertyName.toString();
+        if(propertyName instanceof CharSequence) propertyName = propertyName.toString();
         if(propertyName instanceof List) {
             Map submap = new HashMap();
             List propertyNames = (List)propertyName;
@@ -114,7 +113,7 @@ public class LazyMetaPropertyMap implements Map {
     }
 
     public Object put(Object propertyName, Object propertyValue) {
-        if(propertyName instanceof GString) propertyName = propertyName.toString();
+        if(propertyName instanceof CharSequence) propertyName = propertyName.toString();
         Object old = null;
         MetaProperty mp = metaClass.getMetaProperty((String)propertyName);
         if(mp!=null) {

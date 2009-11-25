@@ -76,7 +76,7 @@ public class FindPersistentMethod
 		if (arguments.length == 0)
 			throw new MissingMethodException(methodName, clazz, arguments);
 
-		final Object arg = arguments[0] instanceof GString ? arguments[0].toString() : arguments[0];
+		final Object arg = arguments[0] instanceof CharSequence ? arguments[0].toString() : arguments[0];
 
 		if (arg instanceof String) {
 			final String query = (String) arg;
@@ -102,7 +102,7 @@ public class FindPersistentMethod
 					}
 					if (queryArgs != null) {
 						for (int i = 0; i < queryArgs.length; i++) {
-							if (queryArgs[0] instanceof GString) {
+							if (queryArgs[0] instanceof CharSequence) {
 								q.setParameter(i, queryArgs[i].toString());
 							} else {
 								q.setParameter(i, queryArgs[i]);
@@ -117,7 +117,7 @@ public class FindPersistentMethod
 										+ queryNamedArgs.toString());
 							String stringKey = (String) entry.getKey();
 							Object value = entry.getValue();
-							if (value instanceof GString) {
+							if (value instanceof CharSequence) {
 								q.setParameter(stringKey, value.toString());
 							} else if (List.class.isAssignableFrom(value.getClass())) {
 								q.setParameterList(stringKey, (List) value);
