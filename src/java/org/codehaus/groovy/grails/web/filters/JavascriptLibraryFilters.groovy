@@ -17,13 +17,15 @@ class JavascriptLibraryFilters implements GrailsApplicationAware {
     GrailsApplication grailsApplication
     static final Log LOG = LogFactory.getLog(JavascriptLibraryFilters)
     def filters = {
-        def library = grailsApplication?.config?.grails?.views?.javascript?.library ?: 'prototype'
+        def library = grailsApplication?.config?.grails?.views?.javascript?.library ?: null
 
         LOG.debug "Using [$library] as the default Ajax provider." 
         all(controller:'*', action:'*') {
             before = {
                 if(!request[JavascriptTagLib.INCLUDED_LIBRARIES]) request[JavascriptTagLib.INCLUDED_LIBRARIES] = []
-                request[JavascriptTagLib.INCLUDED_LIBRARIES] << library
+                if(library) {                    
+                    request[JavascriptTagLib.INCLUDED_LIBRARIES] << library
+                }
             }
         }
     }
