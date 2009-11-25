@@ -35,8 +35,6 @@ import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory;
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher;
 import org.codehaus.groovy.grails.test.junit3.JUnit3ListenerEventPublisherAdapter;
 
-import org.codehaus.groovy.grails.test.GrailsConsoleResultFormatter;
-
 public class JUnit3GrailsTestTypeRunner {
     
     private SystemOutAndErrSwapper outAndErrSwapper = new SystemOutAndErrSwapper();
@@ -53,11 +51,7 @@ public class JUnit3GrailsTestTypeRunner {
         
         JUnit3ListenerEventPublisherAdapter eventPublisherAdapter = new JUnit3ListenerEventPublisherAdapter(eventPublisher);
         result.addListener(eventPublisherAdapter);
-        
-        GrailsConsoleResultFormatter consoleFormatter = new GrailsConsoleResultFormatter();
-        consoleFormatter.setOutput(System.out);
-        result.addListener(consoleFormatter);
-        
+                
         for (Enumeration tests = suite.tests(); tests.hasMoreElements();) {
             TestSuite test = (TestSuite) tests.nextElement();
 
@@ -69,7 +63,6 @@ public class JUnit3GrailsTestTypeRunner {
                 
                 result.addListener(reports);
                 
-                consoleFormatter.startTestSuite(junitTest);
                 reports.startTestSuite(junitTest);
                 eventPublisherAdapter.startTestSuite(junitTest);
                 
@@ -102,12 +95,9 @@ public class JUnit3GrailsTestTypeRunner {
                 reports.setSystemError(err);
                 reports.endTestSuite(junitTest);
                 
-                consoleFormatter.endTestSuite(junitTest);
-                
                 eventPublisherAdapter.endTestSuite(junitTest, out, err);
             }
             
-            result.removeListener(consoleFormatter);
             result.removeListener(reports);
         }
 

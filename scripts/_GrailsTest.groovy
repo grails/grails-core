@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.event.GrailsTestEventConsoleReporter
 
 /**
  * Gant script that runs the Grails unit tests
@@ -51,6 +52,9 @@ phasesToRun = []
 
 // Passed to the test runners to facilitate event publishing
 testEventPublisher = new GrailsTestEventPublisher(event)
+
+// Add a listener to write test status updates to the console
+eventListener.addGrailsBuildListener(new GrailsTestEventConsoleReporter(System.out))
 
 // A list of test names. These can be of any of this forms:
 //
