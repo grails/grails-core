@@ -22,7 +22,6 @@ package org.codehaus.groovy.grails.test
  * The information provided by results is only used for display,
  * so is not required to be exact when that is impossible.
  * 
- * @see GrailsTestTypeRunner#run()
  */
 interface GrailsTestTypeResult {
 

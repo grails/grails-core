@@ -20,20 +20,14 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
-
-import java.io.File;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher;
 import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper;
-
 import org.codehaus.groovy.grails.test.report.junit.JUnitReports;
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory;
 
-import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher;
-import org.codehaus.groovy.grails.test.junit3.JUnit3ListenerEventPublisherAdapter;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.List;
 
 public class JUnit3GrailsTestTypeRunner {
     
@@ -56,7 +50,7 @@ public class JUnit3GrailsTestTypeRunner {
             TestSuite test = (TestSuite) tests.nextElement();
 
             JUnitTest junitTest = new JUnitTest(test.getName());
-            JUnitReports reports = (JUnitReports)reportsFactory.createReports(test.getName());
+            JUnitReports reports = reportsFactory.createReports(test.getName());
             
             try {
                 outAndErrSwapper.swapIn();
