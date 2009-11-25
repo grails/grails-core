@@ -1186,7 +1186,14 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure);
     }
 
-    public void createCriteriaInstance() {
+    public Criteria buildCriteria(Closure criteriaClosure) {
+        createCriteriaInstance();
+        criteriaClosure.setDelegate(this);
+        criteriaClosure.call();
+        return criteria;
+    }
+
+    private void createCriteriaInstance() {
         if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
             this.participate = true;
             this.hibernateSession = ((SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory)).getSession();

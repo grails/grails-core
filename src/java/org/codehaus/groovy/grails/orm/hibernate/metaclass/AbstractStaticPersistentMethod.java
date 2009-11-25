@@ -72,10 +72,7 @@ public abstract class AbstractStaticPersistentMethod extends
         final Criteria crit;
         if(additionalCriteria != null) {
             HibernateCriteriaBuilder builder = new HibernateCriteriaBuilder(clazz, session.getSessionFactory());
-            builder.createCriteriaInstance();
-            additionalCriteria.setDelegate(builder);
-            additionalCriteria.call();
-            crit = builder.getInstance();
+            crit = builder.buildCriteria(additionalCriteria);
         } else {
             crit = session.createCriteria(clazz);
         }
