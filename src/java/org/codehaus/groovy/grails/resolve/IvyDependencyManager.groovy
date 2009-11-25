@@ -249,8 +249,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                        "org.grails:grails-core:$grailsVersion",
                        "org.grails:grails-resources:$grailsVersion",
                        "org.grails:grails-web:$grailsVersion",
-                       "org.slf4j:slf4j-api:1.5.6",
-                       "org.slf4j:slf4j-log4j12:1.5.6",
+                       "org.slf4j:slf4j-api:1.5.8",
+                       "org.slf4j:slf4j-log4j12:1.5.8",
                        "org.springframework:org.springframework.test:3.0.0.RC2"
 
                 // dependencies needed during development, but not for deployment
@@ -299,7 +299,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                          "org.springframework:org.springframework.transaction:3.0.0.RC2",
                          "org.springframework:org.springframework.web:3.0.0.RC2",
                          "org.springframework:org.springframework.web.servlet:3.0.0.RC2",
-                         "org.slf4j:slf4j-api:1.5.6") {
+                         "org.slf4j:slf4j-api:1.5.8") {
                         transitive = false
                 }
 
@@ -310,8 +310,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                      "org.springframework:org.springframework.test:3.0.0.RC2"
 
                 // dependencies needed at runtime only
-                runtime "org.aspectj:aspectjweaver:1.6.2",
-                        "org.aspectj:aspectjrt:1.6.2",
+                runtime "org.aspectj:aspectjweaver:1.6.6",
+                        "org.aspectj:aspectjrt:1.6.6",
                         "cglib:cglib-nodep:2.1_3",
                         "commons-fileupload:commons-fileupload:1.2.1",
                         "oro:oro:2.0.8"
@@ -322,16 +322,16 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                         "hsqldb:hsqldb:1.8.0.10"
 
                 // caching
-                runtime ("opensymphony:oscache:2.4.1") {
+                runtime ("net.sf.ehcache:ehcache-core:1.7.0") {
                     excludes 'jms', 'commons-logging', 'servlet-api'
                 }
 
+
                 // logging
                 runtime( "log4j:log4j:1.2.15",
-                         "org.slf4j:jcl-over-slf4j:1.5.6",
-                         "org.slf4j:jul-to-slf4j:1.5.6",
-
-                         "org.slf4j:slf4j-log4j12:1.5.6" ) {
+                         "org.slf4j:jcl-over-slf4j:1.5.8",
+                         "org.slf4j:jul-to-slf4j:1.5.8",
+                         "org.slf4j:slf4j-log4j12:1.5.8" ) {
                     excludes 'mail', 'jms', 'jmxtools', 'jmxri'
                 }
 

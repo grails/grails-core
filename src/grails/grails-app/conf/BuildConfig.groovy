@@ -5,8 +5,8 @@ grails.project.test.reports.dir	= "target/test-reports"
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits( "global" ) {
-        // uncomment to disable oscache
-        // excludes 'oscache'
+        // uncomment to disable ehcache
+        // excludes 'ehcache'
     }
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     repositories {        
@@ -25,11 +25,6 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
-        // uncomment to enable ehcache
-//        runtime ("net.sf.ehcache:ehcache:1.6.1") {
-//            excludes 'jms', 'commons-logging', 'servlet-api'
-//        }
-        
         // runtime 'mysql:mysql-connector-java:5.1.5'
     }
 

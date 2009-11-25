@@ -70,8 +70,8 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
         if(this.grailsApplication != null) {
 
             GrailsClass[] existingDomainClasses = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
-            for(int i = 0; i < existingDomainClasses.length;i++) {
-                addDomainClass((GrailsDomainClass)existingDomainClasses[i]);
+            for (GrailsClass existingDomainClass : existingDomainClasses) {
+                addDomainClass((GrailsDomainClass) existingDomainClass);
             }
         }
     }
