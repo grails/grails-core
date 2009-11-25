@@ -45,7 +45,7 @@ goto end
 :have_JAVA_HOME
 @rem Validate JAVA_HOME
 %COMMAND_COM% /C DIR "%JAVA_HOME%" 2>&1 | %FIND_EXE% /I /C "%JAVA_HOME%" >nul
-if not errorlevel 1 goto check_GROOVY_HOME
+if not errorlevel 1 goto check_GRAILS_HOME
 
 echo.
 echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
@@ -55,9 +55,9 @@ echo location of your Java installation.
 echo.
 goto end
 
-:check_GROOVY_HOME
-@rem Define GROOVY_HOME if not set
-if "%GROOVY_HOME%" == "" set GROOVY_HOME=%DIRNAME%..
+:check_GRAILS_HOME
+@rem Define GRAILS_HOME if not set
+if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
  
 :init
 @rem Get command-line arguments, handling Windowz variants
