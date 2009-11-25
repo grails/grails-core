@@ -41,7 +41,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			final Object[] arguments, final Closure additionalCriteria) {
+                                      final Closure additionalCriteria, final Object[] arguments) {
 
 		Matcher match = getPattern().matcher( methodName );
 		// find match

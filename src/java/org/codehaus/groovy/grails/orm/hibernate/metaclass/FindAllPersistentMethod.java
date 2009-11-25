@@ -98,7 +98,7 @@ public class FindAllPersistentMethod
 		super(sessionFactory, classLoader, Pattern.compile("^findAll$"));
 	}
 
-	protected Object doInvokeInternal(final Class clazz, String methodName, final Object[] arguments, Closure additionalCriteria) {
+	protected Object doInvokeInternal(final Class clazz, String methodName, Closure additionalCriteria, final Object[] arguments) {
 		if (arguments.length == 0)
 			return getHibernateTemplate().loadAll(clazz);
 

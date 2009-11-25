@@ -52,7 +52,7 @@ public class ExecuteQueryPersistentMethod
         super( sessionFactory, classLoader, METHOD_PATTERN );
     }
 
-    protected Object doInvokeInternal( Class clazz, String methodName, Object[] arguments, Closure additionalCriteria ) {
+    protected Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         checkMethodSignature( clazz, methodName, arguments );
 
         final String query = arguments[0].toString();

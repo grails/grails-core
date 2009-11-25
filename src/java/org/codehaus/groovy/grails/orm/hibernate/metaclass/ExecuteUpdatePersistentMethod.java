@@ -33,7 +33,7 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected Object doInvokeInternal(final Class clazz, final String methodName, final Object[] arguments, Closure additionalCriteria) {
+	protected Object doInvokeInternal(final Class clazz, final String methodName, Closure additionalCriteria, final Object[] arguments) {
 
 		checkMethodSignature(clazz, arguments);
 

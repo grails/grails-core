@@ -15,16 +15,12 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.orm.RlikeExpression;
-import grails.orm.HibernateCriteriaBuilder;
 import groovy.lang.Closure;
-import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.SessionFactory;
-import org.hibernate.Criteria;
-import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.SimpleTypeConverter;
@@ -400,7 +396,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			Object[] arguments, Closure additionalCriteria) {
+                                      Closure additionalCriteria, Object[] arguments) {
 		List expressions = new ArrayList();
         if(arguments == null) arguments = new Object[0];
         Matcher match = super.getPattern().matcher( methodName );

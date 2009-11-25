@@ -155,7 +155,7 @@ class NamedCriteriaProxy {
         def method = dynamicMethods.find {it.isMethodMatch(methodName)}
 
         if (method) {
-            return method.invoke(domainClass, methodName, args, criteriaClosure)
+            return method.invoke(domainClass, methodName, criteriaClosure, args)
         }
         throw new MissingMethodException(methodName, NamedCriteriaProxy, args)
     }
