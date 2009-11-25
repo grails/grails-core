@@ -23,6 +23,14 @@ package org.codehaus.groovy.grails.web.util
 
 
 class TypeConvertingMap extends LinkedHashMap {
+
+    TypeConvertingMap() {
+    }
+    
+    TypeConvertingMap(Map map) {
+        super(map);
+    }
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
