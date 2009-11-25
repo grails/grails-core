@@ -41,8 +41,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  * 
  * @since Oct 24, 2005
  */
-@Mixin(TypeConvertingMap)
-class GrailsParameterMap implements Map  {
+class GrailsParameterMap extends TypeConvertingMap  {
 
 	private Map parameterMap;
 	private HttpServletRequest request;

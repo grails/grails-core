@@ -26,16 +26,14 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
  * @since 1.2
  */
 
-@Mixin(TypeConvertingMap)
-public class GroovyPageAttributes extends LinkedHashMap{
+
+public class GroovyPageAttributes extends TypeConvertingMap{
 
     GroovyPageAttributes() {
-        getMetaClass().mixin TypeConvertingMap
     }
 
     GroovyPageAttributes(Map map) {
         super(map);
-        getMetaClass().mixin TypeConvertingMap
     }
 
     /**

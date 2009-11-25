@@ -21,8 +21,8 @@ package org.codehaus.groovy.grails.web.util
  * @since 1.2
  */
 
-@Category(Map.class)
-class TypeConvertingMap {
+
+class TypeConvertingMap extends LinkedHashMap {
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
