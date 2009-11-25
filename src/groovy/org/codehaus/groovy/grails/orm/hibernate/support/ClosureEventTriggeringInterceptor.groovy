@@ -135,6 +135,9 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
             entity."$property.name" = now
         }
 
+        if(!entity.validate(deepValidate:false)) {
+            result = true
+        }
         return result
     }
 
