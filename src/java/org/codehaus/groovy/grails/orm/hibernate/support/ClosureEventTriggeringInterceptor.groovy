@@ -31,6 +31,7 @@ import org.hibernate.event.*
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
 import grails.validation.ValidationException
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -97,7 +98,8 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     }
 
     private boolean shouldTrigger(entity) {
-        return entity && entity?.metaClass!=null && DomainClassArtefactHandler.isDomainClass(entity.class)
+        Class clazz = entity?.class
+        return entity && entity?.metaClass!=null && (DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz) )
     }
 
     static final String ONLOAD_EVENT = 'onLoad'

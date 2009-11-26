@@ -20,8 +20,8 @@ import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -30,6 +30,8 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.AnyType;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.validation.Validator;
 
 import java.util.*;
@@ -62,6 +64,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     private Set subClasses = new HashSet();
     private Map constraints = Collections.EMPTY_MAP;
     private Map defaultConstraints = Collections.EMPTY_MAP;
+    private AnnotationMetadata metadata;
 
     /**
      * <p/>
@@ -77,6 +80,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         super(clazz, "");
 
         // configure identity property
+        this.metadata = new StandardAnnotationMetadata(clazz);
         String ident = metaData.getIdentifierPropertyName();
         this.defaultConstraints = defaultContraints;
 
@@ -104,6 +108,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
                 GrailsHibernateDomainClassProperty prop = new GrailsHibernateDomainClassProperty(this, propertyName);
                 prop.setType(getPropertyType(propertyName));
                 Type hibernateType = metaData.getPropertyType(propertyName);
+
                 // if its an association type
                 if (hibernateType.isAssociationType()) {
                     prop.setAssociation(true);

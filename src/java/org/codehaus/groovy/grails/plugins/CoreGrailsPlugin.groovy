@@ -58,8 +58,10 @@ class CoreGrailsPlugin {
 
         // Allow the use of Spring annotated components
         context.'annotation-config'()
-        grailsContext.'component-scan'('base-package':'**')
-
+        def beanPackages = application.config.grails.spring.bean.packages
+        if(beanPackages instanceof List) {
+            grailsContext.'component-scan'('base-package':beanPackages.join(','))
+        }
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
         if(getParentCtx()?.containsBean('pluginManager'))

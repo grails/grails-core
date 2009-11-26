@@ -330,6 +330,13 @@ public interface GrailsApplication extends ApplicationContextAware {
     void registerArtefactHandler(ArtefactHandler handler);
 
     /**
+     * <p>Test whether an artefact handler exists for a given type</p>
+     * @param type The type of the handler
+     * @return True if it does
+     */
+    boolean hasArtefactHandler(String type);
+
+    /**
      * <p>Obtain a list of all the artefact handlers</p>
      * @return The list, possible empty but not null, of all currently registered handlers
      */

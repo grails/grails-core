@@ -65,13 +65,28 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
       * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#setGrailsApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
       */
     public void setGrailsApplication(GrailsApplication application) {
-        application.registerArtefactHandler(new AnnotationDomainClassArtefactHandler());
         this.grailsApplication = application;
         if(this.grailsApplication != null) {
 
             GrailsClass[] existingDomainClasses = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
             for (GrailsClass existingDomainClass : existingDomainClasses) {
                 addDomainClass((GrailsDomainClass) existingDomainClass);
+            }
+
+            ArtefactHandler handler = this.grailsApplication.getArtefactHandler(DomainClassArtefactHandler.TYPE);
+            if(handler instanceof AnnotationDomainClassArtefactHandler) {
+                Set<String> jpaDomainNames = ((AnnotationDomainClassArtefactHandler)handler).getJpaClassNames();
+                if(jpaDomainNames!=null) {
+                    final ClassLoader loader = grailsApplication.getClassLoader();
+                    for (String jpaDomainName : jpaDomainNames) {
+                        try {
+                            addAnnotatedClass(loader.loadClass(jpaDomainName));
+                        }
+                        catch (ClassNotFoundException e) {
+                            // impossible condition
+                        }
+                    }
+                }
             }
         }
     }
