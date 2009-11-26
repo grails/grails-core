@@ -100,7 +100,6 @@ target(allTests: "Runs the project's tests.") {
     ant.mkdir(dir: "${testReportsDir}/html")
     ant.mkdir(dir: "${testReportsDir}/plain")
 
-
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
@@ -152,22 +151,17 @@ target(allTests: "Runs the project's tests.") {
             event("TestPhaseEnd", [phase])
             currentTestPhaseName = null
         }
-
     } finally {
         String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
         if (createTestReports) {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}."
         }
-
         event("StatusFinal", [msg])
-
         event("TestPhasesEnd", [])
-        
     }
 
-
-    return testsFailed ? 1 : 0
+    testsFailed ? 1 : 0
 }
 
 /**
