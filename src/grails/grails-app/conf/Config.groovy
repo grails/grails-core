@@ -39,6 +39,8 @@ grails.json.legacy.builder=false
 grails.enable.native2ascii = true
 // whether to install the java.util.logging bridge for sl4j. Disable fo AppEngine!
 grails.logging.jul.usebridge = true
+// packages to include in Spring bean scanning
+grails.spring.bean.packages = []
 
 // set per-environment serverURL stem for creating absolute links
 environments {
