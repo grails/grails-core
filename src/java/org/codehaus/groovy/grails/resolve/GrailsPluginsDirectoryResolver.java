@@ -31,13 +31,15 @@ public class GrailsPluginsDirectoryResolver extends FileSystemResolver{
     private static final String LIB_DIR_PATTERN = "/lib/[artifact]-[revision].[ext]";
 
     public GrailsPluginsDirectoryResolver(BuildSettings buildSettings, IvySettings ivySettings) {
-        final File pluginsDir = buildSettings.getProjectPluginsDir();
-        final File basedir = buildSettings.getBaseDir();
-        if(basedir!=null) {
-            addArtifactPattern(basedir.getAbsolutePath()+ LIB_DIR_PATTERN);
+        if(buildSettings != null) {
+            final File pluginsDir = buildSettings.getProjectPluginsDir();
+            final File basedir = buildSettings.getBaseDir();
+            if(basedir!=null) {
+                addArtifactPattern(basedir.getAbsolutePath()+ LIB_DIR_PATTERN);
+            }
+            addPatternsForPluginsDirectory(pluginsDir);
+            addPatternsForPluginsDirectory(buildSettings.getGlobalPluginsDir());
         }
-        addPatternsForPluginsDirectory(pluginsDir);
-        addPatternsForPluginsDirectory(buildSettings.getGlobalPluginsDir());
         setName(GRAILS_PLUGINS);
         setSettings(ivySettings);
     }
