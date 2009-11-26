@@ -784,9 +784,11 @@ class IvyDomainSpecificLanguageEvaluator {
     void grailsPlugins() {
         if(isResolverNotAlreadyDefined('grailsPlugins')) {            
            repositoryData << ['type':'grailsPlugins', name:"grailsPlugins"]
-           def pluginResolver = new GrailsPluginsDirectoryResolver(buildSettings, ivySettings)
+           if(buildSettings!=null) {               
+               def pluginResolver = new GrailsPluginsDirectoryResolver(buildSettings, ivySettings)
 
-           chainResolver.add pluginResolver
+               chainResolver.add pluginResolver
+           }
         }
 
     }
