@@ -22,6 +22,7 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestType
 import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeMode
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportProcessor
 
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
@@ -55,6 +56,9 @@ testEventPublisher = new GrailsTestEventPublisher(event)
 
 // Add a listener to write test status updates to the console
 eventListener.addGrailsBuildListener(new GrailsTestEventConsoleReporter(System.out))
+
+// Add a listener to generate our JUnit reports.
+eventListener.addGrailsBuildListener(new JUnitReportProcessor())
 
 // A list of test names. These can be of any of this forms:
 //
@@ -152,7 +156,7 @@ target(allTests: "Runs the project's tests.") {
     } finally {
         String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
         if (createTestReports) {
-            produceReports()
+            event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}."
         }
 
@@ -323,15 +327,6 @@ target(packageTests: "Puts some useful things on the classpath for integration t
             exclude(name: "**/*.java")
             exclude(name: "**/*.groovy")
         }
-    }
-}
-
-target(produceReports: "Outputs aggregated xml and html reports") {
-    ant.junitreport(todir: "${testReportsDir}") {
-        fileset(dir: testReportsDir) {
-            include(name: "TEST-*.xml")
-        }
-        report(format: "frames", todir: "${testReportsDir}/html")
     }
 }
 
