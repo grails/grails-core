@@ -137,12 +137,11 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                 event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now;
                 entity."$property.name" = now
             }
+            if(!entity.validate(deepValidate:false)) {
+                result = true
+            }
         }
 
-
-        if(!entity.validate(deepValidate:false)) {
-            result = true
-        }
         return result
     }
 
