@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 
+import javax.persistence.Entity;
 import java.beans.PropertyDescriptor;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -313,7 +314,9 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      */
     public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
-        LinkedList classChain = getSuperClassChain(instance.getClass());
+        final Class<?> theClass = instance.getClass();
+        boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
+        LinkedList classChain = getSuperClassChain(theClass);
         Class clazz;
 
         ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(instance);
@@ -337,7 +340,7 @@ public class GrailsDomainConfigurationUtil {
 
 
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
-        if(properties != null) {
+        if(properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
             for (GrailsDomainClassProperty p : properties) {
                 final String propertyName = p.getName();
                 ConstrainedProperty cp = constrainedProperties.get(propertyName);
@@ -347,6 +350,7 @@ public class GrailsDomainConfigurationUtil {
                     constrainedProperties.put(propertyName, cp);
                 }
                 // Make sure all fields are required by default, unless specified otherwise by the constraints
+                // If the field is a Java entity annotated with @Entity skip this
                 applyDefaultConstraints(propertyName, p, cp, defaultConstraints, delegate.getSharedConstraints());
             }
         }
