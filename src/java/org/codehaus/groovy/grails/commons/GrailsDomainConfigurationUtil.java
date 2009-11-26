@@ -402,13 +402,21 @@ public class GrailsDomainConfigurationUtil {
             }
 
         }
-        if (!cp.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)
-                && isConstrainableProperty(p, propertyName)) {
-            cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, 
+
+        if (canApplyNullableConstraint(propertyName, p, cp)) {
+
+            cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
                     Collection.class.isAssignableFrom(p.getType()) ||
                     Map.class.isAssignableFrom(p.getType())
             );
         }
+    }
+
+    private static boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {
+    final GrailsDomainClassProperty versionProperty = property.getDomainClass().getVersion();
+        final boolean isVersion = versionProperty != null && versionProperty.equals(property);
+        return !constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)
+                && isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion;
     }
 
     private static void applyMapOfConstraints(Map<String, Object> constraints, String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp) {
