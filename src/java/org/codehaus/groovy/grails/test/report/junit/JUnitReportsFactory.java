@@ -27,17 +27,24 @@ public class JUnitReportsFactory {
     public static final String XML = "xml";
     public static final String PLAIN = "plain";
 
+    protected final String phaseName;
+    protected final String typeName;
     protected final File reportsDir;
     protected final List<String> formats;
 
     public static JUnitReportsFactory createFromBuildBinding(Binding buildBinding) {
+        // This is not great, the phase and type names probably shouldn't be sourced from the binding.
         return new JUnitReportsFactory(
+            (String)buildBinding.getProperty("currentTestPhaseName"),
+            (String)buildBinding.getProperty("currentTestTypeName"),
             (File)buildBinding.getProperty("testReportsDir"), 
             (List<String>)buildBinding.getProperty("reportFormats")
         );
     }
     
-    public JUnitReportsFactory(File reportsDir, List<String> formats) {
+    public JUnitReportsFactory(String phaseName, String typeName, File reportsDir, List<String> formats) {
+        this.phaseName = phaseName;
+        this.typeName = typeName;
         this.reportsDir = reportsDir;
         this.formats = formats;
     }
@@ -52,9 +59,9 @@ public class JUnitReportsFactory {
 
     protected JUnitResultFormatter createReport(String format, String name) {
         if (format.equals(PLAIN)) {
-            return new PlainFormatter(name, new File(reportsDir, "plain/TEST-" + name + ".txt"));
+            return new PlainFormatter(name, new File(reportsDir, "plain/TEST-" + phaseName + "-" + typeName + "-" + name + ".txt"));
         } else if (format.equals(XML)) {
-            return new XMLFormatter(new File(reportsDir, "TEST-" + name + ".xml"));
+            return new XMLFormatter(new File(reportsDir, "TEST-" + phaseName + "-" + typeName + "-" + name + ".xml"));
         } else {
             throw new IllegalArgumentException("Unknown format type: " + format);
         }
