@@ -912,7 +912,7 @@ class MockUtils {
                     }
 
                     props = [ property ] + props
-                    def existing = testInstances.find { inst -> !inst.is(obj) && props.every { inst."$it" == obj."$it" } }
+                    def existing = testInstances.find { inst -> !inst.is(obj) && props.every { inst."$it" != null && inst."$it" == obj."$it" } }
                     if (existing != null) {
                         errors.rejectValue(property, "unique")
                     }

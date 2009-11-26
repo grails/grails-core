@@ -1303,6 +1303,47 @@ class MockUtilsTests extends GroovyTestCase {
         assertTrue a.instanceOf(A)
         assertFalse a.instanceOf(B)
     }
+
+    void testMultipleInstancesWithNullUniquePropertyCanExist() {
+        MockUtils.mockDomain TestNullableUniquePropertyDomain, [new TestNullableUniquePropertyDomain()]
+
+        def domain = new TestNullableUniquePropertyDomain()
+        if (!domain.save()) {
+            def errors = domain.errors.allErrors.collect {
+                "$it.field: $it.code"
+            }
+            fail "Domain object could not be saved because of: $errors"
+        }
+    }
+
+    void testMultipleInstancesWithNonNullUniquePropertyCannotExist() {
+        MockUtils.mockDomain TestNullableUniquePropertyDomain, [new TestNullableUniquePropertyDomain(name: "foo")]
+
+        def domain = new TestNullableUniquePropertyDomain(name: "foo")
+        assertNull domain.save()
+        assertEquals "unique", domain.errors.name
+    }
+
+    void testMultipleInstancesWithNullUniqueCompoundPropertyCanExist() {
+        MockUtils.mockDomain TestNullableUniqueCompoundPropertyDomain, [new TestNullableUniqueCompoundPropertyDomain(b: "b"), new TestNullableUniqueCompoundPropertyDomain(a: "a", b: "b")]
+
+        def domain1 = new TestNullableUniqueCompoundPropertyDomain(b: "b")
+        assertNotNull domain1.save()
+
+        def domain2 = new TestNullableUniqueCompoundPropertyDomain(b: "c")
+        assertNotNull domain2.save()
+
+        def domain3 = new TestNullableUniqueCompoundPropertyDomain(a: "b", b: "b")
+        assertNotNull domain3.save()
+    }
+
+    void testMultipleInstancesWithNotNullUniqueCompoundPropertyCannotExist() {
+        MockUtils.mockDomain TestNullableUniqueCompoundPropertyDomain, [new TestNullableUniqueCompoundPropertyDomain(a: "a", b: "b")]
+
+        def domain = new TestNullableUniqueCompoundPropertyDomain(a: "a", b: "b")
+        assertNull domain.save()
+        assertEquals "unique", domain.errors.a
+    }
 }
 
 /**
@@ -1526,5 +1567,26 @@ class TestNestedChildDomain {
 
     String toString() {
         "TestNestedChildDomain (${this.id}, ${this.name})"
+    }
+}
+
+class TestNullableUniquePropertyDomain {
+    Long id
+    Long version
+    String name
+
+    static constraints = {
+        name nullable: true, unique: true
+    }
+}
+
+class TestNullableUniqueCompoundPropertyDomain {
+    Long id
+    Long version
+    String a
+    String b
+
+    static constraints = {
+        a nullable: true, unique: "b"
     }
 }
