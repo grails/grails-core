@@ -46,6 +46,27 @@ class CriteriaBuilderTestClass2 {
         ['bart']
     }
 
+    void testSqlRestriction() {
+        createDomainData()
+
+        def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
+
+        // should retrieve bart and lisa, not homer and maggie
+        def results = domainClass.withCriteria {
+            sqlRestriction "char_length( first_name ) <= 4"
+        }
+
+        assertEquals 2, results?.size()
+
+        // should retrieve bart, lisa, homer and maggie
+        results = domainClass.withCriteria {
+            sqlRestriction "char_length( first_name ) > 2"
+        }
+
+        assertEquals 4, results?.size()
+
+   }
+
     void testOrderByProjection() {
          createDomainData()
 
