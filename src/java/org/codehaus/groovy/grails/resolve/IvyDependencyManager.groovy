@@ -123,6 +123,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     
     boolean readPom = false
     boolean inheritsAll = false
+    boolean resolveErrors = false
 
 
     /**
@@ -220,8 +221,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
             log "warn"
             repositories {
+                grailsPlugins()
                 grailsHome()
-
                 // uncomment the below to enable remote dependency resolution
                 // from public Maven repositories
                 //mavenCentral()
@@ -454,7 +455,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             hasApplicationDependencies = true
         }
         dependencyDescriptors << dependencyDescriptor
-        moduleDescriptor.addDependency dependencyDescriptor
+        if(dependencyDescriptor.isExportedToApplication())
+            moduleDescriptor.addDependency dependencyDescriptor
     }
 
 
@@ -518,13 +520,16 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      * potentially going out to the internet to download jars if they are not found locally
      */
     public ResolveReport resolveDependencies(String conf) {
+        resolveErrors = false
         if(usedConfigurations.contains(conf) || conf == '') {
             def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
             if(conf)
                 options.confs = [conf] as String[]
 
 
-            return resolveEngine.resolve(moduleDescriptor,options)
+            ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
+            resolveErrors = resolve.hasError()
+            return resolve
         }
         else {
             // return an empty resolve report

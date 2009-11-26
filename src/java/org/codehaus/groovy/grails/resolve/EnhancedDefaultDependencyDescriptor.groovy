@@ -54,6 +54,14 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
      */
     boolean exported = true
 
+    /**
+     * Whether the dependency should be exposed to the application
+     */
+    boolean isExportedToApplication() {
+        if(plugin && !exported) return false
+        return true
+    }
+
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
         super(mrid, force);

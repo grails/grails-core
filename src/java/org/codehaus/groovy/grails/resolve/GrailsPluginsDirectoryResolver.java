@@ -32,6 +32,10 @@ public class GrailsPluginsDirectoryResolver extends FileSystemResolver{
 
     public GrailsPluginsDirectoryResolver(BuildSettings buildSettings, IvySettings ivySettings) {
         final File pluginsDir = buildSettings.getProjectPluginsDir();
+        final File basedir = buildSettings.getBaseDir();
+        if(basedir!=null) {
+            addArtifactPattern(basedir.getAbsolutePath()+ LIB_DIR_PATTERN);
+        }
         addPatternsForPluginsDirectory(pluginsDir);
         addPatternsForPluginsDirectory(buildSettings.getGlobalPluginsDir());
         setName(GRAILS_PLUGINS);

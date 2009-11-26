@@ -108,6 +108,10 @@ target(packagePlugin:"Implementation target") {
     if(!supportsAtLeastVersion) {
         IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
         def deps = dependencyManager.resolveExportedDependencies()
+        if(dependencyManager.resolveErrors) {
+            println "Error: There was an error resolving plugin JAR dependencies"
+            exit 1
+        }
 
         if(deps) {
             ant.mkdir(dir:"${libsDir}/lib")
@@ -116,7 +120,7 @@ target(packagePlugin:"Implementation target") {
                     def file = dep.localFile
                     fileset(dir:file.parentFile, includes:file.name)
                 }
-            }            
+            }
         }
     }
 
