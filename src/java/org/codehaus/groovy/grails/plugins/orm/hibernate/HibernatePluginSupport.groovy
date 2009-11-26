@@ -861,7 +861,8 @@ Try using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvi
             template.execute({Session session ->
                 def criteria = session.createCriteria(dc.clazz)
                 criteria.setProjection(Projections.rowCount())
-                criteria.uniqueResult()
+                def num = criteria.uniqueResult()
+                num == null ? 0 : num
             } as HibernateCallback)
         }
     }

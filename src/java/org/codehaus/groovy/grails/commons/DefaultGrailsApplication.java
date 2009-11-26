@@ -212,7 +212,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     private void initArtefactHandlers() {
 
-        final DomainClassArtefactHandler domainClassArtefactHandler = new DomainClassArtefactHandler();
+        final DomainClassArtefactHandler domainClassArtefactHandler = new AnnotationDomainClassArtefactHandler();
         if(!hasArtefactHandler(domainClassArtefactHandler.getType()))
             registerArtefactHandler(domainClassArtefactHandler);
 
