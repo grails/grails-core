@@ -128,6 +128,8 @@ target(allTests: "Runs the project's tests.") {
     try {
         // Process the tests in each phase that is configured to run.
         convertedPhases.each { phase, types ->
+            currentTestPhaseName = phase
+            
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
             println()
@@ -144,6 +146,7 @@ target(allTests: "Runs the project's tests.") {
             this."${phase}TestPhaseCleanUp"()
 
             event("TestPhaseEnd", [phase])
+            currentTestPhaseName = null
         }
 
     } finally {
@@ -170,6 +173,8 @@ target(allTests: "Runs the project's tests.") {
  * For example, "unit", "jsunit", "webtest", etc.
  */
 processTests = { GrailsTestType type ->
+    currentTestTypeName = type.name
+    
     def relativePathToSource = type.relativeSourcePath
     def dest = null
     if (relativePathToSource) {
@@ -181,6 +186,7 @@ processTests = { GrailsTestType type ->
     }
     
     runTests(type, dest)
+    currentTestTypeName = null
 }
 
 /**
