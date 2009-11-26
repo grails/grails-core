@@ -62,7 +62,7 @@ target(main:"Install a JAR dependency into a project") {
             compile dep
         }
 
-        println "Resolving dependency '${dep}'. Please wait.."
+        println "Installing dependency '${dep}'. Please wait.."
         def report = manager.resolveDependencies()
         if(report.hasError()) {
             println """
@@ -73,8 +73,13 @@ Try passing a valid Maven repository with the --repository argument."""
         }
         else {
             for(File file in report.allArtifactsReports.localFile) {
-                ant.copy(file:file, todir:"${basedir}/lib")
-                println "Installed dependency '${dep}' to location '${basedir}/lib'"
+				if(argsMap.dir) {
+					ant.copy(file:file, todir:argsMap.dir)
+                	println "Installed dependency '${dep}' to location '${argsMap.dir}'"					
+				}
+				else {
+                	println "Installed dependency '${dep}'."					
+				}
             }
 
         }
