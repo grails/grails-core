@@ -60,11 +60,17 @@
     </target>
 
     <property name="bundlor.version" value="1.0.0.CI-230" />
-    <property name="bundlor.home" location="${grails.target}/bundlor-${bundlor.version}" />
-    <available file="${bundlor.home}" property="bundlor.installed" />
+    <property name="bundlor.home" location="${base.dir}/downloads/bundlor-${bundlor.version}" />
+    <property name="disable.bundlor" value="true" />
+    <condition property="bundlor.installed">
+        <or>
+            <isset property="disable.bundlor" />
+            <available type="dir" file="${bundlor.home}"  />
+        </or>
+    </condition>
 
-    
     <target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
+
 		<bundlor:bundlor inputPath="${grails.dist}/grails-${bundle.name}-${grails.version}.jar"
                          outputPath="${grails.dist}/grails-${bundle.name}-${grails.version}.jar"
 				         bundleVersion="${grails.version}"
@@ -77,7 +83,7 @@
 		</bundlor:bundlor>
 	</target>
 
-	<target name="bundlor.init" depends="bundlor.download">
+	<target name="bundlor.init" depends="bundlor.download" unless="disable.bundlor">
 		<taskdef resource="com/springsource/bundlor/ant/antlib.xml"
                  uri="antlib:com.springsource.bundlor.ant">
             <classpath id="bundlor.classpath">
