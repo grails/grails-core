@@ -176,8 +176,13 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     def link = { attrs, body ->
 
         def writer = getOut()
+        def elementId = attrs.remove('elementId')
+        writer <<  "<a href=\"${createLink(attrs).encodeAsHTML()}\""
+        if(elementId) {
+           writer << " id=\"${elementId}\""
+        }
 
-        writer <<  "<a href=\"${createLink(attrs).encodeAsHTML()}\"${attrs.collect {k, v -> " $k=\"$v\"" }.join('')}>"
+        writer << "${attrs.collect {k, v -> " $k=\"$v\"" }.join('')}>"
         writer << "${body()}</a>"
     }
 

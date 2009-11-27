@@ -97,6 +97,17 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('<a href="/foo/action?test=test&amp;test2=test2">test</a>', template)
     }
 
+    void testLikeWithElementId() {
+        def template = '<g:link elementId="myId" controller="foo" action="list">bar</g:link>'
+        assertOutputEquals('<a href="/foo/list" id="myId">bar</a>', template)
+    }
+
+    void testLinkWithMultipleParametersAndElementId() {
+        def template = '<g:link elementId="myid" controller="foo" action="action" params="[test: \'test\', test2: \'test2\']">test</g:link>'
+
+        assertOutputEquals('<a href="/foo/action?test=test&amp;test2=test2" id="myid">test</a>', template)
+    }
+
     void testLinkWithFragment() {
         def template = '<g:link controller="foo" action="bar" fragment="test">link</g:link>'
         profile("link rendering") {

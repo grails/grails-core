@@ -667,6 +667,25 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.eq(propertyName, propertyValue));
     }
+
+    /**
+     * Applies a sql restriction to the results to allow something like:
+      <pre>
+       def results = Person.withCriteria {
+           sqlRestriction "char_length( first_name ) <= 4"
+       }
+      </pre>
+     *
+     * @param sqlRestriction the sql restriction
+     * @return a Criterion instance
+     */
+    public Object sqlRestriction(String sqlRestriction) {
+        if(!validateSimpleExpression()) {
+            throwRuntimeException( new IllegalArgumentException("Call to [sqlRestriction] with value ["+sqlRestriction+"] not allowed here."));
+        }
+        return addToCriteria(Restrictions.sqlRestriction(sqlRestriction));
+    }
+
     /**
      * Creates a Criterion with from the specified property name and "like" expression
      * @param propertyName The property name
