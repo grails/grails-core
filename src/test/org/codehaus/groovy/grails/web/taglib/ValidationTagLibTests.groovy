@@ -237,6 +237,23 @@ class Article {
         assertOutputEquals("<ul></ul>", template, [book:b])
     }
 
+    void testRenderErrorsTagAsListWithNoBeanAttribute() {
+        def b = ga.getDomainClass("Book").newInstance()
+        b.validate()
+
+        assert b.hasErrors()
+        request.setAttribute("bookInstance", b);
+
+        def template = '''<g:renderErrors as="list" />'''
+
+        def result = applyTemplate(template,[book:b])
+        assertEquals 1, result.count("<li>Property [title] of class [class Book] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [publisherURL] of class [class Book] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [releaseDate] of class [class Book] cannot be null</li>")
+        assertTrue result.startsWith("<ul>")
+        assertTrue result.endsWith("</ul>")
+    }
+
     void testRenderErrorsAsXMLTag() {
         def b = ga.getDomainClass("Book").newInstance()
         b.validate()

@@ -105,9 +105,9 @@ class ValidationTagLib {
                 def ra = request[it]
                 if(ra) {
                     def mc = GroovySystem.metaClassRegistry.getMetaClass(ra.getClass())
-                    if (ra instanceof Errors)
+                    if (ra instanceof Errors && !checkList.contains(ra))
                         checkList << ra
-                    else if (mc.hasProperty(ra, 'errors') && ra.errors instanceof Errors) {
+                    else if (mc.hasProperty(ra, 'errors') && ra.errors instanceof Errors && !checkList.contains(ra.errors)) {
                         checkList << ra.errors
 					}
                 }
