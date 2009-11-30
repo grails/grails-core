@@ -76,6 +76,15 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Javassist">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/javassist-3.8.0.GA.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module-library" exported="">
       <library name="SLF4J">
         <CLASSES>
