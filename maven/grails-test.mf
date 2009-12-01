@@ -4,6 +4,7 @@ Bundle-Name: Grails
 Bundle-Vendor: SpringSource Inc.
 Bundle-SymbolicName: org.grails.test
 Import-Template:
+ grails.build.*;version="${grails.version:[=.=.=, +1.0.0)}",
  grails.util.*;version="${grails.version:[=.=.=, +1.0.0)}",
  junit.*;version="${junit.version:[=.=.=, +1.0.0)}",
  org.apache.commons.logging.*;version="${commons.logging.version:[=.=.=, +1.0.0)}",
