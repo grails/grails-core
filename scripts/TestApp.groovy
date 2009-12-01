@@ -66,7 +66,7 @@ target('default': "Run a Grails applications unit tests") {
     
     // treat pre 1.2 phase targeting args as '«phase»:' for backwards compatibility
     ["unit", "integration", "functional", "other"].each {
-        if (argsMap[it]) phaseAndTypeTargeters << "${it}${phaseTypeSeperator}"
+        if (argsMap[it]) phaseAndTypeTargeters << "${it}${TEST_PHASE_AND_TYPE_SEPARATOR}"
     }
     
     // process the phaseAndTypeTargeters, populating the targetPhasesAndTypes map from _GrailsTest
