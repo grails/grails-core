@@ -66,7 +66,10 @@ target('default': "Run a Grails applications unit tests") {
     
     // treat pre 1.2 phase targeting args as '«phase»:' for backwards compatibility
     ["unit", "integration", "functional", "other"].each {
-        if (argsMap[it]) phaseAndTypeTargeters << "${it}${TEST_PHASE_AND_TYPE_SEPARATOR}"
+        if (argsMap[it]) {
+            phaseAndTypeTargeters << "${it}${TEST_PHASE_AND_TYPE_SEPARATOR}"
+            argsMap.remove(it) // these are not test "options"
+        }
     }
     
     // process the phaseAndTypeTargeters, populating the targetPhasesAndTypes map from _GrailsTest
@@ -79,6 +82,13 @@ target('default': "Run a Grails applications unit tests") {
         targetPhasesAndTypes[targetPhase] << targetType
     }
     
+    // Any switch style args are "test options" (from _GrailsTest)
+    argsMap.each {
+        if (it.key != 'params') {
+            testOptions[it.key] = it.value
+        }
+    }
+
     if (argsMap["xml"]) {
         reportFormats = [ "xml" ]
         createTestReports = false

@@ -41,6 +41,9 @@ includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsSettings")
 
+// Miscellaneous 'switches' that affect test operation
+testOptions = [:]
+
 // The four test phases that we can run.
 unitTests = [ "unit" ]
 integrationTests = [ "integration" ]
