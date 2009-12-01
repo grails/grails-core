@@ -147,14 +147,14 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications
 
-* spring-2.5.6.jar, spring-test-2.5.6.jar, spring-webmvc-2.5.6.jar
-- Spring Framework 2.5.6 (http://www.springframework.org) Apache 2.0 License
+* org.springframework.*.jar
+- Spring Framework 3.0.0.RC2 (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for the command line tools (Gant)
 - required for running Grails applications
 
-* org.springframework.webflow-2.0.3.RELEASE.jar, org.springframework.binding-2.0.3.RELEASE.jar, org.springframework.js-2.0.3.RELEASE.jar
-- Spring Web Flow 2.0.3 (http://www.springframework.org) Apache 2.0 License
+* org.springframework.webflow-2.0.8.RELEASE.jar, org.springframework.binding-2.0.8.RELEASE.jar, org.springframework.js-2.0.8.RELEASE.jar
+- Spring Web Flow 2.0.8 (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for running Grails applications (When using Web flows)
 

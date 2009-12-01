@@ -107,6 +107,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public GrailsDataBinder(Object target, String objectName) {
         super(target, objectName);
 
+        setAutoGrowNestedPaths(false);        
         bean = (BeanWrapper)((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
 
         Object tmpTransients = GrailsClassUtils.getStaticPropertyValue(bean.getWrappedClass(), GrailsDomainClassProperty.TRANSIENT);
@@ -130,7 +131,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         setDisallowedFields(disallowed);
         setAllowedFields(ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT);
         setIgnoreInvalidFields(true);
-
     }
 
     /**
