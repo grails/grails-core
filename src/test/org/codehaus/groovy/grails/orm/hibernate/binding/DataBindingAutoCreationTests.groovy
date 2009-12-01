@@ -14,14 +14,14 @@ public class DataBindingAutoCreationTests extends AbstractGrailsHibernateTests{
 import grails.persistence.*
 
 @Entity
-class Author {
+class DataBindingAutoCreationAuthor {
     String name
 }
 
 @Entity
-class Book {
+class DataBindingAutoCreationBook {
     String title
-    Author author
+    DataBindingAutoCreationAuthor author
 
     static constraints = {
         author(nullable:true)
@@ -34,8 +34,8 @@ class Book {
 
 
     void testBindToNullIfNullable() {
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
+        def Author = ga.getDomainClass("DataBindingAutoCreationAuthor").clazz
+        def Book = ga.getDomainClass("DataBindingAutoCreationBook").clazz
 
         def a = Author.newInstance(name:"Stephen King")
         assert a.save(flush:true) : 'should have saved author'
