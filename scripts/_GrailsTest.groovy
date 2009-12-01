@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventConsoleReporter
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsSettings")
+includeTargets << grailsScript("_GrailsClean")
 
 // Miscellaneous 'switches' that affect test operation
 testOptions = [:]
@@ -101,7 +102,10 @@ testHelper = null
 testsFailed = false
 
 target(allTests: "Runs the project's tests.") {
-    depends(compile, packagePlugins)
+    def dependencies = [compile, packagePlugins]
+    if (testOptions.clean) dependencies = [clean] + dependencies
+    depends(*dependencies)
+    
     packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
