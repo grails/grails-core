@@ -183,7 +183,7 @@ target(allTests: "Runs the project's tests.") {
         String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
         if (createTestReports) {
             event("TestProduceReports", [])
-            msg += " - view reports in ${testReportsDir}."
+            msg += " - view reports in ${testReportsDir}"
         }
         event("StatusFinal", [msg])
         event("TestPhasesEnd", [])
