@@ -250,6 +250,8 @@ public class DocPublisher {
 
             new File("${docResources}/style/layout.html").withReader(encoding) {reader ->
                 def template = templateEngine.createTemplate(reader)
+                vars.toc = toc
+                vars.body = fullContents.toString()
                 new File("${refGuideDir}/single.html").withWriter(encoding) {out ->
                     template.make(vars).writeTo(out)
                 }
