@@ -44,14 +44,41 @@ import grails.util.GrailsNameUtils
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsTest")
 
+TEST_PHASE_AND_TYPE_SEPARATOR = ':'
+
 target('default': "Run a Grails applications unit tests") {
     depends(checkVersion, configureProxy, parseArguments, cleanTestReports)
 
-    if (argsMap["unit"]) phasesToRun << "unit"
-    if (argsMap["integration"]) phasesToRun << "integration"
-    if (argsMap["functional"]) phasesToRun << "functional"
-    if (argsMap["other"]) phasesToRun << "other"
-    if (argsMap["params"]) testNames = argsMap["params"]
+    // The test targeting patterns 
+    def testTargeters = []
+    
+    // The params that target a phase and/or type
+    def phaseAndTypeTargeters = []
+    
+    // Separate the type/phase targeters from the test targeters
+    argsMap["params"].each { 
+        def destination = it.contains(TEST_PHASE_AND_TYPE_SEPARATOR) ? phaseAndTypeTargeters : testTargeters
+        destination << it
+    }
+
+    // If we are targeting tests, set testNames (from _GrailsTest)
+    if (testTargeters) testNames = testTargeters
+    
+    // treat pre 1.2 phase targeting args as '«phase»:' for backwards compatibility
+    ["unit", "integration", "functional", "other"].each {
+        if (argsMap[it]) phaseAndTypeTargeters << "${it}${phaseTypeSeperator}"
+    }
+    
+    // process the phaseAndTypeTargeters, populating the targetPhasesAndTypes map from _GrailsTest
+    phaseAndTypeTargeters.each {
+        def parts = it.split(TEST_PHASE_AND_TYPE_SEPARATOR, 2)
+        def targetPhase = parts[0] ?: TEST_PHASE_WILDCARD
+        def targetType = parts[1] ?: TEST_TYPE_WILDCARD
+        
+        if (!targetPhasesAndTypes.containsKey(targetPhase)) targetPhasesAndTypes[targetPhase] = []
+        targetPhasesAndTypes[targetPhase] << targetType
+    }
+    
     if (argsMap["xml"]) {
         reportFormats = [ "xml" ]
         createTestReports = false

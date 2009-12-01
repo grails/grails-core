@@ -47,9 +47,12 @@ integrationTests = [ "integration" ]
 functionalTests = []
 otherTests = [ "cli" ]
 
-// The phases that we will run on this execution. Override this in your
-// own scripts to control the phases and their order.
-phasesToRun = []
+// The potential phases for execution, modify this by responding to the TestPhasesStart event
+phasesToRun = ["unit", "integration", "functional", "other"]
+
+TEST_PHASE_WILDCARD = ' _ALL_PHASES_ '
+TEST_TYPE_WILDCARD = ' _ALL_TYPES_ '
+targetPhasesAndTypes = [:]
 
 // Passed to the test runners to facilitate event publishing
 testEventPublisher = new GrailsTestEventPublisher(event)
@@ -106,9 +109,6 @@ target(allTests: "Runs the project's tests.") {
     
     testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
     
-    // If no phases are explicitly configured, run them all.
-    if (!phasesToRun) phasesToRun = [ "unit", "integration", "functional", "other" ]
-    
     event("TestPhasesStart", [phasesToRun])
     
     // Handle pre 1.2 style testing configuration
@@ -128,9 +128,28 @@ target(allTests: "Runs the project's tests.") {
         }
     }
 
+    // Using targetPhasesAndTypes, filter down convertedPhases into filteredPhases
+    filteredPhases = null
+    if (targetPhasesAndTypes.size() == 0) {
+        filteredPhases = convertedPhases // no type or phase targeting was applied
+    } else {
+        filteredPhases = [:]
+        convertedPhases.each { phaseName, types ->
+            if (targetPhasesAndTypes.containsKey(phaseName) || targetPhasesAndTypes.containsKey(TEST_PHASE_WILDCARD)) {
+                def targetTypesForPhase = (targetPhasesAndTypes[phaseName] ?: []) + (targetPhasesAndTypes[TEST_PHASE_WILDCARD] ?: [])
+                types.each { type ->
+                    if (type.name in targetTypesForPhase || TEST_TYPE_WILDCARD in targetTypesForPhase) {
+                        if (!filteredPhases.containsKey(phaseName)) filteredPhases[phaseName] = []
+                        filteredPhases[phaseName] << type
+                    }
+                }
+            }
+        }
+    }
+    
     try {
         // Process the tests in each phase that is configured to run.
-        convertedPhases.each { phase, types ->
+        filteredPhases.each { phase, types ->
             currentTestPhaseName = phase
             
             // Add a blank line before the start of this phase so that it
