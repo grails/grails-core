@@ -66,9 +66,15 @@ class BuildSettings {
     public static final String GLOBAL_PLUGINS_DIR = "grails.global.plugins.dir"
 
     /**
-     * The name of the system property for {@link #resourcesDir}.
+     * The name of the system property for {@link #
+         }.
      */
     public static final String PROJECT_RESOURCES_DIR = "grails.project.resource.dir"
+
+    /**
+     * The name of the system property for {@link #sourceDir}.
+     */
+    public static final String PROJECT_SOURCE_DIR = "grails.project.source.dir"
 
     /**
      * The name of the system property for {@link #webXmlFile}.
@@ -167,6 +173,9 @@ class BuildSettings {
 
     /** The location where Grails keeps temporary copies of a project's resources. */
     File resourcesDir
+
+    /** The location of the plain source. */
+    File sourceDir
 
     /** The location where project-specific plugins are installed to. */
     File projectPluginsDir
@@ -365,6 +374,7 @@ class BuildSettings {
     private boolean classesDirSet
     private boolean testClassesDirSet
     private boolean resourcesDirSet
+    private boolean sourceDirSet
     private boolean webXmlFileSet
     private boolean projectPluginsDirSet
     private boolean globalPluginsDirSet
@@ -549,6 +559,15 @@ class BuildSettings {
     public void setResourcesDir(File dir) {
         this.resourcesDir = dir
         this.resourcesDirSet = true
+    }
+
+    public File getSourceDir() {
+        return this.sourceDir
+    }
+
+    public void setSourceDir(File dir) {
+        this.sourceDir = dir
+        this.sourceDirSet = true
     }
 
     public File getProjectPluginsDir() {
@@ -807,6 +826,10 @@ class BuildSettings {
 
         if (!resourcesDirSet) {
             resourcesDir = new File(getPropertyValue(PROJECT_RESOURCES_DIR, props, "$projectWorkDir/resources"))
+        }
+
+        if (!sourceDirSet) {
+            sourceDir = new File(getPropertyValue(PROJECT_SOURCE_DIR, props, "$baseDir/src"))
         }
 
         if(!webXmlFileSet) {

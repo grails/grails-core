@@ -127,7 +127,7 @@ target (war: "The implementation target") {
                 exclude(name:"**/spring/**")
             }
             fileset(dir:"${basedir}/grails-app/conf/hibernate", includes:"**/**")
-            fileset(dir:"${basedir}/src/java") {
+            fileset(dir:"${grailsSettings.sourceDir}/java") {
                 include(name:"**/**")
                 exclude(name:"**/*.java")
             }

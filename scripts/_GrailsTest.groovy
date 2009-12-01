@@ -328,7 +328,7 @@ target(packageTests: "Puts some useful things on the classpath for integration t
     ant.copy(todir: grailsSettings.testClassesDir.path, failonerror: false) {
         fileset(dir: "${basedir}/grails-app/conf", includes: "**", excludes: "*.groovy, log4j*, hibernate, spring")
         fileset(dir: "${basedir}/grails-app/conf/hibernate", includes: "**/**")
-        fileset(dir: "${basedir}/src/java") {
+        fileset(dir: "${grailsSettings.sourceDir}/java") {
             include(name: "**/**")
             exclude(name: "**/*.java")
         }

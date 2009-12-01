@@ -64,7 +64,7 @@ target(groovydoc:"Produces groovydoc documentation") {
 target(javadoc:"Produces javadoc documentation") {
    depends(setupDoc)
     event("DocStart", ['javadoc'])
-    File javaDir = new File("${basedir}/src/java")
+    File javaDir = new File("${grailsSettings.sourceDir}/java")
     if(javaDir.listFiles().find{ !it.name.startsWith(".")}) {
        try {
            ant.javadoc( access:"protected",
