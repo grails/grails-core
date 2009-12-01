@@ -448,7 +448,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
         assertEquals "mine", resolvers[0].name
-        assertTrue "should resolve to grails home",resolvers[0].artifactPatterns[0].endsWith("lib/[artifact]-[revision].[ext]")
+        assertTrue "should resolve to grails home",resolvers[0].artifactPatterns[0].endsWith("lib/[module]-[revision](-[classifier]).[ext]")
         assertTrue "grailsHome() should be a file system resolver",resolvers[1] instanceof FileSystemResolver
         assertTrue "grailsHome() should be a file system resolver",resolvers[2] instanceof FileSystemResolver
 
