@@ -128,7 +128,7 @@ public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
     }
     
     protected JUnit3GrailsTestTypeRunner createRunner(GrailsTestEventPublisher eventPublisher) {
-        return new JUnit3GrailsTestTypeRunner(JUnitReportsFactory.createFromBuildBinding(getBuildBinding()), eventPublisher);
+        return new JUnit3GrailsTestTypeRunner(JUnitReportsFactory.createFromBuildBinding(getBuildBinding()), eventPublisher, createSystemOutAndErrSwapper());
     }
 
     protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher) {

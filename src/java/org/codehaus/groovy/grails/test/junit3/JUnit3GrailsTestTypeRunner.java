@@ -31,13 +31,14 @@ import java.util.List;
 
 public class JUnit3GrailsTestTypeRunner {
     
-    private SystemOutAndErrSwapper outAndErrSwapper = new SystemOutAndErrSwapper();
+    private SystemOutAndErrSwapper outAndErrSwapper;
     private JUnitReportsFactory reportsFactory;
     private GrailsTestEventPublisher eventPublisher;
     
-    public JUnit3GrailsTestTypeRunner(JUnitReportsFactory reportsFactory, GrailsTestEventPublisher eventPublisher) {
+    public JUnit3GrailsTestTypeRunner(JUnitReportsFactory reportsFactory, GrailsTestEventPublisher eventPublisher, SystemOutAndErrSwapper outAndErrSwapper) {
         this.reportsFactory = reportsFactory;
         this.eventPublisher = eventPublisher;
+        this.outAndErrSwapper = outAndErrSwapper;
     }
 
     public TestResult runTests(TestSuite suite) {

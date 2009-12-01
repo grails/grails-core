@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
 
 import org.springframework.core.io.Resource
 
@@ -188,5 +189,14 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
         def relativePath = filePath.substring(basePath.size() + 1)
         def suffixPos = relativePath.lastIndexOf(".")
         relativePath[0..(suffixPos - 1)].replace(File.separatorChar, '.' as char)
+    }
+    
+    /**
+     * Creates swapper with echo parameters based on testOptions.echoOut and testOptions.echoErr in the build binding.
+     */
+    protected SystemOutAndErrSwapper createSystemOutAndErrSwapper() {
+        buildBinding.with {
+            new SystemOutAndErrSwapper(testOptions.echoOut == true, testOptions.echoErr == true)
+        }
     }
 }

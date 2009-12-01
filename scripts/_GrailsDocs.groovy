@@ -39,9 +39,12 @@ links = [
             'http://java.sun.com/j2se/1.5.0/docs/api/'
         ]
 
+docsDisabled = { argsMap.nodoc == true }
+
 target(docs: "Produces documentation for a Grails project") {
-    depends(compile, javadoc, groovydoc, refdocs)
+    depends(parseArguments, compile, javadoc, groovydoc, refdocs)
 }
+
 
 target(setupDoc:"Sets up the doc directories") {
     ant.mkdir(dir:"${basedir}/docs")
@@ -50,6 +53,13 @@ target(setupDoc:"Sets up the doc directories") {
 }
 
 target(groovydoc:"Produces groovydoc documentation") {
+    depends(parseArguments)
+
+    if (docsDisabled()) {
+        event("DocSkip", ['groovydoc'])
+        return
+    }
+
     ant.taskdef(name:"groovydoc", classname:"org.codehaus.groovy.ant.Groovydoc")
     event("DocStart", ['groovydoc'])
     try {
@@ -62,9 +72,16 @@ target(groovydoc:"Produces groovydoc documentation") {
 }
 
 target(javadoc:"Produces javadoc documentation") {
-   depends(setupDoc)
+    depends(parseArguments)
+
+    if (docsDisabled()) {
+        event("DocSkip", ['javadoc'])
+        return
+    }
+    
+    setupDoc()
     event("DocStart", ['javadoc'])
-    File javaDir = new File("${basedir}/src/java")
+    File javaDir = new File("${grailsSettings.sourceDir}/java")
     if(javaDir.listFiles().find{ !it.name.startsWith(".")}) {
        try {
            ant.javadoc( access:"protected",
@@ -97,7 +114,9 @@ target(javadoc:"Produces javadoc documentation") {
 }
 
 target(refdocs:"Generates Grails style reference documentation") {
-    depends(createConfig,loadPlugins)
+    depends(parseArguments, createConfig,loadPlugins)
+    
+    if (docsDisabled()) return
     
     def srcDocs = new File("${basedir}/src/docs")
 

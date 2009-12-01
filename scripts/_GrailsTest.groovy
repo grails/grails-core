@@ -40,6 +40,10 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventConsoleReporter
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsSettings")
+includeTargets << grailsScript("_GrailsClean")
+
+// Miscellaneous 'switches' that affect test operation
+testOptions = [:]
 
 // The four test phases that we can run.
 unitTests = [ "unit" ]
@@ -85,6 +89,8 @@ reRunTests = false
 
 // Where the report files are created.
 testReportsDir = grailsSettings.testReportsDir
+// Where the test source can be found
+testSourceDir = grailsSettings.testSourceDir
 
 // Set up an Ant path for the tests.
 ant.path(id: "grails.test.classpath", testClasspath)
@@ -96,7 +102,10 @@ testHelper = null
 testsFailed = false
 
 target(allTests: "Runs the project's tests.") {
-    depends(compile, packagePlugins)
+    def dependencies = [compile, packagePlugins]
+    if (testOptions.clean) dependencies = [clean] + dependencies
+    depends(*dependencies)
+    
     packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
@@ -174,7 +183,7 @@ target(allTests: "Runs the project's tests.") {
         String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
         if (createTestReports) {
             event("TestProduceReports", [])
-            msg += " - view reports in ${testReportsDir}."
+            msg += " - view reports in ${testReportsDir}"
         }
         event("StatusFinal", [msg])
         event("TestPhasesEnd", [])
@@ -195,7 +204,7 @@ processTests = { GrailsTestType type ->
     def relativePathToSource = type.relativeSourcePath
     def dest = null
     if (relativePathToSource) {
-        def source = new File("${basedir}/test", relativePathToSource)
+        def source = new File("${testSourceDir}", relativePathToSource)
         if (!source.exists()) return // no source, no point continuing
 
         dest = new File(grailsSettings.testClassesDir, relativePathToSource)
@@ -326,16 +335,16 @@ target(packageTests: "Puts some useful things on the classpath for integration t
     ant.copy(todir: grailsSettings.testClassesDir.path, failonerror: false) {
         fileset(dir: "${basedir}/grails-app/conf", includes: "**", excludes: "*.groovy, log4j*, hibernate, spring")
         fileset(dir: "${basedir}/grails-app/conf/hibernate", includes: "**/**")
-        fileset(dir: "${basedir}/src/java") {
+        fileset(dir: "${grailsSettings.sourceDir}/java") {
             include(name: "**/**")
             exclude(name: "**/*.java")
         }
-        fileset(dir: "${basedir}/test/unit") {
+        fileset(dir: "${testSourceDir}/unit") {
             include(name: "**/**")
             exclude(name: "**/*.java")
             exclude(name: "**/*.groovy")
         }
-        fileset(dir: "${basedir}/test/integration") {
+        fileset(dir: "${testSourceDir}/integration") {
             include(name: "**/**")
             exclude(name: "**/*.java")
             exclude(name: "**/*.groovy")

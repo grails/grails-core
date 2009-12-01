@@ -22,6 +22,9 @@ package org.codehaus.groovy.grails.test.io
  */
 class SystemOutAndErrSwapper {
     
+    final boolean echoOut
+    final boolean echoErr
+    
     protected PrintStream swappedOutOut
     protected PrintStream swappedOutErr
 
@@ -33,6 +36,10 @@ class SystemOutAndErrSwapper {
     
     protected boolean swapped = false
 
+    SystemOutAndErrSwapper(boolean echoOut = false, boolean echoErr = false) {
+        this.echoOut = echoOut
+        this.echoErr = echoErr
+    }
 
     /**
      * Replaces System.out and System.err with PrintStream's wrapping outStream and errStream
@@ -56,8 +63,8 @@ class SystemOutAndErrSwapper {
         swappedOutOut = System.out
         swappedOutErr = System.err
 
-        swappedInOutStream = outStream
-        swappedInErrStream = errStream
+        swappedInOutStream = echoOut ? new MultiplexingOutputStream(swappedOutOut, outStream) : outStream
+        swappedInErrStream = echoErr ? new MultiplexingOutputStream(swappedOutErr, errStream) : errStream
         
         swappedInOut = new PrintStream(swappedInOutStream)
         swappedInErr = new PrintStream(swappedInErrStream)
@@ -88,7 +95,10 @@ class SystemOutAndErrSwapper {
         swappedInOut = null
         swappedInErr = null
 
-        def streams = [swappedInOutStream, swappedInErrStream]
+        def streams = []
+        streams << (echoOut ? swappedInOutStream.streams.last() : swappedInOutStream)
+        streams << (echoErr ? swappedInErrStream.streams.last() : swappedInErrStream)
+
         swappedInOutStream = null
         swappedInErrStream = null
         

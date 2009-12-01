@@ -44,12 +44,12 @@ compilerPaths = { String classpathId, boolean compilingTests ->
     // This stops resources.groovy becoming "spring.resources"
     src(path: "${basedir}/grails-app/conf/spring")
 
-    src(path:"${basedir}/src/groovy")
-    src(path:"${basedir}/src/java")
+    src(path:"${grailsSettings.sourceDir}/groovy")
+    src(path:"${grailsSettings.sourceDir}/java")
     javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
 	if(compilingTests) {
-        src(path:"${basedir}/test/unit")
-        src(path:"${basedir}/test/integration")
+        src(path:"${grailsSettings.testSourceDir}/unit")
+        src(path:"${grailsSettings.testSourceDir}/integration")
 	}
 }
 

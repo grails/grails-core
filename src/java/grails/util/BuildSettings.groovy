@@ -66,9 +66,15 @@ class BuildSettings {
     public static final String GLOBAL_PLUGINS_DIR = "grails.global.plugins.dir"
 
     /**
-     * The name of the system property for {@link #resourcesDir}.
+     * The name of the system property for {@link #
+         }.
      */
     public static final String PROJECT_RESOURCES_DIR = "grails.project.resource.dir"
+
+    /**
+     * The name of the system property for {@link #sourceDir}.
+     */
+    public static final String PROJECT_SOURCE_DIR = "grails.project.source.dir"
 
     /**
      * The name of the system property for {@link #webXmlFile}.
@@ -89,6 +95,10 @@ class BuildSettings {
      */
     public static final String PROJECT_TEST_REPORTS_DIR = "grails.project.test.reports.dir"
 
+    /**
+     * The name of the system property for {@link #testSourceDir}.
+     */
+    public static final String PROJECT_TEST_SOURCE_DIR = "grails.project.test.source.dir"
 
     /**
      * The name of the system property for {@link #projectTargetDir}.
@@ -164,6 +174,9 @@ class BuildSettings {
     /** The location where Grails keeps temporary copies of a project's resources. */
     File resourcesDir
 
+    /** The location of the plain source. */
+    File sourceDir
+
     /** The location where project-specific plugins are installed to. */
     File projectPluginsDir
 
@@ -172,6 +185,9 @@ class BuildSettings {
 
     /** The location of the test reports. */
     File testReportsDir
+
+    /** The location of the test source. */
+    File testSourceDir
 
     /** The root loader for the build. This has the required libraries on the classpath. */
     URLClassLoader rootLoader
@@ -358,10 +374,12 @@ class BuildSettings {
     private boolean classesDirSet
     private boolean testClassesDirSet
     private boolean resourcesDirSet
+    private boolean sourceDirSet
     private boolean webXmlFileSet
     private boolean projectPluginsDirSet
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
+    private boolean testSourceDirSet
     private boolean projectWarFileSet
     private boolean buildListenersSet
 
@@ -543,6 +561,15 @@ class BuildSettings {
         this.resourcesDirSet = true
     }
 
+    public File getSourceDir() {
+        return this.sourceDir
+    }
+
+    public void setSourceDir(File dir) {
+        this.sourceDir = dir
+        this.sourceDirSet = true
+    }
+
     public File getProjectPluginsDir() {
         return this.projectPluginsDir
     }
@@ -568,6 +595,15 @@ class BuildSettings {
     public void setTestReportsDir(File dir) {
         this.testReportsDir = dir
         this.testReportsDirSet = true
+    }
+
+    public File getTestSourceDir() {
+        return this.testSourceDir
+    }
+
+    public void setTestSourceDir(File dir) {
+        this.testSourceDir = dir
+        this.testSourceDirSet = true
     }
 
     void setBuildListeners(buildListeners) {
@@ -792,6 +828,10 @@ class BuildSettings {
             resourcesDir = new File(getPropertyValue(PROJECT_RESOURCES_DIR, props, "$projectWorkDir/resources"))
         }
 
+        if (!sourceDirSet) {
+            sourceDir = new File(getPropertyValue(PROJECT_SOURCE_DIR, props, "$baseDir/src"))
+        }
+
         if(!webXmlFileSet) {
         	this.webXmlLocation = new File(getPropertyValue(PROJECT_WEB_XML_FILE, props, "$resourcesDir/web.xml"))
         }
@@ -806,6 +846,10 @@ class BuildSettings {
 
         if (!testReportsDirSet) {
             testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
+        }
+        
+        if (!testSourceDirSet) {
+            testSourceDir = new File(getPropertyValue(PROJECT_TEST_SOURCE_DIR, props, "${baseDir}/test"))
         }
     }
 
