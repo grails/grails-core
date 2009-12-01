@@ -3,8 +3,6 @@ package org.grails.samples
 import com.google.appengine.api.datastore.*
 
 class OwnerController {
-
-	def persistenceManager
 	
 	def add = {
 		if(request.method == 'GET') {
@@ -13,8 +11,10 @@ class OwnerController {
 		else {
 			def owner = new Owner(params['owner'])
 			if(owner.validate()) {
-				persistenceManager.makePersistent(owner)
-				redirect action:'show', id:owner.key.id
+				Owner.withTransaction {
+					owner.save()
+				}
+				redirect action:'show', id:owner.id.id
 			}
 			else {
 				render view:'add', model:[ownerBean:owner]
@@ -23,8 +23,7 @@ class OwnerController {
 	}
 	
 	def show = {
-	 	Key k = KeyFactory.createKey(Owner.simpleName, params.id.toInteger())
-		def owner = persistenceManager.getObjectById(Owner, k)
+		def owner = Owner.get(params.id.toLong())
 		if(owner)
 			[ownerBean:owner]
 		else
@@ -32,35 +31,36 @@ class OwnerController {
 	}
 	
 	def edit = {
-	 	Key k = KeyFactory.createKey(Owner.simpleName, params.id.toInteger())
-		def owner = persistenceManager.getObjectById(Owner, k)
-		owner = persistenceManager.detachCopy(owner)
+		def owner = Owner.get(params.id)
 		if(request.method == 'GET') {
 			render view:'add',model:[ownerBean: owner]
 		}
 		else {
-			owner.properties = params['owner']
-			if(owner.validate()) {
-				persistenceManager.makePersistent owner
-				redirect action:'show', id:owner.key.id
+			Owner.withTransaction { status ->
+				owner.properties = params['owner']
+				if(owner.validate()) {
+					owner.save()
+					redirect action:'show', id:owner.key.id
+				}
+				else {
+					status.setRollbackOnly()
+					render view:'add', model:[ownerBean: owner]
+				}
 			}
-			else {
-				render view:'add', model:[ownerBean: owner]
-			}
+			
 		}
 	}
 	
 	def find = {
+		println "LIST = ${Owner.list().lastName}"
 		if(request.method == 'POST') {
-			def query = 	persistenceManager.newQuery(Owner)
-			query.setFilter("lastName == lastNameParam")
-		 	query.declareParameters("String lastNameParam")
-		 	def owners =  query.execute(params.lastName?.trim())
+			
+		 	def owners =  Owner.findAllByLastName(params.lastName)
 			if(owners) {
 				if(owners.size()>1) 
 					render view:'selection', model:[owners:owners]
 				else
-					redirect action:'show', id:owners[0].key.id
+					redirect action:'show', id:owners[0].id.id
 			}
 			else {
 				[message:'owners.not.found']

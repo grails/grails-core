@@ -1,5 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
-<datastore-indexes
-  xmlns="http://appengine.google.com/ns/datastore-indexes/1.0"
-  autoGenerate="true">
+<datastore-indexes autoGenerate="true" xmlns="http://appengine.google.com/ns/datastore-indexes/1.0">
 </datastore-indexes>

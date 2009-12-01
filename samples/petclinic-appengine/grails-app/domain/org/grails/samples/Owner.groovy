@@ -1,41 +1,32 @@
 package org.grails.samples;
 
 
-import javax.jdo.annotations.*
+import javax.persistence.*
 import com.google.appengine.api.datastore.Key;
 /**
  * Simple domain object representing an owner.
  *
  * @author Graeme Rocher
  */
-@PersistenceCapable(identityType = IdentityType.APPLICATION, detachable="true")
+@Entity
 class Owner  {
 
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
- 	Key key
+
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+ 	Key id
 
 	
-	@Persistent	
 	String firstName
-	
-	@Persistent	
 	String lastName
-	
-	@Persistent	
 	String address
-	
-	@Persistent		
 	String city
-	
-	@Persistent		
 	String telephone
 
-	@Persistent(mappedBy = "owner")
+	@OneToMany(mappedBy = "owner")
 	List<Pet> pets = new ArrayList<Pet>()
 	
 	static constraints = {
-		key nullable:true
 		firstName blank:false
 		lastName blank:false
 		address blank:false

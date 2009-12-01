@@ -34,7 +34,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 
     <bean id="grailsResourceHolder" scope="prototype" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
         <property name="resources">
-              <value>classpath*:**/grails-app/**/*.groovy</value>
+              <value>/WEB-INF/**/grails-app/**/*.groovy</value>
         </property>
     </bean>    
     

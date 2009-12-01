@@ -3,66 +3,68 @@ package org.grails.samples;
 import com.google.appengine.api.datastore.*
 
 class PetController {
-
-	def persistenceManager
 	
 	def add = {
 		if(request.method == 'GET') {
 			def p = new Pet()
 			if(params['owner']?.id) {
-			 	Key k = KeyFactory.createKey(Owner.simpleName, params['owner']?.id.toInteger())
-				p.owner = persistenceManager.getObjectById(Owner, k)				
+				p.owner = Owner.get(params['owner']?.id)
 			}
-			[pet: p, types: persistenceManager.newQuery(PetType).execute() ]
+			[pet: p, types: PetType.list() ]
 		}
 		else {
-			def pet = new Pet(params['pet'])
-		 	Key k = KeyFactory.createKey(Owner.simpleName, params.'pet.owner.id'.toInteger())
-			def owner = persistenceManager.getObjectById(Owner, k)				
+
+			def args = params['pet']
+			def owner = Owner.get(args.remove('owner.id'))
+			def type = PetType.get(args.remove('type.id'))
+			def pet = new Pet(args)
+			
 			pet.owner = owner
+			pet.type = type
 			if(pet.validate()) {
 				owner.pets << pet
-				persistenceManager.makePersistent(pet)
-				redirect controller:'owner',action:'show', id:pet.owner.key.id				
+				pet.save flush:true
+				redirect controller:'owner',action:'show', id:pet.owner.id.id				
 			}
 			else {
-				render view:'add', model: [pet: pet, types: persistenceManager.newQuery(PetType).execute() ]
+				render view:'add', model: [pet: pet, types: PetType.list() ]
 			}				
 		}
 	}
 
 	def edit = {
-	 	Key k = KeyFactory.createKey(Pet.simpleName, params.id.toInteger())		
 		if(request.method == 'GET') {
-			render view:'add',model:[pet: persistenceManager.getObjectById(Pet, k), 
-									 types: persistenceManager.newQuery(PetType).execute()  ]
+			render view:'add',model:[pet: Pet.get(params.id.toLong()), 
+									 types: PetType.list()  ]
 		}
 		else {
-			def pet = persistenceManager.getObjectById(Pet, k)
-			pet.properties = params['pet']
-			if(pet.validate()) {
-				persistenceManager.makePersistent pet
-				redirect controller:'owner', action:'show', id:pet.owner.key.id				
-			}
-			else {
-				persistenceManager.evict(pet)
-				render view:'add', model:[pet: pet, types: persistenceManager.newQuery(PetType).execute() ]
+			Pet.withTransaction { status ->
+				def pet = Pet.get(params.id)
+				pet.properties = params['pet']
+				if(pet.validate()) {
+					pet.save()
+					redirect controller:'owner', action:'show', id:pet.owner.key.id				
+				}
+				else {
+					status.setRollbackOnly()
+					render view:'add', model:[pet: pet, types: PetType.list() ]
+				}				
 			}
 				
 		}
 	}
 	
 	def addVisit = {
-	 	Key k = KeyFactory.createKey(Pet.simpleName, params.'visit.pet.id' ? params.'visit.pet.id'.toInteger() : params.id.toInteger())				
+		def id = params.'visit.pet.id' ? params.'visit.pet.id'.toInteger() : params.id.toInteger()
 		if(request.method == 'GET') {
-			[visit: new Visit(pet: persistenceManager.getObjectById(Pet, k))]
+			[visit: new Visit(pet: Pet.get(id))]
 		}
 		else {
 			def visit = new Visit(params['visit'])
-			def pet = persistenceManager.getObjectById(Pet, k)
+			def pet = Pet.get(id)
 			visit.pet = pet
 			if(visit.validate()) {
-				persistenceManager.makePersistent visit								
+				visit.save flush:true
 				pet.visits << visit
 				redirect controller:'owner', action:'show', id:visit.pet.owner.key.id				
 			}

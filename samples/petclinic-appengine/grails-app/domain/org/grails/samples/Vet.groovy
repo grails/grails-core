@@ -1,29 +1,25 @@
 package org.grails.samples;
 
-import javax.jdo.annotations.*
+import javax.persistence.*
 import com.google.appengine.api.datastore.Key;
 /**
  * @author Graeme Rocher
  */
-@PersistenceCapable(identityType = IdentityType.APPLICATION)
+@Entity
 class Vet  {
 
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
- 	Key key
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+ 	Key id
 
 	
-	@Persistent	
 	String firstName
-	
-	@Persistent	
 	String lastName
 	
-	@Persistent(mappedBy = "vet")	
+	@OneToMany(mappedBy = "vet")	
 	List<Speciality> specialities = new ArrayList<Speciality>()
 	
 	static constraints = {
-		key nullable:true
 		firstName blank:false
 		lastName blank:false
 		

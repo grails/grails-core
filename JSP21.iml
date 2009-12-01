@@ -10,7 +10,7 @@
     <content url="file://$MODULE_DIR$/src/jsp21">
       <sourceFolder url="file://$MODULE_DIR$/src/jsp21" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
       <library>

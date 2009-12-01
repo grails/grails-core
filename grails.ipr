@@ -512,12 +512,11 @@
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/antlr-2.7.6.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/cglib-nodep-2.1_3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/oscache-2.4.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/jta-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/javassist-3.4.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-core-3.3.1.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.4.0.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.3.0.ga.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/javassist-3.8.0.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -594,7 +593,9 @@
         <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.6.5.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../../../groovy-dev/releases/groovy-1.6.4/src/main" />
+      </SOURCES>
     </library>
     <library name="GParallelizer">
       <CLASSES>
