@@ -89,6 +89,10 @@ class BuildSettings {
      */
     public static final String PROJECT_TEST_REPORTS_DIR = "grails.project.test.reports.dir"
 
+    /**
+     * The name of the system property for {@link #testSourceDir}.
+     */
+    public static final String PROJECT_TEST_SOURCE_DIR = "grails.project.test.source.dir"
 
     /**
      * The name of the system property for {@link #projectTargetDir}.
@@ -172,6 +176,9 @@ class BuildSettings {
 
     /** The location of the test reports. */
     File testReportsDir
+
+    /** The location of the test source. */
+    File testSourceDir
 
     /** The root loader for the build. This has the required libraries on the classpath. */
     URLClassLoader rootLoader
@@ -362,6 +369,7 @@ class BuildSettings {
     private boolean projectPluginsDirSet
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
+    private boolean testSourceDirSet
     private boolean projectWarFileSet
     private boolean buildListenersSet
 
@@ -568,6 +576,15 @@ class BuildSettings {
     public void setTestReportsDir(File dir) {
         this.testReportsDir = dir
         this.testReportsDirSet = true
+    }
+
+    public File getTestSourceDir() {
+        return this.testSourceDir
+    }
+
+    public void setTestSourceDir(File dir) {
+        this.testSourceDir = dir
+        this.testSourceDirSet = true
     }
 
     void setBuildListeners(buildListeners) {
@@ -806,6 +823,10 @@ class BuildSettings {
 
         if (!testReportsDirSet) {
             testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
+        }
+        
+        if (!testSourceDirSet) {
+            testSourceDir = new File(getPropertyValue(PROJECT_TEST_SOURCE_DIR, props, "${baseDir}/test"))
         }
     }
 

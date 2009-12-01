@@ -421,7 +421,7 @@ target(importToSVN:"Imports a plugin project to Grails' remote SVN repository") 
     String testsDir = "${importBaseDirectory}/test"
     ant.mkdir(dir:testsDir)
     ant.copy(todir:testsDir) {
-        fileset(dir:"${basedir}/test")
+        fileset(dir:"${grailsSettings.testSourceDir}/test")
     }
 
     try {

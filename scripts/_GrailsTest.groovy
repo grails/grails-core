@@ -85,6 +85,8 @@ reRunTests = false
 
 // Where the report files are created.
 testReportsDir = grailsSettings.testReportsDir
+// Where the test source can be found
+testSourceDir = grailsSettings.testSourceDir
 
 // Set up an Ant path for the tests.
 ant.path(id: "grails.test.classpath", testClasspath)
@@ -195,7 +197,7 @@ processTests = { GrailsTestType type ->
     def relativePathToSource = type.relativeSourcePath
     def dest = null
     if (relativePathToSource) {
-        def source = new File("${basedir}/test", relativePathToSource)
+        def source = new File("${testSourceDir}", relativePathToSource)
         if (!source.exists()) return // no source, no point continuing
 
         dest = new File(grailsSettings.testClassesDir, relativePathToSource)
@@ -330,12 +332,12 @@ target(packageTests: "Puts some useful things on the classpath for integration t
             include(name: "**/**")
             exclude(name: "**/*.java")
         }
-        fileset(dir: "${basedir}/test/unit") {
+        fileset(dir: "${testSourceDir}/unit") {
             include(name: "**/**")
             exclude(name: "**/*.java")
             exclude(name: "**/*.groovy")
         }
-        fileset(dir: "${basedir}/test/integration") {
+        fileset(dir: "${testSourceDir}/integration") {
             include(name: "**/**")
             exclude(name: "**/*.java")
             exclude(name: "**/*.groovy")

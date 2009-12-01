@@ -48,8 +48,8 @@ compilerPaths = { String classpathId, boolean compilingTests ->
     src(path:"${basedir}/src/java")
     javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
 	if(compilingTests) {
-        src(path:"${basedir}/test/unit")
-        src(path:"${basedir}/test/integration")
+        src(path:"${grailsSettings.testSourceDir}/unit")
+        src(path:"${grailsSettings.testSourceDir}/integration")
 	}
 }
 
