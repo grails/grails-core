@@ -177,9 +177,20 @@ Try using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvi
             entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
+				List hibConfigLocations = []
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
-                    configLocation = "classpath:hibernate.cfg.xml"
+					hibConfigLocations << "classpath:hibernate.cfg.xml"
                 }
+				def explicitLocations = hibConfig?.config?.location
+				if(explicitLocations) {
+					if(explicitLocations instanceof Collection) {
+						hibConfigLocations.addAll(explicitLocations.collect { it.toString() })
+					}
+					else {
+						hibConfigLocations << hibConfig.config.location.toString()
+					}					 
+				}
+				configLocations = hibConfigLocations
                 if (hibConfigClass) {
                     configClass = ds.configClass
                 }
