@@ -630,6 +630,7 @@ class BuildSettings {
      * returns an empty config.
      */
     public ConfigObject loadConfig(File configFile) {
+        loadSettingsFile()
         if (configFile.exists()) {
             // To avoid class loader issues, we make sure that the
             // Groovy class loader used to parse the config file has
@@ -644,14 +645,18 @@ class BuildSettings {
             config.setConfigFile(configUrl)
             loadConfig(slurper.parse(script))
         } else {
-            loadSettingsFile()
             postLoadConfig()
         }
     }
     
     ConfigObject loadConfig(ConfigObject config) {
-        this.config.merge(config)
-        postLoadConfig()
+        try {
+            this.config.merge(config)
+            return this.config
+        }
+        finally {
+            postLoadConfig()
+        }
     }
 
     protected void postLoadConfig() {
@@ -666,14 +671,14 @@ class BuildSettings {
     protected boolean settingsFileLoaded = false
     protected ConfigObject loadSettingsFile() {
         if (!settingsFileLoaded) {
-            def gcl = obtainGroovyClassLoader()
-            def slurper = createConfigSlurper()
-            
             def settingsFile = new File("$userHome/.grails/settings.groovy")
             if (settingsFile.exists()) {
+                def gcl = obtainGroovyClassLoader()
+                def slurper = createConfigSlurper()
                 Script script = gcl.parseClass(settingsFile)?.newInstance()
-                if(script)
+                if(script) {
                     config = slurper.parse(script)
+                }
             }
             settingsFileLoaded = true
         }
@@ -700,7 +705,10 @@ class BuildSettings {
                 this)
 
         config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
-
+        def credentials = config.grails.project.ivy.authentication
+        if(credentials instanceof Closure) {
+            dependencyManager.parseDependencies authentication
+        }
 
         def dependencyConfig = config.grails.project.dependency.resolution
         if(!dependencyConfig) {
