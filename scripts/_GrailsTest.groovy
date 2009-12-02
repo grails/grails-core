@@ -246,7 +246,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
     
     if (testCount) {
         try {
-            event("TestSuiteStart", [type])
+            event("TestSuiteStart", [type.name])
             println ""
             println "-------------------------------------------------------"
             println "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
@@ -263,7 +263,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             println "Tests passed: ${result.passCount}"
             println "Tests failed: ${result.failCount}"
             println "-------------------------------------------------------"
-            event("TestSuiteEnd", [type])
+            event("TestSuiteEnd", [type.name])
         } catch (Exception e) {
             event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
             GrailsUtil.deepSanitize(e)
