@@ -260,7 +260,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                          "javax.servlet:jstl:1.1.2"
 
                 // dependencies needed for compilation
-                compile("org.codehaus.groovy:groovy-all:1.6.7-SNAPSHOT") {
+                compile("org.codehaus.groovy:groovy-all:1.6.6") {
                     excludes 'jline'
                 }
 
