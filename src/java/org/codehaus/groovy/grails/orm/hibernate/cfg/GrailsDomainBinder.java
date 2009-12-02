@@ -384,9 +384,15 @@ public final class GrailsDomainBinder {
         PropertyConfig propConfig = getPropertyConfig(property);
 
         if(propConfig != null && !StringUtils.isBlank(propConfig.getSort())) {
+            if(!property.isBidirectional() && property.isOneToMany()) {
+                String message = "WARNING: Sorting by a child property does " +
+                        "not work with unidirectional one to many relationships " +
+                        "due to http://opensource.atlassian.com/projects/hibernate/browse/HHH-4394";
+                LOG.warn(message);
+            }
             GrailsDomainClass referenced = property.getReferencedDomainClass();
             if(referenced != null) {
-                GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());                
+                GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());
                 collection.setOrderBy(getColumnNameForPropertyAndPath(propertyToSortBy,"",null));
             }
         }
