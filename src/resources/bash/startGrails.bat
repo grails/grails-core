@@ -106,7 +106,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=%GRAILS_HOME%\lib\groovy-all-1.6.6.jar;%GRAILS_HOME%\dist\grails-bootstrap-@grails.version@.jar
+set STARTER_CLASSPATH=%GRAILS_HOME%\lib\groovy-all-1.6.7.jar;%GRAILS_HOME%\dist\grails-bootstrap-@grails.version@.jar
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 

@@ -40,7 +40,7 @@
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence-1.0.2.GA.jar"/>
 	<classpathentry kind="lib" path="lib/gant_groovy1.6-1.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.6.6.jar" sourcepath="/Developer/groovy-dev/releases/groovy-1.6.4/src/main"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.6.7.jar" sourcepath="/Developer/groovy-dev/releases/groovy-1.6.4/src/main"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.10.jar"/>
 	<classpathentry kind="lib" path="lib/jcl-over-slf4j-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/jsp-api-2.0.jar"/>

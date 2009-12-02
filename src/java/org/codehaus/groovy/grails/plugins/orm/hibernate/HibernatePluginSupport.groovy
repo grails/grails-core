@@ -75,6 +75,7 @@ import org.codehaus.groovy.grails.orm.hibernate.support.FlushOnRedirectEventList
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM
@@ -325,10 +326,12 @@ Try using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvi
    	 	proxy.metaClass = emc
     }
 
-    private static DOMAIN_INITIALIZERS = [:]
+    private static DOMAIN_INITIALIZERS = new ConcurrentHashMap()
     static initializeDomain(Class c) {
-    	 // enhance domain class only once, initializer is removed after calling
-         DOMAIN_INITIALIZERS.remove(c)?.call()
+        synchronized(c) {            
+             // enhance domain class only once, initializer is removed after calling
+             DOMAIN_INITIALIZERS.remove(c)?.call()
+        }
     }
     
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {

@@ -34,15 +34,6 @@
     <orderEntry type="library" exported="" name="Hibernate 3" level="project" />
     <orderEntry type="library" exported="" name="javax.servlet" level="project" />
     <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ognl-2.6.9.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
       <library name="XStream">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/xpp3_min-1.1.3.4.O.jar!/" />
