@@ -321,19 +321,26 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         String currentController = null;
         String currentAction = null;
         String currentId = null;
+        Map currentParams = null;
         if (webRequest!=null) {
             currentController = webRequest.getControllerName();
             currentAction = webRequest.getActionName();
-            currentId = webRequest.getId();
+            currentId = webRequest.getId();            
+            currentParams = new HashMap();
+            currentParams.putAll(webRequest.getParameterMap());
         }
         try {
             if (webRequest!=null) {
+            	webRequest.getParameterMap().clear();
                 info.configure(webRequest);
+                webRequest.getParameterMap().putAll(info.getParameters());
             }
             return includeForUrl(includeUrl, request, response, model);
         }
         finally {
             if (webRequest!=null) {
+            	webRequest.getParameterMap().clear();
+            	webRequest.getParameterMap().putAll(currentParams);
                 webRequest.setId(currentId);
                 webRequest.setControllerName(currentController);
                 webRequest.setActionName(currentAction);
