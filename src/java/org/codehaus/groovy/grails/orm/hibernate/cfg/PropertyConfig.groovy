@@ -39,9 +39,14 @@ class PropertyConfig {
     Properties typeParams
 
     /**
-     * The default sort order 
+     * The default sort property name
      */
     String sort
+
+    /**
+     * The default sort order
+     */
+    String order 
 
     /**
      * The batch size used for lazy loading

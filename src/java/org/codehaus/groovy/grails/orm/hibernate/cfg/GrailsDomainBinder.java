@@ -393,7 +393,12 @@ public final class GrailsDomainBinder {
             GrailsDomainClass referenced = property.getReferencedDomainClass();
             if(referenced != null) {
                 GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());
-                collection.setOrderBy(getColumnNameForPropertyAndPath(propertyToSortBy,"",null));
+
+                String columnName = getColumnNameForPropertyAndPath(propertyToSortBy, "", null);
+                if(propConfig.getOrder() != null) {
+                    columnName += " " + propConfig.getOrder();
+                }
+                collection.setOrderBy(columnName);
             }
         }
 

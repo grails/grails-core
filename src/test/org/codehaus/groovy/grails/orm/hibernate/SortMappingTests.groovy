@@ -39,8 +39,66 @@ class SortMappingAuthor {
     }
 }
 
+class SortMappingBook2 {
+    Long id
+    Long version
+    String title
+    SortMappingAuthor2 author
+    static belongsTo = [author:SortMappingAuthor2]
+
+    static mapping = {
+        sort title:'desc'
+    }
+
+}
+
+class SortMappingAuthor2 {
+    Long id
+    Long version
+
+    String name
+    Set books
+    Set unibooks
+
+    static hasMany = [books:SortMappingBook2]
+
+    static mapping = {
+        sort 'name'
+        books sort:'title', order:"desc"
+    }
+}
 ''')
     }
+	
+	void testDefaultAssociationSortOrderWithDirection() {
+		def authorClass = ga.getDomainClass("SortMappingAuthor2").clazz
+		
+		
+		def author = authorClass.newInstance(name:"John")
+				.addToBooks(title:"E")
+				.addToBooks(title:"C")
+				.addToBooks(title:"Z")
+				.addToBooks(title:"A")
+				.addToBooks(title:"K")
+				.save(flush:true)
+		
+		assert author
+		
+		session.clear()
+		
+		author = authorClass.get(1)
+		
+		assert author
+		
+		def books = author.books.toList()
+		
+		
+		assertEquals "Z", books[0].title
+		assertEquals "K", books[1].title        
+		assertEquals "E", books[2].title
+		assertEquals "C", books[3].title
+		assertEquals "A", books[4].title			
+	}
 
     void testDefaultSortOrderWithFinder() {
         def authorClass = ga.getDomainClass("SortMappingAuthor").clazz

@@ -367,6 +367,7 @@ class HibernateMappingBuilder {
             property.lazy = namedArgs.lazy != null ? namedArgs.lazy : property.lazy
             property.cascade = namedArgs.cascade ?: property.cascade
             property.sort = namedArgs.sort ?: property.sort
+            property.order = namedArgs.order ?: property.order
             property.batchSize = namedArgs.batchSize instanceof Integer ? namedArgs.batchSize : property.batchSize
             property.ignoreNotFound = namedArgs.ignoreNotFound != null ? namedArgs.ignoreNotFound : property.ignoreNotFound
             property.typeParams = namedArgs.params ?: property.typeParams
