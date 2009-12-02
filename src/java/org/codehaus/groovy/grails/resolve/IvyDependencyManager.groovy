@@ -773,7 +773,7 @@ class IvyDomainSpecificLanguageEvaluator {
             repositoryData << ['type':'flatDir', name:name, dirs:dirs.join(',')]
             dirs.each { dir ->
                def path = new File(dir?.toString()).absolutePath
-               fileSystemResolver.addIvyPattern( "${path}/[module]-[revision](-[classifier]).pom")                
+               fileSystemResolver.addIvyPattern( "${path}/[module]-[revision](-[classifier]).xml")                
                fileSystemResolver.addArtifactPattern "${path}/[module]-[revision](-[classifier]).[ext]"
             }
             fileSystemResolver.settings = ivySettings
