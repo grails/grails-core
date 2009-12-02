@@ -46,7 +46,7 @@ public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
     protected JUnit3GrailsTestTypeMode mode;
     
     public JUnit3GrailsTestType(String name, String sourceDirectory) {
-        this(name, sourceDirectory, JUnit3GrailsTestTypeMode.NOT_WITH_GRAILS_ENVIRONMENT);
+        this(name, sourceDirectory, null);
     }
     
     public JUnit3GrailsTestType(String name, String sourceDirectory, JUnit3GrailsTestTypeMode mode) {
@@ -111,19 +111,27 @@ public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
         return theWholeTestSuite;
     }   
 
+    protected ApplicationContext getApplicationContext() {
+        ApplicationContext appCtx = (ApplicationContext)getBuildBinding().getProperty("appCtx");
+        if (appCtx == null) {
+            throw new IllegalStateException("ApplicationContext requested, but is not present in the build binding");
+        }
+        return appCtx;
+    }
+    
     protected TestSuite createTestSuite(Class clazz) {
-        if (mode.equals(JUnit3GrailsTestTypeMode.NOT_WITH_GRAILS_ENVIRONMENT)) {
+        if (mode == null) {
             return new TestSuite(clazz);
         } else {
-            return new JUnit3GrailsEnvironmentTestSuite(clazz, (ApplicationContext)getBuildBinding().getProperty("appCtx"));
+            return new JUnit3GrailsEnvironmentTestSuite(clazz, getApplicationContext(), mode);
         }
     }
 
     protected TestSuite createTestSuite() {
-        if (mode.equals(JUnit3GrailsTestTypeMode.NOT_WITH_GRAILS_ENVIRONMENT)) {
+        if (mode == null) {
             return new TestSuite();
         } else {
-            return new JUnit3GrailsEnvironmentTestSuite((ApplicationContext)getBuildBinding().getProperty("appCtx"));
+            return new JUnit3GrailsEnvironmentTestSuite(getApplicationContext(), mode);
         }
     }
     
