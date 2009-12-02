@@ -29,6 +29,19 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testEbrResolver() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            repositories {
+                ebr()
+            }
+        }
+
+        assertEquals 2,manager.chainResolver.resolvers.size()
+
+    }
     void testCredentials() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

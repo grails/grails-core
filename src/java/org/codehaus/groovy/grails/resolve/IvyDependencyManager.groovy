@@ -838,6 +838,24 @@ class IvyDomainSpecificLanguageEvaluator {
         }        
     }
 
+    void ebr() {
+        if(isResolverNotAlreadyDefined('ebr')) {
+            repositoryData << ['type':'ebr']
+            IBiblioResolver ebrReleaseResolver = new IBiblioResolver(name:"ebrRelease",
+                                                                     root:"http://repository.springsource.com/maven/bundles/release",
+                                                                     m2compatible:true,
+                                                                     settings:ivySettings)
+            chainResolver.add ebrReleaseResolver
+
+            IBiblioResolver ebrExternalResolver = new IBiblioResolver(name:"ebrExternal",
+                                                                      root:"http://repository.springsource.com/maven/bundles/external",
+                                                                      m2compatible:true,
+                                                                      settings:ivySettings)
+
+            chainResolver.add ebrExternalResolver
+        }
+    }
+
     void mavenCentral() {
         if(isResolverNotAlreadyDefined('mavenCentral')) {
             repositoryData << ['type':'mavenCentral']
