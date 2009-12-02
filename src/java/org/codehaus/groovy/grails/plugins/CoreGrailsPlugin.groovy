@@ -19,7 +19,7 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.codehaus.groovy.grails.commons.cfg.GrailsOverrideConfigurer
+import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
@@ -50,7 +50,7 @@ class CoreGrailsPlugin {
         xmlns grailsContext:"http://grails.org/schema/context"
 
 
-        addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())
+        addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application.config.beans, application.classLoader))
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
         // replace AutoProxy advisor with Groovy aware one
