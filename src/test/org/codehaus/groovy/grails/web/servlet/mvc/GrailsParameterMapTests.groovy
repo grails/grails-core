@@ -64,6 +64,15 @@ class GrailsParameterMapTests extends GroovyTestCase {
 
     }
 
+    void testAutoEvaluateBlankDates() {
+        mockRequest.addParameter("foo", "date.struct")
+        mockRequest.addParameter("foo_year", "")
+        mockRequest.addParameter("foo_month", "")
+
+
+        theMap = new GrailsParameterMap(mockRequest);
+        assert theMap['foo'] == null : "should be null"
+    }
     void testAutoEvaluateDates() {
         mockRequest.addParameter("foo", "date.struct")
         mockRequest.addParameter("foo_year", "2007")

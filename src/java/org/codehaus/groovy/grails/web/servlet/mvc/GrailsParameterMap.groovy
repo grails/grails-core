@@ -194,9 +194,16 @@ class GrailsParameterMap extends TypeConvertingMap  {
 
         def dateFormat = new SimpleDateFormat(GrailsDataBinder.DEFAULT_DATE_FORMAT, LocaleContextHolder.getLocale())
         def editor = new StructuredDateEditor(dateFormat,true)
-        def d = editor.assemble(Date.class,dateParams)
-        put(key, d);
-        return d;
+		try {
+	        def d = editor.assemble(Date.class,dateParams)
+	        put(key, d);
+	        return d;			
+		}
+		catch(IllegalArgumentException e) {
+			// ignore, probably blank values and not allowed
+			remove(key)
+            return null
+		}		
     }
 
     public Object put(Object key, Object value) {
