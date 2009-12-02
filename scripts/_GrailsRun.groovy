@@ -174,11 +174,11 @@ runServer = { Map args ->
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
     // Start the plugin change scanner.
-    PluginManagerHolder.pluginManager.startPluginChangeScanner()
+    PluginManagerHolder.pluginManager?.startPluginChangeScanner()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
-    PluginManagerHolder.pluginManager.stopPluginChangeScanner()
+    PluginManagerHolder.pluginManager?.stopPluginChangeScanner()
 }
 
 /**

@@ -190,18 +190,20 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
     public void stopPluginChangeScanner() {
-        pluginChangeScanner.enabled = false;
-        try {
+        if(pluginChangeScanner!=null) {
+            pluginChangeScanner.enabled = false;
             try {
-                // wait for thread to die
-                pluginChangeScanner.join(5000);
+                try {
+                    // wait for thread to die
+                    pluginChangeScanner.join(5000);
+                }
+                catch (InterruptedException e) {
+                    // ignore
+                }
             }
-            catch (InterruptedException e) {
-                // ignore
+            finally {
+                pluginChangeScanner = new GrailsPluginChangeChecker(this);
             }
-        }
-        finally {
-            pluginChangeScanner = new GrailsPluginChangeChecker(this);
         }
     }
 
