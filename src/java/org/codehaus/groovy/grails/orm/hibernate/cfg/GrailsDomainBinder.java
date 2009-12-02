@@ -1656,9 +1656,13 @@ public final class GrailsDomainBinder {
             try {
                 userType = Class.forName(typeName, true, Thread.currentThread().getContextClassLoader());
             } catch (ClassNotFoundException e) {
-            	if(LOG.isWarnEnabled()) {
-            		LOG.warn("UserType not found ", e);
-            	}
+                // only print a warning if the user type is in a package this excludes basic
+                // types like string, int etc.
+                if(typeName.indexOf(".")>-1) {
+                    if(LOG.isWarnEnabled()) {
+                        LOG.warn("UserType not found ", e);
+                    }
+                }
             }
         }
         return userType;
