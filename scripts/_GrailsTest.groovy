@@ -97,9 +97,7 @@ testSourceDir = grailsSettings.testSourceDir
 ant.path(id: "grails.test.classpath", testClasspath)
 
 createTestReports = true
-compilationFailures = []
 
-testHelper = null
 testsFailed = false
 
 target(allTests: "Runs the project's tests.") {
