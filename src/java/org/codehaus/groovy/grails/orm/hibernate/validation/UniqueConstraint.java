@@ -150,7 +150,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                                     String uniquenessGroupPropertyName = (String) anUniquenessGroup;
                                     Object uniquenessGroupPropertyValue = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(target, uniquenessGroupPropertyName);
 
-                                    if (DomainClassArtefactHandler.isDomainClass(uniquenessGroupPropertyValue.getClass())) {
+                                    if (uniquenessGroupPropertyValue != null && DomainClassArtefactHandler.isDomainClass(uniquenessGroupPropertyValue.getClass())) {
                                         try {
                                             // We are merely verifying that the object is not transient here
                                             session.lock(uniquenessGroupPropertyValue, LockMode.NONE);
