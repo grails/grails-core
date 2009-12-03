@@ -58,10 +58,11 @@ public class JUnitReportsFactory {
     }
 
     protected JUnitResultFormatter createReport(String format, String name) {
+        String prefix = "TEST-" + phaseName + "-" + typeName + "-" + name;
         if (format.equals(PLAIN)) {
-            return new PlainFormatter(name, new File(reportsDir, "plain/TEST-" + phaseName + "-" + typeName + "-" + name + ".txt"));
+            return new PlainFormatter(prefix, new File(reportsDir, "plain/" + prefix + ".txt"));
         } else if (format.equals(XML)) {
-            return new XMLFormatter(new File(reportsDir, "TEST-" + phaseName + "-" + typeName + "-" + name + ".xml"));
+            return new XMLFormatter(new File(reportsDir, prefix + ".xml"));
         } else {
             throw new IllegalArgumentException("Unknown format type: " + format);
         }

@@ -56,8 +56,8 @@ public class PlainFormatter extends PlainJUnitResultFormatter {
     public void endTestSuite(JUnitTest suite) {
         super.endTestSuite(suite);
         File parentFile = file.getParentFile();
-        writeToFile(new File(parentFile, "TEST-" + name + "-out.txt"),  systemOutput);
-        writeToFile(new File(parentFile, "TEST-" + name + "-err.txt"), systemError);
+        writeToFile(new File(parentFile, name + "-out.txt"), systemOutput);
+        writeToFile(new File(parentFile, name + "-err.txt"), systemError);
     }
     
     protected void writeToFile(File file, String text) {
