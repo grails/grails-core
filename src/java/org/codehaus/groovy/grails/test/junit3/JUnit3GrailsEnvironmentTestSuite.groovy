@@ -72,7 +72,7 @@ class JUnit3GrailsEnvironmentTestSuite extends TestSuite {
 
         def rawRunner = { test.run(result) }
         def inTransactionRunner = mode.wrapInTransaction && transactionInterceptor.isTransactional(test) ? { transactionInterceptor.doInTransaction(rawRunner) } : rawRunner 
-        def inRequestRunner = mode.wrapInRequestEnvironment ? { requestEnvironmentInterceptor.doInRequestEnvironment(transactionRunner) } : rawRunner
+        def inRequestRunner = mode.wrapInRequestEnvironment ? { requestEnvironmentInterceptor.doInRequestEnvironment(inTransactionRunner) } : rawRunner
         
         inRequestRunner()
     }
