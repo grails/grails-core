@@ -163,7 +163,7 @@ public abstract class GroovyPage extends Script {
 	}
 
     public String getPluginContextPath() {
-        return pluginContextPath;
+        return pluginContextPath != null ? pluginContextPath : BLANK_STRING;
     }
 
     public void cleanup() {
