@@ -155,9 +155,9 @@ public class HibernatePluginSupport {
                     try {
                         def cacheClass = getClass().classLoader.loadClass(cacheProvider)
                     } catch (Throwable t) {
-                        hibConfig.remove('cache')
+                        hibConfig.cache.provider_class='net.sf.ehcache.hibernate.EhCacheProvider'
                         log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the classes for this provider cannot be found.
-Try using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'"""
+Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'"""
                     }
                 }
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
