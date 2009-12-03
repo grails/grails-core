@@ -16,7 +16,8 @@
 
 package org.codehaus.groovy.grails.test.junit3
 
-enum JUnit3GrailsTestTypeMode {
-    NOT_WITH_GRAILS_ENVIRONMENT,
-    WITH_GRAILS_ENVIRONMENT
+class JUnit3GrailsTestTypeMode {
+	boolean autowire = false
+	boolean wrapInRequestEnvironment = false
+	boolean wrapInTransaction = false
 }

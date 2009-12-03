@@ -15,6 +15,7 @@
 */
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import grails.util.GrailsUtil
@@ -127,9 +128,17 @@ target(allTests: "Runs the project's tests.") {
         if (types) {
             convertedPhases[phaseName] = types.collect { rawType ->
                 if (rawType instanceof CharSequence) {
-                    def mode = (phaseName == 'integration') ? JUnit3GrailsTestTypeMode.WITH_GRAILS_ENVIRONMENT : JUnit3GrailsTestTypeMode.NOT_WITH_GRAILS_ENVIRONMENT
                     def rawTypeString = rawType.toString()
-                    new JUnit3GrailsTestType(rawTypeString, rawTypeString, mode)
+                    if (phaseName in ['integration', 'functional']) {
+                        def mode = new JUnit3GrailsTestTypeMode(
+                            autowire: true,
+                            wrapInTransaction: phaseName == "integration",
+                            wrapInRequestEnvironment: phaseName == "integration"
+                        )
+                        new JUnit3GrailsTestType(rawTypeString, rawTypeString, mode)
+                    } else {
+                        new JUnit3GrailsTestType(rawTypeString, rawTypeString)
+                    }
                 } else {
                     rawType
                 }
@@ -246,7 +255,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
     
     if (testCount) {
         try {
-            event("TestSuiteStart", [type])
+            event("TestSuiteStart", [type.name])
             println ""
             println "-------------------------------------------------------"
             println "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
@@ -263,7 +272,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             println "Tests passed: ${result.passCount}"
             println "Tests failed: ${result.failCount}"
             println "-------------------------------------------------------"
-            event("TestSuiteEnd", [type])
+            event("TestSuiteEnd", [type.name])
         } catch (Exception e) {
             event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
             GrailsUtil.deepSanitize(e)
@@ -273,6 +282,14 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             type.cleanup()
         }
     }
+}
+
+initPersistenceContext = {
+	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
+}
+
+destroyPersistenceContext = { 
+	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
 }
 
 unitTestPhasePreparation = {}
@@ -292,7 +309,7 @@ integrationTestPhasePreparation = {
         app.applicationContext = appCtx
     }
 
-    appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
+    initPersistenceContext()
 
     def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
@@ -303,10 +320,8 @@ integrationTestPhasePreparation = {
  * Shuts down the bootstrapped Grails application.
  */
 integrationTestPhaseCleanUp = {
-    // Kill any context interceptor we might have.
-    appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
-
-    shutdownApp()
+    destroyPersistenceContext()
+	shutdownApp()
 }
 
 /**
@@ -315,12 +330,21 @@ integrationTestPhaseCleanUp = {
 functionalTestPhasePreparation = {
     packageApp()
     runApp()
+    
+    prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
+    appCtx = ApplicationHolder.application.mainContext
+    
+    initPersistenceContext()
 }
 
 /**
  * Shuts down the test server.
  */
 functionalTestPhaseCleanUp = {
+    destroyPersistenceContext()
+    
+    appCtx = prevAppCtx
+    
     stopServer()
 }
 

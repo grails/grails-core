@@ -44,34 +44,36 @@ class JUnit3GrailsEnvironmentTestSuite extends TestSuite {
     final GrailsTestRequestEnvironmentInterceptor requestEnvironmentInterceptor
     final GrailsTestTransactionInterceptor transactionInterceptor
     
+	final JUnit3GrailsTestTypeMode mode
+	
     /**
      * @see TestSuite(Class)
      */
-    JUnit3GrailsEnvironmentTestSuite(Class test, ApplicationContext applicationContext) {
+    JUnit3GrailsEnvironmentTestSuite(Class test, ApplicationContext applicationContext, JUnit3GrailsTestTypeMode mode) {
         super(test)
-        init(applicationContext)
+        init(applicationContext, mode)
     }
 
-    JUnit3GrailsEnvironmentTestSuite(ApplicationContext applicationContext) {
-        init(applicationContext)
+    JUnit3GrailsEnvironmentTestSuite(ApplicationContext applicationContext, JUnit3GrailsTestTypeMode mode) {
+        init(applicationContext, mode)
     }
 
-    protected init(ApplicationContext applicationContext) {
+    protected init(ApplicationContext applicationContext, JUnit3GrailsTestTypeMode mode) {
+        this.mode = mode
         autowirer = new GrailsTestAutowirer(applicationContext)
         requestEnvironmentInterceptor = new GrailsTestRequestEnvironmentInterceptor(applicationContext)
         transactionInterceptor = new GrailsTestTransactionInterceptor(applicationContext)
     }
     
     void runTest(Test test, TestResult result) {
-        def runner = { test.run(result) }
-        
-        autowirer.autowire(test)
-        requestEnvironmentInterceptor.doInRequestEnvironment {
-            if (transactionInterceptor.isTransactional(test)) {
-                transactionInterceptor.doInTransaction(runner)
-            } else {
-                runner()
-            }
+        if (mode.autowire) {
+            autowirer.autowire(test)
         }
+
+        def rawRunner = { test.run(result) }
+        def inTransactionRunner = mode.wrapInTransaction && transactionInterceptor.isTransactional(test) ? { transactionInterceptor.doInTransaction(rawRunner) } : rawRunner 
+        def inRequestRunner = mode.wrapInRequestEnvironment ? { requestEnvironmentInterceptor.doInRequestEnvironment(transactionRunner) } : rawRunner
+        
+        inRequestRunner()
     }
 }
