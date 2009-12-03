@@ -37,6 +37,8 @@ import org.springframework.context.ApplicationContext;
 import java.util.List;
 import java.util.LinkedList;
 
+import groovy.lang.Binding;
+
 /**
  * An {@code GrailsTestType} for JUnit3 tests.
  */
@@ -112,11 +114,12 @@ public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
     }   
 
     protected ApplicationContext getApplicationContext() {
-        ApplicationContext appCtx = (ApplicationContext)getBuildBinding().getProperty("appCtx");
-        if (appCtx == null) {
+        Binding buildBinding = getBuildBinding();
+        if (buildBinding.getVariables().containsKey("appCtx")) {
+            return (ApplicationContext)buildBinding.getProperty("appCtx");
+        } else {
             throw new IllegalStateException("ApplicationContext requested, but is not present in the build binding");
         }
-        return appCtx;
     }
     
     protected TestSuite createTestSuite(Class clazz) {
