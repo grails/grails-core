@@ -117,8 +117,13 @@ class PluginBuildSettings {
         return pluginInfos as PluginInfo[]
     }
 
-
-
+    /**
+     * Returns true if the specified plugin location is an inline location
+     */
+    boolean isInlinePluginLocation(Resource pluginLocation) {
+        getPluginDirectories() // initialize the cache
+        return cache['inlinePluginLocations']?.contains(pluginLocation)
+    }
     /**
      * Obtains a PluginInfo for the installed plugin directory
      */
@@ -298,6 +303,7 @@ class PluginBuildSettings {
     Resource[] getPluginDirectories() {
         def pluginDirectoryResources = cache['pluginDirectoryResources']
         if(!pluginDirectoryResources)  {
+            cache['inlinePluginLocations'] = []
             def dirList = getImplicitPluginDirectories()
 
             // Also add any explicit plugin locations specified by the
@@ -305,7 +311,10 @@ class PluginBuildSettings {
             def pluginLocations = buildSettings?.config?.grails?.plugin?.location?.findAll { it.value }
             if (pluginLocations) {
                 dirList.addAll(pluginLocations.collect { key, value ->
-                    new FileSystemResource(value) }
+                        FileSystemResource resource = new FileSystemResource(value)
+                        cache['inlinePluginLocations'] << resource
+                        return resource
+                    }
                 )
             }
 

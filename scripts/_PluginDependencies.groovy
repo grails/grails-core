@@ -51,6 +51,7 @@ import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl
 import org.tmatesoft.svn.core.wc.SVNWCUtil
+import grails.util.PluginBuildSettings
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -321,7 +322,8 @@ target(resolveDependencies:"Resolve plugin dependencies") {
         }
         else if(pluginLoc) {
             def dirName = pluginLoc.filename
-            if(!dirName.endsWith(version)) {
+            PluginBuildSettings settings = pluginSettings
+            if(!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
                 println "Upgrading plugin [$dirName] to [${fullName}], resolving.."
 
                 doInstallPluginFromGrailsHomeOrRepository name, version
