@@ -78,6 +78,11 @@
             <artifactId>hibernate-commons-annotations</artifactId>
             <version>3.4.0.ga</version>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hibernate-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 <!-- Grails Dependencies -->

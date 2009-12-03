@@ -20,8 +20,8 @@ import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
@@ -52,7 +52,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     private static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
     private ClassLoader classLoader = null;
     private GrailsApplication grailsApplication;
-    private Class configClass = GrailsAnnotationConfiguration.class;
+    private Class configClass;
     private ApplicationContext applicationContext;
     private Class currentSessionContextClass;
 
@@ -98,6 +98,15 @@ public class ConfigurableLocalSessionFactoryBean extends
 	 * Overrides default behaviour to allow for a configurable configuration class 
 	 */
 	protected Configuration newConfiguration() {
+        if(configClass == null) {
+            try {
+                configClass = this.classLoader.loadClass("org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration");
+            }
+            catch (Throwable e) {
+                // probably not Java 5 or missing some annotation jars, use default
+                configClass = DefaultGrailsDomainConfiguration.class;                
+            }
+        }
         Object config = BeanUtils.instantiateClass(configClass);
         if(config instanceof GrailsDomainConfiguration) {
             GrailsDomainConfiguration grailsConfig = (GrailsDomainConfiguration) config;
