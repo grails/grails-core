@@ -102,6 +102,10 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
         def mid = ModuleId.newInstance(args?.group ?: WILDCARD, args?.name ?: WILDCARD)
         addRuleForModuleId(mid, scope)
     }
+    
+    void dependencyConfiguration(String config){
+    	addDependencyConfiguration(scope, config)
+    }
 
     void setTransitive (boolean b) {
         // nasty hack since the isTransitive Ivy field is not public

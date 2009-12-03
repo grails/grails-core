@@ -76,6 +76,40 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertEquals "jdk14",dep.branch
     }
+    
+    void testModuleConf(){
+       	def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"] ){
+            	dependencyConfiguration("oscache-runtime")
+            }
+        }
+
+        DependencyDescriptor dep = manager.dependencyDescriptors.iterator().next()
+
+				assertEquals 1, dep.getModuleConfigurations().length
+        def configs = dep.getDependencyConfigurations("runtime");
+				assertEquals 1, configs.length
+        assertEquals "oscache-runtime", configs[0]
+    }
+    
+    void testWithoutModuleConf(){
+       	def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"] )
+        }
+
+        DependencyDescriptor dep = manager.dependencyDescriptors.iterator().next()
+
+				def configs = dep.getDependencyConfigurations("runtime");
+				assertEquals 2, configs.length
+        assertEquals "runtime(*)", configs[0]
+        assertEquals "master(*)", configs[1]
+    }
 
     void testExportedDependenciesAndResolvers() {
         def settings = new BuildSettings()

@@ -441,15 +441,18 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             usedConfigurations << scope
         }
 
-        def mappings = configurationMappings[scope]
-        mappings?.each {
-            dependencyDescriptor.addDependencyConfiguration scope, it
-        }
+        
 
         if (dependencyConfigurer) {
             dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
             dependencyConfigurer.setDelegate(dependencyDescriptor)
             dependencyConfigurer.call()
+        }
+        if (dependencyDescriptor.getModuleConfigurations().length == 0){
+		      def mappings = configurationMappings[scope]
+		      mappings?.each {
+		          dependencyDescriptor.addDependencyConfiguration scope, it
+		      }
         }
         if(!dependencyDescriptor.inherited) {
             hasApplicationDependencies = true
