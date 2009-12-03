@@ -406,8 +406,8 @@ compileInplacePlugin = { File pluginDir ->
                     destdir: classesDirPath,
                     classpathref: classpathId,
                     encoding:"UTF-8") {
-                for(dir in pluginResources.file) {
-                    if (dir.exists()) {
+                for(File dir in pluginResources.file) {
+                    if (dir.exists() && dir.isDirectory()) {
                         src(path: dir.absolutePath)
                     }
                 }
