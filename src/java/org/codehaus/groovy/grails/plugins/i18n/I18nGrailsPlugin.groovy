@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessa
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
+import grails.util.Environment
 
 /**
  * A plug-in that configures Grails' internationalisation support 
@@ -74,6 +75,9 @@ class I18nGrailsPlugin {
         messageSource(PluginAwareResourceBundleMessageSource) {
 			basenames = baseNames.toArray()
             pluginManager = manager
+            if(Environment.current.isReloadEnabled()) {
+                cacheSeconds = 5
+            }
         }
 		localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
 			paramName = "lang"
@@ -89,22 +93,25 @@ class I18nGrailsPlugin {
 			return
 		}
 
-        def i18nDir = "${BuildSettingsHolder.settings.resourcesDir.path}/grails-app/i18n"
+        def resourcesDir = BuildSettingsHolder?.settings?.resourcesDir?.path
+        if(resourcesDir) {            
+            def i18nDir = "${resourcesDir}/grails-app/i18n"
 
-        def ant = new AntBuilder()
+            def ant = new AntBuilder()
 
-        def nativeascii = event.application.config.grails.enable.native2ascii
-        nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
-        if(nativeascii) {
-            ant.native2ascii(src:"./grails-app/i18n",
-                             dest:i18nDir,
-                             includes:"*.properties",
-                             encoding:"UTF-8")
+            def nativeascii = event.application.config.grails.enable.native2ascii
+            nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
+            if(nativeascii) {
+                ant.native2ascii(src:"./grails-app/i18n",
+                                 dest:i18nDir,
+                                 includes:"*.properties",
+                                 encoding:"UTF-8")
 
-        }
-        else {
-            ant.copy(todir:i18nDir) {
-                fileset(dir:"./grails-app/i18n", includes:"*.properties")
+            }
+            else {
+                ant.copy(todir:i18nDir) {
+                    fileset(dir:"./grails-app/i18n", includes:"*.properties")
+                }
             }
         }
 

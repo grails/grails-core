@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.context.support;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
+import grails.util.Environment;
 import grails.util.Metadata;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -230,9 +231,16 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         else {
             // The "settings" may be null in some of the Grails unit tests.
             BuildSettings settings = BuildSettingsHolder.getSettings();
+            String location = null;
+            if(Environment.getCurrent().isReloadEnabled()) {
+                location = Environment.getCurrent().getReloadLocation();
+            }
+            if(location == null)
+                location = settings != null ? settings.getResourcesDir().getPath() : null;
+            
             this.localResourceLoader = new DevelopmentResourceLoader(
                     this.application,
-                    settings != null ? settings.getResourcesDir().getPath() : null);
+                    location);
 
         }
         super.setResourceLoader(localResourceLoader);
