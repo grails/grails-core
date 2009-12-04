@@ -74,8 +74,17 @@ target(startLogging:"Bootstraps logging") {
   // do nothing, overrides default behaviour so that logging doesn't kick in
 }
 
+target(checkInPlacePlugins:"Perform a check whether inplace plugins have been packaged") {
+    if(pluginSettings.inlinePluginDirectories) {
+        if (!isInteractive || !confirmInput("WARNING: You have inplace plugins installed which require package-plugin to be run before a WAR is created. Have you already run package-plugin in each plugin directory? [y/n]","confirm.inplace.packaging")) {
+            println "Please run package-plugin in each inplace plugin directory before creating a WAR file"
+            exit 1
+        }
+    }
+
+}
 target (war: "The implementation target") {
-    depends( parseArguments, configureRunningScript, cleanWarFile, packageApp, compilegsp)
+    depends( parseArguments, configureRunningScript, checkInPlacePlugins, cleanWarFile, packageApp, compilegsp)
 
     includeJars = argsMap.nojars ? !argsMap.nojars : true
     stagingDir = grailsSettings.projectWarExplodedDir
