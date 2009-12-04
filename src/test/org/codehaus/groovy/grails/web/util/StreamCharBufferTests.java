@@ -43,6 +43,25 @@ public class StreamCharBufferTests extends TestCase {
 		}
 	}
 
+    public void testEquals()  throws Exception  {
+        StreamCharBuffer charBuffer = new StreamCharBuffer();
+        Writer writer=charBuffer.getWriter();
+        writer.write("ABCDE");
+        writer.flush();
+
+
+        assertEquals(charBuffer,"ABCDE");
+        assertEquals(charBuffer.hashCode(), "ABCDE".hashCode());
+        assertFalse(charBuffer.equals("odifjdsof"));
+        StreamCharBuffer charBuffer2 = new StreamCharBuffer();
+        Writer writer2=charBuffer2.getWriter();
+        writer2.write("ABCDE");
+        writer2.flush();
+
+        assertEquals(charBuffer,charBuffer2);
+        assertEquals(charBuffer.hashCode(),charBuffer2.hashCode());
+
+    }
     public void testSerialization() throws Exception {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();

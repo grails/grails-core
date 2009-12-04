@@ -447,8 +447,22 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 			return str;
 		}
 	}
-	
-	public String plus(String value) {
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof CharSequence)) return false;
+
+        CharSequence other = (CharSequence) o;
+
+        return toString().equals(other.toString());    
+    }
+
+    public String plus(String value) {
 		return toString() + value;
 	}
 
