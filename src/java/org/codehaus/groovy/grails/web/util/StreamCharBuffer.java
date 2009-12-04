@@ -571,7 +571,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}
 		if(newChunk instanceof StreamCharBufferSubChunk) {
 			StreamCharBufferSubChunk bufSubChunk=(StreamCharBufferSubChunk)newChunk;
-			dynamicChunkMap.put(bufferKey, bufSubChunk);
+			dynamicChunkMap.put(bufSubChunk.streamCharBuffer.bufferKey, bufSubChunk);
 		} else {
 			totalCharsInList += newChunk.size();
 		}
@@ -1538,11 +1538,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		if(parentBuffers != null) {
 			for(Iterator<SoftReference<StreamCharBufferKey>> i=parentBuffers.iterator();i.hasNext();){
 				SoftReference<StreamCharBufferKey> ref=i.next();
-				StreamCharBuffer parent=ref.get().getBuffer();
+                final StreamCharBuffer.StreamCharBufferKey parentKey = ref.get();
 				boolean removeIt=true;
-				if(parent != null) {
-					removeIt=!bufferKey.getBuffer().bufferChanged(this);
-				}
+                if(parentKey != null) {
+                    StreamCharBuffer parent= parentKey.getBuffer();
+                    removeIt=!parent.bufferChanged(this);
+                }
 				if(removeIt) {
 					i.remove();
 				}
