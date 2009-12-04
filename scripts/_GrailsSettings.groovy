@@ -94,11 +94,11 @@ servletVersion = getPropertyValue("servlet.version", "2.5")
 // these are legacy settings
 serverPort = getPropertyValue("server.port", 8080).toInteger()
 serverPortHttps = getPropertyValue("server.port.https", 8443).toInteger()
-serverHost = getPropertyValue("server.host", null)
+serverHost = getPropertyValue("server.host", "localhost")
 // which are superceded by these
-serverPort = getPropertyValue("grails.server.port.http", 8080)?.toInteger()
-serverPortHttps = getPropertyValue("grails.server.port.https", 8443)?.toInteger()
-serverHost = getPropertyValue("grails.server.host", null)
+serverPort = getPropertyValue("grails.server.port.http", serverPort)?.toInteger()
+serverPortHttps = getPropertyValue("grails.server.port.https", serverPortHttps)?.toInteger()
+serverHost = getPropertyValue("grails.server.host", serverHost)
 
 metadataFile = new File("${basedir}/application.properties")
 
