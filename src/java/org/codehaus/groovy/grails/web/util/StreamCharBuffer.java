@@ -153,14 +153,15 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 	private AbstractChunk lastChunk;
 	private int totalCharsInList;
 	private int totalCharsInDynamicChunks;
-	private Map<StreamCharBuffer, StreamCharBufferSubChunk> dynamicChunkMap;
-	private Set<SoftReference<StreamCharBuffer>> parentBuffers;
-	
-	int allocatedBufferIdSequence=0;
-	int readerCount=0;
-	boolean hasReaders=false;
-	
-	public StreamCharBuffer() {
+    private StreamCharBufferKey bufferKey = new StreamCharBufferKey();
+    private Map<StreamCharBufferKey, StreamCharBufferSubChunk> dynamicChunkMap;
+
+    private Set<SoftReference<StreamCharBufferKey>> parentBuffers;
+    int allocatedBufferIdSequence=0;
+    int readerCount=0;
+    boolean hasReaders=false;
+
+    public StreamCharBuffer() {
 		this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
 	}
 
@@ -179,7 +180,11 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		writer = new StreamCharBufferWriter();
 		reset(true);
 	}
-	
+
+    private class StreamCharBufferKey {
+        StreamCharBuffer getBuffer() { return StreamCharBuffer.this; }
+    }
+
 	public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
 		return preferSubChunkWhenWritingToOtherBuffer;
 	}
@@ -208,7 +213,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 			totalChunkSize = 0;
 		}
 		allocBuffer = new AllocatedBuffer(chunkSize);
-		dynamicChunkMap=new HashMap<StreamCharBuffer, StreamCharBufferSubChunk>();
+		dynamicChunkMap=new HashMap<StreamCharBufferKey, StreamCharBufferSubChunk>();
 		parentBuffers=null;
 	}	
 
@@ -566,7 +571,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}
 		if(newChunk instanceof StreamCharBufferSubChunk) {
 			StreamCharBufferSubChunk bufSubChunk=(StreamCharBufferSubChunk)newChunk;
-			dynamicChunkMap.put(bufSubChunk.streamCharBuffer, bufSubChunk);
+			dynamicChunkMap.put(bufferKey, bufSubChunk);
 		} else {
 			totalCharsInList += newChunk.size();
 		}
@@ -1284,8 +1289,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 			if(totalCharsInDynamicChunks != -1) {
 				totalCharsInDynamicChunks -= size();
 			}
-			for(Iterator<Map.Entry<StreamCharBuffer, StreamCharBufferSubChunk>> it=dynamicChunkMap.entrySet().iterator();it.hasNext();) {
-				Map.Entry<StreamCharBuffer, StreamCharBufferSubChunk> entry=it.next();
+			for(Iterator<Map.Entry<StreamCharBufferKey, StreamCharBufferSubChunk>> it=dynamicChunkMap.entrySet().iterator();it.hasNext();) {
+				Map.Entry<StreamCharBufferKey, StreamCharBufferSubChunk> entry=it.next();
 				if(entry.getValue()==this) {
 					it.remove();
 				}
@@ -1509,13 +1514,13 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
 	void addParentBuffer(StreamCharBuffer parent) {
 		if(parentBuffers==null) {
-			parentBuffers=new HashSet<SoftReference<StreamCharBuffer>>();
+			parentBuffers=new HashSet<SoftReference<StreamCharBufferKey>>();
 		}
-		parentBuffers.add(new SoftReference<StreamCharBuffer>(parent));
+		parentBuffers.add(new SoftReference<StreamCharBufferKey>(parent.bufferKey));
 	}
 	
 	boolean bufferChanged(StreamCharBuffer buffer) {
-		StreamCharBufferSubChunk subChunk=dynamicChunkMap.get(buffer);
+		StreamCharBufferSubChunk subChunk=dynamicChunkMap.get(buffer.bufferKey);
 		if(subChunk==null) {
 			// buffer isn't a subchunk in this buffer any more
 			return false;
@@ -1531,12 +1536,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
 	void notifyBufferChange() {
 		if(parentBuffers != null) {
-			for(Iterator<SoftReference<StreamCharBuffer>> i=parentBuffers.iterator();i.hasNext();){
-				SoftReference<StreamCharBuffer> ref=i.next();
-				StreamCharBuffer parent=ref.get();
+			for(Iterator<SoftReference<StreamCharBufferKey>> i=parentBuffers.iterator();i.hasNext();){
+				SoftReference<StreamCharBufferKey> ref=i.next();
+				StreamCharBuffer parent=ref.get().getBuffer();
 				boolean removeIt=true;
 				if(parent != null) {
-					removeIt=!parent.bufferChanged(this);
+					removeIt=!bufferKey.getBuffer().bufferChanged(this);
 				}
 				if(removeIt) {
 					i.remove();
