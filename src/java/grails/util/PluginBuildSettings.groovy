@@ -124,6 +124,16 @@ class PluginBuildSettings {
         getPluginDirectories() // initialize the cache
         return cache['inlinePluginLocations']?.contains(pluginLocation)
     }
+
+    /**
+     * Returns an array of the inplace plugin locations 
+     */
+    Resource[] getInlinePluginDirectories() {
+        getPluginDirectories() // initailize the cache
+        def locations = cache['inlinePluginLocations'] ?: []
+
+        return locations as Resource[]
+    }
     /**
      * Obtains a PluginInfo for the installed plugin directory
      */
@@ -268,16 +278,24 @@ class PluginBuildSettings {
     Resource[] getPluginSourceFiles() {
         def sourceFiles = cache['sourceFiles']
         if(!sourceFiles) {
+            cache['sourceFilesPerPlugin'] = [:]
             sourceFiles = new Resource[0]
             sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, pluginDirPath) { pluginDir ->
                 Resource[] pluginSourceFiles = resourceResolver("file:${pluginDir}/grails-app/*")
                 pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
                 pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
+                cache['sourceFilesPerPlugin'][pluginDir] = pluginSourceFiles
                 return pluginSourceFiles
             }
             cache['sourceFiles'] = sourceFiles
         }
         return sourceFiles
+    }
+
+    Resource[] getPluginSourceFiles(File pluginDir) {
+        getPluginSourceFiles() // initialize cache
+
+        cache['sourceFilesPerPlugin'][pluginDir.absolutePath]
     }
 
 
@@ -294,6 +312,24 @@ class PluginBuildSettings {
             cache['jarFiles'] = jarFiles
         }
         return jarFiles
+    }
+
+    /**
+     * Obtains an array of all plug-in provided JAR files for plugins that don't define
+     * a dependencies.groovy
+     */
+    Resource[] getUnmanagedPluginJarFiles() {
+        def jarFiles = cache['unmanagedPluginJars']
+        if(!jarFiles) {
+            jarFiles = new Resource[0]
+            jarFiles = resolvePluginResourcesAndAdd(jarFiles, pluginDirPath) { pluginDir ->
+                if(!new File("${pluginDir}/dependencies.groovy").exists())
+                    return resourceResolver("file:${pluginDir}/lib/*.jar")
+            }
+            cache['unmanagedPluginJars'] = jarFiles
+        }
+        return jarFiles
+
     }
 
 

@@ -52,6 +52,8 @@ import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import grails.util.PluginBuildSettings
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.codehaus.groovy.control.CompilationFailedException
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -366,18 +368,31 @@ target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plu
     // Ensure that the "plugin.xml" is up-to-date for plugins
     // that haven't been installed, i.e. their path is declared
     // explicitly by the project.
-    File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
-    File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
-    Resource basePluginDescriptor = pluginSettings.basePluginDescriptor
 
-    pluginSettings.pluginDescriptors.findAll { Resource r ->
-        File containingDir = r.file.parentFile.parentFile?.canonicalFile?.absoluteFile
-        return containingDir == null ||
-                (containingDir != pluginsDir && containingDir != globalDir && r != basePluginDescriptor)
-    }.each { Resource r ->
-        compileInplacePlugin(r.file.parentFile)
-        generatePluginXml(r.file)
+    // TODO: At the moment we simple check whether plugin.xml exists for each plugin
+    // TODO: otherwise fail
+    PluginBuildSettings settings = pluginSettings
+
+    Resource[] pluginDirs = settings.getInlinePluginDirectories()
+    pluginDirs.each { Resource r ->
+        def dir = r.file
+        def pluginXml = new File(dir, "plugin.xml")
+        if(!pluginXml.exists()) {
+            println "The inplace plugin at [$dir.absolutePath] does not have a plugin.xml. Please run the package-plugin command inside the plugin directory."
+            exit 1
+        }
     }
+
+//    File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
+//    File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
+//    Resource basePluginDescriptor = pluginSettings.basePluginDescriptor
+//
+//    pluginSettings.pluginDescriptors.findAll { Resource r ->
+//        pluginSettings.isInlinePluginLocation(r)
+//    }.each { Resource r ->
+//        compileInplacePlugin(r.file.parentFile)
+//        generatePluginXml(r.file)
+//    }
 }
 
 /**
@@ -393,33 +408,33 @@ compileInplacePlugin = { File pluginDir ->
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
         def classpathId = "grails.compile.classpath"
-        def pluginResources = pluginSettings.resourceResolver("file:${pluginDir.absolutePath}/grails-app/*")
-        pluginResources = ArrayUtils.addAll(
-                pluginResources,
-                pluginSettings.resourceResolver("file:${pluginDir.absolutePath}/src/groovy"))
-        pluginResources = ArrayUtils.addAll(
-                pluginResources,
-                pluginSettings.resourceResolver("file:${pluginDir.absolutePath}/src/java"))
-
+        def pluginResources = pluginSettings.getPluginSourceFiles(pluginDir)
+        
         if (pluginResources) {
             // Only perform the compilation if there are some plugins
             // installed or otherwise referenced.
-            ant.groovyc(
+            try {
+                ant.groovyc(
                     destdir: classesDirPath,
-                    classpathref: classpathId,
-                    encoding:"UTF-8") {
-                for(File dir in pluginResources.file) {
-                    if (dir.exists() && dir.isDirectory()) {
-                        src(path: dir.absolutePath)
+                        classpathref: classpathId,
+                        encoding:"UTF-8") {
+                    for(File dir in pluginResources.file) {
+                        if (dir.exists() && dir.isDirectory()) {
+                            src(path: dir.absolutePath)
+                        }
                     }
+                    exclude(name: "**/BootStrap.groovy")
+                    exclude(name: "**/BuildConfig.groovy")
+                    exclude(name: "**/Config.groovy")
+                    exclude(name: "**/*DataSource.groovy")
+                    exclude(name: "**/UrlMappings.groovy")
+                    exclude(name: "**/resources.groovy")
+                    javac(classpathref: classpathId, encoding: "UTF-8", debug: "yes")
                 }
-                exclude(name: "**/BootStrap.groovy")
-                exclude(name: "**/BuildConfig.groovy")
-                exclude(name: "**/Config.groovy")
-                exclude(name: "**/*DataSource.groovy")
-                exclude(name: "**/UrlMappings.groovy")
-                exclude(name: "**/resources.groovy")
-                javac(classpathref: classpathId, encoding: "UTF-8", debug: "yes")
+            }
+            catch (e) {
+                println "Failed to compile plugin at location [$pluginDir] with error: ${e.message}"
+                exit 1
             }
         }
     }
