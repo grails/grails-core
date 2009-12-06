@@ -169,7 +169,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
         testSuffixes.each { suffix ->
             testExtensions.each { extension ->
                 def resources = resolveResources("file:${sourceDir.absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
-                allResources.addAll(resources.toList())
+                allResources.addAll(resources.findAll { it.file.exists() }.toList())
             }
         }
         allResources
