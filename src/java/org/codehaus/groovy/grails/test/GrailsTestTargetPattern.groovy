@@ -67,7 +67,7 @@ class GrailsTestTargetPattern {
     }
     
     protected boolean containsMethodName(pattern) {
-        Character.isLowerCase(pattern.charAt(pattern.lastIndexOf('.') + 1))
+        pattern.contains('.') && Character.isLowerCase(pattern.charAt(pattern.lastIndexOf('.') + 1))
     }
     
     protected classPatternToFilePattern(pattern) {
