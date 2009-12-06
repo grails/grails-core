@@ -192,6 +192,13 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     }
     
     /**
+     * Convenience method for obtaining the class file for a test class
+     */
+    protected File getClassFileForTestClass(Class clazz) {
+      new File(compiledClassesDir, clazz.name.replace(".", "/") + ".class")
+    }
+    
+    /**
      * Creates swapper with echo parameters based on testOptions.echoOut and testOptions.echoErr in the build binding.
      */
     protected SystemOutAndErrSwapper createSystemOutAndErrSwapper() {
