@@ -21,17 +21,18 @@ import groovy.lang.MetaProperty;
 import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.context.ApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
@@ -294,6 +295,7 @@ public abstract class GroovyPage extends Script {
                 put("model", tmpAttrs);
                 put("template", tmpTagName);
             }};
+            attrs = new GroovyPageAttributes(attrs);
         } else if(tagNamespace.equals(LINK_NAMESPACE)) {
             final String tmpTagName = tagName;
             final Map tmpAttrs = attrs;
@@ -305,6 +307,7 @@ public abstract class GroovyPage extends Script {
                 }
                 put("mapping", tmpTagName);
             }};
+            attrs = new GroovyPageAttributes(attrs);
         }
 
         try {
@@ -468,7 +471,10 @@ public abstract class GroovyPage extends Script {
     }
     
     public static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace, String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
-    	GroovyObject tagLib=lookupCachedTagLib(webRequest, gspTagLibraryLookup, namespace, tagName); 
+        if(!(attrs instanceof GroovyPageAttributes)) {
+            attrs = new GroovyPageAttributes(attrs);
+        }
+    	GroovyObject tagLib=lookupCachedTagLib(webRequest, gspTagLibraryLookup, namespace, tagName);
     	
     	boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(namespace, tagName);
 		Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest, preferSubChunkWhenWritingToOtherBuffer);

@@ -153,10 +153,9 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	final PrintWriter pw = new PrintWriter(sw);
 
     	withTag("textArea", pw) { tag ->
-    	    // use sorted map to be able to predict the order in which tag attributes are generated
-	    	def attributes = new TreeMap([name: "testField", value: "<b>some text</b>"])
+	    	def attributes = [name: "testField", value: "<b>some text</b>"]
     	    tag.call(attributes,{})
-    	    assertEquals '<textarea id="testField" name="testField" >&lt;b&gt;some text&lt;/b&gt;</textarea>', sw.toString()
+    	    assertEquals '<textarea name="testField" id="testField" >&lt;b&gt;some text&lt;/b&gt;</textarea>', sw.toString()
     	}
     }
     
@@ -166,10 +165,9 @@ public class FormTagLibTests extends AbstractGrailsTagTests {
     	final PrintWriter pw = new PrintWriter(sw);
 
     	withTag("textArea", pw) { tag ->
-    		// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: "testField", value: "1"])
+    		def attributes = [name: "testField", value: "1"]
     		tag.call(attributes,{})
-    		assertEquals '<textarea id="testField" name="testField" >1</textarea>', sw.toString()
+    		assertEquals '<textarea name="testField" id="testField" >1</textarea>', sw.toString()
     	}
     }
     

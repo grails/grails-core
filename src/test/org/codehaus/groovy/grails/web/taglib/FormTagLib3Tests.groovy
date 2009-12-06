@@ -30,11 +30,10 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
     	final PrintWriter pw = new PrintWriter(sw);
 
 		withTag("hiddenField", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: "testField", value: "1"])
+    		def attributes = [name: "testField", value: "1"]
     		tag.call(attributes)
 	
-    		assertEquals '<input type="hidden" id="testField" name="testField" value="1" />', sw.toString()
+    		assertEquals '<input type="hidden" name="testField" value="1" id="testField" />', sw.toString()
 		}
     }
 

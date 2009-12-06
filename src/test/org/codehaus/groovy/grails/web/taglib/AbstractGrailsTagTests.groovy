@@ -112,7 +112,21 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 			GroovyPageOutputStack stack=GroovyPageOutputStack.createNew(out)
 
 	        println "calling tag '${tagName}'"
-	        result = callable.call(go.getProperty(tagName))
+            def tag = go.getProperty(tagName)
+
+            def tagWrapper = { Object[] args ->
+                // the first or second arg may be a Map
+                // wrap Map args in GroovyPageAttributes
+                if(args?.length > 0) {
+                    if(args[0] instanceof Map) {
+                        args[0] = new GroovyPageAttributes(args[0])
+                    } else if(args.length > 1 && args[1] instanceof Map) {
+                        args[1] = new GroovyPageAttributes(args[1])
+                    }
+                }
+                tag.call(*args)
+            }
+            result = callable.call(tagWrapper)
 		}
 		return result
 	}
