@@ -37,20 +37,32 @@ class GrailsTestRequestEnvironmentInterceptor {
     }
 
     /**
-     * Establishes the environment, then removes it after invoking {@code body}.
-     */    
-    void doInRequestEnvironment(Closure body) {
+     * Establishes a mock request environment
+     */
+    void init() {
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext)
         ServletContextHolder.servletContext = webRequest.servletContext
         webRequest.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
-        
+    }
+
+    /**
+     * Removes the mock request environment
+     */    
+    void destroy() {
+        RequestContextHolder.requestAttributes = null
+        ServletContextHolder.servletContext = null
+    }
+    
+    /**
+     * Calls init() before and destroy() after invoking {@code body}.
+     */    
+    void doInRequestEnvironment(Closure body) {
+        init() 
         try {
             body()
         } finally {
-            RequestContextHolder.requestAttributes = null
-            ServletContextHolder.servletContext = null
+            destroy()
         }
-        
     }
 
 }

@@ -16,9 +16,7 @@
 
 package org.codehaus.groovy.grails.test.support
 
-import org.springframework.transaction.TransactionStatus
-import org.springframework.transaction.support.TransactionCallback
-import org.springframework.transaction.support.TransactionTemplate
+import org.springframework.transaction.support.DefaultTransactionDefinition
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.ApplicationContext
 
@@ -32,28 +30,51 @@ class GrailsTestTransactionInterceptor {
     static final String TRANSACTIONAL = "transactional"
     
     ApplicationContext applicationContext
+    protected final transactionManager
+    protected final transactionStatus
     
     GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
+
+        if (applicationContext.containsBean("transactionManager")) {
+          transactionManager = applicationContext.getBean("transactionManager")
+        } else {
+            throw new RuntimeException("Cannot run test in transaction as there is no transactionManager defined")
+        }
     }
     
     /**
-     * Wraps {@code body} in a rollback only transaction.
+     * Establishes a transaction.
+     */
+    void init() {
+        if (transactionStatus == null) {
+            transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
+        } else {
+            throw new RuntimeException("init() called on test transaction interceptor during transaction")
+        }
+    }
+
+    /**
+     * Rollsback the current transaction
+     */    
+    void destroy() {
+        if (transactionStatus) {
+            transactionManager.rollback(transactionStatus)
+            transactionStatus = null
+        }
+    }
+    
+    /**
+     * Calls init() before and destroy() after invoking {@code body}.
      * 
      * Note: it is the callers responsibility to verify that {@code body} should be run in a transaction.
      */
     void doInTransaction(Closure body) {
-        if (applicationContext.containsBean("transactionManager")) {
-            def template = new TransactionTemplate(applicationContext.getBean("transactionManager"))
-            template.execute([
-                doInTransaction: { TransactionStatus status -> 
-                    status.setRollbackOnly()
-                    body()
-                    null
-                }
-            ] as TransactionCallback)
-        } else {
-            throw new RuntimeException("Cannot run test in transaction as there is no transactionManager defined")
+        init() 
+        try {
+            body()
+        } finally {
+            destroy()
         }
     }
     
