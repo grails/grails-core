@@ -27,10 +27,9 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher;
 
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory;
 
-import org.springframework.core.io.Resource;
-
 import java.lang.reflect.Modifier;
 import java.io.IOException;
+import java.io.File;
 
 import org.springframework.context.ApplicationContext;
 
@@ -69,24 +68,12 @@ public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
     
     protected TestSuite createWholeTestSuite() {
         TestSuite theWholeTestSuite = new TestSuite("Grails Test Suite");
-        ClassLoader testClassLoader = getTestClassLoader();
         
         for (GrailsTestTargetPattern targetPattern : this.getTestTargetPatterns()) {
-            for (Resource sourceResource : findSource(targetPattern)) {
+            for (File sourceFile : findSourceFiles(targetPattern)) {
                 
-                String className;
-                try {
-                    className = sourceFileToClassName(sourceResource.getFile());
-                } catch (IOException e) {
-                    throw new RuntimeException("could not get file for test resource", e);
-                }
-
-                Class clazz;
-                try {
-                    clazz = testClassLoader.loadClass(className);
-                } catch (Exception e) {
-                    throw new RuntimeException("Could not load test class", e);
-                }
+                String className = sourceFileToClassName(sourceFile);
+                Class clazz = sourceFileToClass(sourceFile);
 
                 if (TestCase.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
                     TestSuite testSuite = null;

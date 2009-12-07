@@ -163,23 +163,34 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Finds source based on the {@code testSuffixes} and {@code testExtensions} that match the {@code targetPattern}.
      */
-    protected List<Resource> findSource(GrailsTestTargetPattern targetPattern) {
-        def allResources = []
+    protected List<File> findSourceFiles(GrailsTestTargetPattern targetPattern) {
+        def sourceFiles = []
         def resolveResources = buildBinding['resolveResources']
         testSuffixes.each { suffix ->
             testExtensions.each { extension ->
                 def resources = resolveResources("file:${sourceDir.absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
-                allResources.addAll(resources.findAll { it.file.exists() }.toList())
+                sourceFiles.addAll(resources*.file.findAll { it.exists() }.toList())
             }
         }
-        allResources
+        sourceFiles
+    }
+    
+    /**
+     * Calls {@code body} with the GrailsTestTargetPattern that matched the source, and the File for the source.
+     */
+    protected void eachSourceFile(Closure body) {
+        testTargetPatterns.each { testTargetPattern ->
+            findSourceFiles(testTargetPattern).each { sourceFile ->
+                body(testTargetPattern, sourceFile)
+            }
+        }
     }
     
     /**
      * Gets the corresponding class name for a source file of this test type.
      */
-    protected String sourceFileToClassName(File file) {
-        def filePath = file.canonicalPath
+    protected String sourceFileToClassName(File sourceFile) {
+        def filePath = sourceFile.canonicalPath
         def basePath = getSourceDir().canonicalPath
         
         if (!filePath.startsWith(basePath)) {
@@ -194,8 +205,15 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Convenience method for obtaining the class file for a test class
      */
-    protected File getClassFileForTestClass(Class clazz) {
-      new File(compiledClassesDir, clazz.name.replace(".", "/") + ".class")
+    protected File sourceFileToClassFile(File sourceFile) {
+        new File(compiledClassesDir, sourceFileToClassName(sourceFile).replace(".", "/") + ".class")
+    }
+
+    /**
+     * Convenience method for obtaining the class file for a test class
+     */
+    protected Class sourceFileToClass(File sourceFile) {
+        loadClass(sourceFileToClassName(sourceFile))
     }
     
     /**
@@ -206,4 +224,17 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
             new SystemOutAndErrSwapper(testOptions.echoOut == true, testOptions.echoErr == true)
         }
     }
+    
+    /**
+     * Loods the class named by {@code className} using a class loader that can load the test classes, 
+     * throwing a RuntimeException if the class can't be loaded.
+     */
+    protected Class loadClass(String className) {
+        try {
+            getTestClassLoader().loadClass(className)
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load class in test type '$name'", e)
+        }
+    }
+    
 }
