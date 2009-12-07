@@ -97,11 +97,12 @@ class PluginBuildSettings {
     PluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
         def pluginInfos
         if(pluginInfosMap) {
-            pluginInfos = pluginInfosMap.values()
+            return cache['pluginInfoList']
         }
         else {
             pluginInfos = []
-            for(dir in getPluginDirectories()) {
+            Resource[] pluginDirs = getPluginDirectories()
+            for(dir in pluginDirs) {
                 try {
                     PluginInfo info = new PluginInfo(dir, this)
                     pluginInfos << info
@@ -113,6 +114,7 @@ class PluginBuildSettings {
                 }
 
             }
+            cache['pluginInfoList'] = pluginInfos as PluginInfo[]
         }
         return pluginInfos as PluginInfo[]
     }
