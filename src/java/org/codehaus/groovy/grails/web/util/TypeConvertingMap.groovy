@@ -22,13 +22,16 @@ package org.codehaus.groovy.grails.web.util
  */
 
 
-class TypeConvertingMap extends LinkedHashMap {
+class TypeConvertingMap implements Map {
+
+    private wrappedMap
 
     TypeConvertingMap() {
+        this([:])
     }
     
     TypeConvertingMap(Map map) {
-        super(map);
+        wrappedMap = map
     }
 
     /**
@@ -195,5 +198,53 @@ class TypeConvertingMap extends LinkedHashMap {
         else {
             return [paramValues]
         }
+    }
+
+    Object put(Object k, Object v) {
+        wrappedMap.put(k, v)
+    }
+
+    Object remove(Object o) {
+        wrappedMap.remove(o)
+    }
+
+    int size() {
+        wrappedMap.size()
+    }
+
+    boolean isEmpty() {
+        wrappedMap.isEmpty()
+    }
+
+    boolean containsKey(Object k) {
+        wrappedMap.containsKey(k)
+    }
+
+    boolean containsValue(Object v) {
+        wrappedMap.containsValue(v)
+    }
+
+    Object get(Object k) {
+        wrappedMap.get(k)
+    }
+
+    void putAll(Map m) {
+        wrappedMap.putAll(m)
+    }
+
+    void clear() {
+        wrappedMap.clear()
+    }
+
+    Set keySet() {
+        wrappedMap.keySet()
+    }
+
+    Collection values() {
+        wrappedMap.values()
+    }
+
+    Set entrySet() {
+        wrappedMap.entrySet()
     }
 }

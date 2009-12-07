@@ -117,14 +117,17 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
             def tagWrapper = { Object[] args ->
                 // the first or second arg may be a Map
                 // wrap Map args in GroovyPageAttributes
+                def newArgs = []
                 if(args?.length > 0) {
-                    if(args[0] instanceof Map) {
-                        args[0] = new GroovyPageAttributes(args[0])
-                    } else if(args.length > 1 && args[1] instanceof Map) {
-                        args[1] = new GroovyPageAttributes(args[1])
+                    args.each {arg ->
+                        if(arg instanceof Map && (!(arg instanceof GroovyPageAttributes))) {
+                            newArgs << new GroovyPageAttributes(arg)
+                        } else {
+                            newArgs << arg
+                        }
                     }
                 }
-                tag.call(*args)
+                tag.call(*newArgs)
             }
             result = callable.call(tagWrapper)
 		}

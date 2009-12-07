@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
 public class GroovyPageAttributes extends TypeConvertingMap{
 
     GroovyPageAttributes() {
+        this([:])
     }
 
     GroovyPageAttributes(Map map) {

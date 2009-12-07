@@ -295,7 +295,6 @@ public abstract class GroovyPage extends Script {
                 put("model", tmpAttrs);
                 put("template", tmpTagName);
             }};
-            attrs = new GroovyPageAttributes(attrs);
         } else if(tagNamespace.equals(LINK_NAMESPACE)) {
             final String tmpTagName = tagName;
             final Map tmpAttrs = attrs;
@@ -307,7 +306,6 @@ public abstract class GroovyPage extends Script {
                 }
                 put("mapping", tmpTagName);
             }};
-            attrs = new GroovyPageAttributes(attrs);
         }
 
         try {
