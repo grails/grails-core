@@ -231,16 +231,23 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         else {
             // The "settings" may be null in some of the Grails unit tests.
             BuildSettings settings = BuildSettingsHolder.getSettings();
+
             String location = null;
-            if(Environment.getCurrent().isReloadEnabled()) {
+            if(settings != null) {
+                location = settings.getResourcesDir().getPath();
+            }
+            else if(Environment.getCurrent().isReloadEnabled()) {
                 location = Environment.getCurrent().getReloadLocation();
             }
-            if(location == null)
-                location = settings != null ? settings.getResourcesDir().getPath() : null;
-            
-            this.localResourceLoader = new DevelopmentResourceLoader(
-                    this.application,
-                    location);
+
+            if(location != null) {
+                this.localResourceLoader = new DevelopmentResourceLoader(
+                        this.application,
+                        location);
+            }
+            else {
+                this.localResourceLoader = resourceLoader;
+            }
 
         }
         super.setResourceLoader(localResourceLoader);
