@@ -19,6 +19,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import groovy.util.MapEntry;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 
 import java.util.*;
 
@@ -118,6 +119,10 @@ public class LazyMetaPropertyMap implements Map {
         MetaProperty mp = metaClass.getMetaProperty((String)propertyName);
         if(mp!=null) {
             old = mp.getProperty(instance);
+            if(propertyValue instanceof GrailsParameterMap) {
+                GrailsParameterMap gpm = (GrailsParameterMap) propertyValue;
+                propertyValue = gpm.get(propertyName);
+            }
             mp.setProperty(instance, propertyValue);
         }
         return old;
