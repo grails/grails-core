@@ -19,6 +19,7 @@ import grails.util.BuildScope
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import groovy.util.slurpersupport.GPathResult
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -27,7 +28,6 @@ import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import groovy.util.slurpersupport.GPathResult
 
 /**
  * A class that uses the project BuildSettings object to discover information
@@ -166,11 +166,19 @@ class PluginBuildSettings {
                 def pluginPath = pluginDir.file.canonicalPath
                 def sourcePath = new File(sourceFile).canonicalPath
                 if(sourcePath.startsWith(pluginPath)) {
-                    PluginInfo info = getPluginInfo(pluginPath)
-                    if(info) {
-                       pluginInfoToSourceMap[sourceFile] = info
+                    // Check the path of the source file relative to the
+                    // plugin directory. If the source file is in the
+                    // plugin's "test" directory, we ignore it. It's a
+                    // bit of a HACK, but not much else we can do without
+                    // a refactor of the plugin management.
+                    sourcePath = sourcePath.substring(pluginPath.length() + 1)
+                    if(!sourcePath.startsWith("test" + File.separator)) {
+                        PluginInfo info = getPluginInfo(pluginPath)
+                        if(info) {
+                            pluginInfoToSourceMap[sourceFile] = info
+                        }
+                        return info
                     }
-                    return info
                 }
               }
           }
