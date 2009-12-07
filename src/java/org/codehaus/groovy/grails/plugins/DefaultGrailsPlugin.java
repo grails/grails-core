@@ -297,7 +297,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
             this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
         }
-        if(Environment.getCurrent().isReloadEnabled()) {
+        if(Environment.getCurrent().isReloadEnabled() || !Metadata.getCurrent().isWarDeployed()) {
             if(this.onChangeListener!=null) {
                 Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
 
