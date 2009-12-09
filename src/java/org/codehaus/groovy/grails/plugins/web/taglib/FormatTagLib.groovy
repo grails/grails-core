@@ -242,7 +242,7 @@ class FormatTagLib {
         	decimalFormat.setDecimalFormatSymbols(dcfs)
         }
         if(attrs.get('groupingUsed') != null) {
-        	decimalFormat.setGroupingUsed(attrs.get('groupingUsed') as Boolean)
+        	decimalFormat.setGroupingUsed((attrs.get('groupingUsed')==true))
         }
         if(attrs.get('maxIntegerDigits') != null) {
         	decimalFormat.setMaximumIntegerDigits(attrs.get('maxIntegerDigits') as Integer)
