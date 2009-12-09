@@ -4,6 +4,48 @@ import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 
 class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 
+    void testHandlingGstrings() {
+        // GRAILS-5499
+
+        def uc = ga.getDomainClass('DemoUser')
+        def u = uc.newInstance()
+
+        // add some GStrings...
+        5.times {
+            u.addToNicknames "nickname${it}"
+        }
+
+        // add some regular Strings...
+        u.addToNicknames 'somenickname'
+        u.addToNicknames 'someothernickname'
+
+        assertEquals 7, u.nicknames.size()
+        assertTrue 'nickname0' in u.nicknames
+        assertTrue 'nickname1' in u.nicknames
+        assertTrue 'nickname2' in u.nicknames
+        assertTrue 'nickname3' in u.nicknames
+        assertTrue 'nickname4' in u.nicknames
+        assertTrue 'somenickname' in u.nicknames
+        assertTrue 'someothernickname' in u.nicknames
+
+        // remove using GStrings...
+        3.times {
+            u.removeFromNicknames "nickname${it}"
+        }
+
+        // remove using regular String...
+        u.removeFromNicknames 'someothernickname'
+
+        assertEquals 3, u.nicknames.size()
+        assertFalse 'nickname0' in u.nicknames
+        assertFalse 'nickname1' in u.nicknames
+        assertFalse 'nickname2' in u.nicknames
+        assertTrue 'nickname3' in u.nicknames
+        assertTrue 'nickname4' in u.nicknames
+        assertTrue 'somenickname' in u.nicknames
+        assertFalse 'someothernickname' in u.nicknames
+    }
+
 	void testWithMapAddition() {
 		def personClass = ga.getDomainClass("Person")
 		def addressClass = ga.getDomainClass("Address")
@@ -98,6 +140,11 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 	void onSetUp() {
 
 		this.gcl.parseClass('''
+@grails.persistence.Entity
+class DemoUser {
+  String name
+  static hasMany = [nicknames: String]
+}
 class Person {
 	Long id
 	Long version

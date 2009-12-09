@@ -174,6 +174,9 @@ class DomainClassGrailsPlugin {
             if(prop.basicCollectionType) {
                 def collectionName = GrailsClassUtils.getClassNameRepresentation(prop.name)
                 metaClass."addTo$collectionName" = { obj ->
+                    if(obj instanceof CharSequence && !(obj instanceof String)) {
+                        obj = obj.toString()
+                    }
                     if(prop.referencedPropertyType.isInstance(obj)) {
                         if (delegate[prop.name] == null) {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
@@ -182,11 +185,14 @@ class DomainClassGrailsPlugin {
                         return delegate
                     }
                     else {
-                        throw new MissingMethodException("addTo${collectionName}", dc.clazz, [arg] as Object[])
+                        throw new MissingMethodException("addTo${collectionName}", dc.clazz, [obj] as Object[])
                     }
                 }
                 metaClass."removeFrom$collectionName" = { obj ->
                     if(delegate[prop.name]) {
+                        if(obj instanceof CharSequence && !(obj instanceof String)) {
+                            obj = obj.toString()
+                        }
                         delegate[prop.name].remove(obj)
                     }
                     return delegate
