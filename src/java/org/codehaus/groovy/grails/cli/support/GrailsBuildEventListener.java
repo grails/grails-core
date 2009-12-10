@@ -240,7 +240,7 @@ public class GrailsBuildEventListener implements BuildListener{
         addGrailsBuildListener(listener);
     }
 
-    void addGrailsBuildListener(GrailsBuildListener listener) {
+    public void addGrailsBuildListener(GrailsBuildListener listener) {
         buildListeners.add(listener);
     }
 }
