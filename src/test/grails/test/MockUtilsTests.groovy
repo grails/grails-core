@@ -889,7 +889,20 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "hello John", controller.response.contentAsString
     }
 
-    /**
+	/**
+	 * Tests that the mock "params" object has typeconversion methods (getInt tested)
+	 */
+	void testMockControllerIntParamsObject() {
+		MockUtils.mockController(TestController)
+		
+		def controller = new TestController()
+		controller.params.intparam='123456'
+		controller.testIntParams()
+		
+		assertEquals "123456", controller.response.contentAsString
+	}
+	
+	/**
      * Tests that the mock "chainModel" object on a controller works properly.
      */
     void testMockControllerChainModelObject() {
@@ -1357,6 +1370,10 @@ class TestController  {
     def testParams = {
         render "hello ${params.id}"
     }
+	
+	def testIntParams = {
+    	render "${params.int('intparam')}"
+	}
 
     def testChainModel = {
         render "chained with ${chainModel}"

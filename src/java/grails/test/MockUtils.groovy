@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.converters.Converter
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
@@ -290,7 +291,7 @@ class MockUtils {
         def mockRequest = new GrailsMockHttpServletRequest()
         def mockResponse = new GrailsMockHttpServletResponse()
         def mockSession = new MockHttpSession()
-        def mockParams = [:]
+        def mockParams = new GroovyPageAttributes()
         def mockFlash = [:]
         def mockChainModel = [:]
 
