@@ -502,6 +502,18 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals 1, testInstances.size()
     }
 
+	/**
+	 * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
+	 */
+	void testSaveWithFailOnErrorTrue() {
+		MockUtils.mockDomain(TestDomain, errorsMap)
+		
+		def domain = new TestDomain()
+		shouldFail(grails.validation.ValidationException) {
+			domain.save(failOnError: true)
+		}
+	}
+
     /**
      * Tests the dynamically added <code>delete()</code> method.
      */

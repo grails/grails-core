@@ -37,6 +37,7 @@ import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import grails.validation.ValidationException
 
 /**
  * This is a utility/helper class for mocking various types of Grails
@@ -740,7 +741,9 @@ class MockUtils {
                     if (!delegate.id) delegate.id = testInstances.size()
                 }
                 return delegate
-            }
+            } else if (args.failOnError) {
+				throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+			}
             return null
         }
 
