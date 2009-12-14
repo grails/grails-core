@@ -84,7 +84,7 @@ class ServletsGrailsPlugin {
 	
 		// test whether the current request is an XHR request
         HttpServletRequest.metaClass.isXhr = {->
-             'XMLHttpRequest' == delegate.getHeader('X-Requested-With')                
+             delegate.getHeader('X-Requested-With') != null                
         }	
 
         // enables access to request attributes with request["foo"] syntax

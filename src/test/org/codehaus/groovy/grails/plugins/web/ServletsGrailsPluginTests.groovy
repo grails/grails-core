@@ -22,7 +22,21 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         remove MockHttpServletResponse
         remove MockHttpServletRequest
     }
-
+	
+	void testIsXhrRequest() {
+		def request = new MockHttpServletRequest()
+		
+		assert !request.xhr : "This should not be an XHR request"
+		
+		request.addHeader "X-Requested-With", "XMLHttpRequest"
+		
+		assert request.xhr : "This should be an XHR request"
+		
+		request = new MockHttpServletRequest()
+		request.addHeader "X-Requested-With", "Ext.basex"
+		assert request.xhr : "This should be an XHR request"
+	}
+	
 	void testServletContextObject() {
         def context = new MockServletContext()
 
