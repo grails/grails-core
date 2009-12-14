@@ -75,10 +75,14 @@ target(startLogging:"Bootstraps logging") {
 }
 
 target(checkInPlacePlugins:"Perform a check whether inplace plugins have been packaged") {
+    boolean force = argsMap.force || !isInteractive ?: false
     if(pluginSettings.inlinePluginDirectories) {
-        if (!isInteractive || !confirmInput("WARNING: You have inplace plugins installed which require package-plugin to be run before a WAR is created. Have you already run package-plugin in each plugin directory? [y/n]","confirm.inplace.packaging")) {
-            println "Please run package-plugin in each inplace plugin directory before creating a WAR file"
-            exit 1
+        println "WARNING: You have inplace plugins installed which require package-plugin to be run before a WAR is created."
+        if (!force) {
+            if (!confirmInput("Have you already run package-plugin in each plugin directory? [y/n]","confirm.inplace.packaging")) {
+                println "Please run package-plugin in each inplace plugin directory before creating a WAR file"
+                exit 1
+            }
         }
     }
 
