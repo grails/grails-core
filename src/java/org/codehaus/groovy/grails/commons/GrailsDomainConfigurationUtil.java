@@ -417,6 +417,7 @@ public class GrailsDomainConfigurationUtil {
     }
 
     private static boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {
+    	if(property == null || property.getType() == null) return false;
         final GrailsDomainClass domainClass = property.getDomainClass();
         // only apply default nullable to Groovy entities not legacy Java ones
         if(!GroovyObject.class.isAssignableFrom(domainClass.getClazz())) return false;
