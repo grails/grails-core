@@ -1036,9 +1036,12 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
 
         Resource currentInstall = getPluginDirForName(currentPluginName)
-
-        if(currentInstall?.exists()) {            
-            if(!isInteractive || confirmInput("You currently already have a version of the plugin installed [$currentInstall.filename]. Do you want to upgrade this version?", "upgrade.${fullPluginName}.plugin")) {
+        PluginBuildSettings pluginSettings = pluginSettings
+        if(currentInstall?.exists()) {
+			if(pluginSettings.isInlinePluginLocation(currentInstall)) {
+				cleanupPluginInstallAndExit("The plugin you are trying to install [${fullPluginName}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins." );
+			}
+			else if(!isInteractive || confirmInput("You currently already have a version of the plugin installed [$currentInstall.filename]. Do you want to upgrade this version?", "upgrade.${fullPluginName}.plugin")) {
                 ant.delete(dir:currentInstall.file)
             }
             else {
@@ -1256,7 +1259,7 @@ private withPluginInstall(Closure callable) {
 
 private completePluginInstall (fullPluginName) {
     classpath ()
-    println "Installing plug-in $fullPluginName"
+    println "Installing plugin $fullPluginName"
     installPluginForName(fullPluginName)
 }
 
