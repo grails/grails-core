@@ -189,7 +189,7 @@ public abstract class AbstractConstraint implements Constraint {
     private Object getPropertyValue(Errors errors, Object target) {
         try {
             return errors.getFieldValue( constraintPropertyName );
-        } catch (NotReadablePropertyException nre) {
+        } catch (Exception nre) {
             int i = constraintPropertyName.lastIndexOf(".");
             String propertyName;
             if(i > -1) {
