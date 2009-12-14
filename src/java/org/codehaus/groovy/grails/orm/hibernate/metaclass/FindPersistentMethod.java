@@ -71,6 +71,7 @@ public class FindPersistentMethod
 		super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));
 	}
 
+	@SuppressWarnings("unchecked")
 	protected Object doInvokeInternal(final Class clazz, String methodName, Closure additionalCriteria, final Object[] arguments) {
 
 		if (arguments.length == 0)
@@ -102,7 +103,7 @@ public class FindPersistentMethod
 					}
 					if (queryArgs != null) {
 						for (int i = 0; i < queryArgs.length; i++) {
-							if (queryArgs[0] instanceof CharSequence) {
+							if (queryArgs[i] instanceof CharSequence) {
 								q.setParameter(i, queryArgs[i].toString());
 							} else {
 								q.setParameter(i, queryArgs[i]);
