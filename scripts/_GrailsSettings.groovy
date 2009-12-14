@@ -151,7 +151,7 @@ if (!System.getProperty("grails.env.set")) {
     System.setProperty("grails.env.set", "true")
 }
 if(getBinding().variables.containsKey("scriptScope")) {
-    buildScope = (scriptScope instanceof BuildScope) ? scriptScope : BuildScope.valueOf(scriptScope.toString());
+    buildScope = (scriptScope instanceof BuildScope) ? scriptScope : BuildScope.valueOf(scriptScope.toString().toUpperCase());
     buildScope.enable()
 }
 else {
