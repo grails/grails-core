@@ -16,6 +16,7 @@ class GrailsPluginUtilsTests extends GroovyTestCase {
     BuildSettings settings
 
     void setUp() {
+		GrailsPluginUtils.clearCaches()
         System.setProperty("disable.grails.plugin.transform","true")
         settings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = settings
