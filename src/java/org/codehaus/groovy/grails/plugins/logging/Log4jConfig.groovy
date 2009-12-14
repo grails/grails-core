@@ -160,6 +160,7 @@ class Log4jConfig {
             if(Environment.current == Environment.DEVELOPMENT) {
                 BuildSettings settings = BuildSettingsHolder.getSettings()
                 def targetDir = settings?.getProjectTargetDir()
+				if(targetDir) targetDir.mkdirs()
                 fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
             }
             else {

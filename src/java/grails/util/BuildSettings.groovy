@@ -496,9 +496,6 @@ class BuildSettings {
     }
 
     public File getProjectTargetDir() {
-        if(!projectTargetDir?.exists()) {
-            projectTargetDir?.mkdirs()
-        }
         return this.projectTargetDir
     }
 
