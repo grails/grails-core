@@ -71,7 +71,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created: 12-Jan-2006
  */
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
-    private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
+    private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
+	private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
     private ClassLoader classLoader;
     private int scriptNameCount;
@@ -548,7 +549,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             metaInfo.setCompilationException(e);
         }
 
-        pageCache.put(name, metaInfo);
+        if(!name.startsWith(GENERATED_GSP_NAME_PREFIX)) {
+        	pageCache.put(name, metaInfo);
+        }
 
         return metaInfo;
     }
@@ -674,7 +677,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return The template name
      */
     private String generateTemplateName() {
-        return "gsp_script_"+ ++scriptNameCount;
+        return GENERATED_GSP_NAME_PREFIX+ ++scriptNameCount;
     }
 
     /**
