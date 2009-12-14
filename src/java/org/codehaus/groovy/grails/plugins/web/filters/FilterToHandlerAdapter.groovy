@@ -75,14 +75,14 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
      * Returns the name of the controller targeted by the given request.
      */
     String controllerName(request) {
-        return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE).toString()
+        return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE)?.toString()
     }
 
     /**
      * Returns the name of the action targeted by the given request.
      */
     String actionName(request) {
-        return request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE).toString()
+        return request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE)?.toString()
     }
 
     String uri(HttpServletRequest request) {
@@ -174,7 +174,10 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
         	matched=pathMatcher.match(uriPattern, uri)
         }
         else if(controllerRegex && actionRegex) {
-        	if(useRegexFind) {
+			if(controllerName == null || actionName == null) {
+				matched = false
+			}
+			else if(useRegexFind) {
         		matched=controllerRegex.matcher(controllerName).find() && actionRegex.matcher(actionName).find()
         	} else {
         		matched=controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches()
