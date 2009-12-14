@@ -22,6 +22,13 @@ import grails.converters.JSON
 
 class JSONConverterTests extends AbstractGrailsControllerTests {
 
+       void testNullJSONValues() {
+           def c = ga.getControllerClass("RestController").newInstance()
+           c.testNullValues()
+
+           assertEquals( '{}', response.contentAsString)
+       }
+
        void testJSONConverter() {
            def c = ga.getControllerClass("RestController").newInstance()
 
@@ -124,6 +131,12 @@ class RestController {
    def testEnum = {
        render params.e as JSON
    }
+
+    def testNullValues = {
+        def descriptors = [:]
+        descriptors.put(null,null)
+        render descriptors as JSON
+    }
 }
 class Book {
    Long id

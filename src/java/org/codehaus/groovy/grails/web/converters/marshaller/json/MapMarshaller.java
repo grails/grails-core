@@ -38,8 +38,10 @@ public class MapMarshaller implements ObjectMarshaller<JSON> {
         writer.object();
         Map<Object,Object> map = (Map<Object,Object>) o;
         for (Map.Entry<Object,Object> entry : map.entrySet()) {
-            writer.key(entry.getKey().toString());
-            converter.convertAnother(entry.getValue());
+            Object key = entry.getKey();
+            if(key != null) {
+                converter.convertAnother(entry.getValue());
+            }
         }
         writer.endObject();
     }
