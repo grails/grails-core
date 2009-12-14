@@ -82,4 +82,7 @@ public class PluginInfo {
         GrailsPluginUtils.getDescriptorForPlugin(pluginDir)
     }
 
+    String getFullName() {
+		"${name}-${version}"
+	}
 }
