@@ -218,21 +218,18 @@ class BuildSettings {
      */
     List applicationJars = []
 
-    private List<File> compileDependencies = []
-    
     List buildListeners = []
+    
+    private List<File> compileDependencies = []
+    private boolean defaultCompileDepsAdded = false
     
     /** List containing the compile-time dependencies of the app as File instances. */
     List<File> getCompileDependencies() {
-        if(dependenciesExternallyConfigured) {
-            return this.compileDependencies
+        if (!defaultCompileDepsAdded) {
+            compileDependencies += defaultCompileDependencies
+            defaultCompileDepsAdded = true
         }
-        else {
-            if(!this.compileDependencies) {
-               this.compileDependencies = defaultCompileDependencies
-            }
-            return this.compileDependencies
-        }
+        return compileDependencies
     }
 
     /**
@@ -254,18 +251,15 @@ class BuildSettings {
 
 
     private List<File> testDependencies = []
+    private boolean defaultTestDepsAdded = false
 
     /** List containing the test-time dependencies of the app as File instances. */
     List<File> getTestDependencies() {
-        if(dependenciesExternallyConfigured) {
-            return this.testDependencies
+        if (!defaultTestDepsAdded) {
+            testDependencies += defaultTestDependencies
+            defaultTestDepsAdded = true
         }
-        else {            
-            if(!this.testDependencies) {
-               this.testDependencies = defaultTestDependencies
-            }
-            return this.testDependencies
-        }
+        return testDependencies
     }
 
     /**
@@ -286,18 +280,15 @@ class BuildSettings {
     }()
 
     private List<File> runtimeDependencies = []
+    private boolean defaultRuntimeDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances. */
     List<File> getRuntimeDependencies() {
-        if(dependenciesExternallyConfigured) {
-           return this.runtimeDependencies 
+        if (!defaultRuntimeDepsAdded) {
+            runtimeDependencies += defaultRuntimeDependencies
+            defaultRuntimeDepsAdded = true
         }
-        else {
-            if(!this.runtimeDependencies) {
-               this.runtimeDependencies = defaultRuntimeDependencies
-            }
-            return this.runtimeDependencies
-        }
+        return runtimeDependencies
     }
 
     /**
@@ -704,10 +695,21 @@ class BuildSettings {
                 appVersion,
                 this)
 
-        config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
-        def credentials = config.grails.project.ivy.authentication
-        if(credentials instanceof Closure) {
-            dependencyManager.parseDependencies authentication
+        if (!dependenciesExternallyConfigured) {
+            config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+            def credentials = config.grails.project.ivy.authentication
+            if(credentials instanceof Closure) {
+                dependencyManager.parseDependencies authentication
+            }
+        }
+        else {
+            // Even if the dependencies are handled externally, we still
+            // to handle plugin dependencies.
+            config.grails.global.dependency.resolution = {
+                repositories {
+                    grailsPlugins()
+                }
+            }
         }
 
         def dependencyConfig = config.grails.project.dependency.resolution
@@ -717,24 +719,25 @@ class BuildSettings {
         }
         if (dependencyConfig) {
             dependencyManager.parseDependencies dependencyConfig
-            def handlePluginDirectory = pluginDependencyHandler()
+        }
 
-            Asynchronizer.withAsynchronizer(5) {
-                Closure predicate = { it.directory && !it.hidden }
-                def pluginDirs = projectPluginsDir.listFiles().findAllAsync(predicate)
+        // All projects need the plugins to be resolved.
+        def handlePluginDirectory = pluginDependencyHandler()
+
+        Asynchronizer.withAsynchronizer(5) {
+            Closure predicate = { it.directory && !it.hidden }
+            def pluginDirs = projectPluginsDir.listFiles().findAllAsync(predicate)
 
 
-                if (globalPluginsDir.exists()) {
-                    pluginDirs.addAll(globalPluginsDir.listFiles().findAllAsync(predicate))
-                }
-                def pluginLocations = config?.grails?.plugin?.location
-                pluginLocations?.values().eachAsync {location ->
-                    pluginDirs << new File(location).canonicalFile
-                }
-
-                pluginDirs.eachAsync(handlePluginDirectory)
-
+            if (globalPluginsDir.exists()) {
+                pluginDirs.addAll(globalPluginsDir.listFiles().findAllAsync(predicate))
             }
+            def pluginLocations = config?.grails?.plugin?.location
+            pluginLocations?.values().eachAsync {location ->
+                pluginDirs << new File(location).canonicalFile
+            }
+
+            pluginDirs.eachAsync(handlePluginDirectory)
 
         }
     }
