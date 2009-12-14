@@ -30,12 +30,14 @@ import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.converters.Converter
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import grails.validation.ValidationException
 
 /**
  * This is a utility/helper class for mocking various types of Grails
@@ -290,7 +292,7 @@ class MockUtils {
         def mockRequest = new GrailsMockHttpServletRequest()
         def mockResponse = new GrailsMockHttpServletResponse()
         def mockSession = new MockHttpSession()
-        def mockParams = [:]
+        def mockParams = new GroovyPageAttributes()
         def mockFlash = [:]
         def mockChainModel = [:]
 
@@ -739,7 +741,9 @@ class MockUtils {
                     if (!delegate.id) delegate.id = testInstances.size()
                 }
                 return delegate
-            }
+            } else if (args.failOnError) {
+				throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+			}
             return null
         }
 

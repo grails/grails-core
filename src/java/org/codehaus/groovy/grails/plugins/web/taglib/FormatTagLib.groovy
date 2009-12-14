@@ -29,6 +29,7 @@ import org.springframework.context.NoSuchMessageException
 import org.springframework.util.StringUtils
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
+
  /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
@@ -242,7 +243,12 @@ class FormatTagLib {
         	decimalFormat.setDecimalFormatSymbols(dcfs)
         }
         if(attrs.get('groupingUsed') != null) {
-        	decimalFormat.setGroupingUsed(attrs.get('groupingUsed') as Boolean)
+			if(attrs.get('groupingUsed') instanceof Boolean) {
+				decimalFormat.setGroupingUsed(attrs.get('groupingUsed'))
+			} else {
+				// accept true, y, 1, yes
+				decimalFormat.setGroupingUsed(attrs.get('groupingUsed').toString().toBoolean() || attrs.get('groupingUsed').toString()=='yes')
+			}
         }
         if(attrs.get('maxIntegerDigits') != null) {
         	decimalFormat.setMaximumIntegerDigits(attrs.get('maxIntegerDigits') as Integer)

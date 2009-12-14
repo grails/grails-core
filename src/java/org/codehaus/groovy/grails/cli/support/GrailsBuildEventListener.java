@@ -89,7 +89,7 @@ public class GrailsBuildEventListener implements BuildListener{
         }
     }
 
-    public void loadGrailsBuildListeners() {
+    protected void loadGrailsBuildListeners() {
         for (Object listener : buildSettings.getBuildListeners()) {
             if (listener instanceof String) {
                 addGrailsBuildListener((String)listener);
@@ -240,7 +240,7 @@ public class GrailsBuildEventListener implements BuildListener{
         addGrailsBuildListener(listener);
     }
 
-    void addGrailsBuildListener(GrailsBuildListener listener) {
+    public void addGrailsBuildListener(GrailsBuildListener listener) {
         buildListeners.add(listener);
     }
 }

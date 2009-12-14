@@ -164,7 +164,30 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals("003", template, [number: number])
     }    
 
-    void testFormatNumberParsingString() {
+	void testFormatNumberInteger2() {
+		def number = 1
+		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3"/>'
+		assertOutputEquals("001", template, [number: number])
+	} 
+	
+	void testFormatNumberIntegerWithNoGrouping() {
+		def number = 1234
+		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="false" locale="en_US"/>'
+		assertOutputEquals("1234", template, [number: number])
+	} 
+	
+	void testFormatNumberIntegerWithGrouping() {
+		def number = 1234
+		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="true" locale="en_US"/>'
+		assertOutputEquals("1,234", template, [number: number])
+	} 	
+	
+	void testFormatNumberIntegerWithGroupingAsBoolean() {
+		def number = 1234
+		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="${true}" locale="en_US"/>'
+		assertOutputEquals("1,234", template, [number: number])
+	}
+	void testFormatNumberParsingString() {
         def number = "3,12325678" as String
         def template = '<g:formatNumber type="number" number="${number}" locale="fi_FI" minFractionDigits="3" maxFractionDigits="3" />'
         assertOutputEquals("3,123", template, [number: number])
