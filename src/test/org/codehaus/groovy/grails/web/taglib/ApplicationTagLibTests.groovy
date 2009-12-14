@@ -16,13 +16,15 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 	void testResourceTagWithPluginAttribute() {
 		request.contextPath = '/test'
         def template = '${resource(file:"images/foo.jpg", plugin:"controllers")}' 
-
-        	
-        	
-        assertOutputEquals "/test/plugins/controllers-${GrailsUtil.getGrailsVersion()}/images/foo.jpg", template
-
-        
+        assertOutputEquals "/test/plugins/controllers-${GrailsUtil.getGrailsVersion()}/images/foo.jpg", template        
 	}
+	
+	void testResourceTagWithPluginAttributeAndNone() {
+		request.contextPath = '/test'
+		def template = '${resource(file:"images/foo.jpg", plugin:"none")}' 
+		assertOutputEquals "/test/images/foo.jpg", template        
+	}
+		
 	
     void testResourceTag() {
         request.contextPath = '/test'
