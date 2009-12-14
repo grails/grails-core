@@ -58,9 +58,21 @@ class CoreGrailsPlugin {
 
         // Allow the use of Spring annotated components
         context.'annotation-config'()
+
+        def packagesToScan = []
+
         def beanPackages = application.config.grails.spring.bean.packages
         if(beanPackages instanceof List) {
-            grailsContext.'component-scan'('base-package':beanPackages.join(','))
+            packagesToScan += beanPackages
+        }
+
+        def validateablePackages = application.config.grails.validateable.packages
+        if(validateablePackages instanceof List) {
+            packagesToScan += validateablePackages
+        }
+
+        if(packagesToScan) {
+            grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
