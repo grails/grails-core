@@ -54,8 +54,8 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      */
     final Binding buildBinding
         
-    final private ClassLoader testClassLoader
-    final private File sourceDir
+    private ClassLoader testClassLoader
+    private File sourceDir
     
     /**
      * Sets the name and relativeSourcePath

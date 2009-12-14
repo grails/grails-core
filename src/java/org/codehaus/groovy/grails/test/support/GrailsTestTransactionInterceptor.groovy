@@ -31,7 +31,7 @@ class GrailsTestTransactionInterceptor {
     
     ApplicationContext applicationContext
     protected final transactionManager
-    protected final transactionStatus
+    protected transactionStatus
     
     GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext

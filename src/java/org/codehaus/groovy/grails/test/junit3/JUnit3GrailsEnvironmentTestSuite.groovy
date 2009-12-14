@@ -40,9 +40,9 @@ import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
  */
 class JUnit3GrailsEnvironmentTestSuite extends TestSuite {
     
-    final GrailsTestAutowirer autowirer
-    final GrailsTestRequestEnvironmentInterceptor requestEnvironmentInterceptor
-    final GrailsTestTransactionInterceptor transactionInterceptor
+    GrailsTestAutowirer autowirer
+    GrailsTestRequestEnvironmentInterceptor requestEnvironmentInterceptor
+    GrailsTestTransactionInterceptor transactionInterceptor
     
 	final JUnit3GrailsTestTypeMode mode
 	
