@@ -54,6 +54,7 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil
 import grails.util.PluginBuildSettings
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.CompilationFailedException
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -584,6 +585,7 @@ target(loadPlugins:"Loads Grails' plugins") {
                 profile("creating plugin manager with classes ${pluginClasses}") {
                     if(grailsApp == null) {
                         grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
+                        ApplicationHolder.application = grailsApp
                     }
                     pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
 
