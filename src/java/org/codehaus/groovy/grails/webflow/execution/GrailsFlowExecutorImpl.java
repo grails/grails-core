@@ -22,6 +22,7 @@ import org.springframework.webflow.context.ExternalContext;
 import org.springframework.webflow.context.ExternalContextHolder;
 import org.springframework.webflow.core.FlowException;
 import org.springframework.webflow.definition.registry.FlowDefinitionLocator;
+import org.springframework.webflow.definition.registry.NoSuchFlowDefinitionException;
 import org.springframework.webflow.execution.FlowExecution;
 import org.springframework.webflow.execution.FlowExecutionFactory;
 import org.springframework.webflow.execution.FlowExecutionKey;
@@ -89,6 +90,16 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
     }
 
     private boolean isNotValidFlowDefinitionId(FlowExecution flowExecution, GrailsWebRequest webRequest) {
-        return !(webRequest.getControllerName()+"/"+webRequest.getActionName()).equals(flowExecution.getDefinition().getId());
+        final String flowId = flowExecution.getDefinition().getId();
+        final FlowDefinitionLocator locator = getDefinitionLocator();
+        final String requestPath = webRequest.getControllerName() + "/" + webRequest.getActionName();
+
+        try {
+            locator.getFlowDefinition(requestPath);
+            return false;
+        }
+        catch(NoSuchFlowDefinitionException e) {
+            return true;
+        }
     }
 }
