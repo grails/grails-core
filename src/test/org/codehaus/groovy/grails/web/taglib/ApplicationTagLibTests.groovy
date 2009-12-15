@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse
 import org.springframework.mock.web.MockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
@@ -18,6 +20,23 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '${resource(file:"images/foo.jpg", plugin:"controllers")}' 
         assertOutputEquals "/test/plugins/controllers-${GrailsUtil.getGrailsVersion()}/images/foo.jpg", template        
 	}
+
+    void testResourceTagWithImplicitPlugin() {
+        def template = '${resource(file:"images/foo.jpg")}'
+
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
+        assertOutputEquals "/plugin/one/images/foo.jpg", template
+
+    }
+
+    void testResourceTagWithContextPathAttribute() {
+        request.contextPath = '/test'
+        def template = '${resource(file:"images/foo.jpg", contextPath:"/foo")}'
+        assertOutputEquals "/test/foo/images/foo.jpg", template
+        
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
+        assertOutputEquals "/test/foo/images/foo.jpg", template
+    }
 	
 	void testResourceTagWithPluginAttributeAndNone() {
 		request.contextPath = '/test'

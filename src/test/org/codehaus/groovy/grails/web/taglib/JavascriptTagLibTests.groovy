@@ -69,6 +69,17 @@ class TestUrlMappings {
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
     }
 
+    void testJavascriptIncludeWithContextPathSpecified() {
+        def template = '<g:javascript src="foo.js" />'
+
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
+        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
+
+        template = '<g:javascript src="foo.js" contextPath="/foo" />'
+        assertOutputContains '<script type="text/javascript" src="/foo/js/foo.js"></script>', template
+
+    }
+
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
         def template = '<g:javascript src="foo.js" />'
 

@@ -112,7 +112,12 @@ class JavascriptTagLib  {
             requestPluginContext = pluginManager.getPluginPath(attrs.remove('plugin')) ?: ''
         }
         else {
-            requestPluginContext = pageScope.pluginContextPath ?: ''
+            if(attrs.contextPath != null) {
+                requestPluginContext = attrs.remove('contextPath').toString()
+            }
+            else {
+                requestPluginContext = pageScope.pluginContextPath ?: ''
+            }
         }
         
         def writer = out

@@ -467,19 +467,20 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def engine = groovyPagesTemplateEngine
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
-        def contextPath = attrs.contextPath ? attrs.contextPath : ""
+        def contextPath = attrs.contextPath ? attrs.contextPath : null
         
         if(attrs.plugin) {
             contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
         }
-        else if (!contextPath) {
+        else if (contextPath == null) {
             contextPath = pageScope.pluginContextPath ?: ""
         }
 
         Template t = TEMPLATE_CACHE[uri]
 
+        def templatePath = "${contextPath}${uri}"
         if(t==null) {
-			  t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
+            t = engine.createTemplateForUri([templatePath, "${contextPath}/grails-app/views/${uri}"] as String[])
 			  if(!engine.isReloadEnabled() && t!=null) {
 				  def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
 				  if(prevt != null) {
@@ -489,7 +490,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         }
 
         if(!t) {
-            throwTagError("Template not found for name [$attrs.template]")            
+            throwTagError("Template not found for name [$attrs.template] and path [$templatePath]")            
         }
         else {
             if(attrs.containsKey('bean')) {

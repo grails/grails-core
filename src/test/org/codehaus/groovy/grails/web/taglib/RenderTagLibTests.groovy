@@ -20,7 +20,10 @@ import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import com.opensymphony.module.sitemesh.RequestConstants
 import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 import com.opensymphony.module.sitemesh.html.util.CharArray
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 
 /**
  * Tests for the RenderTagLib.groovy file which contains tags for rendering
@@ -83,6 +86,33 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         }
     }
 
+    void testRenderTagWithContextPath() {
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/amazon/book/_book.gsp', 'content ${foo}: ${body()}')
+        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+
+
+        def template = '<g:render contextPath="/amazon" template="/book/book" model="[foo: \'bar\']">hello</g:render>'
+
+        assertOutputEquals 'content bar: hello', template
+
+        resourceLoader.registerMockResource('/foo/book/_book.gsp', 'foo ${foo}: ${body()}')
+        resourceLoader.registerMockResource("/plugins/controllers-${GrailsUtil.grailsVersion}/foo/book/_book.gsp".toString(), 'plugin foo ${foo}: ${body()}')
+
+
+        template = '<g:render plugin="controllers" template="/foo/book/book" model="[foo: \'bar\']">hello</g:render>'
+        assertOutputEquals 'plugin foo bar: hello', template
+
+        template = '<g:render contextPath="" template="/foo/book/book" model="[foo: \'bar\']">hello</g:render>'
+
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugins/controllers-${GrailsUtil.grailsVersion}"))
+        assertOutputEquals 'plugin foo bar: hello', template
+
+        request.removeAttribute GrailsApplicationAttributes.PAGE_SCOPE
+
+        assertOutputEquals 'foo bar: hello', template
+    }
+
     void testRenderTagWithBody() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', 'content ${foo}: ${body()}')
@@ -90,7 +120,6 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
 
         def template = '<g:render template="/book/book" model="[foo: \'bar\']">hello</g:render>'
-
         assertOutputEquals 'content bar: hello', template 
     }
 
