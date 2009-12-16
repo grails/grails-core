@@ -637,8 +637,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         for (PropertyValue pv : pvs) {
             String propertyName = pv.getName();
 
+            if(!isAllowed(propertyName)) continue;
+
             if (propertyName.endsWith(IDENTIFIER_SUFFIX)) {
                 propertyName = propertyName.substring(0, propertyName.length() - 3);
+                if(!isAllowed(propertyName)) continue;
                 if (isReadableAndPersistent(propertyName) && bean.isWritableProperty(propertyName)) {
                     if (NULL_ASSOCIATION.equals(pv.getValue())) {
                         bean.setPropertyValue(propertyName, null);
