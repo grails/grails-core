@@ -252,6 +252,9 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
         def xml = new groovy.xml.MarkupBuilder(writer)
         xml.grails {
             xml.resources {
+				
+				def addedResources = new HashSet()
+				
                 for(r in resourceList) {
                     def matcher = r.URL.toString() =~ artefactPattern
 
@@ -270,19 +273,31 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
                     //    org.example.MyFilters
                     //
                     def name = matcher[0][1].replaceAll('/', /\./)
-                    if(name == 'spring.resources') xml.resource("resources")
-                    else xml.resource(name)
+                    if(name == 'spring.resources')
+                    	name='resources'
+					name = name.toString()
+					if(!addedResources.contains(name)) {
+						xml.resource(name)
+						addedResources.add name
+					} else {
+						println "\tWARNING: Duplicate resource '${name}', using the last one in compile order."
+					}
                 }
             }
             xml.plugins {
 
                 GrailsPluginManager pm = pluginManager
-
+				
+				def addedPlugins = new HashSet()
                 for(PluginInfo info in pluginInfos) {
                         boolean supportsScope = pm.supportsCurrentBuildScope(info.name)
                         if(supportsScope) {
                             def name = info.descriptor.file.name - '.groovy'
-                            xml.plugin(name)
+							name = name.toString()
+							if(!addedPlugins.contains(name)) {
+								xml.plugin(name)
+								addedPlugins.add name
+							}
                         }
                 }
             }
