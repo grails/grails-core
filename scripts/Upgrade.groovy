@@ -101,18 +101,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         }
         delete(dir: "${basedir}/tmp", failonerror: false)
 
-        // Unpack the shared files into a temporary directory, and then
-        // copy over the IDE files.
-        def tmpDir = new File("${basedir}/tmp-upgrade")
-        grailsUnpack(dest: tmpDir.path, src: "grails-shared-files.jar")
-        copy(todir: "${basedir}") {
-            fileset(dir: tmpDir.path, includes:"*") {
-                present(present:"srconly", targetdir:basedir) 
-            }
-        }
-        delete(dir: tmpDir.path)
-        launderIDESupportFiles()
-
         copy(todir: "${basedir}/web-app") {
             fileset(dir: "${grailsHome}/src/war") {
                 include(name: "**/**")
