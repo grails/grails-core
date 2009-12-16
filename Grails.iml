@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="Groovy" name="Groovy">
-      <configuration />
-    </facet>
-  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/idea-target/classes" />
     <output-test url="file://$MODULE_DIR$/idea-target/test-classes" />
@@ -13,7 +8,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/jsp21" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/META-INF" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
       <excludeFolder url="file://$MODULE_DIR$/doc" />
       <excludeFolder url="file://$MODULE_DIR$/downloads" />
@@ -105,15 +99,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/src/jar" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="GParallelizer" level="project" />
     <orderEntry type="library" name="DOM4J" level="project" />
     <orderEntry type="library" name="JPA" level="project" />
@@ -136,6 +121,15 @@
       <library name="HSQLDB">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/hsqldb-1.8.0.10.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/src/jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
