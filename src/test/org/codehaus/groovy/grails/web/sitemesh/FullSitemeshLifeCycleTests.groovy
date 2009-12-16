@@ -61,4 +61,24 @@ public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
 
         assertEquals '<h1>pageProperty: here!</h1>', result 
     }
+
+
+    void testParametersWithLogic() {
+        def template = '''
+<html>
+  <head>
+      <title>Simple GSP page</title>
+      <meta name="layout" content="main"/>
+      <parameter name="sideBarSetting" value="vendor"/>
+  </head>
+  <body>Place your content here</body>
+</html>
+'''
+        def layout = '''<g:if test="${pageProperty(name:'page.sideBarSetting') == 'vendor'}">good</g:if>'''
+
+        def result = applyLayout(layout, template)
+
+        assertEquals 'good', result 
+
+    }
 }
