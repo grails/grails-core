@@ -158,9 +158,9 @@
                 <patternset refid="binary.files.pattern"/>
             </zipfileset>
         </zip>
-		<copy todir="dist" failonerror="false">
-			<fileset dir="../grails-doc/dist" />			
-		</copy>
+        <zip destfile="${grails.dist}/grails-docs-${grails.version}.zip">
+            <zipfileset dir="${basedir}/doc" />
+        </zip>
 
     </target>
 
