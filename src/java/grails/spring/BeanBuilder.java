@@ -129,7 +129,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	}
 
 
-	private void initializeSpringConfig() {
+	protected void initializeSpringConfig() {
         this.xmlBeanDefinitionReader = new XmlBeanDefinitionReader((GenericApplicationContext)springConfig.getUnrefreshedApplicationContext());
         initializeBeanBuilderForClassLoader(this.classLoader);        
     }
@@ -140,7 +140,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 
     }
 
-    private void initializeBeanBuilderForClassLoader(ClassLoader classLoader) {
+    protected void initializeBeanBuilderForClassLoader(ClassLoader classLoader) {
         xmlBeanDefinitionReader.setBeanClassLoader(classLoader);
         this.namespaceHandlerResolver = new DefaultNamespaceHandlerResolver(this.classLoader);
         this.readerContext = new XmlReaderContext(beanBuildResource,new FailFastProblemReporter(),new EmptyReaderEventListener(),new NullSourceExtractor(),xmlBeanDefinitionReader,namespaceHandlerResolver);
@@ -579,7 +579,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         return springConfig.getApplicationContext();
     }
 
-    private void finalizeDeferredProperties() {
+    protected void finalizeDeferredProperties() {
         for (Object o : deferredProperties.values()) {
             DeferredProperty dp = (DeferredProperty) o;
 
@@ -594,7 +594,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		deferredProperties.clear();
 	}
 	
-	private boolean addToDeferred(BeanConfiguration beanConfig,String property, Object newValue) {
+	protected boolean addToDeferred(BeanConfiguration beanConfig,String property, Object newValue) {
 		if(newValue instanceof List) {
 			deferredProperties.put(currentBeanConfig.getName()+property,new DeferredProperty(currentBeanConfig, property, newValue));
 			return true;
@@ -613,7 +613,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * the arguments in between are constructor arguments
 	 * @return The bean configuration instance
 	 */
-	private BeanConfiguration invokeBeanDefiningMethod(String name, Object[] args) {
+	protected BeanConfiguration invokeBeanDefiningMethod(String name, Object[] args) {
 
         boolean hasClosureArgument = args[args.length - 1] instanceof Closure;
         if(args[0] instanceof Class) {
@@ -682,14 +682,14 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return beanConfig;
 	}
 
-    private List resolveConstructorArguments(Object[] args, int start, int end) {
+    protected List resolveConstructorArguments(Object[] args, int start, int end) {
         Object[] constructorArgs = subarray(args, start, end);
         filterGStringReferences(constructorArgs);
         List constructorArgsList = Arrays.asList(constructorArgs);
         return constructorArgsList;
     }
 
-    private Object[] subarray(Object[] args, int i, int j) {
+    protected Object[] subarray(Object[] args, int i, int j) {
         if(j > args.length) throw new IllegalArgumentException("Upper bound can't be greater than array length");
         Object[] b = new Object[j-i];
         int n = 0;
@@ -700,7 +700,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         return b;
     }
 
-    private void filterGStringReferences(Object[] constructorArgs) {
+    protected void filterGStringReferences(Object[] constructorArgs) {
         for (int i = 0; i < constructorArgs.length; i++) {
             Object constructorArg = constructorArgs[i];
             if(constructorArg instanceof GString) constructorArgs[i] = constructorArg.toString();
@@ -713,7 +713,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param callable The closure argument
      * @return This BeanBuilder instance
 	 */
-	private BeanBuilder invokeBeanDefiningClosure(Closure callable) {
+	protected BeanBuilder invokeBeanDefiningClosure(Closure callable) {
 
 		callable.setDelegate(this);
   //      callable.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -733,7 +733,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}		
 	}
 
-    private void setPropertyOnBeanConfig(String name, Object value) {
+    protected void setPropertyOnBeanConfig(String name, Object value) {
         if(value instanceof GString)value = value.toString();
         if(addToDeferred(currentBeanConfig, name, value)) {
             return;
@@ -769,7 +769,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param value The current map
 	 * @return A ManagedMap or a normal map
 	 */
-	private Object manageMapIfNecessary(Object value) {
+	protected Object manageMapIfNecessary(Object value) {
 		Map map = (Map)value;
 		boolean containsRuntimeRefs = false;
         for (Object e : map.values()) {
@@ -793,7 +793,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param value The object that represents the list
 	 * @return Either a new list or a managed one
 	 */
-	private Object manageListIfNecessary(Object value) {
+	protected Object manageListIfNecessary(Object value) {
 		List list = (List)value;
 		boolean containsRuntimeRefs = false;
         for (Object e : list) {
