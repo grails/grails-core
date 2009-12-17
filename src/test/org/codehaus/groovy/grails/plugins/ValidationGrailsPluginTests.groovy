@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin
-import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.validation.Validateable
 import org.springframework.context.support.StaticMessageSource
 
 public class ValidationGrailsPluginTests extends GroovyTestCase {
@@ -16,12 +17,10 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
-        def ctxMap = [:]
-        ctxMap.getBean = {new StaticMessageSource()}
-        ctxMap.getBeansWithAnnotation = {[someValidatableClass: new SomeValidateableClass(),
-                                          someValidateableSubclass: new SomeValidateableSubclass()] }
-
-        def mockCtx = ctxMap as ApplicationContext
+        MockApplicationContext mockCtx = new MockApplicationContext()
+        mockCtx.registerMockBean("someValidateableClass", new SomeValidateableClass())
+        mockCtx.registerMockBean("someValidateableSubclass", new SomeValidateableSubclass())
+        mockCtx.registerMockBean('messageSource', new StaticMessageSource())
 
         ValidationGrailsPlugin.metaClass.getApplication = { [:] }
         ValidationGrailsPlugin.metaClass.getLog = { [debug: {}] }
@@ -38,7 +37,7 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
     }
 
     void testInheritedConstraints() {
-        if(notYetImplemented()) return
+        if (notYetImplemented()) return
         def svc = new SomeValidateableSubclass()
         svc.town = 'Saint Charles'
         svc.name = 'Jeff'
@@ -49,6 +48,7 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
     }
 }
 
+@Validateable
 class SomeValidateableClass {
 
     String name
@@ -58,6 +58,7 @@ class SomeValidateableClass {
     }
 }
 
+@Validateable
 class SomeValidateableSubclass extends SomeValidateableClass {
 
     String town
