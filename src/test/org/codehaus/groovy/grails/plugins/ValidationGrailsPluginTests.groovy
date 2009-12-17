@@ -37,7 +37,6 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
     }
 
     void testInheritedConstraints() {
-        if (notYetImplemented()) return
         def svc = new SomeValidateableSubclass()
         svc.town = 'Saint Charles'
         svc.name = 'Jeff'

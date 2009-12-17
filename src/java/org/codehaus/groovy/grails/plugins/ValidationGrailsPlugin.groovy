@@ -107,22 +107,33 @@ public class ValidationGrailsPlugin {
             delegate.setErrors(new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
         }
 
-        def validationClosure = GCU.getStaticPropertyValue(validateableClass, 'constraints')
         def validateable = validateableClass.newInstance()
-        if (validationClosure) {
-            def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(validateable)
-            validationClosure.setDelegate(constrainedPropertyBuilder)
-            validationClosure()
-            metaClass.constraints = constrainedPropertyBuilder.constrainedProperties
-        }
-        else {
-            metaClass.constraints = [:]
-        }
+        def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(validateable)
+        def superClassChain = getSuperClassChain(validateableClass)
 
+        superClassChain.each {clz ->
+            def validationClosure = GCU.getStaticPropertyValue(clz, 'constraints')
+            if (validationClosure instanceof Closure) {
+                validationClosure.setDelegate(constrainedPropertyBuilder)
+                validationClosure()
+            }
+        }
+        metaClass.constraints = constrainedPropertyBuilder.constrainedProperties
         if (!metaClass.respondsTo(validateable, "validate")) {
             metaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
         }
+    }
+
+    private static getSuperClassChain(theClass) {
+        def classChain = new LinkedList()
+        def clazz = theClass
+        while (clazz != Object)
+        {
+            classChain.addFirst(clazz)
+            clazz = clazz.superclass
+        }
+        return classChain
     }
 }
