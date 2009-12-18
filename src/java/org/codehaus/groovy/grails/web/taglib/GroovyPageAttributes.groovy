@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
  */
 
 
-public class GroovyPageAttributes extends TypeConvertingMap{
+public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable{
 
     GroovyPageAttributes() {
         this([:])
@@ -35,6 +35,10 @@ public class GroovyPageAttributes extends TypeConvertingMap{
 
     GroovyPageAttributes(Map map) {
         super(map);
+    }
+
+    protected Object clone() {
+        return new GroovyPageAttributes(this.@wrappedMap.clone())
     }
 
     /**

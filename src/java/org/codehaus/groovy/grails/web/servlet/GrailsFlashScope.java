@@ -148,7 +148,10 @@ public class GrailsFlashScope implements FlashScope {
         }
         storeErrorsIfPossible(next,value);
 
-        return next.put(key,value);
+        if(value == null)
+            return next.remove(key);
+        else
+            return next.put(key,value);
     }
 
     private void storeErrorsIfPossible(Map scope,Object value) {

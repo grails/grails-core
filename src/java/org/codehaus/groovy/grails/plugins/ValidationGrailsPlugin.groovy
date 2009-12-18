@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import org.codehaus.groovy.grails.beans.factory.GenericBeanFactoryAccessor;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 import grails.util.GrailsUtil
@@ -43,8 +44,9 @@ public class ValidationGrailsPlugin {
         application.config?.grails?.validateable?.classes?.each {
             validateables << it
         }
-
-        for(entry in ctx.getBeansWithAnnotation(Validateable)) {
+		
+		def accessor = new GenericBeanFactoryAccessor(ctx)
+        for(entry in accessor.getBeansWithAnnotation(Validateable)) {
             Class validateable = entry?.value?.class
             if(validateable)
                 validateables << validateable

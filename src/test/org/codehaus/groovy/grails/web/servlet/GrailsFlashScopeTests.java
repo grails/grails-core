@@ -30,6 +30,13 @@ public class GrailsFlashScopeTests extends TestCase {
 
     private static final String ERRORS_PROPERTY = "errors";
 
+    public void testPutNull() {
+        GrailsWebUtil.bindMockWebRequest();
+        
+        FlashScope fs = new GrailsFlashScope();
+        fs.put("test",null);        
+    }
+
     public void testNextState() {
 
         GrailsWebUtil.bindMockWebRequest();
