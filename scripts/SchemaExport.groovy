@@ -1,15 +1,14 @@
 import org.hibernate.dialect.DialectFactory
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.support.JdbcUtils
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration
-
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
 def props = new Properties()
-def filename = "${basedir}/ddl.sql"
+def filename = "${grailsSettings.projectTargetDir}/ddl.sql"
 boolean export = false
 boolean stdout = false
+String configClassName = 'org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration'
 
 def configClasspath = {
 
@@ -51,6 +50,16 @@ def populateProperties = {
     props.'hibernate.connection.url' = dsConfig?.dataSource?.url ?: 'jdbc:hsqldb:mem:testDB'
     props.'hibernate.connection.driver_class' =
             dsConfig?.dataSource?.driverClassName ?: 'org.hsqldb.jdbcDriver'
+
+    if (dsConfig?.dataSource?.configClass) {
+        if (dsConfig.dataSource.configClass instanceof Class) {
+            configClassName = dsConfig.dataSource.configClass.name
+        }
+        else {
+            configClassName = dsConfig.dataSource.configClass
+        }
+    }
+
     if (dsConfig?.dataSource?.dialect) {
         def dialect = dsConfig.dataSource.dialect
         if (dialect instanceof Class) {
@@ -91,21 +100,25 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
 
     populateProperties()
 
-    def configuration = new GrailsAnnotationConfiguration(
-            grailsApplication: grailsApp,
-            properties: props)
+    def configuration = classLoader.loadClass(configClassName).newInstance()
+    configuration.setGrailsApplication(grailsApp)
+    configuration.setProperties(props)
     def hibernateCfgXml = eventsClassLoader.getResource('hibernate/hibernate.cfg.xml')
     if (hibernateCfgXml) {
         configuration.configure(hibernateCfgXml)
     }
 
-    def schemaExport = classLoader.loadClass('org.hibernate.tool.hbm2ddl.SchemaExport').newInstance(configuration).setHaltOnError(true).setOutputFile(file.path).setDelimiter(';')
+    def schemaExport = classLoader.loadClass('org.hibernate.tool.hbm2ddl.SchemaExport')
+        .newInstance(configuration)
+        .setHaltOnError(true)
+        .setOutputFile(file.path)
+        .setDelimiter(';')
 
     def action = export ? "Exporting" : "Generating script to ${file.path}"
     println "${action} in environment '${grailsEnv}' using properties ${props}"
 
     if (export) {
-        // 11st drop, warning exceptions
+        // 1st drop, warning exceptions
         schemaExport.execute(stdout, true, true, false)
         schemaExport.exceptions.clear()
         // then create
