@@ -22,15 +22,16 @@ package org.codehaus.groovy.grails.web.util
  */
 
 
-class TypeConvertingMap implements Map {
+class TypeConvertingMap implements Map, Cloneable{
 
-    private wrappedMap
+    protected Map wrappedMap
 
     TypeConvertingMap() {
         this([:])
     }
     
     TypeConvertingMap(Map map) {
+		if(map == null) map = [:]
         wrappedMap = map
     }
 
