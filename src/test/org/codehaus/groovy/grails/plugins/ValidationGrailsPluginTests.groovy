@@ -1,31 +1,52 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
+import org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.validation.Validateable
 import org.springframework.context.support.StaticMessageSource
 
-public class ValidationGrailsPluginTests extends AbstractGrailsPluginTests {
+public class ValidationGrailsPluginTests extends GroovyTestCase {
 
-    void onSetUp() {
-        def config = new ConfigSlurper().parse("grails.validateable.packages= ['org.codehaus.groovy.grails.plugins']")
-        ConfigurationHolder.config = config
-
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-        ctx.registerMockBean('messageSource', new StaticMessageSource())
+    protected void tearDown() {
+        super.tearDown()
+        def registry = GroovySystem.getMetaClassRegistry()
+        registry.removeMetaClass(ValidationGrailsPlugin)
+        registry.removeMetaClass(SomeValidateableClass)
+        registry.removeMetaClass(SomeValidateableSubclass)
     }
 
-    void testAnnotatedClass() {
-        if(notYetImplemented()) return
-        def svc = gcl.loadClass('org.codehaus.groovy.grails.plugins.SomeValidateableClass').newInstance()
+    protected void setUp() {
+        super.setUp()
+        MockApplicationContext mockCtx = new MockApplicationContext()
+        mockCtx.registerMockBean("someValidateableClass", new SomeValidateableClass())
+        mockCtx.registerMockBean("someValidateableSubclass", new SomeValidateableSubclass())
+        mockCtx.registerMockBean('messageSource', new StaticMessageSource())
+
+        ValidationGrailsPlugin.metaClass.getApplication = { [:] }
+        ValidationGrailsPlugin.metaClass.getLog = { [debug: {}] }
+
+        new ValidationGrailsPlugin().doWithDynamicMethods(mockCtx)
+    }
+
+    void testBasicValidation() {
+        def svc = new SomeValidateableClass()
         svc.name = 'Jeff'
         assertTrue svc.validate()
         svc.name = 'Zack'
         assertFalse svc.validate()
     }
-}
 
+    void testInheritedConstraints() {
+        if (notYetImplemented()) return
+        def svc = new SomeValidateableSubclass()
+        svc.town = 'Saint Charles'
+        svc.name = 'Jeff'
+        assertTrue svc.validate()
+
+        svc.name = 'Zack'
+        assertFalse svc.validate()
+    }
+}
 
 @Validateable
 class SomeValidateableClass {
@@ -34,5 +55,15 @@ class SomeValidateableClass {
 
     static constraints = {
         name matches: /J.*/
+    }
+}
+
+@Validateable
+class SomeValidateableSubclass extends SomeValidateableClass {
+
+    String town
+
+    static constraints = {
+        town size: 3..50
     }
 }
