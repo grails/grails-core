@@ -13,7 +13,7 @@ With Grails you can easily create web applications thanks to:
 
 - a complete development and deployment environment. All dependencies and configuration that is required to the run Grails applications in a web server are provided by Grails. The only thing you have to worry about is your application code.
 
-- inclusion of an embedded Jetty web server
+- inclusion of an embedded web server
 
 - development mode that automatically reloads changes made to application code, without having to restart the web server.
 
