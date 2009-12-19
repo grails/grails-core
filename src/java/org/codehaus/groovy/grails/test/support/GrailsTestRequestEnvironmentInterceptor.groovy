@@ -30,6 +30,8 @@ import grails.util.GrailsWebUtil
  */
 class GrailsTestRequestEnvironmentInterceptor {
 
+    static final String DEFAULT_CONTROLLER_NAME = 'test'
+    
     ApplicationContext applicationContext
     
     GrailsTestRequestEnvironmentInterceptor(ApplicationContext applicationContext) {
@@ -39,10 +41,11 @@ class GrailsTestRequestEnvironmentInterceptor {
     /**
      * Establishes a mock request environment
      */
-    void init() {
+    void init(String controllerName = DEFAULT_CONTROLLER_NAME) {
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext)
         ServletContextHolder.servletContext = webRequest.servletContext
         webRequest.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
+        webRequest.controllerName = controllerName
     }
 
     /**
@@ -54,15 +57,22 @@ class GrailsTestRequestEnvironmentInterceptor {
     }
     
     /**
-     * Calls init() before and destroy() after invoking {@code body}.
+     * Passes {@code body} to {@code doInRequestEnvironment(String,Closure)} with the {@code DEFAULT_CONTROLLER_NAME}.
      */    
     void doInRequestEnvironment(Closure body) {
-        init() 
+        doInRequestEnvironment(DEFAULT_CONTROLLER_NAME, body)
+    }
+
+    /**
+     * Calls {@code init()} before and {@code destroy()} after invoking {@code body}.
+     */ 
+    void doInRequestEnvironment(String controllerName, Closure body) {
+        init(controllerName)
         try {
             body()
         } finally {
             destroy()
         }
     }
-
+    
 }

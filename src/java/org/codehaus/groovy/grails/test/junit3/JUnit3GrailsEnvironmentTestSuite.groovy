@@ -28,6 +28,7 @@ import java.util.regex.Pattern
 import org.codehaus.groovy.grails.test.support.GrailsTestAutowirer
 import org.codehaus.groovy.grails.test.support.GrailsTestRequestEnvironmentInterceptor
 import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
+import org.codehaus.groovy.grails.test.support.ControllerNameExtractor
 
 /**
  * A Grails specific test suite that runs tests in a “Grails” environment. That is,
@@ -71,8 +72,25 @@ class JUnit3GrailsEnvironmentTestSuite extends TestSuite {
         }
 
         def rawRunner = { test.run(result) }
-        def inTransactionRunner = mode.wrapInTransaction && transactionInterceptor.isTransactional(test) ? { transactionInterceptor.doInTransaction(rawRunner) } : rawRunner 
-        def inRequestRunner = mode.wrapInRequestEnvironment ? { requestEnvironmentInterceptor.doInRequestEnvironment(inTransactionRunner) } : rawRunner
+
+        def inTransactionRunner
+        if (mode.wrapInTransaction && transactionInterceptor.isTransactional(test)) {
+            inTransactionRunner = { transactionInterceptor.doInTransaction(rawRunner) }
+        } else {
+            inTransactionRunner = rawRunner
+        }
+
+        def inRequestRunner
+        if (mode.wrapInRequestEnvironment) {
+            def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(test.class.name, JUnit3GrailsTestType.TESTS_SUFFIX)
+            if (controllerName) {
+                inRequestRunner = { requestEnvironmentInterceptor.doInRequestEnvironment(controllerName, inTransactionRunner) }
+            } else {
+                inRequestRunner = { requestEnvironmentInterceptor.doInRequestEnvironment(inTransactionRunner) }
+            }
+        } else {
+            inRequestRunner = inTransactionRunner
+        }
         
         inRequestRunner()
     }
