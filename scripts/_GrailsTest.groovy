@@ -168,38 +168,23 @@ target(allTests: "Runs the project's tests.") {
         filteredPhases.each { phase, types ->
             currentTestPhaseName = phase
             
-            def dirs = [:]
-            types.each {
-                def relativeSourcePath = it.relativeSourcePath
-                if (relativeSourcePath) {
-                    def source = new File(testSourceDir, relativeSourcePath)
-                    if (source.exists()) {
-                        dirs[it] = [source: source, classes: new File(grailsSettings.testClassesDir, relativeSourcePath)]
-                    }
-                }
-            }
+            // Add a blank line before the start of this phase so that it
+            // is easier to distinguish
+            println()
 
-            if (dirs) {
-                // Add a blank line before the start of this phase so that it
-                // is easier to distinguish
-                println()
+            event("StatusUpdate", ["Starting $phase test phase"])
+            event("TestPhaseStart", [phase])
 
-                event("StatusUpdate", ["Starting $phase test phase"])
-                event("TestPhaseStart", [phase])
+            "${phase}TestPhasePreparation"()
 
-                "${phase}TestPhasePreparation"()
+            // Now run all the tests registered for this phase.
+            types.each(processTests)
 
-                // Now run all the tests registered for this phase.
-                types.each {
-                    processTests(it, dirs[it].source, dirs[it].classes)
-                }
+            // Perform any clean up required.
+            this."${phase}TestPhaseCleanUp"()
 
-                // Perform any clean up required.
-                this."${phase}TestPhaseCleanUp"()
-
-                event("TestPhaseEnd", [phase])
-                currentTestPhaseName = null
-            }
+            event("TestPhaseEnd", [phase])
+            currentTestPhaseName = null
         }
     } finally {
         String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
@@ -220,10 +205,20 @@ target(allTests: "Runs the project's tests.") {
  * @param type The type of the tests to compile (not the test phase!)
  * For example, "unit", "jsunit", "webtest", etc.
  */
-processTests = { GrailsTestType type, File sourceDir, File classesDir ->
+processTests = { GrailsTestType type ->
     currentTestTypeName = type.name
-    compileTests(type, sourceDir, classesDir)
-    runTests(type, classesDir)
+    
+    def relativePathToSource = type.relativeSourcePath
+    def dest = null
+    if (relativePathToSource) {
+        def source = new File("${testSourceDir}", relativePathToSource)
+        if (!source.exists()) return // no source, no point continuing
+
+        dest = new File(grailsSettings.testClassesDir, relativePathToSource)
+        compileTests(type, source, dest)
+    }
+    
+    runTests(type, dest)
     currentTestTypeName = null
 }
 
