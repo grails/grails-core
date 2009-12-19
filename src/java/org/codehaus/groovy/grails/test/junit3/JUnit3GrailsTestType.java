@@ -43,6 +43,8 @@ import groovy.lang.Binding;
  */
 public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
 
+    public static final String TESTS_SUFFIX = "Tests";
+     
     protected TestSuite wholeTestSuite;
     protected JUnit3GrailsTestTypeMode mode;
     
@@ -57,7 +59,7 @@ public class JUnit3GrailsTestType extends GrailsTestTypeSupport {
 
     protected List<String> getTestSuffixes() { 
         List<String> testSuffixes = new LinkedList<String>();
-        testSuffixes.add("Tests");
+        testSuffixes.add(TESTS_SUFFIX);
         return testSuffixes;
     }
 
