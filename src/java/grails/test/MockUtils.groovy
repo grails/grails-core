@@ -733,14 +733,19 @@ class MockUtils {
 
                 Mapping mapping = evaluateMapping(clazz)
 
-                if (mapping.autoTimestamp && properties.find { it.name == "lastUpdated" } && delegate.id != null) {
-                    delegate.lastUpdated = new Date()
+                def time = System.currentTimeMillis()
+                def lastUpdatedProperty = properties.find { it.name == "lastUpdated" }
+                if (lastUpdatedProperty && mapping.autoTimestamp && delegate.id != null) {
+                    def now = lastUpdatedProperty.propertyType.newInstance([time] as Object[])
+                    delegate.lastUpdated = now
                 }
                 if (!testInstances.contains(delegate)) {
                     testInstances << delegate
                     // If dateCreated exists and id is still null, set it
-                    if (mapping.autoTimestamp && properties.find { it.name == "dateCreated" } && delegate.id == null) {
-                        delegate.dateCreated = new Date()
+                    def dateCreatedProperty = properties.find { it.name == "dateCreated" }
+                    if (dateCreatedProperty && mapping.autoTimestamp && delegate.id == null) {
+                        def now = dateCreatedProperty.propertyType.newInstance([time] as Object[])
+                        delegate.dateCreated = now
                     }
                     if (!delegate.id) delegate.id = testInstances.size()
                 }

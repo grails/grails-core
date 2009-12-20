@@ -1383,6 +1383,20 @@ class MockUtilsTests extends GroovyTestCase {
 
         assertNull domain.lastUpdated
     }
+
+    void testAutoTimestampWorksWithNonDateTypes() {
+        MockUtils.mockDomain TestNonDateTimestampDomain
+
+        def domain = new TestNonDateTimestampDomain(text: "1")
+        assertNotNull domain.save()
+
+        assertNotNull domain.dateCreated
+
+        domain.text = "2"
+        assertNotNull domain.save()
+
+        assertNotNull domain.lastUpdated
+    }
 }
 
 /**
@@ -1643,5 +1657,21 @@ class TestNonAutoTimestampDomain {
 
     static mapping = {
         autoTimestamp false
+    }
+}
+
+class TestNonDateTimestampDomain {
+    Long id
+    Long version
+    String text
+    Timestamp dateCreated
+    Timestamp lastUpdated
+}
+
+class Timestamp {
+    private final long millis
+
+    Timestamp(long millis) {
+        this.millis = millis
     }
 }
