@@ -38,6 +38,8 @@ import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 import grails.validation.ValidationException
+import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder
+import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
 
 /**
  * This is a utility/helper class for mocking various types of Grails
@@ -729,13 +731,15 @@ class MockUtils {
                 // set if it does'nt.
                 def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
 
-                if(properties.find { it.name == "lastUpdated" } && delegate.id != null) {
+                Mapping mapping = evaluateMapping(clazz)
+
+                if (mapping.autoTimestamp && properties.find { it.name == "lastUpdated" } && delegate.id != null) {
                     delegate.lastUpdated = new Date()
                 }
                 if (!testInstances.contains(delegate)) {
                     testInstances << delegate
                     // If dateCreated exists and id is still null, set it
-                    if(properties.find { it.name == "dateCreated" } && delegate.id == null) {
+                    if (mapping.autoTimestamp && properties.find { it.name == "dateCreated" } && delegate.id == null) {
                         delegate.dateCreated = new Date()
                     }
                     if (!delegate.id) delegate.id = testInstances.size()
@@ -789,6 +793,18 @@ class MockUtils {
                 }
             }
         }
+    }
+
+    private static Mapping evaluateMapping(Class clazz) {
+        Mapping mapping
+        Closure mappingBlock = GrailsClassUtils.getStaticPropertyValue(clazz, "mapping")
+        if (mappingBlock) {
+            def builder = new HibernateMappingBuilder(clazz.name)
+            mapping = builder.evaluate(mappingBlock)
+        } else {
+            mapping = new Mapping() // default mapping config
+        }
+        return mapping
     }
 
     /**

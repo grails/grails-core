@@ -1369,6 +1369,20 @@ class MockUtilsTests extends GroovyTestCase {
         assertNull domain.save()
         assertEquals "unique", domain.errors.a
     }
+
+    void testAutoTimestampFalseIsRespected() {
+        MockUtils.mockDomain TestNonAutoTimestampDomain
+
+        def domain = new TestNonAutoTimestampDomain(text: "1")
+        assertNotNull domain.save()
+
+        assertNull domain.dateCreated
+
+        domain.text = "2"
+        assertNotNull domain.save()
+
+        assertNull domain.lastUpdated
+    }
 }
 
 /**
@@ -1617,5 +1631,17 @@ class TestNullableUniqueCompoundPropertyDomain {
 
     static constraints = {
         a nullable: true, unique: "b"
+    }
+}
+
+class TestNonAutoTimestampDomain {
+    Long id
+    Long version
+    String text
+    Date dateCreated
+    Date lastUpdated
+
+    static mapping = {
+        autoTimestamp false
     }
 }
