@@ -492,6 +492,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
             urlc.setDoInput(false);
             urlc.setDoOutput(false);
+            urlc.connect();
 
             lastModified = urlc.getLastModified();
         } catch (FileNotFoundException fnfe) {

@@ -511,6 +511,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             URLConnection c = r.getURL().openConnection();
             c.setDoInput(false);
             c.setDoOutput(false);
+            c.connect();
             modifiedTimes[i] = c.getLastModified();
         }
     }
