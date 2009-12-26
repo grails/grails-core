@@ -5,14 +5,6 @@
 	<key>documents</key>
 	<array>
 		<dict>
-			<key>filename</key>
-			<string>@grails.project.name@.launch</string>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>build.xml</string>
-		</dict>
-		<dict>
 			<key>name</key>
 			<string>grails-app</string>
 			<key>regexFolderFilter</key>
