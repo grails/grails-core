@@ -38,8 +38,6 @@ import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 import grails.validation.ValidationException
-import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder
-import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
 
 /**
  * This is a utility/helper class for mocking various types of Grails
@@ -731,7 +729,7 @@ class MockUtils {
                 // set if it does'nt.
                 def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
 
-                Mapping mapping = evaluateMapping(clazz)
+                def mapping = evaluateMapping(clazz)
 
                 def time = System.currentTimeMillis()
                 def lastUpdatedProperty = properties.find { it.name == "lastUpdated" }
@@ -800,16 +798,14 @@ class MockUtils {
         }
     }
 
-    private static Mapping evaluateMapping(Class clazz) {
-        Mapping mapping
+    private static evaluateMapping(Class clazz) {
         Closure mappingBlock = GrailsClassUtils.getStaticPropertyValue(clazz, "mapping")
+        def builder = new MappingBuilder()
         if (mappingBlock) {
-            def builder = new HibernateMappingBuilder(clazz.name)
-            mapping = builder.evaluate(mappingBlock)
-        } else {
-            mapping = new Mapping() // default mapping config
+            mappingBlock.delegate = builder
+            mappingBlock.call()
         }
-        return mapping
+        return builder.mapping
     }
 
     /**
@@ -1184,5 +1180,14 @@ class MockUtils {
 class ThreadLocalMap extends ThreadLocal {
     protected initialValue() {
         return new WeakHashMap()
+    }
+}
+
+class MappingBuilder {
+    def mapping = [autoTimestamp: true]
+
+    void methodMissing(String name, args) {
+        println "mapping $name = $args"
+        mapping[name] = args[0]
     }
 }
