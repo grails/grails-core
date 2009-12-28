@@ -133,7 +133,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         }
         
         attrs.params?.each { k,v->
-            page.addProperty(k,v)
+            page.addProperty(k,v?.toString())
         }
         def decoratorMapper = getFactory().getDecoratorMapper()
 

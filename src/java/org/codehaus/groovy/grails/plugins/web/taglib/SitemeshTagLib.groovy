@@ -135,15 +135,16 @@ public class SitemeshTagLib implements RequestConstants {
      */
     def captureMeta = { attrs, body ->
     	def content=captureTagContent(out, 'meta', attrs, body)
-   		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
-    	if(attrs && smpage) {
+		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+		def val = attrs.content?.toString()
+    	if(attrs && smpage && val != null) {
     		if(attrs.name) {
-    			smpage.addProperty("meta.${attrs.name}", attrs.content)
-    			smpage.addProperty("meta.${attrs.name.toLowerCase()}", attrs.content)
+    			smpage.addProperty("meta.${attrs.name}", val)
+    			smpage.addProperty("meta.${attrs.name.toLowerCase()}", val)
     		} else if (attrs['http-equiv']) {
-    			smpage.addProperty("meta.http-equiv.${attrs['http-equiv']}", attrs.content)
-    			smpage.addProperty("meta.http-equiv.${attrs['http-equiv'].toLowerCase()}", attrs.content)
-    			smpage.addProperty("meta.http-equiv.${WordUtils.capitalize(attrs['http-equiv'],['-'] as char[])}", attrs.content)
+    			smpage.addProperty("meta.http-equiv.${attrs['http-equiv']}", val)
+    			smpage.addProperty("meta.http-equiv.${attrs['http-equiv'].toLowerCase()}", val)
+    			smpage.addProperty("meta.http-equiv.${WordUtils.capitalize(attrs['http-equiv'],['-'] as char[])}", val)
         	}
     	}
     }
