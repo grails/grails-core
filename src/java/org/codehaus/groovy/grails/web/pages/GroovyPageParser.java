@@ -423,7 +423,7 @@ public class GroovyPageParser implements Tokens {
 	private void directJspTagLib(String text) {
 
 		text = text.substring(TAGLIB_DIRECTIVE.length() + 1, text.length());
-		Map attrs = new HashMap();
+		Map attrs = new LinkedHashMap();
 		populateMapWithAttributes(attrs, text + '>');
 
 		String prefix = (String) attrs.get("\"prefix\"");
@@ -908,7 +908,7 @@ public class GroovyPageParser implements Tokens {
 		text = buf.toString();
 
 		String tagName;
-		Map attrs = new TreeMap();
+		Map attrs = new LinkedHashMap();
 		text = text.replaceAll("[\r\n\t]", " "); // this line added TODO query
 													// this
 
@@ -1044,7 +1044,7 @@ public class GroovyPageParser implements Tokens {
 			String name = m.group(2);
 			String val = m.group(3);
 			name = '\"' + name + '\"';
-			if (val.startsWith("${") && val.endsWith("}")) {
+			if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
 				val = val.substring(2, val.length() - 1);
 			} else if (!(val.startsWith("[") && val.endsWith("]"))) {
 				val = '\"' + val + '\"';
