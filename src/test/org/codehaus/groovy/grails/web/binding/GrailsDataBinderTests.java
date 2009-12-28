@@ -125,7 +125,7 @@ public class GrailsDataBinderTests extends TestCase {
         SimpleDateFormat dateFormat;
 
         public TestDateTimePropertyEditor(String format) {
-            this.dateFormat = new SimpleDateFormat(format);
+            this.dateFormat = new SimpleDateFormat(format, Locale.US);
         }
 
         public List getRequiredFields() {
@@ -206,7 +206,7 @@ public class GrailsDataBinderTests extends TestCase {
     public void testBindStructuredDateTimeWithValidData() {
         TestBean bean = bindDateTimeWithCustomEditor("01/01/2009",  "01:00 PM");
         assertNotNull(bean.getMyDateTime());
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_TIME_FORMAT, Locale.US);
         assertEquals("01/01/2009 01:00 PM", dateFormat.format(bean.getMyDateTime().getDateTime()));
 
         bean = bindDateTimeWithCustomEditor("01/01/2009",  "");
