@@ -43,7 +43,7 @@ class TestUrlMappings {
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
         String newLine = EOL
-        assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>', template)
+        assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" controller="bar" action="list"></a></p><a href="/foo/list" onclick="<remote>return false;" controller="foo" action="list"></a>', template)
 
     }
 
