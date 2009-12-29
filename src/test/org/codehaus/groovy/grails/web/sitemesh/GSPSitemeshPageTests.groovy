@@ -42,6 +42,16 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         assertEquals 'body here', writer.toString()
         assertEquals 'somejs();', gspSiteMeshPage.getProperty('body.onload')
     }
+	
+	void testMetaObjectValues() {
+		// GRAILS-5603 test case
+		def template='<html><head><meta name="intval" content="${123}"/><meta name="dateval" content="${new Date(0)}"/><title>This is the title</title></head><body onload="somejs();">body here</body></html>'
+		def gspSiteMeshPage = new GSPSitemeshPage()
+		webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+		def result = applyTemplate(template, [:])
+		assertEquals '123', gspSiteMeshPage.getProperty('meta.intval')
+		assertEquals new Date(0).toString(), gspSiteMeshPage.getProperty('meta.dateval')
+	}	
 
     void testLayoutTags() {
         def template='<html><head><title>This is the title</title></head><body onload="somejs();">body here</body></html>'
