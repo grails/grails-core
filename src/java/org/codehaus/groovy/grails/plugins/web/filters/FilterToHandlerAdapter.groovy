@@ -174,13 +174,20 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
         	matched=pathMatcher.match(uriPattern, uri)
         }
         else if(controllerRegex && actionRegex) {
-			if(controllerName == null || actionName == null) {
+			if(controllerName == null) {
 				matched = false
 			}
 			else if(useRegexFind) {
         		matched=controllerRegex.matcher(controllerName).find() && actionRegex.matcher(actionName).find()
         	} else {
-        		matched=controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches()
+        		matched=controllerRegex.matcher(controllerName).matches()
+                if(matched) {
+                    if(actionName) {
+                        matched = actionRegex.matcher(actionName).matches()
+                    } else {
+                        matched = ('*' == filterConfig.scope.action)
+                    }
+                }
         	}
         }
     	if(invertRule)
