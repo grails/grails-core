@@ -85,4 +85,14 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 
         assertFalse filterAdapter.accept("demo", null, "/ignored")
     }
+
+    void testMatchingControllerAndActionNotSpecifiedInConfig() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "demo"
+        filterAdapter.afterPropertiesSet()
+
+        assertTrue filterAdapter.accept("demo", null, "/ignored")
+    }
 }

@@ -185,7 +185,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
                     if(actionName) {
                         matched = actionRegex.matcher(actionName).matches()
                     } else {
-                        matched = ('*' == filterConfig.scope.action)
+                        matched = (!filterConfig.scope.action || '*' == filterConfig.scope.action)
                     }
                 }
         	}
