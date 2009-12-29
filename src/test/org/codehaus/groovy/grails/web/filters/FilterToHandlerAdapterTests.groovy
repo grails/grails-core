@@ -52,4 +52,37 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 		assert !filterAdapter.accept("Controller", "index", "/foo/1/2")
 		assert filterAdapter.accept("Contoller", "index", "/foo/1/2")
 	}
+
+    void testNullActionWithMatchingControllerAndActionWildcarded() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "demo"
+        filterAdapter.filterConfig.scope.action = "*"
+        filterAdapter.afterPropertiesSet()
+
+        assertTrue filterAdapter.accept("demo", null, "/ignored")
+    }
+
+    void testNullActionWithNonMatchingControllerAndActionWildcarded() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "demo"
+        filterAdapter.filterConfig.scope.action = "*"
+        filterAdapter.afterPropertiesSet()
+
+        assertFalse filterAdapter.accept("auth", null, "/ignored")
+    }
+
+    void testNullActionWithMatchingControllerAndActionNotWildcarded() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "demo"
+        filterAdapter.filterConfig.scope.action = "index"
+        filterAdapter.afterPropertiesSet()
+
+        assertFalse filterAdapter.accept("demo", null, "/ignored")
+    }
 }
