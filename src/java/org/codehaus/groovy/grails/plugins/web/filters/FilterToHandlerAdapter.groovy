@@ -26,6 +26,8 @@ import org.springframework.web.util.UrlPathHelper
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.AntPathMatcher
 import org.codehaus.groovy.grails.web.servlet.view.NullView
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 /**
  * Adapter between a FilterConfig object and a Spring HandlerInterceptor.
@@ -182,10 +184,14 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
         	} else {
         		matched=controllerRegex.matcher(controllerName).matches()
                 if(matched) {
-                    if(actionName) {
-                        matched = actionRegex.matcher(actionName).matches()
-                    } else {
-                        matched = (!filterConfig.scope.action || '*' == filterConfig.scope.action)
+                    if(filterConfig.scope.action) {
+                        if(!actionName) {
+                            def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, controllerName)
+                            actionName = controllerClass?.getDefaultAction()
+                        }
+                        if(actionName) {
+                            matched = actionRegex.matcher(actionName).matches()
+                        }
                     }
                 }
         	}
