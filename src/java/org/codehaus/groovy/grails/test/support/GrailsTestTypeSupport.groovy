@@ -140,7 +140,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      */
     protected File getSourceDir() {
         if (!sourceDir) {
-            sourceDir = new File("test/$relativeSourcePath") // TODO: remove this hardcoding of 'test/'
+            sourceDir = new File(buildBinding.testSourceDir, relativeSourcePath)
         }
         sourceDir
     }
