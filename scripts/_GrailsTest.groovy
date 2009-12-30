@@ -93,6 +93,9 @@ testReportsDir = grailsSettings.testReportsDir
 // Where the test source can be found
 testSourceDir = grailsSettings.testSourceDir
 
+// The 'styledir' argument to the 'junitreport' ant task (null == default provided by Ant)
+junitReportStyleDir = null
+
 // Set up an Ant path for the tests.
 ant.path(id: "grails.test.classpath", testClasspath)
 

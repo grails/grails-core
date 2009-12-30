@@ -28,7 +28,7 @@ class JUnitReportProcessor implements GrailsBuildListener {
                     fileset(dir: testReportsDir) {
                         include(name: "TEST-*.xml")
                     }
-                    report(format: "frames", todir: "${testReportsDir}/html")
+                    report(format: "frames", todir: "${testReportsDir}/html", *:(junitReportStyleDir ? [styledir: junitReportStyleDir] : [:]))
                 }
             }
         }
