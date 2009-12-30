@@ -26,7 +26,6 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.Validator;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -49,7 +48,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private Map relationshipMap;
     private Map hasOneMap;
 
-    private Map constraints = new HashMap();
+    private Map constraints;
     private Map mappedBy;
     private Validator validator;
     private String mappingStrategy = GrailsDomainClass.GORM;
@@ -57,10 +56,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private boolean root = true;
     private Set subClasses = new HashSet();
     private Collection embedded;
+    private Map<String, Object> defaultConstraints;
 
-    public DefaultGrailsDomainClass(Class clazz) {
+    public DefaultGrailsDomainClass(Class clazz, Map<String, Object> defaultConstraints) {
         super(clazz, "");
-        PropertyDescriptor[] propertyDescriptors = getReference().getPropertyDescriptors();
+        PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
 
         if(!clazz.getSuperclass().equals( GroovyObject.class ) &&
            !clazz.getSuperclass().equals(Object.class) &&
@@ -70,6 +70,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         this.propertyMap = new LinkedHashMap<String, GrailsDomainClassProperty>();
         this.relationshipMap = getAssociationMap();
         this.embedded = getEmbeddedList();
+        this.defaultConstraints = defaultConstraints;         
+
 
         // get mapping strategy by setting
         if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class) != null)
@@ -104,14 +106,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
         // set persistent properties
         establishPersistentProperties();
-        // process the constraints
-        try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistentProperties);
-        } catch (IntrospectionException e) {
-            LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
-        }
 
-
+    }
+    public DefaultGrailsDomainClass(Class clazz) {
+        this(clazz, null);
     }
 
 
@@ -226,12 +224,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private void establishRelationships() {
         for (Object o : this.propertyMap.values()) {
             DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty) o;
+            if(!currentProp.isPersistent()) continue;
+
             Class currentPropType = currentProp.getType();
             // establish if the property is a one-to-many
             // if it is a Set and there are relationships defined
             // and it is defined as persistent
-            if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType) &&
-                    currentProp.isPersistent()) {
+            if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
 
                 establishRelationshipForCollection(currentProp);
             }
@@ -363,6 +362,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     }
 
+    
     /**
      * Finds a property type is an array of descriptors for the given property name
      *
@@ -370,7 +370,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      * @param propertyName The property name
      * @return The Class or null
      */
-	private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
+    private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
 		PropertyDescriptor d = null;
         for (PropertyDescriptor descriptor : descriptors) {
             if (descriptor.getName().equals(propertyName)) {
@@ -678,11 +678,25 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
       * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getConstraints()
       */
     public Map getConstrainedProperties() {
+        if(this.constraints==null) {
+            initializeConstraints();
+        }
         return unmodifiableMap(this.constraints);
     }
+
+    private void initializeConstraints() {
+        // process the constraints
+        if(defaultConstraints != null) {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+        }
+        else {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+        }
+    }
+
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
-      */
+    * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
+    */
     public Validator getValidator() {
         return this.validator;
     }
@@ -710,19 +724,20 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     }
 
     public void refreshConstraints() {
-        try {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), this.persistentProperties);
+        if(defaultConstraints!=null) {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+        }
+        else {
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+        }
 
-            // Embedded components have their own ComponentDomainClass
-            // instance which won't be refreshed by the application.
-            // So, we have to do it here.
-            for (GrailsDomainClassProperty property : this.persistentProperties) {
-                if (property.isEmbedded()) {
-                    property.getComponent().refreshConstraints();
-                }
+        // Embedded components have their own ComponentDomainClass
+        // instance which won't be refreshed by the application.
+        // So, we have to do it here.
+        for (GrailsDomainClassProperty property : this.persistentProperties) {
+            if (property.isEmbedded()) {
+                property.getComponent().refreshConstraints();
             }
-        } catch (IntrospectionException e) {
-            LOG.error("Error reading class ["+getClazz()+"] constraints: " +e .getMessage(), e);
         }
     }
 

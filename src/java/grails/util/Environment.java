@@ -17,6 +17,9 @@
 package grails.util;
 
 
+import groovy.lang.Closure;
+import groovy.lang.MissingMethodException;
+
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -123,6 +126,162 @@ public enum Environment {
             return Environment.valueOf(envName.toUpperCase());
         }
         return null;
+    }
+
+    /**
+     * Takes an environment specific DSL block like:
+     *
+     * <code>
+     * environments {
+     *      development {}
+     *      production {}
+     * }
+     * </code>
+     *
+     * And returns the closure that relates to the current environment
+     *
+     * @param closure The top level closure
+     * @return The environment specific block or null if non exists
+     */
+    public static Closure getEnvironmentSpecificBlock(Closure closure) {
+        final Environment env = getCurrent();
+        return getEnvironmentSpecificBlock(env, closure);
+    }
+
+
+    /**
+     * Takes an environment specific DSL block like:
+     *
+     * <code>
+     * environments {
+     *      development {}
+     *      production {}
+     * }
+     * </code>
+     *
+     * And returns the closure that relates to the specified
+     *
+     * @param env The environment to use
+     * @param closure The top level closure
+     * @return The environment specific block or null if non exists
+     */
+    public static Closure getEnvironmentSpecificBlock(Environment env, Closure closure) {
+        if(closure != null) {
+            final EnvironmentBlockEvaluator evaluator = evaluateEnvironmentSpecificBlock(env, closure);
+            return evaluator.getCallable();
+
+        }
+        return null;
+    }
+
+    /**
+     * Takes an environment specific DSL block like:
+     *
+     * <code>
+     * environments {
+     *      development {}
+     *      production {}
+     * }
+     * </code>
+     *
+     * And executes the closure that relates to the current environment
+     *
+     * @param closure The top level closure
+     * @return The result of the closure execution
+     */
+    public static Object executeForCurrentEnvironment(Closure closure) {
+        final Environment env = getCurrent();
+        return executeForEnvironment(env, closure);
+
+    }
+
+    /**
+     * Takes an environment specific DSL block like:
+     *
+     * <code>
+     * environments {
+     *      development {}
+     *      production {}
+     * }
+     * </code>
+     *
+     * And executes the closure that relates to the specified environment
+     *
+     * @param env The environment to use
+     * @param closure The top level closure
+     * @return The result of the closure execution
+     */
+    public static Object executeForEnvironment(Environment env, Closure closure) {
+        if(closure != null) {
+            final EnvironmentBlockEvaluator evaluator = evaluateEnvironmentSpecificBlock(env, closure);
+            return evaluator.execute();
+
+        }
+        return null;
+    }
+
+    private static EnvironmentBlockEvaluator evaluateEnvironmentSpecificBlock(Environment environment, Closure closure) {
+        final EnvironmentBlockEvaluator evaluator = new EnvironmentBlockEvaluator(environment);
+        closure.setDelegate(evaluator);
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
+        return evaluator;
+    }
+
+    private static class EnvironmentBlockEvaluator {
+        private Environment current;
+        private Closure callable;
+
+        public Closure getCallable() {
+            return callable;
+        }
+
+        Object execute() {
+            if(callable!=null) {
+                return callable.call();
+            }
+            return null;
+        }
+
+        private EnvironmentBlockEvaluator(Environment e) {
+            this.current = e;
+        }
+
+        void environments(Closure callable) {
+            if(callable!=null) {
+                callable.setDelegate(this);
+                callable.setResolveStrategy(Closure.DELEGATE_FIRST);
+                callable.call();
+            }
+        }
+        void production(Closure callable) {
+            if(current == Environment.PRODUCTION) {
+                 this.callable = callable;
+            }
+        }
+        void development(Closure callable) {
+            if(current == Environment.DEVELOPMENT) {
+                 this.callable = callable;
+            }
+        }
+        void test(Closure callable) {
+            if(current == Environment.TEST) {
+                 this.callable = callable;
+            }
+        }
+
+        Object methodMissing(String name, Object[] args) {
+            if(args != null && args.length > 0 && (args[0] instanceof Closure)) {
+                if(current == Environment.CUSTOM && current.getName().equals(name)) {
+                    this.callable = (Closure) args[0];
+                }
+                return null;
+            }
+            else {
+                throw new MissingMethodException(name, Environment.class, args);
+            }
+
+        }
     }
 
     private static boolean isBlank(String value) {

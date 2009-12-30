@@ -22,6 +22,7 @@ import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import grails.util.Environment;
+import grails.util.Metadata;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -29,12 +30,15 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.PluginInfo;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -44,10 +48,12 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
@@ -63,17 +69,17 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 	private static final Log LOG = LogFactory.getLog( GrailsLayoutDecoratorMapper.class );
 
 
-	private Map decoratorMap = new HashMap();
+	private Map<String, Decorator> decoratorMap = new ConcurrentHashMap<String, Decorator>();
 	private ServletContext servletContext;
     private WebApplicationContext applicationContext;
-    private PluginMetaManager pluginMetaManager;
+    private GrailsPluginManager pluginManager;
 
     public void init(Config config, Properties properties, DecoratorMapper parent) throws InstantiationException {
 		super.init(config,properties,parent);
 		this.servletContext = config.getServletContext();
         this.applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        this.pluginMetaManager = (PluginMetaManager)applicationContext.getBean(PluginMetaManager.BEAN_ID);
-
+        if(applicationContext.containsBean(GrailsPluginManager.BEAN_NAME))
+            this.pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
     }
 
 	public Decorator getDecorator(HttpServletRequest request, Page page) {
@@ -143,7 +149,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 		if(StringUtils.isBlank(name))return null;
 
 		if(Environment.getCurrent()!= Environment.DEVELOPMENT && decoratorMap.containsKey(name)) {
-			return (Decorator)decoratorMap.get(name);
+			return decoratorMap.get(name);
 		}
 		else {
 			String decoratorName = name;
@@ -181,22 +187,56 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 		}
 	}
 
-    private String searchPluginViews(String name, ResourceLoader resourceLoader) {
+    public String searchPluginViews(String name, ResourceLoader resourceLoader) {
         String pluginViewLocation = null;
-        ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver(resourceLoader);
-        try {
-            Resource[] resources = resourceResolver.getResources(GrailsResourceUtils.WEB_INF + "/plugins/*/" + GrailsResourceUtils.GRAILS_APP_DIR + "/views/layouts/" + name);
-            if(resources.length>0 && resources[0].exists()) {
-                Resource r = resources[0];
-                String url = r.getURL().toString();
-                pluginViewLocation = GrailsResourceUtils.WEB_INF + url.substring(url.indexOf("/plugins"));
-            }
+        if(Metadata.getCurrent().isWarDeployed()) {
+            pluginViewLocation = searchPluginViewsForWarDeployed(name, resourceLoader);        	
         }
-        catch (Exception e) {
-            // ignore
+        else {
+        	pluginViewLocation = searchPluginViewsInDevelopmentMode(name);
         }
         return pluginViewLocation;
     }
+
+	private String searchPluginViewsInDevelopmentMode(String name) {
+		
+		String pluginViewLocation = null;		
+		Resource[] pluginDirs = GrailsPluginUtils.getPluginDirectories();
+		for (Resource resource : pluginDirs) {
+			try {
+				final String pathToLayoutInPlugin = "grails-app/views/layouts/"+name;
+				final String absolutePathToResource = resource.getFile().getAbsolutePath();
+				if(!absolutePathToResource.endsWith("/"))
+					resource = new FileSystemResource(absolutePathToResource + '/');
+				final Resource layoutPath = resource.createRelative(pathToLayoutInPlugin);
+				if(layoutPath.exists()) {
+					PluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfo(absolutePathToResource);
+					pluginViewLocation = GrailsResourceUtils.WEB_INF + "/plugins/" + info.getFullName() + '/' + pathToLayoutInPlugin; 
+				}
+			} catch (IOException e) {
+				// ignore
+			}
+		}
+		return pluginViewLocation;
+	}
+
+	private String searchPluginViewsForWarDeployed(String name,
+			ResourceLoader resourceLoader) {
+		String pluginViewLocation = null;
+		ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver(resourceLoader);
+		try {
+		    Resource[] resources = resourceResolver.getResources(GrailsResourceUtils.WEB_INF + "/plugins/*/" + GrailsResourceUtils.GRAILS_APP_DIR + "/views/layouts/" + name);
+		    if(resources.length>0 && resources[0].exists()) {
+		        Resource r = resources[0];
+		        String url = r.getURL().toString();
+		        pluginViewLocation = GrailsResourceUtils.WEB_INF + url.substring(url.indexOf("/plugins"));
+		    }
+		}
+		catch (Exception e) {
+		    // ignore
+		}
+		return pluginViewLocation;
+	}
 
     private String lookupPathToControllerView(HttpServletRequest request, String viewName) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
@@ -205,9 +245,9 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                     .getAttributes()
                     .getController(request);
 
-            if(controller != null) {
-                String pathToView = this.pluginMetaManager.getPluginViewsPathForResource(controller.getClass().getName());
-                return GrailsResourceUtils.WEB_INF +pathToView + "/layouts/" + viewName;
+            if(controller != null && pluginManager != null) {
+                String pathToView = pluginManager.getPluginViewsPathForInstance(controller);
+                return GrailsResourceUtils.WEB_INF + (pathToView != null ? pathToView : "") + "/layouts/" + viewName;
             }
 
         }

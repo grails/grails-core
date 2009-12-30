@@ -48,6 +48,8 @@ import java.util.Stack;
  * @author Michał Kłujszo
  * @author Graeme Rocher
  * @since 0.2
+ * 
+ * @deprecated Use {@link grails.web.JSONBuilder} instead 
  *
  * Date Created: May, 18, 2006
  */
@@ -81,7 +83,7 @@ public class JSonBuilder extends BuilderSupport {
 	}
 
     public JSonBuilder(Writer writer) {
-        this( new JSONWriter(new GrailsPrintWriter(writer)) );
+        this( new JSONWriter((!(writer instanceof GrailsPrintWriter))?new GrailsPrintWriter(writer):writer) );
     }
 
 	protected Object createNode(Object name) {

@@ -1,12 +1,12 @@
 /*
- * Copyright 2004-2005 the original author or authors.
- * 
+ * Copyright 2004-2009 the original author or authors.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,76 +16,90 @@
 
 /**
  * Gant script which generates stats for a Grails project.
- * 
- * @author Glen Smith
  *
+ * @author Glen.Smith
+ * @author Andres.Almiray
  */
 
-includeTargets << grailsScript("_GrailsSettings")
+// includeTargets << grailsScript("_GrailsSettings")
+includeTargets << grailsScript("_GrailsEvents")
 
-target ('default': "Generates basic stats for a Grails project") {
+target (default: "Generates basic stats for a Grails project") {
+    def EMPTY = /^\s*$/
+    def SLASH_SLASH = /^\s*\/\/.*/
+    def SLASH_STAR_STAR_SLASH = /^(.*)\/\*(.*)\*\/(.*)$/
 
-	// maps file path to 
-	def pathToInfo = [
-	      new Expando(name: "Controllers", filetype: ".groovy", path: "controllers"),
-	      new Expando(name: "Domain Classes", filetype: ".groovy", path: "domain"),
-	      new Expando(name: "Jobs", filetype: ".groovy", path: "jobs"),
-	      new Expando(name: "Services", filetype: ".groovy", path: "services"),
-	      new Expando(name: "Tag Libraries", filetype: ".groovy", path: "taglib"),
-	      new Expando(name: "Groovy Helpers", filetype: ".groovy", path: "src.groovy"),
-	      new Expando(name: "Java Helpers", filetype: ".java", path: "src.java"),
-	      new Expando(name: "Unit Tests", filetype: ".groovy", path: "test.unit"),
-          new Expando(name: "Integration Tests", filetype: ".groovy", path: "test.integration"),	      
-	]
-	
-	
-	new File(basedir).eachFileRecurse { file ->
-			
-		def match = pathToInfo.find { expando -> 
-			file.path =~ expando.path && 
-			file.path.endsWith(expando.filetype) 
-		}
-		if (match && file.isFile() ) {
-			
-			if (file.path.toLowerCase() =~ /web-inf/ || file.path.toLowerCase() =~ /plugins/) {
-				// println "Skipping $file.path in WEB-INF or plugins dir"
-			} else {
-				match.filecount = match.filecount ? match.filecount+1 : 1
-				// strip whitespace	
-				def loc = file.readLines().findAll { line -> !(line ==~ /^\s*$/) }.size()	
-				match.loc = match.loc ? match.loc + loc : loc
-			}
-		}
-	
-	}
-	
-	
-	def totalFiles = 0
-	def totalLOC = 0
+    // TODO - handle slash_star comments inside strings
+    def DEFAULT_LOC_MATCHER = { file ->
+        loc = 0
+        comment = 0
+        file.eachLine { line ->
+            if(line ==~ EMPTY) return
+            else if(line ==~ SLASH_SLASH) return
+            else {
+                def m = line =~ SLASH_STAR_STAR_SLASH
+                if(m.count && m[0][1] ==~ EMPTY && m[0][3] ==~ EMPTY) return
+                int open = line.indexOf("/*")
+                int close = line.indexOf("*/")
+                if(open != -1 && (close-open) <= 1) comment++
+                else if(close != -1 && comment) comment--
+            }
+            if(!comment) loc++
+        } 
+        loc
+    }
+   
+    // maps file path to
+    def pathToInfo = [
+        [name: "Controllers",        path: "controllers",      filetype: [".groovy"]],
+        [name: "Domain Classes",     path: "domain",           filetype: [".groovy"]],
+        [name: "Jobs",               path: "job",              filetype: [".groovy"]],
+        [name: "Services",           path: "services",         filetype: [".groovy"]],
+        [name: "Tag Libraries",      path: "taglib",           filetype: [".groovy"]],
+        [name: "Groovy Helpers",     path: "src.groovy",       filetype: [".groovy"]],
+        [name: "Java Helpers",       path: "src.java",         filetype: [".java"]],
+        [name: "Unit Tests",         path: "test.unit",        filetype: [".groovy"]],
+        [name: "Integration Tests",  path: "test.integration", filetype: [".groovy"]],
+        [name: "Scripts",            path: "scripts",          filetype: [".groovy"]],
+    ]
 
-	println '''
-	+----------------------+-------+-------+
-	| Name                 | Files |  LOC  |
-	+----------------------+-------+-------+'''
+    event("StatsStart", [pathToInfo])
 
-	
-	pathToInfo.each { info ->
-	
-		if (info.filecount) {
-			println "	| " + 
-				info.name.padRight(20," ") + " | " + 
-				info.filecount.toString().padLeft(5, " ") + " | " +
-				info.loc.toString().padLeft(5," ") + " | "
-			totalFiles += info.filecount
-			totalLOC += info.loc
-		}
-	
-	}
-	
-	
-	println "	+----------------------+-------+-------+"	
-	println "	| Totals               | " + totalFiles.toString().padLeft(5, " ") + " | " + totalLOC.toString().padLeft(5, " ") + " | "
-	println "	+----------------------+-------+-------+\n"	
+    new File(basedir).eachFileRecurse { file ->
+        def match = pathToInfo.find { info ->
+            file.path =~ info.path &&
+            info.filetype.any{ s -> file.path.endsWith(s) }
+        }
+        if (match && file.isFile() ) {
+            match.filecount = match.filecount ? match.filecount+1 : 1
+            // strip whitespace
+            loc = match.locmatcher ? match.locmatcher(file) : DEFAULT_LOC_MATCHER(file)
+            match.loc = match.loc ? match.loc + loc : loc
+        }
+    }
 
+    def totalFiles = 0
+    def totalLOC = 0
 
-}   
+    println '''
+    +----------------------+-------+-------+
+    | Name                 | Files |  LOC  |
+    +----------------------+-------+-------+'''
+
+    pathToInfo.each { info ->
+
+        if (info.filecount) {
+            println "    | " +
+                info.name.padRight(20," ") + " | " +
+                info.filecount.toString().padLeft(5, " ") + " | " +
+                info.loc.toString().padLeft(5," ") + " | "
+            totalFiles += info.filecount
+            totalLOC += info.loc
+        }
+
+    }
+
+    println "    +----------------------+-------+-------+"
+    println "    | Totals               | " + totalFiles.toString().padLeft(5, " ") + " | " + totalLOC.toString().padLeft(5, " ") + " | "
+    println "    +----------------------+-------+-------+\n"
+}

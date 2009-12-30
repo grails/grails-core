@@ -30,12 +30,14 @@ import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.converters.Converter
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import grails.validation.ValidationException
 
 /**
  * This is a utility/helper class for mocking various types of Grails
@@ -290,7 +292,7 @@ class MockUtils {
         def mockRequest = new GrailsMockHttpServletRequest()
         def mockResponse = new GrailsMockHttpServletResponse()
         def mockSession = new MockHttpSession()
-        def mockParams = [:]
+        def mockParams = new GroovyPageAttributes()
         def mockFlash = [:]
         def mockChainModel = [:]
 
@@ -722,13 +724,26 @@ class MockUtils {
                 // The object passes validation, so to confirm that it
                 // has been saved we add it to the list of test instances.
                 // Note that if the instance is already in the list, we
-                // don't add it again! We also give it an ID.
+                // don't add it again! We also give it an ID. lastUpdated
+                // is set if the object already has an ID, dateCreated is
+                // set if it does'nt.
+                def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
+
+                if(properties.find { it.name == "lastUpdated" } && delegate.id != null) {
+                    delegate.lastUpdated = new Date()
+                }
                 if (!testInstances.contains(delegate)) {
                     testInstances << delegate
-                    delegate.id = testInstances.size()
+                    // If dateCreated exists and id is still null, set it
+                    if(properties.find { it.name == "dateCreated" } && delegate.id == null) {
+                        delegate.dateCreated = new Date()
+                    }
+                    if (!delegate.id) delegate.id = testInstances.size()
                 }
                 return delegate
-            }
+            } else if (args.failOnError) {
+				throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+			}
             return null
         }
 
@@ -901,7 +916,7 @@ class MockUtils {
                     }
 
                     props = [ property ] + props
-                    def existing = testInstances.find { inst -> !inst.is(obj) && props.every { inst."$it" == obj."$it" } }
+                    def existing = testInstances.find { inst -> !inst.is(obj) && props.every { inst."$it" != null && inst."$it" == obj."$it" } }
                     if (existing != null) {
                         errors.rejectValue(property, "unique")
                     }
@@ -1112,7 +1127,8 @@ class MockUtils {
         // For each object in the collection that is an instance of
         // "clazz", we manually change its metaclass to "clazz"'s.
         instances?.eachWithIndex { obj, i ->
-            if (obj.metaClass.hasProperty(obj, "id") && !obj.id) {
+            def prop = obj.metaClass.hasProperty(obj, "id")
+            if (prop && !obj.id && Number.isAssignableFrom(prop.type)) {
                 obj.id = i + 1
             }
 

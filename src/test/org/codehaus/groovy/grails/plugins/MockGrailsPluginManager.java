@@ -69,7 +69,11 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
 		this.pluginList.add(plugin);
 	}
 
-	public void loadPlugins() throws PluginException {
+    public GrailsPlugin[] getUserPlugins() {
+        return getAllPlugins();
+    }
+
+    public void loadPlugins() throws PluginException {
 		this.initialised = true;
 	}
 

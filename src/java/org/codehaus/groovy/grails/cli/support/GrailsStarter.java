@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.cli.support;
 
 import org.codehaus.groovy.tools.LoaderConfiguration;
+import org.codehaus.groovy.tools.RootLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +33,9 @@ import java.util.Properties;
  *        Created: Nov 29, 2007
  */
 public class GrailsStarter {
+    private static final String GRAILS_ROOT_CLASSLOADER = "grails.root.classloader";
+    private static final String LOADER_FILE = ".loader";
+
     static void printUsage() {
         System.out.println("possible programs are 'groovyc','groovy','console', and 'groovysh'");
         System.exit(1);
@@ -111,9 +115,7 @@ public class GrailsStarter {
 
         // copy arguments for main class
         String[] newArgs = new String[args.length-argsOffset];
-        for (int i=0; i<newArgs.length; i++) {
-            newArgs[i] = args[i+argsOffset];
-        }
+        System.arraycopy(args, argsOffset, newArgs, 0, newArgs.length);
 
         String basedir = System.getProperty("base.dir");
         if(basedir!=null) {
@@ -135,12 +137,39 @@ public class GrailsStarter {
         }
 
         // create loader and execute main class
-        GrailsRootLoader loader = new GrailsRootLoader();
+        RootLoader loader = null;
+        File loaderFile = new File(LOADER_FILE);
+        if(loaderFile.exists()) {
+            Properties loaderProps = new Properties();
+            FileInputStream input = null;
+            try {
+                input = new FileInputStream(loaderFile);
+                loaderProps.load(input);
+                String loaderClassName = loaderProps.getProperty(GRAILS_ROOT_CLASSLOADER);
+                if(loaderClassName!=null) {
+                    Class loaderClass = GrailsStarter.class.getClassLoader().loadClass(loaderClassName);
+                    loader = (RootLoader) loaderClass.newInstance();
+                }
+            }
+            catch (Exception e) {
+                System.out.println("ERROR: There was an error loading a Grails custom classloader using the properties file ["+loaderFile.getAbsolutePath()+"]: " + e.getMessage());
+            }
+            finally {
+                try {
+                    if(input != null) input.close();
+                }
+                catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+        if(loader == null)
+            loader = new GrailsRootLoader();
         Thread.currentThread().setContextClassLoader(loader);
         // configure class loader
         URL[] urls = lc.getClassPathUrls();
-        for (int i = 0; i < urls.length; i++) {
-            loader.addURL(urls[i]);
+        for (URL url : urls) {
+            loader.addURL(url);
         }
 
         if(javaVersion != null && grailsHome != null) {
@@ -154,9 +183,8 @@ public class GrailsStarter {
                     vmLoaderConfig.setRequireMain(false);
                     vmLoaderConfig.configure(in);
                     URL[] vmSpecificClassPath = vmLoaderConfig.getClassPathUrls();
-                    for (int i = 0; i < vmSpecificClassPath.length; i++) {
-                        loader.addURL(vmSpecificClassPath[i]);
-
+                    for (URL aVmSpecificClassPath : vmSpecificClassPath) {
+                        loader.addURL(aVmSpecificClassPath);
                     }
                 } catch (IOException e) {
                     System.out.println("WARNING: I/O error reading VM specific classpath ["+vmConfig+"]: " + e.getMessage() );

@@ -15,6 +15,8 @@
 package org.codehaus.groovy.grails.commons;
 
 import javax.persistence.Entity;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Detects annotated domain classes for EJB3 style mappings
@@ -27,8 +29,18 @@ import javax.persistence.Entity;
 public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHandler{
     private static final String JPA_MAPPING_STRATEGY = "JPA";
 
+    private Set<String> jpaClassNames = new HashSet<String>();
+
+    public Set<String> getJpaClassNames() {
+        return jpaClassNames;
+    }
+
     public boolean isArtefactClass(Class clazz) {
-        return super.isArtefactClass(clazz) || isJPADomainClass(clazz);
+        final boolean isJpaDomainClass = isJPADomainClass(clazz);
+        if(isJpaDomainClass) {
+             jpaClassNames.add(clazz.getName());
+        }
+        return super.isArtefactClass(clazz) ;
     }
 
     public static boolean isJPADomainClass(Class clazz){
@@ -37,7 +49,8 @@ public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHan
 
     public GrailsClass newArtefactClass(Class artefactClass) {
         GrailsDomainClass grailsClass = (GrailsDomainClass) super.newArtefactClass(artefactClass);
-        grailsClass.setMappingStrategy(JPA_MAPPING_STRATEGY);        
+        if(isJPADomainClass(artefactClass))
+            grailsClass.setMappingStrategy(JPA_MAPPING_STRATEGY);        
         return grailsClass;
     }
 }

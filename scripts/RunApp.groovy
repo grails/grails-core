@@ -24,7 +24,7 @@
 
 includeTargets << grailsScript("_GrailsRun")
 
-target('default': "Runs a Grails application in Jetty") {
+target('default': "Runs a Grails application") {
     depends(checkVersion, configureProxy, packageApp, parseArguments)
     if(argsMap.https) {
         runAppHttps()

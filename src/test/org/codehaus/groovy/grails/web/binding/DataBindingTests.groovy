@@ -60,6 +60,32 @@ class City {
         ''')
     }
 
+    void testNamedBinding() {
+        def c = ga.getControllerClass('TestController').newInstance()
+        def author = ga.getDomainClass('Author').newInstance()
+
+        def params = c.params
+        params.name = 'Douglas Adams'
+        params.hairColour = 'Grey'
+
+        author.properties['name'] = params
+        assertEquals 'Douglas Adams', author.name
+        assertNull author.hairColour
+    }
+
+    void testNamedBindingWithMultipleProperties() {
+        def c = ga.getControllerClass('TestController').newInstance()
+        def author = ga.getDomainClass('Author').newInstance()
+
+        def params = c.params
+        params.name = 'Douglas Adams'
+        params.hairColour = 'Grey'
+
+        author.properties['name', 'hairColour'] = params
+        assertEquals 'Douglas Adams', author.name
+        assertEquals 'Grey', author.hairColour
+    }
+
     void testThreeLevelDataBinding() {
         def c = ga.getControllerClass("TestController").newInstance()
         def b = ga.getDomainClass("Book").newInstance()

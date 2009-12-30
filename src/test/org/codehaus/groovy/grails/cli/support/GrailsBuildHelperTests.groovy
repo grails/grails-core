@@ -10,6 +10,12 @@ class GrailsBuildHelperTests extends GroovyTestCase {
     def testRunner
     def testSettings
 
+    void testSetDepedenciesExternallyConfigured() {
+
+        def testHelper = new GrailsBuildHelper(new CustomClassLoader(this))
+        testHelper.setDependenciesExternallyConfigured(true)
+    }
+
     void testExecution() {
         def testHelper = new GrailsBuildHelper(new CustomClassLoader(this))
         assertEquals 0, testHelper.execute("Compile")
@@ -98,6 +104,7 @@ class MockBuildSettings {
     List testDependencies
     List runtimeDependencies
     URLClassLoader rootLoader
+    boolean dependenciesExternallyConfigured = false
 
     MockBuildSettings() {
         testCase.testSettings = this

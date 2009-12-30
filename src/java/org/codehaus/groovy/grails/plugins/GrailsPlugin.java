@@ -167,6 +167,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
     String TYPE_FILTERS = "typeFilters";
 
     /**
+     * The name of the plugin
+     */
+    String NAME = "name";
+
+    /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
      * to the {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}.</p>
      *
@@ -374,6 +379,12 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
      * @return The file system representation of the plugin name
      */
     String getFileSystemName();
+
+    /**
+     * Returns the name of the plugin as represented on the file system without the version. For example TagLibGrailsPlugin would result in "tag-lib"
+     * @return The file system name
+     */
+    String getFileSystemShortName();
 
     /**
      * Returns the underlying class that represents this plugin

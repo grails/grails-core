@@ -31,11 +31,11 @@ class MyTagLib {
     void testNullValueHandling() {
         def template = '<p>This is tag1: <my:tag1 p1="abc"/></p>'
 
-        assertOutputEquals '<p>This is tag1: org.codehaus.groovy.grails.web.pages.GSPResponseWriter: [abc] []</p>', template
+        assertOutputEquals '<p>This is tag1: org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack$GroovyPageProxyWriter: [abc] []</p>', template
 
         template = '<p>This is tag2: <my:tag2/></p>'
 
-        assertOutputEquals '<p>This is tag2: org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter: [abc] []</p>', template
+        assertOutputEquals '<p>This is tag2: org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack$GroovyPageProxyWriter: [abc] []</p>', template
     }
 
 }

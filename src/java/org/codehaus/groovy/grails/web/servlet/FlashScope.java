@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.io.Serializable;
 
@@ -32,4 +33,12 @@ public interface FlashScope extends Map, Serializable {
      * Sets the flash scope to the next state upon a new request
      */
     void next();
+
+    /**
+     * Returns the current state of flash scope, to be used if you don't
+     * want to include variables in the next request
+     *
+     * @return A map
+     */
+    Map getNow();
 }

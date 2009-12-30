@@ -255,6 +255,28 @@ public class GrailsNameUtils {
     }
 
     /**
+     * Returns the name of a plugin given the name of the *GrailsPlugin.groovy
+     * descriptor file. For example, "DbUtilsGrailsPlugin.groovy" gives
+     * "db-utils".
+     * @param descriptorName The simple name of the plugin descriptor.
+     * @return The plugin name for the descriptor, or <code>null</code>
+     * if <i>descriptorName</i> is <code>null</code>, or an empty string
+     * if <i>descriptorName</i> is an empty string.
+     * @throws IllegalArgumentException if the given descriptor name is
+     * not valid, i.e. if it doesn't end with "GrailsPlugin.groovy".
+     */
+    public static String getPluginName(String descriptorName) {
+        if (descriptorName == null || descriptorName.length() == 0) return descriptorName;
+
+        if (!descriptorName.endsWith("GrailsPlugin.groovy")) {
+            throw new IllegalArgumentException("Plugin descriptor name is not valid: " + descriptorName);
+        }
+
+        int pos = descriptorName.indexOf("GrailsPlugin.groovy");
+        return getScriptName(descriptorName.substring(0, pos));
+    }
+
+    /**
      * Converts a property name into its natural language equivalent eg ('firstName' becomes 'First Name')
      * @param name The property name to convert
      * @return The converted property name

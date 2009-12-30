@@ -22,7 +22,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
         GroovySystem.metaClassRegistry.removeMetaClass MockHttpServletRequest
         TagLibraryResolver.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-            def res = new FileSystemResource("lib/standard-2.4.jar")
+            def res = new FileSystemResource("lib/standard-1.1.2.jar")
             rootLoader.addURL res.getURL()
             resolver.getResources("file:lib/org.springframework.web*.jar").each {
                 rootLoader.addURL it.getURL()
@@ -37,8 +37,8 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
     }
 
 
-    // test for GRAILS-4573 FIXME!
-    /*void testIterativeTags() {
+    // test for GRAILS-4573 
+    void testIterativeTags() {
 
         def template = '''
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -51,7 +51,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
 
         printCompiledSource(template) 
         assertOutputContains("1 . 1<br/>2 . 2<br/>3 . 3<br/>",template)
-    } */
+    } 
 
     void testGRAILS3797() {
         println request.locale
@@ -154,7 +154,7 @@ goodbye
 </form:form>'''
 
         request.setAttribute "address", new TestJspTagAddress(zip:"342343")
-        assertOutputEquals '''<form id="address" action="do" method="post">\n\n<b>Zip: </b><input id="zip" name="zip" type="text" value="342343"/></form>''',
+        assertOutputEquals '''<form id="address" action="do" method="post">\n<b>Zip: </b><input id="zip" name="zip" type="text" value="342343"/>\n</form>''',
                 template, [:], { it.toString().trim() }
     }
 }

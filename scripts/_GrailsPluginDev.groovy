@@ -19,6 +19,9 @@ import groovy.xml.MarkupBuilder
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import grails.util.GrailsNameUtils
 import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.apache.ivy.core.report.ArtifactDownloadReport
 
 /**
  * Gant script that deals with those tasks required for plugin developers
@@ -35,6 +38,9 @@ pluginIncludes = [
 	metadataFile.name,
 	"*GrailsPlugin.groovy",
     "plugin.xml",
+    "LICENSE",
+    "LICENSE.txt",
+    "dependencies.groovy",
 	"grails-app/**",
 	"lib/**",
     "scripts/**",
@@ -70,6 +76,7 @@ target(packagePlugin:"Implementation target") {
 
     if(!pluginFile) ant.fail("Plugin file not found for plugin project")
     plugin = generatePluginXml(pluginFile)
+    generateDependencyDescriptor()
 
 	event("PackagePluginStart", [pluginName])
 
@@ -81,15 +88,63 @@ target(packagePlugin:"Implementation target") {
     if(plugin?.pluginExcludes) {
         pluginExcludes.addAll(plugin?.pluginExcludes)
     }
-    
+
+
+
     def includesList = pluginIncludes.join(",")
     def excludesList = pluginExcludes.join(",")
-    ant.zip(basedir:"${basedir}", destfile:pluginZip, includes:includesList, excludes:excludesList, filesonly:true)
+    def libsDir = new File("${projectWorkDir}/tmp-libs")
+    ant.delete(dir:libsDir, failonerror:false)
+    def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
+
+    boolean supportsAtLeastVersion
+    try {
+        supportsAtLeastVersion = GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")
+    }
+    catch (e) {
+        println "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
+        exit 1 
+    }
+    if(!supportsAtLeastVersion) {
+        IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+        def deps = dependencyManager.resolveExportedDependencies()
+        if(dependencyManager.resolveErrors) {
+            println "Error: There was an error resolving plugin JAR dependencies"
+            exit 1
+        }
+
+        if(deps) {
+            ant.mkdir(dir:"${libsDir}/lib")
+            ant.copy(todir:"${libsDir}/lib") {
+                for(ArtifactDownloadReport dep in deps) {
+                    def file = dep.localFile
+                    fileset(dir:file.parentFile, includes:file.name)
+                }
+            }
+        }
+    }
+
+    def dependencyInfoDir = new File("$projectWorkDir/plugin-info")
+    ant.zip(destfile:pluginZip, filesonly:true) {
+        fileset(dir:basedir, includes:includesList, excludes:excludesList)
+        if(dependencyInfoDir.exists())
+            fileset(dir:dependencyInfoDir)
+        if(libsDir.exists()) {
+            fileset(dir:libsDir)
+        }
+    }
 
 	event("PackagePluginEnd", [pluginName])
 
 }
 
+private generateDependencyDescriptor() {
+    ant.delete(dir:"$projectWorkDir/plugin-info", failonerror:false)
+    if(grailsSettings.dependencyManager.hasApplicationDependencies()) {
+        ant.mkdir(dir:"$projectWorkDir/plugin-info")
+        ant.copy(file:"$basedir/grails-app/conf/BuildConfig.groovy", tofile:"$projectWorkDir/plugin-info/dependencies.groovy", failonerror:false)
+    }
+}
 private def loadBasePlugin() {
 		pluginManager?.allPlugins?.find { it.basePlugin }
 }

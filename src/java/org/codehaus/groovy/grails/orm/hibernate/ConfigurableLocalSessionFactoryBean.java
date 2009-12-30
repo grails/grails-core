@@ -17,13 +17,15 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.hibernate.cache.CacheException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.metadata.ClassMetadata;
@@ -33,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 
@@ -45,11 +48,12 @@ import java.util.Map;
 public class ConfigurableLocalSessionFactoryBean extends
 		LocalSessionFactoryBean implements ApplicationContextAware {
 
-	
-	private ClassLoader classLoader = null;
-	private GrailsApplication grailsApplication;
-    private Class configClass = DefaultGrailsDomainConfiguration.class;
-	private ApplicationContext applicationContext;
+
+    private static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
+    private ClassLoader classLoader = null;
+    private GrailsApplication grailsApplication;
+    private Class configClass;
+    private ApplicationContext applicationContext;
     private Class currentSessionContextClass;
 
     /**
@@ -94,6 +98,16 @@ public class ConfigurableLocalSessionFactoryBean extends
 	 * Overrides default behaviour to allow for a configurable configuration class 
 	 */
 	protected Configuration newConfiguration() {
+        ClassLoader cl = this.classLoader != null ? this.classLoader : Thread.currentThread().getContextClassLoader();
+        if(configClass == null) {
+            try {
+                configClass = cl.loadClass("org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration");
+            }
+            catch (Throwable e) {
+                // probably not Java 5 or missing some annotation jars, use default
+                configClass = DefaultGrailsDomainConfiguration.class;                
+            }
+        }
         Object config = BeanUtils.instantiateClass(configClass);
         if(config instanceof GrailsDomainConfiguration) {
             GrailsDomainConfiguration grailsConfig = (GrailsDomainConfiguration) config;
@@ -113,11 +127,34 @@ public class ConfigurableLocalSessionFactoryBean extends
 	}
 
     protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
-        SessionFactory sf = super.newSessionFactory(config);
-        GrailsApplication application = getGrailsApplication();
-        if(application!=null)
-            GrailsHibernateUtil.configureHibernateDomainClasses(sf, application);
-        return sf;
+        try {
+            return super.newSessionFactory(config);
+        }
+        catch (HibernateException e) {
+            Throwable cause = e.getCause();
+            if(isCacheConfigurationError(cause)) {
+                LOG.fatal("There was an error configuring the Hibernate second level cache: " + getCauseMessage(e));
+                LOG.fatal("This is normally due to one of two reasons. Either you have incorrectly specified the cache provider class name in [DataSource.groovy] or you do not have the cache provider on your classpath (eg. runtime (\"net.sf.ehcache:ehcache:1.6.1\"))");
+                if(grails.util.Environment.getCurrent() == grails.util.Environment.DEVELOPMENT && !(getGrailsApplication().isWarDeployed()))
+                    System.exit(1);
+            }
+            throw e;
+        }
+    }
+
+    private String getCauseMessage(HibernateException e) {
+        Throwable cause = e.getCause();
+        if(cause instanceof InvocationTargetException) {
+            cause = ((InvocationTargetException)cause).getTargetException();
+        }        
+        return cause.getMessage();
+    }
+
+    private boolean isCacheConfigurationError(Throwable cause) {
+        if(cause instanceof InvocationTargetException) {
+            cause = ((InvocationTargetException)cause).getTargetException();
+        }
+        return cause != null && (cause instanceof CacheException);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

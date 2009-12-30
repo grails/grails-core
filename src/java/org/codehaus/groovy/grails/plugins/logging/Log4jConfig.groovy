@@ -33,6 +33,8 @@ import org.apache.log4j.Appender
 import org.apache.log4j.RollingFileAppender
 import org.apache.commons.beanutils.BeanUtils
 import grails.util.Environment
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
 
 /**
  * Encapsulates the configuration of Log4j
@@ -155,7 +157,15 @@ class Log4jConfig {
         }
         else {
             def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
-            fileAppender.file = "stacktrace.log"
+            if(Environment.current == Environment.DEVELOPMENT) {
+                BuildSettings settings = BuildSettingsHolder.getSettings()
+                def targetDir = settings?.getProjectTargetDir()
+				if(targetDir) targetDir.mkdirs()
+                fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
+            }
+            else {
+                fileAppender.file = "stacktrace.log"
+            }
             fileAppender.activateOptions()
             appenders.stacktrace = fileAppender
             return fileAppender
@@ -172,12 +182,6 @@ class Log4jConfig {
         }
 
         return root
-    }
-
-    def debug(Object[] packages) {
-        eachLogger(packages) { Logger logger ->
-            logger.level = Level.DEBUG
-        }
     }
 
     def appenders(Closure callable) {
@@ -206,27 +210,6 @@ class Log4jConfig {
         }
     }
 
-    def debug(Map appenderAndPackages) {
-        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.DEBUG)
-    }
-
-    def error(Map appenderAndPackages) {
-        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ERROR)
-    }
-
-
-    def info(Map appenderAndPackages) {
-        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.INFO)
-    }
-
-    def warn(Map appenderAndPackages) {
-        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.WARN)
-    }
-
-    def all(Map appenderAndPackages) {
-        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ALL)
-    }
-
     def off(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.OFF)
     }
@@ -235,10 +218,30 @@ class Log4jConfig {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.FATAL)
     }
 
+    def error(Map appenderAndPackages) {
+        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ERROR)
+    }
+
+    def warn(Map appenderAndPackages) {
+        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.WARN)
+    }
+
+    def info(Map appenderAndPackages) {
+        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.INFO)
+    }
+
+    def debug(Map appenderAndPackages) {
+        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.DEBUG)
+    }
+
     def trace(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.TRACE)
     }
     
+    def all(Map appenderAndPackages) {
+        setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ALL)
+    }
+
     private setLogLevelForAppenderToPackageMap(appenderAndPackages, Level level) {
 
         def additivity = appenderAndPackages.additivity != null ? appenderAndPackages.remove('additivity') : true
@@ -276,12 +279,6 @@ class Log4jConfig {
 
     }
 
-    def error(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.ERROR
-        }
-    }
-
     def off(Object[] packages) {
         eachLogger(packages) { logger ->
             logger.level = Level.OFF
@@ -294,6 +291,12 @@ class Log4jConfig {
         }
     }
 
+    def error(Object[] packages) {
+        eachLogger(packages) { logger ->
+            logger.level = Level.ERROR
+        }
+    }
+
     def warn(Object[] packages) {
         eachLogger(packages) { logger ->
             logger.level = Level.WARN
@@ -303,6 +306,12 @@ class Log4jConfig {
     def info(Object[] packages) {
         eachLogger(packages) { logger ->
             logger.level = Level.INFO
+        }
+    }
+
+    def debug(Object[] packages) {
+        eachLogger(packages) { Logger logger ->
+            logger.level = Level.DEBUG
         }
     }
 

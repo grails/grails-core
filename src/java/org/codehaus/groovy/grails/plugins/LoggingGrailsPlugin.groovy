@@ -36,9 +36,12 @@ class LoggingGrailsPlugin {
     def observe = ['*']
 
     def doWithSpring = {
-        def juLogMgr = java.util.logging.LogManager.logManager
-        juLogMgr.readConfiguration(new ByteArrayInputStream(".level=INFO".bytes))
-        org.slf4j.bridge.SLF4JBridgeHandler.install()
+        def usebridge = application.config?.grails?.logging?.jul?.usebridge
+        if(usebridge) {
+            def juLogMgr = application.classLoader.loadClass("java.util.logging.LogManager").logManager
+            juLogMgr.readConfiguration(new ByteArrayInputStream(".level=INFO".bytes))
+            org.slf4j.bridge.SLF4JBridgeHandler.install()
+        }
     }
 
     def doWithDynamicMethods = {applicationContext ->

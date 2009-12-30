@@ -30,13 +30,13 @@
 		  <table class="table-buttons">
 		    <tr>
 		      <td colspan="2" align="center">
-		        <g:form method="GET" url="[action:'edit', id:ownerBean.key.id]">
+		        <g:form method="GET" url="[action:'edit', id:ownerBean.id.id]">
 		          <p class="submit"><input type="submit" value="Edit Owner"/></p>
 		        </g:form>
 		      </td>
 		      <td>
 		        <g:form method="GET" url="[controller:'pet', action:'add']" name="formAddPet">
-		          <input type="hidden" name="owner.id" value="${ownerBean.key.id}"/>
+		          <input type="hidden" name="owner.id" value="${ownerBean.id.id}"/>
 		          <p class="submit"><input type="submit" value="Add New Pet"/></p>
 		        </g:form>
 		      </td>
@@ -60,7 +60,7 @@
 		            </tr>
 		            <tr>
 		              <th>Type</th>
-		              <td>${pet.type.name}</td>
+		              <td>${pet.type?.name}</td>
 		            </tr>
 		          </table>
 		        </td>
@@ -85,13 +85,13 @@
 		    <table class="table-buttons">
 		      <tr>
 		        <td>
-		          <g:form method="GET" url="[controller:'pet', action:'edit', id:pet.key.id]"
+		          <g:form method="GET" url="[controller:'pet', action:'edit', id:pet.id.id]"
 		 							name="formEditPet${pet.id}">
 		            <p class="submit"><input type="submit" value="Edit Pet"/></p>
 		          </g:form>
 		        </td>
 		        <td>
-		          <g:form method="GET" url="[controller:'pet', action:'addVisit', id:pet.key.id]"
+		          <g:form method="GET" url="[controller:'pet', action:'addVisit', id:pet.id.id]"
 		                  name="formVisitPet${pet.id}">
 		            <p class="submit"><input type="submit" value="Add Visit"/></p>
 		          </g:form>

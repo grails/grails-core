@@ -30,18 +30,28 @@ public class GrailsFlashScopeTests extends TestCase {
 
     private static final String ERRORS_PROPERTY = "errors";
 
-    public void testNextState() {
-
+    public void testPutNull() {
         GrailsWebUtil.bindMockWebRequest();
         
         FlashScope fs = new GrailsFlashScope();
+        fs.put("test",null);        
+    }
+
+    public void testNextState() {
+
+        GrailsWebUtil.bindMockWebRequest();
+
+        FlashScope fs = new GrailsFlashScope();
         fs.put("test","value");
         fs.put("fred","flintstone");
+        fs.getNow().put("barney", "rubble");
 
         assertFalse(fs.isEmpty());
         assertEquals("flintstone",fs.get("fred"));
-        assertEquals(2, fs.size());
+        assertEquals("rubble",fs.get("barney"));
+        assertEquals(3, fs.size());
         assertTrue(fs.containsKey("test"));
+        assertTrue(fs.containsKey("barney"));
         assertTrue(fs.containsValue("value"));
         assertFalse(fs.containsKey("wilma"));
 

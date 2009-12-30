@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins
 import org.springframework.core.io.Resource
 import groovy.util.slurpersupport.GPathResult
 
+
 /**
  * A class used mainly by the build system that encapsulates access to information
  * about the underlying plugin by delegating to the methods in GrailsPluginUtils
@@ -29,13 +30,21 @@ import groovy.util.slurpersupport.GPathResult
 public class PluginInfo {
 
     Resource pluginDir
+    grails.util.PluginBuildSettings pluginBuildSettings
     def metadata
+    String name
+    String version
 
-    public PluginInfo(Resource pluginDir) {
+    public PluginInfo(Resource pluginDir, grails.util.PluginBuildSettings pluginBuildSettings) {
         super();
         if(pluginDir)
         this.pluginDir = pluginDir
-        this.metadata = GrailsPluginUtils.getMetadataForPlugin(pluginDir)
+        this.metadata = parseMetadata(pluginDir)
+        this.pluginBuildSettings = pluginBuildSettings
+    }
+
+    GPathResult parseMetadata(Resource pluginDir) {
+        return new XmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
     }
 
 
@@ -43,14 +52,20 @@ public class PluginInfo {
      * Returns the plugin's version
      */
     String getVersion() {
-       return metadata.@version.text()
+        if(!version) {
+            version = metadata.@version.text()
+        }
+        return version
     }
 
     /**
      * Returns the plugin's name
      */
     String getName() {
-        return metadata.@name.text()
+        if(!name) {
+            name = metadata.@name.text()
+        }
+        return name
     }
 
     /**
@@ -67,4 +82,7 @@ public class PluginInfo {
         GrailsPluginUtils.getDescriptorForPlugin(pluginDir)
     }
 
+    String getFullName() {
+		"${name}-${version}"
+	}
 }

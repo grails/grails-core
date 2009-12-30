@@ -14,18 +14,18 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -54,7 +54,7 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
  		super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
 	}
 
-	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse) {
+	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
 
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
         return super.getHibernateTemplate().execute( new HibernateCallback() {
@@ -62,11 +62,14 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 
 				
-				Criteria crit = session.createCriteria(clazz);
+				Criteria crit = getCriteria(session, additionalCriteria, clazz);
 				if(arguments.length > 0) {
 					if(arguments[0] instanceof Map) {
 						Map argMap = (Map)arguments[0];
 						GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit,argMap);
+                        if(!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
+                            crit.setMaxResults(1);
+                        }
 					}
 				}
                 if(operator.equals(OPERATOR_OR)) {
@@ -75,25 +78,26 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
                         crit.add(expression.getCriterion());
                     }
                     Disjunction dis = Restrictions.disjunction();
-                    for (Iterator i = expressions.iterator(); i.hasNext();) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-                        dis.add( current.getCriterion() );
+                    for (Object expression : expressions) {
+                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                        dis.add(current.getCriterion());
                     }
                     crit.add(dis);
                 }
                 else {
-                    for (Iterator i = expressions.iterator(); i.hasNext();) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-                        crit.add( current.getCriterion() );
+                    for (Object expression : expressions) {
+                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                        crit.add(current.getCriterion());
 
                     }
                 }
-                try {
-                    return crit.uniqueResult();
-                } catch (HibernateException e) {
-                    crit.setMaxResults(1);
-                    return crit.uniqueResult();
+
+
+                final List list = crit.list();
+                if(!list.isEmpty()) {
+                    return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
                 }
+                return null;
             }
 		});
 	}

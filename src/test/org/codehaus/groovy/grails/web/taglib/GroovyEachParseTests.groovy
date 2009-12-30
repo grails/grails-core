@@ -18,12 +18,14 @@ def params = binding.params
 def request = binding.request
 def flash = binding.flash
 def response = binding.response
+def out = binding.out
+registerSitemeshPreprocessMode(request)
 
-out.print(htmlParts[0])
+printHtmlPart(0)
 evaluate('"blah"', 2, it) { return "blah" }.each { t ->
-out.print(htmlParts[0])
+printHtmlPart(0)
 }
-out.print(htmlParts[0])
+printHtmlPart(0)
 }""" + GSP_FOOTER 
 ),trimAndRemoveCR(output.toString()) )
 		assertEquals("\n", output.htmlParts[0])
@@ -41,8 +43,10 @@ def params = binding.params
 def request = binding.request
 def flash = binding.flash
 def response = binding.response
+def out = binding.out
+registerSitemeshPreprocessMode(request)
 
-out.print(htmlParts[0])
+printHtmlPart(0)
 evaluate('"blah"', 1, it) { return "blah" }.each { t ->
 }
 }""" + GSP_FOOTER
@@ -65,12 +69,14 @@ def params = binding.params
 def request = binding.request
 def flash = binding.flash
 def response = binding.response
+def out = binding.out
+registerSitemeshPreprocessMode(request)
 
-out.print(htmlParts[0])
+printHtmlPart(0)
 evaluate('"blah"', 2, it) { return "blah" }.eachWithIndex { t,i ->
-out.print(htmlParts[0])
+printHtmlPart(0)
 }
-out.print(htmlParts[0])
+printHtmlPart(0)
 }""" + GSP_FOOTER
 ),trimAndRemoveCR(output.toString()) )
 		  assertEquals("\n", output.htmlParts[0])

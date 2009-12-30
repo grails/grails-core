@@ -468,6 +468,14 @@ class MockUtilsTests extends GroovyTestCase {
 
         def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: "Ms.")
         assertEquals domain, domain.save()
+        assertEquals 1, domain.id
+        assertNotNull domain.dateCreated
+        assertNull domain.lastUpdated
+
+        /* Save again and lastUpdated should be set. */
+        domain.save()
+        assertNotNull domain.lastUpdated
+        
     }
 
     /**
@@ -493,6 +501,18 @@ class MockUtilsTests extends GroovyTestCase {
         testInstances[0].save()
         assertEquals 1, testInstances.size()
     }
+
+	/**
+	 * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
+	 */
+	void testSaveWithFailOnErrorTrue() {
+		MockUtils.mockDomain(TestDomain, errorsMap)
+		
+		def domain = new TestDomain()
+		shouldFail(grails.validation.ValidationException) {
+			domain.save(failOnError: true)
+		}
+	}
 
     /**
      * Tests the dynamically added <code>delete()</code> method.
@@ -881,7 +901,20 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "hello John", controller.response.contentAsString
     }
 
-    /**
+	/**
+	 * Tests that the mock "params" object has typeconversion methods (getInt tested)
+	 */
+	void testMockControllerIntParamsObject() {
+		MockUtils.mockController(TestController)
+		
+		def controller = new TestController()
+		controller.params.intparam='123456'
+		controller.testIntParams()
+		
+		assertEquals "123456", controller.response.contentAsString
+	}
+	
+	/**
      * Tests that the mock "chainModel" object on a controller works properly.
      */
     void testMockControllerChainModelObject() {
@@ -1295,6 +1328,47 @@ class MockUtilsTests extends GroovyTestCase {
         assertTrue a.instanceOf(A)
         assertFalse a.instanceOf(B)
     }
+
+    void testMultipleInstancesWithNullUniquePropertyCanExist() {
+        MockUtils.mockDomain TestNullableUniquePropertyDomain, [new TestNullableUniquePropertyDomain()]
+
+        def domain = new TestNullableUniquePropertyDomain()
+        if (!domain.save()) {
+            def errors = domain.errors.allErrors.collect {
+                "$it.field: $it.code"
+            }
+            fail "Domain object could not be saved because of: $errors"
+        }
+    }
+
+    void testMultipleInstancesWithNonNullUniquePropertyCannotExist() {
+        MockUtils.mockDomain TestNullableUniquePropertyDomain, [new TestNullableUniquePropertyDomain(name: "foo")]
+
+        def domain = new TestNullableUniquePropertyDomain(name: "foo")
+        assertNull domain.save()
+        assertEquals "unique", domain.errors.name
+    }
+
+    void testMultipleInstancesWithNullUniqueCompoundPropertyCanExist() {
+        MockUtils.mockDomain TestNullableUniqueCompoundPropertyDomain, [new TestNullableUniqueCompoundPropertyDomain(b: "b"), new TestNullableUniqueCompoundPropertyDomain(a: "a", b: "b")]
+
+        def domain1 = new TestNullableUniqueCompoundPropertyDomain(b: "b")
+        assertNotNull domain1.save()
+
+        def domain2 = new TestNullableUniqueCompoundPropertyDomain(b: "c")
+        assertNotNull domain2.save()
+
+        def domain3 = new TestNullableUniqueCompoundPropertyDomain(a: "b", b: "b")
+        assertNotNull domain3.save()
+    }
+
+    void testMultipleInstancesWithNotNullUniqueCompoundPropertyCannotExist() {
+        MockUtils.mockDomain TestNullableUniqueCompoundPropertyDomain, [new TestNullableUniqueCompoundPropertyDomain(a: "a", b: "b")]
+
+        def domain = new TestNullableUniqueCompoundPropertyDomain(a: "a", b: "b")
+        assertNull domain.save()
+        assertEquals "unique", domain.errors.a
+    }
 }
 
 /**
@@ -1308,6 +1382,10 @@ class TestController  {
     def testParams = {
         render "hello ${params.id}"
     }
+	
+	def testIntParams = {
+    	render "${params.int('intparam')}"
+	}
 
     def testChainModel = {
         render "chained with ${chainModel}"
@@ -1390,6 +1468,9 @@ class TestDomain {
     Long notOdd
     String title
     Set relations
+    Date dateCreated
+    Date lastUpdated
+
 
     static constraints = {
         id(nullable: true, unique: true)
@@ -1515,5 +1596,26 @@ class TestNestedChildDomain {
 
     String toString() {
         "TestNestedChildDomain (${this.id}, ${this.name})"
+    }
+}
+
+class TestNullableUniquePropertyDomain {
+    Long id
+    Long version
+    String name
+
+    static constraints = {
+        name nullable: true, unique: true
+    }
+}
+
+class TestNullableUniqueCompoundPropertyDomain {
+    Long id
+    Long version
+    String a
+    String b
+
+    static constraints = {
+        a nullable: true, unique: "b"
     }
 }

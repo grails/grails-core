@@ -1,6 +1,9 @@
-<project name="grails-bundle">
+<project name="grails-bundle"
+         xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:bundlor="antlib:com.springsource.bundlor.ant">
     <property name="targetDistDirectory" value="${grails.dist}"/>
     <import file="maven.xml"/>
+    <import file="resolve.xml"/>
 
     <target name="-jar-app-files" description="Bundles all the template files for applications and plugins into a JAR files.">
         <!-- Clear the old JAR files out. -->
@@ -9,13 +12,13 @@
 		</delete>
 
 
-
+        <!-- Files to integrate Grails with IDEs and build systems. -->
+        <jar destfile="${grails.target}/grails-integration-files.jar">
+            <fileset dir="${basedir}/src/grails/templates/ide-support"/>
+            <fileset dir="${basedir}/src/grails/ant"/>
+        </jar>
         <!-- Package up the files that are shared by both applications and plugins. -->
         <jar destfile="${grails.target}/grails-shared-files.jar">
-            <fileset dir="${basedir}/src/grails/templates/ide-support/eclipse"/>
-            <fileset dir="${basedir}/src/grails/templates/ide-support/intellij"/>
-            <fileset dir="${basedir}/src/grails/templates/ide-support/textmate" includes="project.tmproj"/>
-            <fileset dir="${basedir}/src/grails/ant"/>
             <zipfileset dir="${basedir}/src/war" prefix="web-app">
                 <include name="WEB-INF/applicationContext.xml"/>
                 <include name="WEB-INF/applicationContext.xml"/>
@@ -46,6 +49,7 @@
         <jar destfile="${grails.target}/grails-plugin-files.jar">
             <fileset dir="${basedir}/src/grails/templates/plugins"/>
             <fileset dir="${basedir}/src/grails">
+                  <include name="grails-app/conf/BuildConfig.groovy"/>
                   <include name="grails-app/views/error.gsp" />
             </fileset>
         </jar>
@@ -55,6 +59,50 @@
 
     </target>
 
+    <property name="bundlor.version" value="1.0.0.CI-231" />
+    <property name="bundlor.home" location="${basedir}/target/bundlor-${bundlor.version}" />
+
+    <target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
+
+		<bundlor:bundlor inputPath="${grails.dist}/grails-${bundle.name}-${grails.version}.jar"
+                         outputPath="${grails.dist}/grails-${bundle.name}-${grails.version}.jar"
+				         bundleVersion="${grails.version}"
+				         manifestTemplatePath="${basedir}/maven/grails-${bundle.name}.mf"
+                         failOnWarnings="true">
+            <propertyset>
+                <propertyref prefix="bundlor."/>
+                <mapper type="glob" from="bundlor.*" to="*" />
+            </propertyset>
+		</bundlor:bundlor>
+	</target>
+
+	<target name="bundlor.init" unless="disable.bundlor">
+		<condition property="bundlor.installed">
+			<or>
+				<isset property="disable.bundlor" />
+				<available type="dir" file="${bundlor.home}"  />
+			</or>
+    	</condition>
+		<antcall target="bundlor.download" />
+		<taskdef resource="com/springsource/bundlor/ant/antlib.xml"
+                 uri="antlib:com.springsource.bundlor.ant">
+            <classpath id="bundlor.classpath">
+                <fileset dir="${bundlor.home}/dist"/>
+                <fileset dir="${bundlor.home}/lib"/>
+            </classpath>
+        </taskdef>
+	</target>
+
+    <target name="bundlor.download" unless="bundlor.installed">
+        <get src="http://s3.amazonaws.com/dist.springframework.org/snapshot/BNDLR/bundlor-${bundlor.version}.zip"
+             dest="${grails.target}/bundlor.zip"
+             usetimestamp="true"/>
+
+        <unzip src="${grails.target}/bundlor.zip"
+               dest="${grails.target}" />
+
+    </target>
+    
     <target name="jar" depends="build,build-scripts,-jar-app-files" description="Build the entire source, run all tests and create the Grails JAR file.">
 		<delete>
 			<fileset dir="${grails.dist}" includes="*"/>
@@ -64,15 +112,25 @@
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/test/**" />
+                <include name="**/groovy/grails/test/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="test" />
+        </antcall>
+
         <jar destfile="${grails.dist}/grails-docs-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+            <fileset dir="${grails.target}" includes="grails-doc-files.jar" />
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
                 <include name="grails/doc/**" />
                 <include name="**/groovy/grails/documentation/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="docs" />
+        </antcall>
+
 
         <jar destfile="${grails.dist}/grails-spring-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
@@ -81,6 +139,11 @@
                 <include name="**/groovy/grails/commons/spring/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="spring" />
+        </antcall>
+
+
         <jar destfile="${grails.dist}/grails-bootstrap-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -91,7 +154,9 @@
                 <include name="grails/util/BuildScope*"/>
                 <include name="grails/util/GrailsMain*"/>
                 <include name="grails/ant/**/*"/>
+                <include name="grails/build/**"/>
                 <include name="**/groovy/grails/cli/**/*" />
+                <include name="**/groovy/grails/resolve/**/*" />
             </fileset>
             <file file="${basedir}/build.properties"/>
         </jar>
@@ -99,6 +164,10 @@
             <fileset dir="${grails.target}/compiled-scripts"/>
             <file file="${basedir}/scripts/log4j.properties"/>            
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="scripts" />
+        </antcall>
+        
 
 
         <jar destfile="${grails.dist}/grails-gorm-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
@@ -110,6 +179,10 @@
                 <include name="**/groovy/grails/validation/Hibernate**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="gorm" />
+        </antcall>
+
         <delete>
             <fileset dir="${grails.build}/META-INF">
                 <include name="*.handlers" />
@@ -130,6 +203,10 @@
                 <include name="**/groovy/grails/webflow/executor/support/GrailsConventionsFlowExecutorArgumentHandler*" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="web" />
+        </antcall>
+
         <jar destfile="${grails.dist}/grails-webflow-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
@@ -137,16 +214,24 @@
                 <include name="**/groovy/grails/plugins/webflow/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="webflow" />
+        </antcall>
+
+
         <jar destfile="${grails.dist}/grails-crud-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
                 <include name="META-INF/**" />
-                <include name="grails/util/Generate**" />
                 <include name="**/groovy/grails/scaffolding/**" />
                 <include name="**/groovy/grails/plugins/scaffolding/**" />
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="crud" />
+        </antcall>
+
         <jar destfile="${grails.dist}/grails-resources-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
-            <fileset dir="${grails.target}" includes="*.jar"/>
+            <fileset dir="${grails.target}" includes="*.jar" excludes="grails-doc-files.jar"/>
             <fileset dir="${basedir}">
                 <include name="conf/webdefault.xml"/>
                 <include name="src/grails/templates/artifacts/**"/>
@@ -155,6 +240,10 @@
                 <include name="src/war/WEB-INF/tld/*/*.tld"/>
             </fileset>
         </jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="resources" />
+        </antcall>
+
     	
     	<mkdir dir="${grails.build}/META-INF/services"/>
     	<copy todir="${grails.build}/META-INF/services">
@@ -184,6 +273,8 @@
                 <exclude name="grails/util/Metadata*"/>
                 <exclude name="grails/util/BuildScope*"/>
                 <exclude name="grails/util/GrailsMain*"/>
+                <exclude name="grails/test/**"/>
+                <exclude name="**/groovy/grails/test/**" />
                 <exclude name="**/groovy/grails/commons/spring/**" />
                 <exclude name="**/groovy/grails/plugins/orm/hibernate**" />
                 <exclude name="**/groovy/grails/plugins/web/**" />
@@ -193,6 +284,17 @@
                 <exclude name="**/groovy/grails/validation/Hibernate**" />
             </fileset>
         </jar>
+
+		<jar destfile="${grails.dist}/grails-osgi-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
+			<fileset dir="${grails.dist}">
+				<include name="grails-bootstrap-${grails.version}.jar" />
+				<include name="grails-core-${grails.version}.jar" />
+			</fileset>
+		</jar>
+        <antcall target="--bundlor-jar">
+            <param name="bundle.name" value="osgi" />
+        </antcall>
+
     	<delete dir="${grails.build}/META-INF/services"></delete>
     </target>
 
@@ -276,17 +378,17 @@
             depends="jar,-mavenInit"
             description="Installs the Grails artifacts in the local Maven repository.">
         <mavenInstallRepo version="${grails.version}" prefix="grails"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-bootstrap"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-docs"/>        
-        <mavenInstallRepo version="${grails.version}" prefix="grails-core"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-crud"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-gorm"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-resources"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-scripts"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-spring"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-test"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-web"/>
-        <mavenInstallRepo version="${grails.version}" prefix="grails-webflow"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-bootstrap"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-docs"/>        
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-core"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-crud"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-gorm"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-resources"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-scripts"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-spring"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-test"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-web"/>
+        <mavenInstallRepoJar version="${grails.version}" prefix="grails-webflow"/>
     </target>
 
     <target name="maven-deploy"

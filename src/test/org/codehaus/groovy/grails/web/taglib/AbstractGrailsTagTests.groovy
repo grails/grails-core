@@ -32,14 +32,19 @@ import org.springframework.ui.context.ThemeSource
 import org.springframework.ui.context.Theme
 import org.springframework.ui.context.support.SimpleTheme
 import org.springframework.context.MessageSource
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.*;
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import com.opensymphony.module.sitemesh.RequestConstants
 
-abstract class AbstractGrailsTagTests extends GroovyTestCase {
+abstract public class AbstractGrailsTagTests extends GroovyTestCase {
 
 	MockServletContext servletContext
 	GrailsWebRequest webRequest
@@ -84,6 +89,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 	def withTag(String tagName, Writer out, Closure callable) {
 		def result = null
 		runTest {
+	        def webRequest = RequestContextHolder.currentRequestAttributes()
+	        webRequest.out = out
+
 			def mockController = grailsApplication.getControllerClass("MockController").newInstance()
 
 	        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController);
@@ -100,11 +108,28 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 			if(go instanceof ApplicationContextAware) {
 				go.applicationContext = appCtx
 			}
-	        def webRequest = RequestContextHolder.currentRequestAttributes()
 
-	        webRequest.out = out
+			GroovyPageOutputStack stack=GroovyPageOutputStack.createNew(out)
+
 	        println "calling tag '${tagName}'"
-	        result = callable.call(go.getProperty(tagName))
+            def tag = go.getProperty(tagName)
+
+            def tagWrapper = { Object[] args ->
+                // the first or second arg may be a Map
+                // wrap Map args in GroovyPageAttributes
+                def newArgs = []
+                if(args?.length > 0) {
+                    args.each {arg ->
+                        if(arg instanceof Map && (!(arg instanceof GroovyPageAttributes))) {
+                            newArgs << new GroovyPageAttributes(arg)
+                        } else {
+                            newArgs << arg
+                        }
+                    }
+                }
+                tag.call(*newArgs)
+            }
+            result = callable.call(tagWrapper)
 		}
 		return result
 	}
@@ -126,16 +151,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ApplicationHolder.application = ga
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)
-        webRequest = GrailsWebUtil.bindMockWebRequest()
-        onInit()
-
-        JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
 
 
 
         def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext();
-
+        ctx.servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
 
         grailsApplication.setApplicationContext(ctx);
 
@@ -152,6 +173,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean("manager", mockManager )
         ctx.registerMockBean("messageSource", messageSource )
         ctx.registerMockBean("grailsApplication",grailsApplication)
+        ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -170,7 +192,11 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
         mockManager.registerProvidedArtefacts(grailsApplication)
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
-
+        
+        webRequest = GrailsWebUtil.bindMockWebRequest(ctx)
+        onInit()
+        JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
+        
         servletContext =  webRequest.servletContext
         ServletContextHolder.servletContext = servletContext
 
@@ -182,23 +208,26 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
 		appCtx = springConfig.getApplicationContext()
 
-        messageSource = appCtx.getBean("messageSource")
+        //messageSource = appCtx.getBean("messageSource")
         
 		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 		mockManager.applicationContext = appCtx
-		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
 		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
-	    grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
+		// Why are the TagLibClasses removed?
+	    //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
 		mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
         request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver()) 
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
-		
+
 		assert appCtx.grailsUrlMappingsHolder
-    }
+
+
+	 }
     
     void tearDown() {
         // Clear the page cache in the template engine since it's
@@ -256,7 +285,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         def text =  getCompiledSource(template, params)
         println "----- GSP SOURCE -----"
         println text
-
     }
 
     def getCompiledSource(template, params = [:]) {
@@ -308,13 +336,21 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         def engine = appCtx.groovyPagesTemplateEngine
 
+        //printCompiledSource(template)
+        
         assert engine
         def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+        
+        /*
+        println "------------HTMLPARTS----------------------"
+        t.metaInfo.htmlParts.eachWithIndex {it, i -> print "htmlpart[${i}]:\n>${it}<\n--------\n" }
+        */
 
         def w = t.make(params)
 
         MockHttpServletResponse mockResponse = new MockHttpServletResponse()
-        GSPResponseWriter writer = GSPResponseWriter.getInstance(mockResponse, 1024)
+        mockResponse.setCharacterEncoding("UTF-8")
+        GSPResponseWriter writer = GSPResponseWriter.getInstance(mockResponse)
         webRequest.out = writer
         w.writeTo(writer)
 
@@ -322,23 +358,51 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         assertEquals expected, transform(mockResponse.contentAsString)
     }	
 
-	def applyTemplate(template, params = [:] ) {
+	def applyTemplate(template, params = [:], target = null, String filename = null ) {
 
         GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
 
+        printCompiledSource(template)
+
         assert engine
-        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+        def t = engine.createTemplate(template, filename ?: "test_"+ System.currentTimeMillis())
 
         def w = t.make(params)
 
-        def sw = new StringWriter()
-        def out = new PrintWriter(sw)
-        webRequest.out = out
-        w.writeTo(out)
+        if(!target) {
+        	target = new FastStringWriter()
+        } 
+        webRequest.out = target
 
-        return sw.toString()
+        w.writeTo(target)
+        target.flush()
+
+        return target.toString()
     }
 
+    /**
+     * Applies sitemesh preprocessing to a template
+     */
+    String sitemeshPreprocess(String template) {
+        def preprocessor=new SitemeshPreprocessor()
+        preprocessor.addGspSitemeshCapturing(template)
+    }
+
+    String applyLayout(String layout, String template, Map params=[:]) {
+        def page = new GSPSitemeshPage()
+        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, page)
+        applyTemplate(template, params)
+        request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+
+
+        try {
+            request.setAttribute(RequestConstants.PAGE, page)
+            return applyTemplate(layout, params,null, "/layouts/test_"+System.currentTimeMillis())
+        }
+        finally {
+            request.removeAttribute(RequestConstants.PAGE)
+        }
+    }
     /**
      * Parses the given XML text and creates a DOM document from it.
      */

@@ -84,6 +84,7 @@ public final class GrailsDomainBinder {
     private static final String DEFAULT_ENUM_TYPE = "default";
 
 
+
     /**
      * A Collection type, for the moment only Set is supported
      *
@@ -262,7 +263,7 @@ public final class GrailsDomainBinder {
             SimpleValue elt = new SimpleValue(map.getCollectionTable());
             map.setElement(elt);
 
-            String typeName = getTypeName(getPropertyConfig(property));
+            String typeName = getTypeName(property,getPropertyConfig(property), getMapping(property.getDomainClass()));
             if(typeName == null) {
                 if(property.isBasicCollectionType()) {
                     typeName = property.getReferencedPropertyType().getName();
@@ -383,10 +384,21 @@ public final class GrailsDomainBinder {
         PropertyConfig propConfig = getPropertyConfig(property);
 
         if(propConfig != null && !StringUtils.isBlank(propConfig.getSort())) {
+            if(!property.isBidirectional() && property.isOneToMany()) {
+                String message = "WARNING: Sorting by a child property does " +
+                        "not work with unidirectional one to many relationships " +
+                        "due to http://opensource.atlassian.com/projects/hibernate/browse/HHH-4394";
+                LOG.warn(message);
+            }
             GrailsDomainClass referenced = property.getReferencedDomainClass();
             if(referenced != null) {
-                GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());                
-                collection.setOrderBy(getColumnNameForPropertyAndPath(propertyToSortBy,"",null));
+                GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());
+
+                String columnName = getColumnNameForPropertyAndPath(propertyToSortBy, "", null);
+                if(propConfig.getOrder() != null) {
+                    columnName += " " + propConfig.getOrder();
+                }
+                collection.setOrderBy(columnName);
             }
         }
 
@@ -399,7 +411,20 @@ public final class GrailsDomainBinder {
 
             if (referenced != null && !referenced.isRoot() && !tablePerSubclass) {
                 // NOTE: Work around for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
-                collection.setWhere(RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME + " = '" + referenced.getFullName() + "'");
+                Mapping referencedMapping = getMapping(referenced);
+                Mapping rootMapping = getRootMapping(referenced);
+                String discriminatorColumnName = RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME;
+                String discriminator = referenced.getFullName();
+                if(rootMapping != null) {
+                    final ColumnConfig discriminatorColumn = rootMapping.getDiscriminatorColumn();
+                    if(discriminatorColumn!=null) {
+                        discriminatorColumnName = discriminatorColumn.getName();
+                    }
+                }
+                if(referencedMapping != null && referencedMapping.getDiscriminator()!=null) {
+                    discriminator = referencedMapping.getDiscriminator();
+                }
+                collection.setWhere(discriminatorColumnName + " = '" + discriminator + "'");
             }
 
             OneToMany oneToMany = (OneToMany) collection.getElement();
@@ -533,7 +558,7 @@ public final class GrailsDomainBinder {
             }
             else {
 
-                String typeName = getTypeName(config);
+                String typeName = getTypeName(property, config, getMapping(property.getDomainClass()));
                 if(typeName == null) {
                     Type type = TypeFactory.basic(className);
                     if(type != null) {
@@ -579,17 +604,21 @@ public final class GrailsDomainBinder {
         return (Column)element.getColumnIterator().next();
     }
 
-    private static String getTypeName(PropertyConfig config) {
+    private static String getTypeName(GrailsDomainClassProperty property, PropertyConfig config, Mapping mapping) {
+        String typeName = null;
         if(config !=null && config.getType()!=null) {
             final Object typeObj = config.getType();
             if(typeObj instanceof Class) {
-                return ((Class)typeObj).getName();
+                typeName = ((Class)typeObj).getName();
             }
             else {
-                return typeObj.toString();
+                typeName = typeObj.toString();
             }
         }
-        return null;
+        else if(mapping!=null){
+            typeName = mapping.getTypeName(property.getType());
+        }
+        return typeName;
     }
 
     private static void bindColumnConfigToColumn(Column column, ColumnConfig columnConfig) {
@@ -1022,12 +1051,23 @@ public final class GrailsDomainBinder {
      * @param domainClass The domain class
      */
     public static Mapping evaluateMapping(GrailsDomainClass domainClass) {
+        return evaluateMapping(domainClass,null);
+    }
 
-        try {
+    public static Mapping evaluateMapping(GrailsDomainClass domainClass, Closure defaultMapping) {
+       try {
             Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.MAPPING);
-            if (o instanceof Closure) {
+            if (o != null || defaultMapping != null) {
                 HibernateMappingBuilder builder = new HibernateMappingBuilder(domainClass.getFullName());
-                Mapping m = builder.evaluate((Closure) o);
+                Mapping m = null;
+                if(defaultMapping != null) {
+                    m = builder.evaluate(defaultMapping);
+                }
+
+                if(o instanceof Closure) {
+                    m = builder.evaluate((Closure) o);
+                }
+
                 MAPPING_CACHE.put(domainClass.getClazz(), m);
                 return m;
             }
@@ -1037,26 +1077,6 @@ public final class GrailsDomainBinder {
 
         }
         return null;
-    }
-
-    /**
-     * Evaluates a Mapping object from the domain class if it has a namedQueries closure
-     *
-     * @param domainClass The domain class
-     */
-    public static void evaluateNamedQueries(GrailsDomainClass domainClass) {
-
-        try {
-            Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.NAMED_QUERIES);
-            if (o instanceof Closure) {
-                HibernateNamedQueriesBuilder builder = new HibernateNamedQueriesBuilder(domainClass);
-                builder.evaluate((Closure) o);
-            }
-        } catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
-            throw new GrailsDomainException("Error evaluating named queries block for domain ["+domainClass.getFullName()+"]:  " + e.getMessage(), e);
-
-        }
     }
 
     /**
@@ -1645,9 +1665,15 @@ public final class GrailsDomainBinder {
         } else if (typeObj != null) {
             String typeName = typeObj.toString();
             try {
-                userType = Class.forName(typeName);
+                userType = Class.forName(typeName, true, Thread.currentThread().getContextClassLoader());
             } catch (ClassNotFoundException e) {
-                // ignore
+                // only print a warning if the user type is in a package this excludes basic
+                // types like string, int etc.
+                if(typeName.indexOf(".")>-1) {
+                    if(LOG.isWarnEnabled()) {
+                        LOG.warn("UserType not found ", e);
+                    }
+                }
             }
         }
         return userType;
@@ -1686,6 +1712,8 @@ public final class GrailsDomainBinder {
 
 
         GrailsDomainClass domainClass = property.getReferencedDomainClass() != null ? property.getReferencedDomainClass() : property.getComponent();
+        
+        evaluateMapping(domainClass);
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
         Table table = component.getOwner().getTable();
         PersistentClass persistentClass = component.getOwner();
@@ -1744,12 +1772,18 @@ public final class GrailsDomainBinder {
                 bindManyToOne(currentGrailsProp, (ManyToOne) value, path, mappings);
             }
         }
+        
         else {
             if (LOG.isDebugEnabled())
                 LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 
             value = new SimpleValue(table);
-            bindSimpleValue(currentGrailsProp,componentProperty, (SimpleValue) value, path, mappings);
+            if (currentGrailsProp.isEnum()) {
+                bindEnumType(currentGrailsProp, (SimpleValue) value, path, mappings);
+            }
+			else {
+            	bindSimpleValue(currentGrailsProp, componentProperty, (SimpleValue) value, path, mappings);
+			}
         }
 
         if (value != null) {
@@ -1952,6 +1986,8 @@ public final class GrailsDomainBinder {
             manyToOne.setFetchMode(FetchMode.DEFAULT);
         }
 
+        manyToOne.setLazy(getLazyiness(property));
+
         if (config != null) {
            manyToOne.setIgnoreNotFound(config.getIgnoreNotFound());
         }
@@ -2065,8 +2101,7 @@ public final class GrailsDomainBinder {
                              grailsProperty.isPersistent() && !grailsProperty.isAssociation() && !grailsProperty.isIdentity();
 
         if(isLazyable) {
-            PropertyConfig config = getPropertyConfig(grailsProperty);
-            final boolean isLazy = config!=null ? config.getLazy() : true;
+            final boolean isLazy = getLazyiness(grailsProperty);
             prop.setLazy(isLazy);
 
             if(isLazy && (grailsProperty.isManyToOne() || grailsProperty.isOneToOne())) {
@@ -2075,6 +2110,12 @@ public final class GrailsDomainBinder {
 
         }
 
+    }
+
+    private static boolean getLazyiness(GrailsDomainClassProperty grailsProperty) {
+        PropertyConfig config = getPropertyConfig(grailsProperty);
+        final boolean isLazy = config!=null ? config.getLazy() : true;
+        return isLazy;
     }
 
     private static boolean isBidirectionalManyToOneWithListMapping(GrailsDomainClassProperty grailsProperty, Property prop) {
@@ -2210,13 +2251,11 @@ public final class GrailsDomainBinder {
     }
 
     private static void setTypeForPropertyConfig(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, PropertyConfig config) {
-        if (config != null && config.getType() != null) {
-            Object type = config.getType();
-            if (type instanceof Class) {
-                simpleValue.setTypeName(((Class) type).getName());
-            } else {
-                simpleValue.setTypeName(type.toString());
-            }
+        final String typeName = getTypeName(grailsProp, getPropertyConfig(grailsProp), getMapping(grailsProp.getDomainClass()));
+        if (typeName != null) {
+            simpleValue.setTypeName(typeName);
+            if(config!=null)
+                simpleValue.setTypeParameters(config.getTypeParams());
         } else {
             simpleValue.setTypeName(grailsProp.getType().getName());
         }
@@ -2474,7 +2513,7 @@ public final class GrailsDomainBinder {
     private static String getIndexColumnType(GrailsDomainClassProperty property, String defaultType) {
         PropertyConfig pc = getPropertyConfig(property);
         if(pc != null && pc.getIndexColumn() != null && pc.getIndexColumn().getType() != null) {
-            return getTypeName(pc.getIndexColumn());
+            return getTypeName(property, pc.getIndexColumn(), getMapping(property.getDomainClass()));
         }
         return defaultType;
     }

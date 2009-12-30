@@ -35,24 +35,30 @@ public class DomainClassPluginSupport {
      */
     public static validateInstance(object, ApplicationContext ctx) {
         def localErrors = new BeanPropertyBindingResult(object, object.class.name)
-        for (prop in object.constraints.values()) {
-            prop.messageSource = ctx.getBean("messageSource")
-            prop.validate(object, object.getProperty(prop.getPropertyName()), localErrors);
-        }
-        if (localErrors.hasErrors()) {
-            def objectErrors = object.errors;
-            localErrors.allErrors.each { localError ->
-                def fieldName = localError.getField()
-                def fieldError = objectErrors.getFieldError(fieldName)
+        if(object.hasProperty('constraints')) {
+            def constraints = object.constraints
+            if(constraints) {
+                for (prop in constraints.values()) {
+                    prop.messageSource = ctx.getBean("messageSource")
+                    prop.validate(object, object.getProperty(prop.getPropertyName()), localErrors);
+                }
+                if (localErrors.hasErrors()) {
+                    def objectErrors = object.errors;
+                    localErrors.allErrors.each { localError ->
+                        def fieldName = localError.getField()
+                        def fieldError = objectErrors.getFieldError(fieldName)
 
-                // if we didn't find an error OR if it is a bindingFailure...
-                if(!fieldError || fieldError.bindingFailure) {
-                    objectErrors.addError(localError)
+                        // if we didn't find an error OR if it is a bindingFailure...
+                        if(!fieldError || fieldError.bindingFailure) {
+                            objectErrors.addError(localError)
+                        }
+                    }
                 }
             }
-        }
 
-        !object.errors.hasErrors()
+            return !object.errors.hasErrors()
+        }
+        return true
     }
 
 }

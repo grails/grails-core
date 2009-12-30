@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.AntPathMatcher
 import org.codehaus.groovy.grails.web.servlet.view.NullView
 
@@ -31,7 +32,7 @@ import org.codehaus.groovy.grails.web.servlet.view.NullView
  * @author mike
  * @author Graeme Rocher
  */
-class FilterToHandlerAdapter implements HandlerInterceptor {
+class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     def filterConfig;
     def configClass;
 
@@ -39,19 +40,49 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
     def actionRegex;
     def uriPattern;
     def urlPathHelper = new UrlPathHelper()
+    def pathMatcher = new AntPathMatcher()
+    def useRegex  // standard regex
+    def invertRule // invert rule
+    def useRegexFind // use find instead of match
 
+    public void afterPropertiesSet() {
+        def scope = filterConfig.scope
+
+        useRegex = scope.regex
+        invertRule = scope.invert
+        useRegexFind = scope.find
+
+        if (scope.controller) {
+            controllerRegex = Pattern.compile((useRegex)?scope.controller:scope.controller.replaceAll("\\*", ".*"))
+        }
+        else {
+            controllerRegex = Pattern.compile(".*")
+        }
+
+        if (scope.action) {
+            actionRegex = Pattern.compile((useRegex)?scope.action:scope.action.replaceAll("\\*", ".*"))
+        }
+        else {
+            actionRegex = Pattern.compile(".*")
+        }
+
+        if (scope.uri) {
+            uriPattern = scope.uri.toString()
+        }
+    }
+    
     /**
      * Returns the name of the controller targeted by the given request.
      */
     String controllerName(request) {
-        return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE).toString()
+        return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE)?.toString()
     }
 
     /**
      * Returns the name of the action targeted by the given request.
      */
     String actionName(request) {
-        return request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE).toString()
+        return request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE)?.toString()
     }
 
     String uri(HttpServletRequest request) {
@@ -137,36 +168,25 @@ class FilterToHandlerAdapter implements HandlerInterceptor {
         }
     }
 
-    def pathMatcher = new AntPathMatcher()
     boolean accept(String controllerName, String actionName, String uri) {
-        if (controllerRegex == null || actionRegex == null) {
-            def scope = filterConfig.scope
-
-            if (scope.controller) {
-                controllerRegex = Pattern.compile(scope.controller.replaceAll("\\*", ".*"))
-            }
-            else {
-                controllerRegex = Pattern.compile(".*")
-            }
-
-            if (scope.action) {
-                actionRegex = Pattern.compile(scope.action.replaceAll("\\*", ".*"))
-            }
-            else {
-                actionRegex = Pattern.compile(".*")
-            }
-
-            if (scope.uri) {
-                uriPattern = scope.uri.toString()
-            }
-        }
-
+    	def matched
         if(uriPattern) {
-            return pathMatcher.match(uriPattern, uri)
+        	matched=pathMatcher.match(uriPattern, uri)
         }
         else if(controllerRegex && actionRegex) {
-            return controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches()
+			if(controllerName == null || actionName == null) {
+				matched = false
+			}
+			else if(useRegexFind) {
+        		matched=controllerRegex.matcher(controllerName).find() && actionRegex.matcher(actionName).find()
+        	} else {
+        		matched=controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches()
+        	}
         }
+    	if(invertRule)
+    		return !matched
+    	else	
+    		return matched
     }
 
     String toString() {

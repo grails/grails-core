@@ -15,7 +15,6 @@
 */
 
 import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import grails.util.GrailsNameUtils
 
@@ -26,8 +25,8 @@ import grails.util.GrailsNameUtils
  *
  * @since 0.4
  */
-
 includeTargets << grailsScript("_GrailsInit")
+includeTargets << grailsScript("_GrailsEvents")
 
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
 ant.path(id: "grails.compile.classpath", compileClasspath)
@@ -45,12 +44,12 @@ compilerPaths = { String classpathId, boolean compilingTests ->
     // This stops resources.groovy becoming "spring.resources"
     src(path: "${basedir}/grails-app/conf/spring")
 
-    src(path:"${basedir}/src/groovy")
-    src(path:"${basedir}/src/java")
-    javac(classpathref:classpathId, debug:"yes")
+    src(path:"${grailsSettings.sourceDir}/groovy")
+    src(path:"${grailsSettings.sourceDir}/java")
+    javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
 	if(compilingTests) {
-        src(path:"${basedir}/test/unit")
-        src(path:"${basedir}/test/integration")
+        src(path:"${grailsSettings.testSourceDir}/unit")
+        src(path:"${grailsSettings.testSourceDir}/integration")
 	}
 }
 
@@ -92,7 +91,7 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
         def classpathId = "grails.compile.classpath"
-        def pluginResources = getPluginSourceFiles()
+        def pluginResources = pluginSettings.pluginSourceFiles
         def excludedPaths = ["views", "i18n"] // conf gets special handling
         pluginResources = pluginResources.findAll {
             !excludedPaths.contains(it.file.name) && it.file.isDirectory()
@@ -113,7 +112,7 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
                 exclude(name: "**/*DataSource.groovy")
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
-                javac(classpathref:classpathId, debug:"yes")
+                javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
             }
         }
     }
@@ -128,7 +127,7 @@ compilePluginDescriptor = { File descriptor ->
 
     if (descriptor.lastModified() > classFile.lastModified()) {
         ant.echo(message: "Compiling plugin descriptor...")
-		compConfig.setTargetDirectory(classesDir)
+        compConfig.setTargetDirectory(classesDir)
         def unit = new CompilationUnit(compConfig, null, new GroovyClassLoader(classLoader))
         unit.addSource(descriptor)
         unit.compile()
@@ -174,7 +173,7 @@ target(compilegsp : "Compile GSP files") {
 
 	// compile views in plugins
 	loadPlugins()
-	def pluginInfos = GrailsPluginUtils.getSupportedPluginInfos(pluginsHome)
+	def pluginInfos = pluginSettings.supportedPluginInfos
 	if(pluginInfos) {
 		for(PluginInfo info in pluginInfos) {
             File pluginViews = new File(info.pluginDir.file, "grails-app/views")

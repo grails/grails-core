@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import grails.util.GrailsWebUtil;
 
 /**
@@ -28,10 +31,10 @@ import grails.util.GrailsWebUtil;
 public class IncludedContent {
 
     private String contentType = GrailsWebUtil.getContentType("text/html","UTF-8");
-    private String content = "";
+    private Object content;
     private String redirectURL;
 
-    public IncludedContent(String contentType, String content) {
+    public IncludedContent(String contentType, Object content) {
         if(contentType!=null)
             this.contentType = contentType;
         this.content = content;
@@ -61,7 +64,33 @@ public class IncludedContent {
      * Returns the included content
      * @return The content
      */
-    public String getContent() {
+    public Object getContent() {
         return content;
+    }
+    
+    public void writeTo(Writer target) throws IOException {
+    	if(content==null) {
+    		return;
+    	}
+    	if(content instanceof StreamCharBuffer) {
+    		((StreamCharBuffer)content).writeTo(target);
+    	} else if (content instanceof String){
+    		target.write((String)content);
+    	} else {
+    		target.write(String.valueOf(content));
+    	}
+    }
+        
+    public char[] getContentAsCharArray() {
+    	if(content==null) {
+    		return new char[0];
+    	}
+    	if(content instanceof StreamCharBuffer) {
+    		return ((StreamCharBuffer)content).toCharArray();
+    	} else if (content instanceof String){
+    		return ((String)content).toCharArray();
+    	} else {
+    		return String.valueOf(content).toCharArray();
+    	}
     }
 }

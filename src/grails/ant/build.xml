@@ -66,18 +66,6 @@
 			<fileset dir="${lib.dir}"/>
         </path>
 
-        <path id="compile.classpath">
-            <fileset dir="${lib.dir}/compile"/>
-        </path>
-
-        <path id="test.classpath">
-            <fileset dir="${lib.dir}/test"/>
-        </path>
-
-        <path id="app.classpath">
-            <fileset dir="${lib.dir}/runtime"/>
-        </path>
-
         <taskdef name="grailsTask"
                  classname="grails.ant.GrailsTask"
                  classpathref="grails.classpath"/>
@@ -91,6 +79,10 @@
           target: clean
          ================================= -->
  	<target name="clean" description="--> Cleans a Grails application">
+		<mkdir dir="${lib.dir}/build"/>
+		<mkdir dir="${lib.dir}/compile"/>
+		<mkdir dir="${lib.dir}/runtime"/>
+		<mkdir dir="${lib.dir}/test"/>	
 		<delete failonerror="true">
 		<fileset dir="${lib.dir}/build" includes="*/"/>
 		<fileset dir="${lib.dir}/compile" includes="*/"/>

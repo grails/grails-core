@@ -19,6 +19,7 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;
@@ -27,7 +28,6 @@ import org.hibernate.proxy.pojo.BasicLazyInitializer;
 import org.hibernate.proxy.pojo.javassist.SerializableProxy;
 import org.hibernate.type.AbstractComponentType;
 import org.hibernate.util.ReflectHelper;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -42,19 +42,21 @@ import java.util.Set;
  *        Created: Apr 21, 2009
  */
 public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer implements MethodHandler {
-
+	private static final String WRITE_CLASSES_DIRECTORY = System.getProperty("javassist.writeDirectory");
+	
     private static final Set GROOVY_METHODS = new HashSet() {{
         add("invokeMethod");
         add("getMetaClass");
+        add("setMetaClass");
         add("metaClass");
         add("getProperty");
         add("setProperty");
-
+        add("$getStaticMetaClass");
     }};
 	private static final MethodFilter METHOD_FILTERS = new MethodFilter() {
 		public boolean isHandled(Method m) {
 			// skip finalize methods
-            return !GROOVY_METHODS.contains(m.getName()) && !(m.getParameterTypes().length == 0 && (m.getName().equals("finalize")));
+            return m.getName().indexOf("super$")==-1 && !GROOVY_METHODS.contains(m.getName()) && !(m.getParameterTypes().length == 0 && (m.getName().equals("finalize")));
         }
 	};
 
@@ -95,20 +97,19 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 			        componentIdType,
 			        session
 			);
-			ProxyFactory factory = new ProxyFactory();
-			factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
-			factory.setInterfaces( interfaces );
-			factory.setFilter(METHOD_FILTERS);
-			Class cl = factory.createClass();
-
-			final HibernateProxy proxy = ( HibernateProxy ) cl.newInstance();
+			ProxyFactory factory = createProxyFactory(persistentClass,
+					interfaces);
+			Class proxyClass = factory.createClass();
+            HibernatePluginSupport.enhanceProxyClass(proxyClass);
+            
+			final HibernateProxy proxy = ( HibernateProxy ) proxyClass.newInstance();
 			( ( ProxyObject ) proxy ).setHandler( instance );
+			HibernatePluginSupport.enhanceProxy(proxy);
 			instance.constructed = true;
-            HibernatePluginSupport.enhanceProxy(proxy);
 			return proxy;
 		}
 		catch ( Throwable t ) {
-			LoggerFactory.getLogger( BasicLazyInitializer.class ).error(
+			LogFactory.getLog( BasicLazyInitializer.class ).error(
 					"Javassist Enhancement failed: " + entityName, t
 			);
 			throw new HibernateException(
@@ -151,8 +152,8 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 		}
 		( ( ProxyObject ) proxy ).setHandler( instance );
 		instance.constructed = true;
+		HibernatePluginSupport.enhanceProxy(proxy);
         HibernatePluginSupport.initializeDomain(persistentClass);
-        HibernatePluginSupport.enhanceProxy(proxy);
 		return proxy;
 	}
 
@@ -162,14 +163,14 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 		// note: interfaces is assumed to already contain HibernateProxy.class
 
 		try {
-			ProxyFactory factory = new ProxyFactory();
-			factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
-			factory.setInterfaces( interfaces );
-			factory.setFilter(METHOD_FILTERS);
-			return  factory.createClass();
+			ProxyFactory factory = createProxyFactory(persistentClass,
+					interfaces);
+			Class proxyClass=factory.createClass();
+	        HibernatePluginSupport.enhanceProxyClass(proxyClass);
+	        return proxyClass;
 		}
 		catch ( Throwable t ) {
-			LoggerFactory.getLogger( BasicLazyInitializer.class ).error(
+			LogFactory.getLog( BasicLazyInitializer.class ).error(
 					"Javassist Enhancement failed: "
 					+ persistentClass.getName(), t
 			);
@@ -178,6 +179,18 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 					+ persistentClass.getName(), t
 			);
 		}
+	}
+
+	private static ProxyFactory createProxyFactory(Class persistentClass,
+			Class[] interfaces) {
+		ProxyFactory factory = new ProxyFactory();
+		factory.setSuperclass( interfaces.length == 1 ? persistentClass : null );
+		factory.setInterfaces( interfaces );
+		factory.setFilter(METHOD_FILTERS);
+		if(WRITE_CLASSES_DIRECTORY != null) {
+			factory.writeDirectory = WRITE_CLASSES_DIRECTORY;
+		}
+		return factory;
 	}
 
 

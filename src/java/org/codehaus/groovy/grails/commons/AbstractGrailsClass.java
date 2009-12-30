@@ -16,19 +16,20 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
+import groovy.lang.*;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
+
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
 /**
  * Abstract base class for Grails types that provides common functionality for
@@ -42,20 +43,18 @@ import java.util.Map;
  *  Created: Jul 2, 2005
  */
 public abstract class AbstractGrailsClass implements GrailsClass {
-
-
-
-	private Class clazz = null;
-    private String fullName = null;
-    private String name = null;
-    private String packageName = null;
-    private BeanWrapper reference = null;
-    private String naturalName;
-    private String shortName;
-    private MetaClass metaClass;
-
-
-
+	static final Log LOG=LogFactory.getLog(AbstractGrailsClass.class);
+	private final Class clazz;
+    private final BeanWrapper reference;
+	private final String fullName;
+    private final String name;
+    private final String packageName;
+    private final String naturalName;
+    private final String shortName;
+    private final String propertyName;
+    private final String logicalPropertyName;
+    private final ClassPropertyFetcher classPropertyFetcher;
+    
     /**
      * <p>Contructor to be used by all child classes to create a
      * new instance and get the name right.
@@ -64,26 +63,31 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @param trailingName the trailing part of the name for this class type
      */
     public AbstractGrailsClass(Class clazz, String trailingName) {
-        super();
-        setClazz(clazz);
-
-        this.reference = new BeanWrapperImpl(newInstance());
-        this.fullName = clazz.getName();
-        this.packageName = ClassUtils.getPackageName(clazz);
-        this.naturalName = GrailsNameUtils.getNaturalName(clazz.getName());
-        this.shortName = getShortClassname(clazz);        
-        this.name = GrailsNameUtils.getLogicalName(clazz, trailingName);
-    }
-
-	public String getShortName() {
-        return this.shortName;
-    }
-
-    private void setClazz(Class clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Clazz parameter should not be null");
         }
         this.clazz = clazz;
+        this.reference = new BeanWrapperImpl(newInstance());
+        this.fullName = clazz.getName();
+        this.packageName = ClassUtils.getPackageName(clazz);
+        this.naturalName = GrailsNameUtils.getNaturalName(clazz.getName());
+        this.shortName = ClassUtils.getShortClassName(clazz);        
+        this.name = GrailsNameUtils.getLogicalName(clazz, trailingName);
+        this.propertyName = GrailsNameUtils.getPropertyNameRepresentation(this.shortName);
+        if(StringUtils.isBlank(this.name)) {
+        	this.logicalPropertyName=this.propertyName;
+        } else {
+        	this.logicalPropertyName=GrailsNameUtils.getPropertyNameRepresentation(this.name);
+        }
+        this.classPropertyFetcher=new ClassPropertyFetcher(clazz, new ClassPropertyFetcher.ReferenceInstanceCallback() {
+			public Object getReferenceInstance() {
+				return AbstractGrailsClass.this.getReferenceInstance();
+			}
+		});
+    }
+
+	public String getShortName() {
+        return this.shortName;
     }
 
     public Class getClazz() {
@@ -119,36 +123,57 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public String getPropertyName() {
-        return GrailsNameUtils.getPropertyNameRepresentation(getShortName());
+        return this.propertyName;
     }
 
     public String getLogicalPropertyName() {
-
-        final String logicalName = getName();
-        if(StringUtils.isBlank(logicalName)) {
-            return GrailsNameUtils.getPropertyNameRepresentation(getShortName());
-        }
-        return GrailsNameUtils.getPropertyNameRepresentation(logicalName);
+    	return this.logicalPropertyName;
     }
 
     public String getPackageName() {
         return this.packageName;
     }
 
-    private static String getShortClassname(Class clazz) {
-        return ClassUtils.getShortClassName(clazz);
+    public Object getReferenceInstance() {
+    	Object obj=getReference().getWrappedInstance();
+		if(obj instanceof GroovyObject) {
+			// GrailsClassUtils.getExpandoMetaClass(clazz) removed here
+            ((GroovyObject)obj).setMetaClass(getMetaClass());
+        }
+    	return obj;
     }
-
+    
+    public PropertyDescriptor[] getPropertyDescriptors() {
+    	return BeanUtils.getPropertyDescriptors(clazz);
+    }
+    
+    public Class getPropertyType(String name) {
+    	return classPropertyFetcher.getPropertyType(name);
+    }
+    
+    public boolean isReadableProperty(String name) {
+    	return classPropertyFetcher.isReadableProperty(name);
+    }
+    
+    public boolean hasMetaMethod(String name) {
+    	return hasMetaMethod(name, null);
+    }
+    
+    public boolean hasMetaMethod(String name, Object[] args) {
+    	return (getMetaClass().getMetaMethod(name, args) != null);
+    }
+    
+    public boolean hasMetaProperty(String name) {
+    	return (getMetaClass().getMetaProperty(name) != null);
+    }
+    
     /**
      * <p>The reference instance is used to get configured property values.
      *
      * @return BeanWrapper instance that holds reference
+     * @deprecated
      */
     public BeanWrapper getReference() {
-        Object obj = this.reference.getWrappedInstance();
-        if(obj instanceof GroovyObject) {
-            ((GroovyObject)obj).setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(getClazz()));
-        }
         return this.reference;
     }
 
@@ -158,34 +183,19 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * and static fields/properties. We will therefore match, in this order:
      * </p>
      * <ol>
-     * <li>Standard public bean property (with getter or just public field, using normal introspection)
-     * <li>Public static property with getter method
      * <li>Public static field
+     * <li>Public static property with getter method
+     * <li>Standard public bean property (with getter or just public field, using normal introspection)
      * </ol>
      *
      *
      * @return property value or null if no property or static field was found
      */
     protected Object getPropertyOrStaticPropertyOrFieldValue(String name, Class type) {
-        BeanWrapper ref = getReference();
-        Object value = null;
-        if (ref.isReadableProperty(name)) {
-            value = ref.getPropertyValue(name);
-        }
-        else if (GrailsClassUtils.isPublicField(ref.getWrappedInstance(), name))
-        {
-            value = GrailsClassUtils.getFieldValue(ref.getWrappedInstance(), name);
-        }
-        else
-        {
-            value = GrailsClassUtils.getStaticPropertyValue(clazz, name);
-        }
-        if ((value != null) && GrailsClassUtils.isGroovyAssignableFrom( type, value.getClass())) {
-            return value;
-        }
-        return null;
+    	Object value=classPropertyFetcher.getPropertyValue(name);
+        return returnOnlyIfInstanceOf(value, type);
     }
-
+    
     /**
      * Get the value of the named property, with support for static properties in both Java and Groovy classes
      * (which as of Groovy JSR 1.0 RC 01 only have getters in the metaClass)
@@ -194,34 +204,31 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @return The property value or null
      */
     public Object getPropertyValue(String name, Class type) {
-
-        // Handle standard java beans normal or static properties
-        BeanWrapper ref = getReference();
-        Object value = null;
-        if (ref.isReadableProperty(name)) {
-            value = ref.getPropertyValue(name);
-        }
-        else{
+    	Object value=classPropertyFetcher.getPropertyValue(name);
+    	if (value==null) {
             // Groovy workaround
-            Object inst = ref.getWrappedInstance();
-            if (inst instanceof GroovyObject)
-            {
-            	final Map properties = DefaultGroovyMethods.getProperties(inst);
-            	if(properties.containsKey(name)) {
-            		value = properties.get(name);
+            Object inst = getReferenceInstance();
+            if (inst instanceof GroovyObject) {
+            	MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
+            	if(metaProperty != null) {
+            		value=metaProperty.getProperty(inst);
             	}
             }
         }
+        return returnOnlyIfInstanceOf(value, type);
+    }
+    
+    public Object getPropertyValueObject(String name) {
+    	return getPropertyValue(name, Object.class);
+    }
 
-        if(value != null && (type.isAssignableFrom(value.getClass())
-            || GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(type, value.getClass()))) {
+	private Object returnOnlyIfInstanceOf(Object value, Class type) {
+		if ((value != null) && (type==Object.class || GrailsClassUtils.isGroovyAssignableFrom( type, value.getClass()))) {
             return value;
-        }
-        else
-        {
+        } else {
             return null;
         }
-    }
+	}
 
     /* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.commons.GrailsClass#getPropertyValue(java.lang.String)
@@ -243,7 +250,8 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	 * @return the metaClass
 	 */
 	public MetaClass getMetaClass() {
-		return GrailsClassUtils.getExpandoMetaClass(clazz);
+		return GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
+		//return GrailsClassUtils.getExpandoMetaClass(clazz);
 	}
 
     public String toString() {

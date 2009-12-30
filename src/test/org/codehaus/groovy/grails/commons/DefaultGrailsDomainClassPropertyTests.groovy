@@ -1,38 +1,46 @@
 package org.codehaus.groovy.grails.commons;
 
-import junit.framework.TestCase;
+import groovy.util.GroovyTestCase;
 
-import java.beans.IntrospectionException;
 
 public class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
+    GrailsDomainClass parentClass
+    GrailsDomainClass childClass
 
-    GrailsDomainClass parentClass = new DefaultGrailsDomainClass(ParentClass.class);
-    GrailsDomainClass childClass = new DefaultGrailsDomainClass(ChildClass.class);
+    GrailsDomainClassProperty prop1Parent
+    GrailsDomainClassProperty prop1Child
+    GrailsDomainClassProperty prop2Child
 
-    GrailsDomainClassProperty prop1Parent = parentClass.getPropertyByName("prop1");
-    GrailsDomainClassProperty prop1Child = childClass.getPropertyByName("prop1");
-    GrailsDomainClassProperty prop2Child = childClass.getPropertyByName("prop2");
+    void setUp() throws Exception {
+    	GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+        parentClass = new DefaultGrailsDomainClass(ParentClass.class);
+        childClass = new DefaultGrailsDomainClass(ChildClass.class);
 
-    void testSamePropEquals() throws IntrospectionException {
+        prop1Parent = parentClass.getPropertyByName("prop1");
+        prop1Child = childClass.getPropertyByName("prop1");
+        prop2Child = childClass.getPropertyByName("prop2");
+    }
+
+    void testSamePropEquals() {
         assertTrue(prop1Child.equals(prop1Child));
     }
 
-    void testSameInParentEqualsPropInChikd() throws IntrospectionException {
+    void testSameInParentEqualsPropInChikd() {
         assertTrue(prop1Parent.equals(prop1Child));
         assertTrue(prop1Child.equals(prop1Parent));
     }
 
-    void testDifferentPropNotEquals() throws IntrospectionException {
+    void testDifferentPropNotEquals() {
         assertFalse(prop1Child.equals(prop2Child));
         assertFalse(prop2Child.equals(prop1Child));
     }
 
-    void testDifferentPropInParentNotEqualChild() throws IntrospectionException {
+    void testDifferentPropInParentNotEqualChild() {
         assertFalse(prop2Child.equals(prop1Parent));
         assertFalse(prop1Parent.equals(prop2Child));
     }
 
-    void testNullAndNonPropsNotEqual() throws IntrospectionException {
+    void testNullAndNonPropsNotEqual() {
         assertFalse(prop1Child.equals(null));
         assertFalse(prop1Child.equals("Not a property"));
 

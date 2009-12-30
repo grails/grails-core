@@ -19,11 +19,9 @@ import grails.util.GrailsUtil
 
 import grails.web.container.EmbeddableServerFactory
 import grails.web.container.EmbeddableServer
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-
 
 /**
- * Gant script that executes Grails using an embedded Jetty server
+ * Gant script that executes Grails using an embedded server
  *
  * @author Graeme Rocher
  *
@@ -35,7 +33,9 @@ includeTargets << grailsScript("_GrailsPlugins")
 SCHEME_HTTP="http"
 SCHEME_HTTPS="https"
 
-
+// Keep track of whether we're running in HTTPS mode in case we need
+// to restart the server.
+usingSecureServer = false
 
 grailsServer = null
 grailsContext = null
@@ -95,7 +95,7 @@ private EmbeddableServerFactory loadServerFactory() {
         if(containerClass==defaultServer) {
             println "WARNING: No default container found, installing Tomcat.."
             doInstallPluginFromGrailsHomeOrRepository "tomcat", GrailsUtil.grailsVersion
-            GrailsPluginUtils.clearCaches()
+            pluginSettings.clearCache()
             compilePlugins()
             serverFactory = load(containerClass)            
         }
@@ -119,9 +119,6 @@ private runInline(scheme, host, httpPort, httpsPort) {
 private runWar(scheme, host, httpPort, httpsPort) {
     EmbeddableServerFactory serverFactory = loadServerFactory()
     grailsServer = serverFactory.createForWAR(warName, serverContextPath)
-    if(serverFactory.class.name.contains("Jetty")) {
-         event("ConfigureJetty", [grailsServer.grailsServer])
-    }
 
     grails.util.Metadata.getCurrent().put(grails.util.Metadata.WAR_DEPLOYED, "true")
     runServer server:grailsServer, host:host, httpPort:httpPort, httpsPort: httpsPort, scheme: scheme
@@ -142,12 +139,16 @@ runServer = { Map args ->
         def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
 
         EmbeddableServer server = args["server"]
-        if(server.class.name.contains("Jetty")) {
-             server.eventListener = this
+        if(server.hasProperty('eventListener')) {
+            server.eventListener = this
+        }
+        if(server.hasProperty('grailsConfig')) {
+            server.grailsConfig = config
         }
 
         profile("start server") {
             if(args.scheme == 'https') {
+                usingSecureServer = true
                 server.startSecure args.host, args.httpPort, args.httpsPort
 
                 // Update the message to reflect the fact we are running HTTPS as well.
@@ -173,7 +174,11 @@ runServer = { Map args ->
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
     // Start the plugin change scanner.
-    PluginManagerHolder.pluginManager.startPluginChangeScanner()
+    PluginManagerHolder.pluginManager?.startPluginChangeScanner()
+}
+
+target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
+    PluginManagerHolder.pluginManager?.stopPluginChangeScanner()
 }
 
 /**
@@ -244,7 +249,13 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
                     PluginManagerHolder.pluginManager = null
                     // reload plugins
                     loadPlugins()
-                    runApp()
+
+                    if (usingSecureServer) {
+                        runAppHttps()
+                    }
+                    else {
+                        runApp()
+                    }
                 } catch (Throwable e) {
                     logError("Error restarting container",e)
                     exit(1)
@@ -257,7 +268,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
         // functional tests so that we can stop the servers that are
         // started.
         if (killFile.exists()) {
-            println "Stopping Jetty server..."
+            println "Stopping server..."
             grailsServer.stop()
             killFile.delete()
             keepRunning = false
@@ -275,7 +286,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         // functional tests so that we can stop the servers that are
         // started.
         if (killFile.exists()) {
-            println "Stopping Jetty server..."
+            println "Stopping server..."
             grailsServer.stop()
             killFile.delete()
             keepRunning = false
@@ -283,9 +294,25 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
     }
 }
 
-target(stopServer: "Stops the Grails Jetty server") {
+target(stopServer: "Stops the Grails servlet container") {
     if (grailsServer) {
-        grailsServer.stop()
+        try {
+            grailsServer.stop()
+        }
+        catch (Throwable e) {
+            GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
+            println "Error stopping server: ${e.message}"
+        }
+        
+        try {
+            stopPluginScanner()
+        }
+        catch (Throwable e) {
+            GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
+            println "Error stopping plugin change scanner: ${e.message}"
+        }
     }
     event("StatusFinal", ["Server stopped"])
 }

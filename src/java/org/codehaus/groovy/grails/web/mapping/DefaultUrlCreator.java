@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletRequest;
@@ -70,7 +71,12 @@ public class DefaultUrlCreator implements UrlCreator {
             id = parameterValues.get(ARGUMENT_ID).toString();
         }
 
-        StringBuilder actualUriBuf = includeContextPath ? new StringBuilder(webRequest.getAttributes().getApplicationUri(request)) : new StringBuilder();
+
+
+        FastStringWriter actualUriBuf = new FastStringWriter();
+        if(includeContextPath) {
+            actualUriBuf.append(webRequest.getContextPath());
+        }
         if(actionName != null) {
 
             if(actionName.indexOf(SLASH) > -1) {
@@ -148,15 +154,16 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     /*
-     * Appends all the requeset parameters to the URI buffer
+     * Appends all the request parameters to the URI buffer
      */
-    private void appendRequestParams(StringBuilder actualUriBuf, Map params, HttpServletRequest request) {
+    private void appendRequestParams(FastStringWriter actualUriBuf, Map<Object,Object> params, HttpServletRequest request) {
 
 
         boolean querySeparator = false;
 
-        for (Object name : params.keySet()) {
-            if (name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION) || name.equals(ARGUMENT_ID))
+        for (Map.Entry<Object, Object> entry : params.entrySet()) {
+        	Object name = entry.getKey();
+        	if (name.equals(GrailsControllerClass.CONTROLLER) || name.equals(GrailsControllerClass.ACTION) || name.equals(ARGUMENT_ID))
                 continue;
 
             if (!querySeparator) {
@@ -166,7 +173,7 @@ public class DefaultUrlCreator implements UrlCreator {
             else {
                 actualUriBuf.append(ENTITY_AMPERSAND);
             }
-            Object value = params.get(name);
+            Object value = entry.getValue();
             if (value instanceof Collection) {
                 Collection values = (Collection) value;
                 Iterator valueIterator = values.iterator();
@@ -199,7 +206,7 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends a request parameters for the given aname and value
      */
-    private void appendRequestParam(StringBuilder actualUriBuf, Object name, Object value, HttpServletRequest request) {
+    private void appendRequestParam(FastStringWriter actualUriBuf, Object name, Object value, HttpServletRequest request) {
         if (value==null)
             value = "";
 
@@ -221,7 +228,7 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends a URL token to the buffer
      */
-    private void appendUrlToken(StringBuilder actualUriBuf, Object token, ServletRequest request) {
+    private void appendUrlToken(FastStringWriter actualUriBuf, Object token, ServletRequest request) {
         actualUriBuf.append(SLASH).append(urlEncode(token, request));
     }
 }

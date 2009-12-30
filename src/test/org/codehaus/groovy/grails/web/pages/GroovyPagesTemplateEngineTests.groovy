@@ -21,7 +21,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
             assert grails.util.GrailsUtil.isDevelopmentEnv()                                        
 
             def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+            gpte.afterPropertiesSet()
+            
             def t = gpte.createTemplate("<%='hello'%>", "hello_test")
             def w = t.make()
 
@@ -42,6 +43,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         def res = new UrlResource("http://grails.org/some.path/foo.gsp")
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
 
         assertEquals "some_path_foo_gsp", gpte.establishPageName(res, null)                
     }
@@ -63,7 +65,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext(rl))
-
+        gpte.afterPropertiesSet()
+        
         def t = gpte.createTemplate()
         def w = t.make()
 
@@ -91,6 +94,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         rl.registerMockResource(uri2, "<%='success 2'%>")
         
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext(rl))
+        gpte.afterPropertiesSet()
         
         def t = gpte.createTemplate()
         def w = t.make()
@@ -110,7 +114,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         def t = gpte.createTemplate(new ByteArrayResource("<%='hello'%>".bytes))
         def w = t.make()
 
@@ -128,7 +133,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         def t = gpte.createTemplate('Hello ${foo}', "hello_test")
         def w = t.make(foo:"World")
 
@@ -146,7 +152,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         GrailsWebUtil.bindMockWebRequest()
         
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         def t = gpte.createTemplate("<%='hello'%>", "hello_test")
         def w = t.make()
 
@@ -163,7 +170,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         GrailsWebUtil.bindMockWebRequest()
         
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+    	gpte.afterPropertiesSet()
+    	
         def t = gpte.createTemplate("<g:each var='num' in='\${1..5}'>\${num} </g:each>", "foreach_test")
         def w = t.make()
 
@@ -178,7 +186,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testGetUriWithinGrailsViews() {
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         assertEquals "/WEB-INF/grails-app/views/myview.gsp", gpte.getUriWithinGrailsViews("/myview")        
         assertEquals "/WEB-INF/grails-app/views/myview.gsp", gpte.getUriWithinGrailsViews("myview")
         assertEquals "/WEB-INF/grails-app/views/mydir/myview.gsp", gpte.getUriWithinGrailsViews("mydir/myview")

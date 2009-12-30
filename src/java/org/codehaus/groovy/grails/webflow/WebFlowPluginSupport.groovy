@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry
 import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
 import org.codehaus.groovy.grails.webflow.execution.GrailsFlowExecutorImpl
 import org.codehaus.groovy.grails.webflow.mvc.servlet.GrailsFlowHandlerAdapter
+import org.codehaus.groovy.grails.webflow.mvc.servlet.GrailsFlowHandlerMapping;
 import org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext
 import org.codehaus.groovy.grails.webflow.persistence.SessionAwareHibernateFlowExecutionListener
 import org.codehaus.groovy.grails.webflow.scope.ScopeRegistrar
@@ -56,6 +57,10 @@ public class WebFlowPluginSupport {
          viewFactoryCreator(MvcViewFactoryCreator) {
              viewResolvers = ref('jspViewResolver')
          }
+         flowHandlerMapping(GrailsFlowHandlerMapping) {
+             // run at slightly higher precedence 
+             order = Integer.MAX_VALUE - 1
+         }         
          flowBuilderServices(FlowBuilderServices){
              conversionService = { DefaultConversionService dcs ->}
              expressionParser = { bean ->

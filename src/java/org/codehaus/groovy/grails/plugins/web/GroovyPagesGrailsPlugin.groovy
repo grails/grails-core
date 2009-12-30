@@ -16,31 +16,30 @@
 
 package org.codehaus.groovy.grails.plugins.web
 
-
-import org.springframework.web.context.request.RequestContextHolder as RCH
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-
-import org.codehaus.groovy.grails.plugins.web.taglib.*
-import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.springframework.core.io.FileSystemResource
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.util.BuildSettingsHolder
 import grails.util.Environment
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
-import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
-import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.util.PluginBuildSettings
+
+import groovy.lang.MetaClass
 import java.lang.reflect.Modifier
+
+import org.codehaus.groovy.grails.commons.GrailsClass
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
 import org.springframework.beans.factory.config.PropertiesFactoryBean
+import org.springframework.context.ApplicationContext
+import org.springframework.core.io.FileSystemResource
+import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.web.pages.*
+import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.util.BuildSettings
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails 
@@ -72,7 +71,9 @@ public class GroovyPagesGrailsPlugin {
             JavascriptTagLib,
             RenderTagLib,
             ValidationTagLib,
-            PluginTagLib
+            PluginTagLib,
+            SitemeshTagLib,
+            JavascriptLibraryFilters
     ]
 
 
@@ -106,25 +107,29 @@ public class GroovyPagesGrailsPlugin {
             log.info "Configuring GSP views directory as '${viewsDir}'"
             groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
+                pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
             }
         }
         else {
             if (developmentMode) {
                 groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
-                    baseResource = new FileSystemResource(".")
+                    BuildSettings settings = BuildSettingsHolder.settings
+                    def location = settings?.baseDir ? GroovyPagesGrailsPlugin.transformToValidLocation(settings.baseDir.absolutePath) : '.'
+                    baseResource = "file:$location"
+                    pluginSettings = new PluginBuildSettings(settings)
                 }
             }
             else {
                 if (warDeployedWithReload) {
                     groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
                         if(env.hasReloadLocation()) {
-                            def location = env.reloadLocation
-                            if(!location.endsWith(File.separator)) location = "${location}${File.separator}"
+                            def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)                             
                             baseResource = "file:${location}"
                         }
                         else {
                             baseResource = "/WEB-INF"
                         }
+                        pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
                     }
                 }
             }
@@ -146,6 +151,11 @@ public class GroovyPagesGrailsPlugin {
 				location = "classpath:gsp/views.properties"
 			}
         }
+
+        // Setup the GroovyPagesUriService
+        groovyPagesUriService(org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService) {
+        	
+        }
         
         // Configure a Spring MVC view resolver
         jspViewResolver(GrailsViewResolver) {
@@ -153,7 +163,6 @@ public class GroovyPagesGrailsPlugin {
             prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
             suffix = ".jsp"
             templateEngine = groovyPagesTemplateEngine
-            pluginMetaManager = ref("pluginMetaManager", true)
             if (developmentMode) {
                 resourceLoader = groovyPageResourceLoader
             }
@@ -163,9 +172,17 @@ public class GroovyPagesGrailsPlugin {
         for(taglib in application.tagLibClasses) {
             "${taglib.fullName}"(taglib.clazz) { bean ->
                    bean.autowire = true
+                   // Taglib scoping support could be easily added here. Scope could be based on a static field in the taglib class.
+				   //bean.scope = 'request'
             }
         }
 
+    }
+
+    static String transformToValidLocation(String location) {
+        if(location == '.') return location
+        if (!location.endsWith(File.separator)) return "${location}${File.separator}"
+        return location
     }
 
     /**
@@ -196,7 +213,10 @@ public class GroovyPagesGrailsPlugin {
      */
     def doWithDynamicMethods = { ApplicationContext ctx ->
 
+    	WebMetaUtils.registerStreamCharBufferMetaClass()
+
         TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
+        GrailsPluginManager pluginManager = getManager()
 
         if(manager?.hasGrailsPlugin("controllers")) {
             for(namespace in gspTagLibraryLookup.availableNamespaces) {
@@ -230,34 +250,35 @@ public class GroovyPagesGrailsPlugin {
             WebMetaUtils.registerCommonWebProperties(mc, application)
 
             for(tag in taglib.tagNames) {
-                def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, tag)
-                WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, tag)
+                WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }
 
+            mc.getTagNamesThatReturnObject = {->
+            	taglib.getTagNamesThatReturnObject()
+            }
+            
             mc.throwTagError = {String message ->
                 throw new org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException(message)
             }
             mc.getPluginContextPath = {->
-                PluginMetaManager metaManager = ctx.pluginMetaManager
-                String path = metaManager.getPluginPathForResource(delegate.class.name)
-                path ? path : ""
+                pluginManager.getPluginPathForInstance(delegate) ?: ""
             }
 
             mc.getPageScope = {->
                 def request = RequestContextHolder.currentRequestAttributes().currentRequest
-                def binding = request[GrailsApplicationAttributes.PAGE_SCOPE]
+                def binding = request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE)
                 if (!binding) {
-                    binding = new Binding()
-                    request[GrailsApplicationAttributes.PAGE_SCOPE] = binding
+                    binding = new GroovyPageBinding()
+                    request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding)
                 }
                 binding
             }
 
             mc.getOut = {->
-                RequestContextHolder.currentRequestAttributes().out
+            	GroovyPageOutputStack.currentWriter()
             }
             mc.setOut = {Writer newOut ->
-                RequestContextHolder.currentRequestAttributes().out = newOut
+            	GroovyPageOutputStack.currentStack().push(newOut,true)
             }
             mc.propertyMissing = {String name ->
                 def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)
@@ -279,10 +300,15 @@ public class GroovyPagesGrailsPlugin {
 
             }
             mc.methodMissing = {String name, args ->
+            	def usednamespace = namespace
                 def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-                if(!tagLibrary) tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
+                if(!tagLibrary) {
+                	tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
+					usednamespace = GroovyPage.DEFAULT_NAMESPACE
+                }
                 if(tagLibrary) {
-                    WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
+                	WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, usednamespace, name)
+                    //WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
                 }
                 if (mc.respondsTo(delegate, name, args)) {
                     return mc.invokeMethod(delegate, name, args)
@@ -305,7 +331,7 @@ public class GroovyPagesGrailsPlugin {
             def tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
             if (tagLibrary) {
                 MetaClass controllerMc = delegate.class.metaClass
-                WebMetaUtils.registerMethodMissingForTags(controllerMc,tagLibrary, name)
+                WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, name)
                 if(controllerMc.respondsTo(delegate, name, args)) {
                   return controllerMc.invokeMethod(delegate, name, args)
                 }
@@ -330,6 +356,7 @@ public class GroovyPagesGrailsPlugin {
                 def beans = beans {
                     "$beanName"(taglibClass.getClazz()) {bean ->
                         bean.autowire = true
+						//bean.scope = 'request'
                     }
                 }
                 beans.registerBeans(event.ctx)
@@ -338,10 +365,17 @@ public class GroovyPagesGrailsPlugin {
                 // so we need to update it now.
                 def lookup = event.ctx.getBean("gspTagLibraryLookup")
                 lookup.registerTagLib(taglibClass)
+
             }
         }
 
         event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(event.ctx)
 
+        // clear uri cache after changes
+        event.ctx.getBean("groovyPagesUriService").clear()
+    }
+
+    private PluginBuildSettings createPluginSettings() {
+        return new PluginBuildSettings(BuildSettingsHolder.settings);
     }
 }

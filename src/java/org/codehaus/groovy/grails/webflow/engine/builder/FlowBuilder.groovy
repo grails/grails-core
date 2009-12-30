@@ -40,8 +40,7 @@ import org.springframework.webflow.engine.support.TransitionExecutingFlowExecuti
 import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.ViewFactory
-import java.beans.Introspector
-import java.beans.BeanInfo
+import org.springframework.beans.BeanUtils
 import java.beans.PropertyDescriptor
 
 /**
@@ -77,7 +76,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
      static final DO_CALL_METHOD = "doCall"
      static final FLOW_METHOD = "flow"
      static final CLOSURE_METHODS = ['setDelegate', 'setMetaClass', 'getMetaClass', 'call', 'doCall']
-     static final FLOW_INFO_METHODS =  ['on', 'action', 'subflow',"render","redirect"]
+     static final FLOW_INFO_METHODS =  ['on', 'action', 'subflow',"render","redirect", "onRender", "onEntry", "onExit"]
 
      final String flowId
      private MetaClass metaClass
@@ -126,86 +125,92 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
          else if(flowDefiningMode) {
              FlowArtifactFactory flowFactory = getContext().getFlowArtifactFactory()
              if(isFirstArgumentClosure(args)) {
-                 FlowInfoCapturer flowInfo = new FlowInfoCapturer(this, applicationContext)
-
-                 Closure c = args[0];
-                 def builder = this
-                 // root methods invoked on the closure to the builder and not to enclosing scope to avoid confusing bugs
-                 MetaClass closureMetaClass = c.class.metaClass
-                 closureMetaClass.invokeMethod = {String methodName, methodArgs ->
-                     if(CLOSURE_METHODS.contains(methodName)) {
-                         def metaMethod = closureMetaClass.getMetaMethod(methodName, methodArgs)
-                         return metaMethod.invoke(delegate, methodArgs)
-                     }
-                     else if(FLOW_INFO_METHODS.contains(methodName)) {
-                         return flowInfo.invokeMethod(methodName, methodArgs)
-                     }
-                     else {
-                         return builder.invokeMethod(methodName, methodArgs)
-                     }
+                 if("onStart" == name) {
+                    flow.startActionList.add(new ClosureInvokingAction(args[0]))
                  }
-                 c.metaClass = closureMetaClass
-                 c.delegate = flowInfo
-                 c.resolveStrategy = Closure.DELEGATE_FIRST
-                 c.call()
-
-                 Transition[] trans = flowInfo.transitions
-
-
-                 Closure action = flowInfo.action
-                 State state
-                 if(flowInfo.redirectUrl) {
-                     if(flowInfo.redirectUrl instanceof RuntimeRedirectAction) {
-                         state = flowFactory.createEndState(name, getFlow(),null,flowInfo.redirectUrl,null,null,null)
-                     }
-                     else {
-                         String url = flowInfo.redirectUrl
-                         state = createRedirectEndState(name, url, flowFactory)
-
-                     }
-                     state.attributes.put("commit", true)
-                 }
-                 else if(trans.length == 0 && flowInfo.subflow == null) {
-                     String view = createViewPath(flowInfo, name)
-                     
-                     state = createEndState(name,view, flowFactory)
-
-                     state.attributes.put("commit", true)
-                 }
-                 else if(action) {
-                    // add action state
-                     state = createActionState(name, action, trans, flowFactory)
-                 }
-                 else if(flowInfo.subflow) {
-                     FlowBuilder subFlowBuilder = new FlowBuilder(name, flowBuilderServices, getContext().getFlowDefinitionLocator())
-                     subFlowBuilder.viewPath = this.viewPath
-                     Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
-                     state = createSubFlow(name, subflow, trans, flowFactory)
-
+                 else if("onEnd" == name) {
+                    flow.endActionList.add(new ClosureInvokingAction(args[0]))
                  }
                  else {
+                     FlowInfoCapturer flowInfo = new FlowInfoCapturer(this, applicationContext)
 
-                     String view = createViewPath(flowInfo, name)
-
-                     if(flowInfo.viewName) {
-                         state = createViewState(name, view,trans,flowFactory);
+                     Closure c = args[0];
+                     def builder = this
+                     // root methods invoked on the closure to the builder and not to enclosing scope to avoid confusing bugs
+                     MetaClass closureMetaClass = c.class.metaClass
+                     closureMetaClass.invokeMethod = {String methodName, methodArgs ->
+                         if(CLOSURE_METHODS.contains(methodName)) {
+                             def metaMethod = closureMetaClass.getMetaMethod(methodName, methodArgs)
+                             return metaMethod.invoke(delegate, methodArgs)
+                         }
+                         else if(FLOW_INFO_METHODS.contains(methodName)) {
+                             return flowInfo.invokeMethod(methodName, methodArgs)
+                         }
+                         else {
+                             return builder.invokeMethod(methodName, methodArgs)
+                         }
                      }
-                     else
-                         state = createViewState(name, view,trans,flowFactory);
+                     c.metaClass = closureMetaClass
+                     c.delegate = flowInfo
+                     c.resolveStrategy = Closure.DELEGATE_FIRST
+                     c.call()
+
+                     Transition[] trans = flowInfo.transitions
+
+
+                     Closure action = flowInfo.action
+                     State state
+                     if(flowInfo.redirectUrl) {
+                         if(flowInfo.redirectUrl instanceof RuntimeRedirectAction) {
+                             state = flowFactory.createEndState(name, getFlow(),null,flowInfo.redirectUrl,null,null,null)
+                         }
+                         else {
+                             String url = flowInfo.redirectUrl
+                             state = createRedirectEndState(name, url, flowFactory, flowInfo.entryAction)
+
+                         }
+                         state.attributes.put("commit", true)
+                     }
+                     else if(trans.length == 0 && flowInfo.subflow == null) {
+                         String view = createViewPath(flowInfo, name)
+
+                         state = createEndState(name,view, flowFactory, flowInfo.entryAction)
+                         state.attributes.put("commit", true)
+                     }
+                     else if(action) {
+                        // add action state
+                         state = createActionState(name, action, trans, flowFactory, flowInfo.entryAction, flowInfo.exitAction)
+                     }
+                     else if(flowInfo.subflow) {
+                         def i = flowId.indexOf('/')
+                         def subflowId = i>-1 ? "${flowId[0..i-1]}/$name" : "${flowId}/$name"
+                         FlowBuilder subFlowBuilder = new FlowBuilder(subflowId, flowBuilderServices, getContext().getFlowDefinitionLocator())
+                         subFlowBuilder.viewPath = this.viewPath
+                         Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
+                         state = createSubFlow(name, subflow, trans, flowFactory)
+                     }
+                     else {
+
+                         String view = createViewPath(flowInfo, name)
+
+                         state = createViewState(name, view,trans,flowFactory, flowInfo.renderAction, flowInfo.entryAction, flowInfo.exitAction);
+                     }
+
+
+                     for(eh in flowInfo.exceptionHandlers) {
+                         state.getExceptionHandlerSet().add(eh)
+                     }
+
+                     // add start state
+                     if(startFlow == null) {
+                         startFlow = name;
+                         getFlow().setStartState(startFlow);
+                     }
+
+                     return state;
                  }
 
 
-                 for(eh in flowInfo.exceptionHandlers) {
-                     state.getExceptionHandlerSet().add(eh)
-                 }
-
-                 // add start state
-                 if(startFlow == null) {
-                     startFlow = name;
-                     getFlow().setStartState(startFlow);
-                 }
-
-                 return state;
              }
              else {
                 String view = createViewPath([viewName:name], name)
@@ -241,8 +246,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
         return view
     }
 
-    private State createViewState(String stateId, String viewName, Transition[] transitions, FlowArtifactFactory flowFactory) {
-         def renderAction = new ClosureInvokingAction() {
+    private State createViewState(String stateId, String viewName, Transition[] transitions, FlowArtifactFactory flowFactory, Closure customRenderAction = null, Closure customEntryAction = null, Closure customExitAction=null) {
+         def renderAction = new ClosureInvokingAction( {
              for(entry in flash.asMap()) {
                  def key = entry.key
                   if(key.startsWith(GrailsApplicationAttributes.ERRORS)) {
@@ -267,22 +272,24 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                        }
                   }
              }
-         }
+         } )
 
 
         ViewFactory viewFactory = createViewFactory(viewName)
 
+        List renderActions = [renderAction]
+        if(customRenderAction) renderActions << new ClosureInvokingAction(customRenderAction)
         return flowFactory.createViewState( stateId,
                                             getFlow(),
                                             [] as ViewVariable[],
-                                            null,
+                                            getActionArrayOrNull(customEntryAction),
                                             viewFactory,
                                             null,
                                             false,
-                                            [renderAction] as Action[],
+                                            renderActions as Action[],
                                             transitions,
                                             null,
-                                            null,
+                                            getActionArrayOrNull(customExitAction),
                                             null)
 
     }
@@ -300,29 +307,37 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                 null)
     }
 
-    private State createActionState(String stateId, Closure action, Transition[] transitions, FlowArtifactFactory flowFactory) {
+    private State createActionState(String stateId, Closure action, Transition[] transitions, FlowArtifactFactory flowFactory,Closure customEntryAction = null, Closure customExitAction=null) {
         return flowFactory.createActionState(stateId,
                 getFlow(),
-                null, [new ClosureInvokingAction(action)] as Action[],
+                getActionArrayOrNull(customEntryAction),
+                [new ClosureInvokingAction(action)] as Action[],
                 transitions,
                 null,
-                null,
+                getActionArrayOrNull(customExitAction),
                 null)
     }
 
-    protected State createRedirectEndState(String stateId, String url, FlowArtifactFactory flowFactory) {
-        return flowFactory.createEndState(stateId, getFlow(), null, new ExternalRedirectAction(new StaticExpression(url)), null, null, null)
+    protected State createRedirectEndState(String stateId, String url, FlowArtifactFactory flowFactory, Closure customEntryAction=null) {
+        return flowFactory.createEndState(stateId, getFlow(), getActionArrayOrNull(customEntryAction), new ExternalRedirectAction(new StaticExpression(url)), null, null, null)
     }
 
-    protected State createEndState( String stateId, String viewId, FlowArtifactFactory flowFactory) {
+    protected State createEndState( String stateId, String viewId, FlowArtifactFactory flowFactory, Closure customEntryAction=null) {
         ViewFactory viewFactory = createViewFactory(viewId)
+
         return flowFactory.createEndState(stateId,
                                             getFlow(),
-                                            null,
+                                            getActionArrayOrNull(customEntryAction),
                                             new ViewFactoryActionAdapter(viewFactory),
                                             null,
                                             null,
                                             null)
+    }
+
+    private Action[] getActionArrayOrNull(Closure customAction) {
+        if (customAction) {
+            return [new ClosureInvokingAction(customAction)] as Action[]
+        }
     }
 
     protected ViewFactory createViewFactory(String viewId) {
@@ -387,11 +402,14 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
      private List transitions = []
      List exceptionHandlers = []
      private Closure action
+     private Closure renderAction
+     private Closure entryAction
+     private Closure exitAction
      private Closure subflow
      private String viewName
      private applicationContext
      private redirectUrl
-     private BeanInfo beanInfo = Introspector.getBeanInfo(ExpressionDelegate)
+     def propertyDescriptors = BeanUtils.getPropertyDescriptors(ExpressionDelegate)
 
      FlowInfoCapturer(FlowBuilder builder,ApplicationContext applicationContext) {
          this.builder = builder;
@@ -404,6 +422,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
      String getViewName() { this.viewName }
      Closure getAction() { this.action }
+     Closure getRenderAction() { this.renderAction}
+     Closure getEntryAction() { this.entryAction}
+     Closure getExitAction() { this.exitAction}
      Closure getSubflow() { this.subflow }
      def getRedirectUrl() { this.redirectUrl }
 
@@ -420,6 +441,15 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
              throw new FlowDefinitionException("Event handler in flow ["+getFlowId()+"] passed a class which is not a instance of java.lang.Throwable");
          }
          return new TransitionTo(exception, builder, transitions,exceptionHandlers);
+     }
+     void onRender(Closure callable) {
+         this.renderAction = callable
+     }
+     void onEntry(Closure callable) {
+         this.entryAction = callable
+     }
+     void onExit(Closure callable) {
+         this.exitAction = callable
      }
      void action(Closure callable) {
          this.action = callable;
@@ -452,7 +482,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
      def propertyMissing(String name) {
 
-         if(beanInfo.propertyDescriptors.find { PropertyDescriptor pd -> pd.name == name}) {
+         if(propertyDescriptors.find { PropertyDescriptor pd -> pd.name == name}) {
              return new PropertyExpression(name)
          }
          else {

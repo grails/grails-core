@@ -14,16 +14,16 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
-import groovy.lang.GString;
-import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.beans.SimpleTypeConverter;
+import org.springframework.orm.hibernate3.HibernateCallback;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -52,7 +52,7 @@ public class ExecuteQueryPersistentMethod
         super( sessionFactory, classLoader, METHOD_PATTERN );
     }
 
-    protected Object doInvokeInternal( Class clazz, String methodName, Object[] arguments ) {
+    protected Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         checkMethodSignature( clazz, methodName, arguments );
 
         final String query = arguments[0].toString();
@@ -79,23 +79,26 @@ public class ExecuteQueryPersistentMethod
                 int index = 0;
                 for( Iterator iterator = positionalParams.iterator(); iterator.hasNext(); index++ ) {
                     Object parameter = iterator.next();
-                    q.setParameter( index, parameter );
+                    q.setParameter( index, parameter instanceof CharSequence ? parameter.toString() : parameter );
                 }
                 // process named HQL params
-                for( Iterator iterator = namedParams.entrySet().iterator(); iterator.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry) iterator.next();
-                    if( !( entry.getKey() instanceof String ) )
-                        throw new GrailsQueryException( "Named parameter's name must be of type String" );
+                for (Object o : namedParams.entrySet()) {
+                    Map.Entry entry = (Map.Entry) o;
+                    if (!(entry.getKey() instanceof String))
+                        throw new GrailsQueryException("Named parameter's name must be of type String");
                     String parameterName = (String) entry.getKey();
                     Object parameterValue = entry.getValue();
-                    if( Collection.class.isAssignableFrom( parameterValue.getClass() )) {
-                        q.setParameterList( parameterName, (Collection) parameterValue );
-                    } else if( parameterValue.getClass().isArray() ) {
-                        q.setParameterList( parameterName, (Object[]) parameterValue );
-                    } else if( parameterValue instanceof GString ) {
-                        q.setParameter( parameterName, parameterValue.toString() );
-                    } else {
-                        q.setParameter( parameterName, parameterValue );
+                    if (Collection.class.isAssignableFrom(parameterValue.getClass())) {
+                        q.setParameterList(parameterName, (Collection) parameterValue);
+                    }
+                    else if (parameterValue.getClass().isArray()) {
+                        q.setParameterList(parameterName, (Object[]) parameterValue);
+                    }
+                    else if (parameterValue instanceof CharSequence) {
+                        q.setParameter(parameterName, parameterValue.toString());
+                    }
+                    else {
+                        q.setParameter(parameterName, parameterValue);
                     }
                 }
                 return q.list();

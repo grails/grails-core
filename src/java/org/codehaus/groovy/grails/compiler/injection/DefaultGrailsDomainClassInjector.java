@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
@@ -29,8 +27,11 @@ import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
-import java.util.*;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Default implementation of domain class injector interface that adds the 'id'
@@ -47,8 +48,6 @@ public class DefaultGrailsDomainClassInjector implements
     private static final String DOMAIN_DIR = "domain";
 
 	private static final String GRAILS_APP_DIR = "grails-app";
-
-	private static final Log LOG = LogFactory.getLog(DefaultGrailsDomainClassInjector.class);
 
     private List classesWithInjectedToString = new ArrayList();
 
@@ -75,7 +74,6 @@ public class DefaultGrailsDomainClassInjector implements
     }
 
     protected boolean isDomainClass(ClassNode classNode, SourceUnit sourceNode) {
-        String clsName = classNode.getNameWithoutPackage();
         String sourcePath = sourceNode.getName();
         File sourceFile = new File(sourcePath);
         File parent = sourceFile.getParentFile();
@@ -95,9 +93,6 @@ public class DefaultGrailsDomainClassInjector implements
         String mappingFile = GrailsDomainConfigurationUtil.getMappingFileName(fullName);
 
         if (getClass().getResource(mappingFile) != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsDomainInjector] Mapping file [" + mappingFile + "] found. Skipping property injection.");
-            }
             return false;
         }
         return !isEnum(classNode);
@@ -132,9 +127,16 @@ public class DefaultGrailsDomainClassInjector implements
             for (Object mapEntry : mapEntries) {
                 MapEntryExpression mme = (MapEntryExpression) mapEntry;
                 String key = mme.getKeyExpression().getText();
-                String type = mme.getValueExpression().getText();
+                final Expression expression = mme.getValueExpression();
+                ClassNode type;
+                if(expression instanceof ClassExpression) {
+                    type = expression.getType();
+                }
+                else {
+                    type = ClassHelper.make(expression.getText());
+                }
 
-                properties.add(new PropertyNode(key, Modifier.PUBLIC, ClassHelper.make(type), classNode, null, null, null));
+                properties.add(new PropertyNode(key, Modifier.PUBLIC, type, classNode, null, null, null));
             }
         }
 
@@ -145,9 +147,6 @@ public class DefaultGrailsDomainClassInjector implements
         for (Object aPropertiesToAdd : propertiesToAdd) {
             PropertyNode pn = (PropertyNode) aPropertiesToAdd;
             if (!GrailsASTUtils.hasProperty(classNode, pn.getName())) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[GrailsDomainInjector] Adding property [" + pn.getName() + "] to class [" + classNode.getName() + "]");
-                }
                 classNode.addProperty(pn);
             }
         }
@@ -181,9 +180,6 @@ public class DefaultGrailsDomainClassInjector implements
             ge.addValue(new VariableExpression("id"));
             Statement s = new ReturnStatement(ge);
             MethodNode mn = new MethodNode("toString", Modifier.PUBLIC, new ClassNode(String.class), new Parameter[0], new ClassNode[0], s);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsDomainInjector] Adding method [toString()] to class [" + classNode.getName() + "]");
-            }
             classNode.addMethod(mn);
             classesWithInjectedToString.add(classNode);
         }
@@ -202,9 +198,6 @@ public class DefaultGrailsDomainClassInjector implements
         final boolean hasVersion = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.VERSION);
 
         if (!hasVersion) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsDomainInjector] Adding property [" + GrailsDomainClassProperty.VERSION + "] to class [" + classNode.getName() + "]");
-            }
             classNode.addProperty(GrailsDomainClassProperty.VERSION, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
@@ -213,9 +206,6 @@ public class DefaultGrailsDomainClassInjector implements
         final boolean hasId = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.IDENTITY);
 
         if (!hasId) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsDomainInjector] Adding property [" + GrailsDomainClassProperty.IDENTITY + "] to class [" + classNode.getName() + "]");
-            }
             classNode.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }

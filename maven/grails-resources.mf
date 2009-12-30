@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Grails
+Bundle-Vendor: SpringSource Inc.
+Bundle-SymbolicName: org.grails.resources
+Import-Template:
+  org.codehaus.groovy.grails.*;version="${grails.version:[=.=.=, =.+1.0)}",
+  org.springframework.*;version="${spring.version:[=.=.=, +1.0.0)}"
+
+

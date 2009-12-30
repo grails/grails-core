@@ -18,13 +18,14 @@ package org.codehaus.groovy.grails.web.errors;
 import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
@@ -50,6 +51,13 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
     * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
     */
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+
+        if (ex instanceof InvokerInvocationException) {
+           Throwable t = getRootCause(ex);
+           if(t instanceof Exception) {
+               ex = (Exception) t;
+           }
+        }
         ModelAndView mv = super.resolveException(request, response, handler, ex);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         // expose the servlet 2.3 specs status code request attribute as 500
@@ -139,5 +147,15 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
             }
         }
         return lineNumber;
+    }
+
+    public static RuntimeException getFirstRuntimeException(Throwable e) {
+        if(e instanceof RuntimeException) return (RuntimeException) e;
+        Throwable ex = e;
+        while(ex.getCause() != null && !ex.equals(ex.getCause())) {
+            ex = ex.getCause();
+            if(ex instanceof RuntimeException) return (RuntimeException) ex;
+        }
+        return null;
     }
 }

@@ -6,7 +6,6 @@ import grails.util.BuildSettingsHolder
 import org.codehaus.gant.GantBinding
 import org.codehaus.groovy.grails.cli.support.GrailsRootLoader
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 abstract class AbstractCliTests extends GroovyTestCase {
@@ -87,7 +86,6 @@ abstract class AbstractCliTests extends GroovyTestCase {
     protected void gantRun(String scriptName) {
         def workDir = "${appBase}/work"
         def projectDir = "${System.getProperty("base.dir")}/work"
-        GrailsPluginUtils.clearCaches()
         System.setProperty("grails.script.profile","true")
 
         // Configure the build settings directly rather than using

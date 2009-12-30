@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
+import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
@@ -69,20 +70,21 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
 
 	public void afterPropertiesSet() throws Exception {
         if(descriptor != null && descriptor.exists()) {
-            // Enforce UTF-8 on source code for reloads
-            CompilerConfiguration config = CompilerConfiguration.DEFAULT;
-            config.setSourceEncoding("UTF-8");
-            GroovyClassLoader classLoader;
-            final ClassLoader parentLoader = Thread.currentThread().getContextClassLoader();
-            if(Environment.getCurrent().isReloadEnabled()) {
-                CompilerConfiguration compilerConfig = CompilerConfiguration.DEFAULT;
+        	LOG.info("Loading Grails application with information from descriptor.");
+        	
+        	ClassLoader classLoader=null;
+        	if(Environment.getCurrent().isReloadEnabled()) {
+        		LOG.info("Reloading is enabled, using GrailsClassLoader.");
+	            // Enforce UTF-8 on source code for reloads
+	            final ClassLoader parentLoader = Thread.currentThread().getContextClassLoader();
+                CompilerConfiguration config = CompilerConfiguration.DEFAULT;
                 config.setSourceEncoding("UTF-8");
-
-                classLoader = new GrailsClassLoader(parentLoader, compilerConfig, resourceLoader);
-            }
-            else {
-                classLoader = new GroovyClassLoader(parentLoader, config);
-            }
+                classLoader = new GrailsClassLoader(parentLoader, config, resourceLoader);
+        	} else {
+        		LOG.info("No reloading, using standard classloader.");
+        		classLoader = Thread.currentThread().getContextClassLoader();
+        	}
+        	
             List classes = new ArrayList();
             InputStream inputStream = null;
             try {
@@ -98,10 +100,17 @@ public class GrailsApplicationFactoryBean implements FactoryBean, InitializingBe
                 // so we attempt to load them as classes.
                 for (int i = 0; i < grailsClasses.size(); i++) {
                     GPathResult node = (GPathResult) grailsClasses.getAt(i);
+                    String className = node.text();
                     try {
-                        classes.add(classLoader.loadClass(node.text()));
+                    	Class clazz;
+                    	if(classLoader instanceof GrailsClassLoader) {
+                    		clazz=classLoader.loadClass(className);
+                    	} else {
+                    		clazz=Class.forName(className, true, classLoader);
+                    	}
+                    	classes.add(clazz);
                     } catch (ClassNotFoundException e) {
-                        LOG.warn("Class with name ["+node.text()+"] was not found, and hence not loaded. Possible empty class or script definition?");
+                        LOG.warn("Class with name ["+className+"] was not found, and hence not loaded. Possible empty class or script definition?");
                     }
                 }
             } finally {

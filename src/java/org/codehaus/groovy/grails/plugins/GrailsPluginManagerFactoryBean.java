@@ -78,8 +78,8 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 		if(pluginManager == null) {
             if(descriptor == null) throw new IllegalStateException("Cannot create PluginManager, /WEB-INF/grails.xml not found!");
 
-            GroovyClassLoader classLoader = application.getClassLoader();
-            List classes = new ArrayList();
+            ClassLoader classLoader = application.getClassLoader();
+            List<Class> classes = new ArrayList<Class>();
             InputStream inputStream = null;
 
             try {
@@ -93,7 +93,14 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
                 for (int i = 0; i < nodes.size(); i++) {
                     GPathResult node = (GPathResult) nodes.getAt(i);
                     final String pluginName = node.text();
-                    classes.add(classLoader.loadClass(pluginName));
+                    Class clazz;
+                    if(classLoader instanceof GroovyClassLoader) {
+                    	clazz=classLoader.loadClass(pluginName);	
+                    } else {
+                    	clazz=Class.forName(pluginName,true,classLoader);
+                    }
+                    if(!classes.contains(clazz))
+                        classes.add(clazz);
                 }
             } finally {
                 if(inputStream!=null)

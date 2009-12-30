@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -106,6 +107,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private long configLastModified;
     private PluginFilter pluginFilter;
     private static final String GRAILS_PLUGIN_SUFFIX = "GrailsPlugin";
+    private List<GrailsPlugin> userPlugins = new ArrayList<GrailsPlugin>();
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) throws IOException {
         super(application);
@@ -167,6 +169,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         setPluginFilter();
     }
 
+    public GrailsPlugin[] getUserPlugins() {
+        return this.userPlugins.toArray(new GrailsPlugin[userPlugins.size()]);
+    }
+
     private void setPluginFilter() {
         this.pluginFilter = new PluginFilterRetriever().getPluginFilter(this.application.getConfig().toProperties());
     }
@@ -184,18 +190,20 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
     public void stopPluginChangeScanner() {
-        pluginChangeScanner.enabled = false;
-        try {
+        if(pluginChangeScanner!=null) {
+            pluginChangeScanner.enabled = false;
             try {
-                // wait for thread to die
-                pluginChangeScanner.join(5000);
+                try {
+                    // wait for thread to die
+                    pluginChangeScanner.join(5000);
+                }
+                catch (InterruptedException e) {
+                    // ignore
+                }
             }
-            catch (InterruptedException e) {
-                // ignore
+            finally {
+                pluginChangeScanner = new GrailsPluginChangeChecker(this);
             }
-        }
-        finally {
-            pluginChangeScanner = new GrailsPluginChangeChecker(this);
         }
     }
 
@@ -247,7 +255,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     */
     public void loadPlugins() throws PluginException {
         if (!this.initialised) {
-            GroovyClassLoader gcl = application.getClassLoader();
+            ClassLoader gcl = application.getClassLoader();
 
             attemptLoadPlugins(gcl);
 
@@ -295,10 +303,11 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
 
-    private void attemptLoadPlugins(GroovyClassLoader gcl) {
+    private void attemptLoadPlugins(ClassLoader gcl) {
         // retrieve load core plugins first
         List<GrailsPlugin>  grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
         List<GrailsPlugin>  grailsUserPlugins = findUserPlugins(gcl);
+        this.userPlugins = grailsUserPlugins;
 
         List<GrailsPlugin>  allPlugins = new ArrayList<GrailsPlugin> (grailsCorePlugins);
         allPlugins.addAll(grailsUserPlugins);
@@ -353,7 +362,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
 
-    private List<GrailsPlugin>  findUserPlugins(GroovyClassLoader gcl) {
+    private List<GrailsPlugin>  findUserPlugins(ClassLoader gcl) {
         List<GrailsPlugin>  grailsUserPlugins = new ArrayList<GrailsPlugin> ();
 
         LOG.info("Attempting to load [" + pluginResources.length + "] user defined plugins");
@@ -527,17 +536,29 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
 
-    private Class loadPluginClass(GroovyClassLoader gcl, Resource r) {
+    private Class loadPluginClass(ClassLoader cl, Resource r) {
         Class pluginClass;
-        try {
-            pluginClass = gcl.parseClass(r.getInputStream());
-        }
-        catch (CompilationFailedException e) {
-            throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);
-        }
-        catch (IOException e) {
-            throw new PluginException("Error reading plugin [" + r.getFilename() + "] " + e.getMessage(), e);
-        }
+    	if(cl instanceof GroovyClassLoader) {
+	        try {
+	        	if(LOG.isInfoEnabled()) {
+	        		LOG.info("Parsing & compiling " + r.getFilename());
+	        	}
+	            pluginClass = ((GroovyClassLoader)cl).parseClass(r.getInputStream());
+	        }
+	        catch (CompilationFailedException e) {
+	            throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);
+	        }
+	        catch (IOException e) {
+	            throw new PluginException("Error reading plugin [" + r.getFilename() + "] " + e.getMessage(), e);
+	        }
+    	} else {
+    		String className=GrailsResourceUtils.getClassName(r);
+    		try {
+				pluginClass = Class.forName(className, true, cl);
+			} catch (ClassNotFoundException e) {
+				throw new PluginException("Cannot find plugin class [" + className + "] resource: [" + r.getFilename()+"]", e);
+			}
+    	}
         return pluginClass;
     }
 
@@ -666,6 +687,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                             config = slurper.parse(configURL);
                             ConfigurationHolder.setConfig(config);
                             configLastModified = lastModified;
+                            application.configChanged();
                             informPluginsOfConfigChange();
 
                         }
@@ -689,7 +711,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
     }
 
-    private void informPluginsOfConfigChange() {
+    public void informPluginsOfConfigChange() {
         LOG.info("Informing plug-ins of configuration change..");
         for (Iterator i = pluginList.iterator(); i.hasNext();) {
             GrailsPlugin plugin = (GrailsPlugin) i.next();

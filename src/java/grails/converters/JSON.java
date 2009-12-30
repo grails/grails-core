@@ -16,7 +16,6 @@ package grails.converters;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
-import groovy.lang.GString;
 import groovy.util.BuilderSupport;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -77,10 +76,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      */
     public JSON() {
         config = initConfig();
-        if (config == null) throw new RuntimeException("Error: JSON Configuration could not be retrieved!!");
-        this.encoding = this.config.getEncoding();
-        this.circularReferenceBehaviour = this.config.getCircularReferenceBehaviour();
-        this.prettyPrint = this.config.isPrettyPrint();
+        this.encoding = config!= null ? this.config.getEncoding() : "UTF-8";
+        this.circularReferenceBehaviour = config!= null ? this.config.getCircularReferenceBehaviour() : CircularReferenceBehaviour.DEFAULT;
+        this.prettyPrint = config != null && this.config.isPrettyPrint();
         this.target = null;
     }
 
@@ -174,18 +172,16 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         try {
             if (o == null || o.equals(JSONObject.NULL)) {
                 writer.value(null);
-            } else if (o instanceof String) {
+            } else if (o instanceof CharSequence) {
                 writer.value(o);
             } else if (o instanceof Class) {
                 writer.value(((Class) o).getName());
             } else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class))
                     || o instanceof Number || o instanceof Boolean) {
                 writer.value(o);
-            } else if (o instanceof GString) {
-                value(o.toString());
             } else {
 
-                if (referenceStack.contains(o)) {
+                if (referenceStack.contains(o) ) {
                     handleCircularRelationship(o);
                 } else {
                     referenceStack.push(o);
@@ -273,7 +269,14 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     public static JSONElement parse(String source) throws ConverterException {
         // TODO: Migrate to new javacc based parser
         try {
-            return (JSONElement) new JSONTokener(source).nextValue();
+            final Object value = new JSONTokener(source).nextValue();
+            if(value instanceof JSONElement)
+                return (JSONElement) value;
+            else {
+                // return empty object
+                return new JSONObject();
+            }
+
         }
         catch (JSONException e) {
             throw new ConverterException("Error parsing JSON", e);
@@ -352,15 +355,17 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         switch (circularReferenceBehaviour) {
             case DEFAULT:
                 {
-                    Map<String, Object> props = new HashMap<String, Object>();
-                    props.put("class", o.getClass());
-                    StringBuilder ref = new StringBuilder();
-                    int idx = referenceStack.indexOf(o);
-                    for (int i = referenceStack.size() - 1; i > idx; i--) {
-                        ref.append("../");
+                    if(!(Map.class.isAssignableFrom(o.getClass())||Collection.class.isAssignableFrom(o.getClass()))) {
+                        Map<String, Object> props = new HashMap<String, Object>();
+                        props.put("class", o.getClass());
+                        StringBuilder ref = new StringBuilder();
+                        int idx = referenceStack.indexOf(o);
+                        for (int i = referenceStack.size() - 1; i > idx; i--) {
+                            ref.append("../");
+                        }
+                        props.put("_ref", ref.substring(0, ref.length() - 1));
+                        value(props);
                     }
-                    props.put("_ref", ref.substring(0, ref.length() - 1));
-                    value(props);
                 }
                 break;
             case EXCEPTION:

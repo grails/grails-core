@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.web.servlet.*
 import org.springframework.mock.web.*
 import org.springframework.validation.*
 import org.springframework.web.servlet.*
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 
 class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
 	
@@ -17,6 +18,8 @@ class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
 		gcl.parseClass(
 """
 import org.codehaus.groovy.grails.web.taglib.*
+import org.codehaus.groovy.grails.web.pages.*
+
 class TestController {
 	def index = {}
 }
@@ -35,6 +38,8 @@ class Test1TagLib {
 }
 class Test2TagLib {
 	def tag2 = { attrs, body -> out << attrs.test }
+	def tag3 = { attrs, body ->
+				out << body() }
 }
 class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
     String getGroovyPageFileName() { "test" }
@@ -42,6 +47,10 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
 		invokeTag("tag1", [attr1:"test"]) {
 		    out << "foo"
 		    ""
+		}
+		def tagResult=tag3([:], new GroovyPage.ConstantClosure('TEST'))?.toString()
+		if(tagResult != 'TEST') {
+				out << '<ERROR in tag3 output>' << tagResult
 		}
 		out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest) {
 
@@ -59,14 +68,15 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
             script.setGspTagLibraryLookup(appCtx.getBean('gspTagLibraryLookup'))
 			def controller = ga.getControllerClass("TestController").newInstance()
 			def sw = new StringWriter()
-			webRequest.out =  new PrintWriter(sw)
-			def b = new Binding(application:controller.servletContext,
+			webRequest.out =  new GrailsPrintWriter(sw)
+			def b = new GroovyPageBinding(application:controller.servletContext,
 								request:controller.request,
 								response:controller.response,
 								flash:controller.flash,
 								out: webRequest.out ,
 								webRequest:webRequest)			
 			script.binding = b
+			script.initRun(webRequest.out, webRequest)
 			script.run()
 			
 			assertEquals "printblahfoohellotest2",sw.toString()

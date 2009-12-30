@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A tag that attempts to render an input for a bean property into an appropriate component based on the type.
@@ -65,7 +66,7 @@ public class RenderInputTag extends RequestContextTag {
     private String property;
     private BeanWrapper beanWrapper;
     private Map constrainedProperties = Collections.EMPTY_MAP;
-    private Map cachedUris = Collections.synchronizedMap(new HashMap());
+    private Map cachedUris = new ConcurrentHashMap();
 
     protected RenderInputTag() {
         super(TAG_NAME);

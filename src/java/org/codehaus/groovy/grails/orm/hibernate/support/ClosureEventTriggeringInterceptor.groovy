@@ -15,36 +15,23 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support
 
+import org.apache.commons.lang.ArrayUtils
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
+import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener
+import org.hibernate.EntityMode
+import org.hibernate.engine.EntityEntry
+import org.hibernate.persister.entity.EntityPersister
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.hibernate.event.SaveOrUpdateEvent
-import org.hibernate.event.PreUpdateEventListener
-import org.hibernate.event.PostUpdateEventListener
-import org.hibernate.event.PostLoadEventListener
-import org.hibernate.event.PostDeleteEventListener
-import org.hibernate.event.PostInsertEventListener
-import org.hibernate.event.PreLoadEventListener
-import org.hibernate.event.PreDeleteEventListener
-import org.hibernate.event.PreLoadEvent
-import org.hibernate.event.PostInsertEvent
-import org.hibernate.event.PostDeleteEvent
-import org.hibernate.event.PreUpdateEvent
-import org.hibernate.event.PreDeleteEvent
-import org.hibernate.event.PostUpdateEvent
-import org.hibernate.event.PostLoadEvent
-import org.hibernate.event.PreInsertEvent
-import org.hibernate.event.PreInsertEventListener
-import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener
-import org.apache.commons.lang.ArrayUtils
-import org.hibernate.event.AbstractEvent
-import org.hibernate.persister.entity.EntityPersister
-import org.hibernate.EntityMode
-import org.hibernate.engine.EntityEntry
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.hibernate.event.*
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
+import grails.validation.ValidationException
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -55,6 +42,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
  * @since 1.0
  */
 class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implements  ApplicationContextAware,
+                                                                                      GrailsConfigurationAware,
                                                                                         PreLoadEventListener,
                                                                                         PostLoadEventListener,
                                                                                         PostInsertEventListener,
@@ -63,9 +51,26 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                                                                                         PreDeleteEventListener,
                                                                                         PreUpdateEventListener{
 
+    ConfigObject config
+    boolean failOnError = false
+    List failOnErrorPackages = []
+
+    public void setConfiguration(ConfigObject co) {
+        this.config = co
+        def failOnErrorConfig = co?.grails?.gorm?.failOnError
+        if(failOnErrorConfig instanceof List)  {
+            failOnError = true
+            failOnErrorPackages = failOnErrorConfig
+        }
+        else {
+            failOnError = failOnErrorConfig ?: false
+        }
+    }
+
     public void onSaveOrUpdate(SaveOrUpdateEvent event) {
 
         def entity = event.getObject()
+
         if(shouldTrigger(entity)) {
             boolean newEntity = !event.session.contains(entity)
             if(newEntity) {
@@ -93,7 +98,8 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     }
 
     private boolean shouldTrigger(entity) {
-        return entity && DomainClassArtefactHandler.isDomainClass(entity.class)
+        Class clazz = entity?.class
+        return entity && entity?.metaClass!=null && (DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz) )
     }
 
     static final String ONLOAD_EVENT = 'onLoad'
@@ -153,7 +159,17 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
         if(!entity.validate(deepValidate:false)) {
             evict = true
+            if(failOnError) {
+                if(failOnErrorPackages) {
+                    if(GrailsClassUtils.isClassBelowPackage(entity.class, failOnErrorPackages))
+                        throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+                }
+                else {
+                    throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+                }
+            }
         }
+
         return evict
     }
 
@@ -242,6 +258,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         return result
 
     }
+
 
 
 

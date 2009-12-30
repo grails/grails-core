@@ -14,38 +14,47 @@
 * limitations under the License.
 */
 
+import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
+
 import groovy.xml.DOMBuilder
 import groovy.xml.MarkupBuilder
 import groovy.xml.dom.DOMCategory
+
 import java.util.regex.Matcher
 import java.util.zip.ZipFile
 import java.util.zip.ZipEntry
+
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.Transformer
-import javax.xml.transform.OutputKeys
 import javax.xml.transform.stream.StreamResult
+
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.springframework.core.io.Resource
-import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.documentation.DocumentedProperty
-
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.springframework.core.io.Resource
+import org.tmatesoft.svn.core.*
+import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl
-import org.tmatesoft.svn.core.*
-import org.tmatesoft.svn.core.auth.*
 import org.tmatesoft.svn.core.wc.SVNWCUtil
-import org.tmatesoft.svn.core.SVNAuthenticationException
+import grails.util.PluginBuildSettings
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.codehaus.groovy.control.CompilationFailedException
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -119,7 +128,12 @@ public Map tokenizeUrl(String url) throws SVNException {
 			aHashMap[KEY_USER_PASS] = userInfoArray[1]
 		}
 	}
-	aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}:${aURL.port}${aURL.path}".toString()
+    if(aURL.port == 443) {
+        aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}${aURL.path}".toString()
+    } else {
+        aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}:${aURL.port}${aURL.path}".toString()
+    }
+	
 	return aHashMap
 }
 
@@ -288,7 +302,7 @@ eachRepository =  { Closure callable ->
 }
 // Targets
 target(resolveDependencies:"Resolve plugin dependencies") {
-    depends(parseArguments)
+    depends(parseArguments, initInplacePlugins)
     def plugins = metadata.findAll { it.key.startsWith("plugins.")}.collect {
        [
         name:it.key[8..-1],
@@ -309,6 +323,17 @@ target(resolveDependencies:"Resolve plugin dependencies") {
             doInstallPluginFromGrailsHomeOrRepository name, version
             installedPlugins = true
         }
+        else if(pluginLoc) {
+            def dirName = pluginLoc.filename
+            PluginBuildSettings settings = pluginSettings
+            if(!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
+                println "Upgrading plugin [$dirName] to [${fullName}], resolving.."
+
+                doInstallPluginFromGrailsHomeOrRepository name, version
+                installedPlugins = true
+            }
+        }
+
     }
     if(installedPlugins) {
         resetClasspathAndState()
@@ -318,11 +343,13 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     // metadata. We only check on the plugins in the project's "plugins"
     // directory and the global "plugins" dir. Plugins loaded via an
     // explicit path should be left alone.
-    def pluginDirs = GrailsPluginUtils.getImplicitPluginDirectories(pluginsHome)
-    def pluginsToUninstall = pluginDirs.findAll { Resource r -> !plugins.find { plugin -> r.filename == "$plugin.name-$plugin.version" }}
+    def pluginDirs = pluginSettings.implicitPluginDirectories
+    def pluginsToUninstall = pluginDirs.findAll { Resource r -> !plugins.find { plugin ->
+        r.filename ==~ "$plugin.name-.+" 
+    }}
 
     for(Resource pluginDir in pluginsToUninstall) {
-        if(GrailsPluginUtils.isGlobalPluginLocation(pluginDir)) {
+        if(pluginSettings.isGlobalPluginLocation(pluginDir)) {
             registerMetadataForPluginLocation(pluginDir)
         }
         else {
@@ -336,8 +363,86 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     }
 }
 
+target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
+    depends(classpath)
+
+    // Ensure that the "plugin.xml" is up-to-date for plugins
+    // that haven't been installed, i.e. their path is declared
+    // explicitly by the project.
+
+    // TODO: At the moment we simple check whether plugin.xml exists for each plugin
+    // TODO: otherwise fail
+    PluginBuildSettings settings = pluginSettings
+
+    Resource[] pluginDirs = settings.getInlinePluginDirectories()
+    pluginDirs.each { Resource r ->
+        def dir = r.file
+        def pluginXml = new File(dir, "plugin.xml")
+        if(!pluginXml.exists()) {
+            println "The inplace plugin at [$dir.absolutePath] does not have a plugin.xml. Please run the package-plugin command inside the plugin directory."
+            exit 1
+        }
+    }
+
+//    File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
+//    File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
+//    Resource basePluginDescriptor = pluginSettings.basePluginDescriptor
+//
+//    pluginSettings.pluginDescriptors.findAll { Resource r ->
+//        pluginSettings.isInlinePluginLocation(r)
+//    }.each { Resource r ->
+//        compileInplacePlugin(r.file.parentFile)
+//        generatePluginXml(r.file)
+//    }
+}
+
+/**
+ * Compiles the sources for a single in-place plugin. A bit of a hack,
+ * but any other solution would require too much refactoring to make it
+ * into the 1.2 release.
+ */
+compileInplacePlugin = { File pluginDir ->
+    def classesDirPath = grailsSettings.classesDir.path
+    ant.mkdir(dir: classesDirPath)
+
+    profile("Compiling inplace plugin sources to location [$classesDirPath]") {
+        // First compile the plugins so that we can exclude any
+        // classes that might conflict with the project's.
+        def classpathId = "grails.compile.classpath"
+        def pluginResources = pluginSettings.getPluginSourceFiles(pluginDir)
+        
+        if (pluginResources) {
+            // Only perform the compilation if there are some plugins
+            // installed or otherwise referenced.
+            try {
+                ant.groovyc(
+                    destdir: classesDirPath,
+                        classpathref: classpathId,
+                        encoding:"UTF-8") {
+                    for(File dir in pluginResources.file) {
+                        if (dir.exists() && dir.isDirectory()) {
+                            src(path: dir.absolutePath)
+                        }
+                    }
+                    exclude(name: "**/BootStrap.groovy")
+                    exclude(name: "**/BuildConfig.groovy")
+                    exclude(name: "**/Config.groovy")
+                    exclude(name: "**/*DataSource.groovy")
+                    exclude(name: "**/UrlMappings.groovy")
+                    exclude(name: "**/resources.groovy")
+                    javac(classpathref: classpathId, encoding: "UTF-8", debug: "yes")
+                }
+            }
+            catch (e) {
+                println "Failed to compile plugin at location [$pluginDir] with error: ${e.message}"
+                exit 1
+            }
+        }
+    }
+}
+
 private registerMetadataForPluginLocation(Resource pluginDir) {
-    def plugin = GrailsPluginUtils.getMetadataForPlugin(pluginDir.filename)
+    def plugin = pluginSettings.getMetadataForPlugin(pluginDir.filename)
     registerPluginWithMetadata(plugin.@name.text(), plugin.@version.text())
 }
 
@@ -351,7 +456,14 @@ generatePluginXml = { File descriptor ->
     Class pluginClass
     def plugin
     try {
-        pluginClass = classLoader.loadClass(descriptor.name[0..-8])
+        // Rather than compiling the descriptor via Ant, we just load
+        // the Groovy file into a GroovyClassLoader. We add the classes
+        // directory to the class loader in case it didn't exist before
+        // the associated plugin's sources were compiled.
+        def gcl = new GroovyClassLoader(classLoader)
+        gcl.addURL(grailsSettings.classesDir.toURI().toURL())
+
+        pluginClass = gcl.parseClass(descriptor)
         plugin = pluginClass.newInstance()
     }
     catch (Throwable t) {
@@ -360,9 +472,9 @@ generatePluginXml = { File descriptor ->
         ant.fail("Cannot instantiate plugin file")
     }
 
-    // Work out what the name of the plugin is from the class name of
-    // the descriptor.
-    pluginName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(pluginClass, "GrailsPlugin"))
+    // Work out what the name of the plugin is from the name of the
+    // descriptor file.
+    pluginName = GrailsNameUtils.getPluginName(descriptor.name)
 
     // Remove the existing 'plugin.xml' if there is one.
     def pluginXml = new File(descriptor.parentFile, "plugin.xml")
@@ -374,12 +486,12 @@ generatePluginXml = { File descriptor ->
 
     // Write the content!
     def props = ['author','authorEmail','title','description','documentation']
-    def resourceList = GrailsPluginUtils.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
+    def resourceList = pluginSettings.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
 
     def rcComparator = [ compare: {a, b -> a.URI.compareTo(b.URI) } ] as Comparator
     Arrays.sort(resourceList, rcComparator)
 
-    def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+    pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     if(plugin.metaClass.hasProperty(plugin,"grailsVersion")) {
         pluginGrailsVersion = plugin.grailsVersion
     }
@@ -401,6 +513,9 @@ generatePluginXml = { File descriptor ->
                     delegate.plugin(name:d.key, version:d.value)
                 }
             }
+
+            IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+            dependencyManager.serialize(delegate, false) 
         }
 
         def docContext = DocumentationContext.instance
@@ -442,7 +557,7 @@ target(loadPlugins:"Loads Grails' plugins") {
     if(!PluginManagerHolder.pluginManager) { // plugin manager already loaded?
 		compConfig.setTargetDirectory(classesDir)
 	    def unit = new CompilationUnit ( compConfig , null , new GroovyClassLoader(classLoader) )
-		def pluginFiles = getPluginDescriptors()
+		def pluginFiles = pluginSettings.pluginDescriptors
 
         for(plugin in pluginFiles) {
             def pluginFile = plugin.file
@@ -459,20 +574,6 @@ target(loadPlugins:"Loads Grails' plugins") {
 	    		unit.compile ()
 			}
 
-            // Ensure that the "plugin.xml" is up-to-date for plugins
-            // that haven't been installed, i.e. their path is declared
-            // explicitly by the project.
-            File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
-            File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
-
-            pluginFiles.findAll { Resource r ->
-                File containingDir = r.file.parentFile.parentFile?.canonicalFile?.absoluteFile
-                return containingDir == null ||
-                        (containingDir != pluginsDir && containingDir != globalDir)
-            }.each { Resource r ->
-                generatePluginXml(r.file)
-            }
-
 			def application
             def pluginClasses = []
             profile("construct plugin manager with ${pluginFiles.inspect()}") {
@@ -484,16 +585,18 @@ target(loadPlugins:"Loads Grails' plugins") {
                 profile("creating plugin manager with classes ${pluginClasses}") {
                     if(grailsApp == null) {
                         grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
+                        ApplicationHolder.application = grailsApp
                     }
                     pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
 
                     PluginManagerHolder.setPluginManager(pluginManager)
+                    pluginSettings.pluginManager = pluginManager
                 }
 	        }
 	        profile("loading plugins") {
 				event("PluginLoadStart", [pluginManager])
 	            pluginManager.loadPlugins()
-                def baseDescriptor = GrailsPluginUtils.getBasePluginDescriptor(grailsSettings.baseDir.absolutePath)
+                def baseDescriptor = pluginSettings.basePluginDescriptor
                 if(baseDescriptor) {                    
                     def baseName = FilenameUtils.getBaseName(baseDescriptor.filename)
                     def plugin = pluginManager.getGrailsPluginForClassName(baseName)
@@ -570,7 +673,7 @@ target(updatePluginsList:"Updates the plugin list from the remote plugin-list.xm
 
 
 def resetClasspathAndState() {
-    GrailsPluginUtils.clearCaches()
+    pluginSettings.clearCache()
     classpathSet = false
     classpath()
     PluginManagerHolder.pluginManager = null
@@ -699,51 +802,62 @@ readPluginXmlMetadata = { String pluginName ->
  * Reads all installed plugin descriptors returning a list
  */
 readAllPluginXmlMetadata = {->
-    getPluginXmlMetadata().collect { new XmlSlurper().parse(it.file) }
+    pluginSettings.pluginXmlMetadata.collect { new XmlSlurper().parse(it.file) }
 }
 
+/**
+ * @deprecated Use "pluginSettings.pluginXmlMetadata" instead.
+ */
 getPluginXmlMetadata = {
-    GrailsPluginUtils.getPluginXmlMetadata(pluginsHome, resolveResources)
+    pluginSettings.pluginXmlMetadata
 }
 /**
  * Obtains the directory for the given plugin name
  */
 getPluginDirForName = { String pluginName ->
-    GrailsPluginUtils.getPluginDirForName(pluginsHome, pluginName)
+    pluginSettings.getPluginDirForName(pluginName)
 }
-/** Obtains all of the plugin directories */
+/**
+ * Obtains all of the plugin directories
+ * @deprecated Use "pluginSettings.pluginDirectories".
+ */
 getPluginDirectories = {->
-    GrailsPluginUtils.getPluginDirectories(pluginsHome)
+    pluginSettings.pluginDirectories
 }
 /**
  * Obtains an array of all plugin source files as Spring Resource objects
+ * @deprecated Use "pluginSettings.pluginSourceFiles".
  */
 getPluginSourceFiles = {
-    GrailsPluginUtils.getPluginSourceFiles(pluginsHome, resolveResources)
+    pluginSettings.pluginSourceFiles
 }
 /**
  * Obtains an array of all the plugin provides Gant scripts
+ * @deprecated Use "pluginSettings.pluginScripts".
  */
 getPluginScripts = {
-    GrailsPluginUtils.getPluginScripts(pluginsHome,resolveResources)
+    pluginSettings.pluginScripts
 }
 /**
  * Gets a list of all scripts known to the application (excluding private scripts starting with _)
+ * @deprecated Use "pluginSettings.availableScripts".
  */
 getAllScripts = {
-    GrailsPluginUtils.getAvailableScripts(grailsHome,pluginsHome, basedir, resolveResources)
+    pluginSettings.availableScripts
 }
 /**
  * Obtains a list of all Grails plugin descriptor classes
+ * @deprecated Use "pluginSettings.pluginDescriptors".
  */
 getPluginDescriptors = {
-    GrailsPluginUtils.getPluginDescriptors(basedir,pluginsHome,resolveResources)
+    pluginSettings.pluginDescriptors
 }
 /**
  * Gets the base plugin descriptor
+ * @deprecated Use "pluginSettings.basePluginDescriptor".
  */
 getBasePluginDescriptor = {
-    GrailsPluginUtils.getBasePluginDescriptor(basedir)
+    pluginSettings.basePluginDescriptor
 }
 /**
  * Runs a script contained within a plugin
@@ -915,10 +1029,21 @@ installPluginForName = { String fullPluginName ->
         event("InstallPluginStart", [fullPluginName])
         def pluginInstallPath = "${globalInstall ? globalPluginsDirPath : pluginsHome}/${fullPluginName}"
 
-        Resource currentInstall = GrailsPluginUtils.getPluginDirForName(currentPluginName)
 
-        if(currentInstall?.exists()) {            
-            if(!isInteractive || confirmInput("You currently already have a version of the plugin installed [$currentInstall.filename]. Do you want to upgrade this version?", "upgrade.${fullPluginName}.plugin")) {
+        def pluginReference = grailsSettings.config.grails.plugin.location[currentPluginName]
+        if(pluginReference) {
+           cleanupPluginInstallAndExit("""\
+Plugin [$currentPluginName] is aliased as [grails.plugin.location.$currentPluginName] to the location [$pluginReference] in grails-app/conf/BuildConfig.groovy.
+You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove the configuration to continue.""" ); 
+        }
+
+        Resource currentInstall = getPluginDirForName(currentPluginName)
+        PluginBuildSettings pluginSettings = pluginSettings
+        if(currentInstall?.exists()) {
+			if(pluginSettings.isInlinePluginLocation(currentInstall)) {
+				cleanupPluginInstallAndExit("The plugin you are trying to install [${fullPluginName}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins." );
+			}
+			else if(!isInteractive || confirmInput("You currently already have a version of the plugin installed [$currentInstall.filename]. Do you want to upgrade this version?", "upgrade.${fullPluginName}.plugin")) {
                 ant.delete(dir:currentInstall.file)
             }
             else {
@@ -972,7 +1097,12 @@ installPluginForName = { String fullPluginName ->
                     event("StatusUpdate", ["Plugin dependency [$depName] not found. Attempting to resolve..."])
                     // recursively install dependent plugins
                     def upperVersion =  GrailsPluginUtils.getUpperVersion(depVersion)
-                    def release = cacheKnownPlugin(depDirName, upperVersion == '*' ? null : upperVersion)
+                    def installVersion = upperVersion
+                    if(installVersion == '*') {
+                        installVersion = grailsSettings.defaultPluginSet.contains(depDirName) ? GrailsUtil.getGrailsVersion() : null
+                    }
+
+                    def release = cacheKnownPlugin(depDirName, installVersion)
 
                     ant.copy(file:"${pluginsBase}/grails-${release}.zip",tofile:"${pluginsDirPath}/grails-${release}.zip")
 
@@ -1000,10 +1130,41 @@ installPluginForName = { String fullPluginName ->
 
         }
         else {
-            def pluginJars = resolveResources("file:${pluginInstallPath}/lib/*.jar")
-            for(jar in pluginJars) {
-                rootLoader.addURL(jar.URL)
+            def pluginDependencyDescriptor = new File("$pluginInstallPath/dependencies.groovy")
+            if(pluginDependencyDescriptor.exists()) {
+                println "Resolving plugin JAR dependencies"
+                BuildSettings settings = grailsSettings
+                def callable = settings.pluginDependencyHandler()
+                callable.call(new File("$pluginInstallPath"))
+                IvyDependencyManager dependencyManager = settings.dependencyManager
+                dependencyManager.resetGrailsPluginsResolver()
+                def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
+                if(resolveReport.hasError()) {
+                    cleanupPluginInstallAndExit("Failed to install plugin [${fullPluginName}]. Plugin has missing JAR dependencies.")
+                }
+                else {
+                    List urls = rootLoader.URLs.toList()
+                    resolveReport.allArtifactsReports
+                                    .localFile.each { File dep ->
+
+                        if(!settings.runtimeDependencies.contains(dep)) {
+                            settings.runtimeDependencies << dep
+                        }
+                        def url = dep.toURI().toURL()
+                        if(!urls.contains(url)) {
+                            rootLoader.addURL(url)
+                        }
+                    }
+                }
+
             }
+            else {
+                def pluginJars = resolveResources("file:${pluginInstallPath}/lib/*.jar")
+                for(jar in pluginJars) {
+                    rootLoader.addURL(jar.URL)
+                }
+            }
+
             // proceed _Install.groovy plugin script if exists
             def installScript = new File("${pluginInstallPath}/scripts/_Install.groovy")
             runPluginScript(installScript, fullPluginName, "post-install script")
@@ -1100,7 +1261,7 @@ private withPluginInstall(Closure callable) {
 
 private completePluginInstall (fullPluginName) {
     classpath ()
-    println "Installing plug-in $fullPluginName"
+    println "Installing plugin $fullPluginName"
     installPluginForName(fullPluginName)
 }
 

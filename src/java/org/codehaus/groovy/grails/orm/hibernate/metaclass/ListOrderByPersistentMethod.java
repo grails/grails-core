@@ -3,6 +3,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -40,7 +41,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			final Object[] arguments) {
+                                      final Closure additionalCriteria, final Object[] arguments) {
 
 		Matcher match = getPattern().matcher( methodName );
 		// find match
@@ -54,7 +55,8 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 				
-				Criteria crit = session.createCriteria(clazz);
+				Criteria crit = getCriteria(session, additionalCriteria, clazz);
+
 				
 				if(arguments != null && arguments.length > 0) {
 					if(arguments[0] instanceof Map) {

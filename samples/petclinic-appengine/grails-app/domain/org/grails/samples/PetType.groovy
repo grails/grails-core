@@ -1,23 +1,20 @@
 package org.grails.samples;
 
-import javax.jdo.annotations.*
+import javax.persistence.*
 import com.google.appengine.api.datastore.Key;
 /**
  * @author Graeme Rocher
  */
-@PersistenceCapable(identityType = IdentityType.APPLICATION)
+@Entity
 class PetType  {
 	
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
- 	Key key
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+ 	Key id
 
-
-	@Persistent
 	String name
 	
 	static constraints = {
 		name blank:false
-		key nullable:true
 	}
 }

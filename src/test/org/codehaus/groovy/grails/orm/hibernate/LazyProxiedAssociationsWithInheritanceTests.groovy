@@ -48,11 +48,13 @@ class Article extends Content {
 
 @Entity
 class LazyProxiedAssociationsWithInheritancePerson {
+    static constraints = { name(nullable:true) }
     String name
 
 }
 @Entity
 class LazyProxiedAssociationsWithInheritanceAuthor extends LazyProxiedAssociationsWithInheritancePerson {
+    static constraints = { address(nullable:true) }
     LazyProxiedAssociationsWithInheritanceAddress address
 
     def houseNumber() {
@@ -63,6 +65,7 @@ class LazyProxiedAssociationsWithInheritanceAuthor extends LazyProxiedAssociatio
 }
 @Entity
 class LazyProxiedAssociationsWithInheritanceAddress {
+    static constraints = { houseNumber(nullable:true) }
     String houseNumber
 }
 @Entity
@@ -117,6 +120,68 @@ class LazyProxiedAssociationsWithInheritanceBook {
          assertFalse "proxies should be instances of the actual class", Author.isInstance(proxy) 
      }
 
+    void testSettersOnProxiedObjects() {
+        def Author = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAuthor").clazz
+        def Address = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAddress").clazz
+        def Book = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceBook").clazz
+
+
+        def addr = Address.newInstance(houseNumber:'52')
+        def auth = Author.newInstance(name:'Marc Palmer')
+        assert addr.save()
+        auth.address = addr
+        assert auth.save()
+
+        def book = Book.newInstance(title:"The Grails book of bugs")
+        book.author = auth
+        assertNotNull "book should have saved", book.save()
+
+        session.flush()
+        session.clear()
+
+        book = Book.get(1)
+
+        def proxy = PropertyUtils.getProperty(book, "author")
+        // test setter with non-null value
+        proxy.address.houseNumber = '123'
+        book.save()
+        session.flush()
+        session.clear()
+        
+        book = Book.get(1)
+        
+        assertEquals('123', book.author.address.houseNumber)
+
+        session.flush()
+        session.clear()
+
+        // test setting property to null
+        book = Book.get(1)
+        proxy = PropertyUtils.getProperty(book, "author")
+        proxy.address.houseNumber = null
+        
+        book.save()
+        session.flush()
+        session.clear()
+        
+        book = Book.get(1)
+        
+        assertEquals(null, proxy.address.houseNumber)
+
+        // test setting proxy's property to null
+        // should delegate call to the closure defined in HibernatePluginSupport.enhanceProxy
+        // this broke with previous code
+        book = Book.get(1)
+        proxy = PropertyUtils.getProperty(book, "author")
+        proxy.address = null
+        book.save()
+        session.flush()
+        session.clear()
+        
+        book = Book.get(1)
+        
+        assertEquals(null, proxy.address)
+     }    
 
     void testLazyProxiesWithInheritance() {
          def Article = ga.getDomainClass("Article").clazz

@@ -23,9 +23,11 @@ import javax.servlet.ServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -51,26 +53,34 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 	private ServletResponse response;
 	private BoundedCharsAsEncodedBytesCounter bytesCounter;
 	private static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
+	private static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
+	private static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
+    private static final int BUFFER_SIZE = Integer.getInteger("GSPResponseWriter.bufferSize", 8042);
 
+    public static GSPResponseWriter getInstance(final ServletResponse response) {
+    	return getInstance(response, BUFFER_SIZE);
+    }
+    
 	/**
 	 * Static factory methdirectWritingod to create the writer.
 	 * @param response
 	 * @param max
 	 * @return  A GSPResponseWriter instance
 	 */
-	public static GSPResponseWriter getInstance(final ServletResponse response, int max) {
+	private static GSPResponseWriter getInstance(final ServletResponse response, int max) {
 		Writer target=null;
 		StreamCharBuffer streamBuffer=null;
 		BoundedCharsAsEncodedBytesCounter bytesCounter=null;
 
-		if(!(response instanceof GrailsContentBufferingResponse)) {
+		if(!(response instanceof GrailsContentBufferingResponse) && (BUFFERING_ENABLED || CONTENT_LENGTH_COUNTING_ENABLED)) {
 			streamBuffer=new StreamCharBuffer(max, 0, max);
+			streamBuffer.setChunkMinSize(max/2);
 			target=streamBuffer.getWriter();
 			if(CONTENT_LENGTH_COUNTING_ENABLED) {
 				bytesCounter = new BoundedCharsAsEncodedBytesCounter(max * 2, response.getCharacterEncoding());
-				streamBuffer.connectTo(bytesCounter.getCountingWriter(), true);
+				streamBuffer.connectTo(bytesCounter.getCountingWriter(), AUTOFLUSH_ENABLED);
 			}
-			streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, !CONTENT_LENGTH_COUNTING_ENABLED);
+			streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, AUTOFLUSH_ENABLED);
 		} else {
 			try {
 				target=response.getWriter();
@@ -84,15 +94,22 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 
 	/**
 	 * Static factory method to create the writer.
+	 * 
+	 * TODO: this can be removed?
+	 * 
 	 * @param target The target writer to write too
 	 * @param max
 	 * @return  A GSPResponseWriter instance
 	 */
-	public static GSPResponseWriter getInstance(Writer target, int max) {
-		StreamCharBuffer streamBuffer=new StreamCharBuffer(max, 0, max);
-		streamBuffer.connectTo(target);
-		Writer writer=streamBuffer.getWriter();
-		return new GSPResponseWriter(writer);
+	private static GSPResponseWriter getInstance(Writer target, int max) {
+		if(BUFFERING_ENABLED && !(target instanceof GrailsRoutablePrintWriter) && !(target instanceof StreamCharBufferWriter)) {
+			StreamCharBuffer streamBuffer=new StreamCharBuffer(max, 0, max);
+			streamBuffer.connectTo(target, false);
+			Writer writer=streamBuffer.getWriter();
+			return new GSPResponseWriter(writer);
+		} else {
+			return new GSPResponseWriter(target);
+		}
 	} // getInstance()
 
     /**
@@ -115,7 +132,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 	private GSPResponseWriter(Writer activeWriter) {
 		super(activeWriter);
 	}
-
+	
 	/**
 	 * Close the stream.
 	 * @see #checkError()

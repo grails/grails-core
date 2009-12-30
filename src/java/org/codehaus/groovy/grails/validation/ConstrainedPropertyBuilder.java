@@ -22,10 +22,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
 
 import java.beans.PropertyDescriptor;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances 
@@ -37,25 +34,30 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 
 	private Object target;
 	private BeanWrapper bean;
-	private Map constrainedProperties = new HashMap();
+	private Map<String, ConstrainedProperty> constrainedProperties = new HashMap<String, ConstrainedProperty>();
+    private List<String> sharedConstraints = new ArrayList<String>();
 	private int order = 1;
-	
-	public ConstrainedPropertyBuilder(Object target) {
+    private static final String SHARED_CONSTRAINT = "shared";
+
+    public ConstrainedPropertyBuilder(Object target) {
 		super();
 		this.target = target;
 		this.bean = new BeanWrapperImpl(target);
 	}
 
 
+    public List<String> getSharedConstraints() {
+        return Collections.unmodifiableList(sharedConstraints);
+    }
 
-	protected Object createNode(Object name, Map attributes) {
+    protected Object createNode(Object name, Map attributes) {
 		// we do this so that missing property exception is throw if it doesn't exist
 
         try {
 			String property = (String)name;
 			ConstrainedProperty cp;
 			if(constrainedProperties.containsKey(property)) {
-				cp = (ConstrainedProperty)constrainedProperties.get(property);				
+				cp = constrainedProperties.get(property);
 			}
 			else {
 				PropertyDescriptor pd = this.bean.getPropertyDescriptor(property);
@@ -63,22 +65,29 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 				cp.setOrder(order++);
 				constrainedProperties.put( property, cp );
 			}
-			for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
-				String constraintName = (String) i.next();
-				if(cp.supportsContraint(constraintName)) {
-					cp.applyConstraint(constraintName, attributes.get(constraintName));
-				} else {
-                    if( ConstrainedProperty.hasRegisteredConstraint( constraintName ) ) {
+            for (Object o : attributes.keySet()) {
+                String constraintName = (String) o;
+                final Object value = attributes.get(constraintName);
+                if(SHARED_CONSTRAINT.equals(constraintName)) {
+                    if(value != null)
+                        sharedConstraints.add(value.toString());
+                    continue;
+                }
+                if (cp.supportsContraint(constraintName)) {
+                    cp.applyConstraint(constraintName, value);
+                }
+                else {
+                    if (ConstrainedProperty.hasRegisteredConstraint(constraintName)) {
                         // constraint is registered but doesn't support this property's type
-                        GrailsUtil.warn( "Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation." );
+                        GrailsUtil.warn("Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation.");
                     }
                     else {
                         // in the case where the constraint is not supported we still retain meta data
                         // about the constraint in case its needed for other things
-                        cp.addMetaConstraint(constraintName, attributes.get(constraintName));
+                        cp.addMetaConstraint(constraintName, value);
                     }
                 }
-			}				
+            }
 			return cp;
 		}
 		catch(InvalidPropertyException ipe) {
@@ -101,7 +110,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 		return createNode(name,Collections.EMPTY_MAP,value);
 	}	
 	
-	public Map getConstrainedProperties() {
+	public Map<String, ConstrainedProperty> getConstrainedProperties() {
 		return this.constrainedProperties;
 	}
 

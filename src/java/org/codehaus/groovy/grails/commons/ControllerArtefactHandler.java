@@ -15,14 +15,18 @@
 */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.Environment;
+
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * @author Marc Palmer (marc@anyware.co.uk)
 */
 public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
-
     public static final String TYPE = "Controller";
-    private GrailsClass[] controllerClasses;
     public static final String PLUGIN_NAME = "controllers";
+    private ConcurrentHashMap<String, GrailsClass> uriToControllerClassCache;
+    private ArtefactInfo artefactInfo;
 
 
     public ControllerArtefactHandler() {
@@ -32,7 +36,8 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
     }
 
     public void initialize(ArtefactInfo artefacts) {
-        controllerClasses = artefacts.getGrailsClasses();
+        uriToControllerClassCache = new ConcurrentHashMap<String, GrailsClass>();
+        this.artefactInfo = artefacts;
     }
 
     @Override
@@ -42,12 +47,26 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
     public GrailsClass getArtefactForFeature(Object feature) {
         String uri = feature.toString();
-        if(controllerClasses!=null) {
-            for (GrailsClass controllerClass : controllerClasses) {
-                if (((GrailsControllerClass) controllerClass).mapsToURI(uri)) {
-                    return controllerClass;
+        if(artefactInfo!=null) {
+        	GrailsClass controllerClass = uriToControllerClassCache.get(uri);
+        	if(controllerClass==null) {
+                final GrailsClass[] controllerClasses = artefactInfo.getGrailsClasses();
+                // iterate in reverse in order to pick up application classes first
+                for (int i = (controllerClasses.length-1); i >= 0; i--) {
+                    GrailsClass c = controllerClasses[i];
+                    if (((GrailsControllerClass) c).mapsToURI(uri)) {
+                        controllerClass = c;
+                        break;
+                    }
+
                 }
-            }
+	            if(controllerClass != null) {
+                    // don't cache for dev environment
+                    if(Environment.getCurrent() != Environment.DEVELOPMENT)
+	            	    uriToControllerClassCache.putIfAbsent(uri, controllerClass);
+	            }
+        	}
+        	return controllerClass;
         }
         return null;
     }

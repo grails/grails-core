@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.plugins.support.aware;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.BeansException;
 
 /**
@@ -21,10 +20,17 @@ public class GrailsApplicationAwareBeanPostProcessor extends BeanPostProcessorAd
     }
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        processAwareInterfaces(grailsApplication,bean);
+        return bean;
+    }
+
+    public static void processAwareInterfaces(GrailsApplication grailsApplication, Object bean) {
         if (bean instanceof GrailsApplicationAware) {
             ((GrailsApplicationAware)bean).setGrailsApplication(grailsApplication);
         }
-        return bean;
+        if(bean instanceof GrailsConfigurationAware) {
+            ((GrailsConfigurationAware)bean).setConfiguration(grailsApplication.getConfig());
+        }
     }
 
 }

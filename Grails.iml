@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module relativePaths="true" type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="Groovy" name="Groovy">
-      <configuration />
-    </facet>
-  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/idea-target/classes" />
     <output-test url="file://$MODULE_DIR$/idea-target/test-classes" />
@@ -13,7 +8,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/jsp21" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/META-INF" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
       <excludeFolder url="file://$MODULE_DIR$/doc" />
       <excludeFolder url="file://$MODULE_DIR$/downloads" />
@@ -28,25 +22,11 @@
     </content>
     <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="groovy-1.6.3" level="application" />
+    <orderEntry type="library" name="Groovy" level="project" />
     <orderEntry type="library" exported="" name="Apache Commons" level="project" />
-    <orderEntry type="library" exported="" name="dom4j" level="project" />
     <orderEntry type="library" exported="" name="Spring" level="project" />
     <orderEntry type="library" exported="" name="Hibernate 3" level="project" />
     <orderEntry type="library" exported="" name="javax.servlet" level="project" />
-    <orderEntry type="library" exported="" name="Jetty" level="project" />
-    <orderEntry type="library" exported="" name="JUnit" level="project" />
-    <orderEntry type="library" exported="" name="SiteMesh" level="project" />
-    <orderEntry type="library" exported="" name="HSQLDB" level="project" />
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ognl-2.6.9.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library" exported="">
       <library name="XStream">
         <CLASSES>
@@ -62,11 +42,9 @@
     <orderEntry type="module-library" exported="">
       <library name="Apache Ant">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/ant-trax.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-1.7.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-nodeps-1.7.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-junit-1.7.0.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/ant-launcher-1.7.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-nodeps-1.7.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-trax-1.7.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ant-1.7.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -83,12 +61,21 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Javassist">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/javassist-3.8.0.GA.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module-library" exported="">
       <library name="SLF4J">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jcl-over-slf4j-1.5.6.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/slf4j-log4j12-1.5.6.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/slf4j-api-1.5.6.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/slf4j-log4j12-1.5.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/slf4j-api-1.5.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/jcl-over-slf4j-1.5.8.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -104,18 +91,36 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="Radeox">
+      <library name="Gant">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/radeox.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gant_groovy1.6-1.6.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="GParallelizer" level="project" />
+    <orderEntry type="library" name="DOM4J" level="project" />
+    <orderEntry type="library" name="JPA" level="project" />
+    <orderEntry type="library" name="Sitemesh" level="project" />
+    <orderEntry type="library" name="Radeox" level="project" />
+    <orderEntry type="library" name="Ivy" level="project" />
+    <orderEntry type="library" name="JUnit" level="project" />
     <orderEntry type="module-library">
-      <library name="Gant">
+      <library name="Apache Ivy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gant_groovy1.6-1.6.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/ivy-2.0.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../../../apache/ivy-2.0.0/src/java" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="HSQLDB">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/hsqldb-1.8.0.10.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

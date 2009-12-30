@@ -164,7 +164,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public String getFieldName() {
-        throw new UnsupportedOperationException("Method 'getFieldName' is not supported by implementation");
+        return getName().toUpperCase();
     }
 
     public void setBidirectional(boolean bidirectional) {
@@ -181,11 +181,11 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
 	public boolean isInherited() {
-		throw new UnsupportedOperationException("Method 'isInherited' is not supported by implementation");
+		return false;
 	}
 
 	public int getFetchMode() {
-		throw new UnsupportedOperationException("Method 'getFetchMode' is not supported by implementation");
+		return FETCH_LAZY;
 	}
 
 	public boolean isOwningSide() {
@@ -193,7 +193,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 	}
 
 	public boolean isCircular() {
-		throw new UnsupportedOperationException("Method 'isCircular' is not supported by implementation");
+		return false;
 	}
 	
 	public String getReferencedPropertyName() {
@@ -205,7 +205,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public GrailsDomainClass getComponent() {
-        throw new UnsupportedOperationException("Method 'getComponent' is not supported by implementation");
+        return null;
     }
 
     public void setOwningSide(boolean b) {

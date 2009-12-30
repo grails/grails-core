@@ -65,6 +65,9 @@ public class ConvertersConfigurationHolder {
         if(cfg == null) {
             cfg = (ConverterConfiguration<C>) getInstance().defaultConfiguration.get(converterClass);
         }
+        if(cfg == null) {
+            cfg = new DefaultConverterConfiguration();
+        }
         return cfg;
     }
 

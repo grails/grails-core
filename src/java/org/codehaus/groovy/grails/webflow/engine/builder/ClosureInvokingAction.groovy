@@ -34,7 +34,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
 import java.util.Map
 import grails.util.GrailsUtil
-import grails.util.GrailsNameUtils;
+import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 
 /**
  * Invokes a closure as a Webflow action placing the returned model within the flow scope
@@ -47,10 +48,10 @@ import grails.util.GrailsNameUtils;
  *        Time: 12:00:23 PM
  */
 public class ClosureInvokingAction extends AbstractAction  {
-    private Closure callable;
     private static final Log LOG = LogFactory.getLog(ClosureInvokingAction.class);
     private static final String RESULT = "result";
 
+    Closure callable;
     def commandClasses
     def noOfParams
     boolean hasCommandObjects
@@ -70,23 +71,26 @@ public class ClosureInvokingAction extends AbstractAction  {
                      RCH.currentRequestAttributes().setAttribute("${co.name}_${delegate.hashCode()}_errors",errors,0)
                 }
                 co.metaClass.hasErrors = {-> errors?.hasErrors() ? true : false }
-                def cp = new ConstraintsEvaluatingDynamicProperty()
-                def constrainedProperties = cp.get(co.newInstance())
+                def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(co.newInstance())
                 co.metaClass.getConstraints = {-> constrainedProperties }
                 co.metaClass.validate = {->
                     errors = new org.springframework.validation.BeanPropertyBindingResult(delegate, delegate.class.name)
                     def localErrors = errors
 
                     checkAppContext()
-                    for(prop in constrainedProperties.values()) {
-                        prop.messageSource = applicationContext.getBean("messageSource")
-                        prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                    if(constrainedProperties) {                        
+                        for(prop in constrainedProperties.values()) {
+                            prop.messageSource = applicationContext.getBean("messageSource")
+                            prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                        }
                     }
                     !localErrors.hasErrors()
                 }
             }
         }
     }
+
+
 
     def checkAppContext() {
         if(!applicationContext) {
@@ -110,7 +114,7 @@ public class ClosureInvokingAction extends AbstractAction  {
                 for(p in commandClasses) {
                     def instance = p.newInstance()
 
-                    applicationContext.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                    applicationContext.autowireCapableBeanFactory?.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
 
                     def params = noOfParams > 1 ? actionDelegate.params[GrailsNameUtils.getPropertyName(instance.class)] : actionDelegate.params
                     if(params) {

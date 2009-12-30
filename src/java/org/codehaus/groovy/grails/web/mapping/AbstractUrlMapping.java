@@ -124,4 +124,16 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     public boolean isRestfulMapping() {
         return restful;
     }
+
+	public boolean hasRuntimeVariable(String name) {
+		if(constraints!=null) {
+			for (int i = 0; i < constraints.length; i++) {
+				ConstrainedProperty cp = constraints[i];
+				if(cp.getPropertyName().equals(name)) return true;
+			}
+		}
+		return false;
+	}
+
+    
 }

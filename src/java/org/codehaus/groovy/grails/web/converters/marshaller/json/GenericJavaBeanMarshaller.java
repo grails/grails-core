@@ -16,16 +16,16 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.json.JSONWriter;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.springframework.beans.BeanUtils;
 
 /**
  * @author Siegfried Puchbauer
@@ -41,8 +41,7 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
         JSONWriter writer = json.getWriter();
         try {
             writer.object();
-            BeanInfo info = Introspector.getBeanInfo(o.getClass());
-            PropertyDescriptor[] properties = info.getPropertyDescriptors();
+            PropertyDescriptor[] properties = BeanUtils.getPropertyDescriptors(o.getClass());
             for (PropertyDescriptor property : properties) {
                 String name = property.getName();
                 Method readMethod = property.getReadMethod();

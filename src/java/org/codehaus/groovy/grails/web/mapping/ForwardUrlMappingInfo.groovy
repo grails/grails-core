@@ -32,13 +32,22 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
     String viewName
     String URI
     String id
-    Map parameters
+    Map parameters = new HashMap()
 
     void setController(String controller) { controllerName = controller }
     void setAction(String action) { actionName = action }
     void setView(String view) { viewName = view }
-    void setParams(Map params) { parameters = params }
+    void setParams(Map params) {
+        if(params)
+            parameters = params
+    }
 
+    Map getParameters() {
+        if(id) {
+            parameters.id = id
+        }
+        return parameters
+    }
 
     public boolean isParsingRequest() {
         return false;

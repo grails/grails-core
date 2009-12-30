@@ -4,7 +4,6 @@ import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty;
 
 import java.util.Collection;
 import java.util.Map;
@@ -25,35 +24,13 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
 
-        ConstraintsEvaluatingDynamicProperty cp = new ConstraintsEvaluatingDynamicProperty(domainClass.getPersistentProperties());
 
-        Map constraints = (Map)cp.get(groovyClass.newInstance());
+        Map constraints = domainClass.getConstrainedProperties();
 
         assertNotNull(constraints);
         assertFalse(constraints.isEmpty());
     }
 
-
-    /**
-     * Test that static constraints work
-     */
-    public void testNonStaticConstraints() throws Exception {
-        String classSource = "package org.codehaus.groovy.grails.validation\n" +
-                "class Test {\n" +
-                "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
-                "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
-                "   String name\n" +
-                "   def constraints = {\n" +
-                "      name( nullable: false, validator : { 'called' } )\n" +
-                "   }" +
-                "}";
-        try {
-            ensureConstraintsPresent(new String[] { classSource }, 0, 2); // Must have nullable and validator
-            fail( "Non-static constraints should throw an exception as of v0.4");
-        }
-        catch (Exception e) {
-        }
-    }
 
     /**
      * Test that static constraints work

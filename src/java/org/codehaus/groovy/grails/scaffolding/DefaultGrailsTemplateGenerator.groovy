@@ -13,20 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.scaffolding;
+package org.codehaus.groovy.grails.scaffolding
 
-import groovy.text.*;
-import org.apache.commons.logging.Log;
-import org.springframework.core.io.*
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import grails.util.BuildSettingsHolder
+import groovy.text.SimpleTemplateEngine
+import groovy.text.Template
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator
+import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator
+import org.springframework.context.ResourceLoaderAware
+import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.context.ResourceLoaderAware;
+import org.codehaus.groovy.grails.cli.CommandLineHelper
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
  * from the domain model
@@ -36,20 +41,26 @@ import org.springframework.context.ResourceLoaderAware;
  */
 class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, ResourceLoaderAware {
 
-    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class);
+    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class)
 
     String basedir = "."
     boolean overwrite = false
     def engine = new SimpleTemplateEngine()
     ResourceLoader resourceLoader
     Template renderEditorTemplate
+    String domainSuffix = 'Instance'
 
 
     /**
-     * Creates an instance for the given class loader
+     * Used by the scripts so that they can pass in their AntBuilder
+     * instance.
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
-        engine = new SimpleTemplateEngine(classLoader)
+        engine = new SimpleTemplateEngine(classLoader)        
+	    def suffix = ConfigurationHolder.config?.grails?.scaffolding?.templates?.domainSuffix
+	    if (suffix != [:]) {
+	        domainSuffix = suffix
+		}
     }
 
     /**
@@ -205,18 +216,19 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         t.make(binding).writeTo(out)
     }
 
-    private def getPropertyName(GrailsDomainClass domainClass) {
-        return domainClass.propertyName + 'Instance'
+    private String getPropertyName(GrailsDomainClass domainClass) {
+        return "${domainClass.propertyName}${domainSuffix}"
     }
 
+    private helper = new CommandLineHelper()
     private canWrite(testFile) {
         if (!overwrite && testFile.exists()) {
             try {
-                def ant = new AntBuilder()
-                ant.input(message: "File ${testFile} already exists. Overwrite?", "y,n,a", addproperty: "overwrite.${testFile.name}")
-                overwrite = (ant.antProject.properties."overwrite.${testFile.name}" == "a") ? true : overwrite
-                return overwrite || ((ant.antProject.properties."overwrite.${testFile.name}" == "y") ? true : false)
-            } catch (Exception e) {
+                def response = helper.userInput("File ${testFile} already exists. Overwrite?",['y','n','a'] as String[])
+                overwrite = overwrite || response == "a"
+                return overwrite || response == "y"
+            }
+            catch (Exception e) {
                 // failure to read from standard in means we're probably running from an automation tool like a build server
                 return true
             }

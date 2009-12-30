@@ -117,6 +117,7 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         final ScaffoldedGroovyPageView view = new ScaffoldedGroovyPageView(viewName, viewCode);
         view.setApplicationContext(getApplicationContext());
         view.setServletContext(getServletContext());
+        view.setTemplateEngine(templateEngine);
         return view;
     }
 

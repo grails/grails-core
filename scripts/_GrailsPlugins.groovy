@@ -27,6 +27,7 @@ import groovy.xml.dom.DOMCategory
 
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsPackage")
+includeTargets << grailsScript("_PluginDependencies")
 
 ERROR_MESSAGE = """
 You need to specify either the direct URL of the plugin or the name and version

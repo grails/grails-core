@@ -18,6 +18,35 @@ import org.hibernate.FetchMode
 
 class HibernateMappingBuilderTests extends GroovyTestCase {
 
+//    void testWildcardApplyToAllProperties() {
+//        def builder = new HibernateMappingBuilder("Foo")
+//        def mapping = builder.evaluate {
+//            '*'(column:"foo")
+//            '*-1'(column:"foo")
+//            '1-1'(column:"foo")
+//            '1-*'(column:"foo")
+//            '*-*'(column:"foo")
+//            one cache:true
+//            two ignoreNoteFound:false
+//        }
+//
+//    }
+
+    void testIncludes() {
+        def callable = {
+            foos lazy:false
+        }
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            includes callable
+            foos ignoreNotFound:true
+        }
+
+        def pc = mapping.getPropertyConfig("foos")
+        assert pc.ignoreNotFound : "should have ignoreNotFound enabled"
+        assert !pc.lazy : "should not be lazy"
+    }
+
     void testIgnoreNotFound() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate {
@@ -136,6 +165,7 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         assertTrue mapping.dynamicUpdate
         assertTrue mapping.dynamicInsert
 
+        builder = new HibernateMappingBuilder("Foo")
         mapping = builder.evaluate {
 
         }
@@ -687,4 +717,29 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
         shouldFail { mapping.columns.amount.column }
         shouldFail { mapping.columns.amount.sqlType }
     }
+
+    void testPropertyWithUserTypeAndNoParams() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            amount type: MyUserType
+        }
+		
+        assertEquals MyUserType.class,mapping.getPropertyConfig('amount').type
+        assertNull mapping.getPropertyConfig('amount').typeParams
+    }
+	
+    void testPropertyWithUserTypeAndTypeParams() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            amount type: MyUserType, params : [ param1 : "amountParam1", param2 : 65 ]
+            value type: MyUserType, params : [ param1 : "valueParam1", param2 : 21 ]
+        }
+		
+        assertEquals MyUserType.class,mapping.getPropertyConfig('amount').type
+        assertEquals "amountParam1",mapping.getPropertyConfig('amount').typeParams.param1
+        assertEquals 65,mapping.getPropertyConfig('amount').typeParams.param2
+        assertEquals MyUserType.class,mapping.getPropertyConfig('value').type
+        assertEquals "valueParam1",mapping.getPropertyConfig('value').typeParams.param1
+        assertEquals 21,mapping.getPropertyConfig('value').typeParams.param2
+	}
 }

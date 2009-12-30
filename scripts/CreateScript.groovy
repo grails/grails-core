@@ -30,5 +30,5 @@ target ('default': "Creates a Grails Gant Script") {
 
     def type = "Script"
     promptForName(type: type)
-	createArtifact(name: argsMap["params"][0], suffix: "", type: type, path: "scripts")
+	createArtifact(name: argsMap["params"][0], suffix: "", type: type, path: "scripts", skipPackagePrompt: true)
 }

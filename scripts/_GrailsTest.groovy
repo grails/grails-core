@@ -15,12 +15,20 @@
 */
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.test.DefaultGrailsTestHelper
-import org.codehaus.groovy.grails.test.DefaultGrailsTestRunner
-import org.codehaus.groovy.grails.test.GrailsIntegrationTestHelper
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import org.springframework.mock.web.MockServletContext
+import grails.util.GrailsUtil
+
+import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestType
+import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeMode
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportProcessor
+
+import org.codehaus.groovy.grails.test.GrailsTestType
+import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.event.GrailsTestEventConsoleReporter
 
 /**
  * Gant script that runs the Grails unit tests
@@ -32,16 +40,33 @@ import org.springframework.mock.web.MockServletContext
 
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
+includeTargets << grailsScript("_GrailsSettings")
+includeTargets << grailsScript("_GrailsClean")
+
+// Miscellaneous 'switches' that affect test operation
+testOptions = [:]
 
 // The four test phases that we can run.
 unitTests = [ "unit" ]
 integrationTests = [ "integration" ]
 functionalTests = []
-otherTests = []
+otherTests = [ "cli" ]
 
-// The phases that we will run on this execution. Override this in your
-// own scripts to control the phases and their order.
-phasesToRun = []
+// The potential phases for execution, modify this by responding to the TestPhasesStart event
+phasesToRun = ["unit", "integration", "functional", "other"]
+
+TEST_PHASE_WILDCARD = ' _ALL_PHASES_ '
+TEST_TYPE_WILDCARD = ' _ALL_TYPES_ '
+targetPhasesAndTypes = [:]
+
+// Passed to the test runners to facilitate event publishing
+testEventPublisher = new GrailsTestEventPublisher(event)
+
+// Add a listener to write test status updates to the console
+eventListener.addGrailsBuildListener(new GrailsTestEventConsoleReporter(System.out))
+
+// Add a listener to generate our JUnit reports.
+eventListener.addGrailsBuildListener(new JUnitReportProcessor())
 
 // A list of test names. These can be of any of this forms:
 //
@@ -53,6 +78,7 @@ phasesToRun = []
 //
 // The default pattern runs all tests.
 testNames = buildConfig.grails.testing.patterns ?: ['**.*']
+testTargetPatterns = null // created in allTests()
 
 // Controls which result formats are generated. By default both XML
 // and plain text files are created. You can override this in your
@@ -64,91 +90,113 @@ reRunTests = false
 
 // Where the report files are created.
 testReportsDir = grailsSettings.testReportsDir
+// Where the test source can be found
+testSourceDir = grailsSettings.testSourceDir
 
 // Set up an Ant path for the tests.
 ant.path(id: "grails.test.classpath", testClasspath)
 
 createTestReports = true
-compilationFailures = []
 
-testHelper = null
 testsFailed = false
 
 target(allTests: "Runs the project's tests.") {
-    depends(compile, packagePlugins)
+    def dependencies = [compile, packagePlugins]
+    if (testOptions.clean) dependencies = [clean] + dependencies
+    depends(*dependencies)
+    
     packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
     ant.mkdir(dir: "${testReportsDir}/html")
     ant.mkdir(dir: "${testReportsDir}/plain")
 
-    // add test dependencies to classpath
-    def currentClasspathURLs = rootLoader.URLs.toList()
-    grailsSettings.testDependencies.each { file ->
-        def url = file.toURL()        
-        if(!currentClasspathURLs.contains(url))
-            rootLoader.addURL url        
-    }
-
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
-
-    // If no phases are explicitly configured, run them all.
-    if (!phasesToRun) phasesToRun = [ "unit", "integration", "functional", "other" ]
+    
+    testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
     
     event("TestPhasesStart", [phasesToRun])
-
-    // This runs the tests and generates the formatted result files.
-    String testRunnerClassName = System.getProperty("grails.test.runner") ?: "org.codehaus.groovy.grails.test.DefaultGrailsTestRunner";
-    testRunner = null
-    if (testRunnerClassName) {
-        try {
-            testRunner = Class.forName(testRunnerClassName).getConstructor(File, List).newInstance(testReportsDir, reportFormats)
+    
+    // Handle pre 1.2 style testing configuration
+    def convertedPhases = [:]
+    phasesToRun.each { phaseName ->
+        def types = binding."${phaseName}Tests"
+        if (types) {
+            convertedPhases[phaseName] = types.collect { rawType ->
+                if (rawType instanceof CharSequence) {
+                    def rawTypeString = rawType.toString()
+                    if (phaseName in ['integration', 'functional']) {
+                        def mode = new JUnit3GrailsTestTypeMode(
+                            autowire: true,
+                            wrapInTransaction: phaseName == "integration",
+                            wrapInRequestEnvironment: phaseName == "integration"
+                        )
+                        new JUnit3GrailsTestType(rawTypeString, rawTypeString, mode)
+                    } else {
+                        new JUnit3GrailsTestType(rawTypeString, rawTypeString)
+                    }
+                } else {
+                    rawType
+                }
+            }
         }
-        catch (Throwable e) {
-            println "Cannot load test runner class '${testRunnerClassName}'. Reason: ${e.message}"
-            testRunner = new DefaultGrailsTestRunner(testReportsDir, reportFormats)
+    }
+
+    // Using targetPhasesAndTypes, filter down convertedPhases into filteredPhases
+    filteredPhases = null
+    if (targetPhasesAndTypes.size() == 0) {
+        filteredPhases = convertedPhases // no type or phase targeting was applied
+    } else {
+        filteredPhases = [:]
+        convertedPhases.each { phaseName, types ->
+            if (targetPhasesAndTypes.containsKey(phaseName) || targetPhasesAndTypes.containsKey(TEST_PHASE_WILDCARD)) {
+                def targetTypesForPhase = (targetPhasesAndTypes[phaseName] ?: []) + (targetPhasesAndTypes[TEST_PHASE_WILDCARD] ?: [])
+                types.each { type ->
+                    if (type.name in targetTypesForPhase || TEST_TYPE_WILDCARD in targetTypesForPhase) {
+                        if (!filteredPhases.containsKey(phaseName)) filteredPhases[phaseName] = []
+                        filteredPhases[phaseName] << type
+                    }
+                }
+            }
         }
     }
+    
+    try {
+        // Process the tests in each phase that is configured to run.
+        filteredPhases.each { phase, types ->
+            currentTestPhaseName = phase
+            
+            // Add a blank line before the start of this phase so that it
+            // is easier to distinguish
+            println()
 
-    // Process the tests in each phase that is configured to run.
-    phasesToRun.each { String phase ->
-        // Skip this phase if there are no test types registered for it.
-        def testTypes = this."${phase}Tests"
-        if (!testTypes) return
+            event("StatusUpdate", ["Starting $phase test phase"])
+            event("TestPhaseStart", [phase])
 
-        // Add a blank line before the start of this phase so that it
-        // is easier to distinguish
-        println()
+            "${phase}TestPhasePreparation"()
 
-        event("StatusUpdate", ["Starting $phase tests"])
-        event("TestPhaseStart", [phase])
+            // Now run all the tests registered for this phase.
+            types.each(processTests)
 
-        // Do whatever preparation is needed to run the tests in this
-        // phase. The method/closure should return a test helper.
-        testHelper = this."${phase}TestsPreparation"()
+            // Perform any clean up required.
+            this."${phase}TestPhaseCleanUp"()
 
-        // Now run all the tests registered for this phase.
-        testTypes.each(processTests)
-
-        // Perform any clean up required.
-        this."${phase}TestsCleanUp"()
-
-        event("TestPhaseEnd", [phase])
+            event("TestPhaseEnd", [phase])
+            currentTestPhaseName = null
+        }
+    } finally {
+        String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
+        if (createTestReports) {
+            event("TestProduceReports", [])
+            msg += " - view reports in ${testReportsDir}"
+        }
+        event("StatusFinal", [msg])
+        event("TestPhasesEnd", [])
     }
 
-    String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
-    if (createTestReports) {
-        produceReports()
-        msg += " - view reports in ${testReportsDir}."
-    }
-
-    event("StatusFinal", [msg])
-
-    event("TestPhasesEnd", [])
-
-    return testsFailed ? 1 : 0
+    testsFailed ? 1 : 0
 }
 
 /**
@@ -157,17 +205,21 @@ target(allTests: "Runs the project's tests.") {
  * @param type The type of the tests to compile (not the test phase!)
  * For example, "unit", "jsunit", "webtest", etc.
  */
-processTests = { String type ->
-    println "Running tests of type '$type'"
+processTests = { GrailsTestType type ->
+    currentTestTypeName = type.name
     
-    // First compile the test classes.
-    compileTests(type)
+    def relativePathToSource = type.relativeSourcePath
+    def dest = null
+    if (relativePathToSource) {
+        def source = new File("${testSourceDir}", relativePathToSource)
+        if (!source.exists()) return // no source, no point continuing
 
-    // Run them.
-    runTests(type)
-
-    // Process the results.
-    createReports(type)
+        dest = new File(grailsSettings.testClassesDir, relativePathToSource)
+        compileTests(type, source, dest)
+    }
+    
+    runTests(type, dest)
+    currentTestTypeName = null
 }
 
 /**
@@ -178,92 +230,73 @@ processTests = { String type ->
  * @param type The type of the tests to compile (not the test phase!)
  * For example, "unit", "jsunit", "webtest", etc.
  */
-compileTests = { String type ->
+compileTests = { GrailsTestType type, File source, File dest ->
     event("TestCompileStart", [type])
 
-    def destDir = new File(grailsSettings.testClassesDir, type)
-    ant.mkdir(dir: destDir.path)
+    ant.mkdir(dir: dest.path)
     try {
         def classpathId = "grails.test.classpath"
-        ant.groovyc(destdir: destDir,
-                encoding:"UTF-8",
-                classpathref: classpathId) {
-            javac(classpathref:classpathId, debug:"yes")
-            src(path:"${basedir}/test/${type}")
+        ant.groovyc(destdir: dest, encoding:"UTF-8", classpathref: classpathId) {
+            javac(classpathref: classpathId, debug: "yes")
+            src(path: source)
         }
-    }
-    catch (Exception e) {
-        event("StatusFinal", ["Compilation Error: ${e.message}"])
-        return 1
+    } catch (Exception e) {
+        event("StatusFinal", ["Compilation error compiling [$type.name] tests: ${e.message}"])
+        exit 1
     }
 
     event("TestCompileEnd", [type])
 }
 
-runTests = { String type ->
-    def prevContextClassLoader = Thread.currentThread().contextClassLoader
-    try {
-        // Get all the test files to run for this test type.
-        def testSuite = testHelper.createTests(testNames, type)
-        if (testSuite.testCount() == 0) {
-            event("StatusUpdate", ["No tests found in test/$type to execute"])
-            return
+runTests = { GrailsTestType type, File compiledClassesDir ->
+    def testCount = type.prepare(testTargetPatterns, compiledClassesDir, binding)
+    
+    if (testCount) {
+        try {
+            event("TestSuiteStart", [type.name])
+            println ""
+            println "-------------------------------------------------------"
+            println "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
+
+            def start = new Date()
+            def result = type.run(testEventPublisher)
+            def end = new Date()
+            
+            event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
+
+            if (result.failCount > 0) testsFailed = true
+            
+            println "-------------------------------------------------------"
+            println "Tests passed: ${result.passCount}"
+            println "Tests failed: ${result.failCount}"
+            println "-------------------------------------------------------"
+            event("TestSuiteEnd", [type.name])
+        } catch (Exception e) {
+            event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
+            GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
+            testsFailed = true
+        } finally {
+            type.cleanup()
         }
-
-        // Set the context class loader to the one used to load the tests.
-        Thread.currentThread().contextClassLoader = testHelper.currentClassLoader
-
-        event("TestSuiteStart", [type])
-        int testCases = testSuite.countTestCases()
-        println "-------------------------------------------------------"
-        println "Running ${testCases} $type test${testCases > 1 ? 's' : ''}..."
-
-        def start = new Date()
-        def result = testRunner.runTests(testSuite)
-        def end = new Date()
-
-        event("TestSuiteEnd", [type, testSuite])
-        event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
-
-        def failedTestCount = result.errorCount() + result.failureCount()
-        println "-------------------------------------------------------"
-        println "Tests passed: ${result.runCount() - failedTestCount}"
-        println "Tests failed: ${failedTestCount}"
-        println "-------------------------------------------------------"
-
-        // If any of the tests fail, we register the whole test run as
-        // a failure.
-        if (failedTestCount > 0) testsFailed = true
-
-        return result
-    }
-    catch (Exception e) {
-        event("StatusFinal", ["Error running $type tests: ${e.toString()}"])
-        e.printStackTrace()
-        testsFailed = true
-        return null
-    }
-    finally {
-        Thread.currentThread().contextClassLoader = prevContextClassLoader
     }
 }
 
-createReports = { String type ->
-    // Reports are not currently done on a per-type basis.
+initPersistenceContext = {
+	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
 }
+
+destroyPersistenceContext = { 
+	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
+}
+
+unitTestPhasePreparation = {}
+unitTestPhaseCleanUp = {}
 
 /**
- * Prepare for the unit tests. Simply sets up the default test helper.
+ * Initialises a persistence context and bootstraps the application.
  */
-unitTestsPreparation = {
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
-
-/**
- * Prepare for the integration tests. Packages the tests and then
- * bootstraps the application.
- */
-integrationTestsPreparation = {
+integrationTestPhasePreparation = {
     packageTests()
     bootstrap()
 
@@ -274,69 +307,48 @@ integrationTestsPreparation = {
         app.applicationContext = appCtx
     }
 
-    def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
-    if (beanNames.size() > 0) appCtx.getBean(beanNames[0]).init()
+    initPersistenceContext()
 
-    MockServletContext servletContext = new org.springframework.mock.web.MockServletContext()
+    def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
     GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
-    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext );
-
-    // We use a specialist test helper for integration tests.
-    return new GrailsIntegrationTestHelper(grailsSettings, app.classLoader, resolveResources, appCtx)
+    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext)
 }
 
 /**
- * Prepare for the functional tests. Starts up the test server.
+ * Shuts down the bootstrapped Grails application.
  */
-functionalTestsPreparation = {
+integrationTestPhaseCleanUp = {
+    destroyPersistenceContext()
+	shutdownApp()
+}
+
+/**
+ * Starts up the test server.
+ */
+functionalTestPhasePreparation = {
     packageApp()
     runApp()
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
+    
+    prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
+    appCtx = ApplicationHolder.application.mainContext
+    
+    initPersistenceContext()
 }
 
 /**
- * Prepare for the unit tests. Intentionally does nothing because unit
- * tests require no special preparation.
+ * Shuts down the test server.
  */
-otherTestsPreparation = {
-    return new DefaultGrailsTestHelper(grailsSettings, classLoader, resolveResources)
-}
-
-/**
- * Clean up after the unit tests. Nothing to do.
- */
-unitTestsCleanUp = {
-}
-
-/**
- * Clean up after the integration tests. Shuts down the bootstrapped
- * Grails application.
- */
-integrationTestsCleanUp = {
-    // Kill any context interceptor we might have.
-    def beanNames = appCtx.getBeanNamesForType(PersistenceContextInterceptor)
-    if (beanNames.size() > 0) appCtx.getBean(beanNames[0]).destroy()
-
-    shutdownApp()
-}
-
-/**
- * Clean up after the functional tests. Shuts down the test server.
- */
-functionalTestsCleanUp = {
+functionalTestPhaseCleanUp = {
+    destroyPersistenceContext()
+    
+    appCtx = prevAppCtx
+    
     stopServer()
 }
 
-/**
- * Clean up after the "other" tests. Nothing to do.
- */
-otherTestsCleanUp = {
-}
+otherTestPhasePreparation = {}
+otherTestPhaseCleanUp = {}
 
-resolveTestFiles = { Closure filter ->
-    def testFiles = resolveTestResources {"file:${basedir}/test/unit/${it}.groovy"}
-    testFiles.addAll(resolveTestResources {"file:${basedir}/test/unit/${it}.java"})
-}
 
 target(packageTests: "Puts some useful things on the classpath for integration tests.") {
     ant.copy(todir: new File(grailsSettings.testClassesDir, "integration").path) {
@@ -345,29 +357,20 @@ target(packageTests: "Puts some useful things on the classpath for integration t
     ant.copy(todir: grailsSettings.testClassesDir.path, failonerror: false) {
         fileset(dir: "${basedir}/grails-app/conf", includes: "**", excludes: "*.groovy, log4j*, hibernate, spring")
         fileset(dir: "${basedir}/grails-app/conf/hibernate", includes: "**/**")
-        fileset(dir: "${basedir}/src/java") {
+        fileset(dir: "${grailsSettings.sourceDir}/java") {
             include(name: "**/**")
             exclude(name: "**/*.java")
         }
-        fileset(dir: "${basedir}/test/unit") {
-            include(name: "**/**")
-            exclude(name: "**/*.java")
-            exclude(name: "**/*.groovy")
-        }
-        fileset(dir: "${basedir}/test/integration") {
+        fileset(dir: "${testSourceDir}/unit") {
             include(name: "**/**")
             exclude(name: "**/*.java")
             exclude(name: "**/*.groovy")
         }
-    }
-}
-
-target(produceReports: "Outputs aggregated xml and html reports") {
-    ant.junitreport(todir: "${testReportsDir}") {
-        fileset(dir: testReportsDir) {
-            include(name: "TEST-*.xml")
+        fileset(dir: "${testSourceDir}/integration") {
+            include(name: "**/**")
+            exclude(name: "**/*.java")
+            exclude(name: "**/*.groovy")
         }
-        report(format: "frames", todir: "${testReportsDir}/html")
     }
 }
 

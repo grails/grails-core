@@ -38,6 +38,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,6 @@ import java.util.Map;
  */
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
-    private static final int BUFFER_SIZE = 8024;
 
     private GrailsApplicationContext context;
     private WebApplicationContext parent;
@@ -102,7 +102,7 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
     }
 
     protected Writer createResponseWriter(HttpServletResponse response) {
-        Writer out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+        PrintWriter out = GSPResponseWriter.getInstance(response);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

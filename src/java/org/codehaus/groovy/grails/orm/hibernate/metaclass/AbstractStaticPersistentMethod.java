@@ -15,13 +15,17 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.util.regex.Pattern;
-
+import grails.orm.HibernateCriteriaBuilder;
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
+
+import java.util.regex.Pattern;
 
 /**
  * Abstract base class for static persistent methods
@@ -50,16 +54,31 @@ public abstract class AbstractStaticPersistentMethod extends
     }
     
 	public Object invoke(Class clazz, String methodName, Object[] arguments) {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();    
+        return invoke(clazz, methodName, null, arguments);
+    }
+
+	public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(this.classLoader);
-			return doInvokeInternal(clazz, methodName, arguments);			
+			return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
 		}   
 		finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);      			
 		}
 	}
 
-	protected abstract Object doInvokeInternal(Class clazz, String methodName, Object[] arguments);
+    protected Criteria getCriteria(Session session, Closure additionalCriteria, Class clazz) {
+        final Criteria crit;
+        if(additionalCriteria != null) {
+            HibernateCriteriaBuilder builder = new HibernateCriteriaBuilder(clazz, session.getSessionFactory());
+            crit = builder.buildCriteria(additionalCriteria);
+        } else {
+            crit = session.createCriteria(clazz);
+        }
+        return crit;
+    }
+
+	protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
 
 }

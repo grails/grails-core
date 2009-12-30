@@ -19,6 +19,8 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
+import org.gparallelizer.Asynchronizer
+import org.springframework.core.io.Resource
 
 /**
  * Gant script that packages a Grails application (note: does not create WAR)
@@ -30,7 +32,6 @@ import org.springframework.core.io.FileSystemResource
 
 includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
-
 
 target( createConfig: "Creates the configuration object") {
    if(configFile.exists()) {
@@ -103,12 +104,40 @@ target( packageApp : "Implementation of package target") {
         }
     }
 
-	if(config.grails.enable.native2ascii) {
+	def nativeascii = config.grails.enable.native2ascii
+    nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
+    if(nativeascii) {
 		profile("converting native message bundles to ascii") {
 			ant.native2ascii(src:"${basedir}/grails-app/i18n",
 							 dest:i18nDir,
 							 includes:"**/*.properties",
 							 encoding:"UTF-8")
+
+            def i18nPluginDirs = pluginSettings.pluginI18nDirectories
+            if(i18nPluginDirs) {
+                Asynchronizer.withAsynchronizer(5) {
+                    i18nPluginDirs.eachAsync { Resource srcDir ->
+                        if(srcDir.exists()) {
+                            def file = srcDir.file
+                            def pluginDirName = file.parentFile.parentFile.name
+                            def destDir = "$resourcesDirPath/plugins/${pluginDirName}/grails-app/i18n"
+                            try {
+                                def ant = new AntBuilder()
+                                ant.project.defaultInputStream = System.in
+                                ant.mkdir(dir:destDir)
+                                ant.native2ascii(src:file,
+                                             dest:destDir,
+                                             includes:"**/*.properties",
+                                             encoding:"UTF-8")
+                            }
+                            catch (e) {
+                                println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                            }
+
+                        }
+                    }
+                }
+            }
 		}
 	}
 	else {
@@ -228,6 +257,8 @@ target(packageTlds:"packages tld definitions for the correct servlet version") {
 recompileCheck = { lastModified, callback ->
     try {
         def ant = new AntBuilder()
+        ant.project.defaultInputStream = System.in
+
         def classpathId = "grails.compile.classpath"
         ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
         ant.path(id:classpathId,compileClasspath)
@@ -235,10 +266,10 @@ recompileCheck = { lastModified, callback ->
         ant.groovyc(destdir:classesDirPath,
                     classpathref:classpathId,
                     encoding:"UTF-8") {
-                    src(path:"${basedir}/src/groovy")
+                    src(path:"${grailsSettings.sourceDir}/groovy")
                     src(path:"${basedir}/grails-app/domain")
                     src(path:"${basedir}/grails-app/utils")
-                    src(path:"${basedir}/src/java")
+                    src(path:"${grailsSettings.sourceDir}/java")
                     javac(classpathref:classpathId, debug:"yes")
 
                 }

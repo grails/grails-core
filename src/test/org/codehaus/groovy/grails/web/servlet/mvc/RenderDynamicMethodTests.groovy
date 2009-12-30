@@ -12,9 +12,16 @@ import org.springframework.validation.*
 import org.springframework.web.servlet.*
 
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
-	
-	
-	void onSetUp() {
+
+    protected void tearDown() {
+        super.tearDown();
+        ConfigurationHolder.config = null
+    }
+
+
+    void onSetUp() {
+        def config = gcl.parseClass("grails.json.legacy.builder=false")
+        ConfigurationHolder.config = new ConfigSlurper().parse(config)
 				gcl.parseClass(
 		"""
 		class TestController {
@@ -36,9 +43,7 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
             def renderJSON = {
                 render(contentType:"application/json") {
-                    foo {
-                        bar("hello")
-                    }
+                    foo = [ { bar = "hello" } ]                    
                 }
             }
             def renderView ={
@@ -94,7 +99,7 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderJSON()
-        assertEquals "application/json;charset=utf-8", response.contentType
+        assertEquals "application/json;charset=UTF-8", response.contentType
         assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
     }
 }

@@ -1,4 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
+import grails.util.GrailsUtil;
+
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -8,6 +11,13 @@ package org.codehaus.groovy.grails.web.taglib
 
 public class PluginTagLibTests extends AbstractGrailsTagTests{
 
+	void testPluginpath() {
+		def template = '<plugin:path name="controllers" />'
+
+		def grailsVersion = GrailsUtil.getGrailsVersion()
+		assertOutputEquals("/plugins/controllers-$grailsVersion", template)
+	}
+	
     void testPluginTagLib() {
         def template = '<plugin:isAvailable name="core">printme</plugin:isAvailable>'
 

@@ -1,1 +1,2 @@
 org.codehaus.groovy.grails.compiler.injection.GlobalEntityASTTransformation
+org.codehaus.groovy.grails.compiler.injection.GlobalPluginAwareEntityASTTransformation

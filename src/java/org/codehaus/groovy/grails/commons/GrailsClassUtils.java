@@ -18,8 +18,9 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.*;
-import org.springframework.util.Assert;
 import org.springframework.core.JdkVersion;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -145,16 +146,25 @@ public class GrailsClassUtils {
         if(instance == null || propertyValue == null)
             return null;
 
-        BeanWrapper wrapper = new BeanWrapperImpl(instance);
-        PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
+        PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(instance.getClass());
 
         for (int i = 0; i < descriptors.length; i++) {
-            Object value = wrapper.getPropertyValue( descriptors[i].getName() );
-            if(propertyValue.equals(value))
-                return descriptors[i];
+        	PropertyDescriptor pd=descriptors[i];
+        	if(isAssignableOrConvertibleFrom(pd.getPropertyType(), propertyValue.getClass())) {
+        		Object value;
+				try {
+			   		ReflectionUtils.makeAccessible(pd.getReadMethod());
+			   		value = pd.getReadMethod().invoke(instance, (Object[]) null);					
+				} catch (Exception e) {
+					throw new FatalBeanException("Problem calling readMethod of " + pd, e);
+				}
+        		if(propertyValue.equals(value))
+        			return pd;
+        	}
         }
         return null;
     }
+    
     /**
      * Returns the type of the given property contained within the specified class
      *
@@ -168,9 +178,9 @@ public class GrailsClassUtils {
             return null;
 
         try {
-            BeanWrapper wrapper = new BeanWrapperImpl(clazz);
-            if(wrapper.isReadableProperty(propertyName)) {
-                return wrapper.getPropertyType(propertyName);
+        	PropertyDescriptor desc=BeanUtils.getPropertyDescriptor(clazz, propertyName);
+            if(desc != null) {
+                return desc.getPropertyType();
             }
             else {
                 return null;
@@ -195,8 +205,7 @@ public class GrailsClassUtils {
 
         Set properties = new HashSet();
         try {
-            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
-            PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
 
             for (int i = 0; i < descriptors.length; i++) {
                 Class currentPropertyType = descriptors[i].getPropertyType();
@@ -254,8 +263,7 @@ public class GrailsClassUtils {
             return null;
 
         try {
-            BeanWrapper wrapper = new BeanWrapperImpl(clazz.newInstance());
-            PropertyDescriptor pd = wrapper.getPropertyDescriptor(propertyName);
+            PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(clazz, propertyName);
             if(pd.getPropertyType().equals( propertyType )) {
                 return pd;
             }
@@ -1075,10 +1083,32 @@ public class GrailsClassUtils {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
         List<MetaProperty> metaProperties = mc.getProperties();
         for (MetaProperty metaProperty : metaProperties) {
-            Object val = metaProperty.getProperty(target);
-            if (val != null && val.equals(obj))
-                return metaProperty.getName();
+        	if(isAssignableOrConvertibleFrom(metaProperty.getType(), obj.getClass())) {
+	            Object val = metaProperty.getProperty(target);
+	            if (val != null && val.equals(obj))
+	                return metaProperty.getName();
+        	}
         }
         return null;
+    }
+
+    /**
+     * Returns whether the specified class is either within one of the specified packages or
+     * within a subpackage of one of the packages
+     *
+     * @param theClass The class
+     * @param packageList The list of packages
+     * @return True if it is within the list of specified packages
+     */
+    public static boolean isClassBelowPackage(Class theClass, List packageList) {
+        String classPackage = theClass.getPackage().getName();
+        for (Object packageName : packageList) {
+            if(packageName!=null) {
+                if (classPackage.startsWith(packageName.toString())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.webflow.persistence;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -21,6 +24,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.webflow.core.collection.AttributeMap;
 import org.springframework.webflow.core.collection.MutableAttributeMap;
 import org.springframework.webflow.definition.FlowDefinition;
+import org.springframework.webflow.execution.FlowExecutionContext;
 import org.springframework.webflow.execution.FlowSession;
 import org.springframework.webflow.execution.RequestContext;
 import org.springframework.webflow.persistence.HibernateFlowExecutionListener;
@@ -34,6 +38,9 @@ import org.springframework.webflow.persistence.HibernateFlowExecutionListener;
  *        Created: Feb 12, 2008
  */
 public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExecutionListener {
+
+    private static final Log LOG = LogFactory.getLog(SessionAwareHibernateFlowExecutionListener.class);
+
     private SessionFactory localSessionFactory;
 
 
@@ -48,23 +55,65 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
         this.localSessionFactory = sessionFactory;
     }
 
+    
+    @Override
     public void sessionStarting(RequestContext context, FlowSession session, MutableAttributeMap input) {
-        if (!TransactionSynchronizationManager.hasResource(localSessionFactory)) {
+
+        if (!isSessionAlreadyBound()) {
+            LOG.debug("sessionStarting: Binding Hibernate session to flow");
             super.sessionStarting(context, session, input);    
         }
         else {
+            LOG.debug("sessionStarting: Obtaining current Hibernate session");
             obtainCurrentSession(context);
        }
     }
 
-	public void sessionEnded(RequestContext context, FlowSession session, String outcome, AttributeMap output) {
-		if (isPersistenceContext(session.getDefinition() ) && session.isRoot()) {
-            super.sessionEnded(context, session, outcome, output);
+    @Override
+    public void sessionEnding(RequestContext context, FlowSession session, String outcome, MutableAttributeMap output) {
+        final Session hibernateSession = getBoundHibernateSession(session);
+        if(hibernateSession!= null && session.isRoot()) {
+            LOG.debug("sessionEnding: Commit transaction and unbinding Hibernate session");
+            super.sessionEnding(context, session, outcome, output);
+        }
+    }
+
+    @Override
+    public void resuming(RequestContext context) {
+        if (!isSessionAlreadyBound()) {
+            LOG.debug("resuming: Resumed flow, obtaining existing Hibernate session");
+//            final FlowExecutionContext executionContext = context.getFlowExecutionContext();
+//            if(executionContext.getActiveSession().getScope().get(PERSISTENCE_CONTEXT_ATTRIBUTE) != null) {
+                 super.resuming(context);
+//             }
         }
         else {
-            super.paused(context);
+             obtainCurrentSession(context);
+        }
+
+    }
+
+    private boolean isSessionAlreadyBound() {
+        return TransactionSynchronizationManager.hasResource(localSessionFactory);
+    }
+
+    @Override
+    public void sessionEnded(RequestContext context, FlowSession session, String outcome, AttributeMap output) {
+		if (isPersistenceContext(session.getDefinition() ) && !isSessionAlreadyBound()) {
+            super.sessionEnded(context, session, outcome, output);
         }
 	}
+
+    @Override
+    public void paused(RequestContext context) {
+        if(LOG.isDebugEnabled())
+            LOG.debug("paused: Disconnecting Hibernate session");
+        super.paused(context);  
+    }
+
+    private Session getBoundHibernateSession(FlowSession session) {
+        return (Session) session.getScope().get(PERSISTENCE_CONTEXT_ATTRIBUTE);
+    }
 
 
     private boolean isPersistenceContext(FlowDefinition flow) {
@@ -76,18 +125,10 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
         MutableAttributeMap flowScope = context.getFlowScope();
         if(flowScope.get(PERSISTENCE_CONTEXT_ATTRIBUTE) == null) {
             SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(localSessionFactory);
-            if(sessionHolder!=null)
+            if(sessionHolder!=null) {
                 flowScope.put(PERSISTENCE_CONTEXT_ATTRIBUTE, sessionHolder.getSession());
+            }
         }
     }
 
-    public void resuming(RequestContext context) {
-        if (!TransactionSynchronizationManager.hasResource(localSessionFactory)) {
-             super.resuming(context);
-        }
-        else {
-             obtainCurrentSession(context);
-        }
-
-    }
 }

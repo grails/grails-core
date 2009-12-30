@@ -30,6 +30,7 @@ import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -59,6 +60,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 	private boolean renderView = true;
     public static final String ID_PARAMETER = "id";
     private List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
+    private UrlPathHelper urlHelper = new UrlPathHelper();
 
 
     public GrailsWebRequest(HttpServletRequest request,  HttpServletResponse response, ServletContext servletContext) {
@@ -113,7 +115,22 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 		return this.attributes.getServletContext();
 	}
 
-	/**
+    /**
+     * Retuns the context path of the request
+     * @return The context path of the request
+     */
+    @Override
+    public String getContextPath() {
+        final HttpServletRequest request = getCurrentRequest();
+        String appUri = (String) request.getAttribute(GrailsApplicationAttributes.APP_URI_ATTRIBUTE);
+        if(appUri==null) {
+            appUri=this.urlHelper.getContextPath(request);
+        }
+        return appUri;
+
+    }
+
+    /**
 	 * @return The FlashScope instance for the current request
 	 */
 	public FlashScope getFlashScope() {

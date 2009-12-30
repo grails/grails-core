@@ -32,6 +32,8 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
     String SUPPORTS_CONTROLLER = "supportsController";
     
     String NAMESPACE_FIELD_NAME = "namespace";
+    
+    String RETURN_OBJECT_FOR_TAGS_FIELD_NAME = "returnObjectForTags";
 
     /**
      * Whether this tag library supports the specified controller
@@ -52,6 +54,9 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
      * @return The tag names in this library
      */
     Set<String> getTagNames();
+    
+    
+    Set<String> getTagNamesThatReturnObject();
     
     /**
      * 

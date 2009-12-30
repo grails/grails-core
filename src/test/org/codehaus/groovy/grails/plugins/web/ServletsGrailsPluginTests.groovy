@@ -18,8 +18,25 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         def remove = GroovySystem.metaClassRegistry.&removeMetaClass
 
         remove MockServletContext
+        remove MockHttpSession
+        remove MockHttpServletResponse
+        remove MockHttpServletRequest
     }
-
+	
+	void testIsXhrRequest() {
+		def request = new MockHttpServletRequest()
+		
+		assert !request.xhr : "This should not be an XHR request"
+		
+		request.addHeader "X-Requested-With", "XMLHttpRequest"
+		
+		assert request.xhr : "This should be an XHR request"
+		
+		request = new MockHttpServletRequest()
+		request.addHeader "X-Requested-With", "Ext.basex"
+		assert request.xhr : "This should be an XHR request"
+	}
+	
 	void testServletContextObject() {
         def context = new MockServletContext()
 
@@ -126,7 +143,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
         def results = request.findAll {
             println it
-            it.key.startsWith("foo")
+            it.key.toString().startsWith("foo")
         }
 
         assertEquals( [foo:"bar",foobar:"yes!"],results )
@@ -139,7 +156,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         request["bar"] = "foo"
         request["foobar"] = "yes!"
 
-        def results = request.find { it.key.startsWith("bar") }
+        def results = request.find { it.key.toString().startsWith("bar") }
 
         assertEquals( [bar:"foo"],results )
     }

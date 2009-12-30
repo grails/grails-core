@@ -7,8 +7,8 @@
 	</head>
 	
 	<body id="add">
-		<h2><g:if test="${!ownerBean.key}">New </g:if>Owner:</h2>
-		<g:form action="${ ownerBean.key ? 'edit' : 'add'}" id="${ownerBean?.key?.id}">
+		<h2><g:if test="${!ownerBean.id}">New </g:if>Owner:</h2>
+		<g:form action="${ ownerBean.id ? 'edit' : 'add'}" id="${ownerBean?.id}">
 		  <table>
 		    <tr>
 		      <th>
@@ -43,7 +43,7 @@
 		    </tr>
 		    <tr>
 		      <td>
-	            <p class="submit"><input type="submit" value="${ ownerBean?.key ? 'Update' : 'Add'} Owner"/></p>
+	            <p class="submit"><input type="submit" value="${ ownerBean?.id ? 'Update' : 'Add'} Owner"/></p>
 		      </td>
 		    </tr>
 		  </table>

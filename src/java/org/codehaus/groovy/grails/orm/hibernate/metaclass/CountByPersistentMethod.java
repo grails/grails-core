@@ -14,13 +14,14 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
@@ -52,12 +53,12 @@ public class CountByPersistentMethod extends
 	}
 
 	protected Object doInvokeInternalWithExpressions(final Class clazz,
-                                                     String methodName, Object[] arguments, final List expressions, String operatorInUse) {
+                                                     String methodName, Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
         return super.getHibernateTemplate().execute( new HibernateCallback() {
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
-				Criteria crit = session.createCriteria(clazz);
+                final Criteria crit = getCriteria(session, additionalCriteria, clazz);
 				crit.setProjection(Projections.rowCount());
                 populateCriteriaWithExpressions(crit, operator, expressions);
 
@@ -66,7 +67,7 @@ public class CountByPersistentMethod extends
 		});
 	}
 
-    
+
     protected void populateCriteriaWithExpressions(Criteria crit, String operator, List expressions) {
         if(operator.equals(OPERATOR_OR)) {
             Disjunction dis = Restrictions.disjunction();

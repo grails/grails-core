@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.MetaClass;
+
 import org.springframework.beans.BeanWrapper;
 
 /**
@@ -115,7 +116,17 @@ public interface GrailsClass {
      */
     public MetaClass getMetaClass();
 
+    /**
+     * @deprecated
+     * @return BeanWrapper for reference instance, deprecated
+     */
     BeanWrapper getReference();
+    
+
+    /**
+     * @return Sample (reference) instance for this Grails class
+     */
+    public Object getReferenceInstance();
 
     /**
      * Obtains a property value for the given name and type

@@ -15,12 +15,12 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.validation.ValidationException;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
-import grails.validation.ValidationException;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -30,6 +30,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -51,18 +52,39 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
     private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.failOnError";
     private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.autoFlush";
+    private boolean shouldFail;
 
-    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-		super(pattern, sessionFactory, classLoader);
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
+        super(pattern, sessionFactory, classLoader);
         if(application == null)
             throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
 
 		this.application = application;
+        this.shouldFail = false;
+        final Map config = application.getConfig().flatten();
+        if(config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
+            Object configProperty = config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
+            if (configProperty instanceof Boolean) {
+                shouldFail = Boolean.TRUE == configProperty;
+            }
+            else if (configProperty instanceof List) {
+                if(domainClass!=null) {
+                    final Class theClass = domainClass.getClazz();
+                    List packageList = (List) configProperty;
+                    shouldFail = GrailsClassUtils.isClassBelowPackage(theClass, packageList);
+                }
+            }
+        }
+    }
+
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+		this(pattern, sessionFactory, classLoader, application,null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod#doInvokeInternal(java.lang.Object, java.lang.Object[])
-	 */
+
+    /* (non-Javadoc)
+      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod#doInvokeInternal(java.lang.Object, java.lang.Object[])
+      */
 	protected Object doInvokeInternal(final Object target, Object[] arguments) {
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
@@ -89,15 +111,12 @@ public abstract class AbstractSavePersistentMethod extends
 
                 if(errors.hasErrors()) {
                     handleValidationError(target,errors);
-                    boolean shouldFail = false;
-                    final Map config = ConfigurationHolder.getFlatConfig();
+                    boolean shouldFail = this.shouldFail;
                     if(argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
-                    } else if(config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
-                        shouldFail = Boolean.TRUE == config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
                     }
                     if(shouldFail) {
-                        throw new ValidationException("Validation Error(s) Occurred During Save");
+                        throw new ValidationException("Validation Error(s) occurred during save()", errors);
                     }
                     return null;
                 }

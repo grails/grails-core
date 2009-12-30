@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 import groovy.lang.MetaMethod;
+
 import org.codehaus.groovy.runtime.MethodClosure;
 
 /**
@@ -52,7 +53,11 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass
         if(closure == null) {
             MetaMethod method = getMetaClass().getMetaMethod(methodName, new Object[]{Object.class});
             if(method!=null) {
-                closure = new MethodClosure(getReference().getWrappedInstance(), methodName);
+            	if(method.isStatic()) {
+            		closure = new MethodClosure(getClazz(), methodName);
+            	} else {
+            		closure = new MethodClosure(getReferenceInstance(), methodName);
+            	}
             }
         }
         return closure;

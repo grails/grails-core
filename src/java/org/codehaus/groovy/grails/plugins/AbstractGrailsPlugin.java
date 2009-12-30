@@ -82,7 +82,11 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 	public abstract void doArtefactConfiguration();
 
     public String getFileSystemName() {        
-        return GrailsNameUtils.getScriptName(getName())+'-'+getVersion();
+        return getFileSystemShortName()+'-'+getVersion();
+    }
+
+    public String getFileSystemShortName() {
+        return GrailsNameUtils.getScriptName(getName());
     }
 
     public Class getPluginClass() {

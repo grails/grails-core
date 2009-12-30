@@ -29,16 +29,17 @@ import org.springframework.context.ApplicationContextAware
  */
 
 public class DevelopmentShutdownHook implements ApplicationContextAware {
-    public static final Log log = LogFactory.getLog(DevelopmentShutdownHook.class);
 
     public void setApplicationContext(ApplicationContext applicationContext)
     {
-      Runtime.runtime.addShutdownHook {
-        log.info("Application context shutting down...")
-        applicationContext.close()
-        log.info("Application context shutdown.")
-      }
-      log.info("Shutdown hook setup...")
+        if(!System.getProperty("grails.shutdown.hook.installed")) {
+          Runtime.runtime.addShutdownHook {
+            println("Application context shutting down...")
+            applicationContext.close()
+            println("Application context shutdown.")
+          }
+          System.setProperty("grails.shutdown.hook.installed", "true")
+        }
     }
 
 }

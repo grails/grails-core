@@ -20,11 +20,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.validation.Validator;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.util.*;
 
@@ -136,19 +137,45 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	 * @param domainClass The owning domain class
 	 * @return A list of transient properties
 	 */
+	@SuppressWarnings("unchecked")
 	private List getTransients(GrailsDomainClass domainClass) {
-		List transientProps;
-		transientProps= (List)domainClass.getPropertyValue( TRANSIENT, List.class );
+		List allTransientProps = new ArrayList();
+		List<GrailsDomainClass> allClasses = resolveAllDomainClassesInHierarchy(domainClass);
 
-        // Undocumented feature alert! Steve insisted on this :-)
-        List evanescent = (List)domainClass.getPropertyValue(EVANESCENT, List.class );
-        if(evanescent != null) {
-            if(transientProps == null)
-                transientProps = new ArrayList();
+		for(GrailsDomainClass currentDomainClass : allClasses) {
+			List transientProps = (List)currentDomainClass.getPropertyValue( TRANSIENT, List.class );
+			if(transientProps != null) {
+				allTransientProps.addAll(transientProps);
+			}
+	
+	        // Undocumented feature alert! Steve insisted on this :-)
+	        List evanescent = (List)currentDomainClass.getPropertyValue(EVANESCENT, List.class );
+	        if(evanescent != null) {
+	        	allTransientProps.addAll(evanescent);
+	        }
+		}
+		return allTransientProps;
+	}
 
-            transientProps.addAll(evanescent);
-        }
-		return transientProps;
+	/**
+	 * returns list of current domainclass and all of it's superclasses
+	 * 
+	 * @param domainClass
+	 * @return
+	 */
+	private List<GrailsDomainClass> resolveAllDomainClassesInHierarchy(GrailsDomainClass domainClass) {
+		List<GrailsDomainClass> allClasses = new ArrayList<GrailsDomainClass>();
+		GrailsApplication application = ApplicationHolder.getApplication();
+		GrailsDomainClass currentDomainClass=domainClass;		
+		while(currentDomainClass != null) {
+			allClasses.add(currentDomainClass);
+			if(application != null) {
+				currentDomainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, currentDomainClass.getClazz().getSuperclass().getName());
+			} else {
+				currentDomainClass = null;
+			}
+		}
+		return allClasses;
 	}
 
 
@@ -518,20 +545,16 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             PropertyDescriptor[] descriptors;
 
             try {
-                descriptors = java.beans.Introspector.getBeanInfo(type).getPropertyDescriptors();
-            } catch (IntrospectionException e) {
-                throw new GrailsDomainException("Failed to use class ["+type+"] as a component. Cannot introspect! " + e.getMessage());
+                descriptors = BeanUtils.getPropertyDescriptors(type);
+            } catch (BeansException e) {
+                throw new GrailsDomainException("Failed to use class ["+type+"] as a component. Cannot introspect! " + e.getMessage(), e);
             }
 
             List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.TRANSIENT, List.class);
             if(tmp!=null) this.transients = tmp;
             this.properties = createDomainClassProperties(this,descriptors);
-            try {
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReference().getWrappedInstance(), properties);
-                DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
-            } catch (IntrospectionException e) {
-                LOG.error("Error reading embedded component ["+getClazz()+"] constraints: " +e .getMessage(), e);
-            }
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), properties);
+            DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(ComponentDomainClass type, PropertyDescriptor[] descriptors) {
@@ -635,14 +658,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public void refreshConstraints() {
-            try {
-                GrailsDomainClassProperty[] props = getPersistentProperties();
-                this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
-                        getReference().getWrappedInstance(),
-                        props);
-            } catch (IntrospectionException e) {
-                LOG.error("Error reading class [" + getClazz() + "] constraints: " + e.getMessage(), e);
-            }
+            GrailsDomainClassProperty[] props = getPersistentProperties();
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
+                    getReferenceInstance(),
+                    props);
         }
 
         public boolean hasSubClasses() {

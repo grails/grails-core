@@ -22,6 +22,10 @@
  * @since 0.4
  */
 
+// No point doing this stuff more than once.
+if (getBinding().variables.containsKey("_grails_clean_called")) return
+_grails_clean_called = true
+
 includeTargets << grailsScript("_GrailsEvents")
 
 target ( cleanAll: "Cleans a Grails project" ) {
@@ -37,6 +41,7 @@ target ( cleanCompiledSources: "Cleans compiled Java and Groovy sources" ) {
     def webInf = "${basedir}/web-app/WEB-INF"
     ant.delete(dir:"${webInf}/classes")
     ant.delete(file:webXmlFile.absolutePath, failonerror:false)
+    ant.delete(dir:"${projectWorkDir}/gspcompile", failonerror:false)
     ant.delete(dir:"${webInf}/lib")
     ant.delete(dir:"${basedir}/web-app/plugins")
     ant.delete(dir:classesDirPath)

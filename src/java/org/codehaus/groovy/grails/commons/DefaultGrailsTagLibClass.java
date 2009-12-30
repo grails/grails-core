@@ -16,11 +16,8 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
 import java.beans.PropertyDescriptor;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -35,6 +32,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
     private List supportedControllers;
     private Set tags = new HashSet();
     private String namespace = GrailsTagLibClass.DEFAULT_NAMESPACE;
+    private Set<String> returnObjectForTagsSet = new HashSet<String>();
     
     /**
      * <p>Default contructor
@@ -55,7 +53,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
             }
         }
 
-        PropertyDescriptor[] props = getReference().getPropertyDescriptors();
+        PropertyDescriptor[] props = getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor prop = props[i];
             Closure tag = (Closure)getPropertyOrStaticPropertyOrFieldValue(prop.getName(),Closure.class);
@@ -67,6 +65,13 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
         String ns = (String) getPropertyOrStaticPropertyOrFieldValue(NAMESPACE_FIELD_NAME, String.class);
         if (ns != null && !"".equals(ns.trim())) {
         	namespace = ns.trim();
+        }
+        
+        List returnObjectForTagsList = (List)getPropertyOrStaticPropertyOrFieldValue(RETURN_OBJECT_FOR_TAGS_FIELD_NAME, List.class);
+        if(returnObjectForTagsList != null) {
+        	for(Object tagName : returnObjectForTagsList) {
+        		returnObjectForTagsSet.add(String.valueOf(tagName));
+        	}
         }
     }
 
@@ -94,5 +99,9 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
 
 	public String getNamespace() {
 		return namespace;
+	}
+
+	public Set<String> getTagNamesThatReturnObject() {
+		return returnObjectForTagsSet;
 	}
 }

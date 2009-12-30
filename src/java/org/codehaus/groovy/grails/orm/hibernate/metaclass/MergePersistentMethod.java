@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
@@ -42,6 +43,10 @@ public class MergePersistentMethod extends AbstractSavePersistentMethod {
    
 	public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
 		super(METHOD_PATTERN, sessionFactory, classLoader, application);
+	}
+
+	public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass dc) {
+		super(METHOD_PATTERN, sessionFactory, classLoader, application, dc);
 	}
 
 	/* (non-Javadoc)

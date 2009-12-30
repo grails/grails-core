@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+
 /**
  * A builder that implements the ORM named queries DSL
 
@@ -25,13 +27,27 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 class HibernateNamedQueriesBuilder {
 
     private final domainClass
-
-
+    private final dynamicMethods
     /**
      * @param domainClass the GrailsDomainClass defining the named queries
+     * @param grailsApplication a GrailsApplication instance
+     * @param ctx the main spring application context
      */
-    HibernateNamedQueriesBuilder(domainClass) {
+    HibernateNamedQueriesBuilder(domainClass, grailsApplication, ctx) {
         this.domainClass = domainClass
+
+        def classLoader = grailsApplication.classLoader
+        def sessionFactory = ctx.getBean('sessionFactory')
+
+        dynamicMethods = [
+                new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                new ListOrderByPersistentMethod(sessionFactory, classLoader)
+        ]
+
     }
 
     def evaluate(Closure namedQueriesClosure) {
@@ -41,19 +57,20 @@ class HibernateNamedQueriesBuilder {
         closure.call()
     }
 
-    private handleMethodMissing = { String name, args ->
+    private handleMethodMissing = {String name, args ->
         def propertyName = name[0].toUpperCase() + name[1..-1]
-        def proxy = new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz)
-        domainClass.metaClass.static."get${propertyName}" = { ->
-            proxy   
+        domainClass.metaClass.static."get${propertyName}" = {->
+            // creating a new proxy each time because the proxy class has
+            // some state that cannot be shared across requests (namedCriteriaParams)
+            new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz, dynamicMethods: dynamicMethods)
         }
-
     }
 
-    void methodMissing(String name, args) {
-        if(args && args[0] instanceof Closure) {
-            handleMethodMissing(name, args)
+    def methodMissing(String name, args) {
+        if (args && args[0] instanceof Closure) {
+            return handleMethodMissing(name, args)
         }
+        throw new MissingMethodException(name, HibernateNamedQueriesBuilder, args)
     }
 }
 
@@ -61,13 +78,15 @@ class NamedCriteriaProxy {
 
     private criteriaClosure
     private domainClass
+    private dynamicMethods
+    private namedCriteriaParams
 
     def list(Object[] params) {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def listClosure = {
             closureClone.delegate = delegate
             def paramsMap
-            if(params && params[-1] instanceof Map) {
+            if (params && params[-1] instanceof Map) {
                 paramsMap = params[-1]
                 params = params.size() > 1 ? params[0..-2] : []
             }
@@ -83,12 +102,14 @@ class NamedCriteriaProxy {
     }
 
     def call(Object[] params) {
-        list(params)
+        namedCriteriaParams = params
+        this
     }
 
     def get(id) {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def getClosure = {
+            closureClone.delegate = delegate
             closureClone()
             eq 'id', id
             uniqueResult = true
@@ -97,7 +118,7 @@ class NamedCriteriaProxy {
     }
 
     def count() {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def countClosure = {
             closureClone.delegate = delegate
             closureClone()
@@ -118,14 +139,34 @@ class NamedCriteriaProxy {
         def queryClosure = {
             closureClone.delegate = delegate
             closureClone()
-            params.each {key , val ->
+            params.each {key, val ->
                 eq key, val
             }
-            if(uniq) {
+            if (uniq) {
                 maxResults 1
                 uniqueResult = true
             }
         }
         domainClass.withCriteria(queryClosure)
+    }
+
+
+    def methodMissing(String methodName, args) {
+
+        def method = dynamicMethods.find {it.isMethodMatch(methodName)}
+
+        if (method) {
+            def preparedClosure = getPreparedCriteriaClosure()
+            return method.invoke(domainClass, methodName, preparedClosure, args)
+        }
+        throw new MissingMethodException(methodName, NamedCriteriaProxy, args)
+    }
+
+    private getPreparedCriteriaClosure() {
+        def closureClone = criteriaClosure.clone()
+        if (namedCriteriaParams) {
+            closureClone = closureClone.curry(namedCriteriaParams)
+        }
+        closureClone
     }
 }

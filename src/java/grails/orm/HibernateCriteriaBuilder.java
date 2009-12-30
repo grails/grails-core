@@ -120,7 +120,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private boolean participate;
     private boolean scroll;
     private boolean count;
-    private ProjectionList projectionList;
+    private ProjectionList projectionList = Projections.projectionList();
     private BeanWrapper targetBean;
     private List<String> aliasStack = new ArrayList<String>();
     private List<Criteria> aliasInstanceStack = new ArrayList<Criteria>();
@@ -130,6 +130,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private ResultTransformer resultTransformer;
     private int aliasCount;
 
+	private boolean paginationEnabledList = false;
+	private ArrayList<Order> orderEntries;	
 
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
         super();
@@ -168,25 +170,50 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void property(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [property] must be within a [projections] node"));
+        property(propertyName, null);
+    }
+
+    /**
+     * A projection that selects a property name
+     * @param propertyName The name of the property
+     * @param alias The alias to use
+     */
+    public void property(String propertyName, String alias) {
+        final PropertyProjection propertyProjection = Projections.property(calculatePropertyName(propertyName));
+        addProjectionToList(propertyProjection, alias);
+    }
+
+    /**
+     * Adds a projection to the projectList for the given alias
+     *
+     * @param propertyProjection The projection
+     * @param alias The alias
+     */
+    protected void addProjectionToList(Projection propertyProjection, String alias) {
+        if(alias!=null) {
+            this.projectionList.add(propertyProjection,alias);
         }
         else {
-            this.projectionList.add(Projections.property(calculatePropertyName(propertyName)));
-        }    	
+            this.projectionList.add(propertyProjection);
+        }
     }
-    
+
     /**
      * A projection that selects a distince property name
      * @param propertyName The property name
      */
     public void distinct(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [distinct] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.distinct(Projections.property(calculatePropertyName(propertyName))));
-        }
+        distinct(propertyName, null);
+    }
+
+    /**
+     * A projection that selects a distince property name
+     * @param propertyName The property name
+     * @param alias The alias to use
+     */
+    public void distinct(String propertyName, String alias) {
+        final Projection proj = Projections.distinct(Projections.property(calculatePropertyName(propertyName)));
+        addProjectionToList(proj,alias);
     }
 
     /**
@@ -195,30 +222,42 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyNames The list of distince property names
      */
     public void distinct(Collection propertyNames) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [distinct] must be within a [projections] node"));
-        }
-        else {
-            ProjectionList list = Projections.projectionList();
-            for (Iterator i = propertyNames.iterator(); i.hasNext();) {
-                Object o = i.next();
-                list.add(Projections.property(calculatePropertyName(o.toString())));
-            }            
-            this.projectionList.add(Projections.distinct(list));
-        }
+        distinct(propertyNames, null);
     }
+
+    /**
+     * A distinct projection that takes a list
+     *
+     * @param propertyNames The list of distince property names
+     * @param alias The alias to use
+     */
+    public void distinct(Collection propertyNames, String alias) {
+        ProjectionList list = Projections.projectionList();
+        for (Object o : propertyNames) {
+            list.add(Projections.property(calculatePropertyName(o.toString())));
+        }
+        final Projection proj = Projections.distinct(list);
+        addProjectionToList(proj, alias);
+    }
+
     /**
      * Adds a projection that allows the criteria to return the property average value
      *
      * @param propertyName The name of the property
      */
     public void avg(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [avg] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.avg(calculatePropertyName(propertyName)));
-        }
+        avg(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to return the property average value
+     *
+     *  @param propertyName The name of the property
+     *  @param alias The alias to use
+     */
+    public void avg(String propertyName, String alias) {
+        final AggregateProjection aggregateProjection = Projections.avg(calculatePropertyName(propertyName));
+        addProjectionToList(aggregateProjection, alias);
     }
 
 
@@ -302,7 +341,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return The calculated property value
      */
     private Object calculatePropertyValue(Object propertyValue) {
-        if(propertyValue instanceof GString) {
+        if(propertyValue instanceof CharSequence) {
             return propertyValue.toString();
         }
         return propertyValue;
@@ -314,12 +353,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void count(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [count] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.count(calculatePropertyName(propertyName)));
-        }
+        count(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to return the property count
+     *
+     * @param propertyName The name of the property
+     * @param alias The alias to use
+     */
+    public void count(String propertyName, String alias) {
+        final CountProjection proj = Projections.count(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -328,12 +373,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void countDistinct(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [countDistinct] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.countDistinct(calculatePropertyName(propertyName)));
-        }
+        countDistinct(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to return the distinct property count
+     *
+     * @param propertyName The name of the property
+     * @param alias The alias to use
+     */
+    public void countDistinct(String propertyName, String alias) {
+        final CountProjection proj = Projections.countDistinct(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -342,12 +393,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void groupProperty(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [groupProperty] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.groupProperty(calculatePropertyName(propertyName)));
-        }
+        groupProperty(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria's result to be grouped by a property
+     *
+     * @param propertyName The name of the property
+     * @param alias The alias to use
+     */
+    public void groupProperty(String propertyName, String alias) {
+        final PropertyProjection proj = Projections.groupProperty(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -356,12 +413,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void max(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [max] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.max(calculatePropertyName(propertyName)));
-        }
+        max(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to retrieve a  maximum property value
+     *
+     * @param propertyName The name of the property
+     * @param alias The alias to use
+     */
+    public void max(String propertyName, String alias) {
+        final AggregateProjection proj = Projections.max(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -370,12 +433,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void min(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [min] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.min(calculatePropertyName(propertyName)));
-        }
+        min(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to retrieve a  minimum property value
+     *
+     * @param alias The alias to use
+     */
+    public void min(String propertyName, String alias) {
+        final AggregateProjection aggregateProjection = Projections.min(calculatePropertyName(propertyName));
+        addProjectionToList(aggregateProjection, alias);
     }
 
     /**
@@ -383,12 +451,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      */
     public void rowCount() {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [rowCount] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.rowCount());
-        }
+        rowCount(null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to return the row count
+     *
+     * @param alias The alias to use
+     */
+    public void rowCount(String alias) {
+        final Projection proj = Projections.rowCount();
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -397,12 +470,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyName The name of the property
      */
     public void sum(String propertyName) {
-        if(this.projectionList == null) {
-            throwRuntimeException( new IllegalArgumentException("call to [sum] must be within a [projections] node"));
-        }
-        else {
-            this.projectionList.add(Projections.sum(calculatePropertyName(propertyName)));
-        }
+        sum(propertyName, null);
+    }
+
+    /**
+     * Adds a projection that allows the criteria to retrieve the sum of the results of a property
+     *
+     * @param propertyName The name of the property
+     * @param alias The alias to use
+     */
+    public void sum(String propertyName, String alias) {
+        final AggregateProjection proj = Projections.sum(calculatePropertyName(propertyName));
+        addProjectionToList(proj, alias);
     }
 
     /**
@@ -588,6 +667,25 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.eq(propertyName, propertyValue));
     }
+
+    /**
+     * Applies a sql restriction to the results to allow something like:
+      <pre>
+       def results = Person.withCriteria {
+           sqlRestriction "char_length( first_name ) <= 4"
+       }
+      </pre>
+     *
+     * @param sqlRestriction the sql restriction
+     * @return a Criterion instance
+     */
+    public Object sqlRestriction(String sqlRestriction) {
+        if(!validateSimpleExpression()) {
+            throwRuntimeException( new IllegalArgumentException("Call to [sqlRestriction] with value ["+sqlRestriction+"] not allowed here."));
+        }
+        return addToCriteria(Restrictions.sqlRestriction(sqlRestriction));
+    }
+
     /**
      * Creates a Criterion with from the specified property name and "like" expression
      * @param propertyName The property name
@@ -689,8 +787,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 throwRuntimeException( new IllegalArgumentException("Call to [order] with propertyName ["+propertyName+"]not allowed here."));
         propertyName = calculatePropertyName(propertyName);
         Order o = Order.asc(propertyName);
-        this.criteria.addOrder(o);
-
+		if (this.paginationEnabledList) {
+			orderEntries.add(o);
+		} else {
+			this.criteria.addOrder(o);
+		}
         return o;
     }
 
@@ -713,8 +814,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         else {
             o = Order.asc(propertyName);
         }
-        this.criteria.addOrder(o);
-
+		if (this.paginationEnabledList) {
+			orderEntries.add(o);
+		} else {
+			this.criteria.addOrder(o);
+		}
         return o;
     }
     /**
@@ -848,10 +952,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
 
     private boolean validateSimpleExpression() {
-        if(this.criteria == null) {
-            return false;
-        }
-        return true;
+        return this.criteria != null;
     }
 
 
@@ -880,13 +981,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
-            boolean paginationEnabledList = false;
-
             createCriteriaInstance();
 
             // Check for pagination params
             if(name.equals(LIST_CALL) && args.length == 2) {
-                paginationEnabledList = true;
+            	paginationEnabledList = true;
+				orderEntries = new ArrayList<Order>();
                 invokeClosureNode(args[1]);
             } else {
                 invokeClosureNode(args[0]);
@@ -917,6 +1017,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     // Drop the projection, add settings for the pagination parameters,
                     // and then execute the query.
                     this.criteria.setProjection(null);
+					for(Iterator<Order> it = orderEntries.iterator();it.hasNext();){
+						this.criteria.addOrder(it.next());
+					}
                     this.criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
                     GrailsHibernateUtil.populateArgumentsForCriteria(targetClass, this.criteria, (Map)args[0]);
                     PagedResultList pagedRes = new PagedResultList(this.criteria.list());
@@ -930,7 +1033,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 }
             }
             else {
-                result = this.criteria.uniqueResult();
+                result = GrailsHibernateUtil.unwrapIfProxy(this.criteria.uniqueResult());
             }
             if(!this.participate) {
                 this.hibernateSession.close();
@@ -939,10 +1042,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
         }
         else {
-
             if(criteria==null) createCriteriaInstance();
 
-           MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
+            MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
             if(metaMethod != null) {
                  return metaMethod.invoke(this, args);
             }
@@ -1053,8 +1155,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             }
         }
 
-
-        closeSessionFollowingException();
         throw new MissingMethodException(name, getClass(), args) ;
     }
 
@@ -1103,6 +1203,13 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 name.equals(GET_CALL) ||
                 name.equals(COUNT_CALL) ||
                 name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure);
+    }
+
+    public Criteria buildCriteria(Closure criteriaClosure) {
+        createCriteriaInstance();
+        criteriaClosure.setDelegate(this);
+        criteriaClosure.call();
+        return criteria;
     }
 
     private void createCriteriaInstance() {

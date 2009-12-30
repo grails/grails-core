@@ -20,6 +20,8 @@ import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.context.support.StaticMessageSource
@@ -96,6 +98,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 		ctx.registerMockBean("manager", mockManager )
 		ctx.registerMockBean("messageSource", messageSource )
 		ctx.registerMockBean("grailsApplication",grailsApplication)
+		ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
 		def dependantPluginClasses = []
 		dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -113,9 +116,8 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 		dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
 		mockManager.registerProvidedArtefacts(grailsApplication)
 		def springConfig = new WebRuntimeSpringConfiguration(ctx)
-        webRequest = GrailsWebUtil.bindMockWebRequest()
 
-        servletContext =  webRequest.servletContext
+        servletContext =  ctx.servletContext
 
 		springConfig.servletContext = servletContext
 
@@ -137,9 +139,11 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 		GroovySystem.metaClassRegistry.removeMetaClass(String.class)
 		GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
-	    grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
+	    //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
 		mockManager.doDynamicMethods()
-        request = webRequest.currentRequest
+		
+        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
+		request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
 
@@ -147,7 +151,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
     }
 
     final void tearDown() {
-        RequestContextHolder.setRequestAttributes(null)
+    	RequestContextHolder.setRequestAttributes(null)
 		GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler);
 
         onDestroy()
@@ -197,7 +201,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 
     }
 
-    String getFlowId() { "testFlow" }
+    String getFlowId() { 'testFlow' }
 
     abstract Closure getFlowClosure();
 }

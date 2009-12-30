@@ -133,9 +133,7 @@ Second line
         request.content = content.getBytes("UTF-8")
 
         // Test the method.
-        shouldFail {
-            request.JSON
-        }
+        assert !request.JSON : "should not contain JSON"
     }
 
     private void verifyXmlResult(xml) {

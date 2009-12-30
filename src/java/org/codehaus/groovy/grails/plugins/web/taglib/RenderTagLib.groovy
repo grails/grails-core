@@ -14,38 +14,38 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.RequestConstants
+import grails.util.GrailsNameUtils
+import groovy.text.Template
+import java.util.concurrent.ConcurrentHashMap
+import javax.servlet.ServletConfig
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.codehaus.groovy.grails.web.util.WebUtils
+
 /**
  * An tag library that contains tags to help rendering of views and layouts
  *
  * @author Graeme Rocher
  * @since 17-Jan-2006
  */
-import org.springframework.validation.Errors;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.web.servlet.support.RequestContextUtils as RCU;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import com.opensymphony.module.sitemesh.PageParserSelector
-import com.opensymphony.module.sitemesh.Factory
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.springframework.web.context.ServletConfigAware
-import javax.servlet.ServletConfig
-import org.springframework.beans.factory.InitializingBean;
-import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
-import org.codehaus.groovy.grails.web.util.WebUtils
-import java.util.concurrent.ConcurrentHashMap
-import groovy.text.Template
-
 class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants {
 	def out // to facilitate testing
 
     ServletConfig servletConfig
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
-
+    
+    static Map TEMPLATE_CACHE = new ConcurrentHashMap()
 
     protected getPage() {
     	return request[PAGE]
@@ -95,21 +95,45 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def contentType = attrs.contentType ? attrs.contentType : "text/html"
 
         def content = ""
-        if(attrs.view || attrs.template) {
-            content = render(attrs)
-        }
-        else if(attrs.url) {
-            content = new URL(attrs.url).text
-        }
-        else {
-            content = body()
+        GSPSitemeshPage gspSiteMeshPage = null
+        if(attrs.url) {
+        	content = new URL(attrs.url).text
+        } else {
+        	def oldGspSiteMeshPage=request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+        	try {
+        		gspSiteMeshPage = new GSPSitemeshPage()
+        		request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+		        if(attrs.view || attrs.template) {
+		            content = render(attrs)
+		        }
+		        else {
+		        	def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest, true)
+		            content = bodyClosure()
+		        }
+        		if(content instanceof StreamCharBuffer) {
+        			gspSiteMeshPage.setPageBuffer(content)
+        		} else if (content != null) {
+        			def buf=new StreamCharBuffer()
+        			buf.writer.write(content)
+        			gspSiteMeshPage.setPageBuffer(buf)
+        		}
+        	} finally {
+          		 if(oldGspSiteMeshPage != null) {
+        			 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
+        		 }        		
+        	}
         }
 
-        def parser = getFactory().getPageParser(contentType)
-
-        def page = parser.parse(content.toCharArray())
+        def page = null
+        if(gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        	page = gspSiteMeshPage
+        } else {
+            def parser = getFactory().getPageParser(contentType)
+        	page = parser.parse(content.toCharArray())
+        }
+        
         attrs.params?.each { k,v->
-            page.addProperty(k,v)
+            page.addProperty(k,v?.toString())
         }
         def decoratorMapper = getFactory().getDecoratorMapper()
 
@@ -145,8 +169,15 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 
             def propertyName = attrs.name
             def htmlPage = getPage()
+            def propertyValue = null
+            
+            if(htmlPage instanceof GSPSitemeshPage) {
+            	// check if there is an component content buffer
+            	propertyValue = htmlPage.getContentBuffer(propertyName)
+            }
 
-            String propertyValue = htmlPage.getProperty(propertyName)
+            if(!propertyValue)
+            	propertyValue = htmlPage.getProperty(propertyName)
 
             if (!propertyValue)
                 propertyValue = attrs.'default';
@@ -155,7 +186,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
                 if (attrs.writeEntireProperty) {
                     out << ' '
                     out << propertyName.substring(propertyName.lastIndexOf('.') + 1)
-                    out << "=\"${propertyValue}\""
+                    out << "=\""
+                    out << propertyValue
+                    out << "\""
                 }
                 else {
                     out << propertyValue
@@ -228,7 +261,6 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		getPage().writeHead(out)
 	}
 
-
 	/**
 	 * Creates next/previous links to support pagination for the current controller
 	 *
@@ -238,23 +270,25 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def writer = out
         if(attrs.total == null)
             throwTagError("Tag [paginate] is missing required attribute [total]")
-
-		def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+                                    
+		def messageSource = grailsAttributes.messageSource
 		def locale = RCU.getLocale(request)
 
-		def total = attrs.total.toInteger()
+		def total = attrs.int('total') ?: 0
 		def action = (attrs.action ? attrs.action : (params.action ? params.action : "list"))
-		def offset = params.offset?.toInteger()
-		def max = params.max?.toInteger()
-		def maxsteps = (attrs.maxsteps ? attrs.maxsteps.toInteger() : 10)
+		def offset = params.int('offset') ?: 0
+		def max = params.int('max')
+		def maxsteps = (attrs.int('maxsteps') ?: 10)
 
-		if(!offset) offset = (attrs.offset ? attrs.offset.toInteger() : 0)
-		if(!max) max = (attrs.max ? attrs.max.toInteger() : 10)
+		if(!offset) offset = (attrs.int('offset') ?: 0)
+		if(!max) max = (attrs.int('max') ?: 10)
 
-		def linkParams = [offset:offset - max, max:max]
+		def linkParams = [:]
+		if(attrs.params) linkParams.putAll(attrs.params)
+        linkParams.offset = offset - max
+        linkParams.max = max
 		if(params.sort) linkParams.sort = params.sort
 		if(params.order) linkParams.order = params.order
-        if(attrs.params) linkParams.putAll(attrs.params)
 
 		def linkTagAttrs = [action:action]
 		if(attrs.controller) {
@@ -405,7 +439,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
 		def titleKey = attrs.remove("titleKey")
 		if(titleKey) {
 			if(!title) title = titleKey
-			def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+			def messageSource = grailsAttributes.messageSource
 			def locale = RCU.getLocale(request)
 			title = messageSource.getMessage(titleKey, null, title, locale)
 		}
@@ -425,7 +459,6 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      *  <g:render template="atemplate" model="[user:user,company:company]" />
      *  <g:render template="atemplate" bean="${user}" />
      */
-    static Map TEMPLATE_CACHE = new ConcurrentHashMap()
     def render = { attrs, body ->
         if(!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         if(!attrs.template)
@@ -434,63 +467,75 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def engine = groovyPagesTemplateEngine
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
-        def contextPath = attrs.contextPath ? attrs.contextPath : ""
+        def contextPath = attrs.contextPath ? attrs.contextPath : null
         
         if(attrs.plugin) {
-            def plugin = pluginManager?.getGrailsPlugin(attrs.plugin)
-            if(plugin && !plugin.isBasePlugin()) contextPath = plugin.getPluginPath()
+            contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
+        }
+        else if (contextPath == null) {
+            contextPath = pageScope.pluginContextPath ?: ""
         }
 
-        Template t
-        if(TEMPLATE_CACHE.containsKey(uri) && !engine.isReloadEnabled()) {
-           t = TEMPLATE_CACHE[uri]
+        Template t = TEMPLATE_CACHE[uri]
+
+        def templatePath = "${contextPath}${uri}"
+        if(t==null) {
+            t = engine.createTemplateForUri([templatePath, "${contextPath}/grails-app/views/${uri}"] as String[])
+			  if(!engine.isReloadEnabled() && t!=null) {
+				  def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
+				  if(prevt != null) {
+					  t = prevt
+				  }
+			  }
+        }
+
+        if(!t) {
+            throwTagError("Template not found for name [$attrs.template] and path [$templatePath]")            
         }
         else {
-          t = engine.createTemplateForUri(["${contextPath}${uri}", "${contextPath}/grails-app/views/${uri}"] as String[])
-          TEMPLATE_CACHE[uri] = t
-        }
-
-        if(attrs.containsKey('bean')) {
-        	def b = [body: body]
-            if (attrs.model instanceof Map) {
-                b += attrs.model
-            }
-        	if (var) {
-        		b.put(var, attrs.bean)
-        	}
-        	else {
-        		b.put('it', attrs.bean)
-	        }
-        	t.make(b).writeTo(out)
-        }
-        else if(attrs.containsKey('collection')) {
-            def collection = attrs.collection
-            def key = 'it'
-            if(collection) {
-                def first = collection.iterator().next()
-                key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
-            }
-            collection.each {
-            	def b = [body:body]
+            if(attrs.containsKey('bean')) {
+                def b = [body: body]
                 if (attrs.model instanceof Map) {
                     b += attrs.model
                 }
-            	if (var) {
-            		b.put(var, it)
-            	}
-            	else {
-                    b.put('it', it)
-            		b.put(key, it)
-            	}
-            	t.make(b).writeTo(out)
+                if (var) {
+                    b.put(var, attrs.bean)
+                }
+                else {
+                    b.put('it', attrs.bean)
+                }
+                t.make(b).writeTo(out)
+            }
+            else if(attrs.containsKey('collection')) {
+                def collection = attrs.collection
+                def key = 'it'
+                if(collection) {
+                    def first = collection.iterator().next()
+                    key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
+                }
+                collection.each {
+                    def b = [body:body]
+                    if (attrs.model instanceof Map) {
+                        b += attrs.model
+                    }
+                    if (var) {
+                        b.put(var, it)
+                    }
+                    else {
+                        b.put('it', it)
+                        b.put(key, it)
+                    }
+                    t.make(b).writeTo(out)
+                }
+            }
+            else if(attrs.model instanceof Map) {
+                t.make( [body:body] + attrs.model ).writeTo(out)
+            }
+            else if(attrs.template) {
+                t.make([body:body]).writeTo(out)
             }
         }
-        else if(attrs.model instanceof Map) {
-            t.make( [body:body] + attrs.model ).writeTo(out)
-        }
-		else if(attrs.template) {
-			t.make([body:body]).writeTo(out)
-		}
+
     }
 
 }

@@ -19,6 +19,8 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import java.text.DateFormat
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.springframework.beans.SimpleTypeConverter
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.springframework.http.HttpMethod;
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 
 /**
@@ -39,10 +41,7 @@ class FormTagLib {
     def textField = {attrs ->
         attrs.type = "text"
         attrs.tagName = "textField"
-        def result = field(attrs)
-        if (result) {
-            out << result
-        }
+        fieldImpl(out, attrs)
     }
 
     /**
@@ -51,20 +50,22 @@ class FormTagLib {
     def passwordField = {attrs ->
         attrs.type = "password"
         attrs.tagName = "passwordField"
-        def result = field(attrs)
-        if (result) {
-            out << result
-        }
+        fieldImpl(out, attrs)
     }
 
     /**
       * Creates a hidden field
       */
     def hiddenField = {attrs ->
-        attrs.type = "hidden"
-        attrs.tagName = "hiddenField"
-        out << field(attrs)
+        hiddenFieldImpl(out, attrs)        	
     }
+
+    def hiddenFieldImpl(out, attrs) {
+	    attrs.type = "hidden"
+	    attrs.tagName = "hiddenField"
+	    fieldImpl(out, attrs)        	
+    }
+
     /**
       * Creates a submit button
       */
@@ -77,19 +78,22 @@ class FormTagLib {
         if(attrs.name && (attrs.value == null)) {
             attrs.value = attrs.name
         }
-        out << field(attrs)
+        fieldImpl(out, attrs)
     }
     /**
       * A general tag for creating fields
       */
     def field = {attrs ->
-        resolveAttributes(attrs)
-        attrs.id = attrs.id ? attrs.id : attrs.name
-        out << "<input type=\"${attrs.remove('type')}\" "
-        outputAttributes(attrs)
-        out << "/>"
+        fieldImpl(out, attrs)
     }
 
+    def fieldImpl(out, attrs) {
+	    resolveAttributes(attrs)
+	    attrs.id = attrs.id ? attrs.id : attrs.name
+	    out << "<input type=\"${attrs.remove('type')}\" "
+	    outputAttributes(attrs)
+	    out << "/>"
+    }
 
     /**
     * A helper tag for creating checkboxes
@@ -200,6 +204,7 @@ class FormTagLib {
         out << form(attrs, body)
     }
 
+    
     /**
      *  General linking to controllers, actions etc. Examples:
      *
@@ -213,8 +218,15 @@ class FormTagLib {
 
         writer << "<form action=\"${createLink(attrs)}\" "
         // default to post
-        if (!attrs['method']) {
+        def method = attrs.remove('method')?.toUpperCase() ?: 'POST'
+        def httpMethod = HttpMethod.valueOf(method)
+        boolean notGet = httpMethod != HttpMethod.GET
+        
+        if (notGet) {
             writer << 'method="post" '
+        }
+        else {
+        	writer << 'method="get" '
         }
         // process remaining attributes
         attrs.id = attrs.id ? attrs.id : attrs.name
@@ -226,18 +238,21 @@ class FormTagLib {
         writer << ">"
         if (request['flowExecutionKey']) {
             writer.println()
-            writer << hiddenField(name: "execution", value: request['flowExecutionKey'])
+            hiddenFieldImpl(writer, [name: "execution", value: request['flowExecutionKey']])
+        }
+        if(notGet && httpMethod != HttpMethod.POST) {
+        	hiddenFieldImpl(writer, [name: "_method", value: httpMethod.toString()])
         }
         if(useToken) {            
             def token = SynchronizerToken.store(session)
             writer.println()
-            writer << hiddenField(name: SynchronizerToken.KEY, value: token.currentToken)
+            hiddenFieldImpl(writer, [name: SynchronizerToken.KEY, value: token.currentToken])
             writer.println()
-            writer << hiddenField(name: SynchronizerToken.URI, value: request.forwardURI)
+            hiddenFieldImpl(writer, [name: SynchronizerToken.URI, value: request.forwardURI])
         }
+        
         // output the body
-        def bodyContent = body()
-        writer << bodyContent
+        writer << body()
 
         // close tag
         writer << "</form>"
@@ -312,6 +327,7 @@ class FormTagLib {
     * eg. <g:datePicker name="myDate" value="${new Date()}" />
     */
     def datePicker = {attrs ->
+    	def out = out
         def xdefault = attrs['default']
         if (xdefault == null) {
             xdefault = new Date()
@@ -385,23 +401,19 @@ class FormTagLib {
             years = (tempyear - 100)..(tempyear + 100)
         }
 
-        out << "<input type=\"hidden\" name=\"${name}\" value=\"struct\" />"
+        out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
             out.println "<select name=\"${name}_day\" id=\"${id}_day\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
             for (i in 1..31) {
-                out.println "<option value=\"${i}\""
-                if (i == day) {
-                    out.println " selected=\"selected\""
-                }
-                out.println ">${i}</option>"
+                out.println "<option value=\"${i}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -411,18 +423,14 @@ class FormTagLib {
             out.println "<select name=\"${name}_month\" id=\"${id}_month\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
             dfs.months.eachWithIndex {m, i ->
                 if (m) {
                     def monthIndex = i + 1
-                    out << "<option value=\"${monthIndex}\""
-                    if (month == i) out << " selected=\"selected\""
-                    out << '>'
-                    out << m
-                    out.println '</option>'
+                    out.println "<option value=\"${monthIndex}\"${i == month ? ' selected="selected"' : ''}>$m</option>"
                 }
             }
             out.println '</select>'
@@ -433,16 +441,12 @@ class FormTagLib {
             out.println "<select name=\"${name}_year\" id=\"${id}_year\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
             for (i in years) {
-                out.println "<option value=\"${i}\""
-                if (i == year) {
-                    out.println " selected=\"selected\""
-                }
-                out.println ">${i}</option>"
+                out.println "<option value=\"${i}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -452,17 +456,14 @@ class FormTagLib {
             out.println "<select name=\"${name}_hour\" id=\"${id}_hour\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
             for (i in 0..23) {
                 def h = '' + i
                 if (i < 10) h = '0' + h
-                out << "<option value=\"${h}\" "
-                if (hour == h.toInteger()) out << "selected=\"selected\""
-                out << '>' << h << '</option>'
-                out.println()
+                out.println "<option value=\"${h}\"${i == hour ? ' selected="selected"' : ''}>$h</option>"                
             }
             out.println '</select> :'
 
@@ -477,29 +478,26 @@ class FormTagLib {
             out.println "<select name=\"${name}_minute\" id=\"${id}_minute\">"
 
             if (noSelection) {
-                renderNoSelectionOption(noSelection.key, noSelection.value, '')
+                renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
                 out.println()
             }
 
             for (i in 0..59) {
                 def m = '' + i
                 if (i < 10) m = '0' + m
-                out << "<option value=\"${m}\" "
-                if (minute == m.toInteger()) out << "selected=\"selected\""
-                out << '>' << m << '</option>'
-                out.println()
+                out.println "<option value=\"${m}\"${i == minute ? ' selected="selected"' : ''}>$m</option>"
             }
             out.println '</select>'
         }
     }
 
     def renderNoSelectionOption = {noSelectionKey, noSelectionValue, value ->
+    	renderNoSelectionOptionImpl(out, noSelectionKey, noSelectionValue, value)
+    }
+
+    def renderNoSelectionOptionImpl(out, noSelectionKey, noSelectionValue, value) {
         // If a label for the '--Please choose--' first item is supplied, write it out
-        out << '<option value="' << (noSelectionKey == null ? "" : noSelectionKey) << '"'
-        if (noSelectionKey.equals(value)) {
-            out << ' selected="selected" '
-        }
-        out << '>' << noSelectionValue.encodeAsHTML() << '</option>'
+        out << "<option value=\"${(noSelectionKey == null ? '' : noSelectionKey)}\"${noSelectionKey == value ? ' selected="selected"' : ''}>${noSelectionValue.encodeAsHTML()}</option>"
     }
 
     /**
@@ -585,6 +583,9 @@ class FormTagLib {
         if (value instanceof Collection && attrs.multiple == null) {
             attrs.multiple = 'multiple'
         }
+        if (value instanceof StreamCharBuffer) {
+        	value = value.toString()
+        }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
         def noSelection = attrs.remove('noSelection')
         if (noSelection != null) {
@@ -595,7 +596,7 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
 
-        writer << "<select name=\"${attrs.remove('name')}\" "
+        writer << "<select name=\"${attrs.remove('name')?.encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
 
@@ -603,7 +604,7 @@ class FormTagLib {
         writer.println()
 
         if (noSelection) {
-            renderNoSelectionOption(noSelection.key, noSelection.value, value)
+            renderNoSelectionOptionImpl(writer, noSelection.key, noSelection.value, value)
             writer.println()
         }
 
@@ -714,12 +715,7 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
         def checked = (attrs.remove('checked') ? true : false)
-        out << '<input type="radio" '
-        out << "name=\"${name}\" "
-        if (checked) {
-            out << 'checked="checked" '
-        }
-        out << "value=\"${value.toString().encodeAsHTML()}\" "
+        out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
 

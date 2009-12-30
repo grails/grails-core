@@ -23,6 +23,7 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -68,10 +69,9 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     public GrailsWrappedRuntimeException(ServletContext servletContext, Throwable t) {
         super(t.getMessage(), t);
         this.cause = t;
-        StringWriter sw  = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
+        FastStringWriter pw = new FastStringWriter();
         cause.printStackTrace(pw);
-        this.stackTrace = sw.toString();
+        this.stackTrace = pw.toString();
 
         while(cause.getCause()!=cause) {
         	if(cause.getCause() == null) {
@@ -88,6 +88,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
         	if(message instanceof SyntaxErrorMessage) {
         		SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
         		this.lineNumber = sem.getCause().getLine();
+                this.className = sem.getCause().getSourceLocator();
                 sem.write(pw);
         	}
         	

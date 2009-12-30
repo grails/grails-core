@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import grails.converters.JSON;
 import grails.util.GrailsWebUtil;
 import grails.util.JSonBuilder;
 import grails.util.OpenRicoBuilder;
+import grails.web.JSONBuilder;
 import groovy.lang.*;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
@@ -29,13 +31,11 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
-import org.codehaus.groovy.grails.web.pages.GroovyPageUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -46,7 +46,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -78,9 +77,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_RICO = "rico";
     private static final String BUILDER_TYPE_JSON = "json";
 
-    private static final int BUFFER_SIZE = 8192;
     private static final String TEXT_HTML = "text/html";
     private String gspEncoding;
+    private boolean useLegacyJSONBuilder = true;
     private static final String DEFAULT_ENCODING = "utf-8";
     private Object ARGUMENT_PLUGIN = "plugin";
 
@@ -95,6 +94,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             this.gspEncoding = gspEnc.toString();
         } else {
             gspEncoding = DEFAULT_ENCODING;
+        }
+
+        Object o = config.get("grails.json.legacy.builder");
+        if(o instanceof Boolean) {
+            useLegacyJSONBuilder = (Boolean) o;
         }
 
     }
@@ -126,13 +130,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 String contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString();
                 String encoding = argMap.get(ARGUMENT_ENCODING).toString();
                 setContentType(response, contentType, encoding);
-                out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+                out = GSPResponseWriter.getInstance(response);
             } else if (argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
                 setContentType(response, argMap.get(ARGUMENT_CONTENT_TYPE).toString(), DEFAULT_ENCODING);
-                out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+                out = GSPResponseWriter.getInstance(response);
             } else {
                 setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
-                out = GSPResponseWriter.getInstance(response, BUFFER_SIZE);
+                out = GSPResponseWriter.getInstance(response);
             }
 
             if(argMap.containsKey(ARGUMENT_STATUS)) {
@@ -167,7 +171,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderView = renderText(text, out);
             } else if (argMap.containsKey(ARGUMENT_VIEW)) {
 
-                renderView(argMap, target, controller);
+                renderView(webRequest, argMap, target, controller);
             } else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             } else {
@@ -195,17 +199,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         String var = (String) argMap.get(ARGUMENT_VAR);
         // get the template uri
-        String templateUri = GroovyPageUtils.getTemplateURI(controller, templateName);
+        String templateUri = webRequest.getAttributes().getTemplateURI(controller, templateName);
 
         // retrieve gsp engine
-        GroovyPagesTemplateEngine engine = (GroovyPagesTemplateEngine) webRequest.getApplicationContext().getBean(GroovyPagesTemplateEngine.BEAN_ID);
+        GroovyPagesTemplateEngine engine = webRequest.getAttributes().getPagesTemplateEngine();
         try {
-            Resource r = engine.getResourceForUri(contextPath + templateUri);
-            if (!r.exists()) {
-                r = engine.getResourceForUri(contextPath + "/grails-app/views/"  + templateUri);
-            }
-
-            Template t = engine.createTemplate(r); //templateUri);
+            Template t = engine.createTemplateForUri(new String[]{contextPath + templateUri, contextPath + "/grails-app/views/"  + templateUri});
 
             if (t == null) {
                 throw new ControllerExecutionException("Unable to load template for uri [" + templateUri + "]. Template not found.");
@@ -294,8 +293,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private void renderTemplateForCollection(Template template, Map binding, Object colObject, String var, Writer out) throws IOException {
         if (colObject instanceof Collection) {
             Collection c = (Collection) colObject;
-            for (Iterator i = c.iterator(); i.hasNext();) {
-                Object o = i.next();
+            for (Object o : c) {
                 if (StringUtils.isBlank(var))
                     binding.put(DEFAULT_ARGUMENT, o);
                 else
@@ -323,11 +321,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         w.writeTo(out);
     }
 
-    private void renderView(Map argMap, Object target, GroovyObject controller) {
+    private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller) {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         Object modelObject = argMap.get(ARGUMENT_MODEL);
 
-        String viewUri = GroovyPageUtils.getNoSuffixViewURI((GroovyObject) target, viewName);
+        String viewUri = webRequest.getAttributes().getNoSuffixViewURI((GroovyObject) target, viewName);
         Map model;
         if (modelObject instanceof Map) {
             model = (Map) modelObject;
@@ -341,16 +339,25 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private boolean renderJSON(Closure callable, HttpServletResponse response) {
-        boolean renderView;
-        JSonBuilder jsonBuilder;
-        try {
-            jsonBuilder = new JSonBuilder(response);
+        boolean renderView = true;
+        if(!useLegacyJSONBuilder) {
+            JSONBuilder builder = new JSONBuilder();
+            JSON json = builder.build(  callable);
+            json.render(response);
             renderView = false;
-        } catch (IOException e) {
-            throw new ControllerExecutionException("I/O error executing render method for arguments [" + callable + "]: " + e.getMessage(), e);
         }
-        jsonBuilder.invokeMethod("json", new Object[]{callable});
+        else {
+            JSonBuilder jsonBuilder;
+            try {
+                jsonBuilder = new JSonBuilder(response);
+                renderView = false;
+            } catch (IOException e) {
+                throw new ControllerExecutionException("I/O error executing render method for arguments [" + callable + "]: " + e.getMessage(), e);
+            }
+            jsonBuilder.invokeMethod("json", new Object[]{callable});
+        }
         return renderView;
+
     }
 
     private boolean renderRico(Closure callable, HttpServletResponse response) {

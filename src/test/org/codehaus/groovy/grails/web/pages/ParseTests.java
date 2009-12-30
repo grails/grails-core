@@ -65,7 +65,10 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+            
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-			"out.print(htmlParts[0])\n"+
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
+
+			"printHtmlPart(0)\n"+
 			"}\n"+ GSP_FOOTER;
 		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
 		assertEquals("<div>hi</div>", result.htmlParts[0]);
@@ -82,9 +85,10 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
 
-            "attrs1 = [\"code\":evaluate('\"[\"', 1, it) { return \"[\" }]\n" +
-            "invokeTag('message','g',1,attrs1,null)\n"+
+            "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,null)\n"+
 			"}\n" + GSP_FOOTER;
 
 		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
@@ -94,7 +98,7 @@ public class ParseTests extends TestCase {
         try{
             parseCode("myTest3", "<g:message value=\"${boom\">");
         }catch(GrailsTagException e){
-            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'?", e.getMessage());
+            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'? at myTest3:17", e.getMessage());
             return;
         }
 		fail("Expected parse exception not thrown");
@@ -128,8 +132,9 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-
-            "out.print(htmlParts[0])\n"+
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
+            "printHtmlPart(0)\n"+
             "}\n" + GSP_FOOTER;;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
         assertEquals(src, output.htmlParts[0]);
@@ -163,8 +168,9 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-
-            "out.print(htmlParts[0])\n"+
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
+            "printHtmlPart(0)\n"+
             "}\n" + GSP_FOOTER;;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
         assertEquals(src, output.htmlParts[0]);
@@ -200,7 +206,7 @@ public class ParseTests extends TestCase {
         }
 
         InputStream gspIn = new ByteArrayInputStream(gsp.getBytes(enc.toString()));
-        GroovyPageParser parse = new GroovyPageParser(uri, uri, gspIn);
+        GroovyPageParser parse = new GroovyPageParser(uri, uri, uri, gspIn);
         InputStream in = parse.parse();
         ParsedResult result=new ParsedResult();
         result.parser=parse;
@@ -228,10 +234,11 @@ public class ParseTests extends TestCase {
             "def request = binding.request\n"+
             "def flash = binding.flash\n"+
             "def response = binding.response\n"+
-
-            "out.print(htmlParts[0])\n" +
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
+            "printHtmlPart(0)\n" +
             "out.print(evaluate('uri', 3, it) { return uri })\n"+
-            "out.print(htmlParts[1])\n" +
+            "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
 
 
@@ -250,4 +257,47 @@ public class ParseTests extends TestCase {
         assertEquals("\n\n\nThanks", output.htmlParts[1]);
         
     }
+
+    public void testBodyWithGStringAttribute() throws Exception {
+		ParsedResult result = parseCode("GRAILS5598", "<body class=\"${page.name} ${page.group.name.toLowerCase()}\">text</body>");
+		String expected = makeImports() +
+            "\n"+
+			"class GRAILS5598 extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"GRAILS5598\" }\n"+
+			"public Object run() {\n"+
+            "def params = binding.params\n"+
+            "def request = binding.request\n"+            
+            "def flash = binding.flash\n"+
+            "def response = binding.response\n"+
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
+            "body1 = createClosureForHtmlPart(0)\n"+
+            "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }] as GroovyPageAttributes,body1)\n"+            
+			"}\n"+ GSP_FOOTER;
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
+		assertEquals("text", result.htmlParts[0]);
+	}
+
+    public void testMetaWithGStringAttribute() throws Exception {
+		ParsedResult result = parseCode("GRAILS5605", "<html><head><meta name=\"SomeName\" content='${grailsApplication.config.myFirstConfig}/something/${someVar}' /></head></html>");
+		String expected = makeImports() +
+            "\n"+
+			"class GRAILS5605 extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"GRAILS5605\" }\n"+
+			"public Object run() {\n"+
+            "def params = binding.params\n"+
+            "def request = binding.request\n"+            
+            "def flash = binding.flash\n"+
+            "def response = binding.response\n"+
+            "def out = binding.out\n"+
+            "registerSitemeshPreprocessMode(request)\n"+
+            "printHtmlPart(0)\n"+
+            "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n"+
+            "invokeTag('captureMeta','sitemesh',1,['name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }] as GroovyPageAttributes,null)\n"+
+            "}\n"+            
+            "invokeTag('captureHead','sitemesh',1,[:],body1)\n"+
+            "printHtmlPart(1)\n"+
+			"}\n"+ GSP_FOOTER;
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
+	}
 }

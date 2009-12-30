@@ -68,7 +68,7 @@
     <servlet-mapping>
         <servlet-name>gsp</servlet-name>
         <url-pattern>*.gsp</url-pattern>
-    </servlet-mapping> 
+    </servlet-mapping>
 
     <jsp-config>
         <taglib>

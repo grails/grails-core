@@ -87,7 +87,7 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         // validate presence and structure of hidden date picker form field
         assertXPathExists(
                 document,
-                "//input[@name='" + DATE_PICKER_TAG_NAME + "' and @type='hidden' and @value='struct']");
+                "//input[@name='" + DATE_PICKER_TAG_NAME + "' and @type='hidden' and @value='date.struct']");
 
         // validate id attributes
         assertXPathExists(
@@ -115,7 +115,7 @@ public class FormTagLib2Tests extends AbstractGrailsTagTests {
         // validate presence and structure of hidden date picker form field
         assertXPathExists(
                 document,
-                "//input[@name='" + DATE_PICKER_TAG_NAME + "' and @type='hidden' and @value='struct']");
+                "//input[@name='" + DATE_PICKER_TAG_NAME + "' and @type='hidden' and @value='date.struct']");
 
         // if no date was given, default to the current date
         Calendar calendar = new GregorianCalendar();

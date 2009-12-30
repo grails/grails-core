@@ -137,7 +137,7 @@ target(createArtifact: "Creates a specific Grails artifact") {
     templateFile = "${basedir}/src/templates/artifacts/${artifactName}.groovy"
     if (!new File(templateFile).exists()) {
         // now check for template provided by plugins
-        Resource[] pluginDirs = getPluginDirectories()
+        Resource[] pluginDirs = pluginSettings.pluginDirectories
         List pluginTemplateFiles = []
         pluginDirs.each {
             File template = new File(it.file, "src/templates/artifacts/${artifactName}.groovy")

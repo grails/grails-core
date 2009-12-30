@@ -19,7 +19,7 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.codehaus.groovy.grails.commons.cfg.GrailsOverrideConfigurer
+import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
@@ -28,7 +28,10 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
 import grails.util.Environment
+import grails.util.Metadata;
+
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.plugins.support.aware.PluginManagerAwareBeanPostProcessor
 
 /**
  * A plug-in that configures the core shared beans within the Grails application context 
@@ -47,7 +50,7 @@ class CoreGrailsPlugin {
         xmlns grailsContext:"http://grails.org/schema/context"
 
 
-        addBeanFactoryPostProcessor(new GrailsOverrideConfigurer())
+        addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application.config.beans, application.classLoader))
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
         // replace AutoProxy advisor with Groovy aware one
@@ -55,16 +58,34 @@ class CoreGrailsPlugin {
 
         // Allow the use of Spring annotated components
         context.'annotation-config'()
-        grailsContext.'component-scan'('base-package':'**')
 
+        def packagesToScan = []
+
+        def beanPackages = application.config.grails.spring.bean.packages
+        if(beanPackages instanceof List) {
+            packagesToScan += beanPackages
+        }
+
+        def validateablePackages = application.config.grails.validateable.packages
+        if(validateablePackages instanceof List) {
+            packagesToScan += validateablePackages
+        }
+
+        if(packagesToScan) {
+            grailsContext.'component-scan'('base-package':packagesToScan.join(','))
+        }
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
+        if(getParentCtx()?.containsBean('pluginManager'))
+            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager', true))
 
         classLoader(MethodInvokingFactoryBean) {
 			targetObject = ref("grailsApplication", true)
 			targetMethod = "getClassLoader"
 		}
-        if(Environment.current == Environment.DEVELOPMENT)
+
+        // add shutdown hook if not running in war deployed mode
+        if(!Metadata.getCurrent().isWarDeployed() || Environment.currentEnvironment == Environment.DEVELOPMENT)
             shutdownHook(DevelopmentShutdownHook)
         
 		customEditors(CustomEditorConfigurer) {

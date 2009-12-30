@@ -30,7 +30,8 @@ public class ScaffoldingViewResolverTests extends GroovyTestCase{
 
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-
+        gpte.afterPropertiesSet()
+        
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
@@ -39,7 +40,6 @@ public class ScaffoldingViewResolverTests extends GroovyTestCase{
         viewResolver.applicationContext = ctx
         viewResolver.templateEngine = gpte
         viewResolver.servletContext = webRequest.getServletContext()
-        viewResolver.pluginMetaManager = new DefaultPluginMetaManager()
         viewResolver.resourceLoader = new DefaultResourceLoader()
         viewResolver.templateGenerator = new DefaultGrailsTemplateGenerator()
         webRequest.actionName = "list"

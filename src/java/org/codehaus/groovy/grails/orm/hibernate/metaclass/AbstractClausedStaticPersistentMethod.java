@@ -15,7 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.orm.RlikeExpression;
-import groovy.lang.GString;
+import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -114,7 +114,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 			for (int i = 0; i < args.length; i++) {
                 if(args[i] == null) continue;
                 // convert GStrings to strings
-				if(prop.getType() == String.class && (args[i] instanceof GString)) {
+				if(prop.getType() == String.class && (args[i] instanceof CharSequence)) {
 					args[i] = args[i].toString();
 				}
 				else if(!prop.getType().isAssignableFrom( args[i].getClass() ) && !(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass()))) {
@@ -396,7 +396,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 	 * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
 	 */
 	protected Object doInvokeInternal(final Class clazz, String methodName,
-			Object[] arguments) {
+                                      Closure additionalCriteria, Object[] arguments) {
 		List expressions = new ArrayList();
         if(arguments == null) arguments = new Object[0];
         Matcher match = super.getPattern().matcher( methodName );
@@ -501,9 +501,10 @@ public abstract class AbstractClausedStaticPersistentMethod extends
 		if(LOG.isTraceEnabled())
 			LOG.trace("Calculated expressions: " + expressions);
 		
-		return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse);
+		return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse, additionalCriteria);
 	}
-	
-	protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse);
+    
+
+	protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse, Closure additionalCriteria);
 
 }

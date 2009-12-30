@@ -17,19 +17,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>org.grails</groupId>
-        <artifactId>grails</artifactId>
-        <version>@grails.version@</version>
-        <relativePath>grails.pom</relativePath>
-    </parent>
 
     <modelVersion>4.0.0</modelVersion>
+    <groupId>org.grails</groupId>
     <artifactId>grails-docs</artifactId>
+    <version>@grails.version@</version>
     <packaging>jar</packaging>
     <name>Grails Docs</name>
     <description>Grails library required for generating Grails documentation.</description>
     <url>http://grails.org/</url>
+
+   <distributionManagement>
+        <repository>
+            <id>codehaus.org</id>
+            <name>Grails Central Repository</name>
+            <url>dav:https://dav.codehaus.org/repository/grails/</url>
+        </repository>
+        <snapshotRepository>
+            <!-- Don't create timestamped snapshots - simply replace the one that's already there. -->
+            <uniqueVersion>false</uniqueVersion>
+
+            <id>codehaus.org</id>
+            <name>Grails Central Development Repository</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/grails/</url>
+        </snapshotRepository>
+    </distributionManagement>    
 
     <dependencies>
         <!-- Required for the documentation generating engine -->
@@ -39,14 +51,23 @@
             <version>1.0-b2</version>
         </dependency>
 
-        <!-- Grails Dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>grails-core</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>1.6.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jline</groupId>
+                    <artifactId>jline</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.7.1</version>
+        </dependency>
 
     </dependencies>
 </project>

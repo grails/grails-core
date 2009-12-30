@@ -1,5 +1,7 @@
 package grails.util
 
+import grails.build.GrailsBuildListener
+
 /**
  * Test case for {@link BuildSettings}.
  */
@@ -226,4 +228,56 @@ class BuildSettingsTests extends GroovyTestCase {
 
         System.setProperty(name, value)
     }
+    
+    void testBuildListenersViaSystemProperty() {
+        try {
+            def config = new ConfigObject()
+            config.grails.build.listeners = 'java.lang.String' // anything, just verify that the system property trumps.
+            System.setProperty(BuildSettings.BUILD_LISTENERS, 'java.lang.Exception')
+
+            def settings = new BuildSettings()
+            settings.loadConfig(config)
+
+            assertEquals(['java.lang.Exception'] as Object[], settings.buildListeners as List)
+        } finally {
+            System.clearProperty(BuildSettings.BUILD_LISTENERS)
+        }
+    }
+    
+    void testBuildListenersMultipleClassNames() {
+        def config = new ConfigObject()
+        config.grails.build.listeners = 'java.lang.String,java.lang.String'
+        def settings = new BuildSettings()
+        settings.loadConfig(config)
+        
+        assertEquals(['java.lang.String', 'java.lang.String'], settings.buildListeners as List)
+    }
+
+    void testBuildListenersCollection() {
+        def config = new ConfigObject()
+        config.grails.build.listeners = [String, String]
+        def settings = new BuildSettings()
+        settings.loadConfig(config)
+        assertEquals([String, String], settings.buildListeners as List)
+        
+        config = new ConfigObject()
+        config.grails.build.listeners = ['java.lang.String', 'java.lang.String']
+        settings = new BuildSettings()
+        settings.loadConfig(config)
+        assertEquals(['java.lang.String', 'java.lang.String'], settings.buildListeners as List)
+    }
+    
+    void testBuildListenersBadValue() {
+        def config = new ConfigObject()
+        config.grails.build.listeners = 1
+        def settings = new BuildSettings()
+        
+        shouldFail(IllegalArgumentException) {
+            settings.loadConfig(config)
+        }
+    }
+}
+
+class BuildSettingsTestsGrailsBuildListener implements GrailsBuildListener {
+    void receiveGrailsBuildEvent(String name, Object[] args) {}
 }

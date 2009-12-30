@@ -33,7 +33,7 @@ class DomainClassGrailsPlugin {
 	
 	def version = grails.util.GrailsUtil.getGrailsVersion()
 	def dependsOn = [i18n:version]
-	def loadAfter = ['hibernate', 'controllers']
+	def loadAfter = ['controllers']
 	
 	def doWithSpring = {
 		for(dc in application.domainClasses) {
@@ -65,6 +65,10 @@ class DomainClassGrailsPlugin {
 	def doWithDynamicMethods = { ApplicationContext ctx->
            enhanceDomainClasses(application, ctx)
 	}
+
+    def onConfigChange = {
+        application.domainClasses*.refreshConstraints()   
+    }
 
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
@@ -142,7 +146,7 @@ class DomainClassGrailsPlugin {
         metaClass.clearErrors = {->
             delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
         }
-        if (!metaClass.respondsTo(dc.getReference(), "validate")) {
+        if (!domainClass.hasMetaMethod("validate")) {
             metaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
@@ -170,6 +174,9 @@ class DomainClassGrailsPlugin {
             if(prop.basicCollectionType) {
                 def collectionName = GrailsClassUtils.getClassNameRepresentation(prop.name)
                 metaClass."addTo$collectionName" = { obj ->
+                    if(obj instanceof CharSequence && !(obj instanceof String)) {
+                        obj = obj.toString()
+                    }
                     if(prop.referencedPropertyType.isInstance(obj)) {
                         if (delegate[prop.name] == null) {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
@@ -178,11 +185,14 @@ class DomainClassGrailsPlugin {
                         return delegate
                     }
                     else {
-                        throw new MissingMethodException("addTo${collectionName}", dc.clazz, [arg] as Object[])
+                        throw new MissingMethodException("addTo${collectionName}", dc.clazz, [obj] as Object[])
                     }
                 }
                 metaClass."removeFrom$collectionName" = { obj ->
                     if(delegate[prop.name]) {
+                        if(obj instanceof CharSequence && !(obj instanceof String)) {
+                            obj = obj.toString()
+                        }
                         delegate[prop.name].remove(obj)
                     }
                     return delegate
@@ -190,7 +200,7 @@ class DomainClassGrailsPlugin {
             }
             else if(prop.oneToOne || prop.manyToOne) {
                 def identifierPropertyName = "${prop.name}Id"
-                if(!metaClass.hasProperty(dc.reference.wrappedInstance,identifierPropertyName)) {
+                if(!dc.hasMetaProperty(identifierPropertyName)) {
                     def getterName = GrailsClassUtils.getGetterName(identifierPropertyName)
                     metaClass."$getterName" = {-> GrailsDomainConfigurationUtil.getAssociationIdentifier(delegate, prop.name, prop.referencedDomainClass) }
                 }

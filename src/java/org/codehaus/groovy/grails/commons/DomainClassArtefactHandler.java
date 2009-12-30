@@ -15,16 +15,27 @@
 */
 package org.codehaus.groovy.grails.commons;
 
+import grails.persistence.Entity;
+import grails.util.ClosureToMapPopulator;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import grails.persistence.Entity;
+import groovy.util.ConfigObject;
+import groovy.util.Eval;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
+
+import java.util.Map;
 
 /**
+ * Evaluates the conventions that define a domain class in Grails
+ *
+ * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsConfigurationAware {
 
     public static final String TYPE = "Domain";
+
+    private Map defaultConstraints = null;
 
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null);
@@ -32,7 +43,15 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
 
 
     public GrailsClass newArtefactClass(Class artefactClass) {
+        if(defaultConstraints!=null) {
+            return new DefaultGrailsDomainClass(artefactClass,defaultConstraints);
+        }
         return new DefaultGrailsDomainClass(artefactClass);
+    }
+
+
+    public Map getDefaultConstraints() {
+        return defaultConstraints;
     }
 
     /**
@@ -80,5 +99,22 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
             testClass = testClass.getSuperclass();
         }
         return result;
+    }
+
+
+    public void setConfiguration(ConfigObject co) {
+        Object constraints = Eval.x(co, "x?.grails?.gorm?.default?.constraints");
+        if(constraints instanceof Closure) {
+            if(defaultConstraints!=null) {
+                // repopulate existing map
+                defaultConstraints.clear();
+                new ClosureToMapPopulator(defaultConstraints).populate((Closure) constraints);
+            }
+            else {
+                ClosureToMapPopulator populator = new ClosureToMapPopulator();
+                this.defaultConstraints = populator.populate((Closure) constraints);
+            }
+        }
+
     }
 }

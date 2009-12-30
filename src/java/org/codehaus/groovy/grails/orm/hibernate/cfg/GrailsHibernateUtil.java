@@ -44,10 +44,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A class containing utility methods for configuring Hibernate inside Grails
@@ -72,13 +69,26 @@ public class GrailsHibernateUtil {
     public static final String ARGUMENT_CACHE = "cache";
     public static final String ARGUMENT_LOCK = "lock";
     public static final String CONFIG_PROPERTY_CACHE_QUERIES="grails.hibernate.cache.queries";
+    public static final Class[] EMPTY_CLASS_ARRAY=new Class[0];
 
 
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map hibernateDomainClassMap = new HashMap();
+        ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
+        Map defaultContraints = Collections.emptyMap();
+        if(artefactHandler instanceof DomainClassArtefactHandler) {
+            final Map map = ((DomainClassArtefactHandler) artefactHandler).getDefaultConstraints();
+            if(map != null)
+                defaultContraints = map;
+        }
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
-            configureDomainClass(sessionFactory, application, classMetadata, classMetadata.getMappedClass(EntityMode.POJO), hibernateDomainClassMap);
+            configureDomainClass(sessionFactory,
+                                 application,
+                                 classMetadata,
+                                 classMetadata.getMappedClass(EntityMode.POJO),
+                                 hibernateDomainClassMap,
+                                 defaultContraints);
         }
         configureInheritanceMappings(hibernateDomainClassMap);
     }
@@ -106,14 +116,14 @@ public class GrailsHibernateUtil {
         }
     }
 
-    private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application, ClassMetadata cmd, Class persistentClass, Map hibernateDomainClassMap) {
+    private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application, ClassMetadata cmd, Class persistentClass, Map hibernateDomainClassMap, Map defaultContraints) {
         if (!Modifier.isAbstract(persistentClass.getModifiers())) {
             LOG.trace("Configuring domain class [" + persistentClass + "]");
             GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.getName());
             if (dc == null) {
                 // a patch to add inheritance to this system
                 GrailsHibernateDomainClass ghdc = new
-                        GrailsHibernateDomainClass(persistentClass, sessionFactory, cmd);
+                        GrailsHibernateDomainClass(persistentClass, sessionFactory, cmd, defaultContraints);
 
                 hibernateDomainClassMap.put(persistentClass.getName(),
                         ghdc);
@@ -400,5 +410,14 @@ public class GrailsHibernateUtil {
         }
 
         return proxyFactory;
+    }
+
+    public static Object unwrapIfProxy(Object instance) {
+        if(instance instanceof HibernateProxy) {
+            return unwrapProxy((HibernateProxy)instance);
+        }
+        else {
+            return instance;
+        }
     }
 }

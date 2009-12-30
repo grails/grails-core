@@ -80,7 +80,7 @@ class DataSourceGrailsPlugin {
                               def codecClass = application.codecClasses.find { it.name?.equalsIgnoreCase(encryptionCodec) || it.fullName == encryptionCodec}?.clazz
                               try {
                                 if(!codecClass) {
-                                    codecClass = application.classLoader.loadClass(encryptionCodec)
+                                    codecClass = Class.forName(encryptionCodec, true, application.classLoader)
                                 }
                                 if(codecClass) {
                                    password = codecClass.decode(thePassword)
@@ -111,12 +111,27 @@ class DataSourceGrailsPlugin {
 
                 if(ds && !parentCtx?.containsBean("dataSource")) {
                     log.info("[RuntimeConfiguration] Configuring data source for environment: ${grails.util.GrailsUtil.getEnvironment()}");
+                    def bean
                     if(ds.pooled) {
-                        def bean = dataSource(BasicDataSource, properties)
+                        bean = dataSource(BasicDataSource, properties)
                         bean.destroyMethod = "close"
                     }
                     else {
-                        dataSource(DriverManagerDataSource, properties)
+                        bean = dataSource(DriverManagerDataSource, properties)
+                    }
+                    // support for setting custom properties (for example maxActive) on the dataSource bean
+                    def dataSourceProperties = ds.properties
+                    if(dataSourceProperties != null) {
+                    	if(dataSourceProperties instanceof Map) {
+                    		dataSourceProperties.each { entry ->
+                    			if(log.debugEnabled) {
+                    				log.debug("Setting property on dataSource bean ${entry.key} -> ${entry.value}")
+                    			}
+                    			bean.setPropertyValue(entry.key.toString(), entry.value)
+                    		}
+                    	} else {
+                    		log.warn("dataSource.properties is not an instanceof java.util.Map, ignoring")
+                    	}
                     }
                 }
                 else if(!parentCtx?.containsBean("dataSource")) {

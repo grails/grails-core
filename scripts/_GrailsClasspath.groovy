@@ -15,12 +15,12 @@
  */
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.springframework.core.io.FileSystemResource
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * Gant script containing the Grails classpath setup.
  *
  * @author Peter Ledbrook
+ * @author Graeme Rocher
  *
  * @since 1.1
  */
@@ -40,23 +40,25 @@ target(classpath: "Sets the Grails classpath") {
 
 /**
  * Obtains all of the plug-in Lib directories
+ * @deprecated Use "pluginSettings.pluginLibDirectories"
  */
 getPluginLibDirs = {
-    GrailsPluginUtils.getPluginLibDirectories(pluginsHome, resolveResources)
+    pluginSettings.pluginLibDirectories
 }
 
 /**
  * Obtains an array of all plug-in JAR files as Spring Resource objects
+ * @deprecated Use "pluginSettings.pluginJarFiles".
  */
 getPluginJarFiles = {
-    GrailsPluginUtils.getPluginJarFiles(pluginsHome, resolveResources)
+    pluginSettings.pluginJarFiles
 }
 
 getJarFiles = {->
     def jarFiles = resolveResources("file:${basedir}/lib/*.jar").toList()
     if(includePluginJarsOnClasspath) {
 
-        def pluginJars = getPluginJarFiles()
+        def pluginJars = pluginSettings.pluginJarFiles
 
         for (pluginJar in pluginJars) {
             boolean matches = jarFiles.any {it.file.name == pluginJar.file.name}
@@ -114,7 +116,7 @@ commonClasspath = {
         pathelement(location: "${d.file.absolutePath}")
     }
 
-    def pluginLibDirs = getPluginLibDirs().findAll { it.exists() }
+    def pluginLibDirs = pluginSettings.pluginLibDirectories.findAll { it.exists() }
     for (pluginLib in pluginLibDirs) {
         fileset(dir: pluginLib.file.absolutePath)
     }
@@ -124,17 +126,28 @@ compileClasspath = {
     commonClasspath.delegate = delegate
     commonClasspath.call()
 
-    grailsSettings.compileDependencies?.each { File f ->
-        pathelement(location: f.absolutePath)
+    def dependencies = grailsSettings.compileDependencies
+    if(dependencies) {
+        for(File f in dependencies) {
+            if(f)
+                pathelement(location: f.absolutePath)
+        }
     }
+
 }
 
 testClasspath = {
     commonClasspath.delegate = delegate
     commonClasspath.call()
 
-    grailsSettings.testDependencies?.each { File f ->
-        pathelement(location: f.absolutePath)
+    def dependencies = grailsSettings.testDependencies
+    if(dependencies) {
+
+        for(File f in dependencies) {
+            if(f) {
+                pathelement(location: f.absolutePath)
+            }
+        }
     }
 
     pathelement(location: "${classesDir.absolutePath}")
@@ -144,8 +157,12 @@ runtimeClasspath = {
     commonClasspath.delegate = delegate
     commonClasspath.call()
 
-    grailsSettings.runtimeDependencies?.each { File f ->
-        pathelement(location: f.absolutePath)
+    def dependencies = grailsSettings.runtimeDependencies
+    if(dependencies) {        
+        for(File f in dependencies) {
+            if(f)
+                pathelement(location: f.absolutePath)
+        }
     }
 
     pathelement(location: "${classesDir.absolutePath}")
@@ -161,35 +178,6 @@ classpathToUrls = { String classpathId ->
     return ant.project.properties.get(propName).split(":").collect { new File(it).toURI().toURL() }
 }
 
-// I don't think this is needed anymore, but keeping around just in
-// case the paths specified are actually important!
-//
-//grailsClasspath = {pluginLibs, grailsDir ->
-//    pathelement(location: "${classesDir.absolutePath}")
-//    pathelement(location: "${basedir}/test/unit")
-//    pathelement(location: "${basedir}/test/integration")
-//    pathelement(location: "${basedir}")
-//    pathelement(location: "${basedir}/web-app")
-//    pathelement(location: "${basedir}/web-app/WEB-INF")
-//    pathelement(location: "${basedir}/web-app/WEB-INF/classes")
-//
-//    if (new File("${basedir}/web-app/WEB-INF/lib").exists()) {
-//        fileset(dir: "${basedir}/web-app/WEB-INF/lib")
-//    }
-//    for (d in grailsDir) {
-//        pathelement(location: "${d.file.absolutePath}")
-//    }
-//
-//	if(preInitConfig.grails.compiler.dependencies) {
-//		def callable = preInitConfig.grails.compiler.dependencies
-//		callable.delegate = delegate
-//		callable.resolveStrategy = Closure.DELEGATE_FIRST
-//		callable()
-//	}
-//    else {
-//        defaultCompilerDependencies(delegate)
-//    }
-//}
 
 void setClasspath() {
     // Make sure the following code is only executed once.
@@ -212,7 +200,7 @@ void setClasspath() {
         //rootLoader?.addURL(dir.URL)
     }
     cpath << classesDirPath << File.pathSeparator
-    cpath << "${basedir}/web-app/WEB-INF"
+    cpath << "${basedir}/web-app/WEB-INF" << File.pathSeparator
     for (jar in jarFiles) {
         cpath << jar.file.absolutePath << File.pathSeparator
     }

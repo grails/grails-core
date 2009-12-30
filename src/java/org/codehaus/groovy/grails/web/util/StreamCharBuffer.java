@@ -15,108 +15,153 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.Writable;
+
 import java.io.EOFException;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- *
- * StreamCharBuffer is a multipurpose in-memory buffer.
+ * 
+ * StreamCharBuffer is a multipurpose in-memory buffer that can replace JDK in-memory buffers (StringBuffer, StringBuilder, StringWriter).
  *
  * <p>
  * There's a java.io.Writer interface for appending character data to the buffer and
  * a java.io.Reader interface for reading data.</p>
- *
- * There's also several other options for reading data:
+ * 
+ * <p>Each {@link #getReader()} call will create a new reader instance that keeps it own state.<br>
+ * There is a alternative method {@link #getReader(boolean)} for creating the reader. When reader is created by calling getReader(true), the reader will remove already read 
+ * characters from the buffer. In this mode only a single reader instance is supported.  
+ * </p>
+ * 
+ * <p>
+ * There's also several other options for reading data:<br>
  * {@link #readAsCharArray()} reads the buffer to a char[] array<br>
  * {@link #readAsString()} reads the buffer and wraps the char[] data as a String<br>
  * {@link #writeTo(Writer)} writes the buffer to a java.io.Writer<br>
  * {@link #toCharArray()} returns the buffer as a char[] array, caches the return value internally so that this method can be called several times.<br>
  * {@link #toString()} returns the buffer as a String, caches the return value internally<br>
- *
+ * </p>
+ * 
+ * <p>
  * By using the "connectTo" method, one can connect the buffer directly to a target java.io.Writer.
  * The internal buffer gets flushed automaticly to the target whenever the buffer gets filled up.
  * @see #connectTo(Writer)
- *
+ * </p>
+ * 
  * <p>
- * <b>This class is not thread-safe.</b> Object instances of this class are intended to be used by a single Thread. The Reader and Writer interfaces can be open simultaneous and the same Thread
- * can write and read several times.
+ * <b>This class is not thread-safe.</b> Object instances of this class are intended to be used by a single Thread. 
+ * The Reader and Writer interfaces can be open simultaneous and the same Thread can write and read several times.
  * </p>
  *
  * <p>
  * Main operation principle:<br>
- * StreamCharBuffer keeps the buffer in a LinkedList of "chunks" ({@link StreamCharBufferChunk}).
- * The main difference compared to JDK in-memory buffers is that the buffer can be held in several smaller buffers ("chunks" here).
- * Normally the buffer has to be expanded whenever it gets filled up. The old buffer's data is copied to the new one and the old one is discarded.
+ * </p>
+ * <p>
+ * StreamCharBuffer keeps the buffer in a linked link of "chunks".<br>
+ * The main difference compared to JDK in-memory buffers (StringBuffer, StringBuilder & StringWriter) is that the buffer can be held in several smaller buffers ("chunks" here).<br>
+ * In JDK in-memory buffers, the buffer has to be expanded whenever it gets filled up. The old buffer's data is copied to the new one and the old one is discarded.<br>
  * In StreamCharBuffer, there are several ways to prevent unnecessary allocation & copy operations.
- *
- * Each chunk may contain several sub-chunks ({@link StringChunk} that are java.lang.String instances.
- *
- * A StringChunk is appended to the current chunk (that's under writing) whenever a java.lang.String of a length
+ * </p>
+ * <p>
+ * There can be several different type of chunks: char arrays ({@link CharBufferChunk}), String chunks ({@link StringChunk}) and other StreamCharBuffers 
+ * as sub chunks ({@link StreamCharBufferSubChunk}). 
+ * </p>
+ * <p>
+ * Child StreamCharBuffers can be changed after adding to parent buffer. The flush() method must be called on the child buffer's Writer to notify the parent 
+ * that the child buffer's content has been changed (used for calculating total size).
+ * </p>
+ * <p>
+ * A StringChunk is appended to the linked list whenever a java.lang.String of a length
  * that exceeds the "stringChunkMinSize" value is written to the buffer.
- *
- * There's actually several layers in storing the data in the buffer:
- * 	- linked list of StreamCharBufferChunk instances
- * 		- for each chunk
- * 				- char[] buffer
- * 				- linked list of StringChunkGroup instances
- * 					- for each StringChunkGroup
- * 						 - linked list of StringChunk instances
- * 								- java.lang.String is kept in StringChunk
- *
- *
+ * </p>
+ * <p>
  * If the buffer is in "connectTo" mode, any String or char[] that's length is over writeDirectlyToConnectedMinSize gets written directly to the target.
  * The buffer content will get fully flushed to the target before writing the String or char[].
- *
+ * </p>
+ * <p>
  * There can be several targets "listening" the buffer in "connectTo" mode. The same content will be written to all targets.
- *
- *
- * Growable chunksize: By default, a newly allocated chunk's size will grow based on the total size of all written chunks.
- * The default growProcent value is 100. If the total size is currently 1024, the newly created chunk will have a internal buffer that's size is 1024.
- * Growable chunksize can be turned off by setting the growProcent to 0.
- * There's a default maximum chunksize of 1MB by default. The minimum size is the initial chunksize size.
- *
+ * <p>
+ * <p>
+ * Growable chunksize: By default, a newly allocated chunk's size will grow based on the total size of all written chunks.<br>
+ * The default growProcent value is 100. If the total size is currently 1024, the newly created chunk will have a internal buffer that's size is 1024.<br>
+ * Growable chunksize can be turned off by setting the growProcent to 0.<br>
+ * There's a default maximum chunksize of 1MB by default. The minimum size is the initial chunksize size.<br>
+ * </p>
+ * 
+ * <p>
+ * System properties to change default configuration parameters:<br>
+ * <table>
+ * 	<tr><td>System Property name</td><td>Description</td><td>Default value</td></tr>
+ * 	<tr><td>streamcharbuffer.chunksize</td><td>default chunk size - the size the first allocated buffer</td><td>512</td></tr>
+ *  <tr><td>streamcharbuffer.maxchunksize</td><td>maximum chunk size - the maximum size of the allocated buffer</td><td>1048576</td></tr>
+ *  <tr><td>streamcharbuffer.growprocent</td><td>growing buffer percentage - the newly allocated buffer is defined by total_size * (growpercent/100)</td><td>100</td></tr>
+ *  <tr><td>streamcharbuffer.subbufferchunkminsize</td><td>minimum size of child StreamCharBuffer chunk - if the size is smaller, the content is copied to the parent buffer</td><td>512</td></tr>
+ *  <tr><td>streamcharbuffer.substringchunkminsize</td><td>minimum size of String chunks - if the size is smaller, the content is copied to the buffer</td><td>512</td></tr>
+ *  <tr><td>streamcharbuffer.chunkminsize</td><td>minimum size of chunk that gets written directly to the target in connected mode.</td><td>256</td></tr>
+ * </table>
+ * 
+ * Configuration values can also be changed for each instance of StreamCharBuffer individually. Default values are defined with System Properties.
+ * 
  * </p>
  *
  *
  * @author Lari Hotari, Sagire Software Oy
  *
  */
-public class StreamCharBuffer {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
 	private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
-	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent",100);
-	private static final int STRING_CHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.stringchunkminsize", 64);
-	private static final int WRITE_DIRECT_MIN_SIZE = Integer.getInteger("streamcharbuffer.writedirectminsize", 512);
-
-	private LinkedList<StreamCharBufferChunk> chunks;
-	private StreamCharBufferChunk currentWriteChunk;
-	private StreamCharBufferChunk currentReadChunk = null;
+	private static final int DEFAULT_CHUNK_SIZE_GROW_PROCENT = Integer.getInteger("streamcharbuffer.growprocent", 100);
+	private static final int SUB_BUFFERCHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.subbufferchunkminsize", 512);
+	private static final int SUB_STRINGCHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.substringchunkminsize", 512);
+	private static final int WRITE_DIRECT_MIN_SIZE = Integer.getInteger("streamcharbuffer.writedirectminsize", 1024);
+	private static final int CHUNK_MIN_SIZE = Integer.getInteger("streamcharbuffer.chunkminsize", 256);
 
 	private final int firstChunkSize;
 	private final int growProcent;
 	private final int maxChunkSize;
-	private int stringChunkMinSize = STRING_CHUNK_MIN_SIZE;
+	private int subStringChunkMinSize = SUB_STRINGCHUNK_MIN_SIZE;
+	private int subBufferChunkMinSize = SUB_BUFFERCHUNK_MIN_SIZE;
 	private int writeDirectlyToConnectedMinSize = WRITE_DIRECT_MIN_SIZE;
+	private int chunkMinSize = CHUNK_MIN_SIZE;
 
 	private int chunkSize;
+	private int totalChunkSize;
+	
 	private final StreamCharBufferWriter writer;
-	private final StreamCharBufferReader reader;
-	private int totalCharsUnreadInList = 0;
-	private int totalChunkSize = 0;
-	private int totalCharsUnread = 0;
+	private List<ConnectedWriter> connectedWriters;
+	private Writer connectedWritersWriter;
 
-	private List<ConnectedWriter> connectedWriters = new ArrayList<ConnectedWriter>();
-	private Writer connectedWritersWriter = new MultiOutputWriter(connectedWriters);
+	boolean preferSubChunkWhenWritingToOtherBuffer=false;
+	
+	private AllocatedBuffer allocBuffer;
+	private AbstractChunk firstChunk;
+	private AbstractChunk lastChunk;
+	private int totalCharsInList;
+	private int totalCharsInDynamicChunks;
+    private StreamCharBufferKey bufferKey = new StreamCharBufferKey();
+    private Map<StreamCharBufferKey, StreamCharBufferSubChunk> dynamicChunkMap;
 
-	private String cachedToString = null;
-	private char[] cachedToCharArray = null;
+    private Set<SoftReference<StreamCharBufferKey>> parentBuffers;
+    int allocatedBufferIdSequence=0;
+    int readerCount=0;
+    boolean hasReaders=false;
 
-	public StreamCharBuffer() {
+    public StreamCharBuffer() {
 		this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
 	}
 
@@ -132,15 +177,45 @@ public class StreamCharBuffer {
 		this.firstChunkSize = chunkSize;
 		this.growProcent = growProcent;
 		this.maxChunkSize = maxChunkSize;
-		this.stringChunkMinSize = STRING_CHUNK_MIN_SIZE;
 		writer = new StreamCharBufferWriter();
-		reader = new StreamCharBufferReader();
 		reset(true);
 	}
 
+    private class StreamCharBufferKey {
+        StreamCharBuffer getBuffer() { return StreamCharBuffer.this; }
+    }
+
+	public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
+		return preferSubChunkWhenWritingToOtherBuffer;
+	}
+
+	public void setPreferSubChunkWhenWritingToOtherBuffer(
+			boolean preferSubChunkWhenWritingToOtherBuffer) {
+		this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
+	}
+	
 	public void reset() {
 		reset(true);
 	}
+	
+	/**
+	 * resets the state of this buffer (empties it)
+	 *
+	 * @param resetChunkSize
+	 */
+	public void reset(boolean resetChunkSize) {
+		firstChunk=null;
+		lastChunk=null;
+		totalCharsInList = 0;
+		totalCharsInDynamicChunks = 0;
+		if(resetChunkSize) {
+			chunkSize = firstChunkSize;
+			totalChunkSize = 0;
+		}
+		allocBuffer = new AllocatedBuffer(chunkSize);
+		dynamicChunkMap=new HashMap<StreamCharBufferKey, StreamCharBufferSubChunk>();
+		parentBuffers=null;
+	}	
 
 	/**
 	 * Connect this buffer to a target Writer.
@@ -149,32 +224,49 @@ public class StreamCharBuffer {
 	 *
 	 * @param writer
 	 */
-	public void connectTo(Writer writer) {
+	public final void connectTo(Writer writer) {
 		connectTo(writer, true);
 	}
 
-	public void connectTo(Writer writer, boolean autoFlush) {
+	public final void connectTo(Writer writer, boolean autoFlush) {
+		initConnected();
 		connectedWriters.add(new ConnectedWriter(writer, autoFlush));
+		initConnectedWritersWriter();
 	}
 
-	public void connectTo(LazyInitializingWriter writer) {
+	private void initConnectedWritersWriter() {
+		if(connectedWriters.size() > 1) {
+			connectedWritersWriter=new MultiOutputWriter(connectedWriters);
+		} else {
+			connectedWritersWriter=new SingleOutputWriter(connectedWriters.get(0));
+		}
+	}
+
+	public final void connectTo(LazyInitializingWriter writer) {
 		connectTo(writer, true);
 	}
 
-	public void connectTo(LazyInitializingWriter writer, boolean autoFlush) {
+	public final void connectTo(LazyInitializingWriter writer, boolean autoFlush) {
+		initConnected();
 		connectedWriters.add(new ConnectedWriter(writer, autoFlush));
+		initConnectedWritersWriter();
 	}
 
-	public void removeConnections() {
-		connectedWriters.clear();
+	public final void removeConnections() {
+		if(connectedWriters != null) {
+			connectedWriters.clear();
+			connectedWritersWriter = null;
+		}
+	}
+	
+	private void initConnected() {
+		if(connectedWriters==null) {
+			connectedWriters = new ArrayList<ConnectedWriter>(2);
+		}
 	}
 
-	public int filledChunkCount() {
-		return chunks.size();
-	}
-
-	public int getStringChunkMinSize() {
-		return stringChunkMinSize;
+	public int getSubStringChunkMinSize() {
+		return subStringChunkMinSize;
 	}
 
 	/**
@@ -183,8 +275,16 @@ public class StreamCharBuffer {
 	 *
 	 * @param stringChunkMinSize
 	 */
-	public void setStringChunkMinSize(int stringChunkMinSize) {
-		this.stringChunkMinSize = stringChunkMinSize;
+	public void setSubStringChunkMinSize(int stringChunkMinSize) {
+		this.subStringChunkMinSize = stringChunkMinSize;
+	}
+
+	public int getSubBufferChunkMinSize() {
+		return subBufferChunkMinSize;
+	}
+
+	public void setSubBufferChunkMinSize(int subBufferChunkMinSize) {
+		this.subBufferChunkMinSize = subBufferChunkMinSize;
 	}
 
 	public int getWriteDirectlyToConnectedMinSize() {
@@ -201,23 +301,12 @@ public class StreamCharBuffer {
 		this.writeDirectlyToConnectedMinSize = writeDirectlyToConnectedMinSize;
 	}
 
-	/**
-	 * resets the state of this buffer (empties it)
-	 *
-	 * @param resetChunkSize
-	 */
-	public void reset(boolean resetChunkSize) {
-		chunks = new LinkedList<StreamCharBufferChunk>();
-		totalCharsUnreadInList = 0;
-		totalCharsUnread = 0;
-		if(resetChunkSize) {
-			chunkSize = firstChunkSize;
-			totalChunkSize = 0;
-		}
-		currentWriteChunk = new StreamCharBufferChunk(chunkSize);
-		currentReadChunk = null;
-		cachedToString = null;
-		cachedToCharArray = null;
+	public int getChunkMinSize() {
+		return chunkMinSize;
+	}
+
+	public void setChunkMinSize(int chunkMinSize) {
+		this.chunkMinSize = chunkMinSize;
 	}
 
 	/**
@@ -231,13 +320,26 @@ public class StreamCharBuffer {
 	}
 
 	/**
-	 * Reader interface for reading/consuming data from the buffer
+	 * Creates a new java.io.Reader instance for reading/consuming data from the buffer.
+	 * Each call creates a new instance that will keep it's reading state. There can be several readers on the buffer. (single thread only supported)
 	 *
 	 * @return
 	 */
 	public Reader getReader() {
-		return reader;
+		return getReader(false);
 	}
+	
+	/**
+	 * Like getReader(), but when removeAfterReading is true, the read data will be removed from the buffer.
+	 * 
+	 * @param removeAfterReading
+	 * @return
+	 */
+	public Reader getReader(boolean removeAfterReading) {
+		readerCount++;
+		hasReaders=true;
+		return new StreamCharBufferReader(removeAfterReading);
+	}	
 
 	/**
 	 * Writes the buffer content to a target java.io.Writer
@@ -245,8 +347,9 @@ public class StreamCharBuffer {
 	 * @param target
 	 * @throws IOException
 	 */
-	public void writeTo(Writer target) throws IOException {
-		writeTo(target, true, true);
+	public Writer writeTo(Writer target) throws IOException {
+		writeTo(target, false, false);
+		return getWriter();
 	}
 
 	/**
@@ -257,9 +360,34 @@ public class StreamCharBuffer {
 	 * @param flushTarget call target.flush() before finishing
 	 * @throws IOException
 	 */
-	public void writeTo(Writer target, boolean flushAll, boolean flushTarget) throws IOException {
-		while (prepareRead(flushAll) != -1) {
-			totalCharsUnread -= currentReadChunk.writeTo(target);
+	public void writeTo(Writer target, boolean flushTarget, boolean emptyAfter) throws IOException {
+		if(target instanceof GrailsPrintWriter) {
+			target=((GrailsPrintWriter)target).getOut();
+		} 
+		if(target instanceof StreamCharBufferWriter) {
+			if(target==writer) {
+				throw new IllegalArgumentException("Cannot write buffer to itself.");				
+			}
+			((StreamCharBufferWriter)target).write(this);
+			return;
+		}
+		writeToImpl(target, flushTarget, emptyAfter);
+	}
+
+	private void writeToImpl(Writer target, boolean flushTarget,
+			boolean emptyAfter) throws IOException {
+		AbstractChunk current=firstChunk;
+		while(current != null) {
+			current.writeTo(target);
+			current = current.next;
+		}
+		if(emptyAfter) {
+			firstChunk=null;
+			lastChunk=null;
+		}
+		allocBuffer.writeTo(target);
+		if(emptyAfter) {
+			allocBuffer.reuseBuffer();
 		}
 		if(flushTarget) {
 			target.flush();
@@ -267,17 +395,18 @@ public class StreamCharBuffer {
 	}
 
 	/**
-	 * reads (and empties) the buffer to a char[]
+	 * reads the buffer to a char[]
 	 *
 	 * @return
 	 */
 	public char[] readAsCharArray() {
-		char[] buf = new char[calculateTotalCharsUnread()];
+		char[] buf = new char[size()];
 		if(buf.length > 0) {
+			StreamCharBufferReader reader=new StreamCharBufferReader(false);
 			try {
-				reader.readImpl(buf, 0, buf.length);
-			} catch (EOFException e) {
-				// ignore
+				reader.read(buf, 0, buf.length);
+			} catch (IOException e) {
+				throw new RuntimeException("Unexpected IOException", e);
 			}
 		}
 		return buf;
@@ -289,8 +418,8 @@ public class StreamCharBuffer {
 	 * @return
 	 */
 	public String readAsString() {
-		if(calculateTotalCharsUnread() > 0) {
-			char[] buf = readAsCharArray();
+		char[] buf = readAsCharArray();
+		if(buf.length > 0) {
 			return StringCharArrayAccessor.createString(buf);
 		} else {
 			return "";
@@ -308,94 +437,152 @@ public class StreamCharBuffer {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		if(cachedToString == null) {
-			cachedToString = readAsString();
-		} else if(calculateTotalCharsUnread() > 0) {
-			if(cachedToString.length() > 0) {
-				cachedToString = new StringBuilder(cachedToString).append(readAsString()).toString();
-			} else {
-				cachedToString = readAsString();
+		if(firstChunk == lastChunk && firstChunk instanceof StringChunk && allocBuffer.charsUsed()==0 && ((StringChunk)firstChunk).isSingleBuffer()) {
+			return ((StringChunk)firstChunk).str;
+		} else {
+			int initialReaderCount=readerCount;
+			String str=readAsString();
+			if(initialReaderCount==0) {
+				// if there are no readers, the result can be cached
+				reset();
+				if(str.length() > 0) {
+					addChunk(new StringChunk(str, 0, str.length()));
+				}
 			}
+			return str;
 		}
-		return cachedToString;
 	}
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof CharSequence)) return false;
+
+        CharSequence other = (CharSequence) o;
+
+        return toString().equals(other.toString());    
+    }
+
+    public String plus(String value) {
+		return toString() + value;
+	}
+
+	public String plus(Object value) {
+		return toString() + String.valueOf(value);
+	}
+	
 	/**
-	 * reads (and empties) the buffer to a char[], but caches the return value for subsequent calls.
+	 * reads the buffer to a char[]
+	 * 
+	 * caches the result if there aren't any readers
 	 *
-	 * if more content has been added between 2 calls, the returned value will be joined from the previously cached value and the data read from the buffer.
      *
 	 * @return
 	 */
 	public char[] toCharArray() {
-		if(cachedToCharArray == null || cachedToCharArray.length == 0) {
-			cachedToCharArray = readAsCharArray();
-		} else if(calculateTotalCharsUnread() > 0) {
-			char[] previousCharArray = cachedToCharArray;
-			int addedLen = calculateTotalCharsUnread();
-			cachedToCharArray = new char[previousCharArray.length + addedLen];
-			arrayCopy(previousCharArray, 0, cachedToCharArray, 0, previousCharArray.length);
-			try {
-				reader.readImpl(cachedToCharArray, previousCharArray.length, addedLen);
-			} catch (EOFException e) {
-				// ignore
+		// check if there is a cached single charbuffer
+		if(firstChunk == lastChunk && firstChunk instanceof CharBufferChunk && allocBuffer.charsUsed()==0 && ((CharBufferChunk)firstChunk).isSingleBuffer()) {
+			return ((CharBufferChunk)firstChunk).buffer;
+		} else {
+			int initialReaderCount=readerCount;
+			char[] buf=readAsCharArray();
+			if(initialReaderCount==0) {
+				// if there are no readers, the result can be cached
+				reset();
+				if(buf.length > 0) {
+					addChunk(new CharBufferChunk(-1, buf, 0, buf.length));
+				}
 			}
+			return buf;
 		}
-		return cachedToCharArray;
 	}
 
 	public int size() {
-		return calculateTotalCharsUnread();
-	}
-
-	public int charsAvailable() {
-		return totalCharsUnread;
-	}
-
-	public int calculateTotalCharsUnread() {
-		int total = totalCharsUnreadInList;
-		if (currentReadChunk != null) {
-			total += currentReadChunk.charsUnread();
+		int total = totalCharsInList;
+		if(totalCharsInDynamicChunks==-1) {
+			totalCharsInDynamicChunks=0;
+			for(StreamCharBufferSubChunk chunk : dynamicChunkMap.values()) {
+				totalCharsInDynamicChunks += chunk.size();
+			}
 		}
-		if (currentWriteChunk != currentReadChunk && currentWriteChunk != null) {
-			total += currentWriteChunk.charsUnread();
-		}
+		total += totalCharsInDynamicChunks;
+		total += allocBuffer.charsUsed();
 		return total;
 	}
 
 	protected int allocateSpace() throws IOException {
-		int spaceLeft = currentWriteChunk.spaceLeft();
+		int spaceLeft = allocBuffer.spaceLeft();
 		if (spaceLeft == 0) {
-			spaceLeft = endCurrentWriteChunk();
+			spaceLeft = appendCharBufferChunk(true);
 		}
 		return spaceLeft;
 	}
 
-	private int endCurrentWriteChunk() throws IOException {
-		int spaceLeft;
-		chunks.add(currentWriteChunk);
-		totalCharsUnreadInList += currentWriteChunk.charsUnread();
-		totalChunkSize += currentWriteChunk.chunkSize();
-		resizeChunkSizeAsProcentageOfTotalSize();
-		currentWriteChunk = new StreamCharBufferChunk(chunkSize);
-		spaceLeft = currentWriteChunk.spaceLeft();
-		flushIfConnected(false,true);
-		return spaceLeft;
-	}
-
-	private void flushCurrentWriteChunkInConnectedMode() throws IOException {
-		if(isChunkSizeResizeable()) {
-			endCurrentWriteChunk();
+	private int appendCharBufferChunk(boolean flushInConnected) throws IOException {
+		int spaceLeft = 0;
+		if(flushInConnected && isConnectedMode()) {
+			flushToConnected();
+			if(!isChunkSizeResizeable()) {
+				allocBuffer.reuseBuffer();
+				spaceLeft=allocBuffer.spaceLeft();
+			} else {
+				spaceLeft=0;
+			}
 		} else {
-			flushIfConnected(true,true);
-			currentWriteChunk.reuseBuffer();
+			if(allocBuffer.hasChunk()) {
+				addChunk(allocBuffer.createChunk());
+			}
+			spaceLeft = allocBuffer.spaceLeft();
+		}
+		if(spaceLeft==0) {
+			totalChunkSize += allocBuffer.chunkSize();
+			resizeChunkSizeAsProcentageOfTotalSize();
+			allocBuffer = new AllocatedBuffer(chunkSize);
+			spaceLeft = allocBuffer.spaceLeft();
+		}
+		return spaceLeft;
+	}
+	
+	void appendStringChunk(String str, int off, int len) throws IOException {
+		appendCharBufferChunk(false);
+		addChunk(new StringChunk(str, off, len));
+	}
+	
+	public void appendStreamCharBufferChunk(StreamCharBuffer subBuffer) throws IOException {
+		appendCharBufferChunk(false);
+		addChunk(new StreamCharBufferSubChunk(subBuffer));
+	}	
+	
+	void addChunk(AbstractChunk newChunk) {
+		if(lastChunk != null) {
+			lastChunk.next = newChunk;
+			if(hasReaders) {
+				// double link only if there are active readers since backwards iterating is only required for simultaneous writer & reader
+				newChunk.prev = lastChunk;
+			}
+		}
+		lastChunk = newChunk;
+		if(firstChunk==null) {
+			firstChunk=newChunk;
+		}
+		if(newChunk instanceof StreamCharBufferSubChunk) {
+			StreamCharBufferSubChunk bufSubChunk=(StreamCharBufferSubChunk)newChunk;
+			dynamicChunkMap.put(bufSubChunk.streamCharBuffer.bufferKey, bufSubChunk);
+		} else {
+			totalCharsInList += newChunk.size();
 		}
 	}
 
-	private void flushIfConnected(boolean flushAll, boolean flushTarget) throws IOException {
-		if(!connectedWriters.isEmpty()) {
-			writeTo(connectedWritersWriter, flushAll, flushTarget);
-		}
+	public boolean isConnectedMode() {
+		return connectedWriters != null && !connectedWriters.isEmpty();
+	}
+	
+	private void flushToConnected() throws IOException {
+		writeTo(connectedWritersWriter, true, true);
 	}
 
 	protected boolean isChunkSizeResizeable() {
@@ -414,35 +601,10 @@ public class StreamCharBuffer {
 		}
 	}
 
-	protected int prepareRead() {
-		return prepareRead(true);
-	}
-
-	protected int prepareRead(boolean readLast) {
-		int charsUnread = (currentReadChunk != null) ? currentReadChunk
-				.charsUnread() : 0;
-		if (charsUnread == 0) {
-			if (!chunks.isEmpty()) {
-				currentReadChunk = chunks.removeFirst();
-				charsUnread = currentReadChunk.charsUnread();
-				totalCharsUnreadInList -= charsUnread;
-			} else if (readLast && currentReadChunk != currentWriteChunk) {
-				currentReadChunk = currentWriteChunk;
-				charsUnread = currentReadChunk.charsUnread();
-				if(charsUnread==0) {
-					charsUnread = -1;
-				}
-			} else {
-				charsUnread = -1;
-			}
-		}
-		return charsUnread;
-	}
-
 	protected static final void arrayCopy(char[] src, int srcPos, char[] dest, int destPos, int length) {
 		if(length==1) {
 			dest[destPos]=src[srcPos];
-		} else if (length > 0) {
+		} else {
 			System.arraycopy(src, srcPos, dest, destPos, length);
 		}
 	}
@@ -454,11 +616,12 @@ public class StreamCharBuffer {
 	 * @author Lari Hotari, Sagire Software Oy
 	 */
 	final public class StreamCharBufferWriter extends Writer {
-		private boolean closed = false;
-		private boolean writerUsed = false;
-
+		boolean closed = false;
+		int writerUsedCounter = 0;
+		boolean increaseCounter = true;
+		
 		@Override
-		public void write(char[] b, int off, int len) throws IOException {
+		public final void write(final char[] b, final int off, final int len) throws IOException {
 			if (b == null) {
 				throw new NullPointerException();
 			} else if ((off < 0) || (off > b.length) || (len < 0)
@@ -467,9 +630,9 @@ public class StreamCharBuffer {
 			} else if (len == 0) {
 				return;
 			}
-			writerUsed = true;
+			markUsed();
 			if(shouldWriteDirectly(len)) {
-				flushCurrentWriteChunkInConnectedMode();
+				appendCharBufferChunk(true);
 				connectedWritersWriter.write(b, off, len);
 			} else {
 				int charsLeft = len;
@@ -477,75 +640,95 @@ public class StreamCharBuffer {
 				while (charsLeft > 0) {
 					int spaceLeft = allocateSpace();
 					int writeChars = Math.min(spaceLeft, charsLeft);
-					currentWriteChunk.write(b, currentOffset, writeChars);
+					allocBuffer.write(b, currentOffset, writeChars);
 					charsLeft -= writeChars;
 					currentOffset += writeChars;
 				}
-				totalCharsUnread += len;
 			}
 		}
 
-		private boolean shouldWriteDirectly(int len) {
-			if(connectedWriters.isEmpty()) {
+		private final boolean shouldWriteDirectly(final int len) {
+			if(!isConnectedMode()) {
 				return false;
 			}
-			return writeDirectlyToConnectedMinSize >= 0 && len > writeDirectlyToConnectedMinSize;
+			
+			if(!(writeDirectlyToConnectedMinSize >= 0 && len >= writeDirectlyToConnectedMinSize)) {
+				return false;
+			}
+			
+			return isNextChunkBigEnough(len);
 		}
 
+		private final boolean isNextChunkBigEnough(final int len) {
+			// check if allocBuffer has enough chars to flush
+			return chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 || allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft() ;
+		}
+		
 		@Override
-		public void write(String str) throws IOException {
+		public final void write(final String str) throws IOException {
 			write(str, 0, str.length());
 		}
 
 		@Override
-		public void write(String str, int off, int len) throws IOException {
+		public final void write(final String str, final int off, final int len) throws IOException {
 			if(len==0) return;
-			writerUsed = true;
+			markUsed();
 			if(shouldWriteDirectly(len)) {
-				flushCurrentWriteChunkInConnectedMode();
+				appendCharBufferChunk(true);
 				connectedWritersWriter.write(str, off, len);
-			} else if (len > stringChunkMinSize) {
-				currentWriteChunk.appendStringChunk(str, off, len);
-				totalCharsUnread += len;
+			} else if (len >= subStringChunkMinSize && isNextChunkBigEnough(len)) {
+				appendStringChunk(str, off, len);
 			} else {
 				int charsLeft = len;
 				int currentOffset = off;
 				while (charsLeft > 0) {
 					int spaceLeft = allocateSpace();
 					int writeChars = Math.min(spaceLeft, charsLeft);
-					currentWriteChunk.writeString(str, currentOffset, writeChars);
+					allocBuffer.writeString(str, currentOffset, writeChars);
 					charsLeft -= writeChars;
 					currentOffset += writeChars;
 				}
-				totalCharsUnread += len;
+			}
+		}
+		
+		public final void write(StreamCharBuffer subBuffer) throws IOException {
+			markUsed();
+			int len=subBuffer.size();
+			if(shouldWriteDirectly(len)) {
+				appendCharBufferChunk(true);
+				subBuffer.writeToImpl(connectedWritersWriter,false,false);
+			} else if(subBuffer.preferSubChunkWhenWritingToOtherBuffer || (len >= subBufferChunkMinSize && isNextChunkBigEnough(len))) {
+				appendStreamCharBufferChunk(subBuffer);
+				subBuffer.addParentBuffer(StreamCharBuffer.this);
+			} else {
+				subBuffer.writeToImpl(this,false,false);
 			}
 		}
 
 		@Override
-		public Writer append(CharSequence csq, int start, int end)
+		public final Writer append(final CharSequence csq, final int start, final int end)
 				throws IOException {
-			writerUsed = true;
+			markUsed();
 			if(csq==null) {
 				write("null");
 			} else {
-				if(csq instanceof StringBuilder || csq instanceof StringBuffer || csq instanceof String) {
+				if(csq instanceof String || csq instanceof StringBuffer || csq instanceof StringBuilder) {
 					int len = end-start;
 					int charsLeft = len;
 					int currentOffset = start;
 					while (charsLeft > 0) {
 						int spaceLeft = allocateSpace();
 						int writeChars = Math.min(spaceLeft, charsLeft);
-						if(csq instanceof StringBuilder) {
-							currentWriteChunk.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
+						if (csq instanceof String) {
+							allocBuffer.writeString((String)csq, currentOffset, writeChars);
 						} else if (csq instanceof StringBuffer) {
-							currentWriteChunk.writeStringBuffer((StringBuffer)csq, currentOffset, writeChars);
-						} else if (csq instanceof String) {
-							currentWriteChunk.writeString((String)csq, currentOffset, writeChars);
-						}
+							allocBuffer.writeStringBuffer((StringBuffer)csq, currentOffset, writeChars);
+						} else if(csq instanceof StringBuilder) {
+							allocBuffer.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
+						} 
 						charsLeft -= writeChars;
 						currentOffset += writeChars;
 					}
-					totalCharsUnread += len;
 				} else {
 					write(csq.subSequence(start, end).toString());
 				}
@@ -554,8 +737,8 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public Writer append(CharSequence csq) throws IOException {
-			writerUsed = true;
+		public final Writer append(final CharSequence csq) throws IOException {
+			markUsed();
 			if(csq==null) {
 				write("null");
 			} else {
@@ -576,25 +759,41 @@ public class StreamCharBuffer {
 		}
 
 		public boolean isUsed() {
-			return this.writerUsed;
+			return writerUsedCounter > 0;
+		}
+		
+		public final void markUsed() {
+			if(increaseCounter) {
+				writerUsedCounter++;
+				if(!hasReaders) {
+					increaseCounter=false;
+				}
+			}
+		}
+		
+		public int resetUsed() {
+			int prevUsed = writerUsedCounter;
+			writerUsedCounter=0;
+			increaseCounter=true;
+			return prevUsed;
 		}
 
 		@Override
-		public void write(int b) throws IOException {
-			writerUsed = true;
+		public void write(final int b) throws IOException {
+			markUsed();
 			allocateSpace();
-			currentWriteChunk.write((char) b);
-			totalCharsUnread++;
+			allocBuffer.write((char) b);
 		}
 
 		@Override
 		public void flush() throws IOException {
-			if(writerUsed) {
-				flushIfConnected(true,true);
+			if(isConnectedMode()) {
+				flushToConnected();
 			}
+			notifyBufferChange();
 		}
 
-		public StreamCharBuffer getBuffer() {
+		public final StreamCharBuffer getBuffer() {
 			return StreamCharBuffer.this;
 		}
 	}
@@ -606,7 +805,92 @@ public class StreamCharBuffer {
 	 */
 
 	final public class StreamCharBufferReader extends Reader {
-		boolean eofReached=false;
+		boolean eofException=false;
+		int eofReachedCounter=0;
+		ChunkReader chunkReader;
+		ChunkReader lastChunkReader;
+		boolean removeAfterReading;
+		
+		public StreamCharBufferReader(boolean removeAfterReading) {
+			this.removeAfterReading=removeAfterReading;
+		}
+		
+		private int prepareRead(int len) {
+			if(hasReaders && eofReachedCounter != 0) {
+				if(eofReachedCounter != writer.writerUsedCounter) {
+					eofReachedCounter=0;
+					eofException=false;
+					repositionChunkReader();
+				}
+			}
+			if(chunkReader==null && eofReachedCounter==0) {
+				if(firstChunk != null) {
+					chunkReader = firstChunk.getChunkReader(removeAfterReading);
+					if(removeAfterReading) {
+						firstChunk.subtractFromTotalCount();
+					}					
+				} else {
+					chunkReader = new AllocatedBufferReader(allocBuffer, removeAfterReading);
+				}
+			}
+			int available = 0;
+			if(chunkReader != null) {
+				available = chunkReader.getReadLenLimit(len);
+				while(available==0 && chunkReader != null) {
+					chunkReader = chunkReader.next();
+					if(chunkReader != null) {
+						available = chunkReader.getReadLenLimit(len);
+					} else {
+						available = 0;
+					}
+				}
+			}
+			if(chunkReader==null) {
+				if(hasReaders) {
+					eofReachedCounter=writer.writerUsedCounter;
+				} else {
+					eofReachedCounter=1;
+				}
+			} else if(hasReaders) {
+				lastChunkReader=chunkReader;
+			}
+			return available;
+		}
+
+		/* adds support for reading and writing simultaneously in the same thread */
+		private void repositionChunkReader() {
+			if(lastChunkReader instanceof AllocatedBufferReader) {
+				if(lastChunkReader.isValid()) {
+					chunkReader=lastChunkReader;
+				} else {
+					AllocatedBufferReader allocBufferReader=(AllocatedBufferReader)lastChunkReader;
+					// find out what is the CharBufferChunk that was read by the AllocatedBufferReader already
+					int currentPosition = allocBufferReader.position;
+					AbstractChunk chunk=lastChunk;
+					while(chunk != null && chunk.writerUsedCounter >= lastChunkReader.getWriterUsedCounter()) {
+						if(chunk instanceof CharBufferChunk) {
+							CharBufferChunk charBufChunk=(CharBufferChunk)chunk;
+							if(charBufChunk.allocatedBufferId==allocBufferReader.parent.id) {
+								if(currentPosition >= charBufChunk.offset && currentPosition <= charBufChunk.lastposition) {
+									CharBufferChunkReader charBufChunkReader=(CharBufferChunkReader)charBufChunk.getChunkReader(removeAfterReading);
+									int oldpointer=charBufChunkReader.pointer;
+									// skip the already chars
+									charBufChunkReader.pointer=currentPosition;
+									if(removeAfterReading) {
+										int diff=charBufChunkReader.pointer-oldpointer;
+										totalCharsInList-=diff;
+										charBufChunk.subtractFromTotalCount();
+									}
+									chunkReader=charBufChunkReader;
+									break;
+								}
+							}
+						}
+						chunk = chunk.prev;
+					}
+				}
+			}
+		}
 
 		@Override
 		public boolean ready() throws IOException {
@@ -614,11 +898,11 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public int read(char[] b, int off, int len) throws IOException {
+		public final int read(final char[] b, final int off, final int len) throws IOException {
 			return readImpl(b, off, len);
 		}
 
-		int readImpl(char[] b, int off, int len) throws EOFException {
+		final int readImpl(final char[] b, final int off, final int len) throws IOException {
 			if (b == null) {
 				throw new NullPointerException();
 			} else if ((off < 0) || (off > b.length) || (len < 0)
@@ -629,27 +913,24 @@ public class StreamCharBuffer {
 			}
 			int charsLeft = len;
 			int currentOffset = off;
-			int charsUnread = prepareRead();
-			if(charsUnread==0 && eofReached) {
+			int readChars = prepareRead(charsLeft);
+			if(eofException) {
 				throw new EOFException();
 			}
 			int totalCharsRead = 0;
-			while (charsLeft > 0 && charsUnread != -1) {
-				int readChars = Math.min(charsUnread, charsLeft);
-				currentReadChunk.read(b, currentOffset, readChars);
+			while (charsLeft > 0 && readChars > 0) {
+				chunkReader.read(b, currentOffset, readChars);
 				charsLeft -= readChars;
 				currentOffset += readChars;
 				totalCharsRead += readChars;
 				if(charsLeft > 0) {
-					charsUnread = prepareRead();
+					readChars = prepareRead(charsLeft);
 				}
 			}
 			if (totalCharsRead > 0) {
-				totalCharsUnread -= totalCharsRead;
-				eofReached=false;
 				return totalCharsRead;
 			} else {
-				eofReached=true;
+				eofException=true;
 				return -1;
 			}
 		}
@@ -659,11 +940,132 @@ public class StreamCharBuffer {
 
 		}
 
-		public StreamCharBuffer getBuffer() {
+		public final StreamCharBuffer getBuffer() {
 			return StreamCharBuffer.this;
+		}
+
+		public int getReadLenLimit(int askedAmount) {
+			return prepareRead(askedAmount);
 		}
 	}
 
+	
+	abstract class AbstractChunk {
+		AbstractChunk next;
+		AbstractChunk prev;
+		int writerUsedCounter;
+		
+		public AbstractChunk() {
+			if(hasReaders) {
+				writerUsedCounter=writer.writerUsedCounter;
+			} else {
+				writerUsedCounter=1;
+			}
+		}
+		
+		public abstract void writeTo(Writer target) throws IOException;
+		public abstract ChunkReader getChunkReader(boolean removeAfterReading);
+		public abstract int size();
+		public int getWriterUsedCounter() {
+			return writerUsedCounter;
+		}
+		
+		public void subtractFromTotalCount() {
+			totalCharsInList -= size();
+		}
+	}
+	
+	// keep read state in this class
+	static abstract class ChunkReader {
+		public abstract int read(char[] ch, int off, int len) throws IOException;
+		public abstract int getReadLenLimit(int askedAmount);
+		public abstract ChunkReader next();
+		public abstract int getWriterUsedCounter();
+		public abstract boolean isValid();
+	}
+	
+	
+	final class AllocatedBuffer {
+		private int id=allocatedBufferIdSequence++;
+		private int size;
+		private char[] buffer;
+		private int used = 0;
+		private int chunkStart = 0;
+		
+		public AllocatedBuffer(int size) {
+			this.size = size;
+			this.buffer = new char[size];
+		}
+		
+		public int charsUsed() {
+			return used-chunkStart;
+		}
+
+		public void writeTo(Writer target) throws IOException {
+			if(used-chunkStart > 0) {
+				target.write(buffer, chunkStart, used-chunkStart);
+			}
+		}
+
+		public void reuseBuffer() {
+			used=0;
+			chunkStart=0;
+		}	
+		
+		public int chunkSize() {
+			return buffer.length;
+		}
+
+		public int spaceLeft() {
+			return size - used;
+		}		
+		
+		public boolean write(final char ch) {
+			if (used < size) {
+				buffer[used++] = ch;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		public final void write(final char[] ch, final int off, final int len) {
+			arrayCopy(ch, off, buffer, used, len);
+			used += len;
+		}
+
+		public final void writeString(final String str, final int off, final int len) {
+			str.getChars(off, off+len, buffer, used);
+			used += len;
+		}
+
+		public final void writeStringBuilder(final StringBuilder stringBuilder, final int off, final int len) {
+			stringBuilder.getChars(off, off+len, buffer, used);
+			used += len;
+		}
+
+		public final void writeStringBuffer(final StringBuffer stringBuffer, final int off, final int len) {
+			stringBuffer.getChars(off, off+len, buffer, used);
+			used += len;
+		}
+		
+		/**
+		 * creates a new chunk from the content written to the buffer (used before adding StringChunk or StreamCharBufferChunk)
+		 * 
+		 * @return
+		 */
+		public CharBufferChunk createChunk() {
+			CharBufferChunk chunk=new CharBufferChunk(id, buffer, chunkStart, used-chunkStart);
+			chunkStart=used;
+			return chunk;
+		}
+		
+		public boolean hasChunk() {
+			return (used > chunkStart);
+		}
+
+	}
+	
 	/**
 	 * The data in the buffer is stored in a linked list of StreamCharBufferChunks.
 	 *
@@ -676,241 +1078,108 @@ public class StreamCharBuffer {
 	 * @author Lari Hotari
 	 *
 	 */
-	static final class StreamCharBufferChunk {
-		private int size;
-		private char[] buffer;
-		private int pointer = 0;
-		private int used = 0;
-		private LinkedList<StringChunkGroup> StringChunkGroups;
-		private int unreadCharsInStringChunkGroups=0;
-		private StringChunkGroup readingStringChunkGroup;
-		private StringChunkGroup writingStringChunkGroup;
+	final class CharBufferChunk extends AbstractChunk {
+		int allocatedBufferId;
+		char[] buffer;
+		int offset;
+		int lastposition;
+		int length;
 
-		public StreamCharBufferChunk(int size) {
-			this.size = size;
-			this.buffer = new char[size];
+		public CharBufferChunk(int allocatedBufferId, char[] buffer, int offset, int len) {
+			super();
+			this.allocatedBufferId=allocatedBufferId;
+			this.buffer=buffer;
+			this.offset=offset;
+			this.lastposition=offset+len;
+			this.length=len;
 		}
 
-		public void reuseBuffer() {
-			pointer=0;
-			used=0;
-			StringChunkGroups=null;
-			unreadCharsInStringChunkGroups=0;
-			readingStringChunkGroup=null;
-			writingStringChunkGroup=null;
+		public void writeTo(final Writer target) throws IOException {
+			target.write(buffer, offset, length);
 		}
 
-		public boolean write(char ch) {
-			if (used < size) {
-				buffer[used++] = ch;
-				return true;
-			} else {
-				return false;
-			}
+		@Override
+		public ChunkReader getChunkReader(boolean removeAfterReading) {
+			return new CharBufferChunkReader(this, removeAfterReading);
 		}
 
-		public int chunkSize() {
-			return buffer.length;
+		@Override
+		public int size() {
+			return length;
 		}
 
-		public void write(char[] ch, int off, int len) {
-			arrayCopy(ch, off, buffer, used, len);
-			used += len;
+		public boolean isSingleBuffer() {
+			return offset==0 && length==buffer.length;
 		}
-
-		public void appendStringChunk(String str, int off, int len) throws IOException {
-			if(writingStringChunkGroup == null || used!=writingStringChunkGroup.getOwnerIndex()) {
-				writingStringChunkGroup = new StringChunkGroup(used);
-				if(StringChunkGroups==null) {
-					StringChunkGroups=new LinkedList<StringChunkGroup>();
-				}
-				StringChunkGroups.add(writingStringChunkGroup);
-			}
-			unreadCharsInStringChunkGroups+=writingStringChunkGroup.appendString(str, off, len);
+	}
+	
+	abstract class AbstractChunkReader extends ChunkReader {
+		private AbstractChunk parentChunk;
+		private boolean removeAfterReading;
+		
+		public AbstractChunkReader(AbstractChunk parentChunk, boolean removeAfterReading) {
+			this.parentChunk=parentChunk;
+			this.removeAfterReading=removeAfterReading;
 		}
-
-		private boolean prepareChildArrayChunkReading() {
-			if(StringChunkGroups==null) {
-				return false;
-			}
-			if(readingStringChunkGroup != null && readingStringChunkGroup.hasUnreadChars()) {
-				return true;
-			}
-			if(StringChunkGroups.isEmpty()) {
-				return false;
-			}
-			if(StringChunkGroups.peek().getOwnerIndex()!=pointer) {
-				return false;
-			}
-			readingStringChunkGroup=StringChunkGroups.removeFirst();
-			unreadCharsInStringChunkGroups-=readingStringChunkGroup.getUnreadChars();
+		
+		public boolean isValid() {
 			return true;
 		}
-
-		public void writeString(String str, int off, int len) {
-			str.getChars(off, off+len, buffer, used);
-			used += len;
-		}
-
-		public void writeStringBuilder(StringBuilder stringBuilder, int off, int len) {
-			stringBuilder.getChars(off, off+len, buffer, used);
-			used += len;
-		}
-
-		public void writeStringBuffer(StringBuffer stringBuffer, int off, int len) {
-			stringBuffer.getChars(off, off+len, buffer, used);
-			used += len;
-		}
-
-		public void read(char[] ch, int off, int len) {
-			int readLen = len;
-			int readOff = off;
-			while(readLen > 0) {
-				if(prepareChildArrayChunkReading()) {
-					int readCharsLen = readingStringChunkGroup.read(ch, readOff, readLen);
-					readLen -= readCharsLen;
-					readOff += readCharsLen;
-					if(readingStringChunkGroup.getUnreadChars()==0) {
-						readingStringChunkGroup=null;
-					}
+		
+		public ChunkReader next() {
+			if(removeAfterReading) {
+				if(firstChunk==this.parentChunk) {
+					firstChunk=null;
 				}
-				if(readLen > 0) {
-					int nextCharArrPointerPos=-1;
-					if (StringChunkGroups != null && !StringChunkGroups.isEmpty()) {
-						nextCharArrPointerPos=StringChunkGroups.peek().getOwnerIndex();
-					}
-					int actualReadLen=readLen;
-					if(nextCharArrPointerPos != -1 && nextCharArrPointerPos < pointer + readLen) {
-						actualReadLen = nextCharArrPointerPos - pointer;
-					}
-					arrayCopy(buffer, pointer, ch, readOff, actualReadLen);
-					readLen -= actualReadLen;
-					readOff += actualReadLen;
-					pointer += actualReadLen;
+				if(lastChunk==this.parentChunk) {
+					lastChunk=null;
 				}
 			}
-		}
-
-		public int writeTo(Writer target) throws IOException {
-			int writtenCount=0;
-			while(charsUnread() > 0) {
-				if(prepareChildArrayChunkReading()) {
-					writtenCount+=readingStringChunkGroup.writeTo(target);
-					if(readingStringChunkGroup.getUnreadChars()==0) {
-						readingStringChunkGroup=null;
+			AbstractChunk nextChunk=parentChunk.next;
+			if(nextChunk != null) {
+				if(removeAfterReading) {
+					if(firstChunk==null) {
+						firstChunk=nextChunk;
 					}
+					if(lastChunk==null) {
+						lastChunk=nextChunk;
+					}
+					nextChunk.prev=null;
+					nextChunk.subtractFromTotalCount();
 				}
-				int nextCharArrPointerPos=-1;
-				if (StringChunkGroups != null && !StringChunkGroups.isEmpty()) {
-					nextCharArrPointerPos=StringChunkGroups.peek().getOwnerIndex();
-				}
-				if (pointer < used) {
-					int limit = (nextCharArrPointerPos != -1)?nextCharArrPointerPos:used;
-					int len = limit - pointer;
-					target.write(buffer, pointer, len);
-					writtenCount+=len;
-					pointer = limit;
-				}
-			}
-			return writtenCount;
-		}
-
-		public int charsUnread() {
-			return used - pointer + unreadCharsInStringChunkGroups + ((readingStringChunkGroup!=null)?readingStringChunkGroup.getUnreadChars():0);
-		}
-
-		public int spaceLeft() {
-			return size - used;
-		}
-	}
-
-	/**
-	 *
-	 * StringChunkGroup is related to a certain position in the StreamCharBufferChunk.
-	 * At writing time the current index of StreamCharBufferChunk is the "ownerIndex".
-	 * It's like a bookmark that knows were 1 or more Strings get inserted when the buffer gets read.
-	 *
-	 * The contains state information for the StringChunkGroup level (like unreadBuffers, unreadChars, current StringChunk un
-     *
-	 * @author Lari Hotari
-	 *
-	 */
-	static final class StringChunkGroup {
-		private int ownerIndex;
-		private LinkedList<StringChunk> unreadStringChunks=new LinkedList<StringChunk>();
-		private StringChunk currentStringChunkUnderRead;
-		private int unreadChars;
-
-		public StringChunkGroup(int ownerIndex) {
-			this.ownerIndex=ownerIndex;
-		}
-
-		public int getOwnerIndex() {
-			return ownerIndex;
-		}
-
-		public boolean hasUnreadChars() {
-			return (unreadChars > 0 || (currentStringChunkUnderRead != null && currentStringChunkUnderRead.getUnreadChars() > 0));
-		}
-
-		public int getUnreadChars() {
-			return unreadChars + ((currentStringChunkUnderRead != null)?currentStringChunkUnderRead.getUnreadChars():0);
-		}
-
-		public int appendString(String str, int off, int len) {
-			if(str.length() > 0) {
-				StringChunk child=new StringChunk(str,off,len);
-				unreadStringChunks.add(child);
-				unreadChars += child.getUnreadChars();
-				return child.getUnreadChars();
+				return nextChunk.getChunkReader(removeAfterReading);
 			} else {
-				return 0;
+				return new AllocatedBufferReader(allocBuffer, removeAfterReading);
 			}
 		}
+		
+		public int getWriterUsedCounter() {
+			return parentChunk.getWriterUsedCounter();
+		}		
+	}
+	
 
-		public boolean prepareReading() {
-			if(currentStringChunkUnderRead != null && currentStringChunkUnderRead.getUnreadChars() > 0) {
-				return true;
-			}
-			if(!unreadStringChunks.isEmpty()) {
-				currentStringChunkUnderRead=unreadStringChunks.removeFirst();
-				unreadChars-=currentStringChunkUnderRead.getUnreadChars();
-				return true;
-			}
-			currentStringChunkUnderRead=null;
-			return false;
+	final class CharBufferChunkReader extends AbstractChunkReader {
+		CharBufferChunk parent;
+		int pointer;
+		
+		public CharBufferChunkReader(CharBufferChunk parent, boolean removeAfterReading) {
+			super(parent, removeAfterReading);
+			this.parent=parent;
+			this.pointer=parent.offset;
 		}
 
-		private void afterReading() {
-			if(currentStringChunkUnderRead !=null && currentStringChunkUnderRead.getUnreadChars()==0) {
-				currentStringChunkUnderRead=null;
-			}
+		public int read(final char[] ch, final int off, final int len) throws IOException {
+			arrayCopy(parent.buffer, pointer, ch, off, len);
+			pointer += len;
+			return len;
 		}
 
-		public int read(char[] ch, int off, int len) {
-			int totalChars = 0;
-			int readLen = Math.min(getUnreadChars(), len);
-			int readOff = off;
-			while(readLen > 0 && prepareReading()) {
-				int readCharsLen = currentStringChunkUnderRead.read(ch, readOff, readLen);
-				readLen -= readCharsLen;
-				readOff += readCharsLen;
-				totalChars += readCharsLen;
-			}
-			afterReading();
-			return totalChars;
-		}
-
-		public int writeTo(Writer target) throws IOException {
-			int writtenCount=0;
-			while(prepareReading()) {
-				writtenCount+=currentStringChunkUnderRead.writeTo(target);
-			}
-			afterReading();
-			return writtenCount;
+		public int getReadLenLimit(int askedAmount) {
+			return Math.min(parent.lastposition-pointer, askedAmount);
 		}
 	}
-
+	
 	/**
 	 * StringChunk is a wrapper for java.lang.String.
 	 *
@@ -921,38 +1190,179 @@ public class StreamCharBuffer {
 	 * @author Lari Hotari
 	 *
 	 */
-	static final class StringChunk {
-		private String str;
-		private int readOffset;
-		private int unreadChars;
+	final class StringChunk extends AbstractChunk {
+		String str;
+		int offset;
+		int lastposition;
+		int length;
 
-		public StringChunk(String str, int off, int len) {
+		public StringChunk(String str, int offset, int length) {
+			super();
 			this.str=str;
-			this.readOffset=off;
-			this.unreadChars=len;
+			this.offset=offset;
+			this.length=length;
+			this.lastposition=offset+length;
 		}
 
-		public int getUnreadChars() {
-			return unreadChars;
+		@Override
+		public ChunkReader getChunkReader(boolean removeAfterReading) {
+			return new StringChunkReader(this, removeAfterReading);
 		}
 
-		public int read(char[] ch, int off, int len) {
-			int readCharsLen = Math.min(unreadChars, len);
-			str.getChars(readOffset, (readOffset + readCharsLen), ch, off);
-			readOffset += readCharsLen;
-			unreadChars -= readCharsLen;
-			return readCharsLen;
+		@Override
+		public void writeTo(Writer target) throws IOException {
+			target.write(str, offset, length);
 		}
 
-		public int writeTo(Writer target) throws IOException {
-			int len=unreadChars;
-			target.write(str, readOffset, len);
-			readOffset+=len;
-			unreadChars-=len;
+		@Override
+		public int size() {
+			return length;
+		}
+		
+		public boolean isSingleBuffer() {
+			return offset==0 && length==str.length();
+		}		
+	}
+	
+	final class StringChunkReader extends AbstractChunkReader {
+		StringChunk parent;
+		int position;
+		
+		public StringChunkReader(StringChunk parent, boolean removeAfterReading) {
+			super(parent, removeAfterReading);
+			this.parent=parent;
+			this.position=parent.offset;
+		}
+
+		public int read(final char[] ch, final int off, final int len) {
+			parent.str.getChars(position, (position + len), ch, off);
+			position += len;
 			return len;
+		}
+
+		public int getReadLenLimit(int askedAmount) {
+			return Math.min(parent.lastposition - position, askedAmount);
 		}
 	}
 
+	final class StreamCharBufferSubChunk extends AbstractChunk {
+		StreamCharBuffer streamCharBuffer;
+		int cachedSize;
+
+		public StreamCharBufferSubChunk(StreamCharBuffer streamCharBuffer) {
+			super();
+			this.streamCharBuffer = streamCharBuffer;
+			this.cachedSize = streamCharBuffer.size();
+			if(totalCharsInDynamicChunks != -1) {
+				totalCharsInDynamicChunks += cachedSize;
+			}
+		}
+
+		@Override
+		public void writeTo(Writer target) throws IOException {
+			streamCharBuffer.writeTo(target);
+		}
+
+		@Override
+		public ChunkReader getChunkReader(boolean removeAfterReading) {
+			return new StreamCharBufferSubChunkReader(this, removeAfterReading);
+		}
+
+		@Override
+		public int size() {
+			if(cachedSize==-1) {
+				cachedSize=streamCharBuffer.size();
+			}
+			return cachedSize;
+		}
+		
+		public boolean resetSize() {
+			if(cachedSize!=-1) {
+				cachedSize=-1;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		public void subtractFromTotalCount() {
+			if(totalCharsInDynamicChunks != -1) {
+				totalCharsInDynamicChunks -= size();
+			}
+			for(Iterator<Map.Entry<StreamCharBufferKey, StreamCharBufferSubChunk>> it=dynamicChunkMap.entrySet().iterator();it.hasNext();) {
+				Map.Entry<StreamCharBufferKey, StreamCharBufferSubChunk> entry=it.next();
+				if(entry.getValue()==this) {
+					it.remove();
+				}
+			}
+		}
+		
+	}
+	
+	final class StreamCharBufferSubChunkReader extends AbstractChunkReader {
+		StreamCharBufferSubChunk parent;
+		private StreamCharBufferReader reader;
+		
+		public StreamCharBufferSubChunkReader(StreamCharBufferSubChunk parent, boolean removeAfterReading) {
+			super(parent, removeAfterReading);
+			this.parent=parent;
+			this.reader=(StreamCharBufferReader)parent.streamCharBuffer.getReader();
+		}
+
+		public int getReadLenLimit(int askedAmount) {
+			return reader.getReadLenLimit(askedAmount);
+		}
+
+		public int read(char[] ch, int off, int len) throws IOException {
+			return reader.read(ch, off, len);
+		}
+	}
+	
+	final class AllocatedBufferReader extends ChunkReader {
+		AllocatedBuffer parent;
+		int position;
+		int writerUsedCounter;
+		boolean removeAfterReading;
+		
+		public AllocatedBufferReader(AllocatedBuffer parent, boolean removeAfterReading) {
+			this.parent=parent;
+			this.position=parent.chunkStart;
+			if(hasReaders) {
+				this.writerUsedCounter=writer.writerUsedCounter;
+			} else {
+				this.writerUsedCounter=1;
+			}
+			this.removeAfterReading=removeAfterReading;
+		}
+
+		public int getReadLenLimit(int askedAmount) {
+			return Math.min(parent.used - position, askedAmount);
+		}
+
+		public int read(char[] ch, int off, int len) throws IOException {
+			arrayCopy(parent.buffer, position, ch, off, len);
+			position += len;
+			if(removeAfterReading) {
+				parent.chunkStart=position;
+			}
+			return len;
+		}
+		
+		public ChunkReader next() {
+			return null;
+		}
+		
+		public int getWriterUsedCounter() {
+			return writerUsedCounter;
+		}
+
+		@Override
+		public boolean isValid() {
+			return (allocBuffer==parent && (lastChunk==null || lastChunk.writerUsedCounter < writerUsedCounter));
+		}
+	}
+	
+	
 	/**
 	 * Interface for a Writer that gets initialized if it is used
 	 * Can be used for passing in to "connectTo" method of StreamCharBuffer
@@ -973,14 +1383,14 @@ public class StreamCharBuffer {
 	static final class ConnectedWriter {
 		Writer writer;
 		LazyInitializingWriter lazyInitializingWriter;
-		boolean autoFlush;
+		final boolean autoFlush;
 
-		ConnectedWriter(Writer writer, boolean autoFlush) {
+		ConnectedWriter(final Writer writer, final boolean autoFlush) {
 			this.writer=writer;
 			this.autoFlush=autoFlush;
 		}
 
-		ConnectedWriter(LazyInitializingWriter lazyInitializingWriter, boolean autoFlush) {
+		ConnectedWriter(final LazyInitializingWriter lazyInitializingWriter, final boolean autoFlush) {
 			this.lazyInitializingWriter=lazyInitializingWriter;
 			this.autoFlush=autoFlush;
 		}
@@ -1002,15 +1412,50 @@ public class StreamCharBuffer {
 			return autoFlush;
 		}
 	}
+	
+	static final class SingleOutputWriter extends Writer {
+		private ConnectedWriter writer;
+		
+		public SingleOutputWriter(ConnectedWriter writer) {
+			this.writer=writer;
+		}
+		
+		@Override
+		public void close() throws IOException {
+
+		}
+
+		@Override
+		public void flush() throws IOException {
+			writer.flush();
+		}
+
+		@Override
+		public void write(final char[] cbuf, final int off, final int len) throws IOException {
+			writer.getWriter().write(cbuf, off, len);
+		}
+
+		@Override
+		public Writer append(final CharSequence csq, final int start, final int end)
+				throws IOException {
+			writer.getWriter().append(csq, start, end);
+			return this;
+		}
+
+		@Override
+		public void write(String str, int off, int len) throws IOException {
+			StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+		}
+	}
 
 	/**
 	 * delegates to several writers, used in "connectTo" mode.
 	 *
 	 */
 	static final class MultiOutputWriter extends Writer {
-		List<ConnectedWriter> writers;
+		final List<ConnectedWriter> writers;
 
-		public MultiOutputWriter(List<ConnectedWriter> writers) {
+		public MultiOutputWriter(final List<ConnectedWriter> writers) {
 			this.writers = writers;
 		}
 
@@ -1027,19 +1472,96 @@ public class StreamCharBuffer {
 		}
 
 		@Override
-		public void write(char[] cbuf, int off, int len) throws IOException {
+		public void write(final char[] cbuf, final int off, final int len) throws IOException {
 			for(ConnectedWriter writer : writers) {
 				writer.getWriter().write(cbuf, off, len);
 			}
 		}
 
 		@Override
-		public Writer append(CharSequence csq, int start, int end)
+		public Writer append(final CharSequence csq, final int start, final int end)
 				throws IOException {
 			for(ConnectedWriter writer : writers) {
 				writer.getWriter().append(csq, start, end);
 			}
 			return this;
 		}
+
+		@Override
+		public void write(String str, int off, int len) throws IOException {
+			for(ConnectedWriter writer : writers) {
+				StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+			}
+		}
+	}
+
+	/* Compatibility methods so that StreamCharBuffer will behave more like java.lang.String in groovy code */
+	
+	public char charAt(int index) {
+		return toString().charAt(index);
+	}
+
+	public int length() {
+		return size();
+	}
+
+	public CharSequence subSequence(int start, int end) {
+		return toString().subSequence(start, end);
+	}
+	
+	
+	/* methods for notifying child (sub) StreamCharBuffer changes to the parent StreamCharBuffer */ 
+
+	void addParentBuffer(StreamCharBuffer parent) {
+		if(parentBuffers==null) {
+			parentBuffers=new HashSet<SoftReference<StreamCharBufferKey>>();
+		}
+		parentBuffers.add(new SoftReference<StreamCharBufferKey>(parent.bufferKey));
+	}
+	
+	boolean bufferChanged(StreamCharBuffer buffer) {
+		StreamCharBufferSubChunk subChunk=dynamicChunkMap.get(buffer.bufferKey);
+		if(subChunk==null) {
+			// buffer isn't a subchunk in this buffer any more
+			return false;
+		}
+		// reset cached size;
+		if(subChunk.resetSize()) {
+			totalCharsInDynamicChunks=-1;
+			// notify parents too
+			notifyBufferChange();
+		}
+		return true;
+	}
+
+	void notifyBufferChange() {
+		if(parentBuffers != null) {
+			for(Iterator<SoftReference<StreamCharBufferKey>> i=parentBuffers.iterator();i.hasNext();){
+				SoftReference<StreamCharBufferKey> ref=i.next();
+                final StreamCharBuffer.StreamCharBufferKey parentKey = ref.get();
+				boolean removeIt=true;
+                if(parentKey != null) {
+                    StreamCharBuffer parent= parentKey.getBuffer();
+                    removeIt=!parent.bufferChanged(this);
+                }
+				if(removeIt) {
+					i.remove();
+				}
+			}
+		}
+	}
+
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		String str=in.readUTF();
+		reset();
+		if(str.length() > 0) {
+			addChunk(new StringChunk(str, 0, str.length()));
+		}		
+	}
+
+	public void writeExternal(ObjectOutput out) throws IOException {
+		String str=toString();
+		out.writeUTF(str);
 	}
 }

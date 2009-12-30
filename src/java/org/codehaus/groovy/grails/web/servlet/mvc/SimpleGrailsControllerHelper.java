@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
@@ -36,6 +37,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -45,8 +47,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * <p>This is a helper class that does the main job of dealing with Grails web requests
@@ -122,13 +124,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
      *
      * @param model The model as a map
      */
-    private void removeProxiesFromModelObjects(Map model) {
-
-        for (Iterator keyIter = model.keySet().iterator(); keyIter.hasNext();) {
-            Object current = keyIter.next();
-            Object modelObject = model.get(current);
-            if(modelObject instanceof Proxy) {
-                model.put( current, ((Proxy)modelObject).getAdaptee() );
+    private void removeProxiesFromModelObjects(Map<Object, Object> model) {
+        for (Map.Entry entry : model.entrySet()) {
+            if(entry.getValue() instanceof Proxy) {
+            	entry.setValue(((Proxy)entry.getValue()).getAdaptee());
             }
         }
     }
@@ -240,7 +239,17 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
             
             // Step 7: process the action
-            Object returnValue = handleAction( controller,action,request,response,params );
+            Object returnValue = null;
+            try {
+                returnValue = handleAction( controller,action,request,response,params );
+            }
+            catch (Throwable t) {
+                GrailsUtil.deepSanitize(t);
+                String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());
+                pluginName = pluginName != null ? "in plugin ["+pluginName+"]" : "";  
+                throw new ControllerExecutionException("Executing action ["+actionName+"] of controller ["+controller.getClass().getName()+"] "+pluginName+" caused exception: " + t.getMessage(), t);
+            }
+
 
             // Step 8: determine return value type and handle accordingly
             initChainModel(controller);
@@ -403,12 +412,15 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             }
         } else if (returnValue instanceof Map) {
             // remove any Proxy wrappers and set the adaptee as the value
-            Map returnModel = (Map)returnValue;
-            removeProxiesFromModelObjects(returnModel);
+            Map finalModel = new LinkedHashMap();
             if(!this.chainModel.isEmpty()) {
-                returnModel.putAll(this.chainModel);
+                finalModel.putAll(this.chainModel);
             }
-            return new ModelAndView(viewName, returnModel);
+            Map returnModel = (Map)returnValue;
+            finalModel.putAll(returnModel);
+
+            removeProxiesFromModelObjects(finalModel);
+            return new ModelAndView(viewName, finalModel);
 
         } else if (returnValue instanceof ModelAndView) {
             ModelAndView modelAndView = (ModelAndView)returnValue;

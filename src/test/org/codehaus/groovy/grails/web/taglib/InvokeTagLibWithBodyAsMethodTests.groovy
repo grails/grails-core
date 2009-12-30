@@ -41,6 +41,10 @@ class TestTagLib {
 		out << "one" << test(foo:"bar", "foo") << "four"
 	}
 
+    def testWithResultOfBody= { attrs, body ->
+		out << "one" << test(foo:"bar", body()) << "four"
+	}
+
     def testWithClosureBody = { attrs, body ->
         out << "one" << test(foo:"bar") {
             out << "big" << "body" 
@@ -55,6 +59,14 @@ class TestTagLib {
 ''')
     }
 
+
+    void testWithResultOfBody() {
+        def template = '<g:testWithResultOfBody>foo</g:testWithResultOfBody>'
+
+
+        assertOutputEquals 'onetwofoothreefour', template
+
+    }
     void testInvokeWithBodyClosure() {
         def template = '<g:testInvokeWithBodyClosure />'
 

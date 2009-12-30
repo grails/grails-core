@@ -109,14 +109,7 @@ class GrailsCompiler extends Groovyc {
 
     private def configureResourceLoader() {
         def basedir = System.getProperty("base.dir") ?: "."
-        Resource[] resources = GrailsPluginUtils.getArtefactResources(basedir) { pattern ->
-            try {
-                return resolver.getResources(pattern)
-            }
-            catch(Throwable e) {
-                 return []  as Resource[]
-            }
-        }
+        Resource[] resources = GrailsPluginUtils.getArtefactResources(basedir)
         def resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
     }

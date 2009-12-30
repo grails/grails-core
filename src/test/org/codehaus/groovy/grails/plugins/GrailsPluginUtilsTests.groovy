@@ -10,13 +10,20 @@ import org.apache.commons.io.FileUtils
 import grails.util.BuildSettingsHolder
 import grails.util.BuildSettings
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 
 class GrailsPluginUtilsTests extends GroovyTestCase {
     BuildSettings settings
 
     void setUp() {
+		GrailsPluginUtils.clearCaches()
+        System.setProperty("disable.grails.plugin.transform","true")
         settings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = settings
+        def resourceDir = "test/resources/grails-plugin-utils"
+        settings.projectPluginsDir = new File("$resourceDir/plugins")
+        settings.globalPluginsDir = new File("$resourceDir/global-plugins")
+
 
 //        new File("tmp/plugins/searchable-0.5").mkdirs()
 //        new File("tmp/plugins/jsecurity-0.3").mkdirs()
@@ -27,7 +34,7 @@ class GrailsPluginUtilsTests extends GroovyTestCase {
 //        new File("tmp/grails-dummy").mkdirs()
         
 
-        def resourceDir = "test/resources/grails-plugin-utils"
+
         settings.config = new ConfigSlurper().parse("""\
 grails {
     plugin {
@@ -38,16 +45,34 @@ grails {
     }
 }
 """)
-        settings.projectPluginsDir = new File("$resourceDir/plugins")
-        settings.globalPluginsDir = new File("$resourceDir/global-plugins")
     }
 
     void tearDown() {
+        System.setProperty("disable.grails.plugin.transform","false")
         BuildSettingsHolder.settings = null
 
 //        new File("tmp").deleteDir()
     }
 
+    void testOsgiFormatVersionNumbers() {
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.1-SNAPSHOT")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.2", "1.2.0.BUILD-SNAPSHOT > *")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.2 > *")
+        assertFalse "version with SNAPSHOT should not match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.3 > *")
+    }
+
+    void testGetPluginName() {
+        assertEquals "foo", GrailsPluginUtils.getPluginName(TestPluginAnnotation)
+        assertNull GrailsPluginUtils.getPluginName(null)
+        assertNull GrailsPluginUtils.getPluginName(String)
+    }
+
+    void testGetPluginVersion() {
+        assertEquals "1.0", GrailsPluginUtils.getPluginVersion(TestPluginAnnotation)
+        assertNull GrailsPluginUtils.getPluginVersion(null)
+        assertNull GrailsPluginUtils.getPluginName(String)
+
+    }
     void testVersionValidity() {
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1-SNAPSHOT","1.0 > *")
         assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0 > *")
@@ -76,6 +101,18 @@ grails {
     }
 
 
+    void testIsAtLeastVersion() {
+        assertFalse "should not support 1.1", GrailsPluginUtils.supportsAtLeastVersion("1.1 > *", "1.2")
+        assertFalse "should not support 1.1", GrailsPluginUtils.supportsAtLeastVersion("1.1", "1.2")
+        assertFalse "should not support anything", GrailsPluginUtils.supportsAtLeastVersion("*", "1.2")
+        assertFalse "should not support anything", GrailsPluginUtils.supportsAtLeastVersion("* > 1.2", "1.2")
+
+        assertTrue "should support 1.2 and above", GrailsPluginUtils.supportsAtLeastVersion("1.2 > *", "1.2")
+        assertTrue "should support 1.2 and above", GrailsPluginUtils.supportsAtLeastVersion("1.2", "1.2")
+
+
+    }
+
     void testGetUpperVersion() {
         assertEquals "*", GrailsPluginUtils.getUpperVersion("1.0 > * ")
         assertEquals "*", GrailsPluginUtils.getUpperVersion("1.0 >*")
@@ -85,24 +122,15 @@ grails {
     }
 
     void testGetPluginDirForName() {
-        def searchableDir = new File("tmp/searchable-0.5-SNAPSHOT")
-        def jsecurityDir = new File("tmp/jsecurity-0.2.1")
-        searchableDir.mkdirs()
-        jsecurityDir.mkdirs()
+        assertNotNull GrailsPluginUtils.getPluginDirForName("jsecurity")
+        assertNotNull GrailsPluginUtils.getPluginDirForName("jsecurity-0.3")
+        assertNotNull GrailsPluginUtils.getPluginDirForName("logging")
+        assertNotNull GrailsPluginUtils.getPluginDirForName("logging-0.1")
 
-        try {
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "jsecurity")
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "jsecurity-0.2.1")
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "searchable")
-            assertNotNull GrailsPluginUtils.getPluginDirForName("tmp", "searchable-0.5-SNAPSHOT")
-
-            assertNull GrailsPluginUtils.getPluginDirForName("tmp", "jsecurity-0.3")
-            assertNull GrailsPluginUtils.getPluginDirForName("tmp", "remoting")
-            assertNull GrailsPluginUtils.getPluginDirForName("tmp", "remoting-0.3")
-        }
-        finally {
-            FileUtils.deleteDirectory(new File("tmp"))
-        }
+        assertNull GrailsPluginUtils.getPluginDirForName("jsecurity-0.2.1")
+        assertNull GrailsPluginUtils.getPluginDirForName("logging-0.1.1")
+        assertNull GrailsPluginUtils.getPluginDirForName("remoting")
+        assertNull GrailsPluginUtils.getPluginDirForName("remoting-0.3")
     }
 
     void testGetPluginDirectories() {
@@ -132,4 +160,9 @@ grails {
         assertNotNull scripts.find { it.filename == "DoSomething.groovy" }
         assertNotNull scripts.find { it.filename == "RunDebug.groovy" }
     }
+}
+
+@GrailsPlugin(name="foo", version="1.0")
+class TestPluginAnnotation {
+
 }

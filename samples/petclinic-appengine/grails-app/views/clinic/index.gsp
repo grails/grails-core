@@ -10,8 +10,8 @@
 		<h2><g:message code="welcome"></g:message></h2>
 
 		<ul>
-		  <li><g:link controller="owner" action="find">Find owner</g:link></a></li>
-		  <li><g:link action="vets">Display all veterinarians</g:link></a></li>
+		  <li><g:link controller="owner" action="find">Find owner</g:link></li>
+		  <li><g:link action="vets">Display all veterinarians</g:link></li>
 		  <li><a href="${createLinkTo(dir:'html', file:'petclinic.html')}">Tutorial</a></li>
 		</ul>		
 	</body>

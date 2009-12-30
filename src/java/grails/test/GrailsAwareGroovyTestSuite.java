@@ -17,6 +17,7 @@ package grails.test;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import groovy.util.GroovyTestSuite;
+import grails.util.PluginBuildSettings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.core.io.Resource;
 
 /**
@@ -54,6 +54,7 @@ import org.springframework.core.io.Resource;
 public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 	private GrailsAwareClassLoader gcl;
 	private BuildSettings grailsSettings;
+	private PluginBuildSettings pluginSettings;
 	protected boolean registerContextClassLoader = true;
 
 	public GrailsAwareGroovyTestSuite() {
@@ -91,7 +92,7 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 	}
 
 	private Resource[] resolveGrailsResources() {
-		Resource[] baseResources = GrailsPluginUtils.getArtefactResources(grailsSettings.getBaseDir().getPath());
+		Resource[] baseResources = pluginSettings.getArtefactResources();
 		List<Resource> grailsResources = new ArrayList<Resource>(Arrays.asList(baseResources));
 		customizeGrailsResources(grailsResources);
 		return grailsResources.toArray(new Resource[grailsResources.size()]);
@@ -106,6 +107,7 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 		final File grailsHome = findGrailsHome();
 		System.setProperty(BuildSettings.APP_BASE_DIR, basedir.getPath());
 		grailsSettings = new BuildSettings(grailsHome, basedir);
+                pluginSettings = new PluginBuildSettings(grailsSettings);
 		customizeBuildSettings(grailsSettings);
 		BuildSettingsHolder.setSettings(grailsSettings);
 	}

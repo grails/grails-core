@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
-import groovy.lang.GroovyClassLoader;
 import groovy.util.ConfigObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -164,9 +163,9 @@ public interface GrailsApplication extends ApplicationContextAware {
     /**
      * <p>Returns the class loader instance for the Grails application</p>
      *
-     * @return The GroovyClassLoader instance
+     * @return The ClassLoader instance
      */
-    GroovyClassLoader getClassLoader();
+    ClassLoader getClassLoader();
 
 
 	/**
@@ -331,6 +330,13 @@ public interface GrailsApplication extends ApplicationContextAware {
     void registerArtefactHandler(ArtefactHandler handler);
 
     /**
+     * <p>Test whether an artefact handler exists for a given type</p>
+     * @param type The type of the handler
+     * @return True if it does
+     */
+    boolean hasArtefactHandler(String type);
+
+    /**
      * <p>Obtain a list of all the artefact handlers</p>
      * @return The list, possible empty but not null, of all currently registered handlers
      */
@@ -381,4 +387,16 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param artefact An overridable artefact
      */
     void addOverridableArtefact(Class artefact);
+
+    /**
+     * Fired to inform the application when the Config.groovy file changes
+     */
+    void configChanged();
+
+    /**
+     * Returns the ArtefactHandler for the given type
+     * @param type The artefact handler type
+     * @return The artefact handler
+     */
+    ArtefactHandler getArtefactHandler(String type);
 }

@@ -16,8 +16,8 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.GString;
 import groovy.lang.MissingMethodException;
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
@@ -98,13 +98,13 @@ public class FindAllPersistentMethod
 		super(sessionFactory, classLoader, Pattern.compile("^findAll$"));
 	}
 
-	protected Object doInvokeInternal(final Class clazz, String methodName, final Object[] arguments) {
+	protected Object doInvokeInternal(final Class clazz, String methodName, Closure additionalCriteria, final Object[] arguments) {
 		if (arguments.length == 0)
 			return getHibernateTemplate().loadAll(clazz);
 
 
 
-        final Object arg = arguments[0] instanceof GString ? arguments[0].toString() : arguments[0];
+        final Object arg = arguments[0] instanceof CharSequence ? arguments[0].toString() : arguments[0];
 
 		// if the arg is an instance of the class find by example
 		if (arg instanceof String) {
@@ -133,7 +133,7 @@ public class FindAllPersistentMethod
 					}
                     if (queryArgs != null) {
                         for (int i = 0; i < queryArgs.length; i++) {
-							if (queryArgs[i] instanceof GString) {
+							if (queryArgs[i] instanceof CharSequence) {
 								q.setParameter(i, queryArgs[i].toString());
 							} else {
 								q.setParameter(i, queryArgs[i]);
@@ -153,7 +153,7 @@ public class FindAllPersistentMethod
                             if(value == null) {
                                q.setParameter(stringKey, null); 
                             }
-							else if (value instanceof GString) {
+							else if (value instanceof CharSequence) {
 								q.setParameter(stringKey, value.toString());
 							} else if (List.class.isAssignableFrom(value.getClass())) {
 								q.setParameterList(stringKey, (List) value);

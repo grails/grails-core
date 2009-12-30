@@ -88,9 +88,11 @@ $Date: 2008-04-22 05:04:01 -0500 (Tue, 22 Apr 2008) $
         <attribute name="version"/>
         <attribute name="prefix"/>
         <sequential>
+            <checksum file="${pom.target.dir}/@{prefix}.pom" algorithm="sha1" todir="${targetDistDirectory}"/>
             <artifact:install file="${targetDistDirectory}/@{prefix}-@{version}.jar">
                 <pom refid="@{prefix}.pom"/>
-                <!--
+                <attach file="${targetDistDirectory}/@{prefix}.pom.sha1" type="pom.sha1"/>
+                  <!--
                 <attach file="${targetDistDirectory}/@{prefix}-@{version}-sources.jar" classifier="sources"/>
                 <attach file="${targetDistDirectory}/@{prefix}-@{version}-javadoc.jar" classifier="javadoc"/>
                 -->
@@ -98,4 +100,21 @@ $Date: 2008-04-22 05:04:01 -0500 (Tue, 22 Apr 2008) $
         </sequential>
     </macrodef>
 
+    <macrodef name="mavenInstallRepoJar">
+        <attribute name="version"/>
+        <attribute name="prefix"/>
+        <sequential>
+            <checksum file="${pom.target.dir}/@{prefix}.pom" algorithm="sha1" todir="${targetDistDirectory}"/>
+            <checksum file="${targetDistDirectory}/@{prefix}-@{version}.jar" algorithm="sha1"/>
+            <artifact:install file="${targetDistDirectory}/@{prefix}-@{version}.jar">
+                <pom refid="@{prefix}.pom"/>
+                <attach file="${targetDistDirectory}/@{prefix}-@{version}.jar.sha1" type="jar.sha1"/>
+                <attach file="${targetDistDirectory}/@{prefix}.pom.sha1" type="pom.sha1"/>
+                <!--
+                <attach file="${targetDistDirectory}/@{prefix}-@{version}-sources.jar" classifier="sources"/>
+                <attach file="${targetDistDirectory}/@{prefix}-@{version}-javadoc.jar" classifier="javadoc"/>
+                -->
+            </artifact:install>
+        </sequential>
+    </macrodef>
 </project>

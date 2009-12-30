@@ -18,6 +18,7 @@ import org.springframework.validation.Errors;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 
  /**
@@ -49,6 +50,8 @@ class JavascriptTagLib  {
 	                                     rico: PrototypeProvider.class
                                   	 ]
 
+  	GrailsPluginManager pluginManager
+  	
 	/**
 	 * Includes a javascript src file, library or inline script
 	 * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:
@@ -67,22 +70,22 @@ class JavascriptTagLib  {
 	 **/
 	def javascript = { attrs, body ->
 		setUpRequestAttributes();
-        def requestPluginContext = request[CONTROLLER]?.pluginContextPath
 		if(attrs.src) {
             javascriptInclude(attrs)
 		}
 		else if(attrs.library) {
 
 			if(LIBRARY_MAPPINGS.containsKey(attrs.library)) {
-				if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-					LIBRARY_MAPPINGS[attrs.library].each {
-						if(!request[INCLUDED_JS].contains(it)) {
-							request[INCLUDED_JS] << it
-							def newattrs = [:] + attrs
-							newattrs.src = it+'.js'
-							javascriptInclude(newattrs)
-					    }
-					}
+
+                LIBRARY_MAPPINGS[attrs.library].each {
+                    if(!request[INCLUDED_JS].contains(it)) {
+                        request[INCLUDED_JS] << it
+                        def newattrs = [:] + attrs
+                        newattrs.src = it+'.js'
+                        javascriptInclude(newattrs)
+                    }
+                }
+                if(!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
 					request[INCLUDED_LIBRARIES] << attrs.library
 				}
 			}
@@ -104,28 +107,41 @@ class JavascriptTagLib  {
 	}
 
 	private javascriptInclude(attrs) {
-    	def requestPluginContext = request[CONTROLLER]?.pluginContextPath
+    	def requestPluginContext
+        if(attrs.plugin) {
+            requestPluginContext = pluginManager.getPluginPath(attrs.remove('plugin')) ?: ''
+        }
+        else {
+            if(attrs.contextPath != null) {
+                requestPluginContext = attrs.remove('contextPath').toString()
+            }
+            else {
+                requestPluginContext = pageScope.pluginContextPath ?: ''
+            }
+        }
+        
         def writer = out
 		writer << '<script type="text/javascript" src="'
 		if (!attrs.base) {
             def baseUri = grailsAttributes.getApplicationUri(request)
             writer << baseUri << (baseUri.endsWith('/') ? '' : '/')
 			if (requestPluginContext) {
-			  out << (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext)
-			  out << "/"
+			  writer << (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext)
+			  writer << "/"
 			}
-			out << 'js/'
+            writer << 'js/'
 		} else {
-			out << attrs.base
+			writer << attrs.base
 		}
-		out << attrs.src
- 		out << '"'
+
+		writer << attrs.src
+		writer << '"'
 		def otherAttrs = [:] + attrs
 		otherAttrs.remove('base')
 		otherAttrs.remove('src')
 		otherAttrs.remove('library')
-		otherAttrs.each {k, v -> out << " $k=\"${v.encodeAsHTML()}\"" }
-		out.println '></script>'
+		otherAttrs.each {k, v -> writer << " $k=\"${v.encodeAsHTML()}\"" }
+		writer.println '></script>'
 	}
 
     /**
@@ -404,10 +420,10 @@ class PrototypeProvider implements JavascriptProvider {
         }
 
         if(attrs.url) {
-			url = taglib.createLink(attrs.url)
+			url = taglib.createLink(attrs.url)?.toString()
 		}
 		else {
-			url = taglib.createLink(attrs)
+			url = taglib.createLink(attrs)?.toString()
 		}
 
         if(!attrs.params) attrs.params = [:]

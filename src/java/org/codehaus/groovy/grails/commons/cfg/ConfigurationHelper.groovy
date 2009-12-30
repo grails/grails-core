@@ -17,6 +17,8 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import grails.util.Metadata;
+
 import org.springframework.core.io.ResourceLoader
 import org.apache.commons.logging.*
 import grails.util.GrailsUtil
@@ -51,8 +53,8 @@ class ConfigurationHelper {
         binding.put(CONFIG_BINDING_GRAILS_HOME, System.getProperty("grails.home"));
 
         if (application) {
-            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get("app.name"))
-            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get("app.version"))
+            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME))
+            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION))
         };
 
 

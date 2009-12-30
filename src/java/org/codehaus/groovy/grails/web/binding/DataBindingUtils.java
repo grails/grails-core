@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.web.binding;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import groovy.lang.GString;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
@@ -234,22 +233,22 @@ public class DataBindingUtils {
         return binder;
     }
 
-    private static Map convertPotentialGStrings(Map args) {
-		Map newArgs = new java.util.HashMap();
-        for (Object key : args.keySet()) {
-            Object value = args.get(key);
-            if (key instanceof GString) {
-                key = key.toString();
-            }
-            if (value instanceof GString) {
-                value = value.toString();
-            }
-            newArgs.put(key, value);
+    private static Map convertPotentialGStrings(Map<Object, Object> args) {
+		Map newArgs = new java.util.HashMap(args.size());
+    	for (Map.Entry<Object, Object> entry : args.entrySet()) {
+    		newArgs.put(unwrapGString(entry.getKey()), unwrapGString(entry.getValue()));
         }
 		return newArgs;
 	}
 
-    private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
+    private static Object unwrapGString(Object value) {
+		if(value instanceof CharSequence) {
+			return value.toString();
+		}
+		return value;
+	}
+
+	private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
         updateAllowed( dataBinder, allowed);
         updateDisallowed( dataBinder, disallowed);
     }

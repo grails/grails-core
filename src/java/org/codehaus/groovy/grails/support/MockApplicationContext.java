@@ -25,12 +25,16 @@ import java.util.*;
 import java.lang.annotation.Annotation;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
-
 	Date startupDate = new Date();
 	Map beans = new HashMap();
 	List resources = new ArrayList();
     List ignoredClassLocations = new ArrayList();
     PathMatcher pathMatcher = new AntPathMatcher();
+    ServletContext servletContext = new MockServletContext();
+    
+    public MockApplicationContext() {
+    	
+    }
 
 	public void registerMockBean(String name, Object instance) {
 		beans.put(name,instance);
@@ -185,6 +189,14 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return (T) beans.get(name);
     }
 
+    public <T> T getBean(Class<T> tClass) throws BeansException {
+        final Map<String, T> map = getBeansOfType(tClass);
+        if(map.isEmpty()) {
+            throw new NoSuchBeanDefinitionException(tClass, "No bean found for type: "  + tClass.getName());
+        }
+        return map.values().iterator().next();
+    }
+
 
     public Object getBean(String name, Object[] args) throws BeansException {
         return getBean(name);
@@ -298,9 +310,13 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 	}
 
     public ServletContext getServletContext() {
-        return new MockServletContext();
+        return servletContext;
     }
 
+    public void setServletContext(ServletContext servletContext) {
+    	this.servletContext = servletContext;
+    }
+    
     public class MockResource extends AbstractResource {
 
         private String contents = "";
@@ -325,7 +341,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
 
         public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(contents.getBytes());
+            return new ByteArrayInputStream(contents.getBytes("UTF-8"));
         }
 
     }

@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import org.springframework.webflow.execution.FlowExecution;
 import org.springframework.webflow.execution.repository.FlowExecutionRepository;
 import org.springframework.webflow.definition.FlowDefinition
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * Changes the default FlowUrlHandler to take into account that Grails request run as part of a forward
@@ -41,20 +42,51 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
     ApplicationContext applicationContext
 
     public String getFlowId(HttpServletRequest request) {
-	return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) + "/" + request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
+	    return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) + "/" + request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
     }
 
     public String createFlowExecutionUrl(String flowId, String flowExecutionKey, HttpServletRequest request) {
         UrlMappingsHolder holder = applicationContext.getBean(UrlMappingsHolder.BEAN_ID)
         def controllerName = request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
-        Map params = [execution:flowExecutionKey]
+        Map params = GrailsWebRequest.lookup(request).params
+        def newParams = [execution:flowExecutionKey]
+        for(entry in params) {
+            def key = entry.key
+            if(key instanceof String) {
+                if(key.startsWith("_event") || key == 'execution') continue
+
+                newParams[key] = entry.value
+            }                
+            else {
+                newParams[key] = entry.value
+            }
+        }
+
 	
 
-        UrlCreator creator =holder.getReverseMapping(controllerName, flowId, params)
+        UrlCreator creator =holder.getReverseMapping(controllerName, flowId, newParams)
 
-	String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
+	    String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
 
-        return creator.createURL(controllerName, actionName, params, 'utf-8')
+        String url = creator.createURL(controllerName, actionName, newParams, 'utf-8')
+        return getValidFlowURL(request, url, flowExecutionKey)
+    }
+
+    private getValidFlowURL(HttpServletRequest request, String url, String flowExecutionKey=null) {
+        if ("GET" != request.method) {
+            url = trimParams(url)
+            return flowExecutionKey ? "$url?execution=$flowExecutionKey" : url
+        }
+        else {
+            return url
+        }
+    }
+
+    String trimParams(String url) {
+        if (url.contains('?')) {
+            url = url[0..url.indexOf('?') - 1]
+        }
+        return url
     }
 
     public String createFlowDefinitionUrl(String flowId, AttributeMap input, HttpServletRequest request) {
@@ -63,12 +95,22 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
 
         UrlMappingsHolder holder = applicationContext.getBean(UrlMappingsHolder.BEAN_ID)
         def controllerName = request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
-        Map params = input?.asMap() ?: [:]
-        UrlCreator creator =holder.getReverseMapping(controllerName, flowId, params)
+        Map params = GrailsWebRequest.lookup(request).params
+        def newParams = [:]
+        newParams.putAll(params)
+        newParams.remove('execution')
+        def inputParams = input?.asMap()
+        if(inputParams) {
+        	newParams.putAll(inputParams)
+        }
+        
+        
+        UrlCreator creator =holder.getReverseMapping(controllerName, flowId, newParams)
 
-	String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
+	    String actionName = flowId.substring(flowId.lastIndexOf('/')+1);
 
-        return creator.createURL(controllerName, actionName, params, 'utf-8')
+        String url = creator.createURL(controllerName, actionName, newParams, 'utf-8')
+        return getValidFlowURL(request, url)
     }
 
 }

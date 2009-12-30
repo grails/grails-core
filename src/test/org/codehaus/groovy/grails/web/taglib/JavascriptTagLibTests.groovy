@@ -1,16 +1,19 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import grails.util.GrailsUtil;
+
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptProvider
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.springframework.web.util.WebUtils;
+import org.springframework.web.util.WebUtils
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 
 
 public class JavascriptTagLibTests extends AbstractGrailsTagTests {
-    private static final String EOL = System.getProperty("line.separator")
+    private static final String EOL = new String([(char)13,(char)10] as char[])
 
     public void onSetUp() {
         gcl.parseClass('''
@@ -39,11 +42,20 @@ class TestUrlMappings {
         webRequest.controllerName = "foo"
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
-        String newLine = System.getProperty("line.separator")
-        assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>' + newLine + '<p><a href="/bar/list" onclick="<remote>return false;" action="list" controller="bar"></a></p><a href="/foo/list" onclick="<remote>return false;" action="list" controller="foo"></a>', template)
+        String newLine = EOL
+        assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" controller="bar" action="list"></a></p><a href="/foo/list" onclick="<remote>return false;" controller="foo" action="list"></a>', template)
 
     }
 
+    void testJavascriptIncludeWithPluginAttribute() {
+        def template = '<g:javascript src="foo.js" plugin="controllers" />'
+
+        def grailsVersion = GrailsUtil.getGrailsVersion()
+
+        assertOutputContains "<script type=\"text/javascript\" src=\"/plugins/controllers-$grailsVersion/js/foo.js\"></script>", template
+    	
+    }
+    
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
 
@@ -51,20 +63,27 @@ class TestUrlMappings {
     }
 
     void testJavascriptIncludeWithPlugin() {
-        def controllerClass = ga.getControllerClass("TestController").clazz
         def template = '<g:javascript src="foo.js" />'
 
-        controllerClass.metaClass.getPluginContextPath = {-> "/plugin/one"}
-        request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
-        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
+        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
+    }
+
+    void testJavascriptIncludeWithContextPathSpecified() {
+        def template = '<g:javascript src="foo.js" />'
+
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
+        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
+
+        template = '<g:javascript src="foo.js" contextPath="/foo" />'
+        assertOutputContains '<script type="text/javascript" src="/foo/js/foo.js"></script>', template
+
     }
 
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
-        def controllerClass = ga.getControllerClass("TestController").clazz
         def template = '<g:javascript src="foo.js" />'
 
-        controllerClass.metaClass.getPluginContextPath = {-> "plugin/one"}
-        request.setAttribute(JavascriptTagLib.CONTROLLER, controllerClass.newInstance())
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugin/one"))
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
@@ -210,7 +229,7 @@ class TestUrlMappings {
             request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
 
             def attrs = [controller: 'test', action: 'changeTitle', update: 'titleDiv', name: 'title', value: 'testValue']
-            tag.call(attrs) {"body"}
+            def retval = tag.call(attrs) {"body"}
             assertEquals("<input type=\"text\" name=\"title\" value=\"testValue\" onkeyup=\"new Ajax.Updater('titleDiv','/test/changeTitle',{asynchronous:true,evalScripts:true,parameters:'value='+this.value});\" />", sw.toString())
         }
 
@@ -230,7 +249,7 @@ class TestUrlMappings {
             setupPluginController(tag)
             def attrs = [src: 'lib.js']
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -242,7 +261,7 @@ class TestUrlMappings {
             setRequestContext('/otherapp/')
             def attrs = [src: 'lib.js']
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/plugins/myplugin/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -253,7 +272,7 @@ class TestUrlMappings {
             setupPluginController(tag)
             def attrs = [library: 'lib']
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -264,7 +283,7 @@ class TestUrlMappings {
             def attrs = [src: 'lib.js']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -275,7 +294,7 @@ class TestUrlMappings {
             def attrs = [src: 'lib.js']
             setRequestContext('/otherapp/')
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -287,7 +306,7 @@ class TestUrlMappings {
             setRequestContext()
             request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null);
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -298,7 +317,7 @@ class TestUrlMappings {
             def attrs = [library: 'lib']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -309,7 +328,7 @@ class TestUrlMappings {
             def attrs = [library: 'lib']
             setRequestContext('/otherapp/')
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -319,7 +338,7 @@ class TestUrlMappings {
         withTag("javascript", pw) {tag ->
             setRequestContext()
             tag.call([:]) {"do.this();"}
-            assertEquals("<script type=\"text/javascript\">" + System.getProperty("line.separator") + "do.this();" + System.getProperty("line.separator") + "</script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\">" + EOL + "do.this();" + EOL + "</script>" + EOL, sw.toString())
         }
     }
 
@@ -331,7 +350,7 @@ class TestUrlMappings {
             def attrs = [library: 'lib', base: 'http://testserver/static/']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/lib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -343,7 +362,7 @@ class TestUrlMappings {
             def attrs = [src: 'mylib.js', base: 'http://testserver/static/']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/mylib.js\"></script>" + System.getProperty("line.separator"), sw.toString())
+            assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/mylib.js\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -356,10 +375,8 @@ class TestUrlMappings {
     }
 
     def setupPluginController(tag) {
-        GroovyObject tagLibrary = (GroovyObject) tag.getOwner()
-        def request = tagLibrary.getProperty("request")
         setRequestContext()
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, new Expando(pluginContextPath: "plugins/myplugin"));
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugins/myplugin"))
     }
 
     public void testEscapeJavascript() throws Exception {

@@ -33,6 +33,15 @@ public class PluginTagLib {
     GrailsPluginManager pluginManager
 
     /**
+     * Gets the path to a particular plugin
+     *
+     * eg. <plugin:path name="myPlugin" />
+     */    
+    def path = { attrs, body  ->
+    	out << pluginManager.getPluginPath(attrs.name)
+    }
+
+    /**
      * Checks whether a particular plugin exists and executes the body if it does
      *
      * eg. <plugin:isAvailable name="hibernate">print me</plugin:isAvailable>

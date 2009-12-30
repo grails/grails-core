@@ -32,7 +32,7 @@ import org.hibernate.SessionFactory;
  */
 abstract class AbstractPersistentConstraint extends AbstractConstraint implements PersistentConstraint {
 
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;

@@ -21,6 +21,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.Mappings;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -64,13 +65,28 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
       * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#setGrailsApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
       */
     public void setGrailsApplication(GrailsApplication application) {
-        application.registerArtefactHandler(new AnnotationDomainClassArtefactHandler());
         this.grailsApplication = application;
         if(this.grailsApplication != null) {
 
             GrailsClass[] existingDomainClasses = this.grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
-            for(int i = 0; i < existingDomainClasses.length;i++) {
-                addDomainClass((GrailsDomainClass)existingDomainClasses[i]);
+            for (GrailsClass existingDomainClass : existingDomainClasses) {
+                addDomainClass((GrailsDomainClass) existingDomainClass);
+            }
+
+            ArtefactHandler handler = this.grailsApplication.getArtefactHandler(DomainClassArtefactHandler.TYPE);
+            if(handler instanceof AnnotationDomainClassArtefactHandler) {
+                Set<String> jpaDomainNames = ((AnnotationDomainClassArtefactHandler)handler).getJpaClassNames();
+                if(jpaDomainNames!=null) {
+                    final ClassLoader loader = grailsApplication.getClassLoader();
+                    for (String jpaDomainName : jpaDomainNames) {
+                        try {
+                            addAnnotatedClass(loader.loadClass(jpaDomainName));
+                        }
+                        catch (ClassNotFoundException e) {
+                            // impossible condition
+                        }
+                    }
+                }
             }
         }
     }
@@ -91,6 +107,10 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
         }             
 
         SessionFactory sessionFactory =  super.buildSessionFactory();
+
+        if(grailsApplication!=null)
+            GrailsHibernateUtil.configureHibernateDomainClasses(sessionFactory, grailsApplication);
+
         return sessionFactory;
     }
 
@@ -99,24 +119,24 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
      *  domain classes
      */
     protected void secondPassCompile() throws MappingException {
-        if (configLocked) {
-            return;
-        }
-        if(LOG.isDebugEnabled()) {
-        	LOG.debug("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
-		}
-
-        // do Grails class configuration
-        for (GrailsDomainClass domainClass : this.domainClasses) {
-            GrailsDomainBinder.evaluateMapping(domainClass);
-        }
-
-        // do Grails class configuration
-        for (GrailsDomainClass domainClass : this.domainClasses) {          
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+        if (!configLocked) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("[GrailsAnnotationConfiguration] [" + this.domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
             }
-            GrailsDomainBinder.bindClass(domainClass, super.createMappings());
+
+            // do Grails class configuration
+            DefaultGrailsDomainConfiguration.configureDomainBinder(grailsApplication,domainClasses);
+
+            // do Grails class configuration
+            for (GrailsDomainClass domainClass : this.domainClasses) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+                }
+                final Mappings mappings = super.createMappings();
+                Mapping m = GrailsDomainBinder.getMapping(domainClass);
+                mappings.setAutoImport(m== null || m.getAutoImport());
+                GrailsDomainBinder.bindClass(domainClass, mappings);
+            }
         }
 
         // call super

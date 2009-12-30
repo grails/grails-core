@@ -19,14 +19,12 @@ import org.codehaus.groovy.grails.support.CommandLineResourceLoader
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.core.io.FileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.support.CommandLineResourceLoader
+import org.springframework.mock.jndi.SimpleNamingContextBuilder
 
 
 /**
@@ -46,15 +44,12 @@ target(loadApp:"Loads the Grails application object") {
 		def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
 		beanDefinitions = builder.beans {
 			resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
-				resources = GrailsPluginUtils.getArtefactResources(basedir, resolveResources)
+				resources = pluginSettings.artefactResources
 			}
 			grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
 				grailsResourceHolder = resourceHolder
 			}
 			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
-			pluginMetaManager(DefaultPluginMetaManager) {
-                grailsApplication = ref('grailsApplication')
-            }
 		}
 	}
 
@@ -82,8 +77,16 @@ target(loadApp:"Loads the Grails application object") {
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
     appCtx.resourceLoader = new  CommandLineResourceLoader()
 	profile("Performing runtime Spring configuration") {
-	    def config = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
-        appCtx = config.configure(servletContext)
+	    def configurer = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
+        def jndiEntries = config?.grails?.naming?.entries
+        if(jndiEntries instanceof Map) {            
+            def builder = new SimpleNamingContextBuilder()
+            jndiEntries.each { key, val ->
+                builder.bind("java:comp/env/$key", val)
+            }
+            builder.activate()
+        }
+        appCtx = configurer.configure(servletContext)
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx );
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 	}
@@ -112,7 +115,7 @@ target(monitorApp:"Monitors an application for changes using the PluginManager a
 
     long lastModified = classesDir.lastModified()
     while(keepMonitoring) {
-        sleep(3500)
+        sleep(10000)
         try {
             pluginManager.checkForChanges()
 

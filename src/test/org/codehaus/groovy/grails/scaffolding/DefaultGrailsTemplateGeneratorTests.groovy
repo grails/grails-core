@@ -4,8 +4,6 @@ import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDyna
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-
 
 /**
  * @author Graeme Rocher
@@ -62,8 +60,8 @@ class ScaffoldingTest {
 
 
         println "sw: ${sw.toString()}"
-        assertTrue "Should have rendered a datePicker for regularDate",sw.toString().contains('g:datePicker name="regularDate" value="${scaffoldingTestInstance?.regularDate}" precision="minute" ></g:datePicker>')
-        assertTrue "Should have rendered a datePicker for sqlDate",sw.toString().contains('g:datePicker name="sqlDate" value="${scaffoldingTestInstance?.sqlDate}" precision="day" ></g:datePicker>')
+        assertTrue "Should have rendered a datePicker for regularDate",sw.toString().contains('g:datePicker name="regularDate" precision="day" value="${scaffoldingTestInstance?.regularDate}"')
+        assertTrue "Should have rendered a datePicker for sqlDate",sw.toString().contains('datePicker name="sqlDate" precision="day" value="${scaffoldingTestInstance?.sqlDate}"')
     }
 
     void testGenerateNumberSelect() {
@@ -81,6 +79,6 @@ class ScaffoldingTest {
         templateGenerator.generateView domainClass, "create", sw
 
 
-        assertTrue "Should have rendered a select box for the number editor",sw.toString().contains('g:select id="status" name="status" from="${scaffoldingTest.constraints.status.inList}" value="${scaffoldingTest.status}" ></g:select>')
+        assertTrue "Should have rendered a select box for the number editor",sw.toString().contains('g:select name="status" from="${scaffoldingTest.constraints.status.inList}" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
     }
 }

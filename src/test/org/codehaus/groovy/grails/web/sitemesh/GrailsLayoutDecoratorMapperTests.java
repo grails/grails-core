@@ -9,6 +9,8 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.plugins.PluginMetaManager;
@@ -23,26 +25,22 @@ import javax.servlet.ServletContext;
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
 
-    protected void setUp() throws Exception {
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
-
+    private GrailsWebRequest buildMockRequest() throws Exception {
         MockApplicationContext appCtx = new MockApplicationContext();
-        appCtx.registerMockResource("/WEB-INF/grails-app/views/layouts/test.gsp");
         appCtx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
-        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
-		webRequest.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
-    }/*
+        appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService());
+        appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+        appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
+        return GrailsWebUtil.bindMockWebRequest(appCtx);
+    }
+    
+    /*
 	 * Test method for 'org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper.getDecorator(HttpServletRequest, Page)'
 	 */
 	public void testGetDecoratorHttpServletRequestPage() throws Exception {
-
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
-
-        MockApplicationContext appCtx = new MockApplicationContext();
-        appCtx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+        GrailsWebRequest webRequest = buildMockRequest();
+        MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
-        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
-		webRequest.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);        
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		ServletContext context = webRequest.getServletContext();
@@ -62,14 +60,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 	}
 	
 	public void testDecoratedByControllerConvention() throws Exception {
-
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
-
-        MockApplicationContext appCtx = new MockApplicationContext();
-        appCtx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+        GrailsWebRequest webRequest = buildMockRequest();
+        MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
-        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
-		webRequest.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
         
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		ServletContext context = webRequest.getServletContext();
@@ -97,15 +90,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 	}
 
 	public void testDecoratedByActionConvention() throws Exception {
-
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
-
-        MockApplicationContext appCtx = new MockApplicationContext();
-        appCtx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+        GrailsWebRequest webRequest = buildMockRequest();
+        MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test2/testAction.gsp", "<html><body><g:layoutBody /></body></html>");
-        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
-
-		webRequest.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 		
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		ServletContext context = webRequest.getServletContext();
@@ -132,15 +119,10 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 	}
 
     public void testDecoratedByLayoutPropertyInController() throws Exception {
-
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest();
-
-        MockApplicationContext appCtx = new MockApplicationContext();
-        appCtx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+        GrailsWebRequest webRequest = buildMockRequest();
+        MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/mylayout.gsp", "<html><body><g:layoutBody /></body></html>");
-        webRequest.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
-		webRequest.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
 		ServletContext context = webRequest.getServletContext();

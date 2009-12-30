@@ -16,9 +16,11 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
@@ -47,13 +49,25 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         super(METHOD_PATTERN,sessionFactory, classLoader, application);
     }
 
+    public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
+        super(METHOD_PATTERN,sessionFactory, classLoader, application, domainClass);
+    }
+
 	protected Object performSave(final Object target, final boolean flush) {
         HibernateTemplate ht = getHibernateTemplate();
         return ht.execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 session.saveOrUpdate(target);
-                if(flush)
-                    getHibernateTemplate().flush();
+                if(flush) {
+                    try {
+                        getHibernateTemplate().flush();
+                    }
+                    catch (DataAccessException e) {
+                        // session should not be flushed again after a data acccess exception!
+                        getHibernateTemplate().setFlushMode(HibernateTemplate.FLUSH_NEVER);
+                        throw e;
+                    }
+                }
                 return target;
             }
         });
@@ -64,8 +78,17 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
         return ht.execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 session.save(target);
-                if(shouldFlush)
-                    getHibernateTemplate().flush();
+                if(shouldFlush) {
+
+                    try {
+                        getHibernateTemplate().flush();
+                    }
+                    catch (DataAccessException e) {
+                        // session should not be flushed again after a data acccess exception!
+                        getHibernateTemplate().setFlushMode(HibernateTemplate.FLUSH_NEVER);
+                        throw e;
+                    }
+                }
                 return target;
             }
         });

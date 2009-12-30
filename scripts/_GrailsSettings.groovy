@@ -14,17 +14,20 @@
 * limitations under the License.
 */
 
+import grails.util.BuildScope
 import grails.util.BuildSettings
+import grails.util.Environment
 import grails.util.GrailsNameUtils
+import grails.util.GrailsUtil
+import grails.util.Metadata
+import grails.util.PluginBuildSettings
+import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.FileCopyUtils
-import grails.util.Environment
-import grails.util.Metadata
-import grails.util.BuildScope
 
 /**
  * Gant script containing build variables.
@@ -70,28 +73,36 @@ getPropertyValue = { String propName, defaultValue ->
 // over the defaults.
 isInteractive = true
 buildProps = buildConfig.toProperties()
-enableJndi = getPropertyValue("enable.jndi", false).toBoolean()
 enableProfile = getPropertyValue("grails.script.profile", false).toBoolean()
 pluginsHome = grailsSettings.projectPluginsDir.path
-buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
 
-// These are legacy settings...
-serverPort = getPropertyValue("server.port", 8080).toInteger()
-serverPortHttps = getPropertyValue("server.port.https", 8443).toInteger()
-serverHost = getPropertyValue("server.host", null)
+// Used to find out about plugins used by this app. The plugin manager
+// is configured later when its created (see _PluginDependencies).
+pluginSettings = new PluginBuildSettings(grailsSettings)
 
-// ...which are superceded by these
-serverPort = getPropertyValue("grails.server.port.http", null)?.toInteger() ?: serverPort
-serverPortHttps = getPropertyValue("grails.server.port.https", null)?.toInteger() ?: serverPortHttps
-serverHost = getPropertyValue("grails.server.host", null) ?: serverHost
+// While some code still relies on GrailsPluginUtils, make sure it
+// uses the same PluginBuildSettings instance as the scripts.
+GrailsPluginUtils.pluginBuildSettings = pluginSettings
 
 // Load the application metadata (application.properties)
 grailsAppName = null
 grailsAppVersion = null
 appGrailsVersion = null
-servletVersion = getPropertyValue("servlet.version", "2.4")
+servletVersion = getPropertyValue("servlet.version", "2.5")
+
+// server port options
+// these are legacy settings
+serverPort = getPropertyValue("server.port", 8080).toInteger()
+serverPortHttps = getPropertyValue("server.port.https", 8443).toInteger()
+serverHost = getPropertyValue("server.host", null)
+// which are superceded by these
+serverPort = getPropertyValue("grails.server.port.http", serverPort)?.toInteger()
+serverPortHttps = getPropertyValue("grails.server.port.https", serverPortHttps)?.toInteger()
+serverHost = getPropertyValue("grails.server.host", serverHost)
+
 metadataFile = new File("${basedir}/application.properties")
-metadata = Metadata.getInstance(metadataFile)
+
+metadata = metadataFile.exists() ? Metadata.getInstance(metadataFile) : Metadata.current
 
 grailsAppName = metadata.getApplicationName()
 grailsAppVersion = metadata.getApplicationVersion()
@@ -115,17 +126,13 @@ else {
 
 // Other useful properties.
 args = System.getProperty("grails.cli.args")
-classesDir = grailsSettings.classesDir
 grailsApp = null
-grailsWorkDir = grailsSettings.grailsWorkDir
-grailsTmp = "${grailsSettings.grailsWorkDir}/tmp"
-isPluginProject = grailsSettings.baseDir.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
+
+isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 
 shouldPackageTemplates = false
 config = new ConfigObject()
-scaffoldDir = "${basedir}/web-app/WEB-INF/templates/scaffolding"
-configFile = new File("${basedir}/grails-app/conf/Config.groovy")
-webXmlFile = new File("${resourcesDirPath}/web.xml")
+
 
 // Pattern that matches artefacts in the 'grails-app' directory.
 // Note that the capturing group matches any package directory
@@ -144,7 +151,7 @@ if (!System.getProperty("grails.env.set")) {
     System.setProperty("grails.env.set", "true")
 }
 if(getBinding().variables.containsKey("scriptScope")) {
-    buildScope = (scriptScope instanceof BuildScope) ? scriptScope : BuildScope.valueOf(scriptScope.toString());
+    buildScope = (scriptScope instanceof BuildScope) ? scriptScope : BuildScope.valueOf(scriptScope.toString().toUpperCase());
     buildScope.enable()
 }
 else {
@@ -218,19 +225,25 @@ grailsUnpack = {Map args ->
 
     // Can't unjar a file from within a JAR, so we copy it to
     // the destination directory first.
-    ant.copy(todir: dir) {
-        javaresource(name: src)
-    }
-
-    // Now unjar it, excluding the META-INF directory.
-    ant.unjar(dest: dir, src: "${dir}/${src}", overwrite: overwriteOption) {
-        patternset {
-            exclude(name: "META-INF/**")
+    try {
+        ant.copy(todir: dir) {
+            javaresource(name: src)
         }
+
+        // Now unjar it, excluding the META-INF directory.
+        ant.unjar(dest: dir, src: "${dir}/${src}", overwrite: overwriteOption) {
+            patternset {
+                exclude(name: "META-INF/**")
+            }
+        }
+
+
+    }
+    finally {
+        // Don't need the JAR file any more, so remove it.
+        ant.delete(file: "${dir}/${src}", failonerror:false)        
     }
 
-    // Don't need the JAR file any more, so remove it.
-    ant.delete(file: "${dir}/${src}")
 }
 
 /**
@@ -275,3 +288,43 @@ profile = {String name, Closure callable ->
     }
 }
 
+/**
+ * Exits the build immediately with a given exit code.
+ */
+exit = {
+    event("Exiting", [it])
+    // Prevent system.exit during unit/integration testing
+    if (System.getProperty("grails.cli.testing") || System.getProperty("grails.disable.exit")) {
+        throw new ScriptExitException(it)
+    } else {
+        System.exit(it)
+    }
+}
+
+/**
+ * Interactive prompt that can be used by any part of the build. Echos
+ * the given message to the console and waits for user input that matches
+ * either 'y' or 'n'. Returns <code>true</code> if the user enters 'y',
+ * <code>false</code> otherwise.
+ */
+confirmInput = {String message, code="confirm.message" ->
+    if(!isInteractive) {
+        println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
+        exit(1)
+    }
+    ant.input(message: message, addproperty: code, validargs: "y,n")
+    def result = ant.antProject.properties[code]
+    (result == 'y')
+}
+
+// Note: the following only work if you also include _GrailsEvents.
+logError = { String message, Throwable t ->
+    GrailsUtil.deepSanitize(t)
+    t.printStackTrace()
+    event("StatusError", ["$message: ${t.message}"])
+}
+
+logErrorAndExit = { String message, Throwable t ->
+    logError(message, t)
+    exit(1)
+}

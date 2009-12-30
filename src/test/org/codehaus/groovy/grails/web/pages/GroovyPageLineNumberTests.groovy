@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.web.pages
 
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * @author Graeme Rocher
@@ -133,7 +135,7 @@ ${foo.bar.path}
         try {
             applyTemplate(template)
         }
-        catch (org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException e) {
+        catch (GroovyPagesException e) {
 
             assertEquals 9,e.lineNumber
         }

@@ -23,7 +23,6 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import grails.util.Metadata
 
 includeTargets << grailsScript("_GrailsPlugins")
@@ -101,18 +100,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 
         }
         delete(dir: "${basedir}/tmp", failonerror: false)
-
-        // Unpack the shared files into a temporary directory, and then
-        // copy over the IDE files.
-        def tmpDir = new File("${basedir}/tmp-upgrade")
-        grailsUnpack(dest: tmpDir.path, src: "grails-shared-files.jar")
-        copy(todir: "${basedir}") {
-            fileset(dir: tmpDir.path, includes:"*") {
-                present(present:"srconly", targetdir:basedir) 
-            }
-        }
-        delete(dir: tmpDir.path)
-        launderIDESupportFiles()
 
         copy(todir: "${basedir}/web-app") {
             fileset(dir: "${grailsHome}/src/war") {
@@ -199,25 +186,13 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
             fileset(dir: "${grailsHome}/src/war/WEB-INF/tld", includes: "grails.tld")
         }
         touch(file: "${basedir}/grails-app/i18n/messages.properties")
-
-        replaceregexp(match: "^.*GRAILS_HOME.*\$", replace: "", flags: "gm") {
-            fileset(dir: "${basedir}", includes: ".classpath")
-        }
-        replace(dir: "${basedir}",
-                includes: ".classpath",
-                token: "</classpath>",
-                value: "<classpathentry kind=\"var\" path=\"GRAILS_HOME/ant/lib/ant.jar\"/>\n${eclipseClasspathLibs()}${eclipseClasspathGrailsJars()}\n</classpath>")
-        replaceregexp(match: "^\\s*", replace: "", flags: "gm") {
-            fileset(dir: "${basedir}", includes: ".classpath")
-        }
-
     }
 
     // Add the app name and Grails version to the metadata.
     updateMetadata("app.name": "$grailsAppName", "app.grails.version": "$grailsVersion")
 
     // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
-    def plugins = GrailsPluginUtils.getPluginBaseDirectories(pluginsHome)
+    def plugins = pluginSettings.pluginBaseDirectories
     if (plugins) {
         for (pluginDir in plugins) {
             def f = new File(pluginDir)

@@ -17,10 +17,10 @@ package org.codehaus.groovy.grails.cli.support;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
+import grails.util.PluginBuildSettings;
 import groovy.lang.*;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
@@ -28,9 +28,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import grails.build.GrailsBuildListener;
+
 
 /**
  * @author Graeme Rocher
@@ -43,6 +47,11 @@ public class GrailsBuildEventListener implements BuildListener{
     protected Map<String, List<Closure>> globalEventHooks = new HashMap<String, List<Closure>>();
     private BuildSettings buildSettings;
 
+    /**
+     * The objects that are listening for build events
+     */
+    private List<GrailsBuildListener> buildListeners = new LinkedList<GrailsBuildListener>();
+    
     public GrailsBuildEventListener(GroovyClassLoader scriptClassLoader, Binding binding, BuildSettings buildSettings) {
         super();
         this.classLoader = scriptClassLoader;
@@ -52,6 +61,7 @@ public class GrailsBuildEventListener implements BuildListener{
 
     public void initialize() {
         loadEventHooks(buildSettings);
+        loadGrailsBuildListeners();
     }
 
     public void setClassLoader(GroovyClassLoader classLoader) {
@@ -67,7 +77,8 @@ public class GrailsBuildEventListener implements BuildListener{
             loadEventsScript( findEventsScript(new File(buildSettings.getUserHome(),".grails/scripts")) );
             loadEventsScript( findEventsScript(new File(buildSettings.getBaseDir(), "scripts")) );
 
-            for (Resource pluginBase : GrailsPluginUtils.getPluginDirectories()) {
+            PluginBuildSettings pluginSettings = (PluginBuildSettings) binding.getVariable("pluginSettings");
+            for (Resource pluginBase : pluginSettings.getPluginDirectories()) {
                 try {
                     loadEventsScript( findEventsScript(new File(pluginBase.getFile(), "scripts")) );
                 }
@@ -78,6 +89,18 @@ public class GrailsBuildEventListener implements BuildListener{
         }
     }
 
+    protected void loadGrailsBuildListeners() {
+        for (Object listener : buildSettings.getBuildListeners()) {
+            if (listener instanceof String) {
+                addGrailsBuildListener((String)listener);
+            } else if (listener instanceof Class) {
+                addGrailsBuildListener((Class)listener);
+            } else {
+                throw new IllegalStateException("buildSettings.getBuildListeners() returned a " + listener.getClass().getName());
+            }
+        }
+    }
+    
     public void loadEventsScript(File eventScript) {
         if(eventScript!=null) {
             try {
@@ -169,6 +192,10 @@ public class GrailsBuildEventListener implements BuildListener{
                 }
             }
         }
+
+        for (GrailsBuildListener buildListener : buildListeners) {
+            buildListener.receiveGrailsBuildEvent(eventName, arguments);
+        }
     }
 
     public void targetFinished(BuildEvent buildEvent) {
@@ -188,5 +215,32 @@ public class GrailsBuildEventListener implements BuildListener{
 
     public void messageLogged(BuildEvent buildEvent) {
         // do nothing
+    }
+    
+    protected void addGrailsBuildListener(String listenerClassName) {
+        Class listenerClass;
+        try {
+            listenerClass = classLoader.loadClass(listenerClassName);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load grails build listener class", e);
+        }
+        addGrailsBuildListener(listenerClass);
+    }
+    
+    protected void addGrailsBuildListener(Class listenerClass) {
+        if (!GrailsBuildListener.class.isAssignableFrom(listenerClass)) {
+            throw new RuntimeException("Intended grails build listener class of " + listenerClass.getName() + " does not implement " + GrailsBuildListener.class.getName());
+        }
+        GrailsBuildListener listener;
+        try {
+            listener = (GrailsBuildListener)listenerClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not instantiate " + listenerClass.getName(), e);
+        }
+        addGrailsBuildListener(listener);
+    }
+
+    public void addGrailsBuildListener(GrailsBuildListener listener) {
+        buildListeners.add(listener);
     }
 }

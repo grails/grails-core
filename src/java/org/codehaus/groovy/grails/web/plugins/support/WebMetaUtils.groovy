@@ -19,9 +19,11 @@ import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.springframework.beans.BeanWrapperImpl
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -87,77 +89,53 @@ class WebMetaUtils {
         mc.getControllerName = {->
             RCH.currentRequestAttributes().controllerName
         }
-
-
+        mc.getWebRequest = {->
+        	RCH.currentRequestAttributes()
+        }
     }
 
 
-    static registerMethodMissingForTags(MetaClass mc, GroovyObject tagLibrary, String name) {
+    static registerMethodMissingForTags(MetaClass mc, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
         mc."$name" = {Map attrs, Closure body ->
-            def webRequest = RCH.currentRequestAttributes()
-            def originalOut = webRequest.out
-            def capturedOutput
-            try {
-                if(body && !(body instanceof GroovyPageTagBody)) {
-                    body = new GroovyPageTagBody(delegate, webRequest, true, body)
-
-                }
-                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, body, webRequest)
-            } finally {
-                webRequest.out = originalOut
-            }
-            capturedOutput
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, RCH.currentRequestAttributes())
         }
-        mc."$name" = {Map attrs, String body ->
-            Closure bodyClosure = {
-                out << body
-            }
-            delegate."$name"(attrs, bodyClosure)
+        mc."$name" = {Map attrs, CharSequence body ->
+            delegate."$name"(attrs, new GroovyPage.ConstantClosure(body))
         }
         mc."$name" = {Map attrs ->
-            def webRequest = RCH.currentRequestAttributes()
-
-
-            def originalOut = webRequest.out
-            def capturedOutput
-            try {
-                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, attrs, null, webRequest)
-            } finally {
-                webRequest.out = originalOut
-            }
-            capturedOutput
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, RCH.currentRequestAttributes())
         }
         mc."$name" = {Closure body ->
-            def webRequest = RCH.currentRequestAttributes()
-
-            def originalOut = webRequest.out
-            def capturedOutput
-            try {
-                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:], body, webRequest)
-            } finally {
-                webRequest.out = originalOut
-            }
-            capturedOutput
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, RCH.currentRequestAttributes())
         }
         mc."$name" = {->
-            def webRequest = RCH.currentRequestAttributes()
-
-
-            def originalOut = webRequest.out
-            def capturedOutput
-            try {
-                capturedOutput = GroovyPage.captureTagOutput(tagLibrary, name, [:], null, webRequest)
-            } finally {
-                webRequest.out = originalOut
-            }
-            capturedOutput
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, RCH.currentRequestAttributes())
         }
     }
 
     static registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx, GrailsTagLibClass tagLibraryClass, String name) {
-        def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
-        registerMethodMissingForTags(mc,tagLibrary,name)
+        //def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
+		TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
+		String namespace = tagLibraryClass.namespace ?: GroovyPage.DEFAULT_NAMESPACE
+        registerMethodMissingForTags(mc,gspTagLibraryLookup,namespace,name)
     }
 
+    static registerStreamCharBufferMetaClass() {
+		StreamCharBuffer.metaClass.methodMissing = { String name, args ->
+			def retval = delegate.toString().invokeMethod(name, args)
+			StreamCharBuffer.metaClass."$name" = { Object[] varArgs -> delegate.toString().invokeMethod(name,varArgs) }
+			retval
+		}
+
+		StreamCharBuffer.metaClass.asType = { Class clazz ->
+			if(clazz == String) {
+				delegate.toString()
+			} else if (clazz == char[]) {
+				delegate.toCharArray()
+			} else {
+				delegate.toString().asType(clazz)
+			}
+		}
+    }
 
 }

@@ -57,10 +57,12 @@ public abstract class AbstractDynamicPersistentMethod extends
 
     public Object invoke(Object target, String methodName, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(this.classLoader);
-        Object returnValue = doInvokeInternal(target, arguments);
-        Thread.currentThread().setContextClassLoader(originalClassLoader);
-        return returnValue;
+        try {
+            Thread.currentThread().setContextClassLoader(this.classLoader);
+            return doInvokeInternal(target, arguments);
+        } finally {
+        	Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
     }
 
     protected abstract Object doInvokeInternal(Object target, Object[] arguments);

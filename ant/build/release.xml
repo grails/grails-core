@@ -38,13 +38,6 @@
         <copy todir="${release.dir}/lib" failonerror="true" overwrite="true" verbose="false">
            <fileset dir="lib">
                <exclude name="**/CVS/**"/>
-               <exclude name="hibernate**"/>
-               <exclude name="org.springframework.webflow**"/>
-               <exclude name="org.springframework.js**"/>
-               <exclude name="org.springframework.binding**"/>
-               <exclude name="javassist**"/>
-               <exclude name="aspectj**"/>
-               <exclude name="dom4j**"/>
            </fileset>
         </copy>
         <antcall target="copy-dir">
@@ -165,9 +158,9 @@
                 <patternset refid="binary.files.pattern"/>
             </zipfileset>
         </zip>
-		<copy todir="dist" failonerror="false">
-			<fileset dir="../grails-doc/dist" />			
-		</copy>
+        <zip destfile="${grails.dist}/grails-docs-${grails.version}.zip">
+            <zipfileset dir="${basedir}/doc" />
+        </zip>
 
     </target>
 

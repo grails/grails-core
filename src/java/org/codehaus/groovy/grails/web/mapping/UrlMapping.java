@@ -121,4 +121,11 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return Whether this is a RESTful mapping
      */
     boolean isRestfulMapping();
+    
+    /**
+     * Whether the mapping has a runtime variable with the given name such as "/$foo"
+     * @param name The name of the variable
+     * @return True if the mapping has the variable
+     */
+    boolean hasRuntimeVariable(String name);
 }

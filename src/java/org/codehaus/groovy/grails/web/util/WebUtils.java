@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import com.opensymphony.module.sitemesh.util.FastByteArrayOutputStream;
 import grails.util.GrailsUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -23,7 +22,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
@@ -49,9 +48,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.CharacterCodingException;
 import java.util.*;
 
 /**
@@ -246,9 +247,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
             }
 
-            if(info.getParameters()!=null && includeParams) {
+            final Map parameters = info.getParameters();
+            if(parameters !=null && !parameters.isEmpty()  && includeParams) {
                 try {
-                    forwardUrl.append(toQueryString(info.getParameters()));
+                    forwardUrl.append(toQueryString(parameters));
                 }
                 catch (UnsupportedEncodingException e) {
                     throw new ControllerExecutionException("Unable to include ");
@@ -319,19 +321,26 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         String currentController = null;
         String currentAction = null;
         String currentId = null;
+        Map currentParams = null;
         if (webRequest!=null) {
             currentController = webRequest.getControllerName();
             currentAction = webRequest.getActionName();
-            currentId = webRequest.getId();
+            currentId = webRequest.getId();            
+            currentParams = new HashMap();
+            currentParams.putAll(webRequest.getParameterMap());
         }
         try {
             if (webRequest!=null) {
+            	webRequest.getParameterMap().clear();
                 info.configure(webRequest);
+                webRequest.getParameterMap().putAll(info.getParameters());
             }
             return includeForUrl(includeUrl, request, response, model);
         }
         finally {
             if (webRequest!=null) {
+            	webRequest.getParameterMap().clear();
+            	webRequest.getParameterMap().putAll(currentParams);
                 webRequest.setId(currentId);
                 webRequest.setControllerName(currentController);
                 webRequest.setActionName(currentAction);
@@ -435,14 +444,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
 
     static class IncludeResponseWrapper extends HttpServletResponseWrapper {
-        private FastStringWriter sw = new FastStringWriter();
-        private PrintWriter pw = sw;
-        private FastByteArrayOutputStream os = new FastByteArrayOutputStream();
-        private ServletOutputStream sos = new ServletOutputStream() {
-            public void write(int i) throws IOException {
-                os.write(i);
-            }
-        };
+        private StreamCharBuffer charBuffer;
+        private PrintWriter pw;
+        private StreamByteBuffer byteBuffer;
+        private OutputStream os;
+        private ServletOutputStream sos;
         private boolean usingStream;
         private boolean usingWriter;
         private int status;
@@ -506,26 +512,53 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         @Override
         public ServletOutputStream getOutputStream() throws IOException {
             if(usingWriter) throw new IllegalStateException("Method getWriter() already called");
-            usingStream = true;
+            if(!usingStream) {
+                usingStream = true;            	
+            	byteBuffer = new StreamByteBuffer();
+            	os = byteBuffer.getOutputStream();
+            	sos = new ServletOutputStream() {
+        			@Override
+        			public void write(byte[] b, int off, int len)
+        					throws IOException {
+        				os.write(b, off, len);
+        			}
+
+        			@Override
+        			public void write(byte[] b) throws IOException {
+        				os.write(b);
+        			}
+
+        			@Override
+        			public void write(int b) throws IOException {
+        				os.write(b);
+        			}
+                };
+            }
+            
             return sos;
         }
 
         @Override
         public PrintWriter getWriter() throws IOException {
             if(usingStream) throw new IllegalStateException("Method getOutputStream() already called");
-            usingWriter = true;
+            if(!usingWriter) {
+            	usingWriter = true;
+            	charBuffer = new StreamCharBuffer();
+            	pw = new GrailsPrintWriter(charBuffer.getWriter());
+            }
             return pw;
         }
 
-        public String getContent() throws UnsupportedEncodingException {
+        public Object getContent() throws CharacterCodingException {
             return getContent("UTF-8");
         }
-        public String getContent(String encoding) throws UnsupportedEncodingException {
-            if(usingWriter) return sw.toString();
+
+        public Object getContent(String encoding) throws CharacterCodingException {
+            if(usingWriter) return charBuffer;
             else if(usingStream) {
-                return os.toString(encoding);
+                return byteBuffer.readAsString(encoding);
             }
-            return "".intern();
+            return "";
         }
     }
 
@@ -545,7 +578,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             String lastToken = uri.substring(idx+1, uri.length());
             idx = lastToken.lastIndexOf('.');
             if(idx > -1 && idx != lastToken.length() - 1) {
-                return lastToken.substring(idx+1);
+                String extension =  lastToken.substring(idx+1, lastToken.length());
+                MimeType[] mimeTypes = MimeType.getConfiguredMimeTypes();
+                for (MimeType mimeType : mimeTypes) {
+                    if (mimeType.getExtension().equals(extension)) return extension;
+                }
             }
         }
         return null;

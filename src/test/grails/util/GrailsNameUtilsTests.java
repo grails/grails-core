@@ -60,6 +60,23 @@ public class GrailsNameUtilsTests extends TestCase {
     	assertEquals("", GrailsNameUtils.getNameFromScript(""));
     	assertNull(GrailsNameUtils.getNameFromScript(null));
     }
+
+    public void testGetPluginName() {
+        assertEquals("db-utils", GrailsNameUtils.getPluginName("DbUtilsGrailsPlugin.groovy"));
+        assertEquals("shiro", GrailsNameUtils.getPluginName("ShiroGrailsPlugin.groovy"));
+        // The following isn't supported yet - but it should be.
+//        assertEquals("CAS-security", GrailsNameUtils.getPluginName("CASSecurityGrailsPlugin.groovy"));
+        assertEquals("", GrailsNameUtils.getPluginName(""));
+        assertNull(GrailsNameUtils.getPluginName(null));
+
+        try {
+            GrailsNameUtils.getPluginName("NotAPlugin.groovy");
+            fail("GrailsNameUtils.getPluginName() should have thrown an IllegalArgumentException.");
+        }
+        catch (IllegalArgumentException ex) {
+            // Expected!
+        }
+    }
     
     public void testIsBlank() {
         assertTrue("'null' value should count as blank.", GrailsNameUtils.isBlank(null));

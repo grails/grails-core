@@ -1,15 +1,19 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.springframework.validation.Errors;
+
+import java.io.Writer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.Writer;
+
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
+import org.springframework.context.MessageSource;
+import org.springframework.validation.Errors;
 
 /**
  * An interface defining the names of and methods to retrieve Grails specific request and servlet attributes
@@ -39,6 +43,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String REQUEST_REDIRECTED_ATTRIBUTE = "org.codehaus.groovy.grails.request_redirected";
     String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
     String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
+    String APP_URI_ATTRIBUTE = "org.codehaus.groovy.grails.APP_URI_ATTRIBUTE";
 
 
     /**
@@ -71,6 +76,11 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
      */
     String getApplicationUri(ServletRequest request);
 
+    
+	String getTemplateURI(GroovyObject controller, String templateName);
+
+	String getNoSuffixViewURI(GroovyObject controller, String viewName);
+		
     /**
      * Retrieves the servlet context instance
      * @return The servlet context instance
@@ -160,5 +170,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
 	 */
 	void setOut(HttpServletRequest currentRequest, Writer out2);
 
-
+	GroovyPagesUriService getGroovyPagesUriService();
+	
+	MessageSource getMessageSource();
 }

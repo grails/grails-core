@@ -4,7 +4,7 @@
     <condition property="ivy.home" value="${env.IVY_HOME}">
       <isset property="env.IVY_HOME" />
     </condition>
-    <property name="ivy.home" value="${user.home}/.ant" />
+    <property name="ivy.home" value="${user.home}/.grails/ivy" />
     <property name="ivy.jar.dir" value="${ivy.home}/lib" />
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy-${ivy.install.version}.jar" />
 
@@ -43,8 +43,9 @@
 
     <macrodef name="grails">
         <attribute name="script"/>
+        <attribute name="args" default="" />
         <sequential>
-            <grailsTask script="@{script}" classpathref="grails.classpath">
+            <grailsTask script="@{script}" args="@{args}" classpathref="grails.classpath">
                 <compileClasspath refid="compile.classpath"/>
                 <testClasspath refid="test.classpath"/>
                 <runtimeClasspath refid="app.classpath"/>
@@ -62,18 +63,7 @@
     <target name="-init-grails" depends="-resolve">
         <path id="grails.classpath">
             <fileset dir="${lib.dir}/build"/>
-        </path>
-
-        <path id="compile.classpath">
-            <fileset dir="${lib.dir}/compile"/>
-        </path>
-
-        <path id="test.classpath">
-            <fileset dir="${lib.dir}/test"/>
-        </path>
-
-        <path id="app.classpath">
-            <fileset dir="${lib.dir}/runtime"/>
+			<fileset dir="${lib.dir}"/>
         </path>
 
         <taskdef name="grailsTask"
@@ -88,10 +78,20 @@
     <!-- =================================
           target: clean
          ================================= -->
-    <target name="clean" depends="-init-grails" description="--> Cleans a Grails application">
-        <grails script="Clean"/>
-        <delete dir="${lib.dir}" includes="**/*"/>
-    </target>
+ 	<target name="clean" description="--> Cleans a Grails application">
+		<delete failonerror="true">
+		<fileset dir="${lib.dir}/build" includes="*/"/>
+		<fileset dir="${lib.dir}/compile" includes="*/"/>
+		<fileset dir="${lib.dir}/runtime" includes="*/"/>
+		<fileset dir="${lib.dir}/test" includes="*/"/>
+		</delete>
+		<antcall target="--grails-clean"/>
+	</target>
+
+	<!-- extra target to avoid errors on Windows because libs on classpath can not be deleted -->
+	<target name="--grails-clean" depends="-init-grails">
+		<grails script="Clean"/>
+	</target>
 
     <!-- =================================
           target: compile

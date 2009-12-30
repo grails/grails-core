@@ -30,12 +30,14 @@ import org.springframework.beans.factory.parsing.*;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -95,6 +97,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     private Map<String, String> namespaces = new HashMap<String, String>();
     private Resource beanBuildResource = new ByteArrayResource(new byte[0]);
     private XmlReaderContext readerContext;
+    private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
 
     public BeanBuilder() {
 		this(null,null);
@@ -120,7 +123,13 @@ public class BeanBuilder extends GroovyObjectSupport {
         initializeSpringConfig();
     }
 
-    private void initializeSpringConfig() {
+    public void setResourcePatternResolver(ResourcePatternResolver resourcePatternResolver) {
+    	Assert.notNull(resourcePatternResolver, "The argument [resourcePatternResolver] cannot be null");
+		this.resourcePatternResolver = resourcePatternResolver;
+	}
+
+
+	protected void initializeSpringConfig() {
         this.xmlBeanDefinitionReader = new XmlBeanDefinitionReader((GenericApplicationContext)springConfig.getUnrefreshedApplicationContext());
         initializeBeanBuilderForClassLoader(this.classLoader);        
     }
@@ -131,7 +140,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 
     }
 
-    private void initializeBeanBuilderForClassLoader(ClassLoader classLoader) {
+    protected void initializeBeanBuilderForClassLoader(ClassLoader classLoader) {
         xmlBeanDefinitionReader.setBeanClassLoader(classLoader);
         this.namespaceHandlerResolver = new DefaultNamespaceHandlerResolver(this.classLoader);
         this.readerContext = new XmlReaderContext(beanBuildResource,new FailFastProblemReporter(),new EmptyReaderEventListener(),new NullSourceExtractor(),xmlBeanDefinitionReader,namespaceHandlerResolver);
@@ -149,7 +158,37 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return LOG;
 	}
 
-
+    
+    /**
+     * Imports Spring bean definitions from either XML or Groovy sources into the current bean builder instance
+     * 
+     * @param resourcePattern The resource pattern
+     */
+    public void importBeans(String resourcePattern) {
+    	try {
+			Resource[] resources =resourcePatternResolver.getResources(resourcePattern);
+			for (int i = 0; i < resources.length; i++) {
+				Resource resource = resources[i];
+				if(resource.getFilename().endsWith(".groovy")) {
+					loadBeans(resource);
+				}
+				else if(resource.getFilename().endsWith(".xml")) {
+					SimpleBeanDefinitionRegistry beanRegistry = new SimpleBeanDefinitionRegistry();
+					XmlBeanDefinitionReader beanReader = new XmlBeanDefinitionReader(beanRegistry);
+					beanReader.loadBeanDefinitions(resource);
+					String[] beanNames = beanRegistry.getBeanDefinitionNames();
+					for (int j = 0; j < beanNames.length; j++) {
+						String beanName = beanNames[j];
+						springConfig.addBeanDefinition(beanName, beanRegistry.getBeanDefinition(beanName));
+					}
+				}
+			}
+			
+		} catch (IOException e) {
+			LOG.error("Error loading beans for resource pattern: " + resourcePattern, e);
+		}
+    }
+    
     /**
      * Defines an Spring namespace definition to use
      *
@@ -540,7 +579,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         return springConfig.getApplicationContext();
     }
 
-    private void finalizeDeferredProperties() {
+    protected void finalizeDeferredProperties() {
         for (Object o : deferredProperties.values()) {
             DeferredProperty dp = (DeferredProperty) o;
 
@@ -555,7 +594,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		deferredProperties.clear();
 	}
 	
-	private boolean addToDeferred(BeanConfiguration beanConfig,String property, Object newValue) {
+	protected boolean addToDeferred(BeanConfiguration beanConfig,String property, Object newValue) {
 		if(newValue instanceof List) {
 			deferredProperties.put(currentBeanConfig.getName()+property,new DeferredProperty(currentBeanConfig, property, newValue));
 			return true;
@@ -574,7 +613,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * the arguments in between are constructor arguments
 	 * @return The bean configuration instance
 	 */
-	private BeanConfiguration invokeBeanDefiningMethod(String name, Object[] args) {
+	protected BeanConfiguration invokeBeanDefiningMethod(String name, Object[] args) {
 
         boolean hasClosureArgument = args[args.length - 1] instanceof Closure;
         if(args[0] instanceof Class) {
@@ -643,14 +682,14 @@ public class BeanBuilder extends GroovyObjectSupport {
 		return beanConfig;
 	}
 
-    private List resolveConstructorArguments(Object[] args, int start, int end) {
+    protected List resolveConstructorArguments(Object[] args, int start, int end) {
         Object[] constructorArgs = subarray(args, start, end);
         filterGStringReferences(constructorArgs);
         List constructorArgsList = Arrays.asList(constructorArgs);
         return constructorArgsList;
     }
 
-    private Object[] subarray(Object[] args, int i, int j) {
+    protected Object[] subarray(Object[] args, int i, int j) {
         if(j > args.length) throw new IllegalArgumentException("Upper bound can't be greater than array length");
         Object[] b = new Object[j-i];
         int n = 0;
@@ -661,7 +700,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         return b;
     }
 
-    private void filterGStringReferences(Object[] constructorArgs) {
+    protected void filterGStringReferences(Object[] constructorArgs) {
         for (int i = 0; i < constructorArgs.length; i++) {
             Object constructorArg = constructorArgs[i];
             if(constructorArg instanceof GString) constructorArgs[i] = constructorArg.toString();
@@ -674,7 +713,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param callable The closure argument
      * @return This BeanBuilder instance
 	 */
-	private BeanBuilder invokeBeanDefiningClosure(Closure callable) {
+	protected BeanBuilder invokeBeanDefiningClosure(Closure callable) {
 
 		callable.setDelegate(this);
   //      callable.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -694,7 +733,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 		}		
 	}
 
-    private void setPropertyOnBeanConfig(String name, Object value) {
+    protected void setPropertyOnBeanConfig(String name, Object value) {
         if(value instanceof GString)value = value.toString();
         if(addToDeferred(currentBeanConfig, name, value)) {
             return;
@@ -730,7 +769,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param value The current map
 	 * @return A ManagedMap or a normal map
 	 */
-	private Object manageMapIfNecessary(Object value) {
+	protected Object manageMapIfNecessary(Object value) {
 		Map map = (Map)value;
 		boolean containsRuntimeRefs = false;
         for (Object e : map.values()) {
@@ -754,7 +793,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 * @param value The object that represents the list
 	 * @return Either a new list or a managed one
 	 */
-	private Object manageListIfNecessary(Object value) {
+	protected Object manageListIfNecessary(Object value) {
 		List list = (List)value;
 		boolean containsRuntimeRefs = false;
         for (Object e : list) {

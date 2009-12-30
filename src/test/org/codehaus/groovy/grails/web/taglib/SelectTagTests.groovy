@@ -12,6 +12,14 @@ import org.w3c.dom.Document
 class SelectTagTests extends AbstractGrailsTagTests {
     private static final def SELECT_TAG_NAME = "testSelect";
 
+    void testSelectTagEscaping() {
+    	def template = '<g:select id="${foo}.genre" name="${foo}.genre" value="${book?.genre}" from="${[\'non-fiction\',\'fiction\']}" noSelection="[\'\':\'-Genre-\']" />'
+
+    	def result = applyTemplate(template, [foo:'bar" /><script>alert("gotcha")</script>'])
+
+    	assertTrue "should have HTML escaped attributes", result.startsWith('<select name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
+    }
+
     void testSelectUsesExpressionForDisable() {
         def template = '<g:set var="flag" value="${true}"/><g:select disabled="${flag}" name="foo" id="foo" from="[1,2,3]" />'
         assertOutputContains('disabled="disabled"', template)

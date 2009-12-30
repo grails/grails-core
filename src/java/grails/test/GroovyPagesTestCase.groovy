@@ -16,6 +16,7 @@ package grails.test
 
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 
 /**
 * A test harness that eases testing of GSP and tag libraries for Grails
@@ -53,7 +54,7 @@ class GroovyPagesTestCase extends GroovyTestCase  {
         def w = t.make(params)
 
         def sw = new StringWriter()
-        def out = new PrintWriter(sw)
+        def out = new GrailsPrintWriter(sw)
         webRequest.out = out
         w.writeTo(out)
 
@@ -76,7 +77,7 @@ class GroovyPagesTestCase extends GroovyTestCase  {
         def w = t.make(params)
 
         def sw = new StringWriter()
-        def out = new PrintWriter(sw)
+        def out = new GrailsPrintWriter(sw)
         webRequest.out = out
         w.writeTo(out)
 

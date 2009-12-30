@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 /**
  * The "findBy*" static persistent method. This method allows querying for
  * instances of grails domain classes based on their properties. This method returns a list of all found results
@@ -42,15 +44,14 @@ public class FindAllByPersistentMethod extends
 	}
 
 	protected Object doInvokeInternalWithExpressions(final Class clazz,
-                                                     String methodName, final Object[] arguments, final List expressions, String operatorInUse) {
+                                                     String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
 
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
         
         return super.getHibernateTemplate().executeFind( new HibernateCallback() {
 
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
-				Criteria c = session.createCriteria(clazz);
-				
+				final Criteria c = getCriteria(session, additionalCriteria, clazz);
 
                 Map argsMap = (arguments.length > 0 && (arguments[0] instanceof Map)) ? (Map) arguments[0] : Collections.EMPTY_MAP;
                 GrailsHibernateUtil.populateArgumentsForCriteria(clazz, c,argsMap);

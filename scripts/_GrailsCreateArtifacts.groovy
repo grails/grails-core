@@ -51,6 +51,11 @@ createArtifact = { Map args = [:] ->
         // Future use of 'pkgPath' requires a trailing slash.
         pkgPath += '/'
     }
+    else if(!args.skipPackagePrompt && isInteractive) {
+        if(!confirmInput("WARNING: You have not specified a package. It is good practise to place classes in packages (eg. mycompany.Book). Do you want to continue?", "no.package.warning")) {
+            exit(1)
+        }
+    }
 
     // Convert the given name into class name and property name
     // representations.
@@ -60,9 +65,9 @@ createArtifact = { Map args = [:] ->
 
 
     if (new File(artifactFile).exists()) {
-        ant.input(addProperty: "${name}.${suffix}.overwrite", message: "${type} ${className}${suffix}.groovy already exists. Overwrite? [y/n]")
-        if (ant.antProject.properties."${name}.${suffix}.overwrite" == "n")
+        if(!confirmInput("${type} ${className}${suffix}.groovy already exists. Overwrite? [y/n]","${name}.${suffix}.overwrite")) {
             return
+        }
     }
 
     // first check for presence of template in application

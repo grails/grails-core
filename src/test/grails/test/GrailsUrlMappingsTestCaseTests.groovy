@@ -439,4 +439,8 @@ class MockUrlMapping implements UrlMapping {
     public void setMappingName(String name) {
     }
 
+	public boolean hasRuntimeVariable(String name) {
+		return false;
+	}
+    
 }

@@ -14,15 +14,19 @@
  */
 package grails.test
 
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.mock.web.MockHttpSession
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import grails.util.GrailsWebUtil
 import org.springframework.mock.web.MockServletContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 
 /**
  * Common test case support class for controllers, tag libraries, and
@@ -110,6 +114,11 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
 
         mockParams = instance.params
         mockFlash = instance.flash
+
+        MockApplicationContext ctx = new MockApplicationContext()
+        ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
+        mockRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
+        
         webRequest = new GrailsWebRequest(
                                 mockRequest,
                                 mockResponse,

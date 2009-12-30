@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.support;
 
 import org.springframework.core.io.Resource;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,11 @@ public class MockStringResourceLoader extends MockResourceLoader {
      * @param contents The contents of the resource
      */
     public void registerMockResource(String location, String contents) {
-        this.mockResources.put(location, new GrailsByteArrayResource(contents.getBytes(), location));
+        try {
+			this.mockResources.put(location, new GrailsByteArrayResource(contents.getBytes("UTF-8"), location));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     /**

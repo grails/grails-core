@@ -16,6 +16,91 @@ public class EnvironmentTests extends GroovyTestCase{
         Metadata.getCurrent().clear()
     }
 
+    void testExecuteForEnvironment() {
+        System.setProperty("grails.env", "prod")
+
+        assertEquals Environment.PRODUCTION, Environment.getCurrent()
+
+
+        assert "prod" == Environment.executeForCurrentEnvironment {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+            }
+        } : "should have returned prod"
+
+
+        assert "dev" == Environment.executeForEnvironment(Environment.DEVELOPMENT) {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+            }
+        } : "should have returned dev"
+
+        System.setProperty("grails.env", "dev")
+
+        assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
+
+        assert "dev" == Environment.executeForCurrentEnvironment {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+            }
+        } : "should have returned dev"
+
+
+
+    }
+
+    void testGetEnvironmentSpecificBlock() {
+        System.setProperty("grails.env", "prod")
+
+        assertEquals Environment.PRODUCTION, Environment.getCurrent()
+
+        def callable = Environment.getEnvironmentSpecificBlock {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+            }
+        }
+
+
+        assertEquals "prod", callable.call()
+
+        System.setProperty("grails.env", "dev")
+
+        assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
+
+        callable = Environment.getEnvironmentSpecificBlock {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+            }
+        }
+
+        assertEquals "dev", callable.call()
+    }
+
 
 
     void testGetCurrent() {

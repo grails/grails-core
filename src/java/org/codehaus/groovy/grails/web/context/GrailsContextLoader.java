@@ -81,11 +81,13 @@ public class GrailsContextLoader extends ContextLoader {
         // clean up in war mode, in run-app these references may be needed again
         if(application!= null && application.isWarDeployed()) {
             if(application!= null) {
-                GroovyClassLoader classLoader = application.getClassLoader();
-                MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-                Class[] loadedClasses = classLoader.getLoadedClasses();
-                for (Class loadedClass : loadedClasses) {
-                    metaClassRegistry.removeMetaClass(loadedClass);
+                ClassLoader classLoader = application.getClassLoader();
+                if(classLoader instanceof GroovyClassLoader) {
+	                MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+	                Class[] loadedClasses = ((GroovyClassLoader)classLoader).getLoadedClasses();
+	                for (Class loadedClass : loadedClasses) {
+	                    metaClassRegistry.removeMetaClass(loadedClass);
+	                }
                 }
             }
             GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();

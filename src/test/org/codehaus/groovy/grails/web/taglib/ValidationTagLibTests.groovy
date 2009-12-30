@@ -1,11 +1,14 @@
 package org.codehaus.groovy.grails.web.taglib;
 
+import java.util.Locale;
+
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.util.StringUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.context.MessageSourceResolvable
+import org.springframework.context.i18n.LocaleContextHolder;
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
@@ -28,11 +31,13 @@ class Article {
     String title
 }
         ''')
+
     }
 
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
         def domain = ga.getDomainClass("Book")
-
+        
+        LocaleContextHolder.setLocale(Locale.US)
         messageSource.addMessage("Book.label", Locale.US, "Reading Material")
         messageSource.addMessage("Book.title.label", Locale.US, "Subject")
         def b = domain.newInstance()
@@ -41,6 +46,7 @@ class Article {
 
         def template = '<g:fieldError bean="${book}" field="title" />'
 
+        webRequest.currentRequest.addPreferredLocale(Locale.US)
         assertOutputEquals 'Property [Subject] of class [Reading Material] cannot be null', template, [book:b]
 
     }
@@ -48,6 +54,7 @@ class Article {
    void testFieldValueWithShortClassAndPropertyNameLookupFromBundle() {
         def domain = ga.getDomainClass("Book")
 
+        LocaleContextHolder.setLocale(Locale.US)
         messageSource.addMessage("book.label", Locale.US, "Reading Material")
         messageSource.addMessage("book.title.label", Locale.US, "Subject")
         def b = domain.newInstance()
@@ -56,6 +63,7 @@ class Article {
 
         def template = '<g:fieldError bean="${book}" field="title" />'
 
+        webRequest.currentRequest.addPreferredLocale(Locale.US)
         assertOutputEquals 'Property [Subject] of class [Reading Material] cannot be null', template, [book:b]
 
     }
@@ -190,6 +198,7 @@ class Article {
         def template = '''<g:eachError var="err" bean="${book}">${err.field}|</g:eachError>'''
 
         def result = applyTemplate(template, [book:b])
+        println result
         assertTrue result.contains("title|")
         assertTrue result.contains("releaseDate|")
         assertTrue result.contains("publisherURL|")
@@ -226,6 +235,23 @@ class Article {
         assert !b.hasErrors()
 
         assertOutputEquals("<ul></ul>", template, [book:b])
+    }
+
+    void testRenderErrorsTagAsListWithNoBeanAttribute() {
+        def b = ga.getDomainClass("Book").newInstance()
+        b.validate()
+
+        assert b.hasErrors()
+        request.setAttribute("bookInstance", b);
+
+        def template = '''<g:renderErrors as="list" />'''
+
+        def result = applyTemplate(template,[book:b])
+        assertEquals 1, result.count("<li>Property [title] of class [class Book] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [publisherURL] of class [class Book] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [releaseDate] of class [class Book] cannot be null</li>")
+        assertTrue result.startsWith("<ul>")
+        assertTrue result.endsWith("</ul>")
     }
 
     void testRenderErrorsAsXMLTag() {

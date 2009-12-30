@@ -32,43 +32,36 @@
     <url>http://www.grails.org</url>
 
     <dependencies>
-<!-- External Dependencies -->
+        <!-- External Dependencies -->
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.4</version>
         </dependency>
 
+
+        <!-- Spring dependencies brought over from dependencyManagement parent -->
+
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.5.6</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring</artifactId>
-            <version>3.0-M4</version>
-            <exclusions>
-                <!-- We have JCL-over-SLF4J instead. -->
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>spring-beans</artifactId>
         </dependency>
 
-<!-- Grails Dependencies -->
-
-<!-- Runtime Dependencies -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.5.6</version>
-            <scope>runtime</scope>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
         </dependency>
+        
+        <!-- Grails Dependencies -->
 
-<!-- Test Dependencies -->
+        <!-- Runtime Dependencies -->
+        
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

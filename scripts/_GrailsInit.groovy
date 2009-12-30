@@ -23,28 +23,20 @@
 * @since 0.4
 */
 
-import grails.util.GrailsUtil
 import org.springframework.core.io.FileSystemResource
 import grails.util.GrailsNameUtils
 import groovy.grape.Grape
 import grails.util.Metadata
+
+// No point doing this stuff more than once.
+if (getBinding().variables.containsKey("_init_called")) return
+_init_called = true
 
 Grape.enableAutoDownload = true
 
 // add includes
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << grailsScript("_PluginDependencies")
-
-
-exit = {
-    event("Exiting", [it])
-    // Prevent system.exit during unit/integration testing
-    if (System.getProperty("grails.cli.testing")) {
-        throw new RuntimeException("Gant script exited")
-    } else {
-        System.exit(it)
-    }
-}
 
 
 // Generates Eclipse .classpath entries for all the Grails dependencies,
@@ -62,45 +54,6 @@ eclipseClasspathLibs = {
     result
 }
 
-intellijClasspathLibs = {
-    def builder = new StringBuilder()
-    if (grailsHome) {
-        (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) {file ->
-            if (!file.name.startsWith("gant-")) {
-                builder << "<root url=\"jar://${grailsHome}/lib/${file.name}!/\" />\n\n"
-            }
-        }
-        (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
-            builder << "<root url=\"jar://${grailsHome}/dist/${file.name}!/\" />\n\n"
-        }
-
-    }
-
-    return builder.toString()
-}
-
-
-// Generates Eclipse .classpath entries for the Grails distribution
-// JARs. This only works if $GRAILS_HOME is set.
-eclipseClasspathGrailsJars = {args ->
-    result = ''
-    if (grailsHome) {
-        (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
-            result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/dist/${file.name}\" />\n\n"
-        }
-    }
-    result
-}
-
-confirmInput = {String message, code="confirm.message" ->
-    if(!isInteractive) {
-        println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
-        exit(1)
-    }
-    ant.input(message: message, addproperty: code, validargs: "y,n")
-    def result = ant.antProject.properties[code]
-    (result == 'y')
-}
 
 target(createStructure: "Creates the application directory structure") {
     ant.sequential {
@@ -147,7 +100,6 @@ target(checkVersion: "Stops build if app expects different Grails version") {
     }
 }
 
-
 target(updateAppProperties: "Updates default application.properties") {
     def entries = [ "app.name": "$grailsAppName", "app.grails.version": "$grailsVersion" ]
     if (grailsAppVersion) {
@@ -160,26 +112,8 @@ target(updateAppProperties: "Updates default application.properties") {
 }
 
 target( launderIDESupportFiles: "Updates the IDE support files (Eclipse, TextMate etc.), changing file names and replacing tokens in files where appropriate.") {
-    ant.move(file: "${basedir}/.launch", tofile: "${basedir}/${grailsAppName}.launch", overwrite: true)
-    ant.move(file: "${basedir}/test.launch", tofile: "${basedir}/${grailsAppName}-test.launch", overwrite: true)
-    ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
+    // do nothing. deprecated target
 
-
-    ant.move(file: "${basedir}/ideaGrailsProject.iml", tofile: "${basedir}/${grailsAppName}.iml", overwrite: true)
-    ant.move(file: "${basedir}/ideaGrailsProject.ipr", tofile: "${basedir}/${grailsAppName}.ipr", overwrite: true)
-    ant.move(file: "${basedir}/ideaGrailsProject.iws", tofile: "${basedir}/${grailsAppName}.iws", overwrite: true)
-
-    
-
-    def appKey = grailsAppName.replaceAll( /\s/, '.' ).toLowerCase()
-    ant.replace(dir:"${basedir}", includes:"*.*") {
-        replacefilter(token:"@grails.intellij.libs@", value: intellijClasspathLibs())
-        replacefilter(token: "@grails.libs@", value: eclipseClasspathLibs())
-        replacefilter(token: "@grails.jar@", value: eclipseClasspathGrailsJars())
-        replacefilter(token: "@grails.version@", value: grailsVersion)
-        replacefilter(token: "@grails.project.name@", value: grailsAppName)
-        replacefilter(token: "@grails.project.key@", value: appKey)
-    }
 }
 
 target(init: "main init target") {
@@ -187,7 +121,6 @@ target(init: "main init target") {
 
     grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
     grailsUnpack(dest: basedir, src: "grails-app-files.jar")
-    launderIDESupportFiles()
 
     classpath()
 
@@ -198,15 +131,4 @@ target(init: "main init target") {
     updateMetadata(
             "app.version": grailsAppVersion ?: "0.1",
             "app.servlet.version": servletVersion)
-}
-
-logError = { String message, Throwable t ->
-    GrailsUtil.deepSanitize(t)
-    t.printStackTrace()
-    event("StatusError", ["$message: ${t.message}"])
-}
-
-logErrorAndExit = { String message, Throwable t ->
-    logError(message, t)
-    exit(1)
 }
