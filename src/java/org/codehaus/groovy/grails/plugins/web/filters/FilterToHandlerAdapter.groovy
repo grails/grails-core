@@ -183,13 +183,11 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
         		matched = doesMatch(controllerRegex, controllerName)
 			}
 			if(matched && filterConfig.scope.action) {
-				if(!actionName) {
+				if(!actionName && controllerName) {
                     def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, controllerName)
                     actionName = controllerClass?.getDefaultAction()
                 }
-                if(actionName) {
-                    matched = doesMatch(actionRegex, actionName)
-                }
+                matched = doesMatch(actionRegex, actionName)
         	}
         }
     	if(invertRule)
