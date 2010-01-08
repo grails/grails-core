@@ -126,4 +126,47 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 
         assertTrue filterAdapter.accept("demo", null, "/ignored")
     }
+
+	void testAppRootWithWildcardedControllerAndAction() {
+		def filterAdapter = new FilterToHandlerAdapter()
+		filterAdapter.filterConfig = new Expando()
+		filterAdapter.filterConfig.scope = new Expando()
+		filterAdapter.filterConfig.scope.controller = "*"
+		filterAdapter.filterConfig.scope.action = "*"
+		filterAdapter.afterPropertiesSet()
+
+		assertTrue filterAdapter.accept(null, null, '/')
+	}
+
+	void testAppRootWithWildcardedControllerAndNoAction() {
+		def filterAdapter = new FilterToHandlerAdapter()
+		filterAdapter.filterConfig = new Expando()
+		filterAdapter.filterConfig.scope = new Expando()
+		filterAdapter.filterConfig.scope.controller = "*"
+		filterAdapter.afterPropertiesSet()
+
+		assertTrue filterAdapter.accept(null, null, '/')
+	}
+
+	void testAppRootWithWildcardedControllerAndSpecificAction() {
+		def filterAdapter = new FilterToHandlerAdapter()
+		filterAdapter.filterConfig = new Expando()
+		filterAdapter.filterConfig.scope = new Expando()
+		filterAdapter.filterConfig.scope.controller = "*"
+		filterAdapter.filterConfig.scope.action = "something"
+		filterAdapter.afterPropertiesSet()
+
+		assertFalse filterAdapter.accept(null, null, '/')
+	}
+
+	void testAppRootWithSpecificControllerAndWildcardedAction() {
+		def filterAdapter = new FilterToHandlerAdapter()
+		filterAdapter.filterConfig = new Expando()
+		filterAdapter.filterConfig.scope = new Expando()
+		filterAdapter.filterConfig.scope.controller = "something"
+		filterAdapter.filterConfig.scope.action = "*"
+		filterAdapter.afterPropertiesSet()
+
+		assertFalse filterAdapter.accept(null, null, '/')
+	}
 }
