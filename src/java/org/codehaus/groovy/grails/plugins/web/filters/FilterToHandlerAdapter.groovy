@@ -177,7 +177,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
         }
         else if(controllerRegex && actionRegex) {
 			if(controllerName == null) {
-				matched = false
+				matched = '/' == uri &&
+				         (filterConfig.scope.controller == null || '*' == filterConfig.scope.controller) &&
+                         (filterConfig.scope.action == null || '*' == filterConfig.scope.action)
 			}
 			else if(useRegexFind) {
         		matched=controllerRegex.matcher(controllerName).find() && actionRegex.matcher(actionName).find()
