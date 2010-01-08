@@ -171,30 +171,24 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     }
 
     boolean accept(String controllerName, String actionName, String uri) {
-    	def matched
+    	boolean matched=true
         if(uriPattern) {
         	matched=pathMatcher.match(uriPattern, uri)
         }
         else if(controllerRegex && actionRegex) {
 			if(controllerName == null) {
-				matched = '/' == uri &&
-				         (filterConfig.scope.controller == null || '*' == filterConfig.scope.controller) &&
-                         (filterConfig.scope.action == null || '*' == filterConfig.scope.action)
+				matched = ('/' == uri)
+        	}
+			if(matched) {
+        		matched = doesMatch(controllerRegex, controllerName)
 			}
-			else if(useRegexFind) {
-        		matched=controllerRegex.matcher(controllerName).find() && actionRegex.matcher(actionName).find()
-        	} else {
-        		matched=controllerRegex.matcher(controllerName).matches()
-                if(matched) {
-                    if(filterConfig.scope.action) {
-                        if(!actionName) {
-                            def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, controllerName)
-                            actionName = controllerClass?.getDefaultAction()
-                        }
-                        if(actionName) {
-                            matched = actionRegex.matcher(actionName).matches()
-                        }
-                    }
+			if(matched && filterConfig.scope.action) {
+				if(!actionName) {
+                    def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, controllerName)
+                    actionName = controllerClass?.getDefaultAction()
+                }
+                if(actionName) {
+                    matched = doesMatch(actionRegex, actionName)
                 }
         	}
         }
@@ -203,6 +197,11 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     	else	
     		return matched
     }
+	
+	boolean doesMatch(Pattern pattern, CharSequence string) {
+		def matcher=pattern.matcher(string?:'')
+		return (useRegexFind ? matcher.find() : matcher.matches())
+	}
 
     String toString() {
         return "FilterToHandlerAdapter[$filterConfig, $configClass]"

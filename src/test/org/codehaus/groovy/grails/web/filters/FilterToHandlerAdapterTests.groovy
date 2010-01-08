@@ -47,7 +47,7 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 		filterAdapter.filterConfig = new Expando()
 		filterAdapter.filterConfig.scope = new Expando()
 		filterAdapter.filterConfig.scope.controller = "trol"
-		filterAdapter.filterConfig.scope.find = "yes"
+		filterAdapter.filterConfig.scope.find = true
 		filterAdapter.afterPropertiesSet()
 
 		assert filterAdapter.accept("Controller", "index", "/restricted/1")
@@ -62,9 +62,9 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 		filterAdapter.filterConfig.scope = new Expando()
 		filterAdapter.filterConfig.scope.controller = ".*trol.*"
 		filterAdapter.filterConfig.scope.action = "index"
-		filterAdapter.filterConfig.scope.invert = "yes"
-		filterAdapter.filterConfig.scope.find = "no"
-		filterAdapter.filterConfig.scope.regex = "yes"
+		filterAdapter.filterConfig.scope.invert = true
+		filterAdapter.filterConfig.scope.find = false
+		filterAdapter.filterConfig.scope.regex = true
 		filterAdapter.afterPropertiesSet()
 
 		assert !filterAdapter.accept("Controller", "index", "/restricted/1")
@@ -137,7 +137,20 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 
 		assertTrue filterAdapter.accept(null, null, '/')
 	}
-
+	
+	
+	void testAppRootWithWildcardedControllerAndActionRegex() {
+		def filterAdapter = new FilterToHandlerAdapter()
+		filterAdapter.filterConfig = new Expando()
+		filterAdapter.filterConfig.scope = new Expando()
+		filterAdapter.filterConfig.scope.controller = ".*"
+		filterAdapter.filterConfig.scope.action = ".*"
+		filterAdapter.filterConfig.scope.regex = true
+		filterAdapter.afterPropertiesSet()
+		
+		assertTrue filterAdapter.accept(null, null, '/')
+	}
+	
 	void testAppRootWithWildcardedControllerAndNoAction() {
 		def filterAdapter = new FilterToHandlerAdapter()
 		filterAdapter.filterConfig = new Expando()
