@@ -46,6 +46,35 @@ class CriteriaBuilderTestClass2 {
         ['bart']
     }
 
+	void testResultTransformerWithMapParamToList() {
+		def domainClass = this.ga.getDomainClass("CriteriaBuilderTestClass").clazz
+
+		def obj = domainClass.newInstance()
+		obj.firstName = "Jeff"
+		obj.lastName="Brown"
+		obj.age=196
+		obj.addToChildren2(firstName:"Zack")
+				.addToChildren2(firstName:"Jake")
+
+		assertNotNull obj.save(flush:true)
+
+		def results = domainClass.createCriteria().list {
+			children2 { like 'firstName', '%a%' }
+			setResultTransformer(org.hibernate.Criteria.DISTINCT_ROOT_ENTITY)
+		}
+
+		assertEquals 1, results.size()
+
+		// per GRAILS-5692, the result transformer doesn't
+		// work if a map is passed to the list method
+		results = domainClass.createCriteria().list([:]) {
+			children2 { like 'firstName', '%a%' }
+			setResultTransformer(org.hibernate.Criteria.DISTINCT_ROOT_ENTITY)
+		}
+
+		assertEquals 1, results.size()
+	}
+
     void testSqlRestriction() {
         createDomainData()
 
