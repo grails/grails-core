@@ -1362,6 +1362,9 @@ public final class GrailsDomainBinder {
 
 
         if (m != null) {
+
+        	configureDerivedProperties(domainClass, m);
+
             CacheConfig cc = m.getCache();
             if (cc != null && cc.getEnabled()) {
                 root.setCacheConcurrencyStrategy(cc.getUsage());
@@ -1415,6 +1418,16 @@ public final class GrailsDomainBinder {
 
         createClassProperties(domainClass, root, mappings);
     }
+
+	private static void configureDerivedProperties(
+			GrailsDomainClass domainClass, Mapping m) {
+		for(GrailsDomainClassProperty prop : domainClass.getPersistentProperties()) {
+			PropertyConfig propertyConfig = m.getPropertyConfig(prop.getName());
+			if(propertyConfig != null && propertyConfig.getFormula() != null) {
+				prop.setDerived(true);
+			}
+		}
+	}
 
     private static void bindIdentity(GrailsDomainClass domainClass, RootClass root, Mappings mappings, Mapping gormMapping) {
         GrailsDomainClassProperty identifierProp = domainClass.getIdentifier();
@@ -2216,39 +2229,50 @@ public final class GrailsDomainBinder {
         bindSimpleValue(grailsProp, null, simpleValue, path, propertyConfig);
     }
 
-    private static void bindSimpleValue(GrailsDomainClassProperty grailsProp, GrailsDomainClassProperty parentProperty, SimpleValue simpleValue, String path, PropertyConfig propertyConfig) {
-        setTypeForPropertyConfig(grailsProp, simpleValue, propertyConfig);
-        Table table = simpleValue.getTable();
+	private static void bindSimpleValue(GrailsDomainClassProperty grailsProp,
+			GrailsDomainClassProperty parentProperty, SimpleValue simpleValue,
+			String path, PropertyConfig propertyConfig) {
+		setTypeForPropertyConfig(grailsProp, simpleValue, propertyConfig);
+		if (grailsProp.isDerived()) {
+			Formula formula = new Formula();
+			formula.setFormula(propertyConfig.getFormula());
+			simpleValue.addFormula(formula);
+		} else {
+			Table table = simpleValue.getTable();
 
-        // Add the column definitions for this value/property. Note that
-        // not all custom mapped properties will have column definitions,
-        // in which case we still need to create a Hibernate column for
-        // this value.
-        List columnDefinitions = propertyConfig != null ? propertyConfig.getColumns() : Arrays.asList(new Object[]{null});
-        if (columnDefinitions.isEmpty()) columnDefinitions = Arrays.asList(new Object[]{null});
+			// Add the column definitions for this value/property. Note that
+			// not all custom mapped properties will have column definitions,
+			// in which case we still need to create a Hibernate column for
+			// this value.
+			List columnDefinitions = propertyConfig != null ? propertyConfig
+					.getColumns() : Arrays.asList(new Object[] { null });
+			if (columnDefinitions.isEmpty())
+				columnDefinitions = Arrays.asList(new Object[] { null });
 
-        for (int i = 0, n = columnDefinitions.size(); i < n; i++) {
-            ColumnConfig cc = (ColumnConfig) columnDefinitions.get(i);
-            Column column = new Column();
+			for (int i = 0, n = columnDefinitions.size(); i < n; i++) {
+				ColumnConfig cc = (ColumnConfig) columnDefinitions.get(i);
+				Column column = new Column();
 
-            // Check for explicitly mapped column name and SQL type.
-            if (cc != null) {
-                if (cc.getName() != null) {
-                    column.setName(cc.getName());
-                }
-                if (cc.getSqlType() != null) {
-                    column.setSqlType(cc.getSqlType());
-                }
-            }
+				// Check for explicitly mapped column name and SQL type.
+				if (cc != null) {
+					if (cc.getName() != null) {
+						column.setName(cc.getName());
+					}
+					if (cc.getSqlType() != null) {
+						column.setSqlType(cc.getSqlType());
+					}
+				}
 
-            column.setValue(simpleValue);
-            bindColumn(grailsProp, parentProperty,column, cc, path, table);
+				column.setValue(simpleValue);
+				bindColumn(grailsProp, parentProperty, column, cc, path, table);
 
-            if (table != null) table.addColumn(column);
+				if (table != null)
+					table.addColumn(column);
 
-            simpleValue.addColumn(column);
-        }
-    }
+				simpleValue.addColumn(column);
+			}
+		}
+	}
 
     private static void setTypeForPropertyConfig(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, PropertyConfig config) {
         final String typeName = getTypeName(grailsProp, getPropertyConfig(grailsProp), getMapping(grailsProp.getDomainClass()));

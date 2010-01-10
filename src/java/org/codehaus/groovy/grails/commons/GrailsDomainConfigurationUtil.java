@@ -424,7 +424,7 @@ public class GrailsDomainConfigurationUtil {
         final GrailsDomainClassProperty versionProperty = domainClass.getVersion();
         final boolean isVersion = versionProperty != null && versionProperty.equals(property);
         return !constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)
-                && isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion;
+                && isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion && !property.isDerived();
     }
 
     private static void applyMapOfConstraints(Map<String, Object> constraints, String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp) {

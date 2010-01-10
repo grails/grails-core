@@ -363,6 +363,7 @@ class HibernateMappingBuilder {
         if(args && args[0] instanceof Map) {
             def namedArgs = args[0]
             PropertyConfig property = mapping.columns[name] ?: new PropertyConfig()
+			property.formula = namedArgs.formula
             property.type = namedArgs.type ?: property.type
             property.lazy = namedArgs.lazy != null ? namedArgs.lazy : property.lazy
             property.cascade = namedArgs.cascade ?: property.cascade

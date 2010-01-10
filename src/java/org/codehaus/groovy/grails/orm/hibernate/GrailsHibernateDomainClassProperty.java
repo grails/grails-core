@@ -47,7 +47,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     private GrailsDomainClassProperty otherSide;
     private boolean owingSide;
     private String columnName;
-
+    private boolean derived;
 
     public GrailsHibernateDomainClassProperty(GrailsHibernateDomainClass domainClass, String propertyName) {
         this.domainClass = domainClass;
@@ -228,4 +228,11 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
         return columnName;
     }
 
+	public boolean isDerived() {
+		return derived;
+	}
+
+	public void setDerived(boolean isDerived) {
+		derived = isDerived;
+	}
 }
