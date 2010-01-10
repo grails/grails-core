@@ -9,9 +9,6 @@ import grails.persistence.Entity
 class Product {
 	Integer price
 	Integer finalPrice
-		static constraints = {
-		finalPrice nullable: true
-	}
 	static mapping = {
 	    finalPrice formula: 'PRICE * 3'
 	}
