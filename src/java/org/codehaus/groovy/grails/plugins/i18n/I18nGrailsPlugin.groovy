@@ -39,7 +39,7 @@ class I18nGrailsPlugin {
 	
 	def doWithSpring = {
 		// find i18n resource bundles and resolve basenames
-		def baseNames = []
+		def baseNames = [] as Set
 
         def messageResources
         if(application.warDeployed) {
@@ -52,20 +52,25 @@ class I18nGrailsPlugin {
         if(messageResources) {
 
             for( resource in messageResources) {
-                // Skip files with a locale specification, since we assume
-                // that there is an associated base resource bundle too.
-                if (resource.filename.contains("_")) {
-                    continue
-                }
-
                 // Extract the file path of the file's parent directory
                 // that comes after "grails-app/i18n".
                 def path = StringUtils.substringAfter(resource.path, baseDir)
 
-                // Lop off the extension - the "basenames" property in the
-                // message source cannot have entries with an extension.
-                path -= ".properties"
+                // look for an underscore in the file name (not the full path)
+                def fileName = resource.filename
+                def firstUnderscore = fileName.indexOf('_')
 
+                if(firstUnderscore > 0) {
+					// grab everyting up to but not including
+					// the first underscore in the file name
+					def numberOfCharsToRemove = fileName.length() - firstUnderscore
+					def lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
+				    path = path[0..lastCharacterToRetain]
+				} else {
+					// Lop off the extension - the "basenames" property in the
+					// message source cannot have entries with an extension.
+					path -= ".properties"
+				}
                 baseNames << "WEB-INF/" + baseDir + path
             }
         }
@@ -124,3 +129,4 @@ class I18nGrailsPlugin {
 		}
 	}
 }
+
