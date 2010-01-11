@@ -35,6 +35,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
@@ -321,6 +322,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         String currentController = null;
         String currentAction = null;
         String currentId = null;
+        ModelAndView currentMv = null;
         Map currentParams = null;
         if (webRequest!=null) {
             currentController = webRequest.getControllerName();
@@ -328,12 +330,14 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             currentId = webRequest.getId();            
             currentParams = new HashMap();
             currentParams.putAll(webRequest.getParameterMap());
+            currentMv = (ModelAndView)webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
         }
         try {
             if (webRequest!=null) {
             	webRequest.getParameterMap().clear();
                 info.configure(webRequest);
                 webRequest.getParameterMap().putAll(info.getParameters());
+                webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
             }
             return includeForUrl(includeUrl, request, response, model);
         }
@@ -344,6 +348,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 webRequest.setId(currentId);
                 webRequest.setControllerName(currentController);
                 webRequest.setActionName(currentAction);
+                if(currentMv != null) {
+                	webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, currentMv, 0);
+                }
             }
         }
     }
