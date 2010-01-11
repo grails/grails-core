@@ -1,25 +1,47 @@
-usePlugin 'groovy'
+import org.codehaus.groovy.tools.javac.JavaStubCompilationUnit
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.Phases
+import org.apache.commons.io.FileUtils
+import org.gradle.api.tasks.testing.TestListener
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "commons-io:commons-io:1.4"
+    }
+}
+
+apply id: 'groovy'
 
 version = '1.2-SNAPSHOT'
 
+tasks.withType(Zip).allObjects {task ->
+    task.version = '1.2.0.BUILD-SNAPSHOT'
+}
 
-lib = "lib"
+sourceCompatibilty = "1.5"
+targetCompatibilty = "1.5"
+
 configurations {
+    compile.transitive = true
     jsp21.extendsFrom compile
 }
 
 dependencies {
-    compile files(
-            fileSet(dir: lib, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar']),
-            "${System.getenv('JAVA_HOME')}/lib/tools.jar",
-            "src/war"
-    )
-
-    jsp files("$lib/jsp-api-2.1.jar") 
+    lib = "$projectDir/lib"
+    groovy files("$lib/groovy-all-1.6.7.jar")
+    compile files(fileTree(dir: lib as File, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar', 'groovy-all-1.6.5.jar']), "${System.getenv('JAVA_HOME')}/lib/tools.jar")
+    testRuntime files('src/test', 'target', 'src/grails/grails-app/utils', ".", "src/war/WEB-INF")
+    jsp21 files("$lib/jsp-api-2.1.jar")
 }
 
-source {
+sourceSets {
     main {
+        java {
+            srcDirs = []
+        }
         groovy {
             srcDirs = ['src/java']
         }
@@ -28,26 +50,188 @@ source {
             include '**/*.properties', '**/*.xsd'
         }
     }
-    jdk12 {
-        compileClasspath(jsp21)
+    jsp21 {
+        compileClasspath = files(configurations.jsp21, main.classes)
         groovy.srcDirs = ['src/jsp21']
         resources.srcDirs = []
     }
+    test {
+        java {
+            srcDirs = []
+        }
+        groovy {
+            srcDirs = ['src/test']
+        }
+        resources {
+            srcDirs = ['src/test', 'src/jar']
+            exclude '**/*.java', '**/*.groovy'
+        }
+    }
     buildScripts {
-        classesDir = "$buildDir/compiled-scripts"
-        groovy.srcDirs = ['scrips']
+        compileClasspath = sourceSets.main.compileClasspath + main.classes
+        classesDir = "$buildDir/compiled-scripts" as File
+        groovy.srcDirs = ['scripts']
         resources.srcDirs = []
     }
 }
 
-manifest.mainAttributes(
-        "Built-By": System.properties['user.name'],
-        "Implementation-Title": "Gradle",
-        "Implementation-Version": version,
-        "Implementation-Vendor": 'grails.org')
+jsp21Classes.dependsOn classes
+task allClasses(dependsOn: [classes, jsp21Classes, buildScriptsClasses])
 
-metaInf << fileSet(dir:'src/jar', includes: ['*.handlers','*.schemas'])
+task stubs(type: StubGenerator) {
+    source = sourceSets.main.allSource
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = "$buildDir/docs/stubs" as File
+}
+
+javadoc {
+    dependsOn stubs
+    source stubs.destinationDir, defaultSource
+    include "org/codehaus/groovy/grails/**", "grails/**"
+    project.configure(options) {
+        windowtitle = "Grails $version"
+        doctitle = "<h1>Grails</h1>"
+        encoding = "UTF-8"
+        access = "package"
+        author = true
+        version = true
+        use = true
+        defaultexcludes = true
+        breakiterator = true
+        links("http://java.sun.com/j2ee/1.4/docs/api", "http://java.sun.com/j2se/1.5.0/docs/api", "http://static.springframework.org/spring/docs/2.5.x/api")
+        tags("todo", "To do:")
+    }
+    verbose = true
+}
+
+configure([compileGroovy, compileTestGroovy]) {
+    groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
+    groovyOptions.encoding = "UTF-8"
+}
+
+configure([compileJava, compileTestJava]) {
+    options.deprecation = true
+    options.debug = true
+}
+
+apply {
+    apply url: 'gradle/unit-test.gradle'
+    apply url: 'gradle/assemble.gradle'
+}
+
+task eclipseClasspath << {
+    def binOutput = "$buildDir/eclipse/bin-output"
+    def testOutput = "$buildDir/eclipse/test-output"
+    generateOutputDir(binOutput)
+    generateOutputDir(testOutput)
+
+    def sw = new FileWriter(".classpath")
+    def pw = new PrintWriter(sw)
+    def mkp = new groovy.xml.MarkupBuilder(pw)
+
+    pw.println('&lt;?xml version="1.0" encoding="UTF-8"?&gt;')
+    def added = new HashSet()
+
+    mkp.doubleQuotes = true
+    mkp.classpath {
+
+        classpathentry(kind: "src", path: "src/commons")
+        classpathentry(kind: "src", path: "src/config")
+        classpathentry(kind: "src", path: "src/tiger")
+        classpathentry(kind: "src", path: "src/web")
+        classpathentry(kind: "src", path: "src/persistence")
+        classpathentry(kind: "src", path: "src/scaffolding")
+        classpathentry(kind: "src", path: "test/groovy", output: testOutput)
+        classpathentry(kind: "src", path: "test/commons", output: testOutput)
+        classpathentry(kind: "src", path: "test/web", output: testOutput)
+        classpathentry(kind: "src", path: "test/persistence", output: testOutput)
+        classpathentry(kind: "src", path: "test/scaffolding", output: testOutput)
+        classpathentry(kind: "output", path: binOutput)
+
+        classpathentry(kind: "lib", path: "lib/hibernate3.jar", sourcepath: "/HIBERNATE_HOME/src")
+        added.add("hibernate3.jar")
+        classpathentry(kind: "lib", path: "lib/spring-2.0.2.jar", sourcepath: "/SPRING_HOME/src")
+        added.add("spring-2.0.2.jar")
+        classpathentry(kind: "lib", path: "lib/spring-mock-2.0.2.jar", sourcepath: "/SPRING_HOME/mock")
+        added.add("spring-mock-2.0.2.jar")
+
+        new File('lib').eachFile {f ->
+            if (!(f.directory || added.contains(f.name))) {
+                classpathentry(kind: "lib", path: "lib/" + f.name)
+            }
+        }
+
+        classpathentry(kind: "lib", path: "ant/lib/ant.jar")
+        classpathentry(kind: "con", path: "org.eclipse.jdt.launching.JRE_CONTAINER")
+
+        if (hasProperty("pluginDisabled")) {
+            logger.warn("Eclipse plugin disabled. Adding Groovy compile targets to classpath")
+
+            //plugin is disabled, which means you need to build
+            //groovy using the ant scripts.
+            //This adds the ant scripts to the classpath
+            // todo Check if this still makes sense
+            classpathentry(kind: "lib", path: "build/classes/core")
+            classpathentry(kind: "lib", path: "build/classes/crud")
+            classpathentry(kind: "lib", path: "build/classes/gorm")
+            classpathentry(kind: "lib", path: "build/classes/web")
+            classpathentry(kind: "lib", path: "build/classes/config")
+        }
+
+    }
+}
+
+void generateOutputDir(dirName) {
+    def output = new File(dirName)
+    if (!output.exists()) {
+        output.mkdirs()
+        logger.info("Generating Eclipse output folder " + output.path)
+    }
+}
+
+class StubGenerator extends DefaultTask {
+    @org.gradle.api.tasks.OutputDirectory
+    File destinationDir
+
+    @org.gradle.api.tasks.InputFiles
+    FileTree source
+
+    @org.gradle.api.tasks.InputFiles
+    FileCollection classpath
+
+    CompilerConfiguration configuration = new CompilerConfiguration()
+
+    @org.gradle.api.tasks.TaskAction
+    void generate() {
+        GroovyClassLoader gcl = createClassLoader();
+
+        JavaStubCompilationUnit compilation = new JavaStubCompilationUnit(configuration, gcl, destinationDir);
+        int count = 0;
+
+        source.matching { include "**/*.groovy", "**/*.java" }.each {File file ->
+            compilation.addSourceFile(file)
+            if (file.getName().endsWith(".groovy")) {
+                count++
+            }
+        }
+
+        if (count > 0) {
+            logger.info("Generating " + count + " Java stub" + (count > 1 ? "s" : "") + " to " + destinationDir);
+            compilation.compile(Phases.CONVERSION);
+        }
+        else {
+            logger.info("No sources found for stub generation");
+        }
+    }
+
+    public GroovyClassLoader createClassLoader() {
+        ClassLoader parent = ClassLoader.getSystemClassLoader();
+        GroovyClassLoader gcl = new GroovyClassLoader(parent, configuration);
+        classpath.each {File file ->
+            gcl.addURL(file.toURI().toURL())
+        }
+        return gcl;
+    }
+}
 
 
-
-task check << { println configurations.compile.files }
