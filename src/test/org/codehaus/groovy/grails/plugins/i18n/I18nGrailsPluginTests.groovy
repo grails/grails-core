@@ -15,11 +15,8 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 
         ga.@applicationMeta = ['grails.war.deployed':'true'] as Metadata
         ctx.registerMockResource("WEB-INF/grails-app/i18n/messages.properties")
-        ctx.registerMockResource("WEB-INF/grails-app/i18n/messages-site_en.properties")
-        ctx.registerMockResource("WEB-INF/grails-app/i18n/foo-site_en.properties")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/project.properties")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/project_nl.properties")
-		ctx.registerMockResource("WEB-INF/grails-app/i18n/sub/dir_name/sub/foo-bar_en.properties")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/nobundle")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/nobundle.txt")
 		ctx.registerMockResource("WEB-INF/grails-app/i18n/nobundle.xml")
@@ -44,9 +41,6 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 		def messageSource = appCtx.getBean("messageSource")?.toString()
 		println messageSource
 		assert StringUtils.contains(messageSource, "messages")
-		assert StringUtils.contains(messageSource, "messages-site")
-		assert StringUtils.contains(messageSource, "foo-site")
-		assert StringUtils.contains(messageSource, "foo-bar")
 		assert StringUtils.contains(messageSource, "project")
 		assert !StringUtils.contains(messageSource, "messages.properties")
 		assert !StringUtils.contains(messageSource, "project.properties")

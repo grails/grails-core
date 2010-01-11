@@ -30,8 +30,6 @@ import org.codehaus.groovy.grails.test.support.GrailsTestRequestEnvironmentInter
 import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
 import org.codehaus.groovy.grails.test.support.ControllerNameExtractor
 
-import grails.util.GrailsNameUtils
-
 /**
  * A Grails specific test suite that runs tests in a “Grails” environment. That is,
  * subjects the tests to autowiring of dependencies (by name), establishes a request like environment,
@@ -86,7 +84,6 @@ class JUnit3GrailsEnvironmentTestSuite extends TestSuite {
         if (mode.wrapInRequestEnvironment) {
             def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(test.class.name, JUnit3GrailsTestType.TESTS_SUFFIX)
             if (controllerName) {
-				controllerName = GrailsNameUtils.getPropertyName(controllerName)
                 inRequestRunner = { requestEnvironmentInterceptor.doInRequestEnvironment(controllerName, inTransactionRunner) }
             } else {
                 inRequestRunner = { requestEnvironmentInterceptor.doInRequestEnvironment(inTransactionRunner) }

@@ -66,7 +66,7 @@ import java.util.*;
  */
 public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
-	public static final String AND = "and"; // builder
+    public static final String AND = "and"; // builder
     public static final String IS_NULL = "isNull"; // builder
     public static final String IS_NOT_NULL = "isNotNull"; // builder
     public static final String NOT = "not";// builder
@@ -105,7 +105,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private static final String COUNT_CALL = "count";
     private static final String GET_CALL = "get";
     private static final String SCROLL_CALL = "scroll";
-    private static final String SET_RESULT_TRANSFORMER_CALL = "setResultTransformer";
 
 
     private static final String PROJECTIONS = "projections";
@@ -956,14 +955,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         return this.criteria != null;
     }
 
+
+
     public Object invokeMethod(String name, Object obj) {
         Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};
 
-        if(paginationEnabledList && SET_RESULT_TRANSFORMER_CALL.equals(name) && args.length == 1 && args[0] instanceof ResultTransformer) {
-    		resultTransformer = (ResultTransformer) args[0];
-    		return null;
-    	}
-
+        
         if(isCriteriaConstructionMethod(name, args)) {
 
             if(this.criteria != null) {
@@ -1023,12 +1020,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 					for(Iterator<Order> it = orderEntries.iterator();it.hasNext();){
 						this.criteria.addOrder(it.next());
 					}
-					if(resultTransformer == null) {
-						this.criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
-					} else if(paginationEnabledList) {
-						// relevant to GRAILS-5692
-						this.criteria.setResultTransformer(resultTransformer);
-					}
+                    this.criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
                     GrailsHibernateUtil.populateArgumentsForCriteria(targetClass, this.criteria, (Map)args[0]);
                     PagedResultList pagedRes = new PagedResultList(this.criteria.list());
 
