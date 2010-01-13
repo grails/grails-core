@@ -45,8 +45,6 @@ target( createConfig: "Creates the configuration object") {
            try {
                config = configSlurper.parse(configClass)
                config.setConfigFile(configFile.toURI().toURL())
-
-               ConfigurationHolder.setConfig(config)
            }
            catch(Exception e) {
                logError("Failed to compile configuration file",e)
@@ -59,7 +57,6 @@ target( createConfig: "Creates the configuration object") {
 		try {
 		   def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
 		   config.merge(dataSourceConfig)
-		   ConfigurationHolder.setConfig(config)
 		}
 		catch(ClassNotFoundException e) {
 			println "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
@@ -70,6 +67,7 @@ target( createConfig: "Creates the configuration object") {
         }
    }
    ConfigurationHelper.initConfig(config, null, classLoader)
+   ConfigurationHolder.config = config
 }
 
 target( packageApp : "Implementation of package target") {
