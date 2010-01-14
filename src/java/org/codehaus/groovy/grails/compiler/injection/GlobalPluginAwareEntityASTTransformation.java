@@ -52,6 +52,7 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
             List classes = moduleNode.getClasses();
             if(classes.size()>0) {
                 ClassNode classNode = (ClassNode) classes.get(0);
+                if(classNode.isAnnotationDefinition()) return;
                 File sourcePath = new File(sourceUnit.getName());
                 try {
                     String absolutePath = sourcePath.getCanonicalPath();
