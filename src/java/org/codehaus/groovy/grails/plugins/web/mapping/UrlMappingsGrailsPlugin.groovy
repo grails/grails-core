@@ -77,16 +77,20 @@ class UrlMappingsGrailsPlugin {
             }
         }
         def welcomeFileList = webXml.'welcome-file-list'
+        def appliedErrorCodes = []
         def errorPages = {
                  for(Resource r in watchedResources) {
                         r.file.eachLine { line ->
                            def matcher = line =~ /\s*"(\d+?)"\(.+?\)/
                            if(matcher) {
                               def errorCode = matcher[0][1]
-                               'error-page' {
-                                   'error-code'(errorCode)
-                                   'location'("/grails-errorhandler")
-                               }
+                              if(!appliedErrorCodes.contains(errorCode)) {
+                                  appliedErrorCodes << errorCode
+                                  'error-page' {
+                                      'error-code'(errorCode)
+                                      'location'("/grails-errorhandler")
+                                  }
+                              }
 
                            }
                         }
