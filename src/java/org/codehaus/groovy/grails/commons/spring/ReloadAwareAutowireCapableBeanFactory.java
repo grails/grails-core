@@ -29,8 +29,10 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.*;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
 import org.springframework.beans.factory.support.*;
 import org.springframework.util.ClassUtils;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 
 /**
  * A BeanFactory that can deal with class cast exceptions that may occur due to class reload events and then
@@ -83,6 +85,9 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
 
             });
         }
+
+        setParameterNameDiscoverer(new LocalVariableTableParameterNameDiscoverer());
+        setAutowireCandidateResolver(new QualifierAnnotationAutowireCandidateResolver());        
     }
 
     @Override
