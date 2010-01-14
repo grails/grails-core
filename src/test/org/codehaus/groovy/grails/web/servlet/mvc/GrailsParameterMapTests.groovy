@@ -81,11 +81,29 @@ class GrailsParameterMapTests extends GroovyTestCase {
 
         theMap = new GrailsParameterMap(mockRequest);
 
-        assert theMap['foo'] instanceof Date : "Should have returned a date!"
+        assert theMap['foo'] instanceof Date : "Should have returned a date but was a ${theMap['foo']}!"
         def cal = new GregorianCalendar()
         cal.setTime(theMap['foo'])
 
         assert 2007 == cal.get(Calendar.YEAR) : "Year should be 2007"
+    }
+
+    void testIterateOverMapContainingDate() {
+        mockRequest.addParameter("stuff", "07")
+        mockRequest.addParameter("foo", "date.struct")
+        mockRequest.addParameter("foo_year", "2007")
+        mockRequest.addParameter("foo_month", "07")
+        mockRequest.addParameter("bar", "07")
+
+
+        theMap = new GrailsParameterMap(mockRequest);
+
+        def params = new GrailsParameterMap(mockRequest);
+        for (Object o : theMap.keySet()) {
+            String name = (String) o;
+            params.put(name, theMap.get(name));
+        }
+
     }
 
     void testMultiDimensionParams() {
