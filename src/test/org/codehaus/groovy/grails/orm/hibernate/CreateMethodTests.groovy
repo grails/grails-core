@@ -19,6 +19,14 @@ class CreateMethodTests extends AbstractGrailsHibernateTests {
         assert domainClass.clazz.isInstance(book)
 	}
 
+	void testCreateMethodOnAnnotatedEntity() {
+		def domainClass = ga.getDomainClass("BookEntity")
+
+		def book = domainClass.clazz.create()
+		assert book
+		assert domainClass.clazz.isInstance(book)
+	}
+
 	void onSetUp() {
 		gcl.parseClass(
 """
@@ -27,6 +35,13 @@ class Book2 {
   Long version
   String title
  }
+
+@javax.persistence.Entity
+class BookEntity {
+	@javax.persistence.Id
+	Long myId
+    String title
+}
 """
 		)
 	}

@@ -85,7 +85,14 @@ class DomainClassGrailsPlugin {
                     BeanUtils.instantiateClass(domainClass.clazz)
                 }
             }
-            metaClass.static.create = {-> ctx.getBean(domainClass.getFullName()) }
+            metaClass.static.create = {->
+				if(ctx.containsBean(domainClass.fullName)) {
+					ctx.getBean(domainClass.fullName)
+				}
+				else {
+					BeanUtils.instantiateClass(domainClass.clazz)
+				}
+			}
 
             addValidationMethods(application, domainClass, ctx)
             addRelationshipManagementMethods(domainClass)
