@@ -59,7 +59,8 @@
 
     </target>
 
-    <property name="bundlor.version" value="1.0.0.CI-231" />
+    <property name="bundlor.version" value="1.0.0.CI-232" />
+    <property name="bundlor.zip" value="${basedir}/bundlor/bundlor-${bundlor.version}.zip" />
     <property name="bundlor.home" location="${basedir}/target/bundlor-${bundlor.version}" />
 
     <target name="--bundlor-jar" depends="bundlor.init" unless="disable.bundlor">
@@ -83,7 +84,7 @@
 				<available type="dir" file="${bundlor.home}"  />
 			</or>
     	</condition>
-		<antcall target="bundlor.download" />
+		<antcall target="bundlor.extract" />
 		<taskdef resource="com/springsource/bundlor/ant/antlib.xml"
                  uri="antlib:com.springsource.bundlor.ant">
             <classpath id="bundlor.classpath">
@@ -93,14 +94,9 @@
         </taskdef>
 	</target>
 
-    <target name="bundlor.download" unless="bundlor.installed">
-        <get src="http://s3.amazonaws.com/dist.springframework.org/snapshot/BNDLR/bundlor-${bundlor.version}.zip"
-             dest="${grails.target}/bundlor.zip"
-             usetimestamp="true"/>
-
-        <unzip src="${grails.target}/bundlor.zip"
+    <target name="bundlor.extract" unless="bundlor.installed">
+        <unzip src="${bundlor.zip}"
                dest="${grails.target}" />
-
     </target>
     
     <target name="jar" depends="build,build-scripts,-jar-app-files" description="Build the entire source, run all tests and create the Grails JAR file.">
