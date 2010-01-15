@@ -78,7 +78,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader{
         if(location.startsWith(GrailsResourceUtils.WEB_INF)) {
             final String noWebInf = location.substring(GrailsResourceUtils.WEB_INF.length() + 1);
             final String defaultPath = "file:" + baseLocation + SLASH + noWebInf;
-            if(isNotMessageBundle(location) && noWebInf.startsWith(PLUGINS_PREFIX)) {
+            if(noWebInf.startsWith(PLUGINS_PREFIX)) {
                 BuildSettings settings = BuildSettingsHolder.getSettings();
                 String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
                 String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
@@ -109,7 +109,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader{
     }
 
     private boolean isNotMessageBundle(String location) {
-        return !location.endsWith(".properties") && !location.contains("i18n");
+        return !location.endsWith(".properties");
     }
 }
 
