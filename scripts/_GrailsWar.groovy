@@ -331,6 +331,7 @@ target(warPlugins:"Includes the plugins in the WAR") {
                         exclude(name:"grails-app/**/*.groovy")
                     }
                     def pluginResources = new File("$resourcesDirPath/plugins/${info.name}-${info.version}")
+                    println "COPYING RESOURCES FOR PATH ${pluginResources.absolutePath}: ${pluginResources.exists()}?"
                     if(pluginResources.exists()) {
                         fileset(dir:pluginResources) {
                             include(name:"grails-app/**")

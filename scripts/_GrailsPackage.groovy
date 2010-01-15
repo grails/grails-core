@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
 import org.gparallelizer.Asynchronizer
 import org.springframework.core.io.Resource
+import grails.util.PluginBuildSettings
 
 /**
  * Gant script that packages a Grails application (note: does not create WAR)
@@ -111,25 +112,31 @@ target( packageApp : "Implementation of package target") {
 							 includes:"**/*.properties",
 							 encoding:"UTF-8")
 
-            def i18nPluginDirs = pluginSettings.pluginI18nDirectories
+            PluginBuildSettings settings = pluginSettings
+            def i18nPluginDirs = settings.pluginI18nDirectories
             if(i18nPluginDirs) {
                 Asynchronizer.withAsynchronizer(5) {
                     i18nPluginDirs.eachAsync { Resource srcDir ->
                         if(srcDir.exists()) {
                             def file = srcDir.file
-                            def pluginDirName = file.parentFile.parentFile.name
-                            def destDir = "$resourcesDirPath/plugins/${pluginDirName}/grails-app/i18n"
-                            try {
-                                def ant = new AntBuilder()
-                                ant.project.defaultInputStream = System.in
-                                ant.mkdir(dir:destDir)
-                                ant.native2ascii(src:file,
-                                             dest:destDir,
-                                             includes:"**/*.properties",
-                                             encoding:"UTF-8")
-                            }
-                            catch (e) {
-                                println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                            def pluginDir = file.parentFile.parentFile
+                            def info = settings.getPluginInfo(pluginDir.absolutePath)
+
+                            if(info) {
+                                def pluginDirName = pluginDir.name
+                                def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
+                                try {
+                                    def ant = new AntBuilder()
+                                    ant.project.defaultInputStream = System.in
+                                    ant.mkdir(dir:destDir)
+                                    ant.native2ascii(src:file,
+                                                 dest:destDir,
+                                                 includes:"**/*.properties",
+                                                 encoding:"UTF-8")
+                                }
+                                catch (e) {
+                                    println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                                }
                             }
 
                         }
