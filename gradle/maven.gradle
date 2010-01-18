@@ -1,0 +1,35 @@
+import groovy.xml.NamespaceBuilder
+
+def artifact = NamespaceBuilder.newInstance(ant, 'antlib:org.apache.maven.artifact.ant')
+
+task generatePoms(type: Copy) {
+    pomsDir = "$buildDir/poms"
+    from('maven') {
+        include '*.pom.in'
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['grails.version': version])
+        rename '(.*)\\.in', '$1'
+    }
+    into pomsDir
+}
+
+task mavenInstall(dependsOn: [generatePoms, tasks.withType(Jar).all]) << {
+    tasks.withType(Jar).matching({task -> task.mavenArtifact } as Spec).each {jar ->
+        artifact.install(file: jar.archivePath) {
+            pom(file: "$generatePoms.pomsDir/$jar.baseName${jar.appendix ? '-' + jar.appendix : ""}.pom")
+        }
+    }
+}
+
+task mavenDeploy(dependsOn: [generatePoms, tasks.withType(Jar).all]) << {
+    tasks.withType(Jar).matching({task -> task.mavenArtifact } as Spec).each {jar ->
+        artifact.deploy(file: jar.archivePath) {
+            remoteRepository(url: "file:///home/hd/tmp/mavenrepo")
+            // todo To what repositories should be deployed? What about the credentials
+//            remoteRepository(url: "http://repo1.maven.org/maven2")
+//            remoteRepository(url: "http://ibiblio.org/maven2")
+//            remoteRepository(url: "http://repository.codehaus.org")
+//            remoteRepository(url: "http://snapshots.repository.codehaus.org")
+            pom(file: "$generatePoms.pomsDir/$jar.baseName${jar.appendix ? '-' + jar.appendix : ""}.pom")
+        }
+    }
+}

@@ -1,0 +1,25 @@
+// To use findbugs you must have findbugs installed. Additionally you need a property called findbugsHome. You can define this
+// in ~/.gradle/gradle.properties
+
+task findbugs(dependsOn: tasks.withType(Jar).all) << {
+    ant {
+        taskdef(name: "findbugs", classname: "edu.umd.cs.findbugs.anttask.FindBugsTask", classpath: "$findbugsHome/lib/findbugs-ant.jar")
+        mkdir dir: "$buildDir/findbugs-report"
+        findbugs(home: findbugsHome, output: "xml:withMessages", outputFile: "$buildDir/findbugs-report/grails-fb.xml", jvmargs: "-Xmx768M") {
+            auxClasspath() {
+                fileset(dir: "lib") {
+                    include(name: "*.jar")
+                    exclude(name: "jsp-api-2.1.jar")
+                }
+                fileset(dir: "${System.properties['JAVA_HOME']}/lib") {
+                    include(name: "tools.jar")
+                }
+            }
+            sourcePath path: file('src/java')
+            auxAnalyzepath() {
+                fileset dir: libsDir, includes: "grails-*.jar" 
+            }
+        }
+        xslt(in: "$buildDir/findbugs-report/grails-fb.xml", out: "$buildDir/findbugs-report/grails-fb.html", style: "$findbugsHome/src/xsl/fancy.xsl")
+    }
+}

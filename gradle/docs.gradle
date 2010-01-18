@@ -1,0 +1,118 @@
+import org.codehaus.groovy.tools.javac.JavaStubCompilationUnit
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.Phases
+import org.gradle.api.file.FileCollection.AntType
+
+//task stubs(type: StubGenerator) {
+//    source = sourceSets.main.allSource
+//    classpath = sourceSets.main.compileClasspath
+//    destinationDir = "$buildDir/docs/stubs" as File
+//}
+
+task stubs {
+    destinationDir = "$buildDir/docs/stubs"
+    doFirst {
+        def antBuilderClasspath = services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('ANT') +
+                configurations.groovy.files
+        def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
+        isolatedAnt.execute(antBuilderClasspath) {
+            mkdir(dir: destinationDir)
+            taskdef(name: "generatestubs", classname: "org.codehaus.groovy.grails.cli.GenerateStubsTask", classpath: sourceSets.main.runtimeClasspath.asPath)
+            generatestubs(destdir: destinationDir) {
+                classpath {
+                    pathelement path: sourceSets.main.runtimeClasspath.asPath
+                }
+                src {
+                    sourceSets.main.groovy.srcDirs.each { srcDir ->
+                        dirset(dir: srcDir) {
+                            exclude name: "**/*.properties"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+javadoc {
+    dependsOn stubs
+    source stubs.destinationDir, defaultSource
+    include "org/codehaus/groovy/grails/**", "grails/**"
+    project.configure(options) {
+        windowTitle = "Grails $version"
+        docTitle = "<h1>Grails</h1>"
+        encoding = "UTF-8"
+        ush 
+        author = true
+        version = true
+        use = true
+        breakIterator = true
+        links("http://java.sun.com/j2ee/1.4/docs/api", "http://java.sun.com/j2se/1.5.0/docs/api", "http://static.springframework.org/spring/docs/2.5.x/api")
+//        tags("todo:a:To do")  todo fix the javadoc task to accept this option
+    }
+    verbose = false
+//    doFirst {
+//        source.files.each { println it }
+//        throw new StopExecutionException()
+//    }
+}
+
+task gdoc {
+    destinationDir = new File(projectDir.parentFile, 'grails-doc/output')
+    doFirst {
+        onlyIf {
+            file('../grails-doc').isDirectory()
+        }
+        ant {
+            ant(target: 'distclean', dir: "../grails-doc", inheritAll: false)
+            ant(target: 'dist-nojavadoc', dir: "../grails-doc", inheritAll: false) {
+                property(name: "base.dir", value: "../grails-doc")
+            }
+        }
+    }
+}
+
+//class StubGenerator extends DefaultTask {
+//    @org.gradle.api.tasks.OutputDirectory
+//    File destinationDir
+//
+//    @org.gradle.api.tasks.InputFiles
+//    FileTree source
+//
+//    @org.gradle.api.tasks.InputFiles
+//    FileCollection classpath
+//
+//    CompilerConfiguration configuration = new CompilerConfiguration()
+//
+//    @org.gradle.api.tasks.TaskAction
+//    void generate() {
+//        GroovyClassLoader gcl = createClassLoader();
+//
+//        JavaStubCompilationUnit compilation = new JavaStubCompilationUnit(configuration, gcl, destinationDir);
+//        int count = 0;
+//
+//        source.matching { include "**/*.groovy", "**/*.java" }.each {File file ->
+//            compilation.addSourceFile(file)
+//            if (file.getName().endsWith(".groovy")) {
+//                count++
+//            }
+//        }
+//
+//        if (count > 0) {
+//            logger.info("Generating " + count + " Java stub" + (count > 1 ? "s" : "") + " to " + destinationDir);
+//            compilation.compile(Phases.CONVERSION);
+//        }
+//        else {
+//            logger.info("No sources found for stub generation");
+//        }
+//    }
+//
+//    public GroovyClassLoader createClassLoader() {
+//        ClassLoader parent = ClassLoader.getSystemClassLoader();
+//        GroovyClassLoader gcl = new GroovyClassLoader(parent, configuration);
+//        classpath.each {File file ->
+//            gcl.addURL(file.toURI().toURL())
+//        }
+//        return gcl;
+//    }
+//}
