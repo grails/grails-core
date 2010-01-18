@@ -1,14 +1,3 @@
-import org.codehaus.groovy.tools.javac.JavaStubCompilationUnit
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.Phases
-import org.gradle.api.file.FileCollection.AntType
-
-//task stubs(type: StubGenerator) {
-//    source = sourceSets.main.allSource
-//    classpath = sourceSets.main.compileClasspath
-//    destinationDir = "$buildDir/docs/stubs" as File
-//}
-
 task stubs {
     destinationDir = "$buildDir/docs/stubs"
     doFirst {
@@ -42,7 +31,7 @@ javadoc {
         windowTitle = "Grails $version"
         docTitle = "<h1>Grails</h1>"
         encoding = "UTF-8"
-        ush 
+        memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PACKAGE
         author = true
         version = true
         use = true
@@ -51,10 +40,6 @@ javadoc {
 //        tags("todo:a:To do")  todo fix the javadoc task to accept this option
     }
     verbose = false
-//    doFirst {
-//        source.files.each { println it }
-//        throw new StopExecutionException()
-//    }
 }
 
 task gdoc {
@@ -71,48 +56,3 @@ task gdoc {
         }
     }
 }
-
-//class StubGenerator extends DefaultTask {
-//    @org.gradle.api.tasks.OutputDirectory
-//    File destinationDir
-//
-//    @org.gradle.api.tasks.InputFiles
-//    FileTree source
-//
-//    @org.gradle.api.tasks.InputFiles
-//    FileCollection classpath
-//
-//    CompilerConfiguration configuration = new CompilerConfiguration()
-//
-//    @org.gradle.api.tasks.TaskAction
-//    void generate() {
-//        GroovyClassLoader gcl = createClassLoader();
-//
-//        JavaStubCompilationUnit compilation = new JavaStubCompilationUnit(configuration, gcl, destinationDir);
-//        int count = 0;
-//
-//        source.matching { include "**/*.groovy", "**/*.java" }.each {File file ->
-//            compilation.addSourceFile(file)
-//            if (file.getName().endsWith(".groovy")) {
-//                count++
-//            }
-//        }
-//
-//        if (count > 0) {
-//            logger.info("Generating " + count + " Java stub" + (count > 1 ? "s" : "") + " to " + destinationDir);
-//            compilation.compile(Phases.CONVERSION);
-//        }
-//        else {
-//            logger.info("No sources found for stub generation");
-//        }
-//    }
-//
-//    public GroovyClassLoader createClassLoader() {
-//        ClassLoader parent = ClassLoader.getSystemClassLoader();
-//        GroovyClassLoader gcl = new GroovyClassLoader(parent, configuration);
-//        classpath.each {File file ->
-//            gcl.addURL(file.toURI().toURL())
-//        }
-//        return gcl;
-//    }
-//}

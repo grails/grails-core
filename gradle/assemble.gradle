@@ -225,7 +225,7 @@ task initBundlor {
 tasks.withType(Jar).allObjects {task ->
     if (task.osgify) {
         task.dependsOn initBundlor
-        task.doFirst {
+        task.doLast {
             def bundlorPath = fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/dist") +
                     fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/lib")
             Properties antBuildProps = new Properties()

@@ -1,3 +1,6 @@
+// todo Unify test tasks into one multithreaded execution unit with a custom fork frequency
+// todo Add test progress listener with dot notation.
+
 repositories {
     mavenCentral()
 }
@@ -90,36 +93,3 @@ def createTestTask(def name, def includes, def excludes) {
     task.dependsOn instrumentForCoverage
 }
 
-
-//gradle.addListener(new ProgressTestListener(logger: logger))
-//
-//class ProgressTestListener implements TestListener {
-//    Logger logger
-//
-//    void suiteStarting(TestListener.Suite suite) {}
-//
-//    /**
-//     * Called after a test suite is finished.
-//     * @param suite The suite whose tests have finished being executed.
-//     */
-//    void suiteFinished(TestListener.Suite suite) {
-//    }
-//
-//    /**
-//     * Called before a test is started.
-//     * @param test The test which is about to be executed.
-//     */
-//    void testStarting(TestListener.Test test) { }
-//
-//    /**
-//     * Called after a test is finished.
-//     * @param test The test which has finished executing.
-//     */
-//    void testFinished(TestListener.Test test, TestListener.Result result) {
-////        logger.lifecycle("JJJJ")
-//        if (result.resultType == TestListener.ResultType.SUCCESS) {
-//            logger.progress(".")
-//        }
-//    }
-//}
-//
