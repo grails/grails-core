@@ -59,7 +59,7 @@
 
     </target>
 
-    <property name="bundlor.version" value="1.0.0.CI-232" />
+    <property name="bundlor.version" value="1.0.0.RELEASE" />
     <property name="bundlor.zip" value="${basedir}/bundlor/bundlor-${bundlor.version}.zip" />
     <property name="bundlor.home" location="${basedir}/target/bundlor-${bundlor.version}" />
 
