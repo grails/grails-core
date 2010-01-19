@@ -48,7 +48,7 @@ public class DevelopmentResourceLoaderTests extends TestCase {
     public void testDevelopmentPluginLocation() {
         DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
 
-        assertEquals("file:./plugins/test-one-0.1/grails-app/i18n", resourceLoader.getRealLocationInProject("WEB-INF/plugins/test-one-0.1/grails-app/i18n"));
+        assertEquals("file:/home/fred/plugins/test-one-0.1/grails-app/i18n", resourceLoader.getRealLocationInProject("WEB-INF/plugins/test-one-0.1/grails-app/i18n"));
 
     }
 
