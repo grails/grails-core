@@ -508,10 +508,25 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         modifiedTimes = new long[watchedResources.length];
         for (int i = 0; i < watchedResources.length; i++) {
             Resource r = watchedResources[i];
-            URLConnection c = r.getURL().openConnection();
-            c.setDoInput(false);
-            c.setDoOutput(false);
-            modifiedTimes[i] = c.getLastModified();
+            URLConnection c = null;
+            try {
+                c = r.getURL().openConnection();
+                c.setDoInput(false);
+                c.setDoOutput(false);
+                modifiedTimes[i] = c.getLastModified();
+            } finally {
+                if (c != null) {
+                    try {
+                        InputStream is = c.getInputStream();
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    catch (IOException e) {
+                        // ignore
+                    }
+                }
+            }
         }
     }
 
