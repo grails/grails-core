@@ -695,7 +695,7 @@ class BuildSettings {
             config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
             def credentials = config.grails.project.ivy.authentication
             if(credentials instanceof Closure) {
-                dependencyManager.parseDependencies authentication
+                dependencyManager.parseDependencies credentials
             }
         }
         else {
