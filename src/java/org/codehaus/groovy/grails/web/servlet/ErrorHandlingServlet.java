@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder;
+import org.codehaus.groovy.grails.web.util.IncludeResponseWrapper;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.grails.web.util.IncludedContent;
 import org.springframework.web.context.WebApplicationContext;
@@ -109,28 +110,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                             response.sendRedirect(includeResult.getRedirectURL());
                         }
                         else {
-                            final Factory factory = FactoryHolder.getFactory();
-                            PageParser parser = getPageParser(factory, response);
-                            Page p = parser != null ? parser.parse(includeResult.getContentAsCharArray()) : null;
-                            String layout = p != null ? p.getProperty("meta.layout") : null;
-                            if(layout != null && p != null) {
-                                final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
-                                DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper());
-                                SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, response, webRequest.getServletContext());
-                                com.opensymphony.sitemesh.Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
-
-                                if(d!=null) {
-                                    response.setContentType(includeResult.getContentType());
-                                    d.render(content, webAppContext);
-                                }
-                                else {
-                                    writeOriginal(response, includeResult);
-                                }
-
-                            }
-                            else {
-                                writeOriginal(response, includeResult);
-                            }
+                            layoutIncludedResponse(webRequest, includeResult, request, response);
                         }
 
                     }
@@ -140,7 +120,11 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                             View v;
                             try {
                                 v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
-                                v.render(Collections.EMPTY_MAP, request, response);
+                                IncludeResponseWrapper includeResponse = new IncludeResponseWrapper(response);
+                                v.render(Collections.EMPTY_MAP, request, includeResponse);
+                                IncludedContent content = new IncludedContent(includeResponse.getContentType(), includeResponse.getContent());
+                                layoutIncludedResponse(webRequest,content, request, response);
+
                             } catch (Exception e) {
                                 throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
                             }
@@ -152,6 +136,31 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         }
         else {
             renderDefaultResponse(response, statusCode);
+        }
+    }
+
+    private void layoutIncludedResponse(GrailsWebRequest webRequest, IncludedContent includeResult, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final Factory factory = FactoryHolder.getFactory();
+        PageParser parser = getPageParser(factory, response);
+        Page p = parser != null ? parser.parse(includeResult.getContentAsCharArray()) : null;
+        String layout = p != null ? p.getProperty("meta.layout") : null;
+        if(layout != null && p != null) {
+            final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
+            DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper());
+            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, response, webRequest.getServletContext());
+            com.opensymphony.sitemesh.Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
+
+            if(d!=null) {
+                response.setContentType(includeResult.getContentType());
+                d.render(content, webAppContext);
+            }
+            else {
+                writeOriginal(response, includeResult);
+            }
+
+        }
+        else {
+            writeOriginal(response, includeResult);
         }
     }
 

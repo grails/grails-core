@@ -54,6 +54,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	private boolean oneToOne;
     private boolean hasOne = false;
 	private boolean bidirectional;
+	private boolean derived;
 
 	private Class referencedPropertyType;
 	private GrailsDomainClass referencedDomainClass;
@@ -214,6 +215,15 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 	public boolean isIdentity() {
 		return this.identity;
 	}
+
+	public boolean isDerived() {
+		return derived;
+	}
+
+	public void setDerived(boolean isDerived) {
+		derived = isDerived;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isOneToMany()
 	 */

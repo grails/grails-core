@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 import grails.util.GrailsWebUtil;
+import groovy.lang.Writable;
 
 /**
  * A class that represents some content that has been used in an include request
@@ -28,7 +29,7 @@ import grails.util.GrailsWebUtil;
  *        <p/>
  *        Created: Mar 26, 2009
  */
-public class IncludedContent {
+public class IncludedContent implements Writable {
 
     private String contentType = GrailsWebUtil.getContentType("text/html","UTF-8");
     private Object content;
@@ -68,9 +69,9 @@ public class IncludedContent {
         return content;
     }
     
-    public void writeTo(Writer target) throws IOException {
+    public Writer writeTo(Writer target) throws IOException {
     	if(content==null) {
-    		return;
+    		return target;
     	}
     	if(content instanceof StreamCharBuffer) {
     		((StreamCharBuffer)content).writeTo(target);
@@ -79,6 +80,7 @@ public class IncludedContent {
     	} else {
     		target.write(String.valueOf(content));
     	}
+        return target;
     }
         
     public char[] getContentAsCharArray() {

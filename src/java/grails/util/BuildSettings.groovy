@@ -465,7 +465,7 @@ class BuildSettings {
         config = new ConfigObject()
         establishProjectStructure()
 
-        if (grailsHome) {
+        if (baseDir) {
             // Add the application's libraries.
             def appLibDir = new File(this.baseDir, "lib")
             if (appLibDir.exists()) {
@@ -473,7 +473,6 @@ class BuildSettings {
                     this.applicationJars << it
                 }
             }
-
         }
     }
 

@@ -150,11 +150,16 @@ class GrailsParameterMap extends TypeConvertingMap  {
 
 	boolean containsValue(Object value) { parameterMap.containsValue(value)	}
 
+    private Map nestedDateMap = [:]
+
 	public Object get(Object key) {
 		// removed test for String key because there
 		// should be no limitations on what you shove in or take out
         def returnValue
-		if (parameterMap.get(key) instanceof String[]){
+        if(nestedDateMap.containsKey(key)) {
+            returnValue = nestedDateMap.get(key)
+        }
+		else if (parameterMap.get(key) instanceof String[]){
 			String[] valueArray = parameterMap.get(key)
 			if(valueArray == null){
 				return null;
@@ -172,7 +177,8 @@ class GrailsParameterMap extends TypeConvertingMap  {
         }
 
         if("date.struct".equals(returnValue)) {
-            return lazyEvaluateDateParam(key)
+            returnValue = lazyEvaluateDateParam(key)
+            nestedDateMap[key] = returnValue
         }        
         return returnValue;
 
@@ -187,7 +193,7 @@ class GrailsParameterMap extends TypeConvertingMap  {
                 String paramName = entryKey
                 final String prefix = key + "_";
                 if(paramName.startsWith(prefix)) {
-                    dateParams.put(paramName.substring(prefix.length(), paramName.length()), entry.getValue());
+                    dateParams.put(paramName.substring(prefix.length(), paramName.length()), entry.getValue())
                 }
             }
         }
@@ -195,23 +201,21 @@ class GrailsParameterMap extends TypeConvertingMap  {
         def dateFormat = new SimpleDateFormat(GrailsDataBinder.DEFAULT_DATE_FORMAT, LocaleContextHolder.getLocale())
         def editor = new StructuredDateEditor(dateFormat,true)
 		try {
-	        def d = editor.assemble(Date.class,dateParams)
-	        put(key, d);
-	        return d;			
+	        return editor.assemble(Date.class,dateParams)
 		}
 		catch(IllegalArgumentException e) {
-			// ignore, probably blank values and not allowed
-			remove(key)
             return null
 		}		
     }
 
     public Object put(Object key, Object value) {
         if(value instanceof CharSequence) value = value.toString()
+        if(nestedDateMap.containsKey(key)) nestedDateMap.remove(key)
         return parameterMap.put(key, value)
 	}
 
 	public Object remove(Object key) {
+        nestedDateMap.remove(key)
 		return parameterMap.remove(key);
 	}
 

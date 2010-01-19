@@ -585,12 +585,15 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                 if(dependencies!=null){
                     for(PomDependencyMgt dep in dependencies) {
                         final String scope = dep.scope ?: 'runtime'
-                        Message.debug("Read dependency [$dep.groupId:$dep.artifactId:$dep.version] (scope $scope) from Maven pom.xml") 
+                        Message.debug("Read dependency [$dep.groupId:$dep.artifactId:$dep.version] (scope $scope) from Maven pom.xml")
 
                         def mrid = ModuleRevisionId.newInstance(dep.groupId, dep.artifactId, dep.version)
                         def mid = mrid.getModuleId()
                         if(!hasDependency(mid)) {
                             def dd = new EnhancedDefaultDependencyDescriptor(mrid, false, true, scope)
+                            for(ModuleId ex in dep.excludedModules) {
+                                dd.addRuleForModuleId(ex, scope)
+                            }
                             configureDependencyDescriptor(dd, scope)
                             addDependencyDescriptor dd
                         }

@@ -43,6 +43,8 @@ class PropertyConfig {
      */
     String sort
 
+	String formula
+
     /**
      * The default sort order
      */

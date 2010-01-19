@@ -26,6 +26,8 @@ import org.springframework.web.util.UrlPathHelper
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.AntPathMatcher
 import org.codehaus.groovy.grails.web.servlet.view.NullView
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 /**
  * Adapter between a FilterConfig object and a Spring HandlerInterceptor.
@@ -169,18 +171,23 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     }
 
     boolean accept(String controllerName, String actionName, String uri) {
-    	def matched
+    	boolean matched=true
         if(uriPattern) {
         	matched=pathMatcher.match(uriPattern, uri)
         }
         else if(controllerRegex && actionRegex) {
-			if(controllerName == null || actionName == null) {
-				matched = false
+			if(controllerName == null) {
+				matched = ('/' == uri)
+        	}
+			if(matched) {
+        		matched = doesMatch(controllerRegex, controllerName)
 			}
-			else if(useRegexFind) {
-        		matched=controllerRegex.matcher(controllerName).find() && actionRegex.matcher(actionName).find()
-        	} else {
-        		matched=controllerRegex.matcher(controllerName).matches() && actionRegex.matcher(actionName).matches()
+			if(matched && filterConfig.scope.action) {
+				if(!actionName && controllerName) {
+                    def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, controllerName)
+                    actionName = controllerClass?.getDefaultAction()
+                }
+                matched = doesMatch(actionRegex, actionName)
         	}
         }
     	if(invertRule)
@@ -188,6 +195,11 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     	else	
     		return matched
     }
+	
+	boolean doesMatch(Pattern pattern, CharSequence string) {
+		def matcher=pattern.matcher(string?:'')
+		return (useRegexFind ? matcher.find() : matcher.matches())
+	}
 
     String toString() {
         return "FilterToHandlerAdapter[$filterConfig, $configClass]"
