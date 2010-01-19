@@ -71,6 +71,31 @@ task integrationFilesJar(type: Jar, description: 'Files to integrate Grails with
     from("src/grails/templates/ide-support", "src/grails/ant")
 }
 
+appFilesJars = tasks.withType(Jar).matching({ jar -> jar.appFileJar } as Spec)
+
+appFilesJars.allObjects {jar ->
+    configure(jar) {
+        version = ''
+        destinationDir = "$buildDir/appFileJars" as File
+    }
+}
+
+task appFilesJars {
+    dependsOn { appFilesJars.all }
+}
+
+distJars = tasks.withType(Jar).matching({ jar -> !jar.appFileJar } as Spec)
+
+task libs {
+    destinationDir = 'dist'
+    dependsOn { distJars.all }
+}
+
+distJars.allObjects {jar ->
+    jar.destinationDir = libs.destinationDir as File
+}
+
+
 handlersAndSchemasMetaInf = {
     from 'src/jar/META-INF'
     include '**/*.handlers', '**/*.schemas'
@@ -88,6 +113,7 @@ task docsJar(type: Jar, dependsOn: docGeneratingFilesJar, description: 'Package 
     appendix = "docs"
     metaInf handlersAndSchemasMetaInf
     from mainClassesIncludeSpec("grails/doc/**", "**/groovy/grails/documentation/**")
+    println docGeneratingFilesJar.archivePath
     from docGeneratingFilesJar.archivePath
     osgify = true
     mavenArtifact = true
@@ -200,30 +226,6 @@ task initBundlor(type: Copy) {
     version = '1.0.0.RELEASE'
     from zipTree("bundlor/bundlor-${version}.zip")
     into dir
-}
-
-appFilesJars = tasks.withType(Jar).matching({ jar -> jar.appFileJar } as Spec)
-
-appFilesJars.allObjects {jar ->
-    configure(jar) {
-        version = ''
-        destinationDir = "$buildDir/appFileJars" as File
-    }
-}
-
-task appFilesJars {
-    dependsOn { appFilesJars.all }
-}
-
-distJars = tasks.withType(Jar).matching({ jar -> !jar.appFileJar } as Spec)
-
-task libs {
-    destinationDir = 'dist'
-    dependsOn { distJars.all }
-}
-
-distJars.allObjects {jar ->
-    jar.destinationDir = libs.destinationDir as File
 }
 
 distJars.matching({ jar -> jar.osgify } as Spec).allObjects {task ->
