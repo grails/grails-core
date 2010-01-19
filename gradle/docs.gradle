@@ -29,7 +29,7 @@ task docs {
 
 javadoc {
     dependsOn stubs
-    maxMemory = 256M
+    maxMemory = '256M'
     destinationDir = file("$docs.destinationDir/api")
     source stubs.destinationDir, defaultSource
     include "org/codehaus/groovy/grails/**", "grails/**"

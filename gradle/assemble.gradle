@@ -12,7 +12,7 @@ manifest.mainAttributes(
         "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
         "Implementation-Title": "Grails",
         "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
-        "Implementation-Version": '1.2.0',
+        "Implementation-Version": version,
         "Implementation-Vendor": 'grails.org')
 
 // todo Once the base Java plugin is out, we will use this and then there will be no default jar and we can remove this line.
@@ -195,21 +195,11 @@ task osgiJar(type: Jar, dependsOn: [bootstrapJar, coreJar], description: 'Packag
     osgify = true
 }
 
-task initBundlor {
-    bundlorDir = "$buildDir/bundlor"
-    bundlorVersion = '1.0.0.CI-231'
-    classpath = ''
-    doFirst {
-        ant.mkdir(dir: bundlorDir)
-        ant.get(src: "http://s3.amazonaws.com/dist.springframework.org/snapshot/BNDLR/bundlor-${bundlorVersion}.zip",
-                dest: "$bundlorDir/bundlor.zip",
-                usetimestamp: true,
-                verbose: true)
-        copy {
-            from zipTree("$bundlorDir/bundlor.zip")
-            into bundlorDir
-        }
-    }
+task initBundlor(type: Copy) {
+    dir = "$buildDir/bundlor"
+    version = '1.0.0.RELEASE'
+    from zipTree("bundlor/bundlor-${version}.zip")
+    into dir
 }
 
 appFilesJars = tasks.withType(Jar).matching({ jar -> jar.appFileJar } as Spec)
@@ -239,8 +229,8 @@ distJars.allObjects {jar ->
 distJars.matching({ jar -> jar.osgify } as Spec).allObjects {task ->
     task.dependsOn initBundlor
     task.doLast {
-        def bundlorPath = fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/dist") +
-                fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/lib")
+        def bundlorPath = fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/dist") +
+                fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/lib")
         Properties antBuildProps = new Properties()
         antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
         ant {
@@ -342,7 +332,7 @@ distSpec = copySpec {
         into "grails-$version/bin"
         filter(ReplaceTokens, tokens: ["grails.version": version])
     }
-    from("$buildDir/libs") {
+    from(libs.destinationDir) {
         into "grails-$version/dist"
     }
     // binary
