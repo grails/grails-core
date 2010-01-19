@@ -129,8 +129,15 @@ public class GrailsAnnotationConfiguration  extends AnnotationConfiguration impl
 
             // do Grails class configuration
             for (GrailsDomainClass domainClass : this.domainClasses) {
+                final String fullClassName = domainClass.getFullName();
+
+                String hibernateConfig = fullClassName.replace('.','/') + ".hbm.xml";
+                final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                // don't configure Hibernate mapped classes
+                if(loader.getResource(hibernateConfig) != null) continue;
+                
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + domainClass.getFullName() + "]");
+                    LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + fullClassName + "]");
                 }
                 final Mappings mappings = super.createMappings();
                 Mapping m = GrailsDomainBinder.getMapping(domainClass);
