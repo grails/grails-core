@@ -821,7 +821,7 @@ class IvyDomainSpecificLanguageEvaluator {
     void mavenRepo(String url) {
         if(isResolverNotAlreadyDefined(url)) {
             repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
-            chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings)
+            chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings, changingPattern:".*SNAPSHOT")
         }
     }
 
@@ -868,6 +868,7 @@ class IvyDomainSpecificLanguageEvaluator {
             IBiblioResolver mavenResolver = new IBiblioResolver(name:"mavenCentral")
             mavenResolver.m2compatible = true
             mavenResolver.settings = ivySettings
+            mavenResolver.changingPattern = ".*SNAPSHOT"
             chainResolver.add mavenResolver
 
         }
@@ -879,6 +880,7 @@ class IvyDomainSpecificLanguageEvaluator {
             FileSystemResolver localMavenResolver = new FileSystemResolver(name:'localMavenResolver');
             localMavenResolver.local = true
             localMavenResolver.m2compatible = true
+            localMavenResolver.changingPattern = ".*SNAPSHOT"
             localMavenResolver.addIvyPattern(
                                 "${repoPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).pom")
 
