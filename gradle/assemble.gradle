@@ -21,12 +21,12 @@ jar.enabled = false
 tasks.withType(Jar).allObjects {jar ->
     jar.osgify = false
     jar.mavenArtifact = false
+    jar.appFileJar = false
 }
 
 task sharedFilesJar(type: Jar, description: 'Package up the files that are shared by both applications and plugins.') {
     appendix = "shared-files"
-    version = ''
-    destinationDir = "$buildDir/resourcesJars" as File
+    appFileJar = true
     from("src/war/WEB-INF") {
         into "web-app/WEB-INF"
         include "applicationContext.xml", "sitemesh.xml", "tld/*.tld"
@@ -39,8 +39,7 @@ task sharedFilesJar(type: Jar, description: 'Package up the files that are share
 
 task sharedApplicationFilesJar(type: Jar, description: 'Package up the files that are exclusive to applications.') {
     appendix = "app-files"
-    version = ''
-    destinationDir = "$buildDir/resourcesJars" as File
+    appFileJar = true
     from("src/war") {
         into "web-app"
         exclude "WEB-INF/**"
@@ -53,8 +52,7 @@ task sharedApplicationFilesJar(type: Jar, description: 'Package up the files tha
 
 task sharedPluginFilesJar(type: Jar, description: 'Package up the files that are exclusive to plugins.') {
     appendix = "plugin-files"
-    version = ''
-    destinationDir = "$buildDir/resourcesJars" as File
+    appFileJar = true
     from("src/grails/templates/plugins")
     from("src/grails") {
         include "grails-app/conf/BuildConfig.groovy", "grails-app/views/error.gsp"
@@ -63,23 +61,15 @@ task sharedPluginFilesJar(type: Jar, description: 'Package up the files that are
 
 task docGeneratingFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
     appendix = "doc-files"
-    version = ''
-    destinationDir = "$buildDir/resourcesJars" as File
+    appFileJar = true
     from("src/grails/docs")
 }
 
 task integrationFilesJar(type: Jar, description: 'Files to integrate Grails with IDEs and build systems.') {
     appendix = "integration-files"
-    version = ''
-    destinationDir = "$buildDir/resourcesJars" as File
+    appFileJar = true
     from("src/grails/templates/ide-support", "src/grails/ant")
 }
-
-task libs {
-    dependsOn { tasks.withType(Jar).all }
-}
-
-task jarAppFiles(dependsOn: [sharedFilesJar, sharedApplicationFilesJar, sharedPluginFilesJar, docGeneratingFilesJar])
 
 handlersAndSchemasMetaInf = {
     from 'src/jar/META-INF'
@@ -222,32 +212,54 @@ task initBundlor {
     }
 }
 
-tasks.withType(Jar).allObjects {task ->
-    if (task.osgify) {
-        task.dependsOn initBundlor
-        task.doLast {
-            def bundlorPath = fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/dist") +
-                    fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/lib")
-            Properties antBuildProps = new Properties()
-            antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
-            ant {
-                antBuildProps.each {key, value ->
-                    if (key.startsWith('bundlor.')) {
-                        ant.properties[key] = value
-                    }
+appFilesJars = tasks.withType(Jar).matching({ jar -> jar.appFileJar } as Spec)
+
+appFilesJars.allObjects {jar ->
+    configure(jar) {
+        version = ''
+        destinationDir = "$buildDir/appFileJars" as File
+    }
+}
+
+task appFilesJars {
+    dependsOn { appFilesJars.all }
+}
+
+distJars = tasks.withType(Jar).matching({ jar -> !jar.appFileJar } as Spec)
+
+task libs {
+    destinationDir = 'dist'
+    dependsOn { distJars.all }
+}
+
+distJars.allObjects {jar ->
+    jar.destinationDir = libs.destinationDir as File
+}
+
+distJars.matching({ jar -> jar.osgify } as Spec).allObjects {task ->
+    task.dependsOn initBundlor
+    task.doLast {
+        def bundlorPath = fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/dist") +
+                fileTree("${initBundlor.bundlorDir}/bundlor-${initBundlor.bundlorVersion}/lib")
+        Properties antBuildProps = new Properties()
+        antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
+        ant {
+            antBuildProps.each {key, value ->
+                if (key.startsWith('bundlor.')) {
+                    ant.properties[key] = value
                 }
-                taskdef(resource: "com/springsource/bundlor/ant/antlib.xml", uri: "antlib:com.springsource.bundlor.ant",
-                     classpath: bundlorPath.asPath) 
-                'antlib:com.springsource.bundlor.ant:bundlor'(
-                        inputPath: archivePath,
-                        outputPath: archivePath,
-                        bundleVersion: version,
-                        manifestTemplatePath: "$projectDir/maven/grails-${appendix}.mf",
-                        failOnWarnings: "true") {
-                    propertyset() {
-                        propertyref(prefix: "bundlor.")
-                        mapper(type: "glob", from: "bundlor.*", to: "*")
-                    }
+            }
+            taskdef(resource: "com/springsource/bundlor/ant/antlib.xml", uri: "antlib:com.springsource.bundlor.ant",
+                    classpath: bundlorPath.asPath)
+            'antlib:com.springsource.bundlor.ant:bundlor'(
+                    inputPath: archivePath,
+                    outputPath: archivePath,
+                    bundleVersion: version,
+                    manifestTemplatePath: "$projectDir/maven/grails-${appendix}.mf",
+                    failOnWarnings: "true") {
+                propertyset() {
+                    propertyref(prefix: "bundlor.")
+                    mapper(type: "glob", from: "bundlor.*", to: "*")
                 }
             }
         }
@@ -262,20 +274,11 @@ def mainClassesIncludeSpec(String[] args) {
     }
 }
 
-minimalSpec = copySpec {
+task minimalZipDist(type: Zip, description: 'Creates a minimal zip archive that can be used for integrating a Grails project with an existing build system.') {
+    classifier = "minimal"
     from projectDir
     include "$projectDir/lib/*.jar" as String, "$buildDir/distributions/*.jar" as String, "build.properties", "bin/**/*", "conf/**/*", "scripts/**/*",
             "src/grails/templates/scaffolding/**/*", "src/war/WEB-INF/**/*"
-}
-
-task minimalZipDist(type: Zip, description: 'Creates a minimal zip archive that can be used for integrating a Grails project with an existing build system.') {
-    classifier = "minimal"
-    from minimalSpec
-}
-
-task minimalTarDist(type: Tar, description: 'Creates a minimal zip archive that can be used for integrating a Grails project with an existing build system.') {
-    classifier = "minimal"
-    from minimalSpec
 }
 
 task pluginsFromSvn {
@@ -305,11 +308,8 @@ distSpec = copySpec {
                 'LICENSE', 'INSTALL', "cruise/coverage/lib/", "src/"
         exclude 'ant/bin'
     }
-    from(gdoc.destinationDir) {
+    from(docs.destinationDir) {
         into "grails-$version/doc"
-    }
-    from(javadoc.destinationDir) {
-        into "grails-$version/doc/api"
     }
     exclude "**/CVS/**"
     from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
@@ -352,13 +352,14 @@ distSpec = copySpec {
     }
 }
 
-task zipDist(type: Zip)
-task tarDist(type: Tar)
-[zipDist, tarDist].each { archive ->
-    configure(archive) {
-        from distSpec
-        dependsOn tasks.withType(Jar).all, gdoc, javadoc
-    }
+task zipDist(type: Zip) {
+    from distSpec
+    dependsOn tasks.withType(Jar).all, docs
+}
+
+task zipDoc(type: Zip) {
+    appendix = 'docs'
+    from docs.destinationDir
 }
 
 task compare2Ant << {

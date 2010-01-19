@@ -23,8 +23,14 @@ task stubs {
     }
 }
 
+task docs {
+    destinationDir = 'doc'
+}
+
 javadoc {
     dependsOn stubs
+    maxMemory = 256M
+    destinationDir = file("$docs.destinationDir/api")
     source stubs.destinationDir, defaultSource
     include "org/codehaus/groovy/grails/**", "grails/**"
     project.configure(options) {
@@ -43,7 +49,7 @@ javadoc {
 }
 
 task gdoc {
-    destinationDir = new File(projectDir.parentFile, 'grails-doc/output')
+    dependsOn javadoc
     doFirst {
         onlyIf {
             file('../grails-doc').isDirectory()
@@ -54,5 +60,11 @@ task gdoc {
                 property(name: "base.dir", value: "../grails-doc")
             }
         }
+        copy {
+            from(new File(projectDir.parentFile, 'grails-doc/output'))
+            into docs.destinationDir
+        }
     }
 }
+
+docs.dependsOn javadoc, gdoc

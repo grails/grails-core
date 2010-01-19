@@ -22,7 +22,7 @@ configurations {
 dependencies {
     lib = "$projectDir/lib"
     groovy files("$lib/groovy-all-1.6.7.jar")
-    compile files(fileTree(dir: lib as File, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar', 'groovy-all-1.6.5.jar']), "${System.getenv('JAVA_HOME')}/lib/tools.jar")
+    compile files(fileTree(dir: lib as File, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar', 'groovy-all-1.6.7.jar']), "${System.getenv('JAVA_HOME')}/lib/tools.jar")
     testRuntime files('src/test', 'target', 'src/grails/grails-app/utils', ".", "src/war/WEB-INF")
     jsp21 files("$lib/jsp-api-2.1.jar")
 }
@@ -85,6 +85,11 @@ apply {
     apply url: 'gradle/eclipse.gradle'
     apply url: 'gradle/maven.gradle'
     apply url: 'gradle/findbugs.gradle'
+}
+
+clean {
+    // add additional dirs
+    from(docs.destinationDir, libs.destinationDir)
 }
 
 task wrapper(type: Wrapper) {
