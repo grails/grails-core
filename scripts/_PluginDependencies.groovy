@@ -673,6 +673,22 @@ target(updatePluginsList:"Updates the plugin list from the remote plugin-list.xm
 
 
 def resetClasspathAndState() {
+
+    // Update the cached dependencies in grailsSettings, and add new jars to the root loader
+    ['compile', 'build', 'test', 'runtime'].each { type ->
+        def existing = grailsSettings."${type}Dependencies"
+        def all = grailsSettings.dependencyManager.resolveDependencies(IvyDependencyManager."${type.toUpperCase()}_CONFIGURATION").allArtifactsReports.localFile
+        def toAdd = all - existing
+        if (toAdd) {
+            existing.addAll(toAdd)
+            if (type in ['build', 'test']) {
+                toAdd.each {
+                    grailsSettings.rootLoader.addURL(it.toURL())
+                }
+            }
+        }
+    }
+
     pluginSettings.clearCache()
     classpathSet = false
     classpath()
@@ -1142,21 +1158,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 if(resolveReport.hasError()) {
                     cleanupPluginInstallAndExit("Failed to install plugin [${fullPluginName}]. Plugin has missing JAR dependencies.")
                 }
-                else {
-                    List urls = rootLoader.URLs.toList()
-                    resolveReport.allArtifactsReports
-                                    .localFile.each { File dep ->
-
-                        if(!settings.runtimeDependencies.contains(dep)) {
-                            settings.runtimeDependencies << dep
-                        }
-                        def url = dep.toURI().toURL()
-                        if(!urls.contains(url)) {
-                            rootLoader.addURL(url)
-                        }
-                    }
-                }
-
             }
             else {
                 def pluginJars = resolveResources("file:${pluginInstallPath}/lib/*.jar")
