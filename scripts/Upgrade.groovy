@@ -42,10 +42,7 @@ target(upgrade: "main upgrade target") {
     if (!force) {
         ant.input(message: """
 		WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
-		However, tag libraries provided by earlier versions of Grails found in grails-app/taglib will be removed. 
-		The target will not, however, delete tag libraries developed by yourself.
-		Are you sure you want to continue? 
-				   """,
+""",
                 validargs: "y,n",
                 addproperty: "grails.upgrade.warning")
 
