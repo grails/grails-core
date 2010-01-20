@@ -25,33 +25,6 @@
         <option name="WHILE_ON_NEW_LINE" value="true" />
         <option name="CATCH_ON_NEW_LINE" value="true" />
         <option name="FINALLY_ON_NEW_LINE" value="true" />
-        <ADDITIONAL_INDENT_OPTIONS fileType="">
-          <option name="INDENT_SIZE" value="4" />
-          <option name="CONTINUATION_INDENT_SIZE" value="8" />
-          <option name="TAB_SIZE" value="4" />
-          <option name="USE_TAB_CHARACTER" value="false" />
-          <option name="SMART_TABS" value="false" />
-          <option name="LABEL_INDENT_SIZE" value="0" />
-          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-        </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="">
-          <option name="INDENT_SIZE" value="4" />
-          <option name="CONTINUATION_INDENT_SIZE" value="8" />
-          <option name="TAB_SIZE" value="4" />
-          <option name="USE_TAB_CHARACTER" value="false" />
-          <option name="SMART_TABS" value="false" />
-          <option name="LABEL_INDENT_SIZE" value="0" />
-          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-        </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="">
-          <option name="INDENT_SIZE" value="2" />
-          <option name="CONTINUATION_INDENT_SIZE" value="8" />
-          <option name="TAB_SIZE" value="4" />
-          <option name="USE_TAB_CHARACTER" value="false" />
-          <option name="SMART_TABS" value="false" />
-          <option name="LABEL_INDENT_SIZE" value="0" />
-          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-        </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="groovy">
           <option name="INDENT_SIZE" value="4" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
@@ -72,6 +45,33 @@
         </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="java">
           <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="js">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="jsp">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="sql">
+          <option name="INDENT_SIZE" value="2" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
           <option name="TAB_SIZE" value="4" />
           <option name="USE_TAB_CHARACTER" value="false" />
@@ -224,11 +224,11 @@
   <component name="IdProvider" IDEtalkID="094372AACB9649246F599517414513BF" />
   <component name="InspectionProjectProfileManager">
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="INFO" />
-      <item index="1" class="java.lang.String" itemvalue="TYPO" />
-      <item index="2" class="java.lang.String" itemvalue="WARNING" />
-      <item index="3" class="java.lang.String" itemvalue="ERROR" />
-      <item index="4" class="java.lang.String" itemvalue="SERVER PROBLEM" />
+      <item index="0" class="java.lang.String" itemvalue="SERVER PROBLEM" />
+      <item index="1" class="java.lang.String" itemvalue="INFO" />
+      <item index="2" class="java.lang.String" itemvalue="TYPO" />
+      <item index="3" class="java.lang.String" itemvalue="WARNING" />
+      <item index="4" class="java.lang.String" itemvalue="ERROR" />
     </list>
   </component>
   <component name="JavadocGenerationManager">
@@ -392,8 +392,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" filepath="$PROJECT_DIR$/../grails-maven-archetype/grails-maven-archetype.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" filepath="$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
@@ -489,8 +487,9 @@
         <root url="jar://$PROJECT_DIR$/lib/jta-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-core-3.3.1.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.4.0.GA.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.3.0.ga.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/javassist-3.8.0.GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.1.0.GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hibernate-ehcache-3.3.1.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -524,30 +523,26 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-webflow-2.0.8.RELEASE/src/org.springframework.faces-sources-2.0.8.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-webflow-2.0.8.RELEASE/src/org.springframework.webflow-sources-2.0.8.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-webflow-2.0.8.RELEASE/src/org.springframework.js-sources-2.0.8.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-webflow-2.0.8.RELEASE/src/org.springframework.binding-sources-2.0.8.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.expression-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.web-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.aop-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.beans-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.oxm-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.orm-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.test-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.jdbc-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.instrument.tomcat-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.context.support-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.web.servlet-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.web.portlet-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.instrument-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.transaction-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.web.struts-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.jms-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.asm-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.aspects-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.core-sources-3.0.0.RC3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RC3/src/org.springframework.context-sources-3.0.0.RC3.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.expression-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.asm-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument.tomcat-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.test-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jdbc-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.oxm-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context.support-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.portlet-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.beans-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.transaction-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.orm-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.core-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aop-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aspects-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jms-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.servlet-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.struts-sources-3.0.0.RELEASE.jar!/" />
       </SOURCES>
     </library>
     <library name="javax.servlet">
@@ -606,7 +601,7 @@
     </library>
     <library name="Ivy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/ivy-2.0.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/ivy-2.1.0.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
