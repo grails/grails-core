@@ -92,14 +92,6 @@ target(configureApp:"Configures the Grails application and builds an Application
 	}
 }
 
-target(shutdownApp:"Shuts down the running Grails application") {
-    appCtx?.close()
-    ApplicationHolder.setApplication(null);
-    ServletContextHolder.setServletContext(null);
-    PluginManagerHolder.setPluginManager(null);
-    ConfigurationHolder.setConfig(null);
-}
-
 // Flag that determines whether the monitor loop should keep running.
 keepMonitoring = true
 
