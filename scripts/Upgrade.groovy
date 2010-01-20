@@ -42,7 +42,8 @@ target(upgrade: "main upgrade target") {
     if (!force) {
         ant.input(message: """
 		WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
-""",
+		Are you sure you want to continue? 
+				   """,
                 validargs: "y,n",
                 addproperty: "grails.upgrade.warning")
 
