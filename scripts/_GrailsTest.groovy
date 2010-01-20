@@ -319,7 +319,6 @@ integrationTestPhasePreparation = {
  */
 integrationTestPhaseCleanUp = {
     destroyPersistenceContext()
-    shutdownApp()
 }
 
 /**
