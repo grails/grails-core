@@ -135,7 +135,7 @@ public class ConfigurableLocalSessionFactoryBean extends
             if(isCacheConfigurationError(cause)) {
                 LOG.fatal("There was an error configuring the Hibernate second level cache: " + getCauseMessage(e));
                 LOG.fatal("This is normally due to one of two reasons. Either you have incorrectly specified the cache provider class name in [DataSource.groovy] or you do not have the cache provider on your classpath (eg. runtime (\"net.sf.ehcache:ehcache:1.6.1\"))");
-                if(grails.util.Environment.getCurrent() == grails.util.Environment.DEVELOPMENT && !(getGrailsApplication().isWarDeployed()))
+                if(grails.util.Environment.isDevelopmentMode())
                     System.exit(1);
             }
             throw e;
