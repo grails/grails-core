@@ -561,7 +561,7 @@ class DummyMavenAwareDependencyManager extends IvyDependencyManager {
 
     public List readDependenciesFromPOM() {
         return [
-                [getGroupId:{"junit"}, getArtifactId:{"junit"}, getVersion:{"3.8.3"}, getScope:{"test"}] as PomDependencyMgt
+                [getExcludedModules:{[]}, getGroupId:{"junit"}, getArtifactId:{"junit"}, getVersion:{"3.8.3"}, getScope:{"test"}] as PomDependencyMgt
         ]
     }
 

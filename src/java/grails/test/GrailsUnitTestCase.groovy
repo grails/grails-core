@@ -41,6 +41,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
      * validation.
      */
     DefaultArtefactInfo domainClassesInfo
+    
+    private previousConfig
 
     protected void setUp() {
         super.setUp()
@@ -55,17 +57,20 @@ class GrailsUnitTestCase extends GroovyTestCase {
         def convertersInit = new ConvertersConfigurationInitializer()
         convertersInit.initialize()
         [ List, Set, Map, Errors ].each { addConverters(it) }
+        
+        previousConfig = ConfigurationHolder.config
     }
 
     protected void tearDown() {
         super.tearDown()
 
-        ConfigurationHolder.config = null
         // Restore all the saved meta classes.
         savedMetaClasses.each { clazz, metaClass ->
             GroovySystem.metaClassRegistry.removeMetaClass(clazz) 
             GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
         }
+        
+        ConfigurationHolder.config = previousConfig
     }
 
     /**

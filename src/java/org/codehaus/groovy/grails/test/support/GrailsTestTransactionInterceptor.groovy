@@ -37,9 +37,7 @@ class GrailsTestTransactionInterceptor {
         this.applicationContext = applicationContext
 
         if (applicationContext.containsBean("transactionManager")) {
-          transactionManager = applicationContext.getBean("transactionManager")
-        } else {
-            throw new RuntimeException("Cannot run test in transaction as there is no transactionManager defined")
+            transactionManager = applicationContext.getBean("transactionManager")
         }
     }
     
@@ -47,10 +45,12 @@ class GrailsTestTransactionInterceptor {
      * Establishes a transaction.
      */
     void init() {
-        if (transactionStatus == null) {
-            transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
-        } else {
-            throw new RuntimeException("init() called on test transaction interceptor during transaction")
+        if (transactionManager) {
+            if (transactionStatus == null) {
+                transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
+            } else {
+                throw new RuntimeException("init() called on test transaction interceptor during transaction")
+            }
         }
     }
 
@@ -58,9 +58,11 @@ class GrailsTestTransactionInterceptor {
      * Rollsback the current transaction
      */    
     void destroy() {
-        if (transactionStatus) {
-            transactionManager.rollback(transactionStatus)
-            transactionStatus = null
+        if (transactionManager) {
+            if (transactionStatus) {
+                transactionManager.rollback(transactionStatus)
+                transactionStatus = null
+            }
         }
     }
     
@@ -70,11 +72,15 @@ class GrailsTestTransactionInterceptor {
      * Note: it is the callers responsibility to verify that {@code body} should be run in a transaction.
      */
     void doInTransaction(Closure body) {
-        init() 
-        try {
+        if (transactionManager) {
+            init() 
+            try {
+                body()
+            } finally {
+                destroy()
+            }
+        } else {
             body()
-        } finally {
-            destroy()
         }
     }
     
