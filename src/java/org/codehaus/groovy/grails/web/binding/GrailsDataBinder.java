@@ -636,8 +636,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (PropertyValue pv : pvs) {
             String propertyName = pv.getName();
+            String propertyNameToCheck = propertyName;
+            final int i = propertyName.indexOf('.');
+            if(i >-1) {
+                propertyNameToCheck = propertyName.substring(0,i);
+            }
 
-            if(!isAllowed(propertyName)) continue;
+            if(!isAllowed(propertyNameToCheck)) continue;
 
             if (propertyName.endsWith(IDENTIFIER_SUFFIX)) {
                 propertyName = propertyName.substring(0, propertyName.length() - 3);
