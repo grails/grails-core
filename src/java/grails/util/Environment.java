@@ -107,6 +107,13 @@ public enum Environment {
         return getCurrent();        
     }
 
+    /**
+     * Returns true if the application is running in development mode (within grails run-app)
+     * @return True if the application is running in development mode
+     */
+    public static boolean isDevelopmentMode() {
+        return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) && System.getProperty("grails.home")!=null;
+    }
 
     /**
      * @return Return true if the environment has been set as a Systme property
