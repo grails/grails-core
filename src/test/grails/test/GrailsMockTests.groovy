@@ -240,18 +240,6 @@ class GrailsMockTests extends GroovyTestCase {
 
         assertEquals "dynamic", testClass.testNullArgument()
     }
-
-	void testEmptyArrayArguments() {
-		def mockControl = new GrailsMock(GrailsMockCollaborator)
-		mockControl.demand.testEmptyArrayArguments(1..1) { String str1, Object[] args, String str2 ->
-			return "dynamic"
-		}
-
-		def testClass = new GrailsMockTestClass()
-		testClass.collaborator = mockControl.createMock()
-
-		assertEquals "dynamic", testClass.testEmptyArrayArguments()
-	}
 }
 
 class GrailsMockTestClass {
@@ -297,10 +285,6 @@ class GrailsMockTestClass {
         return this.collaborator.multiMethod(null)
     }
 
-	String testEmptyArrayArguments() {
-		return this.collaborator.testEmptyArrayArguments('abc', [] as Object[], 'def')
-	}
-
     List testMultiMethod() {
         List methodReturns = []
         methodReturns << this.collaborator.multiMethod()
@@ -326,8 +310,4 @@ class GrailsMockCollaborator {
     String multiMethod(String str, Map map) {
         return "static"
     }
-
-	String someMethod(String str1, Object[] args, String str2) {
-		return 'static'
-	}
 }

@@ -91,14 +91,7 @@ class GrailsMock {
         mock.metaClass.invokeMethod = { String name, Object[] args ->
             // Find an expando method with the same signature as the
             // one being invoked.
-			def paramTypes = []
-			args.each {
-				if(it) {
-				    paramTypes << it.getClass()
-				} else {
-					paramTypes << null
-				}
-			}
+            def paramTypes = args*.getClass()
             def method = delegate.metaClass.expandoMethods.find { MetaMethod m ->
                 // First check the name
                 m.name == name &&
