@@ -303,7 +303,12 @@ class ControllersGrailsPlugin {
                     RCH.currentRequestAttributes().setAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
                 }
                 commandObjectMetaClass.getErrors = {->
-                    RCH.currentRequestAttributes().getAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
+                    def errors = RCH.currentRequestAttributes().getAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
+					if(!errors) {
+						errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
+						RCH.currentRequestAttributes().setAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
+					}
+					return errors
                 }
 
                 commandObjectMetaClass.hasErrors = {->
