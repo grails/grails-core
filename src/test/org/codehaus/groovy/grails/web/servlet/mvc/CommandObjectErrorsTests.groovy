@@ -31,6 +31,10 @@ class TestController {
         [formErrors:form.errors]
     }
 
+    def five = { Form form ->
+		[form: new Form()]
+    }
+
     def validate = { Form form ->
 
         [formErrors:form.validate()]
@@ -47,7 +51,18 @@ class Form {
 '''
     }
 
-    void testClearErrors() {
+	void testCommandObjectsDontShareErrors() {
+		def controller = ga.getControllerClass("TestController").newInstance()
+
+		def model = controller.five()
+
+        def error
+		def form = model.form
+		assertNotNull 'did not find expected form', form
+		assertFalse 'form should not have had errors', form.hasErrors()
+	}
+
+	void testClearErrors() {
         def controller = ga.getControllerClass("TestController").newInstance()
 
         controller.params.url = "not_a_url"
