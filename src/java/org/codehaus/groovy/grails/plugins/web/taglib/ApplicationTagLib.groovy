@@ -97,7 +97,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      * Get the declared URL of the server from config, or guess at localhost for non-production
      */
     String makeServerURL() {
-        def u = ConfigurationHolder.config.grails.serverURL
+        def u = ConfigurationHolder.config?.grails?.serverURL
         if (!u) {
             // Leave it null if we're in production so we can throw
             if (Environment.current != Environment.PRODUCTION) {
