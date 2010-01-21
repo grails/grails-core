@@ -118,9 +118,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         			gspSiteMeshPage.setPageBuffer(buf)
         		}
         	} finally {
-          		 if(oldGspSiteMeshPage != null) {
-        			 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
-        		 }        		
+       			 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
         	}
         }
 

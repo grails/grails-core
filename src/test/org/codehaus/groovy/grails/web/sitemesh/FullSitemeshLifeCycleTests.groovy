@@ -21,7 +21,7 @@ public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
 
         assertOutputEquals '''
 <html>
-		<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>This is the title</title></head>
+		<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
 		<body onload="test();">body text</body>
 </html>
 ''', template
@@ -36,7 +36,7 @@ public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
 
         assertEquals '''
 <html>
-    <head><title>Decorated This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head>
+    <head><title>Decorated This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
     <body><h1>Hello</h1>body text</body>
 </html>
 ''', result

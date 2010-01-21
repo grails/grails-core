@@ -54,7 +54,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
 	}	
 
     void testLayoutTags() {
-        def template='<html><head><title>This is the title</title></head><body onload="somejs();">body here</body></html>'
+        def template='<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body onload="somejs();">body here</body></html>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
@@ -63,10 +63,10 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         def gspSiteMeshPage2 = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage2)
         webRequest.currentRequest.setAttribute(RequestConstants.PAGE, gspSiteMeshPage)
-        def template2='<body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/></body>'
+        def template2='<html><head><title><g:layoutTitle/></title><g:layoutHead/></head><body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/></body></html>'
         def result2 = applyTemplate(template2, [:])
         	
-        assertEquals '<body onload="somejs();">body here</body>', result2
+        assertEquals '<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body onload="somejs();">body here</body></html>', result2
     }
 
     void testLayoutTagsBodyIsWholePage() {
@@ -89,7 +89,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
     }
 
     void testLayoutcontent() {
-        def template='<html><head><title>This is the title</title></head><body onload="somejs();">body here</body><content tag="nav">Navigation content</content></html>'
+        def template='<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head><body onload="somejs();">body here</body><content tag="nav">Navigation content</content></html>'
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
@@ -98,10 +98,10 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         def gspSiteMeshPage2 = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage2)
         webRequest.currentRequest.setAttribute(RequestConstants.PAGE, gspSiteMeshPage)
-        def template2='<body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/> <g:pageProperty name="page.nav"/></body>'
+        def template2='<html><head><title><g:layoutTitle/></title><g:layoutHead/></head><body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/> <g:pageProperty name="page.nav"/></body></html>'
         def result2 = applyTemplate(template2, [:])
         	
-        assertEquals '<body onload="somejs();">body here Navigation content</body>', result2
+        assertEquals '<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head><body onload="somejs();">body here Navigation content</body></html>', result2
     }
 
     
