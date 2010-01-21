@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import com.opensymphony.module.sitemesh.RequestConstants
 import org.apache.commons.lang.WordUtils
@@ -30,7 +31,6 @@ import org.apache.commons.lang.WordUtils
  */
 
 public class SitemeshTagLib implements RequestConstants {
-
     static namespace = 'sitemesh'
 
     def captureTagContent(writer, tagname, attrs, body) {
@@ -42,17 +42,34 @@ public class SitemeshTagLib implements RequestConstants {
     			content = body
     		}
     	}
-    	writer << "<"
+		if(content instanceof StreamCharBuffer) {
+			content.setPreferSubChunkWhenWritingToOtherBuffer(true)
+		}
+    	writer << '<'
     	writer << tagname
+		def htmlClosingForEmptyTag = false
     	if(attrs) {
+			def xmlClosingString = attrs.remove(SitemeshPreprocessor.XML_CLOSING_FOR_EMPTY_TAG_ATTRIBUTE_NAME)
+			if(xmlClosingString!='/') {
+				htmlClosingForEmptyTag=true
+			}
     		attrs.each { k, v ->
     			writer << " ${k}=\"${v.encodeAsHTML()}\""
     		}
     	}
     	if(content) {
-	    	writer << ">$content</$tagname>"
+	    	writer << '>'
+			// the following row must be written separately (append StreamCharBuffer gets appended as subchunk)
+			writer << content
+			writer << '</'
+			writer << tagname
+			writer << '>'
     	} else {
-    		writer << "/>"
+    		if(htmlClosingForEmptyTag) {
+				writer << '>'
+			} else {
+				writer << '/>'
+			}
     	}
     	content
     }
@@ -74,11 +91,9 @@ public class SitemeshTagLib implements RequestConstants {
      * Used to capture the <head> tag
      */
     def captureHead = { attrs, body ->
-    	def content=captureTagContent(out, 'head', attrs, body)
+		def content=captureTagContent(out, 'head', attrs, body)
 
     	if(content != null) {
-            // strip out title for sitemesh version of <head>
-            content = content.replaceFirst(/<title(\s[^>]*)?>(.*?)<\/title>/,'')
     		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
             if(smpage) {
             	smpage.setHeadBuffer(wrapContentInBuffer(content))
@@ -153,8 +168,8 @@ public class SitemeshTagLib implements RequestConstants {
      * Used to capture the <title> tag
      */
     def captureTitle = { attrs, body ->
-    	def content=captureTagContent(out, 'title', attrs, body)
-    	GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+		GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+		def content=captureTagContent(out, 'title', attrs, body)
     	if(smpage && content != null) {
     		smpage.addProperty('title', content?.toString())
     	}

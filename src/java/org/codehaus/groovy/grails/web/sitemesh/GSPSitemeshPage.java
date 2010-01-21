@@ -48,7 +48,9 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	@Override
 	public void writeHead(Writer out) throws IOException {
 		if(headBuffer != null) {
-			headBuffer.writeTo(out);
+			String headAsString = headBuffer.toString();
+			// strip out title for sitemesh version of <head>
+			out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
 		}
 	}
 
@@ -122,6 +124,10 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 		this.used = used;
 	}
 
+	/**
+	 * @param tagName "tagName" name of buffer (without "page." prefix)
+	 * @param buffer
+	 */
 	public void setContentBuffer(String tagName, StreamCharBuffer buffer) {
 		this.used=true;
 		if(contentBuffers==null) {
@@ -133,6 +139,10 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 		super.addProperty(propertyName, "");
 	}
 	
+	/**
+	 * @param name propertyName of contentBuffer (with "page." prefix)
+	 * @return
+	 */
 	public Object getContentBuffer(String name) {
 		if(contentBuffers==null) {
 			return null;
