@@ -6,7 +6,6 @@ import java.util.Stack;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.web.context.request.RequestAttributes;
@@ -15,7 +14,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 public final class GroovyPageOutputStack {
 	public static final Log log = LogFactory.getLog(GroovyPageOutputStack.class);
 	
-	private static final ThreadLocal<GroovyPageOutputStack> instances=new ThreadLocal<GroovyPageOutputStack>();
+	private static final String ATTRIBUTE_NAME_OUTPUT_STACK="org.codehaus.groovy.grails.GSP_OUTPUT_STACK";
 	
 	public static final GroovyPageOutputStack currentStack() {
 		return currentStack(true);
@@ -26,7 +25,7 @@ public final class GroovyPageOutputStack {
 	}
 	
 	public static final GroovyPageOutputStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
-		GroovyPageOutputStack outputStack=instances.get();
+		GroovyPageOutputStack outputStack=(GroovyPageOutputStack)RequestContextHolder.currentRequestAttributes().getAttribute(ATTRIBUTE_NAME_OUTPUT_STACK, RequestAttributes.SCOPE_REQUEST);
 		if(outputStack!=null) {
 			if(pushTop && topWriter != null) {
 				outputStack.push(topWriter);
@@ -42,8 +41,22 @@ public final class GroovyPageOutputStack {
 		} 
 	}
 	
+	private static GrailsWebRequest getGrailsWebRequest() {
+		Object requestAttributes=RequestContextHolder.currentRequestAttributes();
+		if(requestAttributes instanceof GrailsWebRequest) {
+			return (GrailsWebRequest)requestAttributes;
+		} else {
+			return null;
+		}
+	}
+	
 	private static Writer defaultRequest() {
-		return (Writer)RequestContextHolder.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.OUT, RequestAttributes.SCOPE_REQUEST);
+		GrailsWebRequest webRequest=getGrailsWebRequest();
+		if(webRequest != null) {
+			return webRequest.getOut();
+		} else {
+			return null;
+		}
 	}
 	
 	public static final GroovyPageOutputStack createNew(Writer topWriter) {
@@ -52,18 +65,12 @@ public final class GroovyPageOutputStack {
 	
 	private static final GroovyPageOutputStack createNew(Writer topWriter, boolean autoSync) {
 		GroovyPageOutputStack instance=new GroovyPageOutputStack(topWriter, autoSync);
-		// clear instance after the request is over
-		RequestContextHolder.currentRequestAttributes().registerDestructionCallback(GroovyPageOutputStack.class.getName(), new Runnable() {
-			public void run() {
-				GroovyPageOutputStack.removeCurrentInstance();
-			}
-		}, RequestAttributes.SCOPE_REQUEST);
-		instances.set(instance);
+		RequestContextHolder.currentRequestAttributes().setAttribute(ATTRIBUTE_NAME_OUTPUT_STACK, instance, RequestAttributes.SCOPE_REQUEST);
 		return instance;
 	}
 	
 	public static final void removeCurrentInstance() {
-		instances.remove();
+		RequestContextHolder.currentRequestAttributes().removeAttribute(ATTRIBUTE_NAME_OUTPUT_STACK, RequestAttributes.SCOPE_REQUEST);
 	}
 	
 	public static final Writer currentWriter() {
@@ -178,7 +185,7 @@ public final class GroovyPageOutputStack {
 	}
 
 	private void applyWriterThreadLocals(Writer writer) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+		GrailsWebRequest webRequest = getGrailsWebRequest();
 		if(webRequest != null) {
 			webRequest.setOut(writer);
 		}
