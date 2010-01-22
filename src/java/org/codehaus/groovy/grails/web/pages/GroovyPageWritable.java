@@ -349,12 +349,9 @@ class GroovyPageWritable implements Writable {
         if(appCtx!=null) {
             GrailsApplication app = appCtx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             binding.setVariable(GrailsApplication.APPLICATION_ID, app);
-            // GSPs aren't in any package anymore, so this isn't required
-            /*
             Map<String,Class> domainClassesWithoutPackage = getDomainClassMap(app);            
             final Map variables = binding.getVariables();
             variables.putAll(domainClassesWithoutPackage);
-            */
         }
         binding.setVariable(GroovyPage.SESSION, webRequest.getSession());
         binding.setVariable(GroovyPage.PARAMS, webRequest.getParams());
