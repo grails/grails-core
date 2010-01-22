@@ -37,7 +37,8 @@ public class ParseTests extends TestCase {
 			+ "\tthis.jspTags = JSP_TAGS\n"
 			+ "}\n"
 			+ "public static final String CONTENT_TYPE = 'text/html;charset=UTF-8'\n"
-			+ "public static final long LAST_MODIFIED = 0L\n" + "}\n";
+			+ "public static final long LAST_MODIFIED = 0L\n"
+			+ "public static final String DEFAULT_CODEC = null\n"+ "}\n";
 
     protected String makeImports() {
         StringBuffer result = new StringBuffer();
@@ -237,7 +238,7 @@ public class ParseTests extends TestCase {
             "def out = binding.out\n"+
             "registerSitemeshPreprocessMode(request)\n"+
             "printHtmlPart(0)\n" +
-            "out.print(evaluate('uri', 3, it) { return uri })\n"+
+            "out.print(Codec.encode(evaluate('uri', 3, it) { return uri }))\n"+
             "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
 
