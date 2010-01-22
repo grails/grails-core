@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.Environment;
 import grails.util.PluginBuildSettings;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +65,9 @@ public class GroovyPageParser implements Tokens {
 	private static final Pattern PAGE_DIRECTIVE_PATTERN = Pattern
 			.compile("(\\w+)\\s*=\\s*\"([^\"]*)\"");
 
+	private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*page\\s+(.*?)\\s*%>", Pattern.DOTALL);
+	private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?%>", Pattern.DOTALL);
+	
 	public static final String CONSTANT_NAME_JSP_TAGS = "JSP_TAGS";
 	public static final String CONSTANT_NAME_CONTENT_TYPE = "CONTENT_TYPE";
 	public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
@@ -123,6 +127,7 @@ public class GroovyPageParser implements Tokens {
 	private static final String IMPORT_DIRECTIVE = "import";
 	private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
 	private static final String DEFAULT_CODEC_DIRECTIVE = "defaultCodec";
+	private static final String SITEMESH_PREPROCESS_DIRECTIVE = "sitemeshPreprocess";
 	private static final String PAGE_DIRECTIVE = "page";
 
 	private static final String TAGLIB_DIRECTIVE = "taglib";
@@ -187,10 +192,12 @@ public class GroovyPageParser implements Tokens {
 		}
 
 		String gspSource = readStream(in);
+		
+		Map<String, String> directives = parseDirectives(gspSource);
 
-        if(isSitemeshPreprocessingEnabled(config, uri)) {
+		if(isSitemeshPreprocessingEnabled(config, directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("Preprocessing " + uri + " for sitemesh. Replacing head, title, meta and body elements with g:capture*.");
+				LOG.debug("Preprocessing " + uri + " for sitemesh. Replacing head, title, meta and body elements with sitemesh:capture*.");
 			}
 			// GSP preprocessing for direct sitemesh integration: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
 			gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);
@@ -202,9 +209,36 @@ public class GroovyPageParser implements Tokens {
 		makeName(name);
 	} // Parse()
 
-    private boolean isSitemeshPreprocessingEnabled(Map config, String filename) {
+    private Map<String, String> parseDirectives(String gspSource) {
+    	Map <String, String> result=new HashMap<String, String>();
+    	// strip gsp comments
+    	String input = PRESCAN_COMMENT_PATTERN.matcher(gspSource).replaceAll("");
+    	// find page directives
+    	Matcher m=PRESCAN_PAGE_DIRECTIVE_PATTERN.matcher(input);
+    	if(m.find()) {
+    		Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(m.group(1));
+    		while(mat.find()) {
+    			String name = mat.group(1);
+    			String value = mat.group(2);
+    			result.put(name, value);
+    		}
+    	}
+		return result;
+	}
+
+	private boolean isSitemeshPreprocessingEnabled(Map config, String gspFilePreprocessDirective) {
         Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
-        return /*!filename.contains("/layouts/") &&*/ (sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue()));
+        if(gspFilePreprocessDirective != null) {
+        	sitemeshPreprocessEnabled=gspFilePreprocessDirective;
+        }
+        if(sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue())) {
+        	return true;
+        } else if (sitemeshPreprocessEnabled instanceof Number && ((Number)sitemeshPreprocessEnabled).intValue() != 0) {
+        	return true;
+        } else if (BooleanUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim())) {
+        	return true;
+        }
+        return false;
     }
 
 	public int[] getLineNumberMatrix() {

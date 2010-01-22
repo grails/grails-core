@@ -279,6 +279,25 @@ public class ParseTests extends TestCase {
 		assertEquals("text", result.htmlParts[0]);
 	}
 
+    public void testBypassSitemeshPreprocess() throws Exception {
+		ParsedResult result = parseCode("SITEMESH_PREPROCESS_TEST", "<%@page sitemeshPreprocess=\"false\"%>\n<body>text</body>");
+		String expected = makeImports() +
+            "\n"+
+			"class SITEMESH_PREPROCESS_TEST extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"SITEMESH_PREPROCESS_TEST\" }\n"+
+			"public Object run() {\n"+
+            "def params = binding.params\n"+
+            "def request = binding.request\n"+            
+            "def flash = binding.flash\n"+
+            "def response = binding.response\n"+
+            "def out = binding.out\n"+
+            "printHtmlPart(0)\n"+            
+			"}\n"+ GSP_FOOTER;
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
+		assertEquals("\n<body>text</body>", result.htmlParts[0]);
+	}
+
+    
     public void testMetaWithGStringAttribute() throws Exception {
 		ParsedResult result = parseCode("GRAILS5605", "<html><head><meta name=\"SomeName\" content='${grailsApplication.config.myFirstConfig}/something/${someVar}' /></head></html>");
 		String expected = makeImports() +
