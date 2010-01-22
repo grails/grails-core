@@ -14,18 +14,24 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
-import org.springframework.util.ReflectionUtils;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * A class that encapsulates the information necessary to describe a GSP
@@ -52,6 +58,8 @@ class GroovyPageMetaInfo {
     private String[] htmlParts;
     private Map jspTags = Collections.EMPTY_MAP;
     private GroovyPagesException compilationException;
+	private String codecName;
+	private Class codecClass;
 
     public static final String HTML_DATA_POSTFIX = "_html.data";
     public static final String LINENUMBERS_DATA_POSTFIX = "_linenumbers.data";
@@ -66,12 +74,46 @@ class GroovyPageMetaInfo {
     	this.contentType = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_CONTENT_TYPE), null);
     	this.jspTags = (Map)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_JSP_TAGS), null);
     	this.lastModified = (Long)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_LAST_MODIFIED), null);
+    	this.codecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_DEFAULT_CODEC), null);
+    	initCodec();
+    	
     	try {
 			readHtmlData();
 		} catch (IOException e) {
 			throw new RuntimeException("Problem reading html data for page class " + pageClass, e);
 		}
     }
+    
+    public void initCodec() {
+    	if(codecName==null) {
+    		Map config=ConfigurationHolder.getFlatConfig();
+    		if(config != null) {
+    			Object o = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
+    			if(o != null) {
+    				codecName = o.toString();
+    			}
+    		}
+    	}
+    	
+    	GrailsClass codecGrailsClass=null;
+		GrailsApplication app = ApplicationHolder.getApplication();
+		if(codecName != null) {
+			if (app != null) {
+				codecGrailsClass = app.getArtefactByLogicalPropertyName(
+						CodecArtefactHandler.TYPE, codecName);
+				if (codecGrailsClass == null)
+					codecGrailsClass = app.getArtefactByLogicalPropertyName(
+							CodecArtefactHandler.TYPE, codecName.toUpperCase());
+			}
+		}
+		
+		if(codecGrailsClass==null && StringUtils.isNotBlank(codecName) && !"none".equalsIgnoreCase(codecName)) {
+			LOG.warn("Couldn't initialize Codec by name '" + codecName + "' , pageClass=" + pageClass.getName());
+		}
+		if(codecGrailsClass!=null) {
+			codecClass = codecGrailsClass.getClazz();
+		}
+	}
     
     /**
      * Reads the static html parts from a file stored in a separate file in the same package as the precompiled GSP class
@@ -226,6 +268,18 @@ class GroovyPageMetaInfo {
 
 	public void setHtmlParts(String[] htmlParts) {
 		this.htmlParts = htmlParts;
+	}
+
+	public Class getCodecClass() {
+		return codecClass;
+	}
+
+	public String getCodecName() {
+		return codecName;
+	}
+
+	public void setCodecName(String codecName) {
+		this.codecName = codecName;
 	}
 }
 

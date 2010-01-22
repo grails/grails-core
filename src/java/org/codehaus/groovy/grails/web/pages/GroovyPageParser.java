@@ -67,6 +67,7 @@ public class GroovyPageParser implements Tokens {
 	public static final String CONSTANT_NAME_JSP_TAGS = "JSP_TAGS";
 	public static final String CONSTANT_NAME_CONTENT_TYPE = "CONTENT_TYPE";
 	public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
+	public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
 
 	private GroovyPageScanner scan;
 	private GSPWriter out;
@@ -114,13 +115,11 @@ public class GroovyPageParser implements Tokens {
 			"org.codehaus.groovy.grails.web.taglib.*",
 			"org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException",
 			"org.springframework.web.util.*", "grails.util.GrailsUtil" };
-	private static final String CONFIG_PROPERTY_DEFAULT_CODEC = "grails.views.default.codec";
+	public static final String CONFIG_PROPERTY_DEFAULT_CODEC = "grails.views.default.codec";
 	private static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
 	private static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
 	private static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
 
-	private String codecClassName;
-	private String codecName;
 	private static final String IMPORT_DIRECTIVE = "import";
 	private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
 	private static final String DEFAULT_CODEC_DIRECTIVE = "defaultCodec";
@@ -135,6 +134,7 @@ public class GroovyPageParser implements Tokens {
 	private boolean precompileMode;
 	private boolean sitemeshPreprocessMode=false;
     private PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
+    private String defaultCodecDirectiveValue;
 
     public String getContentType() {
 		return this.contentType;
@@ -200,32 +200,12 @@ public class GroovyPageParser implements Tokens {
 		this.pageName = uri;
 		this.environment = Environment.getCurrent();
 		makeName(name);
-		Object o = config.get(CONFIG_PROPERTY_DEFAULT_CODEC);
-		lookupCodec(o);
-
 	} // Parse()
 
     private boolean isSitemeshPreprocessingEnabled(Map config, String filename) {
         Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
         return /*!filename.contains("/layouts/") &&*/ (sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue()));
     }
-
-    private void lookupCodec(Object o) {
-		if (o != null) {
-			this.codecName = o.toString();
-			GrailsApplication app = ApplicationHolder.getApplication();
-			if (app != null) {
-				GrailsClass codecClass = app.getArtefactByLogicalPropertyName(
-						CodecArtefactHandler.TYPE, codecName);
-				if (codecClass == null)
-					codecClass = app.getArtefactByLogicalPropertyName(
-							CodecArtefactHandler.TYPE, codecName.toUpperCase());
-				if (codecClass != null) {
-					this.codecClassName = codecClass.getFullName();
-				}
-			}
-		}
-	}
 
 	public int[] getLineNumberMatrix() {
 		return out.getLineNumbers();
@@ -415,7 +395,7 @@ public class GroovyPageParser implements Tokens {
 			if (name.equals(CONTENT_TYPE_DIRECTIVE))
 				contentType(value);
 			if (name.equals(DEFAULT_CODEC_DIRECTIVE))
-				lookupCodec(value);
+				this.defaultCodecDirectiveValue = value.trim();
 			ix = mat.end();
 		}
 	} // directPage()
@@ -463,13 +443,10 @@ public class GroovyPageParser implements Tokens {
 
 		String text = scan.getToken().trim();
 		text = getExpressionText(text);
-		if (environment == Environment.DEVELOPMENT) {
-
-		}
-		if (codecClassName != null) {
-			out.printlnToResponse("Codec.encode(" + text + ")");
+		if(text.startsWith("(") && text.endsWith(")")) {
+			out.printlnToResponse("Codec.encode" + text);
 		} else {
-			out.printlnToResponse(text);
+			out.printlnToResponse("Codec.encode(" + text + ")");
 		}
 	} // expr()
 
@@ -677,12 +654,6 @@ public class GroovyPageParser implements Tokens {
 			if(sitemeshPreprocessMode) {
 				out.println("registerSitemeshPreprocessMode(request)");
 			}
-			if (codecClassName != null) {
-				out
-						.println("request.setAttribute('org.codehaus.groovy.grails.GSP_CODEC', '"
-								+ codecName + "')");
-			}
-
 		}
 
 		loop: for (;;) {
@@ -768,7 +739,7 @@ public class GroovyPageParser implements Tokens {
 			out.println("protected void init() {");
 			out.println("\tthis.jspTags = " + CONSTANT_NAME_JSP_TAGS);
 			out.println("}");
-
+			
 			out.println("public static final String "
 					+ CONSTANT_NAME_CONTENT_TYPE + " = '"
 					+ escapeGroovy(contentType) + "'");
@@ -776,17 +747,19 @@ public class GroovyPageParser implements Tokens {
 			out.println("public static final long "
 					+ CONSTANT_NAME_LAST_MODIFIED + " = " + lastModified + "L");
 
+			out.print("public static final String "
+					+ CONSTANT_NAME_DEFAULT_CODEC + " = ");
+			if(defaultCodecDirectiveValue != null && defaultCodecDirectiveValue.length() > 0) {
+				out.println("'" + escapeGroovy(defaultCodecDirectiveValue) + "'");
+			} else {
+				out.println("null");
+			}
 			out.println("}");
 		} else {
 			for (int i = 0; i < DEFAULT_IMPORTS.length; i++) {
 				out.print("import ");
 				out.println(DEFAULT_IMPORTS[i]);
 
-			}
-			if (codecClassName != null) {
-				out.print("import ");
-				out.print(codecClassName);
-				out.println(" as Codec");
 			}
 		}
 	} // page()
@@ -1151,5 +1124,9 @@ public class GroovyPageParser implements Tokens {
 
 	public boolean isInClosure() {
 		return closureLevel > 0;
+	}
+	
+	public String getDefaultCodecDirectiveValue() {
+		return defaultCodecDirectiveValue;
 	}
 } // Parse
