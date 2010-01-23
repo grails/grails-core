@@ -115,9 +115,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         boolean renderView = true;
         GroovyObject controller = (GroovyObject) target;
-        if ((arguments[0] instanceof String) || (arguments[0] instanceof GString)) {
+        if (arguments[0] instanceof CharSequence) {
             setContentType(response, TEXT_HTML, DEFAULT_ENCODING,true);
-            String text = arguments[0].toString();
+            CharSequence text = (CharSequence)arguments[0];
             renderView = renderText(text, response);
         } else if (arguments[0] instanceof Closure) {
             setContentType(response, TEXT_HTML, gspEncoding, true);
@@ -163,11 +163,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 } else {
                     renderView = renderMarkup(callable, response);
                 }
-            } else if (arguments[arguments.length - 1] instanceof String) {
-                String text = (String) arguments[arguments.length - 1];
+            } else if (arguments[arguments.length - 1] instanceof CharSequence) {
+            	CharSequence text = (CharSequence) arguments[arguments.length - 1];
                 renderView = renderText(text, out);
             } else if (argMap.containsKey(ARGUMENT_TEXT)) {
-                String text = argMap.get(ARGUMENT_TEXT).toString();
+            	Object textArg = argMap.get(ARGUMENT_TEXT);
+            	CharSequence text = (textArg instanceof CharSequence) ? ((CharSequence)textArg) : textArg.toString();
                 renderView = renderText(text, out);
             } else if (argMap.containsKey(ARGUMENT_VIEW)) {
 
@@ -197,7 +198,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
         String contextPath = getContextPath(webRequest, argMap);
 
-        String var = (String) argMap.get(ARGUMENT_VAR);
+        String var = String.valueOf(argMap.get(ARGUMENT_VAR));
         // get the template uri
         String templateUri = webRequest.getAttributes().getTemplateURI(controller, templateName);
 
@@ -386,7 +387,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         return renderView;
     }
 
-    private boolean renderText(String text, HttpServletResponse response) {
+    private boolean renderText(CharSequence text, HttpServletResponse response) {
         try {
             PrintWriter writer = response.getWriter();
             return renderText(text, writer);
@@ -396,9 +397,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
     }
 
-    private boolean renderText(String text, Writer writer) {
+    private boolean renderText(CharSequence text, Writer writer) {
         try {
-            writer.write(text);
+        	if(writer instanceof PrintWriter) {
+        		((PrintWriter)writer).print(text);
+        	} else {
+        		writer.write(text.toString());
+        	}
             return false;
         } catch (IOException e) {
             throw new ControllerExecutionException(e.getMessage(), e);
