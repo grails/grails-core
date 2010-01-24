@@ -39,10 +39,60 @@ class Publication {
        publishedBetween { start, end ->
            between 'datePublished', start, end
        }
+
+       paperbackOrRecent {
+           or {
+        		def now = new Date()
+        		gt 'datePublished', now - 365
+        		eq 'paperback', true
+           }
+       }
+
+       paperbackAndRecent {
+           and {
+               def now = new Date()
+               gt 'datePublished', now - 365
+               eq 'paperback', true
+           }
+       }
    }
 }
 ''')
     }
+
+	void testDisjunction() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+
+		def now = new Date()
+		def oldDate = now - 2000
+
+		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save(flush: true)
+		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save(flush: true)
+		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save(flush: true)
+		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save(flush: true)
+		session.clear()
+
+		def publications = publicationClass.paperbackOrRecent.list()
+		assertEquals 3, publications?.size()
+
+		def titles = publications.title
+	}
+
+	void testConjunction() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+
+		def now = new Date()
+		def oldDate = now - 2000
+
+		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save(flush: true)
+		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save(flush: true)
+		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save(flush: true)
+		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save(flush: true)
+		session.clear()
+
+		def publications = publicationClass.paperbackAndRecent.list()
+		assertEquals 1, publications?.size()
+	}
 
     void testList() {
         def publicationClass = ga.getDomainClass("Publication").clazz
