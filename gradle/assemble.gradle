@@ -113,7 +113,6 @@ task docsJar(type: Jar, dependsOn: docGeneratingFilesJar, description: 'Package 
     appendix = "docs"
     metaInf handlersAndSchemasMetaInf
     from mainClassesIncludeSpec("grails/doc/**", "**/groovy/grails/documentation/**")
-    println docGeneratingFilesJar.archivePath
     from docGeneratingFilesJar.archivePath
     osgify = true
     mavenArtifact = true
