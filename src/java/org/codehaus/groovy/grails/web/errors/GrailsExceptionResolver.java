@@ -24,6 +24,7 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.GrailsMVCException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.springframework.web.context.ServletContextAware;
@@ -52,7 +53,7 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
     */
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
 
-        if (ex instanceof InvokerInvocationException) {
+        if ((ex instanceof InvokerInvocationException)||(ex instanceof GrailsMVCException)) {
            Throwable t = getRootCause(ex);
            if(t instanceof Exception) {
                ex = (Exception) t;
