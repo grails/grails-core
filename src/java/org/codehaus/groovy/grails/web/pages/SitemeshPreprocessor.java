@@ -47,6 +47,8 @@ public class SitemeshPreprocessor {
 			// no body either, so replace meta & title in the entire gsp source
 			// fix title in sub-template -problem 
 			sb.append(addMetaCapturing(addTitleCapturing(gspSource)));
+		} else {
+			sb.append(gspSource);
 		}
 		return sb;
 	}
