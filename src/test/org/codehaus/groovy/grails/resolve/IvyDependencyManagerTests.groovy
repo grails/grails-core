@@ -198,6 +198,24 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertEquals "grails-test", buildDeps[0].moduleId.name
     }
 
+    void testDependenciesWithGString() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        def springDMVersion = '2.0.0.M1'        
+        manager.parseDependencies {
+            build ("org.springframework.osgi:spring-osgi-core:$springDMVersion",
+                    "org.springframework.osgi:spring-osgi-extender:$springDMVersion",
+                    "org.springframework.osgi:spring-osgi-io:$springDMVersion",
+                    "org.springframework.osgi:spring-osgi-web:$springDMVersion",
+                    "org.springframework.osgi:spring-osgi-web-extender:$springDMVersion") {
+                transitive = false
+            }
+        }
+		
+		assertEquals 5, manager.listDependencies("build").size()
+    }
+
     void testResolveApplicationDependencies() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

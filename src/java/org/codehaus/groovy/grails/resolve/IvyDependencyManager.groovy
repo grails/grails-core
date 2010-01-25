@@ -899,7 +899,7 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     def invokeMethod(String name, args) {
-        if(!args || !((args[0] instanceof String)||(args[0] instanceof Map)))
+        if(!args || !((args[0] instanceof CharSequence)||(args[0] instanceof Map)||(args[0] instanceof Collection)))
             throw new MissingMethodException(name, IvyDependencyManager, args)
         
         def dependencies = args
@@ -919,7 +919,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
         boolean usedArgs = false
         def parseDep = { dependency ->
-                if ((dependency instanceof String) || (dependency instanceof GString)) {
+                if ((dependency instanceof CharSequence)) {
                     def args = [:]
                     if(dependencies[-1] instanceof Map) {
                         args = dependencies[-1]
