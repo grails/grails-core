@@ -28,6 +28,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	StreamCharBuffer bodyBuffer;
 	StreamCharBuffer pageBuffer;
 	boolean used=false;
+	boolean titleCaptured=false;
 	Map<String, StreamCharBuffer> contentBuffers;
 	
 	public GSPSitemeshPage() {
@@ -35,22 +36,28 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 	}
 
 	public void addProperty(String name, Object value) {
-		super.addProperty(name, (value == null ? null : String.valueOf(value)));
-		this.used=true;		
+		addProperty(name, (String)(value == null ? null : String.valueOf(value)));
 	}
 
 	@Override
 	public void addProperty(String name, String value) {
-		super.addProperty(name, (value == null ? null : value));
+		if("title".equals(name)) {
+			titleCaptured=true;
+		}
+		super.addProperty(name, value);
 		this.used=true;		
 	}
 	
 	@Override
 	public void writeHead(Writer out) throws IOException {
 		if(headBuffer != null) {
-			String headAsString = headBuffer.toString();
-			// strip out title for sitemesh version of <head>
-			out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
+			if(titleCaptured) {
+				String headAsString = headBuffer.toString();
+				// strip out title for sitemesh version of <head>
+				out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
+			} else {
+				headBuffer.writeTo(out);
+			}
 		}
 	}
 
