@@ -22,6 +22,7 @@ public class SitemeshPreprocessor {
 	Pattern headPattern=Pattern.compile("<head(\\s[^>]*)?>(.*?)</head>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern bodyPattern=Pattern.compile("<body(\\s[^>]*)?>(.*?)</body>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	Pattern contentPattern=Pattern.compile("<content(\\s+tag[^>]+)>(.*?)</content>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	public static final String XML_CLOSING_FOR_EMPTY_TAG_ATTRIBUTE_NAME = "gsp_sm_xmlClosingForEmptyTag";
 	
 	public String addGspSitemeshCapturing(String gspSource) {
 		StringBuffer sb = addHeadCapturing(gspSource);
@@ -41,8 +42,14 @@ public class SitemeshPreprocessor {
 			sb.append(">");
 			sb.append(addMetaCapturing(addTitleCapturing(m.group(2))));
 			sb.append("</sitemesh:captureHead>");
+			m.appendTail(sb);
+		} else if (!bodyPattern.matcher(gspSource).find()){
+			// no body either, so replace meta & title in the entire gsp source
+			// fix title in sub-template -problem 
+			sb.append(addMetaCapturing(addTitleCapturing(gspSource)));
+		} else {
+			sb.append(gspSource);
 		}
-		m.appendTail(sb);
 		return sb;
 	}
 
@@ -50,7 +57,7 @@ public class SitemeshPreprocessor {
 	String addMetaCapturing(String headContent) {
 		Matcher m=metaPattern.matcher(headContent);
         final String result = parameterPattern.matcher(
-                m.replaceAll("<sitemesh:captureMeta$1/>")
+                m.replaceAll("<sitemesh:captureMeta " + XML_CLOSING_FOR_EMPTY_TAG_ATTRIBUTE_NAME + "=\"$2\"$1/>")
                 ).replaceAll("<sitemesh:parameter$1/>");
         return result;
 	}

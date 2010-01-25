@@ -31,6 +31,16 @@ class TestController {
         [formErrors:form.errors]
     }
 
+    def five = { Form form ->
+		[form: new Form()]
+    }
+
+    def six = { Form form ->
+        def f = new Form(url: new URL('http://www.springsource.com/'))
+        f.validate()
+        [formErrors: f.errors]
+    }
+
     def validate = { Form form ->
 
         [formErrors:form.validate()]
@@ -46,8 +56,28 @@ class Form {
 }
 '''
     }
+	
+	
+	void testCommandObjectsDontShareErrors() {
+		def controller = ga.getControllerClass("TestController").newInstance()
 
-    void testClearErrors() {
+		def model = controller.five()
+
+        def error
+		def form = model.form
+		assertNotNull 'did not find expected form', form
+		assertFalse 'form should not have had errors', form.hasErrors()
+	}
+
+	void testValidatingNewlyCreatedCommandObject() {
+		def controller = ga.getControllerClass("TestController").newInstance()
+		def model = controller.six()
+		def errors = model.formErrors
+		assertNotNull 'did not find expected errors', errors
+		assertEquals 1, errors.allErrors.size()
+	}
+	
+	void testClearErrors() {
         def controller = ga.getControllerClass("TestController").newInstance()
 
         controller.params.url = "not_a_url"

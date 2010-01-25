@@ -42,12 +42,14 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
             } catch (IOException e) {
                 setError();
             }
+            super.out = destination;
         }
         return destination;
     }
 
     public void updateDestination(DestinationFactory factory) {
         destination = null;
+        super.out = destination;
         this.factory = factory;
     }
 

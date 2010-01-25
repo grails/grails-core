@@ -282,6 +282,14 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         ConfigurationHolder.config.grails.serverURL=null
     }
     
+    void testAbsoluteWithContextPathAndNullConfig() {
+        ConfigurationHolder.config = null
+        request.contextPath = "/foo"
+        def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
+
+        assertOutputEquals 'http://localhost:8080/testController/testAction', template
+    }
+
     /**
      * Tests regression of <a href="http://jira.codehaus.org/browse/GRAILS-3368">GRAILS-3368</a>.
      * The context path should not be included in the generated link

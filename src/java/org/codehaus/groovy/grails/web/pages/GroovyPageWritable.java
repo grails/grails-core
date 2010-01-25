@@ -18,26 +18,33 @@ import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.GroovyObject;
 import groovy.lang.Writable;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -76,6 +83,8 @@ class GroovyPageWritable implements Writable {
         this.showSource = shouldShowGroovySource(metaInfo);
 
         this.metaInfo = metaInfo;
+        
+        
     }
 
     private boolean shouldShowGroovySource(GroovyPageMetaInfo metaInfo) {
@@ -147,6 +156,13 @@ class GroovyPageWritable implements Writable {
                 formulateBinding(request, response, binding, out);
             }
 
+            if(metaInfo.getCodecClass() != null) {
+            	request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
+                binding.setVariable("Codec", metaInfo.getCodecClass());
+            } else {
+            	binding.setVariable("Codec", gspNoneCodeInstance);
+            }
+            
             GroovyPage page = (GroovyPage) InvokerHelper.createScript(metaInfo.getPageClass(), binding);
             page.setJspTags(metaInfo.getJspTags());
             page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
@@ -161,6 +177,14 @@ class GroovyPageWritable implements Writable {
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);        
         }
         return out;
+    }
+    
+    private static final GspNoneCodec gspNoneCodeInstance = new GspNoneCodec();
+    
+    private static final class GspNoneCodec {
+    	public final Object encode(Object object) {
+    		return object;
+    	}
     }
 
     protected void copyBinding(Binding binding, Binding oldBinding, Writer out) throws IOException {
@@ -340,19 +364,22 @@ class GroovyPageWritable implements Writable {
         binding.setVariable(GroovyPage.OUT, out);
     }
 
-    private static Map<String,Class> domainsWithoutPackage = new HashMap<String,Class>();
-    private static Map<String,Class> getDomainClassMap(GrailsApplication application) {
+    private static Map<String,Class> cachedDomainsWithoutPackage = null;
+    
+    private static synchronized Map<String,Class> getDomainClassMap(GrailsApplication application) {
+    	Map<String,Class> domainsWithoutPackage = (cachedDomainsWithoutPackage != null) ? cachedDomainsWithoutPackage : new HashMap<String,Class>();
         GrailsClass[] domainClasses = application.getArtefacts(DomainClassArtefactHandler.TYPE);
-        if(domainClasses.length==domainsWithoutPackage.size()) return domainsWithoutPackage;
-        else {
+        if(domainClasses.length!=domainsWithoutPackage.size()) {
             domainsWithoutPackage.clear();
             for (GrailsClass domainClass : domainClasses) {
                 final Class theClass = domainClass.getClazz();
-                domainsWithoutPackage.put(theClass.getName(),theClass);
+                domainsWithoutPackage.put(theClass.getName(), theClass);
             }
-            return domainsWithoutPackage;
+	        if(!Environment.isDevelopmentMode()) {
+	        	// don't cache in development mode
+	        	cachedDomainsWithoutPackage = domainsWithoutPackage;
+	        }
         }
-
+        return domainsWithoutPackage;
     }
-
 }

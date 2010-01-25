@@ -37,7 +37,8 @@ public class ParseTests extends TestCase {
 			+ "\tthis.jspTags = JSP_TAGS\n"
 			+ "}\n"
 			+ "public static final String CONTENT_TYPE = 'text/html;charset=UTF-8'\n"
-			+ "public static final long LAST_MODIFIED = 0L\n" + "}\n";
+			+ "public static final long LAST_MODIFIED = 0L\n"
+			+ "public static final String DEFAULT_CODEC = null\n"+ "}\n";
 
     protected String makeImports() {
         StringBuffer result = new StringBuffer();
@@ -237,7 +238,7 @@ public class ParseTests extends TestCase {
             "def out = binding.out\n"+
             "registerSitemeshPreprocessMode(request)\n"+
             "printHtmlPart(0)\n" +
-            "out.print(evaluate('uri', 3, it) { return uri })\n"+
+            "out.print(Codec.encode(evaluate('uri', 3, it) { return uri }))\n"+
             "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
 
@@ -278,6 +279,25 @@ public class ParseTests extends TestCase {
 		assertEquals("text", result.htmlParts[0]);
 	}
 
+    public void testBypassSitemeshPreprocess() throws Exception {
+		ParsedResult result = parseCode("SITEMESH_PREPROCESS_TEST", "<%@page sitemeshPreprocess=\"false\"%>\n<body>text</body>");
+		String expected = makeImports() +
+            "\n"+
+			"class SITEMESH_PREPROCESS_TEST extends GroovyPage {\n"+
+            "public String getGroovyPageFileName() { \"SITEMESH_PREPROCESS_TEST\" }\n"+
+			"public Object run() {\n"+
+            "def params = binding.params\n"+
+            "def request = binding.request\n"+            
+            "def flash = binding.flash\n"+
+            "def response = binding.response\n"+
+            "def out = binding.out\n"+
+            "printHtmlPart(0)\n"+            
+			"}\n"+ GSP_FOOTER;
+		assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
+		assertEquals("\n<body>text</body>", result.htmlParts[0]);
+	}
+
+    
     public void testMetaWithGStringAttribute() throws Exception {
 		ParsedResult result = parseCode("GRAILS5605", "<html><head><meta name=\"SomeName\" content='${grailsApplication.config.myFirstConfig}/something/${someVar}' /></head></html>");
 		String expected = makeImports() +
@@ -293,7 +313,7 @@ public class ParseTests extends TestCase {
             "registerSitemeshPreprocessMode(request)\n"+
             "printHtmlPart(0)\n"+
             "body1 = new GroovyPageTagBody(this,binding.webRequest) {\n"+
-            "invokeTag('captureMeta','sitemesh',1,['name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }] as GroovyPageAttributes,null)\n"+
+            "invokeTag('captureMeta','sitemesh',1,['gsp_sm_xmlClosingForEmptyTag':evaluate('\"/\"', 1, it) { return \"/\" },'name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }] as GroovyPageAttributes,null)\n"+
             "}\n"+            
             "invokeTag('captureHead','sitemesh',1,[:],body1)\n"+
             "printHtmlPart(1)\n"+

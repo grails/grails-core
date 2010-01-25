@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.test.report.junit;
 
 import java.io.*;
-import grails.util.GrailsUtil;
 import junit.framework.*;
 import org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
+import org.codehaus.groovy.grails.test.support.TestStacktraceSanitizer;
 
 /**
  * JUnit plain text formatter that sanitises the stack traces generated
@@ -44,12 +44,12 @@ public class PlainFormatter extends PlainJUnitResultFormatter {
     }
 
     public void addFailure(Test test, Throwable throwable) {
-        GrailsUtil.deepSanitize(throwable);
+        TestStacktraceSanitizer.sanitize(throwable);
         super.addFailure(test, throwable);
     }
 
     public void addError(Test test, Throwable throwable) {
-        GrailsUtil.deepSanitize(throwable);
+        TestStacktraceSanitizer.sanitize(throwable);
         super.addError(test, throwable);
     }
     
