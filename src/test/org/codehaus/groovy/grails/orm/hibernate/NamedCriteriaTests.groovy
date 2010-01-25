@@ -39,19 +39,69 @@ class Publication {
        publishedBetween { start, end ->
            between 'datePublished', start, end
        }
+
+       paperbackOrRecent {
+           or {
+        		def now = new Date()
+        		gt 'datePublished', now - 365
+        		eq 'paperback', true
+           }
+       }
+
+       paperbackAndRecent {
+           and {
+               def now = new Date()
+               gt 'datePublished', now - 365
+               eq 'paperback', true
+           }
+       }
    }
 }
 ''')
     }
+
+	void testDisjunction() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+
+		def now = new Date()
+		def oldDate = now - 2000
+
+		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
+		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
+		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
+		session.clear()
+
+		def publications = publicationClass.paperbackOrRecent.list()
+		assertEquals 3, publications?.size()
+
+		def titles = publications.title
+	}
+
+	void testConjunction() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+
+		def now = new Date()
+		def oldDate = now - 2000
+
+		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
+		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
+		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
+		session.clear()
+
+		def publications = publicationClass.paperbackAndRecent.list()
+		assertEquals 1, publications?.size()
+	}
 
     void testList() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save(flush: true)
+                datePublished: now - 900).save()
 
         session.clear()
 
@@ -67,11 +117,11 @@ class Publication {
         def now = new Date()
         3.times {
             assert publicationClass.newInstance(title: "Some Book",
-                    datePublished: now - 10).save(flush: true)
+                    datePublished: now - 10).save()
             assert publicationClass.newInstance(title: "Some Other Book",
-                    datePublished: now - 10).save(flush: true)
+                    datePublished: now - 10).save()
             assert publicationClass.newInstance(title: "Some Book",
-                    datePublished: now - 900).save(flush: true)
+                    datePublished: now - 900).save()
         }
         session.clear()
 
@@ -88,10 +138,10 @@ class Publication {
 
         def now = new Date()
 
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save(flush: true)
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save(flush: true)
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save(flush: true)
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save(flush: true)
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save()
 
         def publications = publicationClass.recentPublications.findAllPaperbackByTitle('Some Book')
 
@@ -105,10 +155,10 @@ class Publication {
 
         def now = new Date()
 
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save(flush: true)
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save(flush: true)
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save(flush: true)
-        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save(flush: true)
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 900, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: 'Some Book', datePublished: now - 10, paperback: true).save()
 
         def publication = publicationClass.recentPublications.findPaperbackByTitle('Some Book')
 
@@ -120,9 +170,9 @@ class Publication {
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some Book",
-                    datePublished: now - 900).save(flush: true)
+                    datePublished: now - 900).save()
         def recentBookId = publicationClass.newInstance(title: "Some Book",
-                    datePublished: now - 10).save(flush: true).id
+                    datePublished: now - 10).save().id
         session.clear()
 
         def publication = publicationClass.recentPublications.findByTitle('Some Book')
@@ -136,11 +186,11 @@ class Publication {
         def now = new Date()
         3.times {
             assert publicationClass.newInstance(title: "Some Book",
-                    datePublished: now - 10).save(flush: true)
+                    datePublished: now - 10).save()
             assert publicationClass.newInstance(title: "Some Other Book",
-                    datePublished: now - 10).save(flush: true)
+                    datePublished: now - 10).save()
             assert publicationClass.newInstance(title: "Some Book",
-                    datePublished: now - 900).save(flush: true)
+                    datePublished: now - 900).save()
         }
         session.clear()
 
@@ -154,11 +204,11 @@ class Publication {
 
         def now = new Date()
 
-        assert publicationClass.newInstance(title: "Book 1", datePublished: now).save(flush: true)
-        assert publicationClass.newInstance(title: "Book 5", datePublished: now).save(flush: true)
-        assert publicationClass.newInstance(title: "Book 3", datePublished: now - 900).save(flush: true)
-        assert publicationClass.newInstance(title: "Book 2", datePublished: now - 900).save(flush: true)
-        assert publicationClass.newInstance(title: "Book 4", datePublished: now).save(flush: true)
+        assert publicationClass.newInstance(title: "Book 1", datePublished: now).save()
+        assert publicationClass.newInstance(title: "Book 5", datePublished: now).save()
+        assert publicationClass.newInstance(title: "Book 3", datePublished: now - 900).save()
+        assert publicationClass.newInstance(title: "Book 2", datePublished: now - 900).save()
+        assert publicationClass.newInstance(title: "Book 4", datePublished: now).save()
         session.clear()
 
         def publications = publicationClass.recentPublications.listOrderByTitle()
@@ -175,10 +225,10 @@ class Publication {
 
         def now = new Date()
         def hasBookInTitle = publicationClass.newInstance(title: "Some Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert hasBookInTitle
         def doesNotHaveBookInTitle = publicationClass.newInstance(title: "Some Publication",
-                datePublished: now - 900).save(flush: true)
+                datePublished: now - 900).save()
         assert doesNotHaveBookInTitle
 
         session.clear()
@@ -192,10 +242,10 @@ class Publication {
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert newPublication
         def oldPublication = publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save(flush: true)
+                datePublished: now - 900).save()
         assert oldPublication
 
         session.clear()
@@ -210,10 +260,10 @@ class Publication {
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert newPublication
         def oldPublication = publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save(flush: true)
+                datePublished: now - 900).save()
         assert oldPublication
 
         session.clear()
@@ -228,10 +278,10 @@ class Publication {
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert newPublication
         def oldPublication = publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save(flush: true)
+                datePublished: now - 900).save()
         assert oldPublication
 
         session.clear()
@@ -244,11 +294,11 @@ class Publication {
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert publicationClass.newInstance(title: "Some Book",
-                datePublished: now - 10).save(flush: true)
+                datePublished: now - 10).save()
         assert publicationClass.newInstance(title: "Some Book",
-                datePublished: now - 900).save(flush: true)
+                datePublished: now - 900).save()
 
         session.clear()
         assertEquals 2, publicationClass.recentPublicationsByTitle('Some Book').count()
@@ -258,7 +308,7 @@ class Publication {
         def publicationClass = ga.getDomainClass("Publication").clazz
         (1..25).each {num ->
             publicationClass.newInstance(title: "Book Number ${num}",
-                    datePublished: new Date()).save(flush: true)
+                    datePublished: new Date()).save()
         }
 
         def pubs = publicationClass.recentPublications.list(max: 10)
@@ -269,7 +319,7 @@ class Publication {
         def publicationClass = ga.getDomainClass("Publication").clazz
         (1..25).each {num ->
             publicationClass.newInstance(title: 'Book Title',
-                    datePublished: new Date() + num).save(flush: true)
+                    datePublished: new Date() + num).save()
         }
 
         def pubs = publicationClass.latestBooks.list()
@@ -280,7 +330,7 @@ class Publication {
         def publicationClass = ga.getDomainClass("Publication").clazz
         (1..25).each {num ->
             publicationClass.newInstance(title: "Book Number ${num}",
-                    datePublished: new Date()).save(flush: true)
+                    datePublished: new Date()).save()
         }
 
         def pubs = publicationClass.recentPublications.list(max: 10, offset: 5)
@@ -298,7 +348,7 @@ class Publication {
         (1..5).each {num ->
             3.times {
                 assert publicationClass.newInstance(title: "Book Number ${num}",
-                        datePublished: now).save(flush: true)
+                        datePublished: now).save()
             }
         }
 
@@ -311,9 +361,9 @@ class Publication {
 
         def now = new Date()
         def recentPub = publicationClass.newInstance(title: "Some Title",
-                            datePublished: now).save(flush: true)
+                            datePublished: now).save()
         def oldPub = publicationClass.newInstance(title: "Some Title",
-                            datePublished: now - 900).save(flush: true)
+                            datePublished: now - 900).save()
 
         def pub = publicationClass.recentPublicationsByTitle('Some Title').get(oldPub.id)
         session.clear()
@@ -329,7 +379,7 @@ class Publication {
         (1..5).each {num ->
             3.times {
                 assert publicationClass.newInstance(title: "Book Number ${num}",
-                        datePublished: now).save(flush: true)
+                        datePublished: now).save()
             }
         }
 
@@ -343,7 +393,7 @@ class Publication {
         def now = new Date()
         (1..5).each {num ->
             assert publicationClass.newInstance(title: "Book Number ${num}",
-                    datePublished: ++now).save(flush: true)
+                    datePublished: ++now).save()
         }
 
         def pubs = publicationClass.publishedBetween(now-2, now).list()
@@ -356,9 +406,9 @@ class Publication {
         def now = new Date()
         (1..5).each {num ->
             assert publicationClass.newInstance(title: "Book Number ${num}",
-                    datePublished: now + num).save(flush: true)
+                    datePublished: now + num).save()
             assert publicationClass.newInstance(title: "Another Book Number ${num}",
-                    datePublished: now + num).save(flush: true)
+                    datePublished: now + num).save()
         }
 
         def pubs = publicationClass.publishedBetween(now, now + 2).findAllByTitleLike('Book%')
@@ -371,7 +421,7 @@ class Publication {
         def now = new Date()
         (1..10).each {num ->
             assert publicationClass.newInstance(title: "Book Number ${num}",
-                    datePublished: ++now).save(flush: true)
+                    datePublished: ++now).save()
         }
 
         def pubs = publicationClass.publishedBetween(now-8, now-2).list(offset:2, max: 4)
@@ -385,7 +435,7 @@ class Publication {
         (1..5).each {num ->
             3.times {
                 assert publicationClass.newInstance(title: "Book Number ${num}",
-                        datePublished: now).save(flush: true)
+                        datePublished: now).save()
             }
         }
 

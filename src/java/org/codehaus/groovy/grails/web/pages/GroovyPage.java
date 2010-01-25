@@ -414,7 +414,7 @@ public abstract class GroovyPage extends Script {
 
     private static boolean resolvePreferSubChunk(String tagNamespace, String tagName) {
 		boolean preferSubChunkWhenWritingToOtherBuffer=false;
-		if(DEFAULT_NAMESPACE.equals(tagNamespace) && tagName.startsWith("capture")) {
+		if("sitemesh".equals(tagNamespace) && tagName.startsWith("capture")) {
 			preferSubChunkWhenWritingToOtherBuffer=true;
 		}
 		return preferSubChunkWhenWritingToOtherBuffer;

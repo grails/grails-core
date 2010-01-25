@@ -29,6 +29,16 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 		        render "text"
 		   }
 
+		   def renderStreamCharBuffer = {
+				def writer = new org.codehaus.groovy.grails.web.pages.FastStringWriter()
+				writer.write("text")
+				render writer.buffer
+		   }
+
+		   def renderGString = {
+				render "${'te' + 'xt'}"
+		   }
+
 		   def renderTextWithContentType = {
 		        render(text:"<foo>bar</foo>",contentType:"text/xml", encoding:"utf-16")
            }
@@ -77,7 +87,23 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals "text", response.contentAsString
     }
 
-    void testRenderTextWithContentType() {
+	void testRenderStreamCharBuffer() {
+		def testCtrl = ga.getControllerClass("TestController").newInstance()
+		
+		testCtrl.renderStreamCharBuffer()
+		assertEquals "text/html;charset=utf-8", response.contentType
+		assertEquals "text", response.contentAsString
+	}
+	
+	void testRenderGString() {
+		def testCtrl = ga.getControllerClass("TestController").newInstance()
+		
+		testCtrl.renderGString()
+		assertEquals "text/html;charset=utf-8", response.contentType
+		assertEquals "text", response.contentAsString
+	}
+		
+	void testRenderTextWithContentType() {
         def testCtrl = ga.getControllerClass("TestController").newInstance()
 
         testCtrl.renderTextWithContentType()
