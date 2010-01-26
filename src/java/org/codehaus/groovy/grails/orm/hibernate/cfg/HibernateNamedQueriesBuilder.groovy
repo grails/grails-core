@@ -82,16 +82,20 @@ class NamedCriteriaProxy {
     private dynamicMethods
     private namedCriteriaParams
 
-    def list(Object[] params) {
+    def list(Object[] params, Closure additionalCriteriaClosure = null) {
         def closureClone = getPreparedCriteriaClosure()
         def listClosure = {
             closureClone.delegate = delegate
             def paramsMap
             if (params && params[-1] instanceof Map) {
                 paramsMap = params[-1]
-                params = params.size() > 1 ? params[0..-2] : []
             }
-            closureClone(* params)
+            closureClone()
+			if(additionalCriteriaClosure) {
+				additionalCriteriaClosure = additionalCriteriaClosure.clone()
+				additionalCriteriaClosure.delegate = delegate
+				additionalCriteriaClosure()
+			}
             if (paramsMap?.max) {
                 maxResults(paramsMap.max)
             }
@@ -103,8 +107,14 @@ class NamedCriteriaProxy {
     }
 
     def call(Object[] params) {
-        namedCriteriaParams = params
-        this
+		if(params && params[-1] instanceof Closure) {
+			def additionalCriteriaClosure = params[-1]
+			params = params.length > 1 ? params[0..-2] : [:]
+			list(params, additionalCriteriaClosure)
+		} else {
+			namedCriteriaParams = params
+			this
+		}
     }
 
     def get(id) {
@@ -118,11 +128,16 @@ class NamedCriteriaProxy {
         domainClass.withCriteria(getClosure)
     }
 
-    def count() {
+    def count(Closure additionalCriteriaClosure = null) {
         def closureClone = getPreparedCriteriaClosure()
         def countClosure = {
             closureClone.delegate = delegate
             closureClone()
+			if(additionalCriteriaClosure) {
+				additionalCriteriaClosure = additionalCriteriaClosure.clone()
+				additionalCriteriaClosure.delegate = delegate
+				additionalCriteriaClosure()
+			}
             uniqueResult = true
             projections {
                 rowCount()

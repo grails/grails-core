@@ -59,7 +59,43 @@ class Publication {
 }
 ''')
     }
-
+	
+	void testAdditionalCriteriaClosure() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+		
+		def now = new Date()
+		6.times {
+			assert publicationClass.newInstance(title: "Some Book",
+			datePublished: now - 10).save()
+			assert publicationClass.newInstance(title: "Some Other Book",
+			datePublished: now - 10).save()
+			assert publicationClass.newInstance(title: "Some Book",
+			datePublished: now - 900).save()
+		}
+		session.clear()
+		
+		def publications = publicationClass.recentPublications {
+			eq 'title', 'Some Book'
+		}
+		assertEquals 6, publications?.size()
+		
+		publications = publicationClass.recentPublications {
+			like 'title', 'Some%'
+		}
+		assertEquals 12, publications?.size()
+				
+		publications = publicationClass.recentPublications(max: 3) {
+			like 'title', 'Some%'
+		}
+		assertEquals 3, publications?.size()
+		
+		def cnt = publicationClass.recentPublications.count {
+			eq 'title', 'Some Book'
+			
+		}
+		assertEquals 6, cnt
+	}
+	
 	void testDisjunction() {
 		def publicationClass = ga.getDomainClass("Publication").clazz
 
