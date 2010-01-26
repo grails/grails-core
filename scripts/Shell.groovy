@@ -42,26 +42,11 @@ target(shell:"The shell implementation target") {
     b.ctx = appCtx
     b.grailsApplication = grailsApp
 
-    def original = Groovysh.metaClass.getMetaMethod("execute", [String] as Object[])
-    Groovysh.metaClass.execute = { String line ->
-        try {
-            def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
-            listeners.each { k,v ->
-                v.init()
-            }
-
-            original.invoke(delegate, line)
-            listeners.each { k,v ->
-                v.flush()
-            }
-        }
-    finally {
-            listeners.each { k,v ->
-                v.destroy()
-            }
-        }
-    }
-
+	
+	def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
+	listeners?.each { key, listener ->
+    	listener.init()
+	}
     def shell = new Groovysh(classLoader,b, new IO(System.in, System.out, System.err))
 	shell.run([] as String[])
 }
