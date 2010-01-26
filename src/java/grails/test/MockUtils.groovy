@@ -37,7 +37,8 @@ import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.View
 
 import grails.validation.ValidationException
 
@@ -197,7 +198,7 @@ class MockUtils {
             else if (map["view"] != null) {
                 assert map["text"] == null : "'text' cannot be used with 'view' in render"
 
-                modelAndView["view"] = map["view"]
+                modelAndView["view"] =  [getName: {map["view"]}] as View
                 modelAndView["model"] = map["model"]
             }
             else if (map["text"] != null) {
