@@ -37,6 +37,8 @@ import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.ModelAndView;
+
 import grails.validation.ValidationException
 
 /**
@@ -103,7 +105,7 @@ class MockUtils {
         def renArgs = [:]
         def chaArgs = [:]
         def template = [:]
-        def modelAndView = [:]
+        def modelAndView = new ModelAndView()
         clazz.metaClass.getForwardArgs = {-> fwdArgs}
         clazz.metaClass.getRedirectArgs ={-> redArgs}
         clazz.metaClass.getRenderArgs ={-> renArgs}
@@ -227,6 +229,7 @@ class MockUtils {
 
         clazz.metaClass.getTemplate = {-> template}
         clazz.metaClass.getModelAndView = {-> modelAndView}
+		clazz.metaClass.setModelAndView = { ModelAndView mv -> modelAndView = mv}
     }
 
     /**
