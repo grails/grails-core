@@ -136,7 +136,7 @@ class NamedCriteriaProxy {
     }
 
     def findAllWhere(Map params, Boolean uniq = false) {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def queryClosure = {
             closureClone.delegate = delegate
             closureClone()
