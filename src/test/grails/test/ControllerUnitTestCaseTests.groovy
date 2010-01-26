@@ -1,5 +1,7 @@
 package grails.test;
 
+import org.springframework.web.servlet.ModelAndView;
+
 /**
  * Test case for {@link ControllerUnitTestCase}.
  */
@@ -25,9 +27,22 @@ class ControllerUnitTestCaseTests extends GroovyTestCase {
         testCase.testCommandObject()
         testCase.tearDown()
     }
+	
+	void testGetSetModelAndView() {
+		def testCase = new UnitTestControllerTestCase()
+		testCase.setUp()
+		testCase.testModelAndView()
+		testCase.tearDown()
+				
+	}
 }
 
 class UnitTestControllerTestCase extends ControllerUnitTestCase {
+	
+	void testModelAndView() {
+		controller.testSetModelAndView()
+	}
+	
     void testControllerClass() {
         assertEquals UnitTestController, controllerClass
         assertEquals "unitTest", controller.controllerName
@@ -74,6 +89,11 @@ class UnitTestController {
     def index = {
         
     }
+	
+	def testSetModelAndView() {
+    	modelAndView = new ModelAndView()
+		println modelAndView.viewName
+	}
 }
 
 class ControllerUnitTestCaseCommandObject {
