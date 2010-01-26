@@ -22,7 +22,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.SoftReference;
@@ -36,91 +35,188 @@ import java.util.Set;
 
 /**
  * 
- * StreamCharBuffer is a multipurpose in-memory buffer that can replace JDK in-memory buffers (StringBuffer, StringBuilder, StringWriter).
- *
  * <p>
- * There's a java.io.Writer interface for appending character data to the buffer and
- * a java.io.Reader interface for reading data.</p>
+ * StreamCharBuffer is a multipurpose in-memory buffer that can replace JDK
+ * in-memory buffers (StringBuffer, StringBuilder, StringWriter).
+ * </p>
  * 
- * <p>Each {@link #getReader()} call will create a new reader instance that keeps it own state.<br>
- * There is a alternative method {@link #getReader(boolean)} for creating the reader. When reader is created by calling getReader(true), the reader will remove already read 
- * characters from the buffer. In this mode only a single reader instance is supported.  
+ * <p>
+ * Grails GSP rendering uses this class as a buffer that is optimized for performance.
+ * </p>
+ * 
+ * <p>
+ * StreamCharBuffer keeps the buffer in a linked list of "chunks". The main
+ * difference compared to JDK in-memory buffers (StringBuffer, StringBuilder &
+ * StringWriter) is that the buffer can be held in several smaller buffers
+ * ("chunks" here). In JDK in-memory buffers, the buffer has to be expanded
+ * whenever it gets filled up. The old buffer's data is copied to the new one
+ * and the old one is discarded. In StreamCharBuffer, there are several ways to
+ * prevent unnecessary allocation & copy operations. The StreamCharBuffer
+ * contains a linked list of different type of chunks: char arrays,
+ * java.lang.String chunks and other StreamCharBuffers as sub chunks. A
+ * StringChunk is appended to the linked list whenever a java.lang.String of a
+ * length that exceeds the "stringChunkMinSize" value is written to the buffer.
+ * </p>
+ * 
+ * <p>
+ * Grails tag libraries also use a StreamCharBuffer to "capture" the output of
+ * the taglib and return it to the caller. The buffer can be appended to it's
+ * parent buffer directly without extra object generation (like converting to
+ * java.lang.String in between).
+ * 
+ * for example this line of code in a taglib would just append the buffer
+ * returned from the body closure evaluation to the buffer of the taglib:<br>
+ * <code> 
+ * out << body()
+ * </code><br>
+ * other example:<br> 
+ * <code>
+ * out << g.render(template: '/some/template', model:[somebean: somebean])
+ * </code><br>
+ * There's no extra java.lang.String generation overhead. 
+ * 
+ * </p>
+ * 
+ * <p>
+ * There's a java.io.Writer interface for appending character data to the buffer
+ * and a java.io.Reader interface for reading data.
+ * </p>
+ * 
+ * <p>
+ * Each {@link #getReader()} call will create a new reader instance that keeps
+ * it own state.<br>
+ * There is a alternative method {@link #getReader(boolean)} for creating the
+ * reader. When reader is created by calling getReader(true), the reader will
+ * remove already read characters from the buffer. In this mode only a single
+ * reader instance is supported.
  * </p>
  * 
  * <p>
  * There's also several other options for reading data:<br>
  * {@link #readAsCharArray()} reads the buffer to a char[] array<br>
- * {@link #readAsString()} reads the buffer and wraps the char[] data as a String<br>
+ * {@link #readAsString()} reads the buffer and wraps the char[] data as a
+ * String<br>
  * {@link #writeTo(Writer)} writes the buffer to a java.io.Writer<br>
- * {@link #toCharArray()} returns the buffer as a char[] array, caches the return value internally so that this method can be called several times.<br>
- * {@link #toString()} returns the buffer as a String, caches the return value internally<br>
+ * {@link #toCharArray()} returns the buffer as a char[] array, caches the
+ * return value internally so that this method can be called several times.<br>
+ * {@link #toString()} returns the buffer as a String, caches the return value
+ * internally<br>
  * </p>
  * 
  * <p>
- * By using the "connectTo" method, one can connect the buffer directly to a target java.io.Writer.
- * The internal buffer gets flushed automaticly to the target whenever the buffer gets filled up.
- * @see #connectTo(Writer)
+ * By using the "connectTo" method, one can connect the buffer directly to a
+ * target java.io.Writer. The internal buffer gets flushed automaticly to the
+ * target whenever the buffer gets filled up. {@see #connectTo(Writer)}
  * </p>
  * 
  * <p>
- * <b>This class is not thread-safe.</b> Object instances of this class are intended to be used by a single Thread. 
- * The Reader and Writer interfaces can be open simultaneous and the same Thread can write and read several times.
+ * <b>This class is not thread-safe.</b> Object instances of this class are
+ * intended to be used by a single Thread. The Reader and Writer interfaces can
+ * be open simultaneous and the same Thread can write and read several times.
  * </p>
- *
+ * 
  * <p>
  * Main operation principle:<br>
  * </p>
  * <p>
  * StreamCharBuffer keeps the buffer in a linked link of "chunks".<br>
- * The main difference compared to JDK in-memory buffers (StringBuffer, StringBuilder & StringWriter) is that the buffer can be held in several smaller buffers ("chunks" here).<br>
- * In JDK in-memory buffers, the buffer has to be expanded whenever it gets filled up. The old buffer's data is copied to the new one and the old one is discarded.<br>
- * In StreamCharBuffer, there are several ways to prevent unnecessary allocation & copy operations.
+ * The main difference compared to JDK in-memory buffers (StringBuffer,
+ * StringBuilder & StringWriter) is that the buffer can be held in several
+ * smaller buffers ("chunks" here).<br>
+ * In JDK in-memory buffers, the buffer has to be expanded whenever it gets
+ * filled up. The old buffer's data is copied to the new one and the old one is
+ * discarded.<br>
+ * In StreamCharBuffer, there are several ways to prevent unnecessary allocation
+ * & copy operations.
  * </p>
  * <p>
- * There can be several different type of chunks: char arrays ({@link CharBufferChunk}), String chunks ({@link StringChunk}) and other StreamCharBuffers 
- * as sub chunks ({@link StreamCharBufferSubChunk}). 
+ * There can be several different type of chunks: char arrays (
+ * {@link CharBufferChunk}), String chunks ({@link StringChunk}) and other
+ * StreamCharBuffers as sub chunks ({@link StreamCharBufferSubChunk}).
  * </p>
  * <p>
- * Child StreamCharBuffers can be changed after adding to parent buffer. The flush() method must be called on the child buffer's Writer to notify the parent 
- * that the child buffer's content has been changed (used for calculating total size).
+ * Child StreamCharBuffers can be changed after adding to parent buffer. The
+ * flush() method must be called on the child buffer's Writer to notify the
+ * parent that the child buffer's content has been changed (used for calculating
+ * total size).
  * </p>
  * <p>
- * A StringChunk is appended to the linked list whenever a java.lang.String of a length
- * that exceeds the "stringChunkMinSize" value is written to the buffer.
+ * A StringChunk is appended to the linked list whenever a java.lang.String of a
+ * length that exceeds the "stringChunkMinSize" value is written to the buffer.
  * </p>
  * <p>
- * If the buffer is in "connectTo" mode, any String or char[] that's length is over writeDirectlyToConnectedMinSize gets written directly to the target.
- * The buffer content will get fully flushed to the target before writing the String or char[].
+ * If the buffer is in "connectTo" mode, any String or char[] that's length is
+ * over writeDirectlyToConnectedMinSize gets written directly to the target. The
+ * buffer content will get fully flushed to the target before writing the String
+ * or char[].
  * </p>
  * <p>
- * There can be several targets "listening" the buffer in "connectTo" mode. The same content will be written to all targets.
+ * There can be several targets "listening" the buffer in "connectTo" mode. The
+ * same content will be written to all targets.
  * <p>
  * <p>
- * Growable chunksize: By default, a newly allocated chunk's size will grow based on the total size of all written chunks.<br>
- * The default growProcent value is 100. If the total size is currently 1024, the newly created chunk will have a internal buffer that's size is 1024.<br>
+ * Growable chunksize: By default, a newly allocated chunk's size will grow
+ * based on the total size of all written chunks.<br>
+ * The default growProcent value is 100. If the total size is currently 1024,
+ * the newly created chunk will have a internal buffer that's size is 1024.<br>
  * Growable chunksize can be turned off by setting the growProcent to 0.<br>
- * There's a default maximum chunksize of 1MB by default. The minimum size is the initial chunksize size.<br>
+ * There's a default maximum chunksize of 1MB by default. The minimum size is
+ * the initial chunksize size.<br>
  * </p>
  * 
  * <p>
  * System properties to change default configuration parameters:<br>
  * <table>
- * 	<tr><td>System Property name</td><td>Description</td><td>Default value</td></tr>
- * 	<tr><td>streamcharbuffer.chunksize</td><td>default chunk size - the size the first allocated buffer</td><td>512</td></tr>
- *  <tr><td>streamcharbuffer.maxchunksize</td><td>maximum chunk size - the maximum size of the allocated buffer</td><td>1048576</td></tr>
- *  <tr><td>streamcharbuffer.growprocent</td><td>growing buffer percentage - the newly allocated buffer is defined by total_size * (growpercent/100)</td><td>100</td></tr>
- *  <tr><td>streamcharbuffer.subbufferchunkminsize</td><td>minimum size of child StreamCharBuffer chunk - if the size is smaller, the content is copied to the parent buffer</td><td>512</td></tr>
- *  <tr><td>streamcharbuffer.substringchunkminsize</td><td>minimum size of String chunks - if the size is smaller, the content is copied to the buffer</td><td>512</td></tr>
- *  <tr><td>streamcharbuffer.chunkminsize</td><td>minimum size of chunk that gets written directly to the target in connected mode.</td><td>256</td></tr>
+ * <tr>
+ * <th>System Property name</th>
+ * <th>Description</th>
+ * <th>Default value</th>
+ * </tr>
+ * <tr>
+ * <td>streamcharbuffer.chunksize</td>
+ * <td>default chunk size - the size the first allocated buffer</td>
+ * <td>512</td>
+ * </tr>
+ * <tr>
+ * <td>streamcharbuffer.maxchunksize</td>
+ * <td>maximum chunk size - the maximum size of the allocated buffer</td>
+ * <td>1048576</td>
+ * </tr>
+ * <tr>
+ * <td>streamcharbuffer.growprocent</td>
+ * <td>growing buffer percentage - the newly allocated buffer is defined by
+ * total_size * (growpercent/100)</td>
+ * <td>100</td>
+ * </tr>
+ * <tr>
+ * <td>streamcharbuffer.subbufferchunkminsize</td>
+ * <td>minimum size of child StreamCharBuffer chunk - if the size is smaller,
+ * the content is copied to the parent buffer</td>
+ * <td>512</td>
+ * </tr>
+ * <tr>
+ * <td>streamcharbuffer.substringchunkminsize</td>
+ * <td>minimum size of String chunks - if the size is smaller, the content is
+ * copied to the buffer</td>
+ * <td>512</td>
+ * </tr>
+ * <tr>
+ * <td>streamcharbuffer.chunkminsize</td>
+ * <td>minimum size of chunk that gets written directly to the target in
+ * connected mode.</td>
+ * <td>256</td>
+ * </tr>
  * </table>
  * 
- * Configuration values can also be changed for each instance of StreamCharBuffer individually. Default values are defined with System Properties.
+ * Configuration values can also be changed for each instance of
+ * StreamCharBuffer individually. Default values are defined with System
+ * Properties.
  * 
  * </p>
- *
- *
+ * 
+ * 
  * @author Lari Hotari, Sagire Software Oy
- *
+ * 
  */
 public class StreamCharBuffer implements Writable, CharSequence, Externalizable {
 	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
@@ -357,7 +453,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 	 *
 	 * @param target Writer
 	 * @param flushAll flush all content in buffer (if this is false, only filled chunks will be written)
-	 * @param flushTarget call target.flush() before finishing
+	 * @param flushTarget calls target.flush() before finishing
 	 * @throws IOException
 	 */
 	public void writeTo(Writer target, boolean flushTarget, boolean emptyAfter) throws IOException {
@@ -384,6 +480,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		if(emptyAfter) {
 			firstChunk=null;
 			lastChunk=null;
+			totalCharsInList = 0;
+			totalCharsInDynamicChunks = 0;
+			dynamicChunkMap.clear();
 		}
 		allocBuffer.writeTo(target);
 		if(emptyAfter) {
@@ -400,20 +499,22 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 	 * @return
 	 */
 	public char[] readAsCharArray() {
-		char[] buf = new char[size()];
-		if(buf.length > 0) {
-			StreamCharBufferReader reader=new StreamCharBufferReader(false);
+		int currentSize=size();
+		if(currentSize > 0) {
+			FixedCharArrayWriter target=new FixedCharArrayWriter(currentSize);
 			try {
-				reader.read(buf, 0, buf.length);
+				writeTo(target);
 			} catch (IOException e) {
 				throw new RuntimeException("Unexpected IOException", e);
 			}
+			return target.getCharArray();
+		} else {
+			return new char[0];
 		}
-		return buf;
 	}
 
 	/**
-	 * reads (and empties) the buffer to a String
+	 * reads the buffer to a String
 	 *
 	 * @return
 	 */
@@ -453,11 +554,21 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}
 	}
 
+    /**
+     * hashCode() uses String's hashCode to support compatibility with String instances in maps, sets, etc.
+     *  
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         return toString().hashCode();
     }
 
+    /** 
+     * equals uses String.equals to check for equality to support compatibility with String instances in maps, sets, etc.
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof CharSequence)) return false;
@@ -1289,12 +1400,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 			if(totalCharsInDynamicChunks != -1) {
 				totalCharsInDynamicChunks -= size();
 			}
-			for(Iterator<Map.Entry<StreamCharBufferKey, StreamCharBufferSubChunk>> it=dynamicChunkMap.entrySet().iterator();it.hasNext();) {
-				Map.Entry<StreamCharBufferKey, StreamCharBufferSubChunk> entry=it.next();
-				if(entry.getValue()==this) {
-					it.remove();
-				}
-			}
+			dynamicChunkMap.remove(streamCharBuffer.bufferKey);
 		}
 		
 	}
@@ -1359,6 +1465,59 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		@Override
 		public boolean isValid() {
 			return (allocBuffer==parent && (lastChunk==null || lastChunk.writerUsedCounter < writerUsedCounter));
+		}
+	}
+	
+	/**
+	 * 
+	 * Simplified version of a CharArrayWriter used internally in readAsCharArray method
+	 * 
+	 * doesn't do any bound checks since size shouldn't change during writing in readAsCharArray
+	 * 
+	 *
+	 */
+	private static final class FixedCharArrayWriter extends Writer {
+		char buf[];
+		int count=0;
+		
+		public FixedCharArrayWriter(int fixedSize) {
+			buf = new char[fixedSize];
+		}
+		
+		@Override
+		public void write(char[] cbuf, int off, int len) throws IOException {
+		    arrayCopy(cbuf, off, buf, count, len);
+		    count += len;
+		}
+
+		@Override
+		public void write(char[] cbuf) throws IOException {
+			write(cbuf, 0, cbuf.length);
+		}
+
+		@Override
+		public void write(String str, int off, int len) throws IOException {
+		    str.getChars(off, off + len, buf, count);
+		    count += len;
+		}
+
+		@Override
+		public void write(String str) throws IOException {
+			write(str, 0, str.length());
+		}
+
+		@Override
+		public void close() throws IOException {
+			
+		}
+
+		@Override
+		public void flush() throws IOException {
+
+		}
+		
+		public char[] getCharArray() {
+			return buf;
 		}
 	}
 	
@@ -1551,6 +1710,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}
 	}
 
+	/**
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		String str=in.readUTF();
@@ -1560,6 +1722,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 		}		
 	}
 
+	/**
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
 		String str=toString();
 		out.writeUTF(str);
