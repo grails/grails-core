@@ -786,6 +786,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         assertEquals "list", controller.renderArgs["view"]
         assertEquals( [count: 101], controller.renderArgs["model"] )
+		assertEquals 'list', controller.modelAndView.viewName
 
         // "view" and "text" arguments are mutually exclusive.
         shouldFail(AssertionError) {

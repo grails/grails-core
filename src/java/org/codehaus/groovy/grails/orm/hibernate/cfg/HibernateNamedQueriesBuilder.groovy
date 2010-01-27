@@ -29,8 +29,6 @@ class HibernateNamedQueriesBuilder {
     private final domainClass
     private final dynamicMethods
 
-	private boolean initializationComplete = false
-
     /**
      * @param domainClass the GrailsDomainClass defining the named queries
      * @param grailsApplication a GrailsApplication instance
@@ -58,7 +56,6 @@ class HibernateNamedQueriesBuilder {
         closure.resolveStrategy = Closure.DELEGATE_ONLY
         closure.delegate = this
         closure.call()
-		initializationComplete = true
     }
 
     private handleMethodMissing = {String name, args ->
@@ -71,7 +68,7 @@ class HibernateNamedQueriesBuilder {
     }
 
     def methodMissing(String name, args) {
-        if (!initializationComplete && args && args[0] instanceof Closure) {
+        if (args && args[0] instanceof Closure) {
             return handleMethodMissing(name, args)
         }
         throw new MissingMethodException(name, HibernateNamedQueriesBuilder, args)
@@ -85,16 +82,20 @@ class NamedCriteriaProxy {
     private dynamicMethods
     private namedCriteriaParams
 
-    def list(Object[] params) {
+    def list(Object[] params, Closure additionalCriteriaClosure = null) {
         def closureClone = getPreparedCriteriaClosure()
         def listClosure = {
             closureClone.delegate = delegate
             def paramsMap
             if (params && params[-1] instanceof Map) {
                 paramsMap = params[-1]
-                params = params.size() > 1 ? params[0..-2] : []
             }
-            closureClone(* params)
+            closureClone()
+			if(additionalCriteriaClosure) {
+				additionalCriteriaClosure = additionalCriteriaClosure.clone()
+				additionalCriteriaClosure.delegate = delegate
+				additionalCriteriaClosure()
+			}
             if (paramsMap?.max) {
                 maxResults(paramsMap.max)
             }
@@ -106,8 +107,14 @@ class NamedCriteriaProxy {
     }
 
     def call(Object[] params) {
-        namedCriteriaParams = params
-        this
+		if(params && params[-1] instanceof Closure) {
+			def additionalCriteriaClosure = params[-1]
+			params = params.length > 1 ? params[0..-2] : [:]
+			list(params, additionalCriteriaClosure)
+		} else {
+			namedCriteriaParams = params
+			this
+		}
     }
 
     def get(id) {
@@ -121,11 +128,16 @@ class NamedCriteriaProxy {
         domainClass.withCriteria(getClosure)
     }
 
-    def count() {
+    def count(Closure additionalCriteriaClosure = null) {
         def closureClone = getPreparedCriteriaClosure()
         def countClosure = {
             closureClone.delegate = delegate
             closureClone()
+			if(additionalCriteriaClosure) {
+				additionalCriteriaClosure = additionalCriteriaClosure.clone()
+				additionalCriteriaClosure.delegate = delegate
+				additionalCriteriaClosure()
+			}
             uniqueResult = true
             projections {
                 rowCount()
@@ -139,7 +151,7 @@ class NamedCriteriaProxy {
     }
 
     def findAllWhere(Map params, Boolean uniq = false) {
-        def closureClone = criteriaClosure.clone()
+        def closureClone = getPreparedCriteriaClosure()
         def queryClosure = {
             closureClone.delegate = delegate
             closureClone()
@@ -168,6 +180,7 @@ class NamedCriteriaProxy {
 
     private getPreparedCriteriaClosure() {
         def closureClone = criteriaClosure.clone()
+		closureClone.resolveStrategy = Closure.DELEGATE_FIRST
         if (namedCriteriaParams) {
             closureClone = closureClone.curry(namedCriteriaParams)
         }
