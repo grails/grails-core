@@ -87,7 +87,7 @@ def createTestTaskWithoutSuffix(def name, def includes, def excludes) {
         options.systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
         include includes as String[]
         exclude excludes as String[]
-        testReport = false
+        testReport = true
         ignoreFailures = true
         coverageHtmlReport = false
         classpath = project.files(instrumentForCoverage.instrumentedClassesDir) + classpath + project.rootProject.configurations.coverage
