@@ -25,12 +25,17 @@ public class GrailsPrintWriter extends PrintWriter {
 	private static final char CRLF[] = { '\r', '\n' };
 	protected boolean trouble=false;
 	protected Writer out;
+	protected boolean allowUnwrappingOut=true;
 	private boolean finalTargetHere=false;
 	private boolean usageFlag=false;
 
 	public GrailsPrintWriter(Writer out) {
 		super(out);
 		this.out=out;
+	}
+	
+	public boolean isAllowUnwrappingOut() {
+		return allowUnwrappingOut;
 	}
 
 	public Writer getOut() {

@@ -356,6 +356,27 @@ class Publication {
         assertEquals 3, pubs?.size()
     }
 
+    void testFindAllWhereWithNamedQueryAndDisjuction() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+		
+		def now = new Date()
+		def oldDate = now - 2000
+
+		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
+		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
+		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
+		session.clear()
+
+		def publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'Old Paperback')
+		assertEquals 1, publications?.size()
+        publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'Old Hardback')
+        assertEquals 0, publications?.size()
+        publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'New Paperback')
+        assertEquals 2, publications?.size()
+    }
+    
     void testGetWithParameterizedNamedQuery() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
