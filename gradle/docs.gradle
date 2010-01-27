@@ -1,0 +1,70 @@
+task stubs {
+    destinationDir = "$buildDir/docs/stubs"
+    doFirst {
+        def antBuilderClasspath = services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('ANT') +
+                configurations.groovy.files
+        def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
+        isolatedAnt.execute(antBuilderClasspath) {
+            mkdir(dir: destinationDir)
+            taskdef(name: "generatestubs", classname: "org.codehaus.groovy.grails.cli.GenerateStubsTask", classpath: sourceSets.main.runtimeClasspath.asPath)
+            generatestubs(destdir: destinationDir) {
+                classpath {
+                    pathelement path: sourceSets.main.runtimeClasspath.asPath
+                }
+                src {
+                    sourceSets.main.groovy.srcDirs.each { srcDir ->
+                        dirset(dir: srcDir) {
+                            exclude name: "**/*.properties"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+task docs {
+    destinationDir = 'doc'
+}
+
+javadoc {
+    dependsOn stubs
+    maxMemory = '256M'
+    destinationDir = file("$docs.destinationDir/api")
+    source stubs.destinationDir, defaultSource
+    include "org/codehaus/groovy/grails/**", "grails/**"
+    project.configure(options) {
+        windowTitle = "Grails $version"
+        docTitle = "<h1>Grails</h1>"
+        encoding = "UTF-8"
+        memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PACKAGE
+        author = true
+        version = true
+        use = true
+        breakIterator = true
+        links("http://java.sun.com/j2ee/1.4/docs/api", "http://java.sun.com/j2se/1.5.0/docs/api", "http://static.springframework.org/spring/docs/2.5.x/api")
+//        tags("todo:a:To do")  todo fix the javadoc task to accept this option
+    }
+    verbose = false
+}
+
+task gdoc {
+    dependsOn javadoc
+    doFirst {
+        onlyIf {
+            file('../grails-doc').isDirectory()
+        }
+        ant {
+            ant(target: 'distclean', dir: "../grails-doc", inheritAll: false)
+            ant(target: 'dist-nojavadoc', dir: "../grails-doc", inheritAll: false) {
+                property(name: "base.dir", value: "../grails-doc")
+            }
+        }
+        copy {
+            from(new File(projectDir.parentFile, 'grails-doc/output'))
+            into docs.destinationDir
+        }
+    }
+}
+
+docs.dependsOn javadoc, gdoc

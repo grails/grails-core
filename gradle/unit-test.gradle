@@ -1,0 +1,105 @@
+// todo Unify test tasks into one multithreaded execution unit with a custom fork frequency
+// todo Add test progress listener with dot notation.
+// Add single test execution
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    coverage
+}
+
+dependencies {
+    coverage("net.sourceforge.cobertura:cobertura:1.9.3")
+}
+
+task instrumentForCoverage {
+    cobSerFile = "${project.buildDir}/cobertura.ser"
+    instrumentedClassesDir = "${sourceSets.main.classesDir}-instrumented" as File
+    doFirst {
+        ant {
+            // delete data file for cobertura, otherwise coverage would be added
+            delete(file: cobSerFile, failonerror: false)
+            // delete copy of original classes
+            delete(dir: instrumentedClassesDir, failonerror: false)
+            // import cobertura task, so it is available in the script
+            taskdef(resource: 'tasks.properties', classpath: configurations.coverage.asPath)
+        }
+        copy {
+            from sourceSets.main.classes
+            into instrumentedClassesDir
+        }
+        ant {
+            'cobertura-instrument'(datafile: cobSerFile) {
+                fileset(dir: instrumentedClassesDir) { include(name: "**/*.class") }
+            }
+        }
+    }
+}
+
+test.enabled = false
+
+task coverageReport << {
+    project.ant.taskdef(resource: 'tasks.properties', classpath: configurations.coverage.asPath)
+    ant.'cobertura-report'(destdir: "${project.buildDirName}/reports/coverage",
+            format: 'html', datafile: instrumentForCoverage.cobSerFile) {
+        sourceSets.main.allJava.addToAntBuilder(ant, 'fileset')
+    }
+}
+
+test {
+    options.systemProperties = ['grails.cli.testing': "true"]
+    options.forkOptions.jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+    dependsOn coverageReport
+}
+
+task reportDummy(type: AntTest) {
+    include "ca/ca/ca/TTT"
+}
+
+
+
+createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
+createTestTask("transactionalService", ["org/codehaus/groovy/grails/reload/TransactionalServiceReloadTests.class"], [])
+createTestTask("packagePlugins", ["org/codehaus/groovy/grails/cli/PackagePluginTests.class"], [])
+createTestTask("installTemplates", ["org/codehaus/groovy/grails/cli/InstallTemplatesTests.class"], [])
+createTestTask("generateAll", ["org/codehaus/groovy/grails/cli/GenerateAllTests.class"], [])
+createTestTask("cli", ["org/codehaus/groovy/grails/cli/**/*Tests.class"], ["org/codehaus/groovy/grails/cli/**/*Tests.class", "**/PackagePluginTests", "**/InstallTemplatesTests"])
+createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
+        "**/orm/hibernate/binding/*Tests.class",
+        "**/orm/hibernate/cfg/*Tests.class",
+        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", "**/UniqueConstraint*"])
+createTestTask("uniqueConstraints", ["**/UniqueConstraintTests.class"], [])
+createTestTask("webflow", ["**/webflow/**/*Tests.class"], ["**/Abstract*"])
+createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
+createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
+        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class"])
+
+def createTestTask(def name, def includes, def excludes) {
+    createTestTaskWithoutSuffix(name + 'Test', includes, excludes)
+}
+
+def createTestTaskWithoutSuffix(def name, def includes, def excludes) {
+    task = tasks.add(name: name, type: AntTest) {
+        options.systemProperties = ['grails.cli.testing': "true"]
+        options.forkOptions.jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+        options.systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
+        include includes as String[]
+        exclude excludes as String[]
+        testReport = true
+        ignoreFailures = true
+        coverageHtmlReport = false
+        classpath = project.files(instrumentForCoverage.instrumentedClassesDir) + classpath + project.rootProject.configurations.coverage
+    }
+    test.dependsOn task
+    task.dependsOn instrumentForCoverage
+}
+
+tasks.addRule("Pattern: testSingle<Name> will test **/<Name>Tests.class") { String taskName ->
+    if (taskName.startsWith("testSingle")) {
+        createTestTaskWithoutSuffix(taskName, ['**/' + taskName.substring(10) + 'Tests.class'], [])
+    }
+}
+
+
