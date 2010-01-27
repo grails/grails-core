@@ -121,10 +121,12 @@ public final class GroovyPageOutputStack {
 
 	private Writer unwrapTargetWriter(Writer targetWriter) {
 		if(targetWriter instanceof GrailsPrintWriter) {
-			return ((GrailsPrintWriter)targetWriter).getOut();
-		} else {
-			return targetWriter;
+			GrailsPrintWriter gpw=((GrailsPrintWriter)targetWriter);
+			if(gpw.isAllowUnwrappingOut()) {
+				return ((GrailsPrintWriter)targetWriter).getOut();
+			}
 		}
+		return targetWriter;
 	}
 	
 	public void push(final Writer newWriter) {

@@ -20,7 +20,26 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
     public GrailsRoutablePrintWriter(DestinationFactory factory) {
         super(new NullWriter());
         this.factory = factory;
+        
     }
+    
+	/**
+	 * 
+	 * tell others if getOut() can be called to "unwrap" the actual target writer
+	 * 
+	 * if the destination hasn't been activated, don't allow it.
+	 *  
+	 * 
+	 * @see org.codehaus.groovy.grails.web.util.GrailsPrintWriter#isAllowUnwrappingOut()
+	 */
+	@Override
+	public boolean isAllowUnwrappingOut() {
+		if(destination==null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	public Writer getOut() {
 		return getDestination();
@@ -198,5 +217,6 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
         }
 
     }
+
 
 }
