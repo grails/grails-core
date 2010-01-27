@@ -54,12 +54,6 @@ test {
     dependsOn coverageReport
 }
 
-task reportDummy(type: AntTest) {
-    include "ca/ca/ca/TTT"
-}
-
-
-
 createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
 createTestTask("transactionalService", ["org/codehaus/groovy/grails/reload/TransactionalServiceReloadTests.class"], [])
 createTestTask("packagePlugins", ["org/codehaus/groovy/grails/cli/PackagePluginTests.class"], [])
@@ -76,11 +70,11 @@ createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
 createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
         "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class"])
 
-def createTestTask(def name, def includes, def excludes) {
-    createTestTaskWithoutSuffix(name + 'Test', includes, excludes)
+def createTestTask(name, includes, excludes) {
+    createTestTaskWithoutSuffix( "${name}Test", includes, excludes)
 }
 
-def createTestTaskWithoutSuffix(def name, def includes, def excludes) {
+def createTestTaskWithoutSuffix(String name, includes, excludes) {
     task = tasks.add(name: name, type: AntTest) {
         options.systemProperties = ['grails.cli.testing': "true"]
         options.forkOptions.jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"

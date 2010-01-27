@@ -1,3 +1,7 @@
+/**
+ * Since Grails is a mixed Groovy/Java codebase the javadoc tool needs stubs in order for javadoc compilation to pass
+ * This target generates a set of stubs for the Groovy sources
+ */
 task stubs {
     destinationDir = "$buildDir/docs/stubs"
     doFirst {

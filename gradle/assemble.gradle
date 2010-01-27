@@ -1,6 +1,4 @@
 import org.apache.tools.ant.filters.ReplaceTokens
-import java.util.jar.Manifest
-import org.apache.commons.io.FileUtils
 
 // todo Ask why startGrails and startGrails.bat live in two different locations (one with placeholder, the other probably manually maintained)
 // todo Retrieve bundlor zip via dependency DSL
@@ -101,7 +99,7 @@ handlersAndSchemasMetaInf = {
     include '**/*.handlers', '**/*.schemas'
 }
 
-task testJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task testJar(type: Jar, description: 'Package up the Grails testing jar') {
     appendix = "test"
     metaInf handlersAndSchemasMetaInf
     from mainClassesIncludeSpec("grails/test/**", "**/groovy/grails/test/**")
@@ -118,7 +116,7 @@ task docsJar(type: Jar, dependsOn: docGeneratingFilesJar, description: 'Package 
     mavenArtifact = true
 }
 
-task springJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task springJar(type: Jar, description: 'Package up the Spring related Grails classes') {
     appendix = "spring"
     metaInf handlersAndSchemasMetaInf
     from mainClassesIncludeSpec("grails/spring/**", "**/groovy/grails/commons/spring/**")
@@ -126,7 +124,7 @@ task springJar(type: Jar, description: 'Package up files used for generating doc
     mavenArtifact = true
 }
 
-task bootstrapJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task bootstrapJar(type: Jar, description: 'Package up the classes used to bootstrap Grails') {
     appendix = "bootstrap"
     metaInf handlersAndSchemasMetaInf
     from mainClassesIncludeSpec("grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*", "grails/util/Metadata*",
@@ -143,7 +141,7 @@ task scriptsJar(type: Jar, description: 'Package up files used for generating do
     mavenArtifact = true
 }
 
-task gormJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task gormJar(type: Jar, description: 'Package up GORM related classes.') {
     appendix = "gorm"
     metaInf handlersAndSchemasMetaInf
     from mainClassesIncludeSpec("grails/orm/**", "**/groovy/grails/orm/hibernate/**", "**/groovy/grails/plugins/orm/hibernate/**",
@@ -152,7 +150,7 @@ task gormJar(type: Jar, description: 'Package up files used for generating docum
     mavenArtifact = true
 }
 
-task webJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task webJar(type: Jar, description: 'Package up web related classes.') {
     appendix = "web"
     from(sourceSets.main.classes) {
         include "grails/converters/**", "grails/util/**", "grails/web/**", "**/groovy/grails/web/**", "**/groovy/grails/plugins/web/**",
@@ -164,14 +162,14 @@ task webJar(type: Jar, description: 'Package up files used for generating docume
     mavenArtifact = true
 }
 
-task webflowJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task webflowJar(type: Jar, description: 'Package up Web Flow integration classes.') {
     appendix = "webflow"
     from mainClassesIncludeSpec("**/groovy/grails/webflow/**", "**/groovy/grails/plugins/webflow/**")
     osgify = true
     mavenArtifact = true
 }
 
-task crudJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task crudJar(type: Jar, description: 'Package up scaffolding related classes.') {
     appendix = "crud"
     from mainClassesIncludeSpec("**/groovy/grails/scaffolding/**", "**/groovy/grails/plugins/scaffolding/**")
     osgify = true
@@ -179,7 +177,7 @@ task crudJar(type: Jar, description: 'Package up files used for generating docum
 }
 
 task resourcesJar(type: Jar, dependsOn: [sharedFilesJar, sharedApplicationFilesJar, integrationFilesJar, sharedPluginFilesJar],
-        description: 'Package up files used for generating documentation.') {
+        description: 'Package up JAR containing all Grails templates and static resources.') {
     appendix = "resources"
     from(projectDir) {
         include "conf/webdefault.xml", "src/grails/templates/artifacts/**", "src/grails/templates/scaffolding/**",
@@ -193,7 +191,7 @@ task resourcesJar(type: Jar, dependsOn: [sharedFilesJar, sharedApplicationFilesJ
     mavenArtifact = true
 }
 
-task coreJar(type: Jar, description: 'Package up files used for generating documentation.') {
+task coreJar(type: Jar, description: 'Package up core JAR containing the central APIs of the framework') {
     appendix = "core"
     metaInf {
         from "src/jar/META-INF"
@@ -214,7 +212,7 @@ task coreJar(type: Jar, description: 'Package up files used for generating docum
     mavenArtifact = true
 }
 
-task osgiJar(type: Jar, dependsOn: [bootstrapJar, coreJar], description: 'Package up files used for generating documentation.') {
+task osgiJar(type: Jar, dependsOn: [bootstrapJar, coreJar], description: 'Create an OSGi jar that merges the core and bootstrap JARs for OSGi comptabibility.') {
     appendix = "osgi"
     from bootstrapJar.archivePath, coreJar.archivePath
     osgify = true
@@ -263,13 +261,6 @@ def mainClassesIncludeSpec(String[] args) {
             args.each { include it }
         }
     }
-}
-
-task minimalZipDist(type: Zip, description: 'Creates a minimal zip archive that can be used for integrating a Grails project with an existing build system.') {
-    classifier = "minimal"
-    from projectDir
-    include "$projectDir/lib/*.jar" as String, "$buildDir/distributions/*.jar" as String, "build.properties", "bin/**/*", "conf/**/*", "scripts/**/*",
-            "src/grails/templates/scaffolding/**/*", "src/war/WEB-INF/**/*"
 }
 
 task pluginsFromSvn {
@@ -351,60 +342,4 @@ task zipDist(type: Zip) {
 task zipDoc(type: Zip) {
     appendix = 'docs'
     from docs.destinationDir
-}
-
-task compare2Ant << {
-    tasks.withType(Jar).matching({task -> task.version == '' } as Spec).each {jar ->
-        File antJar = "$projectDir/target/${jar.archivePath.name}" as File
-        println "AntJar $antJar exists: ${antJar.isFile()}"
-        if (antJar.isFile()) {
-            compare(jar.baseName + '-' + jar.appendix, jar.archivePath, antJar, false)
-        }
-    }
-    jarTasks = tasks.withType(Zip).matching({task -> task.version != '' } as Spec)
-    jarTasks.each {jar ->
-        File antJar = "$projectDir/dist/${jar.archivePath.name}" as File
-        println "AntJar $antJar exists: ${antJar.isFile()}"
-        if (antJar.isFile()) {
-            compare(jar.baseName + '-' + jar.appendix, jar.archivePath, antJar, true)
-        }
-    }
-}
-
-def compare(String name, File gradleJar, File antJar, boolean checkManifest) {
-    def File diffDir = new File(buildDir, "diff/$name")
-    ant.delete(dir: diffDir)
-    def unzipGradle = new File(diffDir, "gradle")
-    def unzipAnt = new File(diffDir, "ant")
-    ant.unzip(src: gradleJar, dest: unzipGradle)
-    ant.unzip(src: antJar, dest: unzipAnt)
-
-    def antFiles = [:]
-    def gradleFiles = [:]
-
-    FileUtils.listFiles(unzipAnt, null, true).each {File file ->
-        antFiles[file.absolutePath - unzipAnt.absolutePath] = file
-    }
-    FileUtils.listFiles(unzipGradle, null, true).each {File file ->
-        gradleFiles[file.absolutePath - unzipGradle.absolutePath] = file
-    }
-
-    antFiles.each {key, value ->
-        if (!gradleFiles[key]) {
-            println "ant only: $key"
-        } else if (checkManifest && key == '/META-INF/MANIFEST.MF') {
-            Manifest manifestAnt = new Manifest(new FileInputStream(antFiles[key]))
-            Manifest manifestGradle = new Manifest(new FileInputStream(gradleFiles[key]))
-            if (!manifestAnt.equals(manifestGradle)) {
-                println("Manifest file: $key has different content")
-                println antFiles[key].text
-                println gradleFiles[key].text
-            }
-        }
-        gradleFiles.remove(key)
-    }
-
-    gradleFiles.keySet().each {file ->
-        println "gradle only: $file"
-    }
 }
