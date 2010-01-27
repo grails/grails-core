@@ -256,8 +256,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
                 // dependencies needed during development, but not for deployment
                 provided "javax.servlet:servlet-api:2.5",
-                         "javax.servlet:jsp-api:2.1",
-                         "javax.servlet:jstl:1.1.2"
+                         "javax.servlet:jsp-api:2.1"
 
                 // dependencies needed for compilation
                 compile("org.codehaus.groovy:groovy-all:1.6.7") {
@@ -315,7 +314,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                         "org.aspectj:aspectjrt:1.6.6",
                         "cglib:cglib-nodep:2.1_3",
                         "commons-fileupload:commons-fileupload:1.2.1",
-                        "oro:oro:2.0.8"
+                        "oro:oro:2.0.8",
+                        "javax.servlet:jstl:1.1.2"
 
                 // data source
                 runtime "commons-dbcp:commons-dbcp:1.2.2",
