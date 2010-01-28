@@ -31,7 +31,9 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         super.setUp()
         
         mockApplication = new DefaultGrailsApplication(
-                [ GrailsUrlMappingsTestCaseFakeController, MoneyController, GRAILS_3571_UrlMappings, TestInternalUrlMappings, OverrideUrlMappings ] as Class[],
+                [ GrailsUrlMappingsTestCaseFakeController, MoneyController, GRAILS_3571_UrlMappings, TestInternalUrlMappings, OverrideUrlMappings,
+                  GrailsUrlMappingTestCaseTestsBaseController, GrailsUrlMappingTestCaseTestsSubclassController
+                ] as Class[],
                 new GroovyClassLoader(this.getClass().classLoader))
         mockApplication.initialise()
         mockApplication.config.disableMultipart = true
@@ -258,6 +260,13 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         }
     }
 
+    void testGrails5786() {
+        def test = new Grails5786TestCase()
+        test.grailsApplication = mockApplication
+        test.setUp()
+        test.testSuperClassMapping()
+    }
+    
     private void checkFailures(TestResult result) {
         result.errors().each { TestFailure failure ->
             println ">> Error: ${failure.toString()}"
@@ -270,6 +279,12 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
             failure.thrownException()?.printStackTrace()
         }
         assertEquals 0, result.failureCount()
+    }
+}
+
+class Grails5786TestCase extends GrailsUrlMappingsTestCase {
+    void testSuperClassMapping() {
+        assertUrlMapping('/grailsUrlMappingTestCaseTestsSubclass/base', controller: 'grailsUrlMappingTestCaseTestsSubclass', action:'base')
     }
 }
 
@@ -444,3 +459,9 @@ class MockUrlMapping implements UrlMapping {
 	}
     
 }
+
+abstract class GrailsUrlMappingTestCaseTestsBaseController {
+	def base = {}
+}
+
+class GrailsUrlMappingTestCaseTestsSubclassController extends GrailsUrlMappingTestCaseTestsBaseController {}

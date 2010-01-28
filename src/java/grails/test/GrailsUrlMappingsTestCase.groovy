@@ -33,6 +33,8 @@ import org.springframework.web.servlet.DispatcherServlet
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.springframework.web.context.ServletContextAware
 import javax.servlet.ServletContext
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.springframework.beans.BeanUtils
 
 /**
  * @author Luke Daley
@@ -89,8 +91,8 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
 
     def getActions(controller) {
         def instance = controllers[controller]
-        instance.class.declaredFields.findAll {
-            instance."${it.name}" instanceof Closure
+        BeanUtils.getPropertyDescriptors(instance.class).findAll {
+            GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(instance, it.name) instanceof Closure
         }.collect {
             StringUtils.substringBeforeLast(it.name, "Flow")
         }
