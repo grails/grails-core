@@ -389,14 +389,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
 				}
                 result
             }
-            mc.static.propertyMissing = { String propertyName ->
-			    initDomainClassOnce()
-			    def mp = mc.getMetaProperty(propertyName)
-			    if(mp && java.lang.reflect.Modifier.isStatic(mp.modifiers)) {
-			        return mc.getProperty(delegate, propertyName)
-			    }
-			    throw new MissingPropertyException(propertyName, delegate)
-			}
             addValidationMethods(dc, application, ctx, sessionFactory)
         }
 
