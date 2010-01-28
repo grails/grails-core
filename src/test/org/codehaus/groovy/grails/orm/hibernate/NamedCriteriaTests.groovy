@@ -60,6 +60,26 @@ class Publication {
 ''')
     }
 	
+	void testReferencingNamedQueryBeforeAnyDynamicMethodsAreInvoked() {
+		if(notYetImplemented()) return
+		
+		// GRAILS-5809
+		def publicationClass = ga.getDomainClass("Publication").clazz
+		
+		/*
+		 * currently this will work:
+		 *   publicationClass.recentPublications().list()
+		 * but this will not:
+		 *   publicationClass.recentPublications.list()
+		 *  
+		 * the static property isn't being added to the class until
+		 * the first dynamic method (recentPublications(), save(), list() etc...) is
+		 * invoked
+		 */
+		def publications = publicationClass.recentPublications.list()
+		assertEquals 0, publications.size()
+	}
+	
 	void testAdditionalCriteriaClosure() {
 		def publicationClass = ga.getDomainClass("Publication").clazz
 		
