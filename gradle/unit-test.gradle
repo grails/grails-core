@@ -82,7 +82,7 @@ def createTestTaskWithoutSuffix(String name, includes, excludes) {
         include includes as String[]
         exclude excludes as String[]
         testReport = true
-        ignoreFailures = true
+        ignoreFailures = false
         coverageHtmlReport = false
         classpath = project.files(instrumentForCoverage.instrumentedClassesDir) + classpath + project.rootProject.configurations.coverage
     }

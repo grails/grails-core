@@ -82,7 +82,6 @@ apply {
     apply url: 'gradle/docs.gradle'
     apply url: 'gradle/unit-test.gradle'
     apply url: 'gradle/assemble.gradle'
-    apply url: 'gradle/eclipse.gradle'
     apply url: 'gradle/maven.gradle'
     apply url: 'gradle/findbugs.gradle'
 }
