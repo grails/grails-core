@@ -326,7 +326,7 @@ integrationTestPhaseCleanUp = {
  */
 functionalTestPhasePreparation = {
     packageApp()
-    runApp()
+    testOptions.https ? runAppHttps() : runApp()
     
     prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
     appCtx = ApplicationHolder.application.mainContext
