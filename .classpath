@@ -66,7 +66,7 @@
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry kind="lib" path="lib/aopalliance-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/radeox-1.0-b2.jar"/>
-	<classpathentry kind="lib" path="lib/javassist-3.8.0.GA.jar"/>
+	<classpathentry kind="lib" path="lib/javassist-3.11.0.GA.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-annotations-3.4.0.GA.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-commons-annotations-3.1.0.GA.jar"/>
 	<classpathentry kind="lib" path="lib/jline-0.9.91.jar"/>
