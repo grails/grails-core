@@ -232,7 +232,12 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
     withPluginListUpdate {
         ant.delete(file:pluginsListFile)
         // get newest version of plugin list
-        fetchRemoteFile("${pluginSVN}/.plugin-meta/plugins-list.xml", pluginsListFile)
+		try{
+			fetchRemoteFile("${pluginSVN}/.plugin-meta/plugins-list.xml", pluginsListFile)
+		}(Exception e){
+		    println "Error reading remote plugin list [${e.message}], building locally..."
+		    updatePluginsListManually()
+		}
 
         def remoteRevision = "0"
         if (shouldUseSVNProtocol(pluginDistURL)) {

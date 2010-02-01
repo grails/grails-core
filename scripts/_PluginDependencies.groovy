@@ -1458,9 +1458,9 @@ def fetchRemote(url, closure) {
         // determine if the file exists
         SVNNodeKind nodeKind = repo.checkPath(file , -1)
         if (nodeKind == SVNNodeKind.NONE) {
-            throw new Exception("The file does not exist.")
+            throw new Exception("The file does not exist.: " + url)
         } else if (nodeKind != SVNNodeKind.FILE) {
-            throw new Exception("Error not a file..")
+            throw new Exception("Error not a file..: " + url)
         }
         // present w/ file etc for repo extraction
         closure.call(repo, file)
