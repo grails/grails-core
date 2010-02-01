@@ -234,7 +234,8 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
         // get newest version of plugin list
 		try{
 			fetchRemoteFile("${pluginSVN}/.plugin-meta/plugins-list.xml", pluginsListFile)
-		}(Exception e){
+		}
+		catch (Exception e){
 		    println "Error reading remote plugin list [${e.message}], building locally..."
 		    updatePluginsListManually()
 		}
