@@ -79,11 +79,11 @@ configure([compileJava, compileTestJava]) {
 }
 
 apply {
-    apply url: 'gradle/docs.gradle'
-    apply url: 'gradle/unit-test.gradle'
-    apply url: 'gradle/assemble.gradle'
-    apply url: 'gradle/maven.gradle'
-    apply url: 'gradle/findbugs.gradle'
+    url 'gradle/docs.gradle'
+    url 'gradle/unit-test.gradle'
+    url 'gradle/assemble.gradle'
+    url 'gradle/maven.gradle'
+    url 'gradle/findbugs.gradle'
 }
 
 clean {
