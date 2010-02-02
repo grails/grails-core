@@ -11,8 +11,8 @@ apply id: 'groovy'
 
 version = '1.3.0.BUILD-SNAPSHOT'
 
-sourceCompatibilty = "1.5"
-targetCompatibilty = "1.5"
+sourceCompatibility = "1.5"
+targetCompatibility = "1.5"
 
 configurations {
     compile.transitive = true
