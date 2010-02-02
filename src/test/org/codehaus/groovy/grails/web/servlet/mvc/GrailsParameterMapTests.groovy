@@ -11,6 +11,18 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest = new MockHttpServletRequest();
     }
 
+	void testPlusOperator() {
+		mockRequest.addParameter("album", "Foxtrot")
+
+		def originalMap = new GrailsParameterMap(mockRequest)
+
+		def newMap = originalMap + [vocalist: 'Peter']
+		assertTrue originalMap.containsKey('album')
+		assertFalse originalMap.containsKey('vocalist')
+		assertTrue newMap.containsKey('album')
+		assertTrue newMap.containsKey('vocalist')
+	}
+
     void testConversionHelperMethods() {
         def map = new GrailsParameterMap(mockRequest)
 

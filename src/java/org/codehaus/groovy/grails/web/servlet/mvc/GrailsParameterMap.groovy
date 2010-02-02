@@ -241,6 +241,10 @@ class GrailsParameterMap extends TypeConvertingMap  {
 		return parameterMap.entrySet()
 	}
 
+	protected Object clone() {
+		return new GrailsParameterMap(this.@wrappedMap?.clone())
+	}
+
     /**
      * Converts this parameter map into a query String. Note that this will flatten nested keys separating them with the
      * . character and URL encode the result
