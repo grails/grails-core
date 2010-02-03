@@ -49,7 +49,7 @@ sourceSets {
         java {
             srcDirs = []
         }
-        groovy {                                            Rel
+        groovy {
             srcDirs = ['src/test']
         }
         resources {
