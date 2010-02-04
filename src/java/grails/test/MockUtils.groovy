@@ -604,7 +604,7 @@ class MockUtils {
                         result = intersect(TEST_INSTANCES[clazz], result + secondResult)
                     }
                     else {
-                        throw RuntimeException("Unrecognised join type: '$join'")
+                        throw new RuntimeException("Unrecognised join type: '$join'")
                     }
                 }
 
