@@ -254,7 +254,7 @@ else {
 
 installedPlugins = [] // a list of plugins that have been installed
 
-boolean isCorePlugin(name) {
+boolean isCorePlugin(name)  {
     CORE_PLUGINS.contains(name)
 }
 
@@ -384,16 +384,6 @@ target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plu
         }
     }
 
-//    File pluginsDir = grailsSettings.projectPluginsDir.canonicalFile.absoluteFile
-//    File globalDir = grailsSettings.globalPluginsDir.canonicalFile.absoluteFile
-//    Resource basePluginDescriptor = pluginSettings.basePluginDescriptor
-//
-//    pluginSettings.pluginDescriptors.findAll { Resource r ->
-//        pluginSettings.isInlinePluginLocation(r)
-//    }.each { Resource r ->
-//        compileInplacePlugin(r.file.parentFile)
-//        generatePluginXml(r.file)
-//    }
 }
 
 /**
@@ -905,7 +895,8 @@ downloadRemotePlugin = { url, pluginsBase ->
  * Caches a local plugin into the plugins directory
  */
 cacheLocalPlugin = { pluginFile ->
-    fullPluginName = "${pluginFile.name[7..-5]}"
+	def fileName = pluginFile.name
+    fullPluginName = fileName.startsWith("grails-") ? "${pluginFile.name[7..-5]}" : fileName[0..-5]
     String zipLocation = "${pluginsBase}/grails-${fullPluginName}.zip"
     ant.copy(file: pluginFile, tofile: zipLocation)
     readMetadataFromZip(zipLocation, pluginFile)
