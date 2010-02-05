@@ -44,6 +44,8 @@ import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.util.url.CredentialsStore
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor
+import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor
+import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -916,6 +918,26 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
+    void grailsRepo(String url, String name=null) {
+        if(isResolverNotAlreadyDefined(name ?: url)) {            
+            repositoryData << ['type':'grailsRepo', url:url]
+            def urlResolver = new org.apache.ivy.plugins.resolver.URLResolver(name: name ?: url )
+            urlResolver.addArtifactPattern("${url}/grails-[artifact]/tags/LATEST_RELEASE/grails-[artifact]-[revision].[ext]")
+            urlResolver.settings = ivySettings
+            urlResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
+            urlResolver.changingPattern = ".*SNAPSHOT"
+            urlResolver.setCheckmodified(true)
+            chainResolver.add urlResolver
+        }
+
+    }
+
+    void grailsCentral() {
+        if(isResolverNotAlreadyDefined('grailsCentral')) {
+            grailsRepo("http://svn.codehaus.org/grails-plugins", "grailsCentral")
+        }
+    }
+
     void mavenCentral() {
         if(isResolverNotAlreadyDefined('mavenCentral')) {
             repositoryData << ['type':'mavenCentral']
@@ -992,10 +1014,17 @@ class IvyDomainSpecificLanguageEvaluator {
 
                             def mrid = ModuleRevisionId.newInstance(group, name, m[0][3])
 
-                            if(!pluginMode)
-                                addDependency mrid
+
 
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
+
+                            if(!pluginMode) {
+                                addDependency mrid
+                            }
+                            else {
+                                def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
+                                dependencyDescriptor.addDependencyArtifact(scope, artifact)
+                            }
                             dependencyDescriptor.exported = getBooleanValue(args, 'export')
                             dependencyDescriptor.inherited = inherited || inheritsAll || plugin
 
@@ -1026,10 +1055,16 @@ class IvyDomainSpecificLanguageEvaluator {
                                mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
                            }
 
-                           if(!pluginMode)
-                                addDependency mrid
 
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(dependency, 'transitive'), scope)
+                           if(!pluginMode) {
+                               addDependency mrid
+                           }
+                           else {
+                               def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
+                               dependencyDescriptor.addDependencyArtifact(scope, artifact)
+                           }
+                           
                            dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
                            dependencyDescriptor.inherited = inherited || inheritsAll
                            if(plugin) {
