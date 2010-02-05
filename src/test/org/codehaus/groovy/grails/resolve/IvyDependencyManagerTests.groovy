@@ -29,6 +29,46 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testDeclarePluginDependencies() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            plugins {
+                runtime "org.grails.plugins:feeds:1.5"
+                runtime ":searchable:0.5.5"
+                test ":functional-test:1.2"
+                runtime name:"quartz", version:"0.5.6"
+            }
+        }
+
+        assertEquals "Should not have any application JAR dependencies", 0, manager.dependencyDescriptors.size()
+        assertEquals "Should not have any application JAR dependencies", 4, manager.pluginDependencyDescriptors.size()
+
+        def deps = manager.pluginDependencyDescriptors
+        EnhancedDefaultDependencyDescriptor dd = deps.find { DependencyDescriptor dep -> dep.dependencyId.name == 'feeds'}
+        assertNotNull "should have defined feeds plugin dependency", dd
+        assertEquals "org.grails.plugins", dd.dependencyId.organisation
+        assertEquals "feeds", dd.dependencyId.name
+        assertEquals "1.5", dd.getDependencyRevisionId().revision
+        assertEquals "runtime", dd.scope
+
+        dd = deps.find { DependencyDescriptor dep -> dep.dependencyId.name == 'searchable'}
+        assertNotNull "should have defined searchable plugin dependency", dd
+        assertEquals "org.grails.plugins", dd.dependencyId.organisation
+        assertEquals "searchable", dd.dependencyId.name
+        assertEquals "0.5.5", dd.getDependencyRevisionId().revision
+        assertEquals "runtime", dd.scope
+
+        dd = deps.find { DependencyDescriptor dep -> dep.dependencyId.name == 'quartz'}
+        assertNotNull "should have defined searchable plugin dependency", dd
+        assertEquals "org.grails.plugins", dd.dependencyId.organisation
+        assertEquals "quartz", dd.dependencyId.name
+        assertEquals "0.5.6", dd.getDependencyRevisionId().revision
+        assertEquals "runtime", dd.scope
+        
+    }
+
     void testEbrResolver() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

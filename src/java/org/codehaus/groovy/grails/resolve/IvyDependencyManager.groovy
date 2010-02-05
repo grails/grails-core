@@ -43,6 +43,7 @@ import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.util.url.CredentialsStore
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -97,6 +98,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     private Set<ModuleId> modules = [] as Set
     private Set<ModuleRevisionId> dependencies = [] as Set
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
+    private Set<DependencyDescriptor> pluginDependencyDescriptors = [] as Set
 
     private orgToDepMap = [:]
     private hasApplicationDependencies = false
@@ -372,6 +374,10 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      */
     Set<DependencyDescriptor> getDependencyDescriptors() { dependencyDescriptors }
 
+    /**
+    * Obtains a list of plugin dependency descriptors defined in the project
+     */
+    Set<DependencyDescriptor> getPluginDependencyDescriptors() { pluginDependencyDescriptors }
 
 
     /**
@@ -436,7 +442,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         (configuredPlugins.contains(name) || configuredPlugins.contains(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)))        
     }
 
-    def configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer=null) {
+    def configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer=null, boolean pluginMode = false) {
         if(!usedConfigurations.contains(scope)) {
             usedConfigurations << scope
         }
@@ -457,9 +463,14 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         if(!dependencyDescriptor.inherited) {
             hasApplicationDependencies = true
         }
-        dependencyDescriptors << dependencyDescriptor
-        if(dependencyDescriptor.isExportedToApplication())
+        if(pluginMode) {
+            pluginDependencyDescriptors << dependencyDescriptor
+        }
+        else {
+            dependencyDescriptors << dependencyDescriptor
+            if(dependencyDescriptor.isExportedToApplication())
             moduleDescriptor.addDependency dependencyDescriptor
+        }
     }
 
 
@@ -518,6 +529,33 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
 
+
+    /**
+     * Performs a resolve of declared plugin dependencies (zip files containing plugin distributions)
+     */
+    public ResolveReport resolvePluginDependencies(String conf) {
+        resolveErrors = false
+        if(usedConfigurations.contains(conf) || conf == '') {
+            def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
+            if(conf)
+                options.confs = [conf] as String[]
+
+
+            def md = createModuleDescriptor()
+            for(dd in pluginDependencyDescriptors) {
+                md.addDependency dd
+            }
+            ResolveReport resolve = resolveEngine.resolve(md, options)
+            resolveErrors = resolve.hasError()
+            return resolve
+        }
+        else {
+            // return an empty resolve report
+            return new ResolveReport(createModuleDescriptor())
+        }
+
+    }
+    
     /**
      * Performs a resolve of all dependencies for the given configuration,
      * potentially going out to the internet to download jars if they are not found locally
@@ -562,15 +600,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     void parseDependencies(Closure definition) {
         if(definition && applicationName && applicationVersion) {
             if(this.moduleDescriptor == null) {                
-                this.moduleDescriptor =
-                    DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion))
-
-                // TODO: make configurations extensible
-                this.moduleDescriptor.addConfiguration BUILD_CONFIGURATION
-                this.moduleDescriptor.addConfiguration COMPILE_CONFIGURATION
-                this.moduleDescriptor.addConfiguration RUNTIME_CONFIGURATION
-                this.moduleDescriptor.addConfiguration TEST_CONFIGURATION
-                this.moduleDescriptor.addConfiguration PROVIDED_CONFIGURATION
+                this.moduleDescriptor = createModuleDescriptor()
             }
 
             def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
@@ -602,6 +632,19 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             }
 
         }
+    }
+
+    ModuleDescriptor createModuleDescriptor() {
+        def moduleDescriptor =
+            DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion))
+
+        // TODO: make configurations extensible
+        moduleDescriptor.addConfiguration BUILD_CONFIGURATION
+        moduleDescriptor.addConfiguration COMPILE_CONFIGURATION
+        moduleDescriptor.addConfiguration RUNTIME_CONFIGURATION
+        moduleDescriptor.addConfiguration TEST_CONFIGURATION
+        moduleDescriptor.addConfiguration PROVIDED_CONFIGURATION
+        return moduleDescriptor
     }
 
     List readDependenciesFromPOM() {
@@ -647,6 +690,7 @@ class IvyDomainSpecificLanguageEvaluator {
     static final String WILDCARD = '*'
 
     boolean inherited = false
+    boolean pluginMode = false
     String plugin = null
     @Delegate IvyDependencyManager delegate
 
@@ -714,6 +758,16 @@ class IvyDomainSpecificLanguageEvaluator {
 
     void inherits(String name) {
         inherits name, null
+    }
+
+    void plugins(Closure callable) {
+         try {
+             pluginMode = true
+             callable.call()
+         }
+         finally {
+             pluginMode = false
+         }
     }
 
     void plugin(String name, Closure callable) {
@@ -933,9 +987,13 @@ class IvyDomainSpecificLanguageEvaluator {
 
                         def name = m[0][2]
                         if(!isExcluded(name)) {
-                            def mrid = ModuleRevisionId.newInstance(m[0][1], name, m[0][3])
+                            def group = m[0][1]
+                            if(!group && pluginMode) group = 'org.grails.plugins'
 
-                            addDependency mrid
+                            def mrid = ModuleRevisionId.newInstance(group, name, m[0][3])
+
+                            if(!pluginMode)
+                                addDependency mrid
 
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
                             dependencyDescriptor.exported = getBooleanValue(args, 'export')
@@ -948,15 +1006,15 @@ class IvyDomainSpecificLanguageEvaluator {
                                 pluginExcludes[plugin] << name
                                 dependencyDescriptor.plugin = plugin
                             }
-                            configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
+                            configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
                         }
-
-
                     }
 
                 }
                 else if(dependency instanceof Map) {
                     def name = dependency.name
+                    if(!dependency.group && pluginMode) dependency.group = "org.grails.plugins"
+                    
                     if(dependency.group && name && dependency.version) {
                        if(!isExcluded(name)) {
 
@@ -968,7 +1026,8 @@ class IvyDomainSpecificLanguageEvaluator {
                                mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
                            }
 
-                           addDependency mrid
+                           if(!pluginMode)
+                                addDependency mrid
 
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(dependency, 'transitive'), scope)
                            dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
@@ -977,7 +1036,7 @@ class IvyDomainSpecificLanguageEvaluator {
                                dependencyDescriptor.plugin = plugin
                            }
 
-                           configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer)
+                           configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
                        }
 
                     }
