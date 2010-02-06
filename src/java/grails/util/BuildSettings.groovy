@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-import org.gparallelizer.Asynchronizer
+import groovyx.gpars.Asynchronizer
 
 
 /**
@@ -720,20 +720,20 @@ class BuildSettings {
         // All projects need the plugins to be resolved.
         def handlePluginDirectory = pluginDependencyHandler()
 
-        Asynchronizer.withAsynchronizer(5) {
+        Asynchronizer.doParallel(5) {
             Closure predicate = { it.directory && !it.hidden }
-            def pluginDirs = projectPluginsDir.listFiles().findAllAsync(predicate)
+            def pluginDirs = projectPluginsDir.listFiles().findAllParallel(predicate)
 
 
             if (globalPluginsDir.exists()) {
-                pluginDirs.addAll(globalPluginsDir.listFiles().findAllAsync(predicate))
+                pluginDirs.addAll(globalPluginsDir.listFiles().findAllParallel(predicate))
             }
             def pluginLocations = config?.grails?.plugin?.location
-            pluginLocations?.values().eachAsync {location ->
+            pluginLocations?.values().eachParallel {location ->
                 pluginDirs << new File(location).canonicalFile
             }
 
-            pluginDirs.eachAsync(handlePluginDirectory)
+            pluginDirs.eachParallel(handlePluginDirectory)
 
         }
     }

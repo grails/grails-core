@@ -239,7 +239,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             dependencies {
 
                 // dependencies needed by the Grails build system
-                 build "org.gparallelizer:GParallelizer:0.8.3",
+                 build "org.codehaus.gpars:gpars:0.9",
                        "org.tmatesoft.svnkit:svnkit:1.3.1",
                        "org.apache.ant:ant:1.7.1",
                        "org.apache.ant:ant-launcher:1.7.1",

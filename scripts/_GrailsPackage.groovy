@@ -19,9 +19,10 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
-import org.gparallelizer.Asynchronizer
 import org.springframework.core.io.Resource
+
 import grails.util.PluginBuildSettings
+import groovyx.gpars.Asynchronizer
 
 /**
  * Gant script that packages a Grails application (note: does not create WAR)
@@ -115,8 +116,8 @@ target( packageApp : "Implementation of package target") {
             PluginBuildSettings settings = pluginSettings
             def i18nPluginDirs = settings.pluginI18nDirectories
             if(i18nPluginDirs) {
-                Asynchronizer.withAsynchronizer(5) {
-                    i18nPluginDirs.eachAsync { Resource srcDir ->
+                Asynchronizer.doParallel(5) {
+                    i18nPluginDirs.eachParallel { Resource srcDir ->
                         if(srcDir.exists()) {
                             def file = srcDir.file
                             def pluginDir = file.parentFile.parentFile

@@ -34,9 +34,9 @@
     <dependencies>
         <!-- External Dependencies -->
         <dependency>
-          <groupId>org.gparallelizer</groupId>
-          <artifactId>GParallelizer</artifactId>
-          <version>0.8.3</version>
+          <groupId>org.codehaus.gpars</groupId>
+          <artifactId>gpars</artifactId>
+          <version>0.9</version>
         </dependency>
         
         <dependency>
