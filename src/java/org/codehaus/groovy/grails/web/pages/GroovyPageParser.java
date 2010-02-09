@@ -840,7 +840,7 @@ public class GroovyPageParser implements Tokens {
 			String bodyTagClosureName = "null";
 			if (!tm.emptyTag && !tm.bufferMode) {
 				bodyTagClosureName = "body" + tagIndex;
-				out.println("}");
+				out.println("})");
 				closureLevel--;
 			}
 			
@@ -1018,7 +1018,7 @@ public class GroovyPageParser implements Tokens {
 			out
 					.println("body"
 							+ tm.tagIndex
-							+ " = new GroovyPageTagBody(this,binding.webRequest) {");
+							+ " = new GroovyPageTagBody(this,binding.webRequest, {");
 			closureLevel++;
 		}
 	}
