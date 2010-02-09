@@ -7,10 +7,9 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 14, 2009
  */
-
 public class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
@@ -1071,8 +1070,8 @@ class CriteriaBuilderTestClass2 {
         assertEquals(1, results.size());
    }
 
-   public void testEq() throws Exception {
-        GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+   void testEq() throws Exception {
+        GrailsDomainClass domainClass =  grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
 
         assertNotNull(domainClass);
@@ -1091,14 +1090,59 @@ class CriteriaBuilderTestClass2 {
 
         obj2.invokeMethod("save", null);
 
-
         List results = (List)parse(	"{ " +
                         "eq('firstName','fred');" +
                 "}", "Test1","CriteriaBuilderTestClass");
         assertEquals(1, results.size());
    }
 
-   public void testNe() throws Exception {
+	void testEqCaseInsensitive() throws Exception {
+      GrailsDomainClass domainClass =  grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+      "CriteriaBuilderTestClass");
+
+      assertNotNull(domainClass);
+
+      GroovyObject obj = (GroovyObject)domainClass.newInstance();
+      obj.setProperty( "firstName", "fred" );
+      obj.setProperty( "lastName", "flinstone" );
+      obj.setProperty( "age", new Integer(43));
+
+      obj.invokeMethod("save", null);
+
+      GroovyObject obj2 = (GroovyObject)domainClass.newInstance();
+      obj2.setProperty( "firstName", "zulu" );
+      obj2.setProperty( "lastName", "alpha" );
+      obj2.setProperty( "age", new Integer(45));
+
+      obj2.invokeMethod("save", null);
+
+      List results = parse(   "{ " +
+            "eq('firstName','Fred');" +
+            "}", "Test1","CriteriaBuilderTestClass");
+      assertEquals 'default not ignoring case', 0, results.size()
+
+      results = parse(   "{ " +
+            "eq 'firstName','Fred', ignoreCase: false" +
+            "}", "Test1","CriteriaBuilderTestClass");
+      assertEquals 'explicitly not ignoring case', 0, results.size()
+
+      results = parse(   "{ " +
+            "eq 'firstName', 'Fred', ignoreCase: true" +
+            "}", "Test1","CriteriaBuilderTestClass");
+      assertEquals 'ignoring case should match one', 1, results.size()
+
+      results = parse(   "{ " +
+      		"eq('firstName', 'Fred', [ignoreCase: true])" +
+      		"}", "Test1","CriteriaBuilderTestClass");
+      assertEquals 'ignoring case should match one', 1, results.size()
+
+      results = parse(   "{ " +
+            "eq 'firstName', 'Fred', dontKnowWhatToDoWithThis: 'foo'" +
+            "}", "Test1","CriteriaBuilderTestClass");
+      assertEquals 'an unknown parameter should be ignored', 0, results.size()
+   }
+
+	public void testNe() throws Exception {
         GrailsDomainClass domainClass =  (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             "CriteriaBuilderTestClass");
 
