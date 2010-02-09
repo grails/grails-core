@@ -654,20 +654,53 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         return addToCriteria(Restrictions.le(propertyName, propertyValue));
     }
     /**
-     * Creates an "equals" Criterion based on the specified property name and value
+     * Creates an "equals" Criterion based on the specified property name and value. Case-sensitive.
      * @param propertyName The property name
      * @param propertyValue The property value
      *
      * @return A Criterion instance
      */
     public Object eq(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [eq] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
-        }
-        propertyName = calculatePropertyName(propertyName);
-        propertyValue = calculatePropertyValue(propertyValue);
-        return addToCriteria(Restrictions.eq(propertyName, propertyValue));
+   	 return eq(propertyName, propertyValue, Collections.emptyMap());
     }
+
+    /**
+     * Groovy moves the map to the first parameter if using the idiomatic form, e.g.
+     * <code>eq 'firstName', 'Fred', ignoreCase: true</code>.
+     * @param params optional map with customization parameters; currently only 'ignoreCase' is supported.
+     * @param propertyName
+     * @param propertyValue
+     * @return A Criterion instance
+     */
+    public Object eq(Map params, String propertyName, Object propertyValue) {
+       return eq(propertyName, propertyValue, params);
+    }
+
+    /**
+     * Creates an "equals" Criterion based on the specified property name and value.
+     * Supports case-insensitive search if the <code>params</code> map contains <code>true</code>
+     * under the 'ignoreCase' key.
+     * @param propertyName The property name
+     * @param propertyValue The property value
+     * @param params optional map with customization parameters; currently only 'ignoreCase' is supported.
+     *
+     * @return A Criterion instance
+     */
+    public Object eq(String propertyName, Object propertyValue, Map params) {
+       if (!validateSimpleExpression()) {
+           throwRuntimeException( new IllegalArgumentException("Call to [eq] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+       }
+       propertyName = calculatePropertyName(propertyName);
+       propertyValue = calculatePropertyValue(propertyValue);
+       SimpleExpression eq =  Restrictions.eq(propertyName, propertyValue);
+       if (params != null) {
+      	 Object ignoreCase = params.get("ignoreCase");
+      	 if (ignoreCase instanceof Boolean && (Boolean)ignoreCase) {
+      		 eq = eq.ignoreCase();
+      	 }
+       }
+       return addToCriteria(eq);
+   }
 
     /**
      * Applies a sql restriction to the results to allow something like:
