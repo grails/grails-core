@@ -52,9 +52,9 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
 		if(tagResult != 'TEST') {
 				out << '<ERROR in tag3 output>' << tagResult
 		}
-		out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest) {
+		out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest, {
 
-        })
+        }))
 	}
 }
 """)
