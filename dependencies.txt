@@ -79,8 +79,8 @@ The following libraries are included in Grails because they are required either 
 - required if you want to use EHCache as your second-level cache
 - optional otherwise
 
-* gant_groovy1.6-1.6.0.jar
-- Gant 1.6 (http://groovy.codehaus.org/Gant) Apache 2.0 License
+* gant-1.9.1_groovy-1.7.0.jar
+- Gant 1.9.1 (http://gant.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 
 * groovy-all-1.7.0.jar
