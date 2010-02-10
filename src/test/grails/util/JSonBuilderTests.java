@@ -61,14 +61,14 @@ public class JSonBuilderTests extends TestCase {
 		try {
 			parse("json{ message( \"Hello World\" ){ item() } }");
 			fail();
-		} catch (InvokerInvocationException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 
 		try {
 			parse("json{ message( \"Hello World\" ){ item(\"test\") } }");		
 			fail();
-		} catch (InvokerInvocationException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 		

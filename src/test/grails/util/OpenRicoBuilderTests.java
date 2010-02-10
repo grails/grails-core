@@ -78,14 +78,14 @@ public class OpenRicoBuilderTests extends TestCase {
 		try {
 			parse("ajax{ test(id:\"test\") { } }");
 			fail();
-		} catch (InvokerInvocationException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 
 		try {
 			parse("element{ test(id:\"test\") { } }");
 			fail();
-		} catch (InvokerInvocationException e) {
+		} catch (IllegalArgumentException e) {
 			// expected
 		}
 
