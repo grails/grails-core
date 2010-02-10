@@ -17,7 +17,6 @@
 package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
-import gant.TargetExecutionException;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
@@ -365,7 +364,7 @@ public class GrailsScriptRunner {
             catch (ScriptNotFoundException ex) {
                 out.println("No script found for " + script.name);
             }
-            catch (TargetExecutionException ex) {
+            catch (Throwable ex) {
                 if (ex.getCause() instanceof ScriptExitException) {
                     out.println("Script exited with code " + ((ScriptExitException) ex.getCause()).getExitCode());
                 }
