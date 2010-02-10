@@ -16,6 +16,7 @@ Import-Template:
   org.codehaus.groovy.runtime.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.control.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.reflection.*;version="${groovy.version:[=.=.=, =.+1.0)}",
+  org.codehaus.groovy.transform.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.ant.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.tools.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.syntax.*;version="${groovy.version:[=.=.=, =.+1.0)}",
