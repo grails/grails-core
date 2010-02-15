@@ -58,7 +58,7 @@ createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFor
 createTestTask("transactionalService", ["org/codehaus/groovy/grails/reload/TransactionalServiceReloadTests.class"], [])
 createTestTask("packagePlugins", ["org/codehaus/groovy/grails/cli/PackagePluginTests.class"], [])
 createTestTask("installTemplates", ["org/codehaus/groovy/grails/cli/InstallTemplatesTests.class"], [])
-createTestTask("generateAll", ["org/codehaus/groovy/grails/cli/GenerateAllTests.class"], [])
+/*createTestTask("generateAll", ["org/codehaus/groovy/grails/cli/GenerateAllTests.class"], [])*/
 createTestTask("cli", ["org/codehaus/groovy/grails/cli/**/*Tests.class"], ["org/codehaus/groovy/grails/cli/**/*Tests.class", "**/PackagePluginTests", "**/InstallTemplatesTests"])
 createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
         "**/orm/hibernate/binding/*Tests.class",
