@@ -722,12 +722,16 @@ class BuildSettings {
 
         Asynchronizer.doParallel(5) {
             Closure predicate = { it.directory && !it.hidden }
-            def pluginDirs = projectPluginsDir.listFiles().findAllParallel(predicate)
 
+            def pluginDirs = []
+            if (projectPluginsDir.exists()) {
+                pluginDirs.addAll(projectPluginsDir.listFiles().findAllParallel(predicate))
+            }
 
             if (globalPluginsDir.exists()) {
                 pluginDirs.addAll(globalPluginsDir.listFiles().findAllParallel(predicate))
             }
+
             def pluginLocations = config?.grails?.plugin?.location
             pluginLocations?.values().eachParallel {location ->
                 pluginDirs << new File(location).canonicalFile
