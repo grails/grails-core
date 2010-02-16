@@ -40,17 +40,25 @@ public class CorePluginFinder {
 	private static final Log LOG = LogFactory.getLog(CorePluginFinder.class);
 
 	private final PathMatchingResourcePatternResolver resolver;
-
-	private final GrailsApplication application;
-
+    private final ClassLoader classLoader;
 	private final Set foundPluginClasses;
 
-	public CorePluginFinder(GrailsApplication application) {
-		super();
-		this.resolver = new PathMatchingResourcePatternResolver();
-		this.application = application;
-		this.foundPluginClasses = new HashSet();
-	}
+    /**
+     * Creates a new finder that searches for the core Grails plugins
+     * in the given class loader. Typically the class loader will include
+     * grails-core, grails-web, etc. on its classpath.
+     * @param classLoader The class loader with which to load the core
+     * plugins.
+     */
+    public CorePluginFinder(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+        this.resolver = new PathMatchingResourcePatternResolver(classLoader);
+        this.foundPluginClasses = new HashSet();
+    }
+
+    public CorePluginFinder(GrailsApplication application) {
+        this(application.getClassLoader());
+    }
 
 	public Set getPluginClasses() {
 
@@ -76,18 +84,18 @@ public class CorePluginFinder {
 
 	private void loadCorePluginsStatically() {
 
-		// This is a horrible hard coded hack, but there seems to be no way to
-		// resolve .class files dynamically
-		// on OC4J. If anyones knows how to fix this shout
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
+        // This is a horrible hard coded hack, but there seems to be no way to
+        // resolve .class files dynamically
+        // on OC4J. If anyones knows how to fix this shout
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin");
-		loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin");
@@ -115,7 +123,7 @@ public class CorePluginFinder {
 
 	private Class attemptCorePluginClassLoad(String pluginClassName) {
 		try {
-			return application.getClassLoader().loadClass(pluginClassName);
+			return classLoader.loadClass(pluginClassName);
 		} catch (ClassNotFoundException e) {
 			LOG.warn("[GrailsPluginManager] Core plugin [" + pluginClassName
 					+ "] not found, resuming load without..");
