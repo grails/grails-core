@@ -1331,22 +1331,36 @@ public final class GrailsDomainBinder {
         entity.setDiscriminator(d);
         entity.setDiscriminatorValue(m!=null && m.getDiscriminator() != null ? m.getDiscriminator() : entity.getClassName());
 
-        bindSimpleValue(
-                STRING_TYPE,
-                d,
-                false,
-                RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME,
-                mappings
-        );
+		if(m!=null && m.getDiscriminatorMap().get("insert") != null){
+			entity.setDiscriminatorInsertable((Boolean)m.getDiscriminatorMap().get("insert"));
+		}
+		if(m!=null && m.getDiscriminatorMap().get("type") != null){
+			d.setTypeName((String)m.getDiscriminatorMap().get("type")); 
+		}
+		
+		if(m!=null && m.getDiscriminatorMap().get("formula") != null){
+			Formula formula = new Formula();
+			formula.setFormula((String)m.getDiscriminatorMap().get("formula"));
+			d.addFormula(formula);
+		}
+		else{
+	        bindSimpleValue(
+	                STRING_TYPE,
+	                d,
+	                false,
+	                RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME,
+	                mappings
+	        );
 
-        ColumnConfig cc = m!= null ? m.getDiscriminatorColumn() : null;
-        if(cc != null) {
-            Column c = (Column) d.getColumnIterator().next();
-            if(cc.getName() != null) {
-                c.setName(cc.getName());
-            }
-            bindColumnConfigToColumn(c, cc);
-        }
+	        ColumnConfig cc = m!= null ? m.getDiscriminatorColumn() : null;
+	        if(cc != null) {
+	            Column c = (Column) d.getColumnIterator().next();
+	            if(cc.getName() != null) {
+	                c.setName(cc.getName());
+	            }
+	            bindColumnConfigToColumn(c, cc);
+	        }
+		}
 
         entity.setPolymorphic(true);
     }

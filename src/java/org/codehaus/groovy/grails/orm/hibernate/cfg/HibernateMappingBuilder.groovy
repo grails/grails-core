@@ -115,6 +115,9 @@ class HibernateMappingBuilder {
             BeanUtils.populate config, args.column 
             mapping.discriminatorColumn = config
         }
+		mapping.discriminatorMap.type = args?.remove('type')
+		mapping.discriminatorMap.insert = args?.remove('insert')
+		mapping.discriminatorMap.formula = args?.remove('formula')
     }
 
     /**
