@@ -949,17 +949,23 @@ public final class GrailsDomainBinder {
      */
     private static String calculateTableForMany(GrailsDomainClassProperty property) {
         String propertyColumnName = namingStrategy.propertyToColumnName(property.getName());
+		//add fix here
+		//fix for GRAILS-5895
+		PropertyConfig config = getPropertyConfig(property);
+        JoinTable jt = config != null ? config.getJoinTable() : null;
+        boolean hasJoinTableMapping = jt != null && jt.getName() != null;
+		String left = getTableName(property.getDomainClass());
+
         if (Map.class.isAssignableFrom(property.getType())) {
-            String tablePrefix = getTableName(property.getDomainClass());
-            return tablePrefix + "_" + propertyColumnName;
+			if (hasJoinTableMapping) {
+                return jt.getName();
+            }
+            else {
+                return left + UNDERSCORE + propertyColumnName;
+            }
 
         }
         else {
-            PropertyConfig config = getPropertyConfig(property);
-            JoinTable jt = config != null ? config.getJoinTable() : null;
-            boolean hasJoinTableMapping = jt != null && jt.getName() != null;
-
-            String left = getTableName(property.getDomainClass());
 
             if (property.isBasicCollectionType()) {
                 if (hasJoinTableMapping) {
