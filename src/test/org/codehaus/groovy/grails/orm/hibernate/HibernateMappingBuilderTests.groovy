@@ -117,6 +117,21 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
     }
 
+	void testDiscriminatorMap() {
+        def builder = new HibernateMappingBuilder("Foo")
+        def mapping = builder.evaluate {
+            discriminator value:'1', formula:"case when CLASS_TYPE in ('a', 'b', 'c') then 0 else 1 end",type:'integer',insert:false
+        }
+
+        assertEquals "1", mapping.discriminator
+        assertNull mapping.discriminatorColumn
+
+        assertEquals "case when CLASS_TYPE in ('a', 'b', 'c') then 0 else 1 end", mapping.discriminatorMap.formula
+		assertEquals "integer", mapping.discriminatorMap.type
+		assertEquals false, mapping.discriminatorMap.insert
+
+    }
+
     void testAutoImport() {
         def builder = new HibernateMappingBuilder("Foo")
         def mapping = builder.evaluate { }

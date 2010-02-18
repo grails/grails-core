@@ -107,6 +107,11 @@ class Mapping {
      */
     String discriminator
 
+	/**
+     * Used to hold the attributes for Discriminator, such as formula, type and insertable
+     */
+    Map discriminatorMap = [:]
+
     /**
      * Used to configure the disriminator column properties
      */
