@@ -8,6 +8,7 @@ Import-Template:
   org.apache.commons.lang.*;version="${commons.lang.version:[=.=.=, +1.0.0)}",
   groovy.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.runtime.*;version="${groovy.version:[=.=.=, =.+1.0)}",
+  org.codehaus.groovy.classgen.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.control.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.reflection.*;version="${groovy.version:[=.=.=, =.+1.0)}",
   org.codehaus.groovy.ant.*;version="${groovy.version:[=.=.=, =.+1.0)}",
