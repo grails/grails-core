@@ -850,7 +850,7 @@ class MockUtils {
         // Add data binding capabilities
 
         clazz.metaClass.constructor =  { Map params ->
-            def obj = BeanUtils.instantiateClass(clazz)
+            def obj = BeanUtils.instantiateClass(delegate)
             DataBindingUtils.bindObjectToInstance(obj,params)
             return obj            
         }
