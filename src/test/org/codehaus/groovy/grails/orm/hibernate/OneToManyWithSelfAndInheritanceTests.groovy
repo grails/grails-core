@@ -59,7 +59,8 @@ class ExtOrganization extends Organization{
         // collection.setWhere(RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME + " = '" + referenced.getFullName() + "'");
         // from GrailsDomainBinder the problem goes away, but causes other regressions. The current workaround is to use table-per-subclass inheritance
 
-        if(notYetImplemented()) return
+		//FIXED
+        //if(notYetImplemented()) return
         xorg1 = ExtOrganization.findByName('ExtOrg 1')
 
         assertEquals 2, xorg1.children.size()
