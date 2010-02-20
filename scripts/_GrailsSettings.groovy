@@ -123,7 +123,6 @@ else {
     appClassName = GrailsNameUtils.getClassNameRepresentation(grailsAppName)
 }
 
-
 // Other useful properties.
 args = System.getProperty("grails.cli.args")
 grailsApp = null
