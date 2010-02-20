@@ -1,60 +1,66 @@
 <project name="grails-unit-test">
                  
-  <condition property="_skipTests_">
-    <istrue value="${skipTests}"/>
-  </condition>
+    <!-- optional local properties -->
+    <property file='local.properties'/>
 
-	<target name="test-with-coverage" depends="build-test, instrument-for-coverage, run-test,test-report,coverage-report" description="Compile and Run the unit tests while measuring coverage">
-		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
-	</target>
-	<target name="test" depends="clean-instrumented, run-test,test-report" unless="_skipTests_" description="Compile and Run the unit tests plainly">
-		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
-	</target>
+    <property name='args.memory' value='-Xmx1500m -Xms256m -XX:MaxPermSize=256m'/>
+    <property name='args.debug' value=''/> <!-- -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 -->
 
-	<taskdef resource="tasks.properties">
-		<classpath>
-			<pathelement path="${grails.build}" />
-			<fileset dir="cruise/coverage/lib" includes="*.jar" />
-		</classpath>
-		<classpath refid="classpath" />
-	</taskdef>
-	<taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc">
-		<classpath refid="classpath" />
-	</taskdef>
+    <condition property="_skipTests_">
+        <istrue value="${skipTests}"/>
+    </condition>
 
-	<property name="coverage.build" value="cruise/coverage/build/instrumented-classes" />
-	<property name="coverage.report" value="cruise/coverage/report" />
+    <target name="test-with-coverage" depends="build-test, instrument-for-coverage, run-test,test-report,coverage-report" description="Compile and Run the unit tests while measuring coverage">
+        <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
+    </target>
+    <target name="test" depends="clean-instrumented, run-test,test-report" unless="_skipTests_" description="Compile and Run the unit tests plainly">
+        <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.reports}</fail>
+    </target>
 
-	<target name="clean-instrumented">
-		<delete quiet="true" dir="${coverage.build}" />
-		<mkdir dir="${coverage.build}" />
-	</target>
+    <taskdef resource="tasks.properties">
+        <classpath>
+            <pathelement path="${grails.build}" />
+            <fileset dir="cruise/coverage/lib" includes="*.jar" />
+        </classpath>
+        <classpath refid="classpath" />
+    </taskdef>
+    <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc">
+        <classpath refid="classpath" />
+    </taskdef>
 
-	<target name="instrument-for-coverage" depends="clean-instrumented">
-		<delete file="cobertura.ser" quiet="true" />
-		<cobertura-instrument todir="${coverage.build}">
-			<fileset dir="${grails.build}" includes="**/*.class" />
-		</cobertura-instrument>
-	</target>
+    <property name="coverage.build" value="cruise/coverage/build/instrumented-classes" />
+    <property name="coverage.report" value="cruise/coverage/report" />
 
-	<target name="coverage-report">
-		<delete quiet="true">
-			<fileset dir="${coverage.report}" />
-		</delete>
-		<mkdir dir="${coverage.report}" />
-		<cobertura-report format="xml" destdir="cruise/coverage/report">
-			<fileset dir="${grails.src}" />
-		</cobertura-report>
-	</target>
+    <target name="clean-instrumented">
+        <delete quiet="true" dir="${coverage.build}" />
+        <mkdir dir="${coverage.build}" />
+    </target>
 
-	<target name="build-test" depends="build,build-scripts">
+    <target name="instrument-for-coverage" depends="clean-instrumented">
+        <delete file="cobertura.ser" quiet="true" />
+        <cobertura-instrument todir="${coverage.build}">
+            <fileset dir="${grails.build}" includes="**/*.class" />
+        </cobertura-instrument>
+    </target>
 
-		<groovyc srcdir="${grails.test}" destdir="${grails.test.build}" encoding="UTF-8">
+    <target name="coverage-report">
+        <delete quiet="true">
+            <fileset dir="${coverage.report}" />
+        </delete>
+        <mkdir dir="${coverage.report}" />
+        <cobertura-report format="xml" destdir="cruise/coverage/report">
+            <fileset dir="${grails.src}" />
+        </cobertura-report>
+    </target>
+
+    <target name="build-test" depends="build,build-scripts">
+
+        <groovyc srcdir="${grails.test}" destdir="${grails.test.build}" encoding="UTF-8">
             <javac debug="on" deprecation="on" encoding="UTF-8"/>
             <classpath refid="classpath" />
-			<classpath location="${grails.test.build}" />
-			<classpath location="${grails.build}" />
-		</groovyc>
+            <classpath location="${grails.test.build}" />
+            <classpath location="${grails.build}" />
+        </groovyc>
 
         <copy todir="${grails.test.build}">
             <fileset dir="${grails.src.jar}">
@@ -63,35 +69,28 @@
             </fileset>
         </copy>
 
-
     </target>
 
-
     <target name="defineTestingScope">
-		<!--Sets the test value to all tests ('*') if no value is provided-->
-		<condition property="test" value="*">
-			<not>
-				<isset property="test" />
-			</not>
-		</condition>
-		<condition property="test.isolated" value="true">
-			<equals arg1="${test}" arg2="*" />
-		</condition>
-	</target>
+        <!--Sets the test value to all tests ('*') if no value is provided-->
+        <condition property="test" value="*">
+            <not>
+                <isset property="test" />
+            </not>
+        </condition>
+        <condition property="test.isolated" value="true">
+            <equals arg1="${test}" arg2="*" />
+        </condition>
+    </target>
 
-	<target name="run-test" depends="defineTestingScope, build-test,-jar-app-files" unless="_skipTests_">
-		<delete dir="${grails.test.reports}" />
+    <target name="run-test" depends="defineTestingScope, build-test,-jar-app-files" unless="_skipTests_">
+        <delete dir="${grails.test.reports}" />
         <mkdir dir="${grails.test.reports}" />
         <echo>Test being run ${test} from ${grails.test.build}</echo>
         <junit fork="true" forkmode="perBatch" clonevm="true" printsummary="on">
-			<!-- only fork VMs as needed -->
+            <!-- only fork VMs as needed -->
             <sysproperty key="grails.cli.testing" value="true"/>
-            <jvmarg value="-server" />
-			<jvmarg value="-Xmx1G" />
-			<jvmarg value="-Xms256m" />
-			<jvmarg value="-XX:MaxPermSize=256m"/>
-			<jvmarg value="-Dgroovy.grails.joint=${groovy.grails.joint}" />			
-            <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+                <jvmarg line="-server -Dgroovy.grails.joint=${groovy.grails.joint} ${args.memory} ${args.debug}"/>
             <classpath>
                 <pathelement location="${coverage.build}" />
                 <!-- must be first in cp!    -->
@@ -140,65 +139,61 @@
                   </fileset>
             </batchtest>
 
-
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
-			    <fileset dir="${grails.test.build}">
+                <fileset dir="${grails.test.build}">
                     <include name="**/orm/hibernate/${test}Tests.class" />
                     <include name="**/orm/hibernate/binding/${test}Tests.class" />
                     <include name="**/orm/hibernate/cfg/${test}Tests.class" />
                     <include name="**/orm/hibernate/validation/${test}Tests.class" />
                     <exclude name="**/Abstract*" />
                     <exclude name="**/UniqueConstraint*" />
-				</fileset>
+                </fileset>
             </batchtest>
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
-			    <fileset dir="${grails.test.build}">
+                <fileset dir="${grails.test.build}">
                     <include name="**/UniqueConstraintTests.class" />
-				</fileset>
+                </fileset>
             </batchtest>
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
-			    <fileset dir="${grails.test.build}">
+                <fileset dir="${grails.test.build}">
                     <include name="**/webflow/**${test}Tests.class" />                    
                     <exclude name="**/Abstract*" />
-				</fileset>
+                </fileset>
             </batchtest>
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
-			    <fileset dir="${grails.test.build}">
+                <fileset dir="${grails.test.build}">
                     <include name="**/web/taglib/**${test}Tests.class" />                    
                     <exclude name="**/Abstract*" />
-				</fileset>
+                </fileset>
             </batchtest>
 
             <batchtest todir="${grails.test.reports}" failureproperty="grails.test.failure" fork="true" >
-				<fileset dir="${grails.test.build}">
-					<include name="**/${test}Tests.class" />
-					<exclude name="**/Abstract*" />
+                <fileset dir="${grails.test.build}">
+                    <include name="**/${test}Tests.class" />
+                    <exclude name="**/Abstract*" />
                     <exclude name="**/TransactionalServiceReloadTests*" />
                     <exclude name="**/ContentFormatControllerTests*" />
                     <exclude name="**/orm/hibernate/**" />
                     <exclude name="**/webflow/**" />
                     <exclude name="**/web/taglib/**" />
                     <exclude name="**/cli/**Tests.class" />
-				</fileset>
-			</batchtest>
+                </fileset>
+            </batchtest>
 
+        </junit>
+    </target>
 
-
-
-		</junit>
-	</target>
-
-	<target name="test-report" depends="clean-instrumented, run-test" description="Runs unit tests and generates HTML report">
-		<mkdir dir="${grails.test.html.reports}" />
-		<junitreport todir="${grails.test.html.reports}">
-			<fileset dir="${grails.test.reports}">
-				<include name="TEST-*.xml" />
-			</fileset>
-			<report format="frames" todir="${grails.test.html.reports}" />
-		</junitreport>
-		<fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.html.reports}/index.html</fail>
-	</target>
+    <target name="test-report" depends="clean-instrumented, run-test" description="Runs unit tests and generates HTML report">
+        <mkdir dir="${grails.test.html.reports}" />
+        <junitreport todir="${grails.test.html.reports}">
+            <fileset dir="${grails.test.reports}">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${grails.test.html.reports}" />
+        </junitreport>
+        <fail if="grails.test.failure">The tests failed. Have a look at ${grails.test.html.reports}/index.html</fail>
+    </target>
 </project>
