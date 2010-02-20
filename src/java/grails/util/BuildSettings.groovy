@@ -116,6 +116,11 @@ class BuildSettings {
     public static final String BUILD_LISTENERS = "grails.build.listeners"
 
     /**
+     * The name of the system property for enabling verbose compilation {@link #verboseCompile}.
+     */
+    public static final String VERBOSE_COMPILE = "grails.project.compile.verbose"
+
+    /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
      * of a project, then this will be the current working directory
@@ -219,6 +224,11 @@ class BuildSettings {
     List applicationJars = []
 
     List buildListeners = []
+    
+    /**
+     * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
+     */
+    boolean verboseCompile = false
     
     private List<File> compileDependencies = []
     private boolean defaultCompileDepsAdded = false
@@ -373,6 +383,7 @@ class BuildSettings {
     private boolean testSourceDirSet
     private boolean projectWarFileSet
     private boolean buildListenersSet
+    private boolean verboseCompileSet
 
     BuildSettings() {
         this(null)
@@ -602,6 +613,11 @@ class BuildSettings {
         buildListeners.toArray()
     }
 
+    void setVerboseCompile(boolean flag) {
+        verboseCompile = flag
+        verboseCompileSet = true
+    }
+    
     /**
      * Loads the application's BuildSettings.groovy file if it exists
      * and returns the corresponding config object. If the file does
@@ -861,6 +877,10 @@ class BuildSettings {
         
         if (!testSourceDirSet) {
             testSourceDir = new File(getPropertyValue(PROJECT_TEST_SOURCE_DIR, props, "${baseDir}/test"))
+        }
+        
+        if (!verboseCompileSet) {
+            verboseCompile = getPropertyValue(VERBOSE_COMPILE, props, '').toBoolean()
         }
     }
 

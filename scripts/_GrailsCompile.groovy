@@ -27,6 +27,7 @@ import grails.util.GrailsNameUtils
  */
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_GrailsEvents")
+includeTargets << grailsScript("_GrailsArgParsing")
 
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
 ant.path(id: "grails.compile.classpath", compileClasspath)
@@ -53,6 +54,13 @@ compilerPaths = { String classpathId, boolean compilingTests ->
 	}
 }
 
+target(setCompilerSettings: "Updates the compile build settings based on args") {
+    depends(parseArguments)
+    if (argsMap.containsKey('verboseCompile')) {
+        grailsSettings.verboseCompile = argsMap.verboseCompile as boolean
+    }
+}
+
 target(compile : "Implementation of compilation phase") {
     depends(compilePlugins)
 
@@ -65,6 +73,8 @@ target(compile : "Implementation of compilation phase") {
             ant.groovyc(destdir:classesDirPath,
 	                    classpathref:classpathId,
 	                    encoding:"UTF-8",
+	                    verbose: grailsSettings.verboseCompile,
+                        listfiles: grailsSettings.verboseCompile,
 	                    compilerPaths.curry(classpathId, false))
         }
         catch(Exception e) {
@@ -82,7 +92,7 @@ target(compile : "Implementation of compilation phase") {
 }
 
 target(compilePlugins: "Compiles source files of all referenced plugins.") {
-    depends(resolveDependencies)
+    depends(setCompilerSettings, resolveDependencies)
 
     def classesDirPath = grailsSettings.classesDir.path
     ant.mkdir(dir:classesDirPath)
@@ -102,7 +112,9 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
             // installed or otherwise referenced.
             ant.groovyc(destdir:classesDirPath,
                     classpathref:classpathId,
-                    encoding:"UTF-8") {
+                    encoding:"UTF-8",
+                    verbose: grailsSettings.verboseCompile,
+                    listfiles: grailsSettings.verboseCompile) {
                 for(dir in pluginResources.file) {
                     src(path:"${dir}")
                 }

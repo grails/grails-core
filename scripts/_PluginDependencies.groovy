@@ -408,7 +408,9 @@ compileInplacePlugin = { File pluginDir ->
                 ant.groovyc(
                     destdir: classesDirPath,
                         classpathref: classpathId,
-                        encoding:"UTF-8") {
+                        encoding:"UTF-8",
+                        verbose: grailsSettings.verboseCompile,
+                        listfiles: grailsSettings.verboseCompile) {
                     for(File dir in pluginResources.file) {
                         if (dir.exists() && dir.isDirectory()) {
                             src(path: dir.absolutePath)
