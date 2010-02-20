@@ -1,6 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.util.GrailsUtil
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
@@ -8,8 +11,10 @@ import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
+
 import org.hibernate.Session
 import org.hibernate.SessionFactory
+
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
@@ -18,7 +23,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.util.Log4jConfigurer
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 
 /**
  * @author Graeme Rocher
@@ -26,14 +30,13 @@ import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
  * 
  * Created: Jan 14, 2009
  */
+abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
 
-public class AbstractGrailsHibernateTests extends GroovyTestCase {
-
-    GroovyClassLoader gcl = new GroovyClassLoader(this.getClass().classLoader)
-    GrailsApplication ga;
-    GrailsApplication grailsApplication;
+    GroovyClassLoader gcl = new GroovyClassLoader(getClass().classLoader)
+    GrailsApplication ga
+    GrailsApplication grailsApplication
     GrailsPluginManager mockManager
-    MockApplicationContext ctx;
+    MockApplicationContext ctx
     ApplicationContext appCtx
     ApplicationContext applicationContext
     def originalHandler
@@ -44,20 +47,20 @@ public class AbstractGrailsHibernateTests extends GroovyTestCase {
     }
 
     protected void setUp() {
-        super.setUp();
+        super.setUp()
 
         Log4jConfigurer.initLogging("src/test/log4j.properties") 
         ExpandoMetaClass.enableGlobally()
 
 
-        GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
+        GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
 
         gcl.parseClass('''
 dataSource {
-	pooled = true
-	driverClassName = "org.hsqldb.jdbcDriver"
-	username = "sa"
-	password = ""
+    pooled = true
+    driverClassName = "org.hsqldb.jdbcDriver"
+    username = "sa"
+    password = ""
     dbCreate = "create-drop" // one of 'create', 'create-drop','update'
     url = "jdbc:hsqldb:mem:grailsIntTestDB"    
 }
@@ -68,9 +71,9 @@ hibernate {
 }
 ''', "DataSource")
 
-        ctx = new MockApplicationContext();
-        onSetUp();
-        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl);
+        ctx = new MockApplicationContext()
+        onSetUp()
+        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
         grailsApplication = ga
         mockManager = new MockGrailsPluginManager(ga)
         
@@ -96,13 +99,13 @@ hibernate {
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
 
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
-        mockManager.doArtefactConfiguration();
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+        mockManager.doArtefactConfiguration()
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
         ga.initialise()
-        ga.setApplicationContext(ctx);
+        ga.setApplicationContext(ctx)
         ApplicationHolder.setApplication(ga)
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
@@ -116,24 +119,22 @@ hibernate {
         mockManager.applicationContext = appCtx
         mockManager.doDynamicMethods()
 
-        this.sessionFactory = this.appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN);
+        sessionFactory = appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)
 
-        if(!TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
-            this.session = this.sessionFactory.openSession();
-            TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(session));
+        if(!TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            session = sessionFactory.openSession()
+            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
-
     }
 
     protected void tearDown() {
 
-        if(TransactionSynchronizationManager.hasResource(this.sessionFactory)) {
-		    SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(this.sessionFactory);
-		    org.hibernate.Session s = holder.getSession();
-		    //s.flush();
-		    TransactionSynchronizationManager.unbindResource(this.sessionFactory);
-		    SessionFactoryUtils.releaseSession(s, this.sessionFactory);
-		}
+        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(sessionFactory)
+            Session s = holder.session
+            TransactionSynchronizationManager.unbindResource(sessionFactory)
+            SessionFactoryUtils.releaseSession(s, sessionFactory)
+        }
 
         gcl = null
         ga = null
@@ -148,34 +149,33 @@ hibernate {
 
         originalHandler = null
 
-        onTearDown();
-
+        onTearDown()
 
         super.tearDown()
     }
 
+    protected MockApplicationContext createMockApplicationContext() {
+        return new MockApplicationContext()
+    }
 
-	protected MockApplicationContext createMockApplicationContext() {
-		return new MockApplicationContext();
-	}
-
-	protected Resource[] getResources(String pattern) throws IOException {
-		return new PathMatchingResourcePatternResolver().getResources(pattern);
-	}
+    protected Resource[] getResources(String pattern) throws IOException {
+        return new PathMatchingResourcePatternResolver().getResources(pattern);
+    }
 
     protected void onTearDown() {
     }
 }
+
 class MockHibernateGrailsPlugin {
 
-      def version = grails.util.GrailsUtil.getGrailsVersion()
-      def dependsOn = [dataSource: version,
-                       i18n: version,
-                       core: version,
-                       domainClass: version]
+    def version = GrailsUtil.grailsVersion
+    def dependsOn = [dataSource: version,
+                     i18n: version,
+                     core: version,
+                     domainClass: version]
 
-      def artefacts = [new AnnotationDomainClassArtefactHandler()]
-      def loadAfter = ['controllers']
-      def doWithSpring = HibernatePluginSupport.doWithSpring
-      def doWithDynamicMethods = HibernatePluginSupport.doWithDynamicMethods
+    def artefacts = [new AnnotationDomainClassArtefactHandler()]
+    def loadAfter = ['controllers']
+    def doWithSpring = HibernatePluginSupport.doWithSpring
+    def doWithDynamicMethods = HibernatePluginSupport.doWithDynamicMethods
 }
