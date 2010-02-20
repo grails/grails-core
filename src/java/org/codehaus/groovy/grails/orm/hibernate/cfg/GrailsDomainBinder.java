@@ -414,17 +414,21 @@ public final class GrailsDomainBinder {
                 Mapping referencedMapping = getMapping(referenced);
                 Mapping rootMapping = getRootMapping(referenced);
                 String discriminatorColumnName = RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME;
-                String discriminator = referenced.getFullName();
+                
                 if(rootMapping != null) {
                     final ColumnConfig discriminatorColumn = rootMapping.getDiscriminatorColumn();
                     if(discriminatorColumn!=null) {
                         discriminatorColumnName = discriminatorColumn.getName();
                     }
+					if(rootMapping.getDiscriminatorMap().get("formula")!=null){
+						discriminatorColumnName = (String)m.getDiscriminatorMap().get("formula");
+					}
                 }
-                if(referencedMapping != null && referencedMapping.getDiscriminator()!=null) {
-                    discriminator = referencedMapping.getDiscriminator();
-                }
-                collection.setWhere(discriminatorColumnName + " = '" + discriminator + "'");
+				//NOTE: this will build the set for the in clause if it has sublcasses
+				Set discSet = buildDiscriminatorSet(referenced);
+				String inclause = StringUtils.join(discSet, ',') ;
+
+                collection.setWhere(discriminatorColumnName + " in (" + inclause + ")");
             }
 
             OneToMany oneToMany = (OneToMany) collection.getElement();
@@ -508,6 +512,33 @@ public final class GrailsDomainBinder {
             bindUnidirectionalOneToMany(property, mappings, collection);
         }
     }
+
+	private static Set buildDiscriminatorSet(GrailsDomainClass domainClass) {
+		Set theSet = new HashSet();
+		
+		Mapping mapping = getMapping(domainClass);
+		String discriminator = domainClass.getFullName();
+        if(mapping != null && mapping.getDiscriminator()!=null) {
+            discriminator = mapping.getDiscriminator();
+        }
+		Mapping rootMapping = getRootMapping(domainClass);
+		String qoute = "'";
+		if(rootMapping!=null && rootMapping.getDiscriminatorMap()!=null 
+			&& rootMapping.getDiscriminatorMap().get("type")!=null && rootMapping.getDiscriminatorMap().get("type")!="string"){
+			qoute="";
+		}
+		theSet.add(qoute+discriminator+qoute);
+		
+		Set subclasses = domainClass.getSubClasses();
+		if (!subclasses.isEmpty()) {
+			for (Iterator i = subclasses.iterator(); i.hasNext();) {
+            	GrailsDomainClass subClass = (GrailsDomainClass) i.next();
+				Set subSet = buildDiscriminatorSet(subClass);
+				theSet.addAll(subSet);
+			}
+        }
+		return theSet;
+	}
 
     private static Mapping getRootMapping(GrailsDomainClass referenced) {
         if (referenced == null) return null;
