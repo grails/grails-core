@@ -319,6 +319,7 @@ integrationTestPhasePreparation = {
  */
 integrationTestPhaseCleanUp = {
     destroyPersistenceContext()
+    appCtx?.close()
 }
 
 /**
@@ -339,7 +340,8 @@ functionalTestPhasePreparation = {
  */
 functionalTestPhaseCleanUp = {
     destroyPersistenceContext()
-    
+
+    appCtx?.close()
     appCtx = prevAppCtx
     
     stopServer()
