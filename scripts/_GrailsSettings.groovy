@@ -306,9 +306,9 @@ confirmInput = {String message, code="confirm.message" ->
         println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }
-    ant.input(message: message, addproperty: code, validargs: "y,n")
+    ant.input(message: message, addproperty: code, validargs: "y,Y,n,N")
     def result = ant.antProject.properties[code]
-    (result == 'y')
+    'y'.equalsIgnoreCase(result)
 }
 
 // Note: the following only work if you also include _GrailsEvents.
