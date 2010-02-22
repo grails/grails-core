@@ -30,7 +30,7 @@ scriptClassesDirTask = dir("$buildDirName/script-classes")
 dependencies {
     addFlatDirResolver('lib', new File(rootDir, 'lib'))
 
-    clientModule(['groovy'], ":groovy-all:1.6-RC-1") {
+    clientModule(['groovy'], ":groovy-all:1.6.8") {
         dependency(":commons-cli:1.0")
         clientModule(":ant:1.7.0") {
             dependencies(":ant-junit:1.7.0", ":ant-launcher:1.7.0")

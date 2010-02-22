@@ -562,7 +562,7 @@
     </library>
     <library name="Groovy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.6.7.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.6.8.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
