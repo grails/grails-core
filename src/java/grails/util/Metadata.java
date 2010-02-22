@@ -197,6 +197,23 @@ public class Metadata extends Properties {
     }
 
     /**
+     * Obtains a map (name->version) of installed plugins specified in the project metadata
+     * @return A map of installed plugins
+     */
+    public Map<String, String> getInstalledPlugins() {
+        Map<String, String> newMap = new LinkedHashMap<String, String>();
+
+        for (Map.Entry<Object, Object> entry : entrySet()) {
+            String key = entry.getKey().toString();
+            Object val = entry.getValue();
+            if(key.startsWith("plugin.") && val != null) {
+                newMap.put(key.substring(7), val.toString());
+            }
+        }
+        return newMap;
+    }
+
+    /**
      * @return The version of the servlet spec the application was created for
      */
     public String getServletVersion() {
