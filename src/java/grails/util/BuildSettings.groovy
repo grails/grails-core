@@ -689,7 +689,8 @@ class BuildSettings {
 
         this.dependencyManager = new IvyDependencyManager(appName,
                 appVersion,
-                this)
+                this,
+                metadata)
 
         if (!dependenciesExternallyConfigured) {
             config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)

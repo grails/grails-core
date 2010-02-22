@@ -46,6 +46,7 @@ import org.apache.ivy.util.url.CredentialsStore
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
+import grails.util.Metadata
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -101,6 +102,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     private Set<ModuleRevisionId> dependencies = [] as Set
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
     private Set<DependencyDescriptor> pluginDependencyDescriptors = [] as Set
+    private Set<String> pluginDependencyNames = [] as Set
 
     private orgToDepMap = [:]
     private hasApplicationDependencies = false
@@ -117,6 +119,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     String applicationName
     String applicationVersion
     IvySettings ivySettings
+    Metadata metadata
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
     List repositoryData = []
@@ -133,7 +136,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     /**
      * Creates a new IvyDependencyManager instance
      */
-    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null) {
+    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null) {
         ivySettings = new IvySettings()
 
         ivySettings.defaultInit()
@@ -152,6 +155,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         this.applicationName = applicationName
         this.applicationVersion = applicationVersion
         this.buildSettings = settings
+        this.metadata = metadata
     }
 
     /**
@@ -766,6 +770,18 @@ class IvyDomainSpecificLanguageEvaluator {
          try {
              pluginMode = true
              callable.call()
+
+             def installedPlugins = metadata?.installedPlugins
+             if(installedPlugins) {
+                 for(entry in installedPlugins) {
+                     if(!pluginDependencyNames.contains(entry.key)) {
+                         def mrid = ModuleRevisionId.newInstance("org.grails.plugins", entry.key, entry.value)
+                         def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, false, "runtime")
+                         pluginDependencyDescriptors << dd
+                     }
+                 }
+             }
+
          }
          finally {
              pluginMode = false
@@ -862,6 +878,7 @@ class IvyDomainSpecificLanguageEvaluator {
             def grailsHome = buildSettings?.grailsHome?.absolutePath ?: System.getenv("GRAILS_HOME")
             if(grailsHome) {
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
+                flatDir(name:"grailsHome", dirs:"${grailsHome}/plugins")
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
             }
         }
@@ -918,6 +935,13 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
+    /**
+     * Defines a repository that uses Grails plugin repository format. Grails repositories are
+     * SVN repositories that follow a particular convention that is not Maven compatible.
+     *
+     * Ivy is flexible enough to allow the configuration of a resolver that resolves artifacts
+     * against non-Maven repositories 
+     */
     void grailsRepo(String url, String name=null) {
         if(isResolverNotAlreadyDefined(name ?: url)) {            
             repositoryData << ['type':'grailsRepo', url:url]
