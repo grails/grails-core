@@ -665,7 +665,7 @@ target(updatePluginsList:"Updates the plugin list from the remote plugin-list.xm
 def resetClasspathAndState() {
 
     // Update the cached dependencies in grailsSettings, and add new jars to the root loader
-    ['compile', 'build', 'test', 'runtime'].each { type ->
+    for(type in ['compile', 'build', 'test', 'runtime']) {
         def existing = grailsSettings."${type}Dependencies"
         def all = grailsSettings.dependencyManager.resolveDependencies(IvyDependencyManager."${type.toUpperCase()}_CONFIGURATION").allArtifactsReports.localFile
         def toAdd = all - existing
