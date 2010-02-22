@@ -771,7 +771,7 @@ class IvyDomainSpecificLanguageEvaluator {
              pluginMode = true
              callable.call()
 
-             def installedPlugins = metadata?.installedPlugins
+             def installedPlugins = metadata?.getInstalledPlugins()
              if(installedPlugins) {
                  for(entry in installedPlugins) {
                      if(!pluginDependencyNames.contains(entry.key)) {
