@@ -111,7 +111,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="file://$MODULE_DIR$/../../../../apache/ivy-2.0.0/src/java" />
+          <root url="file:///apache/ivy-2.0.0/src/java" />
         </SOURCES>
       </library>
     </orderEntry>
