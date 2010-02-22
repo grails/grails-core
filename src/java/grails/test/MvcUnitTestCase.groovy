@@ -14,19 +14,19 @@
  */
 package grails.test
 
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import grails.util.GrailsNameUtils
+
+import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.springframework.mock.web.MockHttpSession
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import grails.util.GrailsWebUtil
-import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.springframework.web.context.request.RequestContextHolder
-import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
+import org.springframework.mock.web.MockHttpSession
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Common test case support class for controllers, tag libraries, and
@@ -74,23 +74,19 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
         this.testClass = clazz
     }
 
-    protected void setUp() {
-        super.setUp()
-    }
-
     protected void tearDown() {
-        super.tearDown();
+        super.tearDown()
         RequestContextHolder.setRequestAttributes(null)
     }
 
-
     Class getTestClass() {
-        return this.testClass
+        this.testClass
     }
 
     protected void reset() {
         mockRequest.clearAttributes()
         mockRequest.removeAllParameters()
+        mockResponse.reset()
         mockResponse.committed = false
         mockSession.clearAttributes()
         mockSession.setNew(true)
@@ -118,15 +114,11 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
         MockApplicationContext ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
         mockRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
-        
-        webRequest = new GrailsWebRequest(
-                                mockRequest,
-                                mockResponse,
-                                mockRequest.servletContext
-                     )
-       
-        mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
-        RequestContextHolder.setRequestAttributes(webRequest);
+
+        webRequest = new GrailsWebRequest(mockRequest, mockResponse, mockRequest.servletContext)
+
+        mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest)
+        RequestContextHolder.setRequestAttributes(webRequest)
 
         return instance
     }

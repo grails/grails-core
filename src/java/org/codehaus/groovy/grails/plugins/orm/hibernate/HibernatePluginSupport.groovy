@@ -16,77 +16,70 @@
 
 package org.codehaus.groovy.grails.plugins.orm.hibernate
 
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.hibernate.SessionFactory;
-import org.hibernate.proxy.HibernateProxy;
-import org.springframework.context.ApplicationContext;
 import grails.orm.HibernateCriteriaBuilder
+import grails.util.GrailsUtil
+
+import java.util.concurrent.ConcurrentHashMap
+
+import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
+import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.hibernate.Query
+
+import org.hibernate.Criteria
+import org.hibernate.EmptyInterceptor
+import org.hibernate.FlushMode
+import org.hibernate.LockMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
+import org.hibernate.proxy.HibernateProxy
+
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.beans.SimpleTypeConverter
+import org.springframework.beans.TypeMismatchException
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.PropertiesFactoryBean
+import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
+import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
 import org.springframework.orm.hibernate3.*
 import org.springframework.transaction.support.TransactionCallback
-import org.springframework.transaction.support.TransactionTemplate
-import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
-import org.hibernate.LockMode
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
-import org.hibernate.Criteria
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
-import org.hibernate.proxy.HibernateProxy
-import org.hibernate.proxy.LazyInitializer
-import org.apache.commons.beanutils.PropertyUtils
-import org.hibernate.Hibernate
-import org.springframework.validation.Validator
-import org.hibernate.EmptyInterceptor
-import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.springframework.dao.DataAccessException
-import org.hibernate.FlushMode
-import org.codehaus.groovy.grails.orm.hibernate.support.FlushOnRedirectEventListener
-import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
-import org.codehaus.groovy.grails.exceptions.GrailsDomainException
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
-import java.util.concurrent.ConcurrentHashMap
+import org.springframework.transaction.support.TransactionTemplate
+import org.springframework.validation.Validator
 
 /**
- * Used by HibernateGrailsPlugin to implement the core parts of GORM
- * 
+ * Used by HibernateGrailsPlugin to implement the core parts of GORM.
+ *
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Jan 13, 2009
  */
-
-public class HibernatePluginSupport {
+class HibernatePluginSupport {
 
     static final Log LOG = LogFactory.getLog(HibernatePluginSupport)
 
@@ -94,14 +87,14 @@ public class HibernatePluginSupport {
     static hibConfigClass
 
     static doWithSpring = {
-        def factory = new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(), UniqueConstraint.class)
-        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory);
+        def factory = new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(), UniqueConstraint)
+        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory)
 
-        for(GrailsDomainClass dc in application.domainClasses) {
+        for (GrailsDomainClass dc in application.domainClasses) {
             "${dc.fullName}Validator"(HibernateDomainClassValidator) {
                 messageSource = ref("messageSource")
                 domainClass = ref("${dc.fullName}DomainClass")
-                grailsApplication = ref("grailsApplication", true)                
+                grailsApplication = ref("grailsApplication", true)
             }
         }
         def vendorToDialect = new Properties()
@@ -129,10 +122,12 @@ public class HibernatePluginSupport {
                 hibProps."hibernate.format_sql" = "true"
             }
             if (ds && ds.dialect) {
-                if(ds.dialect instanceof Class)
+                if (ds.dialect instanceof Class) {
                     hibProps."hibernate.dialect" = ds.dialect.name
-                else
+                }
+                else {
                     hibProps."hibernate.dialect" = ds.dialect.toString()
+                }
             }
             else {
                 dialectDetector(HibernateDialectDetectorFactoryBean) {
@@ -149,9 +144,9 @@ public class HibernatePluginSupport {
             }
             LOG.info "Set db generation strategy to '${hibProps.'hibernate.hbm2ddl.auto'}'"
 
-            if(hibConfig) {
+            if (hibConfig) {
                 def cacheProvider = hibConfig.cache.provider_class ?: 'net.sf.ehcache.hibernate.EhCacheProvider'
-                if(cacheProvider.contains('OSCacheProvider')) {
+                if (cacheProvider.contains('OSCacheProvider')) {
                     try {
                         def cacheClass = getClass().classLoader.loadClass(cacheProvider)
                     } catch (Throwable t) {
@@ -168,37 +163,37 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 properties = hibProps
             }
             nativeJdbcExtractor(CommonsDbcpNativeJdbcExtractor)
-			lobHandlerDetector(SpringLobHandlerDetectorFactoryBean) {
-				dataSource = dataSource
+            lobHandlerDetector(SpringLobHandlerDetectorFactoryBean) {
+                dataSource = dataSource
                 pooledConnection =  ds && ds.pooled ?: false
                 nativeJdbcExtractor = ref("nativeJdbcExtractor")
-			}
-			eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
+            }
+            eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
             entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
-				List hibConfigLocations = []
+                List hibConfigLocations = []
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
-					hibConfigLocations << "classpath:hibernate.cfg.xml"
+                    hibConfigLocations << "classpath:hibernate.cfg.xml"
                 }
-				def explicitLocations = hibConfig?.config?.location
-				if(explicitLocations) {
-					if(explicitLocations instanceof Collection) {
-						hibConfigLocations.addAll(explicitLocations.collect { it.toString() })
-					}
-					else {
-						hibConfigLocations << hibConfig.config.location.toString()
-					}					 
-				}
-				configLocations = hibConfigLocations
+                def explicitLocations = hibConfig?.config?.location
+                if (explicitLocations) {
+                    if (explicitLocations instanceof Collection) {
+                        hibConfigLocations.addAll(explicitLocations.collect { it.toString() })
+                    }
+                    else {
+                        hibConfigLocations << hibConfig.config.location.toString()
+                    }
+                }
+                configLocations = hibConfigLocations
                 if (hibConfigClass) {
                     configClass = ds.configClass
                 }
                 hibernateProperties = hibernateProperties
                 grailsApplication = ref("grailsApplication", true)
-				lobHandler = lobHandlerDetector
+                lobHandler = lobHandlerDetector
                 entityInterceptor = entityInterceptor
-				eventListeners = ['flush': new PatchedDefaultFlushEventListener(),
+                eventListeners = ['flush': new PatchedDefaultFlushEventListener(),
                                   'pre-load':eventTriggeringInterceptor,
                                   'post-load':eventTriggeringInterceptor,
                                   'save':eventTriggeringInterceptor,
@@ -221,7 +216,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 flushingRedirectEventListener(FlushOnRedirectEventListener, sessionFactory)
                 openSessionInViewInterceptor(GrailsOpenSessionInViewInterceptor) {
 
-                    if(hibConfig.flush.mode instanceof String) {
+                    if (hibConfig.flush.mode instanceof String) {
                         switch(hibConfig.flush.mode) {
                             case "manual":
                                 flushMode = HibernateAccessor.FLUSH_NEVER; break
@@ -238,113 +233,95 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                     }
                     sessionFactory = sessionFactory
                 }
-                if(getSpringConfig().containsBean("controllerHandlerMappings")) {
+                if (getSpringConfig().containsBean("controllerHandlerMappings")) {
                     controllerHandlerMappings.interceptors << openSessionInViewInterceptor
                 }
-                if(getSpringConfig().containsBean("annotationHandlerMapping")) {
-                	if(annotationHandlerMapping.interceptors) {
-                		annotationHandlerMapping.interceptors << openSessionInViewInterceptor
-                	}
-                	else {
-                		annotationHandlerMapping.interceptors = [openSessionInViewInterceptor]
-                	}
-                	
+                if (getSpringConfig().containsBean("annotationHandlerMapping")) {
+                    if (annotationHandlerMapping.interceptors) {
+                        annotationHandlerMapping.interceptors << openSessionInViewInterceptor
+                    }
+                    else {
+                        annotationHandlerMapping.interceptors = [openSessionInViewInterceptor]
+                    }
                 }
             }
-
         }
-
     }
 
     static final doWithDynamicMethods = {ApplicationContext ctx ->
 
-        for(entry in ctx.getBeansOfType(SessionFactory)) {            
+        for (entry in ctx.getBeansOfType(SessionFactory)) {
             SessionFactory sessionFactory = entry.value
             enhanceSessionFactory(sessionFactory, application, ctx)
         }
     }
 
-
-    
-    public static void enhanceProxyClass ( Class proxyClass ) {
-    	def mc = proxyClass.metaClass
-    	if(! mc.pickMethod('grailsEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY) ) {
+    static void enhanceProxyClass (Class proxyClass) {
+        def mc = proxyClass.metaClass
+        if (!mc.pickMethod('grailsEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY)) {
             // hasProperty
             mc.hasProperty = { String name ->
-                if(delegate instanceof HibernateProxy) {
+                if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).hasProperty(name)
                 }
-                else {
-                    throw new MissingPropertyException(name, delegate.class)
-                }                
+                throw new MissingPropertyException(name, delegate.class)
             }
             // respondsTo
             mc.respondsTo = { String name ->
-                if(delegate instanceof HibernateProxy) {
+                if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name)
                 }
-                else {
-                    throw new MissingPropertyException(name, delegate.class)
-                }
+                throw new MissingPropertyException(name, delegate.class)
             }
             mc.respondsTo = { String name, Object[] args ->
-                if(delegate instanceof HibernateProxy) {
+                if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name, args)
+                }
+                throw new MissingPropertyException(name, delegate.class)
+            }
+            // getter
+            mc.propertyMissing = { String name ->
+                if (delegate instanceof HibernateProxy) {
+                    return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
+                }
+                throw new MissingPropertyException(name, delegate.class)
+            }
+
+            // setter
+            mc.propertyMissing = { String name, val ->
+                if (delegate instanceof HibernateProxy) {
+                    GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
                 }
                 else {
                     throw new MissingPropertyException(name, delegate.class)
                 }
             }
-	    	// getter
-    		mc.propertyMissing = { String name ->
-		        if(delegate instanceof HibernateProxy) {
-		            return GrailsHibernateUtil.unwrapProxy(delegate)."$name"
-		        }
-		        else {
-		            throw new MissingPropertyException(name, delegate.class)
-		        }
-		    }
-	
-	        // setter
-	    	mc.propertyMissing = { String name, val ->
-	            if(delegate instanceof HibernateProxy) {
-	                GrailsHibernateUtil.unwrapProxy(delegate)."$name" = val
-	            }
-	            else {
-	                throw new MissingPropertyException(name, delegate.class)
-	            }
-	        }
-	
-	    	mc.methodMissing = { String name, args ->
-	            if(delegate instanceof HibernateProxy) {
-	                def obj = GrailsHibernateUtil.unwrapProxy(delegate)
-	                return obj."$name"(*args)
-	            }
-	            else {
-	                throw new MissingPropertyException(name, delegate.class)
-	            }
-	
-	        }
-	
-	    	mc.grailsEnhanced = { true }
-    	}
 
-    	
+            mc.methodMissing = { String name, args ->
+                if (delegate instanceof HibernateProxy) {
+                    def obj = GrailsHibernateUtil.unwrapProxy(delegate)
+                    return obj."$name"(*args)
+                }
+                throw new MissingPropertyException(name, delegate.class)
+            }
+
+            mc.grailsEnhanced = { true }
+        }
     }
 
-    public static void enhanceProxy ( HibernateProxy proxy ) {
-   	 	MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(proxy.getClass())
-   	 	proxy.metaClass = emc
+    static void enhanceProxy(HibernateProxy proxy) {
+        MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(proxy.getClass())
+        proxy.metaClass = emc
     }
 
     private static DOMAIN_INITIALIZERS = new ConcurrentHashMap()
     static initializeDomain(Class c) {
-        synchronized(c) {            
+        synchronized(c) {
              // enhance domain class only once, initializer is removed after calling
              DOMAIN_INITIALIZERS.remove(c)?.call()
         }
     }
-    
+
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
         // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
         // the overhead of doing so at start-up time
@@ -356,9 +333,8 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(dc.clazz)
         }
         def initializeDomainOnceClosure = {GrailsDomainClass dc ->
-        	initializeDomain(dc.clazz)
+            initializeDomain(dc.clazz)
         }
-        
 
         for (GrailsDomainClass dc in application.domainClasses) {
             //    registerDynamicMethods(dc, application, ctx)
@@ -375,29 +351,27 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             mc.static.findAll = {Object example, Map args -> findAllMethod.invoke(mc.javaClass, "findAll", [example, args] as Object[])}
 
             mc.methodMissing = { String name, args ->
-            	initDomainClassOnce()
+                initDomainClassOnce()
                 mc.invokeMethod(delegate, name, args)
             }
             mc.static.methodMissing = {String name, args ->
-            	initDomainClassOnce()
+                initDomainClassOnce()
                 def result
                 if (delegate instanceof Class) {
-    				result = mc.invokeStaticMethod(delegate, name, args)
-				}
+                    result = mc.invokeStaticMethod(delegate, name, args)
+                }
                 else {
-	            	    result = mc.invokeMethod(delegate, name, args)
-				}
+                    result = mc.invokeMethod(delegate, name, args)
+                }
                 result
             }
             addValidationMethods(dc, application, ctx, sessionFactory)
         }
-
     }
-
 
     static final LAZY_PROPERTY_HANDLER = { String propertyName ->
       def propertyValue = PropertyUtils.getProperty(delegate, propertyName)
-      if(propertyValue instanceof HibernateProxy) {          
+      if (propertyValue instanceof HibernateProxy) {
           return GrailsHibernateUtil.unwrapProxy(propertyValue)
       }
       return propertyValue
@@ -406,18 +380,17 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
     /**
      * This method overrides a getter on a property that is a Hibernate proxy in order to make sure the initialized object is returned hence avoiding Hibernate proxy hell
      */
-    public static void handleLazyProxy ( GrailsDomainClass domainClass, org.codehaus.groovy.grails.commons.GrailsDomainClassProperty property) {
+    static void handleLazyProxy(GrailsDomainClass domainClass, GrailsDomainClassProperty property) {
         String propertyName = property.name
         def getterName = GrailsClassUtils.getGetterName(propertyName)
         def setterName = GrailsClassUtils.getSetterName(propertyName)
         domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.curry(propertyName)
         domainClass.metaClass."${setterName}" = { PropertyUtils.setProperty(delegate, propertyName, it)  }
 
-        for(GrailsDomainClass sub in domainClass.subClasses) {
+        for (GrailsDomainClass sub in domainClass.subClasses) {
             handleLazyProxy(sub, sub.getPropertyByName(property.name))
         }
     }
-
 
     private static registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
         dc.metaClass.methodMissing = { String name, args ->
@@ -442,25 +415,25 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             GrailsUtil.deepSanitize(e)
             throw new GrailsDomainException("Error evaluating named queries block for domain [${dc.fullName}]:  " + e.message, e)
         }
-
     }
+
     private static addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
         def mc = dc.metaClass
         ClassLoader classLoader = application.classLoader
         def sessionFactory = ctx.getBean('sessionFactory')
 
         def dynamicMethods = [new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-        new FindAllByPersistentMethod(application, sessionFactory, classLoader),
-        new FindByPersistentMethod(application, sessionFactory, classLoader),
-        new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-        new CountByPersistentMethod(application, sessionFactory, classLoader),
-        new ListOrderByPersistentMethod(sessionFactory, classLoader)]
+                              new FindAllByPersistentMethod(application, sessionFactory, classLoader),
+                              new FindByPersistentMethod(application, sessionFactory, classLoader),
+                              new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
+                              new CountByPersistentMethod(application, sessionFactory, classLoader),
+                              new ListOrderByPersistentMethod(sessionFactory, classLoader)]
 
         // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
         // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
         mc.static.methodMissing = {String methodName, args ->
-            def result = null            
+            def result = null
             StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
             if (method) {
                 // register the method invocation for next time
@@ -522,25 +495,26 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         }
         metaClass.static.withNewSession = { Closure callable ->
             HibernateTemplate template = new HibernateTemplate(sessionFactory)
-            SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(sessionFactory);
-            Session previousSession = sessionHolder?.getSession()
+            SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
+            Session previousSession = sessionHolder?.session
             try {
-                template.alwaysUseNewSession=true
+                template.alwaysUseNewSession = true
                 template.execute({ Session session ->
                     sessionHolder.addSession(session)
-                    
+
                     callable(session)
                 } as HibernateCallback)
             }
             finally {
-                if(previousSession!=null) sessionHolder.addSession(previousSession)
+                if (previousSession) {
+                    sessionHolder.addSession(previousSession)
+                }
             }
-
         }
         // Initiates a pessimistic lock on the row represented by the object using
         // the dbs "SELECT FOR UPDATE" mechanism
         def template = new HibernateTemplate(sessionFactory)
-        metaClass.lock = {->            
+        metaClass.lock = {->
             template.lock(delegate, LockMode.UPGRADE)
         }
         metaClass.static.lock = { Serializable id ->
@@ -549,7 +523,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
 
             template.get(delegate, id, LockMode.UPGRADE)
         }
-
     }
 
     private static addQueryMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
@@ -611,7 +584,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         metaClass.static.executeUpdate = { String query ->
             executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query] as Object[])
         }
-        metaClass.static.executeUpdate = { String query, Collection args ->           
+        metaClass.static.executeUpdate = { String query, Collection args ->
             executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, args] as Object[])
         }
         metaClass.static.executeUpdate = { String query, Map argMap ->
@@ -622,7 +595,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         metaClass.static.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
         metaClass.static.list = {Map args -> listMethod.invoke(domainClassType, "list", [args] as Object[])}
         metaClass.static.findWhere = {Map query ->
-            if(!query) return null
+            if (!query) return null
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
                 def criteria = session.createCriteria(domainClassType)
@@ -632,12 +605,12 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             } as HibernateCallback)
         }
         metaClass.static.findAllWhere = {Map query ->
-            if(!query) return null
+            if (!query) return null
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
                 def criteria = session.createCriteria(domainClassType)
                 criteria.add(org.hibernate.criterion.Expression.allEq(queryArgs))
-                criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
                 criteria.list()
             } as HibernateCallback)
 
@@ -691,7 +664,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             }
             builder.invokeMethod("doCall", callable)
         }
-
 
         // TODO: deprecated methods planned for removing from further releases
 
@@ -758,7 +730,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             deprecated("executeQuery(String query, Object[] positionalParams)")
             template.bulkUpdate(query, args)
         }
-        //
     }
 
     static Map filterQueryArgumentMap(Map query) {
@@ -781,7 +752,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         def classLoader = application.classLoader
         SessionFactory sessionFactory = ctx.getBean("sessionFactory")
         def template = new HibernateTemplate(sessionFactory)
-
 
         def saveMethod = new SavePersistentMethod(sessionFactory, classLoader, application, dc)
         def metaClass = dc.metaClass
@@ -808,20 +778,19 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         }
 
         metaClass.instanceOf = { Class c ->
-            if(delegate instanceof HibernateProxy) {
+            if (delegate instanceof HibernateProxy) {
                 def instance = GrailsHibernateUtil.unwrapProxy(delegate)
                 return c.isInstance(instance)
             }
             return c.isInstance(delegate)
         }
 
-
         metaClass.delete = {->
             def obj = delegate
             try {
                 template.execute({Session session ->
                     session.delete obj
-                    if(this.shouldFlush()) {
+                    if (this.shouldFlush()) {
                         session.flush()
                     }
                 } as HibernateCallback)
@@ -833,7 +802,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         metaClass.delete = { Map args ->
             def obj = delegate
             template.delete obj
-            if(shouldFlush(args)) {
+            if (shouldFlush(args)) {
                 try {
                     template.flush()
                 }
@@ -851,26 +820,33 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             def identityType = dc.identifier.type
 
             id = convertToType(id, identityType)
-            if(id != null) {
+            if (id != null) {
                 final Object result = template.get(dc.clazz, id)
                 return GrailsHibernateUtil.unwrapIfProxy(result)
             }
         }
 
         metaClass.static.read = {id ->
-
-            if(id != null) {
-                return template.execute({ Session session ->
-                    def o = get(id)
-                    if(o && session.contains(o)) {
-                        session.setReadOnly( o, true )
-                    }
-                    return o
-                } as HibernateCallback)
+            if (id == null) {
+                return null
             }
+
+            template.execute({ Session session ->
+                def o = get(id)
+                if (o && session.contains(o)) {
+                    session.setReadOnly(o, true)
+                }
+                return o
+            } as HibernateCallback)
         }
 
-
+        metaClass.static.load = { id ->
+            id = convertToType(id, dc.identifier.type)
+            if (id != null) {
+                return template.load(dc.clazz, id)
+            }
+        }
+		
         metaClass.static.count = {->
             template.execute({Session session ->
                 def criteria = session.createCriteria(dc.clazz)
@@ -899,15 +875,15 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 
         if (value != null && !targetType.isAssignableFrom(value.class)) {
-            if (value instanceof Number && Long.class.equals(targetType)) {
+            if (value instanceof Number && Long.equals(targetType)) {
                 value = value.toLong()
             }
             else {
                 try {
                     value = typeConverter.convertIfNecessary(value, targetType)
-                } catch (org.springframework.beans.TypeMismatchException e) {
+                } catch (TypeMismatchException e) {
                     // ignore
-                };
+                }
             }
         }
         return value
@@ -916,7 +892,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
     static shouldFlush(Map map = [:]) {
         def shouldFlush
 
-        if(map?.containsKey('flush')) {
+        if (map?.containsKey('flush')) {
             shouldFlush = Boolean.TRUE == map.flush
         } else {
             def config = ConfigurationHolder.flatConfig
@@ -928,12 +904,12 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
     private static checkExternalBeans(GrailsApplication application) {
         ApplicationContext parent = application.parentContext
         try {
-            def resourcesXml = parent?.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+            def resourcesXml = parent?.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML)
             if (resourcesXml && resourcesXml.exists()) {
-                def xmlBeans = new org.springframework.beans.factory.xml.XmlBeanFactory(resourcesXml);
+                def xmlBeans = new XmlBeanFactory(resourcesXml)
                 if (xmlBeans.containsBean("dataSource")) {
                     LOG.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_XML}")
-                    return xmlBeans.getMergedBeanDefinition("dataSource");
+                    return xmlBeans.getMergedBeanDefinition("dataSource")
                 }
             }
         } catch (FileNotFoundException fnfe) {
@@ -949,6 +925,4 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         }
         return null
     }
-
-
 }

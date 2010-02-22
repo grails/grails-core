@@ -1,4 +1,3 @@
-
 /* Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,30 +14,32 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-import org.springframework.context.MessageSourceResolvable;
 import groovy.xml.MarkupBuilder
+
 import java.beans.PropertyEditor
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+
 import org.apache.commons.lang.StringEscapeUtils
+
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+
 import org.springframework.beans.PropertyEditorRegistry
+import org.springframework.context.MessageSourceResolvable
+import org.springframework.context.NoSuchMessageException
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.context.MessageSource
-import org.springframework.context.MessageSourceAware
-import org.springframework.context.NoSuchMessageException;
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
-*  A  tag lib that provides tags to handle validation and errors
-*
-* @author Graeme Rocher
-* @since 17-Jan-2006
-*/
-
+ * Tags to handle validation and errors.
+ *
+ * @author Graeme Rocher
+ * @since 17-Jan-2006
+ */
 class ValidationTagLib {
-	static returnObjectForTags = ['message', 'fieldError', 'formatValue']
+
+    static returnObjectForTags = ['message', 'fieldError', 'formatValue']
 
     /**
      * Renders an error message for the given bean and field
@@ -61,37 +62,37 @@ class ValidationTagLib {
     * Obtains the value of a field either from the original errors
     *
     * eg. <g:fieldValue bean="${book}" field="title" />
-    */ 
+    */
    def fieldValue =  { attrs, body ->
-   		def bean = attrs.bean
-		def field = attrs.field?.toString()
-		if(bean && field) {
-			if(bean.metaClass.hasProperty( bean,'errors')) {
-				Errors errors = bean.errors
+        def bean = attrs.bean
+        def field = attrs.field?.toString()
+        if(bean && field) {
+            if(bean.metaClass.hasProperty( bean,'errors')) {
+                Errors errors = bean.errors
                 def rejectedValue = errors?.getFieldError(field)?.rejectedValue
-				if(rejectedValue == null ) {
+                if(rejectedValue == null ) {
                     rejectedValue = bean
                     field.split("\\.").each{ String fieldPart ->
                         rejectedValue = rejectedValue?."$fieldPart"
                     }
                 }
-				if(rejectedValue != null) {
-					out << formatValue(rejectedValue)
-				}                            
-			}
-			else {     
-				def rejectedValue = bean
+                if(rejectedValue != null) {
+                    out << formatValue(rejectedValue)
+                }
+            }
+            else {
+                def rejectedValue = bean
                 field.split("\\.").each{ String fieldPart ->
                     rejectedValue = rejectedValue?."$fieldPart"
                 }
-				if(rejectedValue != null) {
-					out << formatValue(rejectedValue)
-				}
-			}
-		}
-   }
+                if(rejectedValue != null) {
+                    out << formatValue(rejectedValue)
+                }
+            }
+        }
+    }
 
-	def extractErrors(attrs) {
+    def extractErrors(attrs) {
         def model = attrs['model']
         def checkList = []
         if (attrs?.containsKey('bean')) {
@@ -109,7 +110,7 @@ class ValidationTagLib {
                         checkList << ra
                     else if (mc.hasProperty(ra, 'errors') && ra.errors instanceof Errors && !checkList.contains(ra.errors)) {
                         checkList << ra.errors
-					}
+                    }
                 }
             }
         }
@@ -137,7 +138,7 @@ class ValidationTagLib {
 
         return resultErrorsList
     }
-    
+
     /**
      * Checks if the request has errors either for a field or global errors
      */
@@ -152,9 +153,9 @@ class ValidationTagLib {
      * Loops through each error for either field or global errors
      */
     def eachError = { attrs, body ->
-    	eachErrorInternal(attrs,body,true)
+        eachErrorInternal(attrs,body,true)
     }
-    
+
     def eachErrorInternal(attrs, body, outputResult=false) {
         def errorsList = extractErrors(attrs)
         def var = attrs.var
@@ -172,15 +173,15 @@ class ValidationTagLib {
         }
 
         errorList.each { error ->
-        	def result
+            def result
             if(var) {
-            	result=body([(var):error])
+                result=body([(var):error])
             } else {
-            	result=body(error)
+                result=body(error)
             }
-        	if(outputResult) {
-        		out << result
-        	}
+            if(outputResult) {
+                out << result
+            }
         }
 
         null
@@ -207,7 +208,7 @@ class ValidationTagLib {
         else if(renderAs.equalsIgnoreCase("xml")) {
             def mkp = new MarkupBuilder(out)
             mkp.errors() {
-            	eachErrorInternal(attrs, {
+                eachErrorInternal(attrs, {
                     error(object:it.objectName,
                           field:it.field,
                           message:message(error:it)?.toString(),
@@ -222,48 +223,47 @@ class ValidationTagLib {
      * Resolves a message code for a given error or code from the resource bundle
      */
     def message = { attrs ->
-    	messageImpl(attrs)
+        messageImpl(attrs)
     }
-
 
     def messageImpl(attrs) {
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
-          def locale = attrs.locale ?: RCU.getLocale(request)
+        def locale = attrs.locale ?: RCU.getLocale(request)
 
-          def text
-          def error = attrs['error'] ?: attrs['message']
-          if(error) {
-                try {
-                	text = messageSource.getMessage( error , locale )
-                } catch (NoSuchMessageException e) {
-                	if(error instanceof MessageSourceResolvable) {
-                		text = error?.code
-                	} else {
-                		text = error?.toString()
-                	}
+        def text
+        def error = attrs['error'] ?: attrs['message']
+        if(error) {
+            try {
+                text = messageSource.getMessage( error , locale )
+            } catch (NoSuchMessageException e) {
+                if(error instanceof MessageSourceResolvable) {
+                    text = error?.code
+                } else {
+                    text = error?.toString()
                 }
-          } else if(attrs['code']) {
-                def code = attrs['code']
-                def args = attrs['args']
-                def defaultMessage = ( attrs['default'] != null ? attrs['default'] : code )
+            }
+        } else if(attrs['code']) {
+            def code = attrs['code']
+            def args = attrs['args']
+            def defaultMessage = ( attrs['default'] != null ? attrs['default'] : code )
 
-                def message = messageSource.getMessage( code,
-                                                        args == null ? null : args.toArray(),
-                                                        defaultMessage,
-                                                        locale )
-                if(message != null) {
-                    text = message
-                }
-                else {
-                    text = defaultMessage
-                }
-          }
-          if (text) {
-                return (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
-          }
-          return ''
+            def message = messageSource.getMessage( code,
+                                                    args == null ? null : args.toArray(),
+                                                    defaultMessage,
+                                                    locale )
+            if(message != null) {
+                text = message
+            }
+            else {
+                text = defaultMessage
+            }
+        }
+        if (text) {
+            return (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
+        }
+        return ''
     }
-    
+
     // Maps out how Grails contraints map to Apache commons validators
     static CONSTRAINT_TYPE_MAP = [ email : 'email',
                                              creditCard : 'creditCard',
@@ -358,11 +358,10 @@ class ValidationTagLib {
             }
         }
         out << 'function validateForm(form) {\n'
-         fieldValidations.each { k,v ->
-             
-               def validateType = k.substring(0,1).toUpperCase() + k.substring(1)
-               out << "if(!validate${validateType}(form)) return false;\n"
-         }
+        fieldValidations.each { k,v ->
+           def validateType = k.substring(0,1).toUpperCase() + k.substring(1)
+           out << "if(!validate${validateType}(form)) return false;\n"
+        }
         out << 'return true;\n';
         out << '}\n'
       //  out << "document.forms['${attrs['form']}'].onsubmit = function(e) {return validateForm(this)}\n"
@@ -373,29 +372,27 @@ class ValidationTagLib {
      * Formats a given value for output to an HTML page by converting
      * it to a string and encoding it. If the value is a number, it is
      * formatted according to the current user's locale during the
-     * conversion to a string. 
+     * conversion to a string.
      */
     def formatValue(value) {
         PropertyEditorRegistry registry = RequestContextHolder.currentRequestAttributes().getPropertyEditorRegistry()
         PropertyEditor editor = registry.getCustomEditor(value.getClass())
-        if(editor!=null) {
+        if (editor != null) {
             editor.setValue(value)
-            return HTMLCodec.shouldEncode() ? editor.asText?.encodeAsHTML() : editor.asText
+            return HTMLCodec.shouldEncode() && !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText
         }
-        else {
 
-            if (value instanceof Number) {
-                def pattern = "0"
-                if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
-                    pattern = "0.00#####"
-                }
-                def locale = RCU.getLocale(request)
-                def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
-                def decimalFormat = new java.text.DecimalFormat(pattern, dcfs)
-                value = decimalFormat.format(value)
+        if (value instanceof Number) {
+            def pattern = "0"
+            if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
+                pattern = "0.00#####"
             }
-
-            return HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
+            def locale = RCU.getLocale(request)
+            def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
+            def decimalFormat = new DecimalFormat(pattern, dcfs)
+            value = decimalFormat.format(value)
         }
+
+        return HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
     }
 }

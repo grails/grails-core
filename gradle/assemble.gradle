@@ -90,6 +90,7 @@ task libs {
 }
 
 distJars.allObjects {jar ->
+    jar.baseName = "grails"
     jar.destinationDir = libs.destinationDir as File
 }
 

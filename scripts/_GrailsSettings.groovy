@@ -1,21 +1,20 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import grails.util.BuildScope
-import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
@@ -66,7 +65,6 @@ getPropertyValue = { String propName, defaultValue ->
     // default.
     return value != null ? value : defaultValue
 }
-
 
 // Set up various build settings. System properties take precedence
 // over those defined in BuildSettings, which in turn take precedence
@@ -122,7 +120,6 @@ if(grailsAppName.indexOf('/') >-1) {
 else {
     appClassName = GrailsNameUtils.getClassNameRepresentation(grailsAppName)
 }
-
 
 // Other useful properties.
 args = System.getProperty("grails.cli.args")
@@ -195,24 +192,25 @@ grailsResource = {String path ->
     if (grailsSettings.grailsHome) {
         return new FileSystemResource("${grailsSettings.grailsHome}/$path")
     }
-    else {
-        return new ClassPathResource(path)
-    }
+    return new ClassPathResource(path)
 }
 
 // Closure that copies a Spring resource to the file system.
-copyGrailsResource = { String targetFile, Resource resource ->
-    FileCopyUtils.copy(resource.inputStream, new FileOutputStream(targetFile))
+copyGrailsResource = { targetFile, Resource resource, boolean overwrite = true ->
+    def file = new File(targetFile.toString())
+    if (overwrite || !file.exists()) {
+        FileCopyUtils.copy(resource.inputStream, new FileOutputStream(file))
+    }
 }
 
 // Copies a set of resources to a given directory. The set is specified
 // by an Ant-style path-matching pattern.
-copyGrailsResources = { String destDir, String pattern ->
-    new File(destDir).mkdirs()
+copyGrailsResources = { destDir, pattern, boolean overwrite = true ->
+    new File(destDir.toString()).mkdirs()
     Resource[] resources = resolveResources("classpath:${pattern}")
     resources.each { Resource res ->
         if (res.readable) {
-            copyGrailsResource("${destDir}/${res.filename}", res)
+            copyGrailsResource("${destDir}/${res.filename}", res, overwrite)
         }
     }
 }
@@ -236,14 +234,11 @@ grailsUnpack = {Map args ->
                 exclude(name: "META-INF/**")
             }
         }
-
-
     }
     finally {
         // Don't need the JAR file any more, so remove it.
-        ant.delete(file: "${dir}/${src}", failonerror:false)        
+        ant.delete(file: "${dir}/${src}", failonerror:false)
     }
-
 }
 
 /**
@@ -296,9 +291,8 @@ exit = {
     // Prevent system.exit during unit/integration testing
     if (System.getProperty("grails.cli.testing") || System.getProperty("grails.disable.exit")) {
         throw new ScriptExitException(it)
-    } else {
-        System.exit(it)
     }
+    System.exit(it)
 }
 
 /**
@@ -312,9 +306,9 @@ confirmInput = {String message, code="confirm.message" ->
         println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }
-    ant.input(message: message, addproperty: code, validargs: "y,n")
+    ant.input(message: message, addproperty: code, validargs: "y,Y,n,N")
     def result = ant.antProject.properties[code]
-    (result == 'y')
+    'y'.equalsIgnoreCase(result)
 }
 
 // Note: the following only work if you also include _GrailsEvents.
