@@ -29,6 +29,23 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testPluginResolve() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            repositories {
+                grailsCentral()
+            }
+            plugins {
+                runtime "org.grails.plugins:feeds:1.5"
+            }
+        }
+
+        def report = manager.resolvePluginDependencies()
+
+    }
+
     void testDeclarePluginDependencies() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

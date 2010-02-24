@@ -44,7 +44,6 @@ import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.util.url.CredentialsStore
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor
-import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 import grails.util.Metadata
 
@@ -376,15 +375,20 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
     /**
-    * Obtains a list of dependency descriptors defined in the project
+    * Obtains a set of dependency descriptors defined in the project
      */
     Set<DependencyDescriptor> getDependencyDescriptors() { dependencyDescriptors }
 
     /**
-    * Obtains a list of plugin dependency descriptors defined in the project
+    * Obtains a set of plugin dependency descriptors defined in the project
      */
     Set<DependencyDescriptor> getPluginDependencyDescriptors() { pluginDependencyDescriptors }
 
+    /**
+     * Obtains a set of plugins this application is dependent onb
+     * @return A set of plugins names
+     */
+    Set<String> getPluginDependencyNames() { pluginDependencyNames }
 
     /**
      * Adds a dependency to the project
@@ -539,10 +543,10 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     /**
      * Performs a resolve of declared plugin dependencies (zip files containing plugin distributions)
      */
-    public ResolveReport resolvePluginDependencies(String conf) {
+    public ResolveReport resolvePluginDependencies(String conf = '') {
         resolveErrors = false
         if(usedConfigurations.contains(conf) || conf == '') {
-            def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
+            def options = new ResolveOptions(checkIfChanged:true, outputReport:true, validate:false)
             if(conf)
                 options.confs = [conf] as String[]
 
@@ -636,6 +640,24 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                     }
                 }
             }
+
+            def installedPlugins = metadata?.getInstalledPlugins()
+            if(installedPlugins) {
+                for(entry in installedPlugins) {
+                    if(!pluginDependencyNames.contains(entry.key)) {
+                        def name = entry.key
+                        def scope = "runtime"
+                        def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, entry.value)
+                        def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, false, scope)
+                        def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
+                        dd.addDependencyArtifact(scope, artifact)
+
+                        configureDependencyDescriptor(dd, scope, null, true)
+                        pluginDependencyDescriptors << dd
+                    }
+                }
+            }
+            
 
         }
     }
@@ -770,18 +792,6 @@ class IvyDomainSpecificLanguageEvaluator {
          try {
              pluginMode = true
              callable.call()
-
-             def installedPlugins = metadata?.getInstalledPlugins()
-             if(installedPlugins) {
-                 for(entry in installedPlugins) {
-                     if(!pluginDependencyNames.contains(entry.key)) {
-                         def mrid = ModuleRevisionId.newInstance("org.grails.plugins", entry.key, entry.value)
-                         def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, false, "runtime")
-                         pluginDependencyDescriptors << dd
-                     }
-                 }
-             }
-
          }
          finally {
              pluginMode = false
@@ -878,8 +888,14 @@ class IvyDomainSpecificLanguageEvaluator {
             def grailsHome = buildSettings?.grailsHome?.absolutePath ?: System.getenv("GRAILS_HOME")
             if(grailsHome) {
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
-                flatDir(name:"grailsHome", dirs:"${grailsHome}/plugins")
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
+                def pluginResolver = new FileSystemResolver(name:"grailsHome")
+                pluginResolver.addArtifactPattern("${grailsHome}/plugins/grails-[artifact]-[revision].[ext]")
+                pluginResolver.settings = ivySettings
+                pluginResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
+                pluginResolver.changingPattern = ".*SNAPSHOT"
+                pluginResolver.setCheckmodified(true)
+                chainResolver.add pluginResolver
             }
         }
     }
@@ -945,8 +961,8 @@ class IvyDomainSpecificLanguageEvaluator {
     void grailsRepo(String url, String name=null) {
         if(isResolverNotAlreadyDefined(name ?: url)) {            
             repositoryData << ['type':'grailsRepo', url:url]
-            def urlResolver = new org.apache.ivy.plugins.resolver.URLResolver(name: name ?: url )
-            urlResolver.addArtifactPattern("${url}/grails-[artifact]/tags/LATEST_RELEASE/grails-[artifact]-[revision].[ext]")
+            def urlResolver = new GrailsRepoResolver(name ?: url, new URL(url) )
+            urlResolver.addArtifactPattern("${url}/grails-[artifact]/tags/RELEASE_*/grails-[artifact]-[revision].[ext]")
             urlResolver.settings = ivySettings
             urlResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
             urlResolver.changingPattern = ".*SNAPSHOT"
@@ -959,6 +975,7 @@ class IvyDomainSpecificLanguageEvaluator {
     void grailsCentral() {
         if(isResolverNotAlreadyDefined('grailsCentral')) {
             grailsRepo("http://svn.codehaus.org/grails-plugins", "grailsCentral")
+            grailsRepo("http://svn.codehaus.org/grails/trunk/grails-plugins", "grailsCore")
         }
     }
 
@@ -1034,11 +1051,11 @@ class IvyDomainSpecificLanguageEvaluator {
                         def name = m[0][2]
                         if(!isExcluded(name)) {
                             def group = m[0][1]
-                            if(!group && pluginMode) group = 'org.grails.plugins'
-
-                            def mrid = ModuleRevisionId.newInstance(group, name, m[0][3])
-
-
+                            def version = m[0][3]
+                            if(pluginMode) {
+                                group = group ?: 'org.grails.plugins'
+                            }
+                            def mrid = ModuleRevisionId.newInstance(group, name, version)
 
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
 
