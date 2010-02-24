@@ -206,8 +206,8 @@ public class Metadata extends Properties {
         for (Map.Entry<Object, Object> entry : entrySet()) {
             String key = entry.getKey().toString();
             Object val = entry.getValue();
-            if(key.startsWith("plugin.") && val != null) {
-                newMap.put(key.substring(7), val.toString());
+            if(key.startsWith("plugins.") && val != null) {
+                newMap.put(key.substring(8), val.toString());
             }
         }
         return newMap;
