@@ -619,7 +619,9 @@
         <root url="jar://$PROJECT_DIR$/lib/ivy-2.1.0.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../../apache/ivy-2.1.0/src/java" />
+      </SOURCES>
     </library>
     <library name="JUnit">
       <CLASSES>
