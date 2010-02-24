@@ -814,6 +814,15 @@ cacheLocalPlugin = { pluginFile ->
     return fullPluginName
 }
 
+cacheRemotePlugin = { url, cachePath ->
+    def s = url.toString()
+    def filename = s[s.lastIndexOf("/")..-1]
+    def local = "${cachePath}/$filename"
+    ant.get(src: url, dest: local, verbose:"on",usetimestamp:true)
+    readMetadataFromZip(local, local)
+    return fullPluginName
+}
+
 File findZip(String name, String dir) {
     new File(dir).listFiles().find {it.name.startsWith(name)}
 }
