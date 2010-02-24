@@ -229,6 +229,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             repositories {
                 grailsPlugins()
                 grailsHome()
+                grailsCentral()
                 // uncomment the below to enable remote dependency resolution
                 // from public Maven repositories
                 //mavenCentral()
