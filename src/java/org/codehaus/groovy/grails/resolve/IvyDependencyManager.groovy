@@ -935,6 +935,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
     void resolver(org.apache.ivy.plugins.resolver.DependencyResolver resolver) {
         if(resolver) {
+            resolver.setSettings(ivySettings)
             chainResolver.add resolver
         }        
     }
