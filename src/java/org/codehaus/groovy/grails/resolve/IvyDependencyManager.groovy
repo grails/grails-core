@@ -889,7 +889,8 @@ class IvyDomainSpecificLanguageEvaluator {
             if(grailsHome) {
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
-                chainResolver.add(createLocalPluginResolver("grailsHome",grailsHome))
+                if(grailsHome!='.')
+                    chainResolver.add(createLocalPluginResolver("grailsHome",grailsHome))
             }
             if(buildSettings?.grailsWorkDir) {
                 chainResolver.add(createLocalPluginResolver("grailsCache",buildSettings?.grailsWorkDir?.absolutePath))
