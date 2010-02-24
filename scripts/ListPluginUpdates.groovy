@@ -63,7 +63,7 @@ target('default': "Checks installed plugin versions against latest releases on r
     if (installedPluginVersions) {
         installedPluginVersions.each {name, version ->
             def availableVersion = availablePluginVersions."$name"
-            if (availableVersion != version) {
+            if (availableVersion != version && availableVersion != null) {
                 if (!headerDisplayed) {
                     println """
 Plugins with available updates are listed below:

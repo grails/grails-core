@@ -392,6 +392,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Grails.iml" filepath="$PROJECT_DIR$/Grails.iml" />
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" filepath="$PROJECT_DIR$/../grails-maven-plugin/grails-maven-plugin.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
@@ -410,6 +411,20 @@
         <entry key="$PROJECT_DIR$">
           <value>
             <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://svn.codehaus.org/grails/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://svn.codehaus.org/grails/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://svn.codehaus.org/grails/branches" />
@@ -493,8 +508,8 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../hibernate-distribution-3.3.1.GA/project/core/src/main/java" />
-        <root url="file://$PROJECT_DIR$/../../../../hibernate-annotations-3.4.0.GA/src" />
+        <root url="file:///hibernate-distribution-3.3.1.GA/project/core/src/main/java" />
+        <root url="file:///hibernate-annotations-3.4.0.GA/src" />
       </SOURCES>
     </library>
     <library name="Spring">
@@ -523,26 +538,26 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.expression-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.asm-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument.tomcat-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.test-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jdbc-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.oxm-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context.support-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.portlet-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.beans-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.transaction-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.orm-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.core-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aop-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aspects-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jms-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.servlet-sources-3.0.0.RELEASE.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../../../springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.struts-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.expression-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.asm-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument.tomcat-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.test-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jdbc-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.oxm-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context.support-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.portlet-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.beans-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.transaction-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.orm-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.core-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aop-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aspects-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jms-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.servlet-sources-3.0.0.RELEASE.jar!/" />
+        <root url="jar:///springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.struts-sources-3.0.0.RELEASE.jar!/" />
       </SOURCES>
     </library>
     <library name="javax.servlet">
@@ -561,12 +576,12 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../../../groovy-dev/releases/groovy-1.6.4/src/main" />
+        <root url="file:///groovy-dev/releases/groovy-1.6.4/src/main" />
       </SOURCES>
     </library>
     <library name="GParallelizer">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/GParallelizer-0.8.3.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/gpars-0.9.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -604,7 +619,9 @@
         <root url="jar://$PROJECT_DIR$/lib/ivy-2.1.0.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../../apache/ivy-2.1.0/src/java" />
+      </SOURCES>
     </library>
     <library name="JUnit">
       <CLASSES>

@@ -31,11 +31,11 @@ includeTargets << grailsScript("_PluginDependencies")
 
 ERROR_MESSAGE = """
 You need to specify either the direct URL of the plugin or the name and version
-of a distributed Grails plugin found at ${pluginSVN}
+of a distributed Grails plugin found at http://plugins.grails.org
 For example:
 'grails install-plugin acegi 0.1'
 or
-'grails install-plugin ${pluginBinaryDistURL}/grails-acegi-0.1.zip"""
+'grails install-plugin http://plugins.grails.org/grails-acegi/trunk/grails-acegi-0.1.zip"""
 
 globalInstall = false
 
@@ -178,7 +178,7 @@ Plug-ins you currently have installed are listed below:
 
 private printRemotePluginList(name) {
   println """
-Plug-ins available in the $name repository are listed below:
+Plugins available in the $name repository are listed below:
 -------------------------------------------------------------
 """
   def plugins = []
@@ -219,7 +219,7 @@ Plug-ins available in the $name repository are listed below:
 }
 
 formatPluginForPrint = { pluginName, pluginVersion, pluginTitle ->
-    "${pluginName.padRight(20, " ")}${pluginVersion.padRight(16, " ")} --  ${pluginTitle}"
+    "${pluginName.toString().padRight(20, " ")}${pluginVersion.toString().padRight(16, " ")} --  ${pluginTitle}"
 }
 
 
@@ -233,103 +233,50 @@ Information about Grails plugin
 
 def displayPluginInfo = { pluginName, version ->
 
-    use(DOMCategory) {
-        def plugin = findPlugin(pluginName)
-        if( plugin == null ) {
-            event("StatusError", ["Plugin with name '${pluginName}' was not found in the configured repositories"])
-            System.exit(1)
-        } else {
-            def line = "Name: ${pluginName}"
-            def releaseVersion = null
-            if( !version ) {
-                releaseVersion = plugin.'@latest-release'
-                def naturalVersion = releaseVersion
-                if( ! releaseVersion ) {
-                    plugin.'release'.each {
-                        if( !releaseVersion || (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > releaseVersion )) releaseVersion = "${it.'@version'}"
-                    }
-                    if( releaseVersion ) naturalVersion = "${releaseVersion} (?)"
-                    else naturalVersion = '<no info available>'
-                }
-                line += "\t| Latest release: ${naturalVersion}"
+    File pluginZip = resolvePluginZip(pluginName, version)
+    readMetadataFromZip pluginZip.absolutePath
+
+    def plugin = pluginXml
+    if( plugin == null ) {
+        event("StatusError", ["Plugin with name '${pluginName}' was not found in the configured repositories"])
+        exit 1
+    } else {
+        def line = "Name: ${pluginName}"
+        line += "\t| Latest release: ${plugin.@version}"
+        println line
+        println '--------------------------------------------------------------------------'
+        def release = pluginXml
+        if( release ) {
+            if( release.'title'.text() ) {
+                println "${release.'title'.text()}"
             } else {
-                releaseVersion = version
-                line += "\t| Release: ${releaseVersion}"
+                println "No info about this plugin available"
             }
-            println line
             println '--------------------------------------------------------------------------'
-            if( releaseVersion ) {
-                def release = plugin.'release'.find{ rel -> rel.'@version' == releaseVersion }
-                if( release ) {
-                    if( release.'title'.text() ) {
-                        println "${release.'title'.text()}"
-                    } else {
-                        println "No info about this plugin available"
-                    }
-                    println '--------------------------------------------------------------------------'
-                    if( release.'author'.text() ) {
-                        println "Author: ${release.'author'.text()}"
-                        println '--------------------------------------------------------------------------'
-                    }
-                    if( release.'authorEmail'.text() ) {
-                        println "Author's e-mail: ${release.'authorEmail'.text()}"
-                        println '--------------------------------------------------------------------------'
-                    }
-                    if( release.'documentation'.text() ) {
-                        println "Find more info here: ${release.'documentation'.text()}"
-                        println '--------------------------------------------------------------------------'
-                    }
-                    if( release.'description'.text() ) {
-                        println "${release.'description'.text()}"
-                        println '--------------------------------------------------------------------------'
-                    }
-                } else {
-                    println "<release ${releaseVersion} not found for this plugin>"
-                    println '--------------------------------------------------------------------------'
-                }
-           }
-
-            def releases = ""
-            plugin.'release'.findAll{ it.'@type' == 'svn'}.each {
-                releases += " ${it.'@version'}"
+            if( release.'author'.text() ) {
+                println "Author: ${release.'author'.text()}"
+                println '--------------------------------------------------------------------------'
             }
-            def zipReleases = ""
-            plugin.'release'.findAll{ it.'@type' == 'zip'}.each {
-                zipReleases += " ${it.'@version'}"
+            if( release.'authorEmail'.text() ) {
+                println "Author's e-mail: ${release.'authorEmail'.text()}"
+                println '--------------------------------------------------------------------------'
             }
-            if( releases ) {
-                println "Available full releases: ${releases}"
-            } else {
-                println "Available full releases: <no full releases available for this plugin now>"
+            if( release.'documentation'.text() ) {
+                println "Find more info here: ${release.'documentation'.text()}"
+                println '--------------------------------------------------------------------------'
             }
-            if( zipReleases ) {
-                println "Available zip releases:  ${zipReleases}"
+            if( release.'description'.text() ) {
+                println "${release.'description'.text()}"
+                println '--------------------------------------------------------------------------'
             }
+        } else {
+            println "<release ${releaseVersion} not found for this plugin>"
+            println '--------------------------------------------------------------------------'
         }
     }
 }
 
 
-
-def displayFullPluginInfo = { pluginName ->
-    use(DOMCategory) {
-        pluginsList.'plugin'.each { plugin ->
-            def pluginLine = plugin.'@name'
-            def version = "unknown"
-            def title = "No description available"
-            if( plugin.'@latest-release' ) {
-                version = plugin.'@latest-release'
-                def release = plugin.'release'.find{ rel -> rel.'@version' == plugin.'@latest-release' }
-                if( release?.'title' ) {
-                    title = release?.'title'.text()
-                }
-            }
-            pluginLine += "${spacesFormatter[pluginLine.length()..-1]}<${version}>"
-            pluginLine += "\t--\t${title}"
-            plugins << pluginLine
-        }
-    }
-}
 
 def displayFooter = {
     println '''
@@ -349,10 +296,10 @@ target(pluginInfo:"Implementation target") {
     depends(parseArguments)
 
     if( argsMap.params ) {
-        depends(updatePluginsList)
         displayHeader()
         def pluginName = argsMap.params[0]
         def version = argsMap.params.size() > 1 ? argsMap.params[1] : null
+
         displayPluginInfo( pluginName, version )
         displayFooter()
     } else {
