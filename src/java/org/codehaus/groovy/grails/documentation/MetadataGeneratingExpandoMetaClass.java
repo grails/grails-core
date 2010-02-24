@@ -38,21 +38,27 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
 
 
     public void addMetaBeanProperty(MetaBeanProperty mp) {
+
         super.addMetaBeanProperty(mp);
 
-        DocumentationContext context = DocumentationContext.getInstance();
+        if(!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
 
-        if(context!=null&&context.isActive() && getExpandoProperties().contains(mp)) {
-            context.documentProperty(context.getArtefactType(),getJavaClass(), mp.getName());
+            DocumentationContext context = DocumentationContext.getInstance();
+
+            if(context!=null&&context.isActive() && getExpandoProperties().contains(mp)) {
+                context.documentProperty(context.getArtefactType(),getJavaClass(), mp.getName());
+            }
         }
 
     }
 
     protected void registerStaticMethod(String name, Closure callable) {
         super.registerStaticMethod(name, callable);
-        DocumentationContext context = DocumentationContext.getInstance();
-        if(context!=null&&context.isActive() && isInitialized()) {
-               context.documentStaticMethod(context.getArtefactType(),getJavaClass(), name, callable.getParameterTypes());
+        if(!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
+            DocumentationContext context = DocumentationContext.getInstance();
+            if(context!=null&&context.isActive() && isInitialized()) {
+                context.documentStaticMethod(context.getArtefactType(),getJavaClass(), name, callable.getParameterTypes());
+            }
         }
 
     }
@@ -61,13 +67,15 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
 
     public void registerInstanceMethod(MetaMethod method) {
         super.registerInstanceMethod(method);
-        DocumentationContext context = DocumentationContext.getInstance();
-        if(context!=null&&context.isActive() && isInitialized()) {
-            if(method.isStatic()) {
-               context.documentStaticMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
-            }
-            else {
-               context.documentMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
+        if(!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
+            DocumentationContext context = DocumentationContext.getInstance();
+            if(context!=null&&context.isActive() && isInitialized()) {
+                if(method.isStatic()) {
+                    context.documentStaticMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
+                }
+                else {
+                    context.documentMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
+                }
             }
         }
 

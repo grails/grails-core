@@ -31,20 +31,24 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
 	 * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
 	 */
 	protected MetaClass createNormalMetaClass(Class theClass, MetaClassRegistry registry) {
-		if(theClass != MetadataGeneratingExpandoMetaClass.class
-           && theClass != ExpandoMetaClass.class
-           && theClass != DocumentationContext.class
-           && theClass != DocumentedMethod.class
-           && theClass != DocumentedProperty.class
-           && theClass != DocumentedElement.class
-           && theClass != DocumentationContextThreadLocal.class
-           && !Closure.class.isAssignableFrom(theClass)) {
+		if(isExcludedClass(theClass)) {
 			return new MetadataGeneratingExpandoMetaClass(theClass);
 		}
 		else {
 			return super.createNormalMetaClass(theClass, registry);
 		}
 	}
+
+    public static boolean isExcludedClass(Class theClass) {
+        return theClass != MetadataGeneratingExpandoMetaClass.class
+                && theClass != ExpandoMetaClass.class
+                && theClass != DocumentationContext.class
+                && theClass != DocumentedMethod.class
+                && theClass != DocumentedProperty.class
+                && theClass != DocumentedElement.class
+                && theClass != DocumentationContextThreadLocal.class
+                && !Closure.class.isAssignableFrom(theClass);
+    }
 
     /**
      * Registers a modified ExpandoMetaClass with the creation handle
