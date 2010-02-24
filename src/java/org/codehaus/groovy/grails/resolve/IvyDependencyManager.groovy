@@ -30,9 +30,7 @@ import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-import org.codehaus.groovy.grails.resolve.DependencyDefinitionParser
-import org.codehaus.groovy.grails.resolve.DependencyResolver
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import grails.util.GrailsNameUtils
@@ -46,6 +44,7 @@ import org.apache.ivy.util.url.CredentialsStore
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 import grails.util.Metadata
+import org.apache.ivy.plugins.latest.LatestTimeStrategy
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -889,15 +888,22 @@ class IvyDomainSpecificLanguageEvaluator {
             if(grailsHome) {
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
-                def pluginResolver = new FileSystemResolver(name:"grailsHome")
-                pluginResolver.addArtifactPattern("${grailsHome}/plugins/grails-[artifact]-[revision].[ext]")
-                pluginResolver.settings = ivySettings
-                pluginResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
-                pluginResolver.changingPattern = ".*SNAPSHOT"
-                pluginResolver.setCheckmodified(true)
-                chainResolver.add pluginResolver
+                chainResolver.add(createLocalPluginResolver("grailsHome",grailsHome))
+            }
+            if(buildSettings?.grailsWorkDir) {
+                chainResolver.add(createLocalPluginResolver("grailsCache",buildSettings?.grailsWorkDir?.absolutePath))
             }
         }
+    }
+
+    FileSystemResolver createLocalPluginResolver(String name, String location) {
+        def pluginResolver = new FileSystemResolver(name: name)
+        pluginResolver.addArtifactPattern("${location}/plugins/grails-[artifact]-[revision].[ext]")
+        pluginResolver.settings = ivySettings
+        pluginResolver.latestStrategy = new LatestTimeStrategy()
+        pluginResolver.changingPattern = ".*SNAPSHOT"
+        pluginResolver.setCheckmodified(true)
+        return pluginResolver
     }
 
     private boolean isResolverNotAlreadyDefined(String name) {
