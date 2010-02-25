@@ -22,7 +22,7 @@ public class EnvironmentTests extends GroovyTestCase{
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
 
 
-        assert "prod" == Environment.executeForCurrentEnvironment {
+        assertEquals "prod", Environment.executeForCurrentEnvironment {
             environments {
                 production {
                     "prod"
@@ -30,11 +30,14 @@ public class EnvironmentTests extends GroovyTestCase{
                 development {
                     "dev"
                 }
+                soe {
+                    "some other environment"
+                }
             }
-        } : "should have returned prod"
+        }
 
 
-        assert "dev" == Environment.executeForEnvironment(Environment.DEVELOPMENT) {
+        assertEquals "dev", Environment.executeForEnvironment(Environment.DEVELOPMENT) {
             environments {
                 production {
                     "prod"
@@ -42,14 +45,17 @@ public class EnvironmentTests extends GroovyTestCase{
                 development {
                     "dev"
                 }
+                soe {
+                    "some other environment"
+                }
             }
-        } : "should have returned dev"
+        }
 
         System.setProperty("grails.env", "dev")
 
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
 
-        assert "dev" == Environment.executeForCurrentEnvironment {
+        assertEquals "dev", Environment.executeForCurrentEnvironment {
             environments {
                 production {
                     "prod"
@@ -57,11 +63,29 @@ public class EnvironmentTests extends GroovyTestCase{
                 development {
                     "dev"
                 }
+                soe {
+                    "some other environment"
+                }
             }
-        } : "should have returned dev"
+        }
 
+        System.setProperty("grails.env", "soe")
 
+        assertEquals Environment.CUSTOM, Environment.getCurrent()
 
+        assertEquals "some other environment", Environment.executeForCurrentEnvironment {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+                soe {
+                    "some other environment"
+                }
+            }
+        }
     }
 
     void testGetEnvironmentSpecificBlock() {
@@ -76,6 +100,9 @@ public class EnvironmentTests extends GroovyTestCase{
                 }
                 development {
                     "dev"
+                }
+                soe {
+                    "some other environment"
                 }
             }
         }
@@ -95,10 +122,35 @@ public class EnvironmentTests extends GroovyTestCase{
                 development {
                     "dev"
                 }
+                soe {
+                    "some other environment"
+                }
             }
         }
 
         assertEquals "dev", callable.call()
+
+
+
+        System.setProperty("grails.env", "soe")
+
+        assertEquals Environment.CUSTOM, Environment.getCurrent()
+
+        callable = Environment.getEnvironmentSpecificBlock {
+            environments {
+                production {
+                    "prod"
+                }
+                development {
+                    "dev"
+                }
+                soe {
+                    "some other environment"
+                }
+            }
+        }
+
+        assertEquals "some other environment", callable.call()
     }
 
 
@@ -111,6 +163,10 @@ public class EnvironmentTests extends GroovyTestCase{
         System.setProperty("grails.env", "dev")
 
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
+
+        System.setProperty("grails.env", "soe")
+
+        assertEquals Environment.CUSTOM, Environment.getCurrent()
         
     }
 
