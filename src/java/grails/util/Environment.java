@@ -18,6 +18,7 @@ package grails.util;
 
 
 import groovy.lang.Closure;
+import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 
 import java.util.HashMap;
@@ -235,7 +236,7 @@ public enum Environment {
         return evaluator;
     }
 
-    private static class EnvironmentBlockEvaluator {
+    private static class EnvironmentBlockEvaluator extends GroovyObjectSupport {
         private Environment current;
         private Closure callable;
 
@@ -277,15 +278,16 @@ public enum Environment {
             }
         }
 
-        Object methodMissing(String name, Object[] args) {
-            if(args != null && args.length > 0 && (args[0] instanceof Closure)) {
+        Object methodMissing(String name, Object args) {
+        	Object[] argsArray = (Object[])args;
+            if(args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
                 if(current == Environment.CUSTOM && current.getName().equals(name)) {
-                    this.callable = (Closure) args[0];
+                    this.callable = (Closure) argsArray[0];
                 }
                 return null;
             }
             else {
-                throw new MissingMethodException(name, Environment.class, args);
+                throw new MissingMethodException(name, Environment.class, argsArray);
             }
 
         }
