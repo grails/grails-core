@@ -26,6 +26,7 @@ import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
 import org.codehaus.gant.GantBinding;
+import org.codehaus.gant.GantState;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
@@ -479,6 +480,7 @@ public class GrailsScriptRunner {
                     gant.setUseCache(true);
                     gant.setCacheDirectory(scriptCacheDir);
                     gant.loadScript(scriptFile);
+                    gant.setVerbosity(GantState.WARNINGS_AND_ERRORS);
 
                     // Invoke the default target.
                     return gant.processTargets().intValue();
@@ -511,6 +513,7 @@ public class GrailsScriptRunner {
                 // Set up the script to call.
                 Gant gant = new Gant(binding, classLoader);
                 gant.loadScript((File) potentialScripts.get(number - 1));
+                gant.setVerbosity(GantState.WARNINGS_AND_ERRORS);
 
                 // Invoke the default target.
                 return gant.processTargets().intValue();
@@ -537,7 +540,7 @@ public class GrailsScriptRunner {
                     }
                 }
             }
-
+            gant.setVerbosity(GantState.WARNINGS_AND_ERRORS);
             return gant.processTargets().intValue();
         }
     }
