@@ -40,6 +40,7 @@ import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.apache.ivy.core.module.id.ModuleRevisionId
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -79,25 +80,21 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 
     IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
 
-    def plugins = dependencyManager.pluginDependencyDescriptors.collect { DependencyDescriptor dd ->
-       def id = dd.getDependencyRevisionId()
-       [
-            name:id.name,
-            version: id.revision
-       ]
+    def pluginDeps = dependencyManager.pluginDependencyDescriptors.collect { DependencyDescriptor dd ->
+       dd.getDependencyRevisionId()
     }
 
     boolean resolveRequired = false
 
     def pluginsToInstall = []
-    for(p in plugins) {
+    for(p in pluginDeps) {
         def name = p.name
-        def version = p.version
+        def version = p.revision
         def fullName = "$name-$version"
         def pluginLoc = getPluginDirForName(name)
         if(!pluginLoc?.exists()) {
             println "Plugin [${fullName}] not installed."
-            pluginsToInstall << name
+            pluginsToInstall << p
             resolveRequired = true
         }
         else if(pluginLoc) {
@@ -105,7 +102,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
             PluginBuildSettings settings = pluginSettings
             if(!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
                 println "Upgrading plugin [$dirName] to [${fullName}]."
-                pluginsToInstall << name
+                pluginsToInstall << p
                 resolveRequired = true
             }
         }
@@ -113,7 +110,15 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     }
     if(resolveRequired) {
         println "Downloading new plugins. Please wait..."
-        ResolveReport report = dependencyManager.resolvePluginDependencies()
+        IvyDependencyManager newManager = createFreshDependencyManager(grailsAppName, grailsAppVersion, grailsSettings)
+        newManager.parseDependencies {
+            plugins {
+                for(ModuleRevisionId id in pluginsToInstall) {
+                    runtime group:id.organisation ?: "org.grails.plugins", name:id.name, version:id.revision
+                }
+            }
+        }
+        ResolveReport report = newManager.resolvePluginDependencies()
         if(report.hasError()) {
             println "Failed to resolve plugins."
             exit 1
@@ -121,7 +126,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
         else {
             for(ArtifactDownloadReport ar in report.allArtifactsReports) {
                 def arName = ar.artifact.moduleRevisionId.name
-                if(pluginsToInstall.contains(arName)) {
+                if(pluginsToInstall.any { it.name == arName }) {
                     doInstallPluginZip ar.localFile
                 }
             }
@@ -134,7 +139,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     // directory and the global "plugins" dir. Plugins loaded via an
     // explicit path should be left alone.
     def pluginDirs = pluginSettings.implicitPluginDirectories
-    def pluginsToUninstall = pluginDirs.findAll { Resource r -> !plugins.find { plugin ->
+    def pluginsToUninstall = pluginDirs.findAll { Resource r -> !pluginDeps.find {  ModuleRevisionId plugin ->
         r.filename ==~ "$plugin.name-.+" 
     }}
 
@@ -771,9 +776,7 @@ eachRepository = { Closure callable ->
 }
 
 resolvePluginZip = {pluginName, pluginVersion ->
-        IvyDependencyManager dependencyManager = new IvyDependencyManager(grailsAppName, grailsAppVersion ?: "0.1", grailsSettings)
-        dependencyManager.chainResolver = grailsSettings.dependencyManager.chainResolver
-        dependencyManager.logger = grailsSettings.dependencyManager.logger
+        IvyDependencyManager dependencyManager = createFreshDependencyManager(grailsAppName, grailsAppVersion, grailsSettings)
         def (group, name) = pluginName.contains(":") ? pluginName.split(":") : ['org.grails.plugins', pluginName]
         def resolveArgs = [name:name, group:group]
         if(pluginVersion) resolveArgs.version = pluginVersion
@@ -804,6 +807,12 @@ resolvePluginZip = {pluginName, pluginVersion ->
         }
 }
 
+IvyDependencyManager createFreshDependencyManager(grailsAppName, grailsAppVersion, grailsSettings) {
+    IvyDependencyManager dependencyManager = new IvyDependencyManager(grailsAppName, grailsAppVersion ?: "0.1", grailsSettings)
+    dependencyManager.chainResolver = grailsSettings.dependencyManager.chainResolver
+    dependencyManager.logger = grailsSettings.dependencyManager.logger
+    return dependencyManager
+}
 
 /**
  * Caches a local plugin into the plugins directory
