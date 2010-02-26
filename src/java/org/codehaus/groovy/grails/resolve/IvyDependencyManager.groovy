@@ -45,6 +45,7 @@ import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 import grails.util.Metadata
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
+import org.apache.ivy.util.MessageLogger
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -117,6 +118,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     String applicationName
     String applicationVersion
     IvySettings ivySettings
+    MessageLogger logger
     Metadata metadata
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
@@ -155,6 +157,34 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         this.buildSettings = settings
         this.metadata = metadata
     }
+
+    /**
+     * Allows settings an alternative chain resolver to be used
+     * @param resolver The resolver to be used
+     */
+    void setChainResolver(ChainResolver resolver) {
+        this.chainResolver = resolver;
+        resolveEngine.dictatorResolver = chainResolver
+    }
+
+
+     /**
+      * Sets the default message logger used by Ivy
+      *
+      * @param logger
+     */
+    void setLogger(MessageLogger logger) {
+        Message.setDefaultLogger logger
+        this.logger = logger;
+    }
+    
+    MessageLogger getLogger() { this.logger }
+
+
+     /**
+      * @return The current chain resolver 
+     */
+    ChainResolver getChainResolver() { chainResolver }
 
     /**
      * Resets the Grails plugin resolver if it is used
@@ -816,18 +846,22 @@ class IvyDomainSpecificLanguageEvaluator {
     void log(String level) {
         // plugins can't configure log
         if(plugin) return
+
         switch(level) {
             case "warn":
-                Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN); break
+                setLogger(new DefaultMessageLogger(Message.MSG_WARN)); break
             case "error":
-                Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_ERR); break
+                setLogger(new DefaultMessageLogger(Message.MSG_ERR)); break
             case "info":
-                Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO); break
+                setLogger(new DefaultMessageLogger(Message.MSG_INFO)); break
             case "debug":
-                Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_DEBUG); break
+                setLogger(new DefaultMessageLogger(Message.MSG_DEBUG)); break
             case "verbose":
-                Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_VERBOSE); break
+                setLogger(new DefaultMessageLogger(Message.MSG_VERBOSE)); break
+            default:
+                setLogger(new DefaultMessageLogger(Message.MSG_WARN))
         }
+        Message.setDefaultLogger logger
     }
 
     /**

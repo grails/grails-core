@@ -771,7 +771,9 @@ eachRepository = { Closure callable ->
 }
 
 resolvePluginZip = {pluginName, pluginVersion ->
-        IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+        IvyDependencyManager dependencyManager = new IvyDependencyManager(grailsAppName, grailsAppVersion ?: "0.1", grailsSettings)
+        dependencyManager.chainResolver = grailsSettings.dependencyManager.chainResolver
+        dependencyManager.logger = grailsSettings.dependencyManager.logger
         def (group, name) = pluginName.contains(":") ? pluginName.split(":") : ['org.grails.plugins', pluginName]
         def resolveArgs = [name:name, group:group]
         if(pluginVersion) resolveArgs.version = pluginVersion
