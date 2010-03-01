@@ -30,7 +30,7 @@ class MockUtilsTests extends GroovyTestCase {
     private Map savedMetaClasses
     private Map errorsMap
 
-    void setUp() {
+    protected void setUp() {
         savedMetaClasses = [
             (TestDomain): TestDomain.metaClass,
             (TestController): TestController.metaClass,
@@ -40,7 +40,7 @@ class MockUtilsTests extends GroovyTestCase {
         errorsMap = new IdentityHashMap()
     }
 
-    void tearDown() {
+    protected void tearDown() {
         // Restore all the saved meta classes.
         savedMetaClasses.each { Class clazz, MetaClass metaClass ->
             GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
@@ -53,6 +53,8 @@ class MockUtilsTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(MockHttpServletResponse)
         GroovySystem.metaClassRegistry.removeMetaClass(BeanPropertyBindingResult)
         GroovySystem.metaClassRegistry.removeMetaClass(Errors)
+
+        MockUtils.resetIds()
     }
 
     /**
@@ -160,7 +162,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findByNameLikeOrCountry("%Jones", "UK")
         assertEquals  janeDoeUK, result
-        
+
         result = TestDomain.findAll()
         assertEquals  12, result.size()
 
@@ -197,7 +199,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findAllByAgeBetween(18, 35)
         assertEquals( [ janeDoeUK, peterPan, aliceSmithOz, chrisJonesOz, aliceDoeUS, chrisPanNull ], result )
-        assertEquals 6, TestDomain.countByAgeBetween(18,35) 
+        assertEquals 6, TestDomain.countByAgeBetween(18,35)
 
         result = TestDomain.findAllByCountryIsNull()
         assertEquals( [ janeDoeNull, chrisPanNull ], result )
@@ -475,7 +477,6 @@ class MockUtilsTests extends GroovyTestCase {
         /* Save again and lastUpdated should be set. */
         domain.save()
         assertNotNull domain.lastUpdated
-        
     }
 
     /**
@@ -502,17 +503,17 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals 1, testInstances.size()
     }
 
-	/**
-	 * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
-	 */
-	void testSaveWithFailOnErrorTrue() {
-		MockUtils.mockDomain(TestDomain, errorsMap)
-		
-		def domain = new TestDomain()
-		shouldFail(grails.validation.ValidationException) {
-			domain.save(failOnError: true)
-		}
-	}
+    /**
+     * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
+     */
+    void testSaveWithFailOnErrorTrue() {
+        MockUtils.mockDomain(TestDomain, errorsMap)
+
+        def domain = new TestDomain()
+        shouldFail(grails.validation.ValidationException) {
+            domain.save(failOnError: true)
+        }
+    }
 
     /**
      * Tests the dynamically added <code>delete()</code> method.
@@ -533,6 +534,22 @@ class MockUtilsTests extends GroovyTestCase {
         aliceSmithOz.delete()
         assertNull TestDomain.get(3)
         assertEquals 3, TestDomain.count()
+    }
+
+    void testSaveAfterDelete() {
+        def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: 'title')
+        def aliceSmithOz = new TestDomain(name: "Alice Smith", country: "Australia", age: 34, title: 'title')
+        def chrisJonesCA = new TestDomain(name: "Chris Jones", country: "Canada", age: 16, title: 'title')
+        def chrisJonesOz = new TestDomain(name: "Chris Jones", country: "Australia", age: 29, title: 'title')
+
+        def testInstances = [aliceDoeUS, chrisJonesCA, aliceSmithOz, chrisJonesOz]
+        MockUtils.mockDomain TestDomain, errorsMap, testInstances
+
+        chrisJonesCA.delete()
+
+        def jimBondCA = new TestDomain(name: "Jim Bond", country: "canada", age: 18, title: 'title')
+        assertNotNull jimBondCA.save()
+        assertEquals chrisJonesOz.id + 1, jimBondCA.id
     }
 
     /**
@@ -786,7 +803,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         assertEquals "list", controller.renderArgs["view"]
         assertEquals( [count: 101], controller.renderArgs["model"] )
-		assertEquals 'list', controller.modelAndView.viewName
+        assertEquals 'list', controller.modelAndView.viewName
 
         // "view" and "text" arguments are mutually exclusive.
         shouldFail(AssertionError) {
@@ -902,20 +919,20 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "hello John", controller.response.contentAsString
     }
 
-	/**
-	 * Tests that the mock "params" object has typeconversion methods (getInt tested)
-	 */
-	void testMockControllerIntParamsObject() {
-		MockUtils.mockController(TestController)
-		
-		def controller = new TestController()
-		controller.params.intparam='123456'
-		controller.testIntParams()
-		
-		assertEquals "123456", controller.response.contentAsString
-	}
-	
-	/**
+    /**
+     * Tests that the mock "params" object has typeconversion methods (getInt tested)
+     */
+    void testMockControllerIntParamsObject() {
+        MockUtils.mockController(TestController)
+
+        def controller = new TestController()
+        controller.params.intparam='123456'
+        controller.testIntParams()
+
+        assertEquals "123456", controller.response.contentAsString
+    }
+
+    /**
      * Tests that the mock "chainModel" object on a controller works properly.
      */
     void testMockControllerChainModelObject() {
@@ -1411,10 +1428,10 @@ class TestController  {
     def testParams = {
         render "hello ${params.id}"
     }
-	
-	def testIntParams = {
-    	render "${params.int('intparam')}"
-	}
+
+    def testIntParams = {
+        render "${params.int('intparam')}"
+    }
 
     def testChainModel = {
         render "chained with ${chainModel}"
