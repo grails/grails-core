@@ -17,6 +17,7 @@ package grails.test
 import groovy.xml.StreamingMarkupBuilder
 import java.beans.Introspector
 import java.beans.PropertyDescriptor
+
 import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -25,12 +26,13 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.codehaus.groovy.grails.plugins.web.mimes.FormatInterceptor
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.converters.Converter
-import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
@@ -42,14 +44,13 @@ import org.springframework.web.servlet.ModelAndView
 import grails.validation.ValidationException
 
 /**
- * This is a utility/helper class for mocking various types of Grails
- * artifacts and is one of the foundations of the Grails unit testing
- * framework.
+ * A utility/helper class for mocking various types of Grails artifacts
+ * and is one of the foundations of the Grails unit testing framework.
  *
  * @author Peter Ledbrook
  */
 class MockUtils {
-    static final COMPARATORS = Collections.unmodifiableList([
+    static final COMPARATORS = [
             "IsNull",
             "IsNotNull",
             "LessThan",
@@ -59,11 +60,12 @@ class MockUtils {
             "NotEqual",
             "Like",
             "Ilike",
-            "Between" ])
+            "Between"].asImmutable()
     static final COMPARATORS_RE = COMPARATORS.join("|")
     static final DYNAMIC_FINDER_RE = /(\w+?)(${COMPARATORS_RE})?((And|Or)(\w+?)(${COMPARATORS_RE})?)?/
 
     static final errorsObjects = new ThreadLocalMap()
+    static final Map<Class, Long> IDS = [:]
 
     /**
      * Enhances a class that has the method signatures setAttribute/getAttribute (such as the Request object) to allow property style access
@@ -74,9 +76,7 @@ class MockUtils {
             if(delegate.metaClass.hasProperty(delegate,name)) {
                 return delegate.metaClass.getMetaProperty(name).getProperty(delegate)
             }
-            else {
-                return delegate.getAttribute(name)
-            }
+            return delegate.getAttribute(name)
         }
         clazz.metaClass.setProperty = { String name, val ->
             if(delegate.metaClass.hasProperty(delegate,name)) {
@@ -87,7 +87,7 @@ class MockUtils {
             }
         }
     }
-    
+
     /**
      * Call this to mock the given controller class. It adds mock versions of
      * the various methods available on controllers that are normally provided
@@ -117,7 +117,7 @@ class MockUtils {
         clazz.metaClass.render = {Converter arg -> delegate.response.writer << arg.toString()}
 
         clazz.metaClass.withFormat = { Closure callable ->
-            def formatInterceptor = new org.codehaus.groovy.grails.plugins.web.mimes.FormatInterceptor()
+            def formatInterceptor = new FormatInterceptor()
             def originalDelegate = delegate
             try {
                 callable.delegate = formatInterceptor
@@ -139,7 +139,7 @@ class MockUtils {
             if(response instanceof Closure) {
                 return response.call()
             }
-            else if(response instanceof Map) {
+            if(response instanceof Map) {
                 return response
             }
         }
@@ -147,7 +147,7 @@ class MockUtils {
         clazz.metaClass.withForm { Closure callable ->
             def result
             if (!delegate.request.invalidToken) {
-                def nullInvalidTokenHandler = { Closure c -> return result }
+                def nullInvalidTokenHandler = { Closure c -> result }
 
                 result = callable()
                 if (result instanceof Map) {
@@ -229,7 +229,7 @@ class MockUtils {
 
         clazz.metaClass.getTemplate = {-> template}
         clazz.metaClass.getModelAndView = {-> modelAndView}
-		clazz.metaClass.setModelAndView = { ModelAndView mv -> modelAndView = mv}
+        clazz.metaClass.setModelAndView = { ModelAndView mv -> modelAndView = mv}
     }
 
     /**
@@ -310,7 +310,7 @@ class MockUtils {
         clazz.metaClass.getServletContext = {-> mockRequest.servletContext }
 
         // Provide access to "g" taglib namespace.
-        clazz.metaClass.getG = {-> return delegate }
+        clazz.metaClass.getG = {-> delegate }
     }
 
     /**
@@ -440,7 +440,6 @@ class MockUtils {
         def rootInstances = testInstances.findAll { clazz.isInstance(it) }
         def childInstances = testInstances.findAll { clazz.isInstance(it) && it.class != clazz }.groupBy { it.class }
 
-
         TEST_INSTANCES[clazz] = rootInstances
         addDynamicFinders(clazz, rootInstances)
         addGetMethods(clazz, dc, rootInstances)
@@ -449,8 +448,6 @@ class MockUtils {
         addValidateMethod(clazz, dc, errorsMap, rootInstances)
         addDynamicInstanceMethods(clazz, rootInstances)
         addOtherStaticMethods(clazz, rootInstances)
-
-
 
         // Note that if the test instances are of type "clazz", they
         // will not have the extra dynamic methods because they were
@@ -472,7 +469,6 @@ class MockUtils {
             addDynamicInstanceMethods(childClass, instances)
             addOtherStaticMethods(childClass, instances)
             updateMetaClassForClass(rootInstances, childClass)
-
         }
 
         return dc
@@ -540,7 +536,7 @@ class MockUtils {
         def dc = null
         if(DomainClassArtefactHandler.isDomainClass(clazz))
            dc = new DefaultGrailsDomainClass(clazz)
-        
+
         addValidateMethod(clazz, dc, errorsMap, testInstances)
 
         // Note that if the test instances are of type "clazz", they
@@ -553,16 +549,18 @@ class MockUtils {
         updateMetaClassForClass(testInstances, clazz)
     }
 
+    static void resetIds() {
+        IDS.clear()
+    }
+
     private static void addDynamicFinders(Class clazz, List testInstances) {
         // Implement the dynamic class methods for domain classes.
 
-        clazz.metaClass.'static'.findAll = { ->
-            return TEST_INSTANCES[clazz]
-        }
+        clazz.metaClass.'static'.findAll = { -> TEST_INSTANCES[clazz] }
 
         clazz.metaClass.'static'.findAllWhere = { args = [:] ->
             TEST_INSTANCES[clazz].findAll { instance ->
-                args.every { k,v -> instance[k] == v } 
+                args.every { k,v -> instance[k] == v }
             }
         }
 
@@ -604,7 +602,7 @@ class MockUtils {
                         result = intersect(TEST_INSTANCES[clazz], result + secondResult)
                     }
                     else {
-                        throw new RuntimeException("Unrecognised join type: '$join'")
+                        throw RuntimeException("Unrecognised join type: '$join'")
                     }
                 }
 
@@ -618,11 +616,9 @@ class MockUtils {
                     // We're doing a findAllBy* so return a list.
                     return result ?: []
                 }
-                else {
-                    // we're doing a findBy* so just return the first
-                    // result (or null if there are none).
-                    return result ? result[0] : null
-                }
+                // we're doing a findBy* so just return the first
+                // result (or null if there are none).
+                return result ? result[0] : null
             } else {
                 m = method =~ /^countBy${DYNAMIC_FINDER_RE}$/
                 if(m) {
@@ -642,14 +638,11 @@ class MockUtils {
         }
     }
 
-
     /**
-     * Adds methods that mock the behavior of the count() methods 
+     * Adds methods that mock the behavior of the count() methods.
      */
     private static void addCountMethods(Class clazz, GrailsDomainClass dc, List testInstances) {
-         clazz.metaClass.static.count = {->
-            return testInstances.size()
-         }
+         clazz.metaClass.static.count = {-> testInstances.size() }
     }
 
     private static void addGetMethods(Class clazz, GrailsDomainClass dc, List testInstances) {
@@ -689,9 +682,7 @@ class MockUtils {
         }
 
         // ...then ident()...
-        clazz.metaClass.ident = {->
-            delegate.id
-        }
+        clazz.metaClass.ident = {-> delegate.id }
 
         // ...and finally exists().
         clazz.metaClass.'static'.exists = {id ->
@@ -706,9 +697,7 @@ class MockUtils {
             if (args) {
                 return applyQueryOptions(testInstances, args)
             }
-            else {
-                return testInstances
-            }
+            return testInstances
         }
     }
 
@@ -723,39 +712,49 @@ class MockUtils {
     private static void addDynamicInstanceMethods(Class clazz, List testInstances) {
         // Add save() method.
         clazz.metaClass.save = { Map args = [:] ->
-            if(validate()) {
-                // The object passes validation, so to confirm that it
-                // has been saved we add it to the list of test instances.
-                // Note that if the instance is already in the list, we
-                // don't add it again! We also give it an ID. lastUpdated
-                // is set if the object already has an ID, dateCreated is
-                // set if it does'nt.
-                def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
+            if (!validate()) {
+                if (args.failOnError) {
+                    throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+                }
+                return null
+            }
 
-                if(properties.find { it.name == "lastUpdated" } && delegate.id != null) {
-                    delegate.lastUpdated = new Date()
+            // The object passes validation, so to confirm that it
+            // has been saved we add it to the list of test instances.
+            // Note that if the instance is already in the list, we
+            // don't add it again! We also give it an ID. lastUpdated
+            // is set if the object already has an ID, dateCreated is
+            // set if it doesn't.
+            def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
+
+            def mapping = evaluateMapping(clazz)
+
+            def time = System.currentTimeMillis()
+            def lastUpdatedProperty = properties.find { it.name == "lastUpdated" }
+            if (lastUpdatedProperty && mapping.autoTimestamp && delegate.id != null) {
+                def now = lastUpdatedProperty.propertyType.newInstance([time] as Object[])
+                delegate.lastUpdated = now
+            }
+
+            if (!testInstances.contains(delegate)) {
+                testInstances << delegate
+                // If dateCreated exists and id is still null, set it
+                def dateCreatedProperty = properties.find { it.name == "dateCreated" }
+                if (dateCreatedProperty && mapping.autoTimestamp && delegate.id == null) {
+                    def now = dateCreatedProperty.propertyType.newInstance([time] as Object[])
+                    delegate.dateCreated = now
                 }
-                if (!testInstances.contains(delegate)) {
-                    testInstances << delegate
-                    // If dateCreated exists and id is still null, set it
-                    if(properties.find { it.name == "dateCreated" } && delegate.id == null) {
-                        delegate.dateCreated = new Date()
-                    }
-                    if (!delegate.id) delegate.id = testInstances.size()
-                }
-                return delegate
-            } else if (args.failOnError) {
-				throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
-			}
-            return null
+                setId delegate, clazz
+            }
+            return delegate
         }
 
         // Add delete() method.
         clazz.metaClass.delete = { Map args = [:] ->
             for (int i in 0..<testInstances.size()) {
                 if (testInstances[i] == delegate) {
-                    testInstances.remove(i)                    
-                    break;
+                    testInstances.remove(i)
+                    break
                 }
             }
         }
@@ -794,6 +793,16 @@ class MockUtils {
         }
     }
 
+    private static evaluateMapping(Class clazz) {
+        Closure mappingBlock = GrailsClassUtils.getStaticPropertyValue(clazz, "mapping")
+        def builder = new MappingBuilder()
+        if (mappingBlock) {
+            mappingBlock.delegate = builder
+            mappingBlock.call()
+        }
+        return builder.mapping
+    }
+
     /**
      * Adds a <code>validate()</code> method to the given domain class
      * or command object. It also adds the errors-related methods and
@@ -822,16 +831,16 @@ class MockUtils {
         // Get clazz's class hierarchy up to, but not including, Object
         // as a linked list. The list starts with the ultimate base class
         // and ends with "clazz".
-        LinkedList classChain = new LinkedList();
+        LinkedList classChain = new LinkedList()
         while (clazz != Object.class) {
-            classChain.addFirst(clazz);
-            clazz = clazz.getSuperclass();
+            classChain.addFirst(clazz)
+            clazz = clazz.getSuperclass()
         }
 
         // Now get build up our constraints from all "constraints"
         // properties in all the classes in the hierarchy.
         for (Iterator it = classChain.iterator(); it.hasNext();) {
-            clazz = (Class) it.next();
+            clazz = (Class) it.next()
             // Read the constraints.
             def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
 
@@ -852,9 +861,8 @@ class MockUtils {
         clazz.metaClass.constructor =  { Map params ->
             def obj = BeanUtils.instantiateClass(delegate)
             DataBindingUtils.bindObjectToInstance(obj,params)
-            return obj            
+            return obj
         }
-
 
         clazz.metaClass.setProperties = {Object o ->
             DataBindingUtils.bindObjectToInstance(delegate,o)
@@ -865,14 +873,14 @@ class MockUtils {
         }
 
         // Add all the errors-related methods.
-        clazz.metaClass.getErrors = {-> return getErrorsFor(errorsMap, delegate) }
-        clazz.metaClass.hasErrors = {-> return getErrorsFor(errorsMap, delegate).hasErrors() }
+        clazz.metaClass.getErrors = {-> getErrorsFor(errorsMap, delegate) }
+        clazz.metaClass.hasErrors = {-> getErrorsFor(errorsMap, delegate).hasErrors() }
         clazz.metaClass.setErrors = { Errors errors ->
             if(!(errors instanceof GrailsMockErrors)) {
                 def mockErrors = new GrailsMockErrors(delegate)
                 mockErrors.addAllErrors errors
                 errors = mockErrors
-            }            
+            }
             setErrorsFor(errorsMap, delegate, errors)
         }
         clazz.metaClass.clearErrors = {-> clearErrorsFor(errorsMap, delegate) }
@@ -976,11 +984,11 @@ class MockUtils {
 
             case "Ilike":
                 if (propValue ==~ /(?i)${args[0].replaceAll("%", ".*")}/) result << record
-                break;
+                break
 
             case "Between":
                 if (propValue >= args[0] && propValue <= args[1]) result << record
-                break;
+                break
 
             default:
                 throw new RuntimeException("Unrecognised comparator: ${comparator}")
@@ -994,14 +1002,13 @@ class MockUtils {
         if (comparator == "Between") {
             return 2
         }
-        else if (["IsNull", "IsNotNull"].contains(comparator)) {
+        if (["IsNull", "IsNotNull"].contains(comparator)) {
             return 0
         }
-        else {
-            return 1
-        }
+
+        return 1
     }
-    
+
     /**
      * Applies the standard sorting and pagination query options to a
      * list of objects.
@@ -1116,8 +1123,6 @@ class MockUtils {
         return errors
     }
 
-
-
     /**
      * Updates all object in the given collection of type "clazz" so
      * that their meta-class is whatever clazz's is. This also injects
@@ -1129,15 +1134,21 @@ class MockUtils {
     private static void updateMetaClassForClass(Collection instances, Class clazz) {
         // For each object in the collection that is an instance of
         // "clazz", we manually change its metaclass to "clazz"'s.
-        instances?.eachWithIndex { obj, i ->
-            def prop = obj.metaClass.hasProperty(obj, "id")
-            if (prop && !obj.id && Number.isAssignableFrom(prop.type)) {
-                obj.id = i + 1
-            }
+        instances.each { obj ->
+            setId obj, clazz
 
             if (clazz.isAssignableFrom(obj.getClass())) {
                 obj.metaClass = clazz.metaClass
             }
+        }
+    }
+
+    private static void setId(instance, clazz) {
+        def prop = instance.metaClass.hasProperty(instance, "id")
+        if (prop && !instance.id && Number.isAssignableFrom(prop.type)) {
+            Long id = (IDS[clazz] ?: 0) + 1
+            IDS[clazz] = id
+            instance.id = id
         }
     }
 
@@ -1147,14 +1158,10 @@ class MockUtils {
      */
     private static convertToType(value, Class targetType) {
         if (value instanceof Number && Long.class.equals(targetType)) {
-            value = value.toLong()
-        }
-        else {
-            SimpleTypeConverter typeConverter = new SimpleTypeConverter()
-            value = typeConverter.convertIfNecessary(value, targetType)
+            return value.toLong()
         }
 
-        return value
+        return new SimpleTypeConverter().convertIfNecessary(value, targetType)
     }
 }
 
@@ -1166,5 +1173,14 @@ class MockUtils {
 class ThreadLocalMap extends ThreadLocal {
     protected initialValue() {
         return new WeakHashMap()
+    }
+}
+
+class MappingBuilder {
+    def mapping = [autoTimestamp: true]
+
+    void methodMissing(String name, args) {
+        println "mapping $name = $args"
+        mapping[name] = args[0]
     }
 }
