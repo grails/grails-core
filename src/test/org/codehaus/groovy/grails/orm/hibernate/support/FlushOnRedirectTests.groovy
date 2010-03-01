@@ -4,6 +4,7 @@ import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import grails.util.GrailsWebUtil
 import org.springframework.web.context.request.RequestContextHolder
+import org.hibernate.FlushMode
 
 /**
  * @author Graeme Rocher
@@ -55,6 +56,27 @@ class FlushOnRedirectController {
         def t = FlushOnRedirect.get(1)
 
         assertEquals "Should have changed name of during flush", t.name, "changed"
+    }
+
+    void testNoFlushOnFlushModeManual() {
+        def FlushOnRedirect = ga.getDomainClass("RedirectFlushTestDomain").clazz
+
+        assert FlushOnRedirect.newInstance(name:"Bob").save(flush:true) : "should have saved instance"
+
+        session.clear()
+        session.setFlushMode(FlushMode.MANUAL)
+        def controllerClass = ga.getControllerClass("FlushOnRedirectController").clazz
+
+        def c = controllerClass.newInstance()
+
+        GrailsWebUtil.bindMockWebRequest(appCtx)
+        c.test()
+        session.clear()
+
+
+        def t = FlushOnRedirect.get(1)
+
+        assertEquals "Should have changed name of during flush", t.name, "Bob"        
     }
 
     protected void onTearDown() {
