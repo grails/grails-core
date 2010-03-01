@@ -449,12 +449,12 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         ClassLoader classLoader = application.classLoader
         def sessionFactory = ctx.getBean('sessionFactory')
 
-        def dynamicMethods = [new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-        new FindAllByPersistentMethod(application, sessionFactory, classLoader),
-        new FindByPersistentMethod(application, sessionFactory, classLoader),
-        new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-        new CountByPersistentMethod(application, sessionFactory, classLoader),
-        new ListOrderByPersistentMethod(sessionFactory, classLoader)]
+        def dynamicMethods = [new FindAllByPersistentMethod(application, sessionFactory, classLoader),
+		                      new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
+		                      new FindByPersistentMethod(application, sessionFactory, classLoader),
+                              new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
+                              new CountByPersistentMethod(application, sessionFactory, classLoader),
+                              new ListOrderByPersistentMethod(sessionFactory, classLoader)]
 
         // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
