@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.aop.framework.autoproxy;
 
+import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
 import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProxyCreator;
 import groovy.lang.GroovyObject;
 
@@ -23,7 +24,7 @@ import groovy.lang.GroovyObject;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class GroovyAwareInfrastructureAdvisorAutoProxyCreator extends InfrastructureAdvisorAutoProxyCreator{
+public class GroovyAwareInfrastructureAdvisorAutoProxyCreator extends AnnotationAwareAspectJAutoProxyCreator {
 
     @Override
     protected boolean shouldProxyTargetClass(Class<?> beanClass, String beanName) {
