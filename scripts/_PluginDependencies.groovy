@@ -623,6 +623,11 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             ant.delete(dir: pluginInstallPath, failonerror: false)
             ant.mkdir(dir: pluginInstallPath)
             ant.unzip(dest: pluginInstallPath, src: "${pluginsBase}/grails-${fullPluginName}.zip")
+            println "Installed plugin ${fullPluginName} to location ${pluginInstallPath}."
+        }
+        else {
+            println "Cannot install plugin. Plugin install would override inline plugin configuration which is not allowed."
+            exit 1
         }
 
 
@@ -872,14 +877,17 @@ def registerPluginWithMetadata(String pluginName, pluginVersion) {
  * Check to see if the plugin directory is in plugins home.
  */
 checkPluginPath = { pluginDir ->
-  // insure all the directory is in the pluginsHome
-  def absPluginsHome = new File(pluginsHome).absolutePath
-  if(pluginDir instanceof File) {
-	pluginDir.absolutePath.startsWith(absPluginsHome)
-  }
-  else {
-	new File(pluginDir).absolutePath.startsWith(absPluginsHome)
-  }
-  
+  // insure all the directory is in the pluginsHome    
+  checkPluginPathWithPluginDir(pluginsHome, pluginDir) ||
+          checkPluginPathWithPluginDir(globalPluginsDirPath, pluginDir)
+}
+def checkPluginPathWithPluginDir (pluginsHome, pluginDir) {
+    def absPluginsHome = pluginsHome instanceof File ? pluginsHome : new File (pluginsHome).absolutePath
+    if (pluginDir instanceof File) {
+        pluginDir.absolutePath.startsWith(absPluginsHome)
+    }
+    else {
+        new File(pluginDir).absolutePath.startsWith(absPluginsHome)
+    }
 }
 
