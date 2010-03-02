@@ -228,7 +228,13 @@ lateInit
 startGrails() {
   CLASS=$1
   shift
-  JAVA_OPTS="-server -Xmx512M -XX:MaxPermSize=96m $JAVA_OPTS"
+  if [[ -n $GRAILS_OPTS  ]]
+     then
+ 	GRAILS_OPTS="$GRAILS_OPTS"
+     else
+	GRAILS_OPTS="-server -Xmx512M -XX:MaxPermSize=192m"
+  fi
+  JAVA_OPTS="$GRAILS_OPTS $JAVA_OPTS"
   # Start the Profiler or the JVM
   if $useprofiler; then
       runProfiler
