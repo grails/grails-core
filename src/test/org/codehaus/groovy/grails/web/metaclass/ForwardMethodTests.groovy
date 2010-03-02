@@ -5,11 +5,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 9, 2009
  */
-
-public class ForwardMethodTests extends AbstractGrailsControllerTests{
+class ForwardMethodTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
@@ -33,7 +32,6 @@ class ForwardingController {
 ''')
     }
 
-
     void testForwardMethod() {
         def testController = ga.getControllerClass("ForwardingController").newInstance()
 
@@ -43,5 +41,4 @@ class ForwardingController {
         assertEquals "/grails/next/go.dispatch?id=10",testController.four()
         assertEquals "bar", request.foo
     }
-
 }
