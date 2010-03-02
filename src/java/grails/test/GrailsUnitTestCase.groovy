@@ -71,6 +71,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
         }
         
         ConfigurationHolder.config = previousConfig
+
+        MockUtils.resetIds()
     }
 
     /**

@@ -88,6 +88,7 @@ def generateForDomainClass(domainClass) {
     if(generateController) {
         event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])
         templateGenerator.generateController(domainClass, basedir)
+        createUnitTest(name: domainClass.fullName, suffix: "Controller", superClass: "ControllerUnitTestCase")
         event("GenerateControllerEnd", [domainClass.fullName])
     }
 }
