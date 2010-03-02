@@ -76,7 +76,7 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
 
     protected void tearDown() {
         super.tearDown()
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 
     Class getTestClass() {
@@ -84,18 +84,18 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
     }
 
     protected void reset() {
-        mockRequest.clearAttributes()
-        mockRequest.removeAllParameters()
-        mockResponse.reset()
-        mockResponse.committed = false
-        mockSession.clearAttributes()
-        mockSession.setNew(true)
+        mockRequest?.clearAttributes()
+        mockRequest?.removeAllParameters()
+        mockResponse?.reset()
+        mockResponse?.committed = false
+        mockSession?.clearAttributes()
+        mockSession?.setNew(true)
 
-        forwardArgs.clear()
-        redirectArgs.clear()
-        renderArgs.clear()
-        mockParams.clear()
-        mockFlash.clear()
+        forwardArgs?.clear()
+        redirectArgs?.clear()
+        renderArgs?.clear()
+        mockParams?.clear()
+        mockFlash?.clear()
     }
 
     protected newInstance() {

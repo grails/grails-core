@@ -14,8 +14,10 @@ class FindByMethodBook {
     Long version
     String title
     Date releaseDate
+    String writtenBy
     static constraints  = {
         releaseDate(nullable:true)
+        writtenBy(nullable: true)
     }
 }
 class FindByMethodUser {
@@ -117,5 +119,15 @@ class FindByBooleanPropertyBook {
         books = bookClass.findAllNotPublishedByAuthor('Graeme')
         assertEquals 0, books?.size()
     }
+
+	void testQueryByPropertyWith_By_InName() {
+		// GRAILS-5929
+		def bookClass = ga.getDomainClass("FindByMethodBook").clazz
+
+		assert bookClass.newInstance(title:"The Stand", writtenBy: 'Stephen King').save()
+
+        def results = bookClass.findAllByWrittenByAndTitle('Stephen King', 'The Stand')
+		assertEquals 1, results?.size()
+	}
 
 }

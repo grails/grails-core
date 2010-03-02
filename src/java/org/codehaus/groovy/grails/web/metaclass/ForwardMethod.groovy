@@ -15,54 +15,52 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.springframework.util.Assert
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.apache.commons.beanutils.BeanUtils
-import org.codehaus.groovy.grails.web.util.WebUtils
 import javax.servlet.http.HttpServletResponse
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+
+import org.apache.commons.beanutils.BeanUtils
+
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.util.WebUtils
+
+import org.springframework.util.Assert
 
 /**
- * Implements performing a forward
- * 
+ * Implements performing a forward.
+ *
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Jan 9, 2009
  */
-
-public class ForwardMethod {
+class ForwardMethod {
 
     public static final String CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED"
 
     UrlMappingsHolder holder
-    public ForwardMethod(UrlMappingsHolder urlMappingsHolder) {
-        super();
 
+    ForwardMethod(UrlMappingsHolder urlMappingsHolder) {
         Assert.notNull(urlMappingsHolder, "Argument [urlMappingsHolder] is required")
-        this.holder = urlMappingsHolder
+        holder = urlMappingsHolder
     }
 
-    def forward(HttpServletRequest request, HttpServletResponse response, Map params) {
+    String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
         def urlInfo = new ForwardUrlMappingInfo()
-        if(params.action && !params.controller) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
+
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
+        if (params.controller) {
+            webRequest?.controllerName = params.controller
+        }
+        else {
             urlInfo.controllerName = webRequest?.controllerName
         }
 
         BeanUtils.populate(urlInfo, params)
 
-        String uri
-        if(params.model instanceof Map) {
-            uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, params.model, true)
-        }
-        else {
-            uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, Collections.EMPTY_MAP, true)
-        }
-        request.setAttribute(CALLED,true)
+        def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
+        String uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
+        request.setAttribute(CALLED, true)
         return uri
     }
 }

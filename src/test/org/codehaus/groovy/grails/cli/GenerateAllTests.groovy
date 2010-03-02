@@ -62,15 +62,17 @@ class Person {
 
         // Check that the controller has been created.
         def controllerFile = new File("${appDir}/grails-app/controllers/${pkgPath}${className}Controller.groovy")
-        assert controllerFile.exists()
-        assert controllerFile.text =~ "^${pkg ? 'package ' + pkg : ''}\\s*class ${className}Controller \\{"
+        assertTrue controllerFile.exists()
+        assertTrue controllerFile.text =~ "^${pkg ? 'package ' + pkg : ''}\\s*class ${className}Controller \\{"
 
         // Now check that the associated views have also been created.
         def viewDir = "${appDir}/grails-app/views/${GrailsClassUtils.getPropertyName(className)}/"
-		assertTrue "${viewDir} does not exist", new File(viewDir).exists()
+        assertTrue "${viewDir} does not exist", new File(viewDir).exists()
         assertTrue "'list.gsp' is missing", new File(viewDir, "list.gsp").exists()
         assertTrue "'show.gsp' is missing", new File(viewDir, "show.gsp").exists()
         assertTrue "'create.gsp' is missing", new File(viewDir, "create.gsp").exists()
         assertTrue "'edit.gsp' is missing", new File(viewDir, "edit.gsp").exists()
+
+        assertTrue "unit test is missing", new File("${appDir}/test/unit/${pkgPath}${className}ControllerTests.groovy").exists()
     }
 }
