@@ -560,9 +560,8 @@ public class GrailsScriptRunner {
                     throw new ScriptNotFoundException(scriptName);
                 }
             }
-
-            return gant.processTargets().intValue();
         }
+        return gant.processTargets().intValue();
     }
 
     private boolean isGrailsProject() {
