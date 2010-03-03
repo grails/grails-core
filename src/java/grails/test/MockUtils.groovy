@@ -760,37 +760,104 @@ class MockUtils {
         }
 
         // discard() method - doesn't need to do anything.
-        clazz.metaClass.discard = {-> delegate}
+        clazz.metaClass.discard = {-> delegate }
 
         // instanceOf() method - just delegates to regular operator
-        clazz.metaClass.instanceOf = { Class c ->
-            c.isInstance(delegate)
-        }
+        clazz.metaClass.instanceOf = { Class c -> c.isInstance(delegate) }
 
         // Add the "addTo*" and "removeFrom*" methods.
-        Introspector.getBeanInfo(clazz).propertyDescriptors.each { PropertyDescriptor pd ->
-            if (Collection.isAssignableFrom(pd.propertyType)) {
-                // Capitalise the name of the property.
-                def propertyName = pd.name
-                def collectionName = propertyName[0].toUpperCase() + propertyName[1..-1]
 
-                clazz.metaClass."addTo${collectionName}" = { arg ->
-                    def obj = delegate
-                    if (obj."${propertyName}" == null) {
-                        obj."${propertyName}" = GrailsClassUtils.createConcreteCollection(pd.propertyType)
-                    }
-
-                    def prop = obj."${propertyName}"
-                    prop << arg
-                    return obj
-                }
-
-                clazz.metaClass."removeFrom${collectionName}" = { arg ->
-                    delegate."${propertyName}"?.remove(arg)
-                    return delegate
-                }
+        def collectionTypes = [:]
+        def hasManyField = clazz.declaredFields.find { it.name == 'hasMany' }
+        def hasMany = findHasMany(clazz)
+        if (hasMany) {
+            for (name in hasMany.keySet()) {
+                // pre-populate with Set, override with PropertyDescriptors below
+                collectionTypes[name] = Set
             }
         }
+
+        Introspector.getBeanInfo(clazz).propertyDescriptors.each { PropertyDescriptor pd ->
+            if (Collection.isAssignableFrom(pd.propertyType)) {
+                collectionTypes[pd.name] = pd.propertyType
+            }
+        }
+
+        collectionTypes.each { String propertyName, propertyType ->
+            // Capitalise the name of the property.
+            def collectionName = propertyName[0].toUpperCase() + propertyName[1..-1]
+
+            clazz.metaClass."addTo$collectionName" = { arg ->
+                def obj = delegate
+                if (obj."$propertyName" == null) {
+                    obj."$propertyName" = GrailsClassUtils.createConcreteCollection(propertyType)
+                }
+
+                def instanceClass
+                if (arg instanceof Map) {
+                    instanceClass = hasMany[propertyName]
+                    arg = createFromMap(arg, instanceClass)
+                }
+                else {
+                    instanceClass = arg.getClass()
+                }
+
+                obj."$propertyName" << arg
+
+                // now set back-reference
+                if (!(arg instanceof Map)) {
+                    def otherHasMany = findHasMany(instanceClass)
+                    if (otherHasMany) {
+                        // many-to-many
+                        otherHasMany.each { String otherCollectionName, Class otherCollectionType ->
+                            if (clazz.isAssignableFrom(otherCollectionType)) {
+                                if (arg."$otherCollectionName" == null) {
+                                    arg."$otherCollectionName" = GrailsClassUtils.createConcreteCollection(otherCollectionType)
+                                }
+                                arg."$otherCollectionName" << obj
+                            }
+                        }
+                    }
+                    else {
+                        // 1-many
+                        for (PropertyDescriptor pd in Introspector.getBeanInfo(instanceClass).propertyDescriptors) {
+                            if (clazz.isAssignableFrom(pd.propertyType)) {
+                                arg[pd.name] = obj
+                            }
+                        }
+                    }
+                }
+
+                return obj
+            }
+
+            clazz.metaClass."removeFrom$collectionName" = { arg ->
+                if (arg instanceof Map) {
+                    arg = createFromMap(arg, hasMany[propertyName])
+                }
+
+                delegate."$propertyName"?.remove(arg)
+                return delegate
+            }
+        }
+    }
+
+    private static createFromMap(map, instanceClass) {
+        if (instanceClass) {
+            def instance = instanceClass.newInstance()
+            DataBindingUtils.bindObjectToInstance(instance, map)
+            return instance
+        }
+		  null
+    }
+
+    private static Map findHasMany(clazz) {
+        def hasManyField = clazz.declaredFields.find { it.name == 'hasMany' }
+        if (hasManyField) {
+            hasManyField.accessible = true
+            return hasManyField.get(null)
+        }
+        null
     }
 
     private static evaluateMapping(Class clazz) {
