@@ -29,6 +29,20 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         GroovySystem.metaClassRegistry.removeMetaClass(System) 
     }
 
+    void testClassifier() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"] )
+        }
+
+        ModuleRevisionId dep = manager.dependencies.iterator().next()
+
+        assertEquals "source",dep.extraAttributes['classifier']
+
+    }
+
     void testPluginResolve() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

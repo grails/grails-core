@@ -572,10 +572,15 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     /**
      * Performs a resolve of declared plugin dependencies (zip files containing plugin distributions)
      */
-    public ResolveReport resolvePluginDependencies(String conf = '') {
+    public ResolveReport resolvePluginDependencies(String conf = '', Map args = [:]) {
         resolveErrors = false
         if(usedConfigurations.contains(conf) || conf == '') {
-            def options = new ResolveOptions(checkIfChanged:true, outputReport:true, validate:false)
+
+            if(args.checkIfChanged==null) args.checkIfChanged = true
+            if(args.outputReport==null) args.outputReport = true
+            if(args.validate==null) args.validate = false
+
+            def options = new ResolveOptions(args)
             if(conf)
                 options.confs = [conf] as String[]
 
@@ -925,9 +930,6 @@ class IvyDomainSpecificLanguageEvaluator {
                 if(grailsHome!='.')
                     chainResolver.add(createLocalPluginResolver("grailsHome",grailsHome))
             }
-            if(buildSettings?.grailsWorkDir) {
-                chainResolver.add(createLocalPluginResolver("grailsCache",buildSettings?.grailsWorkDir?.absolutePath))
-            }
         }
     }
 
@@ -1130,12 +1132,16 @@ class IvyDomainSpecificLanguageEvaluator {
                     if(dependency.group && name && dependency.version) {
                        if(!isExcluded(name)) {
 
+                           def attrs = [:]
+                           if(dependency.classifier) {
+                               attrs["m:classifier"] = dependency.classifier
+                           }
                            def mrid
                            if(dependency.branch) {
-                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version)
+                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version, attrs)
                            }
                            else {
-                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
+                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version, attrs)
                            }
 
 
@@ -1147,7 +1153,8 @@ class IvyDomainSpecificLanguageEvaluator {
                                def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
                                dependencyDescriptor.addDependencyArtifact(scope, artifact)
                            }
-                           
+
+
                            dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
                            dependencyDescriptor.inherited = inherited || inheritsAll
                            if(plugin) {
