@@ -1,19 +1,18 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.commons;
-
 
 import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
@@ -31,36 +30,33 @@ import java.util.*;
 /**
  * @author Graeme Rocher
  * @since 08-Jul-2005
- * 
- * Class containing utility methods for dealing with Grails class artifacts
- * 
+ *
+ * Utility methods for dealing with Grails class artifacts.
  */
 public class GrailsClassUtils {
 
     private static final String PROPERTY_SET_PREFIX = "set";
-	public static final Map PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap();
+    public static final Map<Class<?>, Class<?>> PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap<Class<?>, Class<?>>();
 
     /**
      * Just add two entries to the class compatibility map
      * @param left
      * @param right
      */
-    private static final void registerPrimitiveClassPair(Class left, Class right)
-    {
-        PRIMITIVE_TYPE_COMPATIBLE_CLASSES.put( left, right);
-        PRIMITIVE_TYPE_COMPATIBLE_CLASSES.put( right, left);
+    private static final void registerPrimitiveClassPair(Class<?> left, Class<?> right) {
+        PRIMITIVE_TYPE_COMPATIBLE_CLASSES.put(left, right);
+        PRIMITIVE_TYPE_COMPATIBLE_CLASSES.put(right, left);
     }
 
-    static
-    {
-        registerPrimitiveClassPair( Boolean.class, boolean.class);
-        registerPrimitiveClassPair( Integer.class, int.class);
-        registerPrimitiveClassPair( Short.class, short.class);
-        registerPrimitiveClassPair( Byte.class, byte.class);
-        registerPrimitiveClassPair( Character.class, char.class);
-        registerPrimitiveClassPair( Long.class, long.class);
-        registerPrimitiveClassPair( Float.class, float.class);
-        registerPrimitiveClassPair( Double.class, double.class);
+    static {
+        registerPrimitiveClassPair(Boolean.class, boolean.class);
+        registerPrimitiveClassPair(Integer.class, int.class);
+        registerPrimitiveClassPair(Short.class, short.class);
+        registerPrimitiveClassPair(Byte.class, byte.class);
+        registerPrimitiveClassPair(Character.class, char.class);
+        registerPrimitiveClassPair(Long.class, long.class);
+        registerPrimitiveClassPair(Float.class, float.class);
+        registerPrimitiveClassPair(Double.class, double.class);
     }
 
     /**
@@ -73,17 +69,15 @@ public class GrailsClassUtils {
      *
      * @return A boolean value
      */
-    public static boolean isPropertyOfType( Class clazz, String propertyName, Class type ) {
+    public static boolean isPropertyOfType(Class<?> clazz, String propertyName, Class<?> type) {
         try {
-
-            Class propType = getPropertyType( clazz, propertyName );
+            Class<?> propType = getPropertyType(clazz, propertyName);
             return propType != null && propType.equals(type);
         }
         catch(Exception e) {
             return false;
         }
     }
-
 
     /**
      * Returns the value of the specified property and type from an instance of the specified Grails class
@@ -94,10 +88,11 @@ public class GrailsClassUtils {
      *
      * @return The value of the property or null if none exists
      */
-    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, Class propertyType) {
+    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, Class<?> propertyType) {
         // validate
-        if(clazz == null || StringUtils.isBlank(propertyName))
+        if(clazz == null || StringUtils.isBlank(propertyName)) {
             return null;
+        }
 
         Object instance = null;
         try {
@@ -105,7 +100,6 @@ public class GrailsClassUtils {
         } catch (BeanInstantiationException e) {
             return null;
         }
-
 
         return getPropertyOrStaticPropertyOrFieldValue(instance, propertyName);
     }
@@ -118,10 +112,11 @@ public class GrailsClassUtils {
      *
      * @return The value of the property or null if none exists
      */
-    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName) {
+    public static Object getPropertyValueOfNewInstance(Class<?> clazz, String propertyName) {
         // validate
-        if(clazz == null || StringUtils.isBlank(propertyName))
+        if (clazz == null || StringUtils.isBlank(propertyName)) {
             return null;
+        }
 
         Object instance = null;
         try {
@@ -130,10 +125,8 @@ public class GrailsClassUtils {
             return null;
         }
 
-
         return getPropertyOrStaticPropertyOrFieldValue(instance, propertyName);
     }
-
 
     /**
      * Retrieves a PropertyDescriptor for the specified instance and property value
@@ -143,28 +136,29 @@ public class GrailsClassUtils {
      * @return The PropertyDescriptor
      */
     public static PropertyDescriptor getPropertyDescriptorForValue(Object instance, Object propertyValue) {
-        if(instance == null || propertyValue == null)
+        if(instance == null || propertyValue == null) {
             return null;
+        }
 
         PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(instance.getClass());
-
-        for (int i = 0; i < descriptors.length; i++) {
-        	PropertyDescriptor pd=descriptors[i];
-        	if(isAssignableOrConvertibleFrom(pd.getPropertyType(), propertyValue.getClass())) {
-        		Object value;
-				try {
-			   		ReflectionUtils.makeAccessible(pd.getReadMethod());
-			   		value = pd.getReadMethod().invoke(instance, (Object[]) null);					
-				} catch (Exception e) {
-					throw new FatalBeanException("Problem calling readMethod of " + pd, e);
-				}
-        		if(propertyValue.equals(value))
-        			return pd;
-        	}
+        for (PropertyDescriptor pd : descriptors) {
+            if (isAssignableOrConvertibleFrom(pd.getPropertyType(), propertyValue.getClass())) {
+                Object value;
+                try {
+                    ReflectionUtils.makeAccessible(pd.getReadMethod());
+                    value = pd.getReadMethod().invoke(instance);
+                }
+                catch (Exception e) {
+                    throw new FatalBeanException("Problem calling readMethod of " + pd, e);
+                }
+                if (propertyValue.equals(value)) {
+                    return pd;
+                }
+            }
         }
         return null;
     }
-    
+
     /**
      * Returns the type of the given property contained within the specified class
      *
@@ -173,18 +167,17 @@ public class GrailsClassUtils {
      *
      * @return The property type or null if none exists
      */
-    public static Class getPropertyType(Class clazz, String propertyName) {
-        if(clazz == null || StringUtils.isBlank(propertyName))
+    public static Class<?> getPropertyType(Class<?> clazz, String propertyName) {
+        if (clazz == null || StringUtils.isBlank(propertyName)) {
             return null;
+        }
 
         try {
-        	PropertyDescriptor desc=BeanUtils.getPropertyDescriptor(clazz, propertyName);
+            PropertyDescriptor desc=BeanUtils.getPropertyDescriptor(clazz, propertyName);
             if(desc != null) {
                 return desc.getPropertyType();
             }
-            else {
-                return null;
-            }
+            return null;
         } catch (Exception e) {
             // if there are any errors in instantiating just return null for the moment
             return null;
@@ -199,18 +192,17 @@ public class GrailsClassUtils {
      *
      * @return An array of PropertyDescriptor instances
      */
-    public static PropertyDescriptor[] getPropertiesOfType(Class clazz, Class propertyType) {
-        if(clazz == null || propertyType == null)
+    public static PropertyDescriptor[] getPropertiesOfType(Class<?> clazz, Class<?> propertyType) {
+        if(clazz == null || propertyType == null) {
             return new PropertyDescriptor[0];
+        }
 
-        Set properties = new HashSet();
+        Set<PropertyDescriptor> properties = new HashSet<PropertyDescriptor>();
         try {
-            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
-
-            for (int i = 0; i < descriptors.length; i++) {
-                Class currentPropertyType = descriptors[i].getPropertyType();
+            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(clazz)) {
+                Class<?> currentPropertyType = descriptor.getPropertyType();
                 if(isTypeInstanceOfPropertyType(propertyType, currentPropertyType)) {
-                    properties.add(descriptors[i]);
+                    properties.add(descriptor);
                 }
             }
 
@@ -218,10 +210,10 @@ public class GrailsClassUtils {
             // if there are any errors in instantiating just return null for the moment
             return new PropertyDescriptor[0];
         }
-        return (PropertyDescriptor[])properties.toArray( new PropertyDescriptor[ properties.size() ] );
+        return properties.toArray(new PropertyDescriptor[properties.size()]);
     }
 
-    private static boolean isTypeInstanceOfPropertyType(Class type, Class propertyType) {
+    private static boolean isTypeInstanceOfPropertyType(Class<?> type, Class<?> propertyType) {
         return propertyType.isAssignableFrom(type) && !propertyType.equals(Object.class);
     }
 
@@ -232,22 +224,20 @@ public class GrailsClassUtils {
      * @param propertySuperType The type of the properties you wish to retrieve
      * @return An array of PropertyDescriptor instances
      */
-    public static PropertyDescriptor[] getPropertiesAssignableToType(Class clazz, Class propertySuperType) {
+    public static PropertyDescriptor[] getPropertiesAssignableToType(Class<?> clazz, Class<?> propertySuperType) {
         if (clazz == null || propertySuperType == null) return new PropertyDescriptor[0];
 
-        Set properties = new HashSet();
+        Set<PropertyDescriptor> properties = new HashSet<PropertyDescriptor>();
         try {
-            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
-
-            for (int i = 0; i < descriptors.length; i++) {
-                if (propertySuperType.isAssignableFrom(descriptors[i].getPropertyType())) {
-                    properties.add(descriptors[i]);
+            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(clazz)) {
+                if (propertySuperType.isAssignableFrom(descriptor.getPropertyType())) {
+                    properties.add(descriptor);
                 }
             }
         } catch (Exception e) {
             return new PropertyDescriptor[0];
         }
-        return (PropertyDescriptor[]) properties.toArray(new PropertyDescriptor[properties.size()]);
+        return properties.toArray(new PropertyDescriptor[properties.size()]);
     }
 
     /**
@@ -258,18 +248,16 @@ public class GrailsClassUtils {
      *
      * @return A PropertyDescriptor instance or null if none exists
      */
-    public static PropertyDescriptor getProperty(Class clazz, String propertyName, Class propertyType) {
+    public static PropertyDescriptor getProperty(Class<?> clazz, String propertyName, Class<?> propertyType) {
         if(clazz == null || propertyName == null || propertyType == null)
             return null;
 
         try {
             PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(clazz, propertyName);
-            if(pd.getPropertyType().equals( propertyType )) {
+            if(pd.getPropertyType().equals(propertyType)) {
                 return pd;
             }
-            else {
-                return null;
-            }
+            return null;
         } catch (Exception e) {
             // if there are any errors in instantiating just return null for the moment
             return null;
@@ -295,13 +283,13 @@ public class GrailsClassUtils {
      * @return The short name of the class
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getShortName(String)} instead.
-     */    
+     */
     public static String getShortName(String className) {
         int i = className.lastIndexOf(".");
         if(i > -1) {
-            className = className.substring( i + 1, className.length() );
+            className = className.substring(i + 1, className.length());
         }
-        return className;    	
+        return className;
     }
 
     /**
@@ -335,16 +323,13 @@ public class GrailsClassUtils {
         if(name.length() > 1 && Character.isUpperCase(name.charAt(0)) && Character.isUpperCase(name.charAt(1)))  {
             return name;
         }
-        else {
-
-            String propertyName = name.substring(0,1).toLowerCase(Locale.ENGLISH) + name.substring(1);
-            if(propertyName.indexOf(' ') > -1) {
-                propertyName = propertyName.replaceAll("\\s", "");
-            }
-            return propertyName;
+        String propertyName = name.substring(0,1).toLowerCase(Locale.ENGLISH) + name.substring(1);
+        if(propertyName.indexOf(' ') > -1) {
+            propertyName = propertyName.replaceAll("\\s", "");
         }
+        return propertyName;
     }
-       
+
     /**
      * Returns the class name representation of the given name
      *
@@ -353,8 +338,7 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getClassNameRepresentation(String)} instead.
      */
-	public static String getClassNameRepresentation(String name) {
-        String className;
+    public static String getClassNameRepresentation(String name) {
 
         StringBuilder buf = new StringBuilder();
         if(name != null && name.length() > 0) {
@@ -365,10 +349,8 @@ public class GrailsClassUtils {
                         .append(token.substring(1));
             }
         }
-        className = buf.toString();
-
-        return className;
-	}
+        return buf.toString();
+    }
     /**
      * Shorter version of getPropertyNameRepresentation
      * @param name The name to convert
@@ -377,9 +359,9 @@ public class GrailsClassUtils {
      * @deprecated Use {@link grails.util.GrailsNameUtils#getPropertyName(String)} instead.
      */
     public static String getPropertyName(String name) {
-    	return getPropertyNameRepresentation(name);
+        return getPropertyNameRepresentation(name);
     }
-    
+
     /**
      * Shorter version of getPropertyNameRepresentation
      * @param clazz The clazz to convert
@@ -388,37 +370,37 @@ public class GrailsClassUtils {
      * @deprecated Use {@link grails.util.GrailsNameUtils#getPropertyName(Class)} instead.
      */
     public static String getPropertyName(Class clazz) {
-    	return getPropertyNameRepresentation(clazz);
+        return getPropertyNameRepresentation(clazz);
     }
-    
+
     /**
      * Retrieves the script name representation of the supplied class. For example
      * MyFunkyGrailsScript would be my-funky-grails-script
-     * 
+     *
      * @param clazz The class to convert
      * @return The script name representation
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getScriptName(Class)} instead.
      */
     public static String getScriptName(Class clazz) {
-    	return getScriptName(clazz.getName());
+        return getScriptName(clazz.getName());
     }
 
     /**
      * @deprecated Use {@link grails.util.GrailsNameUtils#getScriptName(String)} instead.
      */
-    public static String getScriptName(String name) {  
-		if(name.endsWith(".groovy")) {
-			name = name.substring(0, name.length()-7);
-		}
-    	String naturalName = getNaturalName(getShortName(name));
-    	return naturalName.replaceAll("\\s", "-").toLowerCase();    	
+    public static String getScriptName(String name) {
+        if(name.endsWith(".groovy")) {
+            name = name.substring(0, name.length()-7);
+        }
+        String naturalName = getNaturalName(getShortName(name));
+        return naturalName.replaceAll("\\s", "-").toLowerCase();
     }
-    
+
     /**
      * Calculates the class name from a script name in the form
      * my-funk-grails-script
-     * 
+     *
      * @param scriptName The script name
      * @return A class name
      *
@@ -460,9 +442,7 @@ public class GrailsClassUtils {
             }
             return buf.toString();
         }
-        else {
-            return name.substring(0,1).toUpperCase() + name.substring(1);
-        }
+        return name.substring(0,1).toUpperCase() + name.substring(1);
     }
 
     /**
@@ -490,7 +470,7 @@ public class GrailsClassUtils {
             if(Character.isLowerCase(c) || Character.isDigit(c)) {
                 if(Character.isLowerCase(c) && w.length() == 0)
                     c = Character.toUpperCase(c);
-                else if(w.length() > 1 && Character.isUpperCase(w.charAt(w.length() - 1)) ) {
+                else if(w.length() > 1 && Character.isUpperCase(w.charAt(w.length() - 1))) {
                     w = "";
                     words.add(++i,w);
                 }
@@ -498,7 +478,7 @@ public class GrailsClassUtils {
                 words.set(i, w + c);
             }
             else if(Character.isUpperCase(c)) {
-                if((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1)) ) 	{
+                if((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1))) {
                     words.set(i, w + c);
                 }
                 else {
@@ -519,7 +499,6 @@ public class GrailsClassUtils {
         return buf.toString();
     }
 
-
     /**
      * Convenience method for converting a collection to an Object[]
      * @param c The collection
@@ -527,10 +506,8 @@ public class GrailsClassUtils {
      */
     public static Object[] collectionToObjectArray(Collection c) {
         if(c == null) return new Object[0];
-
         return c.toArray(new Object[c.size()]);
     }
-
 
     /**
      * Detect if left and right types are matching types. In particular,
@@ -546,12 +523,12 @@ public class GrailsClassUtils {
     public static boolean isMatchBetweenPrimativeAndWrapperTypes(Class leftType, Class rightType) {
         if (leftType == null) {
             throw new NullPointerException("Left type is null!");
-        } else if (rightType == null) {
-            throw new NullPointerException("Right type is null!");
-        } else {
-            Class r = (Class)PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(leftType);
-            return r == rightType;
         }
+        if (rightType == null) {
+            throw new NullPointerException("Right type is null!");
+        }
+        Class<?> r = PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(leftType);
+        return r == rightType;
     }
 
     /**
@@ -565,42 +542,39 @@ public class GrailsClassUtils {
      * @param rightType The type of the right hand part of a notional assignment
      * @return True if values of the right hand type can be assigned in Groovy to variables of the left hand type.
      */
-    public static boolean isGroovyAssignableFrom(
-            Class leftType, Class rightType)
-    {
+    public static boolean isGroovyAssignableFrom(Class<?> leftType, Class<?> rightType) {
         if (leftType == null) {
             throw new NullPointerException("Left type is null!");
-        } else if (rightType == null) {
+        }
+        if (rightType == null) {
             throw new NullPointerException("Right type is null!");
-        } else if (leftType == Object.class) {
+        }
+        if (leftType == Object.class) {
             return true;
-        } else if (leftType == rightType) {
+        }
+        if (leftType == rightType) {
             return true;
-        } else {
-            // check for primitive type equivalence
-            Class r = (Class)PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(leftType);
-            boolean result = r == rightType;
+        }
+        // check for primitive type equivalence
+        Class<?> r = PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(leftType);
+        boolean result = r == rightType;
 
-            if (!result)
-            {
-                // If no primitive <-> wrapper match, it may still be assignable
-                // from polymorphic primitives i.e. Number -> int (AKA Integer)
-                if (rightType.isPrimitive())
-                {
-                    // see if incompatible
-                    r = (Class)PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(rightType);
-                    if (r != null)
-                    {
-                        result = leftType.isAssignableFrom(r);
-                    }
-                } else
-                {
-                    // Otherwise it may just be assignable using normal Java polymorphism
-                    result = leftType.isAssignableFrom(rightType);
+        if (!result) {
+            // If no primitive <-> wrapper match, it may still be assignable
+            // from polymorphic primitives i.e. Number -> int (AKA Integer)
+            if (rightType.isPrimitive()) {
+                // see if incompatible
+                r = PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(rightType);
+                if (r != null) {
+                    result = leftType.isAssignableFrom(r);
                 }
             }
-            return result;
+            else {
+                // Otherwise it may just be assignable using normal Java polymorphism
+                result = leftType.isAssignableFrom(rightType);
+            }
         }
+        return result;
     }
 
     /**
@@ -612,26 +586,19 @@ public class GrailsClassUtils {
      * @param propertyName The property name
      * @return true if the property with name propertyName has a static getter method
      */
-    public static boolean isStaticProperty( Class clazz, String propertyName)
-    {
+    public static boolean isStaticProperty(Class clazz, String propertyName) {
         Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(propertyName), null);
-        if (getter != null)
-        {
+        if (getter != null) {
             return isPublicStatic(getter);
         }
-        else
-        {
-            try
-            {
-                Field f = clazz.getDeclaredField(propertyName);
-                if (f != null)
-                {
-                    return isPublicStatic(f);
-                }
+        try {
+            Field f = clazz.getDeclaredField(propertyName);
+            if (f != null) {
+                return isPublicStatic(f);
             }
-            catch (NoSuchFieldException e)
-            {
-            }
+        }
+        catch (NoSuchFieldException ignored) {
+            // ignored
         }
 
         return false;
@@ -642,8 +609,7 @@ public class GrailsClassUtils {
      * @param m
      * @return True if the method is declared public static
      */
-    public static boolean isPublicStatic( Method m)
-    {
+    public static boolean isPublicStatic(Method m) {
         final int modifiers = m.getModifiers();
         return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers);
     }
@@ -653,8 +619,7 @@ public class GrailsClassUtils {
      * @param f
      * @return True if the field is declared public static
      */
-    public static boolean isPublicStatic( Field f)
-    {
+    public static boolean isPublicStatic(Field f) {
         final int modifiers = f.getModifiers();
         return Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers);
     }
@@ -664,8 +629,7 @@ public class GrailsClassUtils {
      * @param propertyName
      * @return The name for the getter method for this property, if it were to exist, i.e. getConstraints
      */
-    public static String getGetterName(String propertyName)
-    {
+    public static String getGetterName(String propertyName) {
         return "get" + Character.toUpperCase(propertyName.charAt(0))
             + propertyName.substring(1);
     }
@@ -677,26 +641,19 @@ public class GrailsClassUtils {
      * @param name The property name
      * @return The value if there is one, or null if unset OR there is no such property
      */
-    public static Object getStaticPropertyValue(Class clazz, String name)
-    {
+    public static Object getStaticPropertyValue(Class<?> clazz, String name) {
         Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(name), null);
-        try
-        {
-            if (getter != null)
-            {
-                return getter.invoke(null, null);
+        try {
+            if (getter != null) {
+                return getter.invoke(null);
             }
-            else
-            {
-                Field f = clazz.getDeclaredField(name);
-                if (f != null)
-                {
-                    return f.get(null);
-                }
+            Field f = clazz.getDeclaredField(name);
+            if (f != null) {
+                return f.get(null);
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception ignored) {
+            // ignored
         }
         return null;
     }
@@ -714,31 +671,22 @@ public class GrailsClassUtils {
      *
      * @return property value or null if no property found
      */
-    public static Object getPropertyOrStaticPropertyOrFieldValue(Object obj, String name) throws BeansException
-    {
+    public static Object getPropertyOrStaticPropertyOrFieldValue(Object obj, String name) throws BeansException {
         BeanWrapper ref = new BeanWrapperImpl(obj);
         if (ref.isReadableProperty(name)) {
             return ref.getPropertyValue(name);
         }
-        else
-        {
-            // Look for public fields
-            if (isPublicField(obj, name))
-            {
-                return getFieldValue(obj, name);
-            }
-
-            // Look for statics
-            Class clazz = obj.getClass();
-            if (isStaticProperty(clazz, name))
-            {
-                return getStaticPropertyValue(clazz, name);
-            }
-            else
-            {
-               return null;
-            }
+        // Look for public fields
+        if (isPublicField(obj, name)) {
+            return getFieldValue(obj, name);
         }
+
+        // Look for statics
+        Class<?> clazz = obj.getClass();
+        if (isStaticProperty(clazz, name)) {
+            return getStaticPropertyValue(clazz, name);
+        }
+        return null;
     }
 
     /**
@@ -748,17 +696,13 @@ public class GrailsClassUtils {
      * @param name
      * @return The object value or null if there is no such field or access problems
      */
-    public static Object getFieldValue(Object obj, String name)
-    {
-        Class clazz = obj.getClass();
-        Field f = null;
-        try
-        {
-            f = clazz.getDeclaredField(name);
+    public static Object getFieldValue(Object obj, String name) {
+        Class<?> clazz = obj.getClass();
+        try {
+            Field f = clazz.getDeclaredField(name);
             return f.get(obj);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             return null;
         }
     }
@@ -770,74 +714,71 @@ public class GrailsClassUtils {
      * @param name
      * @return True if a public field with the name exists
      */
-    public static boolean isPublicField(Object obj, String name)
-    {
-        Class clazz = obj.getClass();
-        Field f = null;
-        try
-        {
-            f = clazz.getDeclaredField(name);
+    public static boolean isPublicField(Object obj, String name) {
+        Class<?> clazz = obj.getClass();
+        try {
+            Field f = clazz.getDeclaredField(name);
             return Modifier.isPublic(f.getModifiers());
         }
-        catch (NoSuchFieldException e)
-        {
+        catch (NoSuchFieldException e) {
             return false;
         }
     }
 
     /**
      * Checks whether the specified property is inherited from a super class
-     * 
+     *
      * @param clz The class to check
      * @param propertyName The property name
      * @return True if the property is inherited
      */
     public static boolean isPropertyInherited(Class clz, String propertyName) {
-		if(clz == null) return false;
-		if(StringUtils.isBlank(propertyName))
-			throw new IllegalArgumentException("Argument [propertyName] cannot be null or blank");
-		
-		Class superClass = clz.getSuperclass();
-		
-		PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(superClass, propertyName);
-		if (pd != null && pd.getReadMethod() != null) {
-			return true;
-		}
-		return false;
-	}
+        if (clz == null) return false;
+        if (StringUtils.isBlank(propertyName)) {
+            throw new IllegalArgumentException("Argument [propertyName] cannot be null or blank");
+        }
 
-	/**
-	 * Creates a concrete collection for the suppied interface
-	 * @param interfaceType The interface
-	 * @return ArrayList for List, TreeSet for SortedSet, HashSet for Set etc.
-	 */
-	public static Collection createConcreteCollection(Class interfaceType) {
-		Collection elements;
-		if(interfaceType.equals(List.class)) {
-		    elements = new ArrayList();
-		}
-		else if(interfaceType.equals(SortedSet.class)) {
-		    elements = new TreeSet();
-		}
-		else {
-		    elements = new HashSet();
-		}
-		return elements;
-	}
+        Class<?> superClass = clz.getSuperclass();
 
-	/**
-	 * Retrieves the logical class name of a Grails artifact given the Grails class
-	 * and a specified trailing name
-	 * 
-	 * @param clazz The class
-	 * @param trailingName The trailing name such as "Controller" or "TagLib"
-	 * @return The logical class name
+        PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(superClass, propertyName);
+        if (pd != null && pd.getReadMethod() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Creates a concrete collection for the suppied interface
+     * @param interfaceType The interface
+     * @return ArrayList for List, TreeSet for SortedSet, HashSet for Set etc.
+     */
+    public static Collection createConcreteCollection(Class interfaceType) {
+        Collection elements;
+        if(interfaceType.equals(List.class)) {
+            elements = new ArrayList();
+        }
+        else if(interfaceType.equals(SortedSet.class)) {
+            elements = new TreeSet();
+        }
+        else {
+            elements = new HashSet();
+        }
+        return elements;
+    }
+
+    /**
+     * Retrieves the logical class name of a Grails artifact given the Grails class
+     * and a specified trailing name
+     *
+     * @param clazz The class
+     * @param trailingName The trailing name such as "Controller" or "TagLib"
+     * @return The logical class name
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getLogicalName(Class, String)} instead.
-	 */
-	public static String getLogicalName(Class clazz, String trailingName) {
+     */
+    public static String getLogicalName(Class clazz, String trailingName) {
         return getLogicalName(clazz.getName(), trailingName);
-	}
+    }
 
     /**
      * Retrieves the logical name of the class without the trailing name
@@ -847,10 +788,10 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getLogicalName(String, String)} instead.
      */
-    public static String getLogicalName(String name, String trailingName ) {
+    public static String getLogicalName(String name, String trailingName) {
         if(!StringUtils.isBlank(trailingName)) {
             String shortName = getShortName(name);
-            if(shortName.indexOf( trailingName ) > - 1) {
+            if(shortName.indexOf(trailingName) > - 1) {
                 return shortName.substring(0, shortName.length() - trailingName.length());
             }
         }
@@ -864,101 +805,96 @@ public class GrailsClassUtils {
         return getLogicalName(getPropertyName(className), trailingName);
     }
 
-    
+    /**
+     * Retrieves the name of a setter for the specified property name
+     * @param propertyName The property name
+     * @return The setter equivalent
+     */
+    public static String getSetterName(String propertyName) {
+        return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
+    }
 
     /**
-	 * Retrieves the name of a setter for the specified property name
-	 * @param propertyName The property name
-	 * @return The setter equivalent
-	 */
-	public static String getSetterName(String propertyName) {
-		return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
-	}
-
-	/**
-	 * Returns true if the name of the method specified and the number of arguments make it a javabean property
-	 * 
-	 * @param name True if its a Javabean property
-	 * @param args The arguments
-	 * @return True if it is a javabean property method
-	 */
-	public static boolean isGetter(String name, Class[] args) {
-		if(StringUtils.isBlank(name) || args == null)return false;
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property
+     *
+     * @param name True if its a Javabean property
+     * @param args The arguments
+     * @return True if it is a javabean property method
+     */
+    public static boolean isGetter(String name, Class<?>[] args) {
+        if(StringUtils.isBlank(name) || args == null)return false;
         if(args.length != 0)return false;
 
         if(name.startsWith("get")) {
-			name = name.substring(3);
-			if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;			
-		}
+            name = name.substring(3);
+            if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+        }
         else if(name.startsWith("is")) {
             name = name.substring(2);
             if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
         }
         return false;
-	}
+    }
 
-	/**
-	 * Returns a property name equivalent for the given getter name or null if it is not a getter
-	 * 
-	 * @param getterName The getter name
-	 * @return The property name equivalent
-	 */
-	public static String getPropertyForGetter(String getterName) {
-		if(StringUtils.isBlank(getterName))return null;
-		
-		if(getterName.startsWith("get")) {
-			String prop = getterName.substring(3);
-			return convertPropertyName(prop);
-		}
-        else if(getterName.startsWith("is")) {
+    /**
+     * Returns a property name equivalent for the given getter name or null if it is not a getter
+     *
+     * @param getterName The getter name
+     * @return The property name equivalent
+     */
+    public static String getPropertyForGetter(String getterName) {
+        if(StringUtils.isBlank(getterName))return null;
+
+        if(getterName.startsWith("get")) {
+            String prop = getterName.substring(3);
+            return convertPropertyName(prop);
+        }
+        if(getterName.startsWith("is")) {
             String prop = getterName.substring(2);
             return convertPropertyName(prop);
         }
         return null;
-	}
+    }
 
-	private static String convertPropertyName(String prop) {
-		if(Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
-			return prop;
-		}
-		else if(Character.isDigit(prop.charAt(0))) {
-			return prop;
-		}
-		else {
-			return Character.toLowerCase(prop.charAt(0)) + prop.substring(1);
-		}
-	}
-	
-	
-	/**
-	 * Returns a property name equivalent for the given setter name or null if it is not a getter
-	 * 
-	 * @param setterName The setter name
-	 * @return The property name equivalent
-	 */
-	public static String getPropertyForSetter(String setterName) {
-		if(StringUtils.isBlank(setterName))return null;
-		
-		if(setterName.startsWith("set")) {
-			String prop = setterName.substring(3);
-			return convertPropertyName(prop);
-		}
-		return null;
-	}
+    private static String convertPropertyName(String prop) {
+        if(Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
+            return prop;
+        }
+        if(Character.isDigit(prop.charAt(0))) {
+            return prop;
+        }
+        return Character.toLowerCase(prop.charAt(0)) + prop.substring(1);
+    }
 
-	public static boolean isSetter(String name, Class[] args) {
-		if(StringUtils.isBlank(name) || args == null)return false;
-		
-		if(name.startsWith("set")) {
-			if(args.length != 1) return false;
-			name = name.substring(3);
-			if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
-		}
-		
-		return false;
-	}
+    /**
+     * Returns a property name equivalent for the given setter name or null if it is not a getter
+     *
+     * @param setterName The setter name
+     * @return The property name equivalent
+     */
+    public static String getPropertyForSetter(String setterName) {
+        if(StringUtils.isBlank(setterName))return null;
 
-	public static MetaClass getExpandoMetaClass(Class clazz) {
+        if(setterName.startsWith("set")) {
+            String prop = setterName.substring(3);
+            return convertPropertyName(prop);
+        }
+        return null;
+    }
+
+    public static boolean isSetter(String name, Class[] args) {
+        if(StringUtils.isBlank(name) || args == null)return false;
+
+        if(name.startsWith("set")) {
+            if(args.length != 1) return false;
+            name = name.substring(3);
+            if(name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+        }
+
+        return false;
+    }
+
+    public static MetaClass getExpandoMetaClass(Class clazz) {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         Assert.isTrue(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle, "Grails requires an instance of [ExpandoMetaClassCreationHandle] to be set in Groovy's MetaClassRegistry!");
         MetaClass mc = registry.getMetaClass(clazz);
@@ -966,7 +902,7 @@ public class GrailsClassUtils {
         if(mc instanceof AdaptingMetaClass) {
             adapter = (AdaptingMetaClass) mc;
             mc= ((AdaptingMetaClass)mc).getAdaptee();
-		}
+        }
 
         if(!(mc instanceof ExpandoMetaClass)) {
             // removes cached version
@@ -978,56 +914,49 @@ public class GrailsClassUtils {
         }
         Assert.isTrue(mc instanceof ExpandoMetaClass,"BUG! Method must return an instance of [ExpandoMetaClass]!");
         return mc;
-	}	
-	
+    }
+
     /**
-     * Returns true if the specified clazz parameter is either the same as, or is a superclass or superinterface 
+     * Returns true if the specified clazz parameter is either the same as, or is a superclass or superinterface
      * of, the specified type parameter. Converts primitive types to compatible class automatically.
-     * 
+     *
      * @param clazz
      * @param type
      * @return True if the class is a taglib
      * @see java.lang.Class#isAssignableFrom(Class)
      */
-    public static boolean isAssignableOrConvertibleFrom(Class clazz, Class type) {
-    	if (type == null || clazz == null) {
-    		return false;
-    	}
-    	else if (type.isPrimitive()) {
-    		// convert primitive type to compatible class 
-    		Class primitiveClass = (Class)GrailsClassUtils.PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(type);
-    		if (primitiveClass == null) {
-    			// no compatible class found for primitive type
-    			return false;
-    		}
-    		else {
-    			return clazz.isAssignableFrom(primitiveClass);
-    		}
-    	}
-    	else {
-    		return clazz.isAssignableFrom(type);
-    	}
+    public static boolean isAssignableOrConvertibleFrom(Class<?> clazz, Class<?> type) {
+        if (type == null || clazz == null) {
+            return false;
+        }
+        if (type.isPrimitive()) {
+            // convert primitive type to compatible class
+            Class<?> primitiveClass = GrailsClassUtils.PRIMITIVE_TYPE_COMPATIBLE_CLASSES.get(type);
+            if (primitiveClass == null) {
+                // no compatible class found for primitive type
+                return false;
+            }
+            return clazz.isAssignableFrom(primitiveClass);
+        }
+        return clazz.isAssignableFrom(type);
     }
-
 
     /**
      * Retrieves a boolean value from a Map for the given key
      *
      * @param key The key that references the boolean value
      * @param map The map to look in
-     * @return A boolean value which will be false if the map is null, the map doesn't contain the key or the value is false 
+     * @return A boolean value which will be false if the map is null, the map doesn't contain the key or the value is false
      */
     public static boolean getBooleanFromMap(String key, Map map) {
         if(map == null) return false;
         if(map.containsKey(key)) {
             Object o = map.get(key);
             if(o == null)return false;
-            else if(o instanceof Boolean) {
+            if(o instanceof Boolean) {
                 return ((Boolean)o).booleanValue();
             }
-            else {
-                 return Boolean.valueOf(o.toString()).booleanValue();
-            }
+            return Boolean.valueOf(o.toString()).booleanValue();
         }
         return false;
     }
@@ -1055,26 +984,25 @@ public class GrailsClassUtils {
      * @param type The class to check
      * @return True if it is an enum
      */
-    public static boolean isJdk5Enum(Class type) {
+    public static boolean isJdk5Enum(Class<?> type) {
         if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
             Method m = BeanUtils.findMethod(type.getClass(),"isEnum", null);
             if(m == null) return false;
             try {
-                Object result = m.invoke(type, null);
+                Object result = m.invoke(type);
                 return result instanceof Boolean && ((Boolean) result).booleanValue();
-            } catch (Exception e ) {
+            } catch (Exception e) {
                 return false;
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * Locates the name of a property for the given value on the target object using Groovy's meta APIs.
      * Note that this method uses the reference so the incorrect result could be returned for two properties
      * that refer to the same reference. Use with caution.
-     * 
+     *
      * @param target The target
      * @param obj The property value
      * @return The property name or null
@@ -1083,11 +1011,11 @@ public class GrailsClassUtils {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
         List<MetaProperty> metaProperties = mc.getProperties();
         for (MetaProperty metaProperty : metaProperties) {
-        	if(isAssignableOrConvertibleFrom(metaProperty.getType(), obj.getClass())) {
-	            Object val = metaProperty.getProperty(target);
-	            if (val != null && val.equals(obj))
-	                return metaProperty.getName();
-        	}
+            if(isAssignableOrConvertibleFrom(metaProperty.getType(), obj.getClass())) {
+                Object val = metaProperty.getProperty(target);
+                if (val != null && val.equals(obj))
+                    return metaProperty.getName();
+            }
         }
         return null;
     }
@@ -1100,10 +1028,10 @@ public class GrailsClassUtils {
      * @param packageList The list of packages
      * @return True if it is within the list of specified packages
      */
-    public static boolean isClassBelowPackage(Class theClass, List packageList) {
+    public static boolean isClassBelowPackage(Class<?> theClass, List packageList) {
         String classPackage = theClass.getPackage().getName();
         for (Object packageName : packageList) {
-            if(packageName!=null) {
+            if(packageName != null) {
                 if (classPackage.startsWith(packageName.toString())) {
                     return true;
                 }
