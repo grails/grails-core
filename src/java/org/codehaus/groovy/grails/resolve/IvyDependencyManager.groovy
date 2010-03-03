@@ -259,7 +259,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             repositories {
                 grailsPlugins()
                 grailsHome()
-                grailsCentral()
                 // uncomment the below to enable remote dependency resolution
                 // from public Maven repositories
                 //mavenCentral()
@@ -1008,7 +1007,7 @@ class IvyDomainSpecificLanguageEvaluator {
             urlResolver.addArtifactPattern("${url}/grails-[artifact]/tags/RELEASE_*/grails-[artifact]-[revision].[ext]")
             urlResolver.settings = ivySettings
             urlResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
-            urlResolver.changingPattern = ".*SNAPSHOT"
+            urlResolver.changingPattern = ".*"
             urlResolver.setCheckmodified(true)
             chainResolver.add urlResolver
         }
