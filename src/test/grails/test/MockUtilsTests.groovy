@@ -593,11 +593,15 @@ class MockUtilsTests extends GroovyTestCase {
         assertNull "Alice US's relations set should be null.", aliceDoeUS.relations
 
         // Now add a relation or two.
-        assertEquals aliceDoeUS, aliceDoeUS.addToRelations("Auntie Miriam")
-        assertEquals aliceDoeUS, aliceDoeUS.addToRelations("Uncle Jack")
+        assertEquals aliceDoeUS, aliceDoeUS.addToRelations(name: "Auntie Miriam")
+        assertEquals aliceDoeUS, aliceDoeUS.addToRelations(name: "Uncle Jack")
 
         // Check that they are in the set.
-        assertEquals( [ "Auntie Miriam", "Uncle Jack" ] as Set, aliceDoeUS.relations )
+        assertEquals([new Relation(name: "Auntie Miriam"), new Relation(name: "Uncle Jack")] as Set, aliceDoeUS.relations)
+
+        for (relation in aliceDoeUS.relations) {
+            assertSame aliceDoeUS, relation.testDomain
+        }
     }
 
     /**
@@ -608,17 +612,17 @@ class MockUtilsTests extends GroovyTestCase {
                 name: "Alice Doe",
                 country: "US",
                 age: 35,
-                relations: [ "Auntie Miriam", "Uncle Jack" ] as Set)
+                relations: [new Relation(name: "Auntie Miriam"), new Relation(name: "Uncle Jack")] as Set)
 
         MockUtils.mockDomain(TestDomain, errorsMap, [ aliceDoeUS ])
 
         assertEquals 2, aliceDoeUS.relations?.size()
 
         // Now remove a relation.
-        assertEquals aliceDoeUS, aliceDoeUS.removeFromRelations("Auntie Miriam")
+        assertEquals aliceDoeUS, aliceDoeUS.removeFromRelations(name: "Auntie Miriam")
 
         // Check that only Uncle Jack is left.
-        assertEquals( [ "Uncle Jack" ] as Set, aliceDoeUS.relations )
+        assertEquals([new Relation(name: "Uncle Jack")] as Set, aliceDoeUS.relations)
     }
 
     /**
@@ -767,7 +771,7 @@ class MockUtilsTests extends GroovyTestCase {
         MockUtils.mockDomain(TestDomain, errorsMap, testInstances)
 
         def domain = TestDomain.get(1)
-        assertEquals domain, domain.addToRelations("test")
+        assertEquals domain, domain.addToRelations(name: "test")
 
         // Also check that the "id" attribute has been set correctly
         // on all of the test instances.
@@ -1513,10 +1517,11 @@ class TestDomain {
     Long number
     Long notOdd
     String title
-    Set relations
     Date dateCreated
     Date lastUpdated
 
+    static hasMany = [relations: Relation]
+    Set relations
 
     static constraints = {
         id(nullable: true, unique: true)
@@ -1544,6 +1549,22 @@ class TestDomain {
 
     String toString() {
         "TestDomain(${this.id}, ${this.name}, ${this.country}, ${this.age})"
+    }
+}
+
+class Relation {
+    Long id
+    Long version
+
+    String name
+    TestDomain testDomain
+
+    boolean equals(other) {
+        other instanceof Relation && other.name == name
+    }
+
+    int hashCode() {
+        name.hashCode()
     }
 }
 
