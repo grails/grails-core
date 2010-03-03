@@ -542,7 +542,7 @@ readMetadataFromZip = { String zipLocation, pluginFile=zipLocation ->
         fullPluginName = "$currentPluginName-$currentPluginRelease"
     }
     else {
-        cleanupPluginInstallAndExit("Plug-in $pluginFile is not a valid Grails plugin. No plugin.xml descriptor found!")
+        cleanupPluginInstallAndExit("Plugin $pluginFile is not a valid Grails plugin. No plugin.xml descriptor found!")
     }
 }
 
@@ -582,6 +582,7 @@ uninstallPluginForName = { name, version=null ->
             ant.delete(dir:pluginDir, failonerror:true)
         }
         resetClasspathAndState()
+        println "Uninstalled plugin [${name}]."
     }
     else {
         event("StatusError", ["No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall"])
@@ -729,7 +730,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             def providedScripts = resolveResources("file:${pluginInstallPath}/scripts/*.groovy").findAll { !it.filename.startsWith('_')}
             event("StatusFinal", ["Plugin ${fullPluginName} installed"])
             if (providedScripts) {
-                println "Plug-in provides the following new scripts:"
+                println "Plugin provides the following new scripts:"
                 println "------------------------------------------"
                 providedScripts.file.each {file ->
                     def scriptName = GrailsNameUtils.getScriptName(file.name)
@@ -785,7 +786,7 @@ resolvePluginZip = {pluginName, pluginVersion ->
         def (group, name) = pluginName.contains(":") ? pluginName.split(":") : ['org.grails.plugins', pluginName]
         def resolveArgs = [name:name, group:group]
         if(pluginVersion) resolveArgs.version = pluginVersion
-        else resolveArgs.version = "latest.integration"
+        else resolveArgs.version = "latest.release"
 
         dependencyManager.parseDependencies {
             plugins {
