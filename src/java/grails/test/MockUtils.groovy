@@ -768,8 +768,7 @@ class MockUtils {
         // Add the "addTo*" and "removeFrom*" methods.
 
         def collectionTypes = [:]
-        def hasManyField = clazz.declaredFields.find { it.name == 'hasMany' }
-        def hasMany = findHasMany(clazz)
+        def hasMany = GrailsClassUtils.getStaticPropertyValue(clazz, 'hasMany')
         if (hasMany) {
             for (name in hasMany.keySet()) {
                 // pre-populate with Set, override with PropertyDescriptors below
@@ -806,7 +805,7 @@ class MockUtils {
 
                 // now set back-reference
                 if (!(arg instanceof Map)) {
-                    def otherHasMany = findHasMany(instanceClass)
+                    def otherHasMany = GrailsClassUtils.getStaticPropertyValue(instanceClass, 'hasMany')
                     if (otherHasMany) {
                         // many-to-many
                         otherHasMany.each { String otherCollectionName, Class otherCollectionType ->
@@ -849,15 +848,6 @@ class MockUtils {
             return instance
         }
 		  null
-    }
-
-    private static Map findHasMany(clazz) {
-        def hasManyField = clazz.declaredFields.find { it.name == 'hasMany' }
-        if (hasManyField) {
-            hasManyField.accessible = true
-            return hasManyField.get(null)
-        }
-        null
     }
 
     private static evaluateMapping(Class clazz) {
