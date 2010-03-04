@@ -41,6 +41,7 @@ import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
 import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.codehaus.groovy.grails.resolve.PluginResolveEngine
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -110,15 +111,9 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     }
     if(resolveRequired) {
         println "Downloading new plugins. Please wait..."
-        IvyDependencyManager newManager = createFreshDependencyManager(grailsAppName, grailsAppVersion, grailsSettings)
-        newManager.parseDependencies {
-            plugins {
-                for(ModuleRevisionId id in pluginsToInstall) {
-                    runtime group:id.organisation ?: "org.grails.plugins", name:id.name, version:id.revision
-                }
-            }
-        }
-        ResolveReport report = newManager.resolvePluginDependencies()
+        BuildSettings settings = grailsSettings
+        def pluginResolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
+        ResolveReport report = pluginResolveEngine.resolvePlugins(pluginsToInstall)
         if(report.hasError()) {
             println "Failed to resolve plugins."
             exit 1
@@ -542,7 +537,7 @@ readMetadataFromZip = { String zipLocation, pluginFile=zipLocation ->
         fullPluginName = "$currentPluginName-$currentPluginRelease"
     }
     else {
-        cleanupPluginInstallAndExit("Plug-in $pluginFile is not a valid Grails plugin. No plugin.xml descriptor found!")
+        cleanupPluginInstallAndExit("Plugin $pluginFile is not a valid Grails plugin. No plugin.xml descriptor found!")
     }
 }
 
@@ -582,6 +577,7 @@ uninstallPluginForName = { name, version=null ->
             ant.delete(dir:pluginDir, failonerror:true)
         }
         resetClasspathAndState()
+        println "Uninstalled plugin [${name}]."
     }
     else {
         event("StatusError", ["No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall"])
@@ -729,7 +725,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             def providedScripts = resolveResources("file:${pluginInstallPath}/scripts/*.groovy").findAll { !it.filename.startsWith('_')}
             event("StatusFinal", ["Plugin ${fullPluginName} installed"])
             if (providedScripts) {
-                println "Plug-in provides the following new scripts:"
+                println "Plugin provides the following new scripts:"
                 println "------------------------------------------"
                 providedScripts.file.each {file ->
                     def scriptName = GrailsNameUtils.getScriptName(file.name)
@@ -781,42 +777,13 @@ eachRepository = { Closure callable ->
 }
 
 resolvePluginZip = {pluginName, pluginVersion ->
-        IvyDependencyManager dependencyManager = createFreshDependencyManager(grailsAppName, grailsAppVersion, grailsSettings)
-        def (group, name) = pluginName.contains(":") ? pluginName.split(":") : ['org.grails.plugins', pluginName]
-        def resolveArgs = [name:name, group:group]
-        if(pluginVersion) resolveArgs.version = pluginVersion
-        else resolveArgs.version = "latest.integration"
-
-        dependencyManager.parseDependencies {
-            plugins {
-                runtime resolveArgs
-            }
-        }
-
-        println "Resolving plugin ${pluginName}. Please wait..."
-        println()
-        def report = dependencyManager.resolvePluginDependencies("")
-        if(report.hasError()) {
-            println "Error resolving plugin ${resolveArgs}."
-            exit 1
-        }
-        else {
-            def artifactReport = report.allArtifactsReports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-            if(artifactReport) {
-                return artifactReport.localFile
-            }
-            else {
-                println "Error resolving plugin ${resolveArgs}. Plugin not found."
-                exit 1
-            }
-        }
-}
-
-IvyDependencyManager createFreshDependencyManager(grailsAppName, grailsAppVersion, grailsSettings) {
-    IvyDependencyManager dependencyManager = new IvyDependencyManager(grailsAppName, grailsAppVersion ?: "0.1", grailsSettings)
-    dependencyManager.chainResolver = grailsSettings.dependencyManager.chainResolver
-    dependencyManager.logger = grailsSettings.dependencyManager.logger
-    return dependencyManager
+    BuildSettings settings = grailsSettings
+    def pluginResolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
+    def zip = pluginResolveEngine.resolvePluginZip(pluginName, pluginVersion)
+    if(!zip) exit 1 // an error occured
+    else {
+        return zip
+    }
 }
 
 /**

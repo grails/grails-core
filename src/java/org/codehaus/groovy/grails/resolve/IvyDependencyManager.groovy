@@ -46,6 +46,10 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 import grails.util.Metadata
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.util.MessageLogger
+import org.apache.ivy.core.module.descriptor.Artifact
+import org.apache.ivy.core.report.ConfigurationResolveReport
+import org.apache.ivy.core.report.DownloadReport
+import org.apache.ivy.core.report.DownloadStatus
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -259,7 +263,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             repositories {
                 grailsPlugins()
                 grailsHome()
-                grailsCentral()
                 // uncomment the below to enable remote dependency resolution
                 // from public Maven repositories
                 //mavenCentral()
@@ -504,6 +507,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             hasApplicationDependencies = true
         }
         if(pluginMode) {
+            pluginDependencyNames << dependencyDescriptor.dependencyId.name
             pluginDependencyDescriptors << dependencyDescriptor
         }
         else {
@@ -573,10 +577,15 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     /**
      * Performs a resolve of declared plugin dependencies (zip files containing plugin distributions)
      */
-    public ResolveReport resolvePluginDependencies(String conf = '') {
+    public ResolveReport resolvePluginDependencies(String conf = '', Map args = [:]) {
         resolveErrors = false
         if(usedConfigurations.contains(conf) || conf == '') {
-            def options = new ResolveOptions(checkIfChanged:true, outputReport:true, validate:false)
+
+            if(args.checkIfChanged==null) args.checkIfChanged = true
+            if(args.outputReport==null) args.outputReport = true
+            if(args.validate==null) args.validate = false
+
+            def options = new ResolveOptions(args)
             if(conf)
                 options.confs = [conf] as String[]
 
@@ -585,9 +594,30 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             for(dd in pluginDependencyDescriptors) {
                 md.addDependency dd
             }
-            ResolveReport resolve = resolveEngine.resolve(md, options)
-            resolveErrors = resolve.hasError()
-            return resolve
+            if(!options.download) {
+                def date = new Date()
+                def report = new ResolveReport(md)
+                def ivyNodes = resolveEngine.getDependencies(md, options, report)
+                for(IvyNode node in ivyNodes) {
+                    for(Artifact a in node.allArtifacts) {
+                        def origin = resolveEngine.locate(a)
+                        def cr = new ConfigurationResolveReport(resolveEngine, md, conf, date, options)
+                        def dr = new DownloadReport()
+                        def adr = new ArtifactDownloadReport(a)
+                        adr.artifactOrigin = origin
+                        adr.downloadStatus = DownloadStatus.NO
+                        dr.addArtifactReport(adr)
+                        cr.addDependency(node, dr)
+                        report.addReport(conf, cr)
+                    }
+                }
+                return report
+            }
+            else {
+                ResolveReport resolve = resolveEngine.resolve(md, options)
+                resolveErrors = resolve.hasError()
+                return resolve
+            }
         }
         else {
             // return an empty resolve report
@@ -926,9 +956,6 @@ class IvyDomainSpecificLanguageEvaluator {
                 if(grailsHome!='.')
                     chainResolver.add(createLocalPluginResolver("grailsHome",grailsHome))
             }
-            if(buildSettings?.grailsWorkDir) {
-                chainResolver.add(createLocalPluginResolver("grailsCache",buildSettings?.grailsWorkDir?.absolutePath))
-            }
         }
     }
 
@@ -1008,7 +1035,7 @@ class IvyDomainSpecificLanguageEvaluator {
             urlResolver.addArtifactPattern("${url}/grails-[artifact]/tags/RELEASE_*/grails-[artifact]-[revision].[ext]")
             urlResolver.settings = ivySettings
             urlResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
-            urlResolver.changingPattern = ".*SNAPSHOT"
+            urlResolver.changingPattern = ".*"
             urlResolver.setCheckmodified(true)
             chainResolver.add urlResolver
         }
@@ -1131,12 +1158,16 @@ class IvyDomainSpecificLanguageEvaluator {
                     if(dependency.group && name && dependency.version) {
                        if(!isExcluded(name)) {
 
+                           def attrs = [:]
+                           if(dependency.classifier) {
+                               attrs["m:classifier"] = dependency.classifier
+                           }
                            def mrid
                            if(dependency.branch) {
-                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version)
+                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version, attrs)
                            }
                            else {
-                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version)
+                               mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.version, attrs)
                            }
 
 
@@ -1145,10 +1176,17 @@ class IvyDomainSpecificLanguageEvaluator {
                                addDependency mrid
                            }
                            else {
-                               def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
+
+                               def artifact
+                               if(dependency.classifier == 'plugin')
+                                    artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "xml", "xml", null, null )
+                               else
+                                    artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
+
                                dependencyDescriptor.addDependencyArtifact(scope, artifact)
-                           }
-                           
+                           }                                                                
+
+
                            dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
                            dependencyDescriptor.inherited = inherited || inheritsAll
                            if(plugin) {

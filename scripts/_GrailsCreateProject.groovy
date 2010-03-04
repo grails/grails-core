@@ -44,6 +44,7 @@ target(createApp: "Creates a Grails application for the given name")  {
             "app.version": grailsAppVersion ?: "0.1",
             "app.servlet.version": servletVersion)
 
+
     installDefaultPluginSet()
     
     event("StatusFinal", ["Created Grails Application at $basedir"])
@@ -102,6 +103,13 @@ target(initProject: "Initialise an application or plugin project") {
     grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
     grailsUnpack(dest: basedir, src: "grails-$projectType-files.jar")
     integrateEclipse()
+
+    // make sure Grails central repo is prepped for default plugin set installation
+    grailsSettings.dependencyManager.parseDependencies {
+        repositories {
+            grailsCentral()
+        }
+    }
 }
 
 target ( appName : "Evaluates the application name") {

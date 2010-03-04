@@ -67,6 +67,7 @@ pluginExcludes = [
 target(packagePlugin:"Implementation target") {
     depends (checkVersion, packageApp)
 
+    println "Packaging plugin..."
     def pluginFile
     new File("${basedir}").eachFile {
         if(it.name.endsWith("GrailsPlugin.groovy")) {
@@ -134,6 +135,7 @@ target(packagePlugin:"Implementation target") {
         }
     }
 
+    println "Plugin zip created at ${pluginZip}"
 	event("PackagePluginEnd", [pluginName])
 
 }

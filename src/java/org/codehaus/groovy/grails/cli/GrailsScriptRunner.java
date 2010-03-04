@@ -74,6 +74,8 @@ public class GrailsScriptRunner {
         DEFAULT_ENVS.put("TestApp", Environment.TEST.getName());
         DEFAULT_ENVS.put("RunWebtest", Environment.TEST.getName());
         ExpandoMetaClass.enableGlobally();
+        // disable annoying ehcache up-to-date check
+        System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
     }
 
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
