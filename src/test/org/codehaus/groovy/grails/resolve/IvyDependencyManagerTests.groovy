@@ -49,10 +49,10 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         manager.parseDependencies {
             repositories {
-                grailsCentral()
+                mavenLocal()
             }
             plugins {
-                runtime "org.grails.plugins:feeds:1.5"
+                runtime name:"easy", classifier:"plugin", version:"latest.integration"
             }
         }
 

@@ -46,6 +46,10 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 import grails.util.Metadata
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.util.MessageLogger
+import org.apache.ivy.core.module.descriptor.Artifact
+import org.apache.ivy.core.report.ConfigurationResolveReport
+import org.apache.ivy.core.report.DownloadReport
+import org.apache.ivy.core.report.DownloadStatus
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -589,9 +593,30 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             for(dd in pluginDependencyDescriptors) {
                 md.addDependency dd
             }
-            ResolveReport resolve = resolveEngine.resolve(md, options)
-            resolveErrors = resolve.hasError()
-            return resolve
+            if(!options.download) {
+                def date = new Date()
+                def report = new ResolveReport(md)
+                def ivyNodes = resolveEngine.getDependencies(md, options, report)
+                for(IvyNode node in ivyNodes) {
+                    for(Artifact a in node.allArtifacts) {
+                        def origin = resolveEngine.locate(a)
+                        def cr = new ConfigurationResolveReport(resolveEngine, md, conf, date, options)
+                        def dr = new DownloadReport()
+                        def adr = new ArtifactDownloadReport(a)
+                        adr.artifactOrigin = origin
+                        adr.downloadStatus = DownloadStatus.NO
+                        dr.addArtifactReport(adr)
+                        cr.addDependency(node, dr)
+                        report.addReport(conf, cr)
+                    }
+                }
+                return report
+            }
+            else {
+                ResolveReport resolve = resolveEngine.resolve(md, options)
+                resolveErrors = resolve.hasError()
+                return resolve
+            }
         }
         else {
             // return an empty resolve report
@@ -1150,9 +1175,15 @@ class IvyDomainSpecificLanguageEvaluator {
                                addDependency mrid
                            }
                            else {
-                               def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
+
+                               def artifact
+                               if(dependency.classifier == 'plugin')
+                                    artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "xml", "xml", null, null )
+                               else
+                                    artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
+
                                dependencyDescriptor.addDependencyArtifact(scope, artifact)
-                           }
+                           }                                                                
 
 
                            dependencyDescriptor.exported = getBooleanValue(dependency, 'export')

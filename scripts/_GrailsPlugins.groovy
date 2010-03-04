@@ -15,6 +15,8 @@
 */
 
 import groovy.xml.dom.DOMCategory
+import org.codehaus.groovy.grails.resolve.PluginResolveEngine
+import grails.util.BuildSettings
 
 /**
  * Gant script that handles the installation of Grails plugins
@@ -233,8 +235,13 @@ Information about Grails plugin
 
 def displayPluginInfo = { pluginName, version ->
 
-    File pluginZip = resolvePluginZip(pluginName, version)
-    readMetadataFromZip pluginZip.absolutePath
+    BuildSettings settings = grailsSettings
+    def pluginResolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
+    pluginXml = pluginResolveEngine.resolvePluginMetadata(pluginName, version)
+    if(!pluginXml) {
+        event("StatusError", ["Plugin with name '${pluginName}' was not found in the configured repositories"])
+        exit 1
+    }
 
     def plugin = pluginXml
     if( plugin == null ) {
