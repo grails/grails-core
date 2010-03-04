@@ -15,6 +15,15 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
+
+import java.io.Writer;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -27,18 +36,12 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.Writer;
 
 /**
  * Implementation of the GrailsApplicationAttributes interface that holds knowledge about how to obtain
@@ -178,10 +181,13 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return null;
     }
 
+	public String getTemplateUri(String templateName, ServletRequest request) {
+		return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName);
+	}
 
-    public String getTemplateUri(String templateName, ServletRequest request) {
-        return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName);
-   }
+	public String getTemplateUri(StreamCharBuffer templateName,	ServletRequest request) {
+		return getTemplateUri(templateName.toString(), request);
+	}
 
 	public String getViewUri(String viewName, HttpServletRequest request) {
         return groovyPagesUriService.getDeployedViewURI(getControllerName(request), viewName);
