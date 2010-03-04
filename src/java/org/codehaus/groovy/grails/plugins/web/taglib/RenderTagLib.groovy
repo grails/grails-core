@@ -24,8 +24,10 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
@@ -64,6 +66,11 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
      * @param model A model to pass onto the included controller in the request 
      */
 	def include =  { attrs, body ->
+		if(attrs.action && !attrs.controller) {
+			def controller = request?.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+			def controllerName = controller?.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY)
+			attrs.controller = controllerName
+		}
 		if(attrs.controller || attrs.view){
 			def mapping = new ForwardUrlMappingInfo(controller:attrs.controller,
 													action:attrs.action,
