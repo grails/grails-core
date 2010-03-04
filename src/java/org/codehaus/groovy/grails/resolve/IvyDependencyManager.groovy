@@ -507,6 +507,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             hasApplicationDependencies = true
         }
         if(pluginMode) {
+            pluginDependencyNames << dependencyDescriptor.dependencyId.name
             pluginDependencyDescriptors << dependencyDescriptor
         }
         else {
