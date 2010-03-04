@@ -181,12 +181,8 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return null;
     }
 
-	public String getTemplateUri(String templateName, ServletRequest request) {
-		return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName);
-	}
-
-	public String getTemplateUri(StreamCharBuffer templateName,	ServletRequest request) {
-		return getTemplateUri(templateName.toString(), request);
+	public String getTemplateUri(CharSequence templateName, ServletRequest request) {
+		return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName.toString());
 	}
 
 	public String getViewUri(String viewName, HttpServletRequest request) {
