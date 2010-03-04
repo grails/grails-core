@@ -48,7 +48,8 @@ public class GrailsContextLoader extends ContextLoader {
     GrailsApplication application;
 
     protected WebApplicationContext createWebApplicationContext(ServletContext servletContext, ApplicationContext parent) throws BeansException {
-
+        // disable annoying ehcache up-to-date check
+        System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
         ExpandoMetaClass.enableGlobally();
         Metadata metadata = Metadata.getCurrent();
         if(metadata!=null&&metadata.isWarDeployed()) {
