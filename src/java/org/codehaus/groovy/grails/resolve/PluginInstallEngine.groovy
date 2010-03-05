@@ -236,7 +236,7 @@ class PluginInstallEngine {
         // hasn't been installed by that point.
         pluginDirVariableStore["${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName)}PluginDir"] = new File(pluginInstallPath).absoluteFile
 
-        def dependencies = processPluginDependencies(pluginXml)
+        def dependencies = processPluginDependencies(pluginName,pluginXml)
 
         // if there are any unprocessed dependencies, bail out
         if (dependencies) {
@@ -352,7 +352,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    protected Map processPluginDependencies(GPathResult pluginXml) {
+    protected Map processPluginDependencies(String pluginName, GPathResult pluginXml) {
         Map dependencies = [:]
         for (dep in pluginXml.dependencies.plugin) {
             def depName = dep.@name.toString()
@@ -365,31 +365,39 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             else {
                 dependencies[depName] = depVersion
                 def depDirName = GrailsNameUtils.getScriptName(depName)
-                def depPluginDir = pluginSettings.getPluginDirForName(depDirName)?.file
-                if (!depPluginDir?.exists()) {
-                    eventHandler("StatusUpdate", "Plugin dependency [$depName] not found. Attempting to resolve...")
-                    // recursively install dependent plugins
-                    def upperVersion = GrailsPluginUtils.getUpperVersion(depVersion)
-                    def installVersion = upperVersion
-                    if (installVersion == '*') {
-                        installVersion = settings.defaultPluginSet.contains(depDirName) ? GrailsUtil.getGrailsVersion() : null
-                    }
+                def manager = settings.dependencyManager
 
-                    // recurse
-                    installPlugin(depDirName, installVersion)
-
+                if(manager.isExcludedFromPlugin(pluginName, depDirName)) {
                     dependencies.remove(depName)
                 }
                 else {
-                    def dependency = readPluginXmlMetadata(depDirName)
-                    def dependencyVersion = dependency.@version.toString()
-                    if (!GrailsPluginUtils.isValidVersion(dependencyVersion, depVersion)) {
-                        errorHandler("Plugin requires version [$depVersion] of plugin [$depName], but installed version is [${dependencyVersion}]. Please upgrade this plugin and try again.")
-                    }
-                    else {
+                    def depPluginDir = pluginSettings.getPluginDirForName(depDirName)?.file
+                    if (!depPluginDir?.exists()) {
+                        eventHandler("StatusUpdate", "Plugin dependency [$depName] not found. Attempting to resolve...")
+                        // recursively install dependent plugins
+                        def upperVersion = GrailsPluginUtils.getUpperVersion(depVersion)
+                        def installVersion = upperVersion
+                        if (installVersion == '*') {
+                            installVersion = settings.defaultPluginSet.contains(depDirName) ? GrailsUtil.getGrailsVersion() : null
+                        }
+
+                        // recurse
+                        installPlugin(depDirName, installVersion)
+
                         dependencies.remove(depName)
                     }
+                    else {
+                        def dependency = readPluginXmlMetadata(depDirName)
+                        def dependencyVersion = dependency.@version.toString()
+                        if (!GrailsPluginUtils.isValidVersion(dependencyVersion, depVersion)) {
+                            errorHandler("Plugin requires version [$depVersion] of plugin [$depName], but installed version is [${dependencyVersion}]. Please upgrade this plugin and try again.")
+                        }
+                        else {
+                            dependencies.remove(depName)
+                        }
+                    }
                 }
+
             }
         }
         return dependencies

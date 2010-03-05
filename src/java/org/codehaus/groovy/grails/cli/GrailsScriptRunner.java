@@ -816,17 +816,12 @@ public class GrailsScriptRunner {
     private static void addPluginLibs(File pluginDir, List<URL> urls, BuildSettings settings) throws MalformedURLException {
         if (!pluginDir.exists()) return;
 
-        // let Ivy deal with resolving dependencies
-        File dependencyDefinition = new File(pluginDir, "dependencies.groovy");
-        if(dependencyDefinition.exists()) return;
-
         // otherwise just add them
         File libDir = new File(pluginDir, "lib");
         if (libDir.exists()) {
             final IvyDependencyManager dependencyManager = settings.getDependencyManager();
-            final Map pluginExcludes = dependencyManager.getPluginExcludes();
             String pluginName = getPluginName(pluginDir);
-            Collection excludes = (Collection) pluginExcludes.get(pluginName);
+            Collection excludes = dependencyManager.getPluginExcludes(pluginName);
             addLibs(libDir, urls, excludes != null ? excludes : Collections.emptyList());
         }
     }
