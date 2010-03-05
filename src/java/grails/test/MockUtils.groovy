@@ -37,7 +37,10 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
+import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
@@ -759,38 +762,107 @@ class MockUtils {
             }
         }
 
-        // discard() method - doesn't need to do anything.
-        clazz.metaClass.discard = {-> delegate}
+        // these don't need to do anything.
+        clazz.metaClass.discard = {-> delegate }
+        clazz.metaClass.refresh = {-> delegate }
+        clazz.metaClass.attach = {-> delegate }
 
         // instanceOf() method - just delegates to regular operator
-        clazz.metaClass.instanceOf = { Class c ->
-            c.isInstance(delegate)
-        }
+        clazz.metaClass.instanceOf = { Class c -> c.isInstance(delegate) }
 
         // Add the "addTo*" and "removeFrom*" methods.
-        Introspector.getBeanInfo(clazz).propertyDescriptors.each { PropertyDescriptor pd ->
-            if (Collection.isAssignableFrom(pd.propertyType)) {
-                // Capitalise the name of the property.
-                def propertyName = pd.name
-                def collectionName = propertyName[0].toUpperCase() + propertyName[1..-1]
 
-                clazz.metaClass."addTo${collectionName}" = { arg ->
-                    def obj = delegate
-                    if (obj."${propertyName}" == null) {
-                        obj."${propertyName}" = GrailsClassUtils.createConcreteCollection(pd.propertyType)
-                    }
-
-                    def prop = obj."${propertyName}"
-                    prop << arg
-                    return obj
-                }
-
-                clazz.metaClass."removeFrom${collectionName}" = { arg ->
-                    delegate."${propertyName}"?.remove(arg)
-                    return delegate
-                }
+        def collectionTypes = [:]
+        def hasManyField = clazz.declaredFields.find { it.name == 'hasMany' }
+        def hasMany = findHasMany(clazz)
+        if (hasMany) {
+            for (name in hasMany.keySet()) {
+                // pre-populate with Set, override with PropertyDescriptors below
+                collectionTypes[name] = Set
             }
         }
+
+        Introspector.getBeanInfo(clazz).propertyDescriptors.each { PropertyDescriptor pd ->
+            if (Collection.isAssignableFrom(pd.propertyType)) {
+                collectionTypes[pd.name] = pd.propertyType
+            }
+        }
+
+        collectionTypes.each { String propertyName, propertyType ->
+            // Capitalise the name of the property.
+            def collectionName = propertyName[0].toUpperCase() + propertyName[1..-1]
+
+            clazz.metaClass."addTo$collectionName" = { arg ->
+                def obj = delegate
+                if (obj."$propertyName" == null) {
+                    obj."$propertyName" = GrailsClassUtils.createConcreteCollection(propertyType)
+                }
+
+                def instanceClass
+                if (arg instanceof Map) {
+                    instanceClass = hasMany[propertyName]
+                    arg = createFromMap(arg, instanceClass)
+                }
+                else {
+                    instanceClass = arg.getClass()
+                }
+
+                obj."$propertyName" << arg
+
+                // now set back-reference
+                if (!(arg instanceof Map)) {
+                    def otherHasMany = findHasMany(instanceClass)
+                    if (otherHasMany) {
+                        // many-to-many
+                        otherHasMany.each { String otherCollectionName, Class otherCollectionType ->
+                            if (clazz.isAssignableFrom(otherCollectionType)) {
+                                if (arg."$otherCollectionName" == null) {
+                                    arg."$otherCollectionName" = GrailsClassUtils.createConcreteCollection(otherCollectionType)
+                                }
+                                arg."$otherCollectionName" << obj
+                            }
+                        }
+                    }
+                    else {
+                        // 1-many
+                        for (PropertyDescriptor pd in Introspector.getBeanInfo(instanceClass).propertyDescriptors) {
+                            if (clazz.isAssignableFrom(pd.propertyType)) {
+                                arg[pd.name] = obj
+                            }
+                        }
+                    }
+                }
+
+                return obj
+            }
+
+            clazz.metaClass."removeFrom$collectionName" = { arg ->
+                if (arg instanceof Map) {
+                    arg = createFromMap(arg, hasMany[propertyName])
+                }
+
+                delegate."$propertyName"?.remove(arg)
+                return delegate
+            }
+        }
+    }
+
+    private static createFromMap(map, instanceClass) {
+        if (instanceClass) {
+            def instance = instanceClass.newInstance()
+            DataBindingUtils.bindObjectToInstance(instance, map)
+            return instance
+        }
+        null
+    }
+
+    private static Map findHasMany(clazz) {
+        def hasManyField = clazz.declaredFields.find { it.name == 'hasMany' }
+        if (hasManyField) {
+            hasManyField.accessible = true
+            return hasManyField.get(null)
+        }
+        null
     }
 
     private static evaluateMapping(Class clazz) {
@@ -933,6 +1005,33 @@ class MockUtils {
                     }
                 }
             }
+            return !errors.hasErrors()
+        }
+
+        // add no-arg attributes validator, just to be inline with what HibernatePluginSupport.addValidationMethods does.
+        // It works lke validate(Map) with empty map
+        clazz.metaClass.validate = { -> validate([:]) }
+
+        // add validator that is able to discard changes to the domain objects, that possible validator can do.
+        // Validator is required for compatibility with HibernatePluginSupport.addValidationMethods.
+        // Internally it call validator(Map) with evict parameter. Because current mock implementation of validator does not do any database interaction
+        // so this validator works exactly the same way as validate()
+        clazz.metaClass.validate = { Boolean b -> validate([evict: b]) }
+
+        // add validator that validates only fields that names are passed in input list of fieldsToValdate.
+        // All errors for the other fields are removed.
+        clazz.metaClass.validate = { List fieldsToValidate ->
+            if (!validate([:]) && fieldsToValidate != null && !fieldsToValidate.isEmpty()) {
+                def result = new BeanPropertyBindingResult(delegate, delegate.getClass().name)
+                for (e in errors.allErrors) {
+                    if (e instanceof FieldError && !fieldsToValidate.contains(e.field)) {
+                        continue
+                    }
+                    result.addError(e)
+                }
+                setErrors result
+            }
+
             return !errors.hasErrors()
         }
     }

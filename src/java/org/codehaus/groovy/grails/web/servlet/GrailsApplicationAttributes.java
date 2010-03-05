@@ -100,7 +100,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
      * @param request
      * @return The uri of a named template for the current controller
      */
-    String getTemplateUri(String templateName, ServletRequest request);
+    String getTemplateUri(CharSequence templateName, ServletRequest request);
     
 	/**
 	 * Retrieves the uri of a named view
