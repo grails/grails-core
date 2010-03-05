@@ -764,14 +764,18 @@ class BuildSettings {
 
         def handlePluginDirectory = {File dir ->
             def pluginName = dir.name
-            if (!dependencyManager.isPluginConfiguredByApplication(pluginName)) {
+            def matcher = pluginName =~ /(\S+?)-(\d\S+)/
+            if(matcher) {
+                pluginName = matcher[0][1]
+
                 // Try BuildConfig.groovy first, which should work
                 // work for in-place plugins.
-                def pluginDependencyDescriptor = new File("${dir.absolutePath}/grails-app/conf/BuildConfig.groovy")
+                def path = dir.absolutePath
+                def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
 
                 if (!pluginDependencyDescriptor.exists()) {
                     // OK, that doesn't exist, so try dependencies.groovy.
-                    pluginDependencyDescriptor = new File("$dir.absolutePath/dependencies.groovy")
+                    pluginDependencyDescriptor = new File("$path/dependencies.groovy")
                 }
 
                 if (pluginDependencyDescriptor.exists()) {
@@ -791,9 +795,7 @@ class BuildSettings {
 
                 }
             }
-            else {
-                println "Plugin [$pluginName] dependencies are configured by application. Skipping.."
-            }
+
         }
         return handlePluginDirectory
     }
