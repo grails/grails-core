@@ -90,7 +90,7 @@ public class CommandLineHelper {
                 if (validResponses == null) return line;
 
                 for (String validResponse : validResponses) {
-                    if (line != null && line.equals(validResponse)) {
+                    if (line != null && line.equalsIgnoreCase(validResponse)) {
                         return line;
                     }
                 }
