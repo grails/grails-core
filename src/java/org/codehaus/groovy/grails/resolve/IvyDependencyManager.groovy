@@ -50,6 +50,11 @@ import org.apache.ivy.core.module.descriptor.Artifact
 import org.apache.ivy.core.report.ConfigurationResolveReport
 import org.apache.ivy.core.report.DownloadReport
 import org.apache.ivy.core.report.DownloadStatus
+import org.apache.ivy.plugins.matcher.PatternMatcher
+import org.apache.ivy.plugins.matcher.ExactPatternMatcher
+import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
+import org.apache.ivy.core.module.id.ArtifactId
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -106,8 +111,8 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
     private Set<DependencyDescriptor> pluginDependencyDescriptors = [] as Set
     private Set<String> pluginDependencyNames = [] as Set
-
     private orgToDepMap = [:]
+
     private hasApplicationDependencies = false
 
     Map configurationMappings = [ runtime:['runtime(*)','master(*)'],
@@ -115,6 +120,10 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                                   compile:['compile(*)', 'master(*)'],
                                   provided:['compile(*)', 'master(*)'],
                                   test:['runtime(*)', 'master(*)']]
+
+    Map<String, DependencyDescriptor> pluginNameToDescriptorMap = [:]
+    
+    String[] configurationNames = configurationMappings.keySet() as String[]
 
 
     ResolveEngine resolveEngine
@@ -126,6 +135,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     Metadata metadata
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
+    DefaultDependencyDescriptor currentDependencyDescriptor
     List repositoryData = []
     Set<String> configuredPlugins = [] as Set
     Set<String> usedConfigurations = [] as Set
@@ -492,10 +502,16 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
 
         
 
-        if (dependencyConfigurer) {
-            dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
-            dependencyConfigurer.setDelegate(dependencyDescriptor)
-            dependencyConfigurer.call()
+        try {
+            this.currentDependencyDescriptor = dependencyDescriptor
+            if (dependencyConfigurer) {
+                dependencyConfigurer.resolveStrategy = Closure.DELEGATE_ONLY
+                dependencyConfigurer.setDelegate(dependencyDescriptor)
+                dependencyConfigurer.call()
+            }
+        }
+        finally {
+            this.currentDependencyDescriptor = null
         }
         if (dependencyDescriptor.getModuleConfigurations().length == 0){
 		      def mappings = configurationMappings[scope]
@@ -507,8 +523,10 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             hasApplicationDependencies = true
         }
         if(pluginMode) {
-            pluginDependencyNames << dependencyDescriptor.dependencyId.name
+            def name = dependencyDescriptor.dependencyId.name
+            pluginDependencyNames << name
             pluginDependencyDescriptors << dependencyDescriptor
+            pluginNameToDescriptorMap[name] = dependencyDescriptor
         }
         else {
             dependencyDescriptors << dependencyDescriptor
@@ -758,7 +776,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             if(moduleDescriptor == null) throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
 
             def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
-            evaluator.plugin = pluginName
+            evaluator.currentPluginBeingConfigured = pluginName
             definition.delegate = evaluator
             definition.resolveStrategy = Closure.DELEGATE_FIRST
             definition()
@@ -779,7 +797,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
     boolean inherited = false
     boolean pluginMode = false
-    String plugin = null
+    String currentPluginBeingConfigured = null
     @Delegate IvyDependencyManager delegate
 
     IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
@@ -805,22 +823,40 @@ class IvyDomainSpecificLanguageEvaluator {
         delegate.readPom = b
     }
 
-    void excludes(String... excludes) {
-        if(plugin) {
-              for(name in excludes) {
-                  pluginExcludes[plugin] << name
-              }
+    void excludes(Map exclude) {
+        def anyExpression = PatternMatcher.ANY_EXPRESSION
+        def mid = ModuleId.newInstance(exclude.group ?: anyExpression, exclude.name.toString())
+        def aid = new ArtifactId(
+                mid, anyExpression,
+                anyExpression,
+                anyExpression)
+
+        def excludeRule = new DefaultExcludeRule(aid,
+                        ExactPatternMatcher.INSTANCE, null)
+
+        for(String conf in configurationNames) {
+            excludeRule.addConfiguration conf
+        }
+
+        if(currentDependencyDescriptor==null) {
+            moduleDescriptor.addExcludeRule(excludeRule)
         }
         else {
-            for(name in excludes ) {
-                moduleExcludes << name
-            }
+            for(String conf in configurationNames) {
+                currentDependencyDescriptor.addExcludeRule(conf, excludeRule);
+            }            
+        }
+
+    }
+    void excludes(String... excludeList) {
+        for(exclude in excludeList) {
+            excludes name:exclude
         }
     }
 
     void inherits(String name, Closure configurer) {
         // plugins can't configure inheritance
-        if(plugin) return
+        if(currentPluginBeingConfigured) return
 
         configurer?.delegate=this
         configurer?.call()
@@ -863,19 +899,19 @@ class IvyDomainSpecificLanguageEvaluator {
         pluginExcludes[name] = new HashSet()
 
         try {
-            plugin = name
+            currentPluginBeingConfigured = name
             callable?.delegate = this
             callable?.call()
         }
         finally {
-            plugin = null
+            currentPluginBeingConfigured = null
         }
 
     }
 
     void log(String level) {
         // plugins can't configure log
-        if(plugin) return
+        if(currentPluginBeingConfigured) return
 
         switch(level) {
             case "warn":
@@ -1118,8 +1154,9 @@ class IvyDomainSpecificLanguageEvaluator {
 
                     if (m.matches()) {
 
-                        def name = m[0][2]
-                        if(!isExcluded(name)) {
+                        String name = m[0][2]
+                        boolean isExcluded = currentPluginBeingConfigured ? isExcludedFromPlugin(currentPluginBeingConfigured, name) : isExcluded(name)
+                        if(!isExcluded) {
                             def group = m[0][1]
                             def version = m[0][3]
                             if(pluginMode) {
@@ -1137,14 +1174,14 @@ class IvyDomainSpecificLanguageEvaluator {
                                 dependencyDescriptor.addDependencyArtifact(scope, artifact)
                             }
                             dependencyDescriptor.exported = getBooleanValue(args, 'export')
-                            dependencyDescriptor.inherited = inherited || inheritsAll || plugin
+                            dependencyDescriptor.inherited = inherited || inheritsAll || currentPluginBeingConfigured
 
-                            if(plugin) {
-                                if(!pluginExcludes[plugin]) {
-                                    pluginExcludes[plugin] = new HashSet()
+                            if(currentPluginBeingConfigured) {
+                                if(!pluginExcludes[currentPluginBeingConfigured]) {
+                                    pluginExcludes[currentPluginBeingConfigured] = new HashSet()
                                 }
-                                pluginExcludes[plugin] << name
-                                dependencyDescriptor.plugin = plugin
+                                pluginExcludes[currentPluginBeingConfigured] << name
+                                dependencyDescriptor.plugin = currentPluginBeingConfigured
                             }
                             configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
                         }
@@ -1156,7 +1193,8 @@ class IvyDomainSpecificLanguageEvaluator {
                     if(!dependency.group && pluginMode) dependency.group = "org.grails.plugins"
                     
                     if(dependency.group && name && dependency.version) {
-                       if(!isExcluded(name)) {
+                       boolean isExcluded = currentPluginBeingConfigured ? isExcludedFromPlugin(currentPluginBeingConfigured, name) : isExcluded(name)
+                       if(!isExcluded) {
 
                            def attrs = [:]
                            if(dependency.classifier) {
@@ -1189,8 +1227,8 @@ class IvyDomainSpecificLanguageEvaluator {
 
                            dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
                            dependencyDescriptor.inherited = inherited || inheritsAll
-                           if(plugin) {
-                               dependencyDescriptor.plugin = plugin
+                           if(currentPluginBeingConfigured) {
+                               dependencyDescriptor.plugin = currentPluginBeingConfigured
                            }
 
                            configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
@@ -1207,10 +1245,31 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
 
-    boolean isExcluded(name) {
-        return moduleExcludes.contains(name) ||
-                (plugin != null && pluginExcludes[plugin]?.contains(name) )
+    boolean isExcluded(String name) {
+        def aid = createExcludeArtifactId(name)
+        return moduleDescriptor.doesExclude(configurationNames, aid)
     }
+
+    boolean isExcludedFromPlugin(String plugin, String dependencyName) {
+        def aid = createExcludeArtifactId(dependencyName)
+        isExcludedFromPlugin(plugin, aid)
+    }
+
+    protected boolean isExcludedFromPlugin(String currentPlugin, ArtifactId dependency) {
+        if(!currentPlugin) return false
+        DependencyDescriptor dd = pluginNameToDescriptorMap[currentPlugin]
+        dd?.doesExclude(configurationNames, dependency)
+    }
+
+    protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {
+        def mid = ModuleId.newInstance(group, excludeName)
+        def aid = new ArtifactId(
+                mid, PatternMatcher.ANY_EXPRESSION,
+                PatternMatcher.ANY_EXPRESSION,
+                PatternMatcher.ANY_EXPRESSION)
+        return aid
+    }
+
 
 
 }

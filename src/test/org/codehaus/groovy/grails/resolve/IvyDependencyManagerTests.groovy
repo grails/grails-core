@@ -13,6 +13,10 @@ import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.util.url.CredentialsStore
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
+import org.apache.ivy.core.module.id.ArtifactId
+import org.apache.ivy.plugins.matcher.PatternMatcher
+import org.apache.ivy.core.module.id.ModuleId
 
 /**
  * @author Graeme Rocher
@@ -223,9 +227,12 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         manager.parseDependencies {
             runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
             runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )
-            plugin("foo") {
-                build "junit:junit:3.8.4"
+            plugins {
+                runtime(":foo:1.5") {
+                    excludes "junit"
+                }
             }
+            build "junit:junit:3.8.4"
         }
 
         manager.parseDependencies("foo") {
@@ -243,7 +250,6 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'junit' }
 
-        assert dd.inherited : "should be an inherited dependency"
     }
 
 
@@ -253,9 +259,11 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         manager.parseDependencies {
             runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )            
-            plugin("foo") {
-                excludes "junit"
+            runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )
+            plugins {
+                runtime(":foo:1.0") {
+                    excludes "junit"
+                }
             }
         }
 
@@ -534,15 +542,50 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
             }
         }
 
+        DefaultDependencyDescriptor dd = manager.getDependencyDescriptors().iterator().next()
+        ArtifactId aid = createExcludeArtifactId("jms")
+        assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
+        aid = createExcludeArtifactId("jdbc")
+        assertFalse "should not contain exclude", dd.doesExclude(['runtime'] as String[], aid)
+
+        manager = new IvyDependencyManager("test", "0.1")
         // test complex exclude
         manager.parseDependencies {
             runtime("opensymphony:oscache:2.4.1") {
-                excludes group:'javax.jms',module:'jms'
+                excludes group:'javax.jms',name:'jms'
             }
         }
 
+        dd = manager.getDependencyDescriptors().iterator().next()
+        aid = createExcludeArtifactId("jms", 'javax.jms')
+        assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
 
     }
+
+    void testExcludesWithPlugin() {
+        def manager = new IvyDependencyManager("test", "0.1")
+        // test simple exclude
+        manager.parseDependencies {
+            plugins {
+                runtime(":feeds:1.5") {
+                   excludes 'jms'
+                }
+            }
+        }
+        DefaultDependencyDescriptor dd = manager.getPluginDependencyDescriptors().iterator().next()
+        ArtifactId aid = createExcludeArtifactId("jms")
+        assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
+
+    }
+    protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {
+        def mid = ModuleId.newInstance(group, excludeName)
+        def aid = new ArtifactId(
+                mid, PatternMatcher.ANY_EXPRESSION,
+                PatternMatcher.ANY_EXPRESSION,
+                PatternMatcher.ANY_EXPRESSION)
+        return aid
+    }
+
     void testResolve() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO); 
         def manager = new IvyDependencyManager("test", "0.1")
