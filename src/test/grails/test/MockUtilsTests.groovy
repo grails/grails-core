@@ -1438,6 +1438,49 @@ class MockUtilsTests extends GroovyTestCase {
 
         assertNotNull domain.lastUpdated
     }
+
+    /**
+     * Test different forms of <code>validate()</code> method. With Boolean, List, Map and empty params.
+     */
+    void testDynamicValidateMethods() {
+        MockUtils.prepareForConstraintsTests(TestDomain)
+
+        def dc = new TestDomain()
+        // Validate object with discard option turned on
+        assertFalse dc.validate(true)
+        assertEquals "nullable", dc.errors["name"]
+        assertEquals "nullable", dc.errors["title"]
+        assertEquals "min", dc.errors["age"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
+
+        dc = new TestDomain()
+        // Validate only name and title object's fields
+        assertFalse dc.validate(["name", "title"])
+        assertEquals "nullable", dc.errors["name"]
+        assertEquals "nullable", dc.errors["title"]
+        assertNull dc.errors["age"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
+
+        dc = new TestDomain()
+        // Validate with map of predefined properties
+        assertFalse dc.validate([deepValidate: true, evict: false])
+        assertEquals "nullable", dc.errors["name"]
+        assertEquals "nullable", dc.errors["title"]
+        assertEquals "min", dc.errors["age"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
+    }
 }
 
 /**

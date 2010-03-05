@@ -37,7 +37,10 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
+import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
@@ -992,6 +995,33 @@ class MockUtils {
                     }
                 }
             }
+            return !errors.hasErrors()
+        }
+
+        // add no-arg attributes validator, just to be inline with what HibernatePluginSupport.addValidationMethods does.
+        // It works lke validate(Map) with empty map
+        clazz.metaClass.validate = { -> validate([:]) }
+
+        // add validator that is able to discard changes to the domain objects, that possible validator can do.
+        // Validator is required for compatibility with HibernatePluginSupport.addValidationMethods.
+        // Internally it call validator(Map) with evict parameter. Because current mock implementation of validator does not do any database interaction
+        // so this validator works exactly the same way as validate()
+        clazz.metaClass.validate = { Boolean b -> validate([evict: b]) }
+
+        // add validator that validates only fields that names are passed in input list of fieldsToValdate.
+        // All errors for the other fields are removed.
+        clazz.metaClass.validate = { List fieldsToValidate ->
+            if (!validate([:]) && fieldsToValidate != null && !fieldsToValidate.isEmpty()) {
+                def result = new BeanPropertyBindingResult(delegate, delegate.getClass().name)
+                for (e in errors.allErrors) {
+                    if (e instanceof FieldError && !fieldsToValidate.contains(e.field)) {
+                        continue
+                    }
+                    result.addError(e)
+                }
+                setErrors result
+            }
+
             return !errors.hasErrors()
         }
     }
