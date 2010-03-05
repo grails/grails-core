@@ -777,7 +777,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
                         def name = entry.key
                         def scope = "runtime"
                         def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, entry.value)
-                        def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, false, scope)
+                        def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
                         def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
                         dd.addDependencyArtifact(scope, artifact)
 
