@@ -1,38 +1,59 @@
 package org.codehaus.groovy.grails.plugins;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 
+import groovy.util.ConfigObject;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
  * Implements mechanism for figuring out what <code>PluginFilter</code>
  * implementation to use based on a set of provided configuration properties
+ *
  * @author Phil Zoio
+ * @author Graeme Rocher
  */
 public class PluginFilterRetriever {
 
-	public PluginFilter getPluginFilter(Properties properties) {
+	public PluginFilter getPluginFilter(Map properties) {
 
 		Assert.notNull(properties);
-
-		String includes = properties.getProperty("plugin.includes");
-		String excludes = properties.getProperty("plugin.excludes");
+        if(properties instanceof ConfigObject) {
+            properties = ((ConfigObject)properties).flatten();
+        }
+		Object includes = properties.get("grails.plugin.includes");
+        if(includes == null) properties.get("plugin.includes");
+		Object excludes = properties.get("grails.plugin.excludes");
+        if(excludes == null) properties.get("plugin.excludes");
 
 		return getPluginFilter(includes, excludes);
 	}
 
-	PluginFilter getPluginFilter(String includes, String excludes) {
+	PluginFilter getPluginFilter(Object includes, Object excludes) {
 		PluginFilter pluginFilter = null;
 
 		if (includes != null) {
-			String[] includesArray = StringUtils
-					.commaDelimitedListToStringArray(includes);
-			pluginFilter = new IncludingPluginFilter(includesArray);
+            if(includes instanceof Collection) {
+                pluginFilter = new IncludingPluginFilter(new HashSet((Collection)includes));
+            }
+            else {
+                String[] includesArray = StringUtils
+                        .commaDelimitedListToStringArray(includes.toString());
+                pluginFilter = new IncludingPluginFilter(includesArray);
+            }
 		} else if (excludes != null) {
-			String[] excludesArray = StringUtils
-					.commaDelimitedListToStringArray(excludes);
-			pluginFilter = new ExcludingPluginFilter(excludesArray);
+            if(excludes instanceof Collection) {
+                pluginFilter = new ExcludingPluginFilter(new HashSet((Collection)includes));
+            }
+            else {
+                String[] excludesArray = StringUtils
+                        .commaDelimitedListToStringArray(excludes.toString());
+                pluginFilter = new ExcludingPluginFilter(excludesArray);
+           }
+
 		} else {
 			pluginFilter = new IdentityPluginFilter();
 		}

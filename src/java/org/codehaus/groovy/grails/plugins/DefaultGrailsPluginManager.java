@@ -196,7 +196,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     }
 
     private void setPluginFilter() {
-        this.pluginFilter = new PluginFilterRetriever().getPluginFilter(this.application.getConfig().toProperties());
+        this.pluginFilter = new PluginFilterRetriever().getPluginFilter(this.application.getConfig());
     }
 
     public void startPluginChangeScanner() {
