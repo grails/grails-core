@@ -181,7 +181,6 @@ class MockUtilsTests extends GroovyTestCase {
         result = TestDomain.findAllWhere(country: 'US', name: 99)
         assertEquals( [], result )
 
-
         result = TestDomain.findAllByName("Peter Parker")
         assertEquals( [], result )
 
@@ -578,7 +577,27 @@ class MockUtilsTests extends GroovyTestCase {
         MockUtils.mockDomain(TestDomain, errorsMap)
 
         def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35)
-        assertEquals domain, domain.discard()
+        assertSame domain, domain.discard()
+    }
+
+    /**
+     * Tests that the <code>refresh()</code> method is mocked.
+     */
+    void testRefresh() {
+        MockUtils.mockDomain(TestDomain, errorsMap)
+
+        def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35)
+        assertSame domain, domain.refresh()
+    }
+
+    /**
+     * Tests that the <code>attach()</code> method is mocked.
+     */
+    void testAttach() {
+        MockUtils.mockDomain(TestDomain, errorsMap)
+
+        def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35)
+        assertSame domain, domain.attach()
     }
 
     /**
@@ -1418,6 +1437,49 @@ class MockUtilsTests extends GroovyTestCase {
         assertNotNull domain.save()
 
         assertNotNull domain.lastUpdated
+    }
+
+    /**
+     * Test different forms of <code>validate()</code> method. With Boolean, List, Map and empty params.
+     */
+    void testDynamicValidateMethods() {
+        MockUtils.prepareForConstraintsTests(TestDomain)
+
+        def dc = new TestDomain()
+        // Validate object with discard option turned on
+        assertFalse dc.validate(true)
+        assertEquals "nullable", dc.errors["name"]
+        assertEquals "nullable", dc.errors["title"]
+        assertEquals "min", dc.errors["age"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
+
+        dc = new TestDomain()
+        // Validate only name and title object's fields
+        assertFalse dc.validate(["name", "title"])
+        assertEquals "nullable", dc.errors["name"]
+        assertEquals "nullable", dc.errors["title"]
+        assertNull dc.errors["age"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
+
+        dc = new TestDomain()
+        // Validate with map of predefined properties
+        assertFalse dc.validate([deepValidate: true, evict: false])
+        assertEquals "nullable", dc.errors["name"]
+        assertEquals "nullable", dc.errors["title"]
+        assertEquals "min", dc.errors["age"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
     }
 }
 

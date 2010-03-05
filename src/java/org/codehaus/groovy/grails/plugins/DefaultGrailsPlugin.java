@@ -16,12 +16,33 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
-import grails.util.*;
+import grails.util.BuildScope;
+import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
+import grails.util.Environment;
+import grails.util.GrailsUtil;
+import grails.util.Metadata;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,10 +54,10 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
+import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
-import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
@@ -44,23 +65,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
-
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
- * and provides the magic to invoke its various methods from Java
+ * and provides the magic to invoke its various methods from Java.
  *
  * @author Graeme Rocher
  * @since 0.4
- *
  */
-public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsPlugin, ParentApplicationContextAware {
+public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentApplicationContextAware {
 
     private static final String PLUGIN_CHANGE_EVENT_CTX = "ctx";
     private static final String PLUGIN_CHANGE_EVENT_APPLICATION = "application";
@@ -92,12 +104,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     private URL pluginUrl;
     private Closure onConfigChangeListener;
     private Closure onShutdownListener;
-    private Class[] providedArtefacts = new Class[0];
+    private Class<?>[] providedArtefacts = new Class[0];
     private Map pluginScopes;
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
     private Collection<? extends TypeFilter> typeFilters = new ArrayList<TypeFilter>();
-
 
     public DefaultGrailsPlugin(Class pluginClass, Resource resource, GrailsApplication application) {
         super(pluginClass, application);
@@ -109,10 +120,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 pluginUrl = resource.getURL();
                 URLConnection urlConnection = null;
                 try {
-                    urlConnection = pluginUrl
-                                                        .openConnection();
-                    this.pluginLastModified = urlConnection
-                                                .getLastModified();
+                    urlConnection = pluginUrl.openConnection();
+                    this.pluginLastModified = urlConnection.getLastModified();
                 }
                 finally {
                     try {
@@ -130,12 +139,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
         }
 
-
         initialisePlugin(pluginClass);
     }
 
-    private void initialisePlugin(Class pluginClass) {
-        this.pluginGrailsClass = new GrailsPluginClass(pluginClass);
+    private void initialisePlugin(Class<?> clazz) {
+        this.pluginGrailsClass = new GrailsPluginClass(clazz);
         this.plugin = (GroovyObject)this.pluginGrailsClass.newInstance();
         this.pluginBean = new BeanWrapperImpl(this.plugin);
 
@@ -152,7 +160,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         evaluatePluginScopes();
         evaluatePluginExcludes();
         evaluateTypeFilters();
-
     }
 
     private void evaluateTypeFilters() {
@@ -164,16 +171,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     private void evaluatePluginExcludes() {
         Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PLUGIN_EXCLUDES);
-        if(result instanceof List) {
+        if (result instanceof List) {
             this.pluginExcludes = (List<String>) result;
-
         }
-
     }
 
     private void evaluatePluginScopes() {
         // Damn I wish Java had closures
         this.pluginScopes = evaluateIncludeExcludeProperty(SCOPES, new Closure(this) {
+            private static final long serialVersionUID = 1;
             @Override
             public Object call(Object arguments) {
                 final String scopeName = ((String) arguments).toUpperCase();
@@ -186,6 +192,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
         });
         this.pluginEnvs = evaluateIncludeExcludeProperty(ENVIRONMENTS, new Closure(this) {
+            private static final long serialVersionUID = 1;
             @Override
             public Object call(Object arguments) {
                 String envName = (String)arguments;
@@ -195,7 +202,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             }
         });
     }
-
 
     private Map evaluateIncludeExcludeProperty(String name, Closure converter) {
         Map resultMap = new HashMap();
@@ -252,18 +258,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     private void evaluateProvidedArtefacts() {
         Object providedArtefacts = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PROVIDED_ARTEFACTS);
-        if(providedArtefacts instanceof Collection) {
+        if (providedArtefacts instanceof Collection) {
             final Collection artefactList = (Collection) providedArtefacts;
             this.providedArtefacts = (Class[])artefactList.toArray(new Class[artefactList.size()]);
         }
     }
 
     public DefaultGrailsPlugin(Class pluginClass, GrailsApplication application) {
-        this(pluginClass, null,application);
+        this(pluginClass, null, application);
     }
 
     private void evaluateObservedPlugins() {
-        if(this.pluginBean.isReadableProperty(PLUGIN_OBSERVE)) {
+        if (this.pluginBean.isReadableProperty(PLUGIN_OBSERVE)) {
             Object observeProperty = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, PLUGIN_OBSERVE);
             if(observeProperty instanceof Collection) {
                 Collection  observeList = (Collection)observeProperty;
@@ -275,7 +281,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 }
             }
         }
-        if(observedPlugins == null) observedPlugins = new String[0];
+        if (observedPlugins == null) {
+            observedPlugins = new String[0];
+        }
     }
 
     private void evaluatePluginStatus() {
@@ -300,7 +308,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         if(Environment.getCurrent().isReloadEnabled() || !Metadata.getCurrent().isWarDeployed()) {
             if(this.onChangeListener!=null) {
                 Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
-
 
                 try {
                     List resourceList = null;
@@ -403,7 +410,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 } catch (IOException e) {
                     LOG.warn("I/O exception initializing modified times for watched resources: " + e.getMessage(), e);
                 }
-
             }
         }
     }
@@ -427,15 +433,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void evaluatePluginVersion() {
-        if(this.pluginBean.isReadableProperty(VERSION)) {
-            Object vobj = this.plugin.getProperty(VERSION);
-            if(vobj != null)
-                this.version = vobj.toString();
-            else
-                throw new PluginException("Plugin "+this+" must specify a version. eg: def version = 0.1");
+        if (!this.pluginBean.isReadableProperty(VERSION)) {
+           throw new PluginException("Plugin ["+getName()+"] must specify a version!");
+        }
+
+        Object vobj = this.plugin.getProperty(VERSION);
+        if (vobj != null) {
+            this.version = vobj.toString();
         }
         else {
-            throw new PluginException("Plugin ["+getName()+"] must specify a version!");
+            throw new PluginException("Plugin "+this+" must specify a version. eg: def version = 0.1");
         }
     }
 
@@ -465,7 +472,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 this.loadBeforeNames = (String[])loadBeforeNamesList.toArray(new String[loadBeforeNamesList.size()]);
             }
         }
-
     }
 
     private void evaluatePluginDependencies() {
@@ -474,7 +480,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             this.dependencyNames = (String[])this.dependencies.keySet().toArray(new String[this.dependencies.size()]);
         }
     }
-
 
     public String[] getLoadAfterNames() {
         return this.loadAfterNames;
@@ -491,8 +496,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     public PathMatchingResourcePatternResolver getResolver() {
         return resolver;
     }
-
-
 
     public ApplicationContext getParentCtx() {
         return application.getParentContext();
@@ -530,9 +533,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         }
     }
 
-    public void doWithApplicationContext(ApplicationContext applicationContext) {
+    public void doWithApplicationContext(ApplicationContext ctx) {
         try {
-
             if(this.pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
                 Closure c = (Closure)this.plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
                 if(enableDocumentationGeneration()) {
@@ -540,7 +542,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 }
 
                 c.setDelegate(this);
-                c.call(new Object[]{applicationContext});
+                c.call(new Object[]{ctx});
             }
         }
         finally {
@@ -548,15 +550,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 DocumentationContext.getInstance().reset();
             }
         }
-
     }
 
     private boolean enableDocumentationGeneration() {
         return !Metadata.getCurrent().isWarDeployed() && isBasePlugin();
     }
 
-    public void doWithRuntimeConfiguration(
-            RuntimeSpringConfiguration springConfig) {
+    public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
 
         if(this.pluginBean.isReadableProperty(DO_WITH_SPRING)) {
             if(LOG.isDebugEnabled()) {
@@ -574,16 +574,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             c.setDelegate(bb);
             bb.invokeMethod("beans", new Object[]{c});
         }
-
     }
 
+    @Override
     public String getName() {
         return this.pluginGrailsClass.getLogicalPropertyName();
     }
 
     public boolean supportsScope(BuildScope buildScope) {
         return supportsValueInIncludeExcludeMap(pluginScopes, buildScope);
-
     }
 
     public boolean supportsEnvironment(Environment environment) {
@@ -598,20 +597,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private boolean supportsValueInIncludeExcludeMap(Map includeExcludeMap, Object value) {
-        if(includeExcludeMap.isEmpty()) return true;
-        else {
-            Set includes = (Set) includeExcludeMap.get(INCLUDES);
-            if( includes != null && includes.contains(value)) return true;
-            else if(includes != null && !includes.contains(value)) return false;
-
-            Set excludes = (Set) includeExcludeMap.get(EXCLUDES);
-            return !(excludes != null && excludes.contains(value));
+        if(includeExcludeMap.isEmpty()) {
+            return true;
         }
-    }
 
+        Set includes = (Set) includeExcludeMap.get(INCLUDES);
+        if (includes != null) {
+      	  return includes.contains(value);
+        }
 
-    public String getVersion() {
-        return this.version;
+        Set excludes = (Set)includeExcludeMap.get(EXCLUDES);
+        return !(excludes != null && excludes.contains(value));
     }
 
     public void doc(String text) {
@@ -633,26 +629,24 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     public String getDependentVersion(String name) {
         Object dependentVersion = this.dependencies.get(name);
-        if(dependentVersion == null)
+        if (dependentVersion == null) {
             throw new PluginException("Plugin ["+getName()+"] referenced dependency ["+name+"] with no version!");
-        else
-            return dependentVersion.toString();
+        }
+        return dependentVersion.toString();
     }
 
+    @Override
     public String toString() {
         return "["+getName()+":"+getVersion()+"]";
     }
-
-    
 
     public void doWithWebDescriptor(GPathResult webXml) {
         if(this.pluginBean.isReadableProperty(DO_WITH_WEB_DESCRIPTOR)) {
             Closure c = (Closure)this.plugin.getProperty(DO_WITH_WEB_DESCRIPTOR);
             c.setResolveStrategy(Closure.DELEGATE_FIRST);
             c.setDelegate(this);
-             c.call(webXml);
+            c.call(webXml);
         }
-
     }
 
     /**
@@ -664,15 +658,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             long currentModified = -1;
             URLConnection conn = null;
             try {
-                conn = pluginUrl
-                             .openConnection();
+                conn = pluginUrl.openConnection();
 
-                currentModified = conn
-                                    .getLastModified();
+                currentModified = conn.getLastModified();
                 if(currentModified > pluginLastModified) {
 
-                    if(LOG.isInfoEnabled())
+                    if (LOG.isInfoEnabled()) {
                         LOG.info("Grails plug-in "+this+" changed, reloading changes..");
+                    }
 
                     GroovyClassLoader gcl = new GroovyClassLoader(application.getClassLoader());
                     initialisePlugin(gcl.parseClass(conn.getInputStream()));
@@ -690,29 +683,25 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                         LOG.warn("Error closing URL connection to plugin resource ["+pluginUrl+"]: " + e.getMessage(), e);
                     }
                 }
-
             }
-
         }
-        if(onChangeListener!=null) {
-                checkForNewResources(this);
+        if (onChangeListener != null) {
+            checkForNewResources(this);
 
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Plugin "+this+" checking ["+watchedResources.length+"] resources for changes..");
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Plugin "+this+" checking ["+watchedResources.length+"] resources for changes..");
+            }
+            for (int i = 0; i < watchedResources.length; i++) {
+                final Resource r = watchedResources[i];
+                long modifiedFlag = checkModified(r, modifiedTimes[i]) ;
+                if( modifiedFlag > -1) {
+                    if(LOG.isInfoEnabled()) LOG.info("Grails plug-in resource ["+r+"] changed, reloading changes..");
+
+                    modifiedTimes[i] = modifiedFlag;
+                    fireModifiedEvent(r, this);
+                    refreshInfluencedPlugins();
                 }
-                for (int i = 0; i < watchedResources.length; i++) {
-                    final Resource r = watchedResources[i];
-                    long modifiedFlag = checkModified(r, modifiedTimes[i]) ;
-                    if( modifiedFlag > -1) {
-                        if(LOG.isInfoEnabled())
-                            LOG.info("Grails plug-in resource ["+r+"] changed, reloading changes..");
-
-                        modifiedTimes[i] = modifiedFlag;
-                        fireModifiedEvent(r, this);
-                        refreshInfluencedPlugins();
-                    }
-                }
-
+            }
         }
         return false;
     }
@@ -722,16 +711,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
      * call refresh() on each one
      */
     private void refreshInfluencedPlugins() {
-        GrailsPluginManager manager = getManager();
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("Plugin "+this+" starting refresh of influenced plugins " + ArrayUtils.toString(influencedPluginNames));
+        }
         if(manager != null) {
             for (String name : influencedPluginNames) {
                 GrailsPlugin plugin = manager.getGrailsPlugin(name);
 
                 if (plugin != null) {
-                    if (LOG.isDebugEnabled())
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug(this + " plugin is refreshing influenced plugin " + plugin + " following change to resource");
+                    }
 
                     plugin.refresh();
                 }
@@ -742,24 +732,25 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         }
     }
 
-
-
     /**
-     * This method will take a Resource and check it against the previous modified time passed
+     * Takes a Resource and checks it against the previous modified time passed
      * in the arguments. If the resource was modified it will return the new modified time, otherwise
-     * it will return -1
+     * it will return -1.
      *
-     * @param r The Resource instance
-     * @param previousModifiedTime The last time the Resource was modified
-     * @return The new modified time or -1
+     * @param r the Resource instance
+     * @param previousModifiedTime the last time the Resource was modified
+     * @return the new modified time or -1
      */
     private long checkModified(Resource r, long previousModifiedTime) {
         // If the resource doesn't exist, skip the check.
-        if (!r.exists()) return -1;
+        if (!r.exists()) {
+      	  return -1;
+        }
 
         try {
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug("Checking modified for resource " + r);
+            }
 
             long lastModified = r.lastModified();
 
@@ -774,63 +765,62 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
     private void checkForNewResources(final GrailsPlugin plugin) {
 
+        if (resourcesReferences == null) {
+      	  return;
+        }
 
-        if(resourcesReferences != null) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Plugin "+plugin+" checking ["+ArrayUtils.toString(resourcesReferences)+"] resource references new resources that have been added..");
-            }
-            
-            for (int i = 0; i < resourcesReferences.length; i++) {
-                String resourcesReference = resourcesReferences[i];
-                try {
-                    Resource[] tmp = resolver.getResources(resourcesReference);
-                    if(resourceCount[i] < tmp.length) {
-                        Resource newResource = null;
-                        resourceCount[i] = tmp.length;
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Plugin "+plugin+" checking ["+ArrayUtils.toString(resourcesReferences)+"] resource references new resources that have been added..");
+        }
 
-                        for (Resource resource : tmp) {
-                            if (!ArrayUtils.contains(watchedResources, resource)) {
-                                newResource = resource;
-                                break;
-                            }
-                        }
+        for (int i = 0; i < resourcesReferences.length; i++) {
+            String resourcesReference = resourcesReferences[i];
+            try {
+                Resource[] tmp = resolver.getResources(resourcesReference);
+                if(resourceCount[i] < tmp.length) {
+                    Resource newResource = null;
+                    resourceCount[i] = tmp.length;
 
-                        if(newResource!=null) {
-                            watchedResources = (Resource[])ArrayUtils.add(watchedResources, newResource);
-
-                            if(LOG.isInfoEnabled())
-                                LOG.info("Found new Grails plug-in resource ["+newResource+"], adding to application..");
-
-
-                            if(newResource.getFilename().endsWith(".groovy")) {
-                                if(LOG.isDebugEnabled())
-                                    LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, registering resource with class loader...");
-
-                                ClassLoader classLoader = this.application.getClassLoader();
-
-                                GrailsResourceLoader resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
-
-                                Resource[] classLoaderResources = resourceLoader.getResources();
-                                classLoaderResources = (Resource[])ArrayUtils.add(classLoaderResources, newResource);
-                                resourceLoader.setResources(classLoaderResources);
-
-                                if(classLoader instanceof GrailsClassLoader) {
-                                    ((GrailsClassLoader)classLoader).setGrailsResourceLoader(resourceLoader);
-                                }
-                            }
-
-                            initializeModifiedTimes();
-
-                            if(LOG.isDebugEnabled())
-                                LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
-                            fireModifiedEvent(newResource, plugin);
+                    for (Resource resource : tmp) {
+                        if (!ArrayUtils.contains(watchedResources, resource)) {
+                            newResource = resource;
+                            break;
                         }
                     }
-                }
-                catch (Exception e) {
-                    LOG.debug("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
-                }
 
+                    if(newResource!=null) {
+                        watchedResources = (Resource[])ArrayUtils.add(watchedResources, newResource);
+
+                        if(LOG.isInfoEnabled())
+                            LOG.info("Found new Grails plug-in resource ["+newResource+"], adding to application..");
+
+                        if(newResource.getFilename().endsWith(".groovy")) {
+                            if(LOG.isDebugEnabled())
+                                LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, registering resource with class loader...");
+
+                            ClassLoader classLoader = this.application.getClassLoader();
+
+                            GrailsResourceLoader resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
+
+                            Resource[] classLoaderResources = resourceLoader.getResources();
+                            classLoaderResources = (Resource[])ArrayUtils.add(classLoaderResources, newResource);
+                            resourceLoader.setResources(classLoaderResources);
+
+                            if(classLoader instanceof GrailsClassLoader) {
+                                ((GrailsClassLoader)classLoader).setGrailsResourceLoader(resourceLoader);
+                            }
+                        }
+
+                        initializeModifiedTimes();
+
+                        if(LOG.isDebugEnabled())
+                            LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, firing event if possible..");
+                        fireModifiedEvent(newResource, plugin);
+                    }
+                }
+            }
+            catch (Exception e) {
+                LOG.debug("Plugin "+this+"  was unable to check for new plugin resources: " + e.getMessage());
             }
         }
     }
@@ -850,7 +840,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             source = resource;
         }
 
-
         if(loadedClass != null && Modifier.isAbstract(loadedClass.getModifiers())) {
             restartContainer();
         }
@@ -862,7 +851,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
 
             getManager().informObservers(getName(), event);
         }
-
     }
 
     public void restartContainer() {
@@ -881,31 +869,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         }
     }
 
-    private Class attemptClassReload(final Resource resource) {
-        String className = GrailsResourceUtils.getClassName(resource);
-        if(className != null) {
-            return attemptClassReload(className);
-        }
-        return null;
-    }
-
-
-
-    private Class attemptClassReload(String className) {
+    private Class<?> attemptClassReload(String className) {
         final ClassLoader loader = application.getClassLoader();
         if(loader instanceof GrailsClassLoader) {
             GrailsClassLoader grailsLoader = (GrailsClassLoader)loader;
 
             return grailsLoader.reloadClass(className);
         }
-        else {
-            // Added this to see whether it helps track down an intermittent
-            // bug with dynamic loading of new artifacts.
-            LOG.warn("Expected GrailsClassLoader - got " + loader.getClass());
-        }
+        // Added this to see whether it helps track down an intermittent
+        // bug with dynamic loading of new artifacts.
+        LOG.warn("Expected GrailsClassLoader - got " + loader.getClass());
         return null;
     }
-
 
     public void setWatchedResources(Resource[] watchedResources) throws IOException {
         this.watchedResources = watchedResources;
@@ -922,16 +897,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         return this;
     }
 
-
     public void setParentApplicationContext(ApplicationContext parent) {
         // do nothing for the moment
     }
 
-
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.plugins.AbstractGrailsPlugin#refresh()
      */
+    @Override
     public void refresh() {
         refresh(true);
     }
@@ -944,20 +917,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
             catch (IOException e) {
                 // ignore
             }
-            if (fireEvent)
+            if (fireEvent) {
                 fireModifiedEvent(r, this);
+            }
         }
     }
-
 
     public GroovyObject getInstance() {
         return this.plugin;
     }
 
-    public void doWithDynamicMethods(ApplicationContext applicationContext) {
-
+    public void doWithDynamicMethods(ApplicationContext ctx) {
         try {
-
             if(this.pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
                 Closure c = (Closure)this.plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
                 if(enableDocumentationGeneration()) {
@@ -965,7 +936,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
                 }
 
                 c.setDelegate(this);
-                c.call(new Object[]{applicationContext});
+                c.call(new Object[]{ctx});
             }
         }
         finally {
@@ -1001,15 +972,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         switch (eventKind) {
             case EVENT_ON_CHANGE:
                 notifyOfEvent(event);
-                getManager().informObservers(getName(), event);                
-            break;
+                getManager().informObservers(getName(), event);
+                break;
             case EVENT_ON_SHUTDOWN:
                 invokeOnShutdownEventListener(event);
-            break;
+                break;
 
             case EVENT_ON_CONFIG_CHANGE:
                 invokeOnConfigChangeListener(event);
-            break;
+                break;
             default:
                 notifyOfEvent(event);
         }
@@ -1017,14 +988,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     }
 
     private void invokeOnShutdownEventListener(Map event) {
-        callEvent(onShutdownListener,event);    }
+        callEvent(onShutdownListener,event);
+    }
 
     private void invokeOnConfigChangeListener(Map event) {
         callEvent(onConfigChangeListener,event);
     }
 
     private void callEvent(Closure closureHook, Map event) {
-        if(closureHook !=null) {
+        if (closureHook !=null) {
             closureHook.setDelegate(this);
             closureHook.call(new Object[]{event});
         }
@@ -1034,41 +1006,43 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
         onChangeListener.setDelegate(this);
         onChangeListener.call(new Object[]{event});
     }
-	
-	public void doArtefactConfiguration() {
-		if(this.pluginBean.isReadableProperty(ARTEFACTS)) {
-			List l = (List)this.plugin.getProperty(ARTEFACTS);
-            for (Object artefact : l) {
-                if (artefact instanceof Class) {
-                    Class artefactClass = (Class) artefact;
-                    if (ArtefactHandler.class.isAssignableFrom(artefactClass)) {
-                        try {
-                            this.application.registerArtefactHandler((ArtefactHandler) artefactClass.newInstance());
-                        }
-                        catch (InstantiationException e) {
-                            LOG.error("Cannot instantiate an Artefact Handler:" + e.getMessage(), e);
-                        }
-                        catch (IllegalAccessException e) {
-                            LOG.error("The constructor of the Artefact Handler is not accessible:" + e.getMessage(), e);
-                        }
+
+    public void doArtefactConfiguration() {
+        if (!pluginBean.isReadableProperty(ARTEFACTS)) {
+      	  return;
+        }
+
+        List l = (List)this.plugin.getProperty(ARTEFACTS);
+        for (Object artefact : l) {
+            if (artefact instanceof Class) {
+                Class artefactClass = (Class) artefact;
+                if (ArtefactHandler.class.isAssignableFrom(artefactClass)) {
+                    try {
+                        this.application.registerArtefactHandler((ArtefactHandler) artefactClass.newInstance());
                     }
-                    else {
-                        LOG.error("This class is not an ArtefactHandler:" + artefactClass.getName());
+                    catch (InstantiationException e) {
+                        LOG.error("Cannot instantiate an Artefact Handler:" + e.getMessage(), e);
+                    }
+                    catch (IllegalAccessException e) {
+                        LOG.error("The constructor of the Artefact Handler is not accessible:" + e.getMessage(), e);
                     }
                 }
                 else {
-                    if (artefact instanceof ArtefactHandler) {
-                        this.application.registerArtefactHandler((ArtefactHandler) artefact);
-                    }
-                    else {
-                        LOG.error("This object is not an ArtefactHandler:" + artefact + "[" + artefact.getClass().getName() + "]");
-                    }
+                    LOG.error("This class is not an ArtefactHandler:" + artefactClass.getName());
                 }
             }
-		}
-	}
+            else {
+                if (artefact instanceof ArtefactHandler) {
+                    this.application.registerArtefactHandler((ArtefactHandler) artefact);
+                }
+                else {
+                    LOG.error("This object is not an ArtefactHandler:" + artefact + "[" + artefact.getClass().getName() + "]");
+                }
+            }
+        }
+    }
 
-    public Class[] getProvidedArtefacts() {
+    public Class<?>[] getProvidedArtefacts() {
         return this.providedArtefacts;
     }
 
@@ -1079,5 +1053,4 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements GrailsP
     public Collection<? extends TypeFilter> getTypeFilters() {
         return this.typeFilters;
     }
-
 }

@@ -3,13 +3,9 @@ package org.codehaus.groovy.grails.orm.hibernate
 import javax.sql.DataSource
 
 /**
-* Created by IntelliJ IDEA.
-* User: grocher
-* Date: Jan 23, 2008
-* Time: 9:04:47 PM
-* To change this template use File | Settings | File Templates.
-*/
-class TablePerSubclassWithCustomTableNameTests extends AbstractGrailsHibernateTests{
+ * @author grocher
+ */
+class TablePerSubclassWithCustomTableNameTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -38,8 +34,6 @@ class Cat extends Animal {
 '''
     }
 
-
-
     void testGeneratedTables() {
         DataSource ds = applicationContext.getBean('dataSource')
 
@@ -53,7 +47,5 @@ class Cat extends Animal {
         } finally {
             con.close()
         }
-
     }
-
 }

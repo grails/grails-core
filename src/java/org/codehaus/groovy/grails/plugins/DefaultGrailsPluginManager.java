@@ -18,11 +18,45 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.GroovyShell;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.Writable;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.Writer;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletContext;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,24 +73,14 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.Assert;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.servlet.ServletContext;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
-
 /**
- * <p>A class that handles the loading and management of plug-ins in the Grails system.
- * A plugin a just like a normal Grails application except that it contains a file ending
+ * <p>Handles the loading and management of plug-ins in the Grails system.
+ * A plugin is just like a normal Grails application except that it contains a file ending
  * in *Plugin.groovy  in the root of the directory.
  * <p/>
  * <p>A Plugin class is a Groovy class that has a version and optionally closures
@@ -74,7 +98,7 @@ import java.util.*;
  * <p> Example:
  * <pre>
  * class ClassEditorGrailsPlugin {
- *      def version = 1.1
+ *      def version = '1.1'
  *      def doWithSpring = { application ->
  *          classEditor(org.springframework.beans.propertyeditors.ClassEditor, application.classLoader)
  *      }
@@ -124,9 +148,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
         this.application = application;
         setPluginFilter();
-
       }
-
 
     public DefaultGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
         super(application);
@@ -538,27 +560,27 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     private Class loadPluginClass(ClassLoader cl, Resource r) {
         Class pluginClass;
-    	if(cl instanceof GroovyClassLoader) {
-	        try {
-	        	if(LOG.isInfoEnabled()) {
-	        		LOG.info("Parsing & compiling " + r.getFilename());
-	        	}
-	            pluginClass = ((GroovyClassLoader)cl).parseClass(r.getInputStream());
-	        }
-	        catch (CompilationFailedException e) {
-	            throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);
-	        }
-	        catch (IOException e) {
-	            throw new PluginException("Error reading plugin [" + r.getFilename() + "] " + e.getMessage(), e);
-	        }
-    	} else {
-    		String className=GrailsResourceUtils.getClassName(r);
-    		try {
-				pluginClass = Class.forName(className, true, cl);
-			} catch (ClassNotFoundException e) {
-				throw new PluginException("Cannot find plugin class [" + className + "] resource: [" + r.getFilename()+"]", e);
-			}
-    	}
+        if(cl instanceof GroovyClassLoader) {
+            try {
+                if(LOG.isInfoEnabled()) {
+                    LOG.info("Parsing & compiling " + r.getFilename());
+                }
+                pluginClass = ((GroovyClassLoader)cl).parseClass(r.getInputStream());
+            }
+            catch (CompilationFailedException e) {
+                throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);
+            }
+            catch (IOException e) {
+                throw new PluginException("Error reading plugin [" + r.getFilename() + "] " + e.getMessage(), e);
+            }
+        } else {
+            String className=GrailsResourceUtils.getClassName(r);
+            try {
+                pluginClass = Class.forName(className, true, cl);
+            } catch (ClassNotFoundException e) {
+                throw new PluginException("Cannot find plugin class [" + className + "] resource: [" + r.getFilename()+"]", e);
+            }
+        }
         return pluginClass;
     }
 
@@ -578,7 +600,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
     }
 
-
     private void registerPlugin(GrailsPlugin plugin) {
         if (canRegisterPlugin(plugin)) {
             if (LOG.isInfoEnabled()) {
@@ -590,8 +611,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             }
             plugin.setManager(this);
             String[] evictionNames = plugin.getEvictionNames();
-            if (evictionNames.length > 0)
+            if (evictionNames.length > 0) {
                 delayedEvictions.put(plugin, evictionNames);
+            }
 
             String[] observedPlugins = plugin.getObservedPluginNames();
             for (int i = 0; i < observedPlugins.length; i++) {
@@ -635,11 +657,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         return getGrailsPlugin(name, version) != null;
     }
 
-
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        for (Iterator i = pluginList.iterator(); i.hasNext();) {
-            GrailsPlugin plugin = (GrailsPlugin) i.next();
+        for (GrailsPlugin plugin : pluginList) {
             plugin.setApplicationContext(applicationContext);
         }
     }
@@ -650,8 +671,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     public void checkForChanges() {
         checkForConfigChanges();
-        for (Iterator i = pluginList.iterator(); i.hasNext();) {
-            GrailsPlugin plugin = (GrailsPlugin) i.next();
+        for (GrailsPlugin plugin : pluginList) {
             if (plugin.checkForChanges()) {
                 LOG.info("Plugin " + plugin + " changed, re-registering beans...");
                 reloadPlugin(plugin);
@@ -671,7 +691,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                 LOG.error("I/O error obtaining URL connection for configuration [" + configURL + "]: " + e.getMessage(), e);
                 return;
             }
-
 
             try {
                 long lastModified = connection.getLastModified();
@@ -713,8 +732,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     public void informPluginsOfConfigChange() {
         LOG.info("Informing plug-ins of configuration change..");
-        for (Iterator i = pluginList.iterator(); i.hasNext();) {
-            GrailsPlugin plugin = (GrailsPlugin) i.next();
+        for (GrailsPlugin plugin : pluginList) {
             plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CONFIG_CHANGE, application.getConfig());
         }
     }
@@ -757,8 +775,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
             GPathResult result = slurper.parse(inputStream);
 
-            for (Iterator i = pluginList.iterator(); i.hasNext();) {
-                GrailsPlugin plugin = (GrailsPlugin) i.next();
+            for (GrailsPlugin plugin : pluginList) {
                 if(plugin.supportsCurrentScopeAndEnvironment()) {
                     plugin.doWithWebDescriptor(result);
                 }
@@ -796,7 +813,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         w.writeTo(output);
     }
 
-
     public void doWebDescriptor(File descriptor, Writer target) {
         try {
             doWebDescriptor(new FileInputStream(descriptor), target);
@@ -806,27 +822,24 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
     }
 
+    @Override
     public void setApplication(GrailsApplication application) {
-        if (application == null) throw new IllegalArgumentException("Argument [application] cannot be null");
+        Assert.notNull(application, "Argument [application] cannot be null");
         this.application = application;
-        for (Iterator i = pluginList.iterator(); i.hasNext();) {
-            GrailsPlugin plugin = (GrailsPlugin) i.next();
+        for (GrailsPlugin plugin : pluginList) {
             plugin.setApplication(application);
-
         }
     }
 
+    @Override
     public void doDynamicMethods() {
         checkInitialised();
         // remove common meta classes just to be sure
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         for (int i = 0; i < COMMON_CLASSES.length; i++) {
-            Class commonClass = COMMON_CLASSES[i];
-            registry.removeMetaClass(commonClass);
+            registry.removeMetaClass(COMMON_CLASSES[i]);
         }
-        for (Iterator i = pluginList.iterator(); i.hasNext();) {
-            GrailsPlugin plugin = (GrailsPlugin) i.next();
-
+        for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 try {
                     plugin.doWithDynamicMethods(applicationContext);
@@ -1897,6 +1910,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             setDaemon(true);
         }
 
+        @Override
         public void run() {
             while (enabled) {
                 int sleepTime = DefaultGrailsPluginManager.SCAN_INTERVAL;
@@ -1909,6 +1923,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                 else {
                     try {
                         scanner = new Thread() {
+                            @Override
                             public void run() {
                                 pluginManager.checkForChanges();
                             }
@@ -1932,7 +1947,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                     // exception.
                 }
             }
-
         }
     }
 }

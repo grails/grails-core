@@ -1,8 +1,10 @@
 import org.hibernate.dialect.DialectFactory
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.support.JdbcUtils
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
 includeTargets << grailsScript("_GrailsBootstrap")
+includeTargets << grailsScript("_GrailsPackage")
 
 def props = new Properties()
 def filename = "${grailsSettings.projectTargetDir}/ddl.sql"
@@ -11,8 +13,6 @@ boolean stdout = false
 String configClassName = 'org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration'
 
 def configClasspath = {
-
-//    getClass().classLoader.rootLoader?.addURL(new File(classesDirPath).toURL())
 
     ant.copy(todir: classesDirPath, file: metadataFile)
     ant.copy(todir: classesDirPath, failonerror: false) {
@@ -39,11 +39,8 @@ def configureFromArgs = {
 
 def populateProperties = {
 
-    def dsFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
-    def dsConfig = null
-    if (dsFile.exists()) {
-        dsConfig = new ConfigSlurper(grailsEnv).parse(dsFile.text)
-    }
+    createConfig()
+    def dsConfig = CH.config
 
     props.'hibernate.connection.username' = dsConfig?.dataSource?.username ?: 'sa'
     props.'hibernate.connection.password' = dsConfig?.dataSource?.password ?: ''
