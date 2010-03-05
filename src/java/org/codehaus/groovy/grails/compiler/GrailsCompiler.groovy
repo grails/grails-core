@@ -16,82 +16,66 @@
 package org.codehaus.groovy.grails.compiler
 
 import org.codehaus.groovy.ant.Groovyc
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.compiler.support.*
-import org.codehaus.groovy.grails.compiler.injection.*
-import org.apache.tools.ant.BuildException
-import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit
-import org.codehaus.groovy.tools.ErrorReporter
-import org.apache.tools.ant.AntClassLoader  
-import org.apache.tools.ant.util.*
-import org.codehaus.groovy.control.*
-import org.apache.commons.lang.ArrayUtils
-import org.codehaus.groovy.grails.commons.GrailsApplication
+
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import grails.util.BuildSettingsHolder
+
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 /**
- * <p>An extended version of the Groovy compiler that sets up the Grails ResourceLoader upon compilation
-
+ * An extended version of the Groovy compiler that sets up the Grails ResourceLoader upon compilation.
+ *
  * @author Graeme Rocher
  * @since 0.6
-  *
- * Created: Jul 27, 2007
- * Time: 3:53:37 PM
- *
  */
 class GrailsCompiler extends Groovyc {
 
-    GrailsCompiler() {
-    }
+    String projectName
+    def resolver = new PathMatchingResourcePatternResolver()
 
-	String projectName
-	def resolver = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
-	
-	private destList = []
-    
-	void scanDir(File srcDir, File destDir, String[] files) {
+    private destList = []
+
+    @Override
+    void scanDir(File srcDir, File destDir, String[] files) {
         def srcList = []
         def srcPath = srcDir.absolutePath
         def destPath = destDir.absolutePath
-        for(f in files) {
+        for (f in files) {
             def sf = new File("${srcPath}/$f")
             def df = null
-            if(f.endsWith(".groovy") ) {
+            if (f.endsWith(".groovy") ) {
                 df = new File("${destPath}/${f[0..-7] + 'class'}")
                 def i = f.lastIndexOf('/')
-                if(!df.exists() && i > -1) {
+                if (!df.exists() && i > -1) {
                     // check root package
                     def tmp = new File("${destPath}/${f[i..-7] + 'class'}")
-                    if(tmp.exists()) df = tmp
+                    if (tmp.exists()) {
+                        df = tmp
+                    }
                 }
             }
-            else if(f.endsWith(".java")) {
+            else if (f.endsWith(".java")) {
                 df = new File("${destPath}/${f[0..-5] + 'class'}")
             }
             else {
                 continue
             }
-                       
-            if(sf.lastModified() > df.lastModified()) {
+
+            if (sf.lastModified() > df.lastModified()) {
                 srcList << sf
                 destList << df
-            }            
+            }
         }
         addToCompileList(srcList as File[])
     }
 
-
-
     void compile() {
-
 
         configureResourceLoader()
 
-
-        if(compileList) {
-
+        if (compileList) {
             long now = System.currentTimeMillis()
             try {
                 super.compile()
@@ -104,19 +88,12 @@ class GrailsCompiler extends Groovyc {
                 }
             }
         }
-
     }
 
-    private def configureResourceLoader() {
+    private configureResourceLoader() {
         def basedir = System.getProperty("base.dir") ?: "."
         Resource[] resources = GrailsPluginUtils.getArtefactResources(basedir)
         def resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.resourceLoader = resourceLoader
     }
-
-
-
-
-
 }
-

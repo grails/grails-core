@@ -948,7 +948,7 @@ public class GrailsClassUtils {
      * @param map The map to look in
      * @return A boolean value which will be false if the map is null, the map doesn't contain the key or the value is false
      */
-    public static boolean getBooleanFromMap(String key, Map map) {
+    public static boolean getBooleanFromMap(String key, Map<?, ?> map) {
         if(map == null) return false;
         if(map.containsKey(key)) {
             Object o = map.get(key);
@@ -986,7 +986,7 @@ public class GrailsClassUtils {
      */
     public static boolean isJdk5Enum(Class<?> type) {
         if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
-            Method m = BeanUtils.findMethod(type.getClass(),"isEnum", null);
+            Method m = BeanUtils.findMethod(type.getClass(),"isEnum");
             if(m == null) return false;
             try {
                 Object result = m.invoke(type);
@@ -1028,7 +1028,7 @@ public class GrailsClassUtils {
      * @param packageList The list of packages
      * @return True if it is within the list of specified packages
      */
-    public static boolean isClassBelowPackage(Class<?> theClass, List packageList) {
+    public static boolean isClassBelowPackage(Class<?> theClass, List<?> packageList) {
         String classPackage = theClass.getPackage().getName();
         for (Object packageName : packageList) {
             if(packageName != null) {

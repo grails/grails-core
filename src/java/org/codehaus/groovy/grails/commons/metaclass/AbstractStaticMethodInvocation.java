@@ -20,41 +20,32 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * 
- * 
  * @author Steven Devijver
  * @since Aug 7, 2005
  */
 public abstract class AbstractStaticMethodInvocation implements StaticMethodInvocation {
 
-	private Pattern pattern = null;
-	
-	public AbstractStaticMethodInvocation() {
-		super();
-	}
+    private Pattern pattern = null;
+    
+    public void setPattern(Pattern pattern) {
+        this.pattern = pattern;
+    }
+    
+    protected Pattern getPattern() {
+        return pattern;
+    }
 
-	public void setPattern(Pattern pattern) {
-		this.pattern = pattern;
-	}
-	
-	protected Pattern getPattern() {
-		return pattern;
-	}
+    public boolean isMethodMatch(String methodName) {
+        return this.pattern.matcher(methodName.subSequence(0, methodName.length())).find();
+    }
 
-	public boolean isMethodMatch(String methodName) {
-		return this.pattern.matcher(methodName.subSequence(0, methodName.length())).find();
-	}
+    public abstract Object invoke(Class clazz, String methodName, Object[] arguments);
 
-	public abstract Object invoke(Class clazz, String methodName, Object[] arguments);
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return new ToStringBuilder(this)
-						.append("Pattern",this.pattern)
-						.toString();
-	}
-
-	
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).append("Pattern", pattern).toString();
+    }
 }

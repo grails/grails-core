@@ -1,84 +1,86 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.GrailsUtil
+
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
+
+import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import org.springframework.beans.BeanUtils
 
 /**
-* A plug-in that configures the domain classes in the spring context
-*
-* @author Graeme Rocher
-* @since 0.4
-*/
+ * A plug-in that configures the domain classes in the spring context.
+ *
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class DomainClassGrailsPlugin {
-	
-	def version = grails.util.GrailsUtil.getGrailsVersion()
-	def dependsOn = [i18n:version]
-	def loadAfter = ['controllers']
-	
-	def doWithSpring = {
-		for(dc in application.domainClasses) {
-		    // Note the use of Groovy's ability to use dynamic strings in method names!
-		    "${dc.fullName}"(dc.getClazz()) { bean ->
-				bean.singleton = false
-				bean.autowire = "byName"						
-			}
-			"${dc.fullName}DomainClass"(MethodInvokingFactoryBean) {
-				targetObject = ref("grailsApplication", true)
-				targetMethod = "getArtefact"
-				arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
-			}
-			"${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) {
-				targetObject = ref("${dc.fullName}DomainClass")
-				targetMethod = "getClazz"        						
+
+    def version = GrailsUtil.getGrailsVersion()
+    def dependsOn = [i18n:version]
+    def loadAfter = ['controllers']
+
+    def doWithSpring = {
+        for(dc in application.domainClasses) {
+            // Note the use of Groovy's ability to use dynamic strings in method names!
+            "${dc.fullName}"(dc.clazz) { bean ->
+                bean.singleton = false
+                bean.autowire = "byName"
+            }
+            "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) {
+                targetObject = ref("grailsApplication", true)
+                targetMethod = "getArtefact"
+                arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
+            }
+            "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) {
+                targetObject = ref("${dc.fullName}DomainClass")
+                targetMethod = "getClazz"
             }
             "${dc.fullName}Validator"(GrailsDomainClassValidator) {
                 messageSource = ref("messageSource")
                 domainClass = ref("${dc.fullName}DomainClass")
                 grailsApplication = ref("grailsApplication", true)
             }
-
-		}
-	}
-          
-	static final PROPERTY_INSTANCE_MAP = new org.codehaus.groovy.grails.support.SoftThreadLocalMap()	
-	
-	def doWithDynamicMethods = { ApplicationContext ctx->
-           enhanceDomainClasses(application, ctx)
-	}
-
-    def onConfigChange = {
-        application.domainClasses*.refreshConstraints()   
+        }
     }
 
+    static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+
+    def doWithDynamicMethods = { ApplicationContext ctx->
+        enhanceDomainClasses(application, ctx)
+    }
+
+    def onConfigChange = {
+        application.domainClasses*.refreshConstraints()
+    }
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
-        for(GrailsDomainClass dc in application.domainClasses) {
-			def domainClass = dc
+        for (GrailsDomainClass dc in application.domainClasses) {
+            def domainClass = dc
             MetaClass metaClass = domainClass.metaClass
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
             metaClass.constructor = {->
-                if(ctx.containsBean(domainClass.fullName)) {
+                if (ctx.containsBean(domainClass.fullName)) {
                     ctx.getBean(domainClass.fullName)
                 }
                 else {
@@ -86,19 +88,18 @@ class DomainClassGrailsPlugin {
                 }
             }
             metaClass.static.create = {->
-				if(ctx.containsBean(domainClass.fullName)) {
-					ctx.getBean(domainClass.fullName)
-				}
-				else {
-					BeanUtils.instantiateClass(domainClass.clazz)
-				}
-			}
+                if (ctx.containsBean(domainClass.fullName)) {
+                    ctx.getBean(domainClass.fullName)
+                }
+                else {
+                    BeanUtils.instantiateClass(domainClass.clazz)
+                }
+            }
 
             addValidationMethods(application, domainClass, ctx)
             addRelationshipManagementMethods(domainClass)
         }
     }
-    
 
     private static addValidationMethods(GrailsApplication application, GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
@@ -117,9 +118,7 @@ class DomainClassGrailsPlugin {
                 if(attributes) {
                     return attributes.request.getAttribute(it)
                 }
-                else {
-                    return PROPERTY_INSTANCE_MAP.get().get(it)
-                }
+                return PROPERTY_INSTANCE_MAP.get().get(it)
             }
             put = { key, val ->
                 def attributes = rch.getRequestAttributes()
@@ -140,12 +139,12 @@ class DomainClassGrailsPlugin {
             def errors
             def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             errors = get(key)
-            if(!errors) {
+            if (!errors) {
                 errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
                 put key, errors
             }
             errors
-           }
+        }
         metaClass.setErrors = { Errors errors ->
             def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             put key, errors
@@ -163,7 +162,7 @@ class DomainClassGrailsPlugin {
     /**
      * Registers the constraints property for the given MetaClass and domainClass instance
      */
-    static def registerConstraintsProperty(MetaClass metaClass, GrailsDomainClass domainClass) {
+    static void registerConstraintsProperty(MetaClass metaClass, GrailsDomainClass domainClass) {
         metaClass.'static'.getConstraints = {->
             domainClass.constrainedProperties
         }
@@ -173,12 +172,11 @@ class DomainClassGrailsPlugin {
         }
     }
 
-
     private static addRelationshipManagementMethods(GrailsDomainClass dc) {
         def metaClass = dc.metaClass
         for(p in dc.persistantProperties) {
             def prop = p
-            if(prop.basicCollectionType) {
+            if (prop.basicCollectionType) {
                 def collectionName = GrailsClassUtils.getClassNameRepresentation(prop.name)
                 metaClass."addTo$collectionName" = { obj ->
                     if(obj instanceof CharSequence && !(obj instanceof String)) {
@@ -271,6 +269,5 @@ class DomainClassGrailsPlugin {
                 }
             }
         }
-
     }
 }

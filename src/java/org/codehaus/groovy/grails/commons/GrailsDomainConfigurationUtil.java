@@ -40,31 +40,29 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
- * Utility methods used in configuring the Grails Hibernate integration
+ * Utility methods used in configuring the Grails Hibernate integration.
  *
  * @author Graeme Rocher
  * @since 18-Feb-2006
  */
 public class GrailsDomainConfigurationUtil {
 
-
-
     public static final String PROPERTY_NAME = "constraints";
     private static final String CONSTRAINTS_GROOVY = "Constraints.groovy";
 
     private static Log LOG = LogFactory.getLog(GrailsDomainConfigurationUtil.class);
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
 
     public static Serializable getAssociationIdentifier(Object target, String propertyName, GrailsDomainClass referencedDomainClass) {
         String getterName = GrailsClassUtils.getGetterName(propertyName);
 
         try {
             Method m = target.getClass().getDeclaredMethod(getterName, EMPTY_CLASS_ARRAY);
-            Object value = m.invoke(target, null);
+            Object value = m.invoke(target);
             if(value != null && referencedDomainClass != null) {
                 String identifierGetter = GrailsClassUtils.getGetterName(referencedDomainClass.getIdentifier().getName());
                 m = value.getClass().getDeclaredMethod(identifierGetter, EMPTY_CLASS_ARRAY);
-                return (Serializable)m.invoke(value, null);
+                return (Serializable)m.invoke(value);
             }
         } catch (NoSuchMethodException e) {
            // ignore
@@ -82,18 +80,19 @@ public class GrailsDomainConfigurationUtil {
      * @param domainClasses The domain classes to configure relationships for
      * @param domainMap     The domain class map
      */
-    public static void configureDomainClassRelationships(GrailsClass[] domainClasses, Map domainMap) {
+    public static void configureDomainClassRelationships(GrailsClass[] domainClasses, Map<?, ?> domainMap) {
 
         // configure super/sub class relationships
         // and configure how domain class properties reference each other
         for (GrailsClass grailsClass : domainClasses) {
             GrailsDomainClass domainClass = (GrailsDomainClass) grailsClass;
             if (!domainClass.isRoot()) {
-                Class superClass = grailsClass.getClazz().getSuperclass();
+                Class<?> superClass = grailsClass.getClazz().getSuperclass();
                 while (!superClass.equals(Object.class) && !superClass.equals(GroovyObject.class)) {
                     GrailsDomainClass gdc = (GrailsDomainClass) domainMap.get(superClass.getName());
-                    if (gdc == null || gdc.getSubClasses() == null)
+                    if (gdc == null || gdc.getSubClasses() == null) {
                         break;
+                    }
 
                     gdc.getSubClasses().add((GrailsDomainClass)grailsClass);
                     superClass = superClass.getSuperclass();
@@ -107,7 +106,6 @@ public class GrailsDomainConfigurationUtil {
                     prop.setReferencedDomainClass(referencedGrailsDomainClass);
                 }
             }
-
         }
 
         // now configure so that the 'other side' of a property can be resolved by the property itself
@@ -150,7 +148,6 @@ public class GrailsDomainConfigurationUtil {
                     }
                 }
             }
-
         }
     }
 
@@ -158,10 +155,10 @@ public class GrailsDomainConfigurationUtil {
 
         if (prop.equals(referencedProp)) return false;
         if (prop.isOneToMany() && referencedProp.isOneToMany()) return false;
-        Class referencedPropertyType = referencedProp.getReferencedPropertyType();
+        Class<?> referencedPropertyType = referencedProp.getReferencedPropertyType();
         if (referencedPropertyType == null || !referencedPropertyType.isAssignableFrom(domainClass.getClazz()))
             return false;
-        Map mappedBy = domainClass.getMappedBy();
+        Map<?, ?> mappedBy = domainClass.getMappedBy();
 
         Object propertyMapping = mappedBy.get(prop.getName());
         boolean mappedToDifferentProperty = propertyMapping != null && !propertyMapping.equals(referencedProp.getName());
@@ -169,7 +166,6 @@ public class GrailsDomainConfigurationUtil {
         mappedBy = referencedProp.getDomainClass().getMappedBy();
         propertyMapping = mappedBy.get(referencedProp.getName());
         boolean mappedFromDifferentProperty = propertyMapping != null && !propertyMapping.equals(prop.getName());
-
 
         return !mappedToDifferentProperty && !mappedFromDifferentProperty;
     }
@@ -181,8 +177,7 @@ public class GrailsDomainConfigurationUtil {
      * @return The mapping file name
      */
     public static String getMappingFileName(String className) {
-        String fileName = className.replaceAll("\\.", "/");
-        return fileName += ".hbm.xml";
+        return className.replaceAll("\\.", "/") + ".hbm.xml";
     }
 
     /**
@@ -191,10 +186,10 @@ public class GrailsDomainConfigurationUtil {
      * @param domainClass the domain class
      * @return The association map
      */
-    public static Map getAssociationMap(Class domainClass) {
-        Map associationMap = (Map) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class);
+    public static Map<?, ?> getAssociationMap(Class domainClass) {
+        Map<?, ?> associationMap = (Map<?, ?>) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class);
         if (associationMap == null) {
-            associationMap = (Map) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.HAS_MANY, Map.class);
+            associationMap = (Map<?, ?>) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.HAS_MANY, Map.class);
             if (associationMap == null) {
                 associationMap = Collections.EMPTY_MAP;
             }
@@ -208,8 +203,9 @@ public class GrailsDomainConfigurationUtil {
      * @param domainClass The domain class
      * @return The mappedBy map
      */
-    public static Map getMappedByMap(Class domainClass) {
-        Map mappedByMap = (Map) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.MAPPED_BY, Map.class);
+    public static Map<?, ?> getMappedByMap(Class<?> domainClass) {
+        Map<?, ?> mappedByMap = (Map<?, ?>) GrailsClassUtils.getPropertyValueOfNewInstance(
+      		  domainClass, GrailsDomainClassProperty.MAPPED_BY, Map.class);
         if (mappedByMap == null) {
             return Collections.EMPTY_MAP;
         }
@@ -224,8 +220,7 @@ public class GrailsDomainConfigurationUtil {
      */
     public static boolean isBasicType(GrailsDomainClassProperty prop) {
         if (prop == null) return false;
-        Class propType = prop.getType();
-        return isBasicType(propType);
+        return isBasicType(prop.getType());
     }
 
     private static final Set<String> BASIC_TYPES;
@@ -283,7 +278,6 @@ public class GrailsDomainConfigurationUtil {
         return BASIC_TYPES.contains(propType.getName());
     }
 
-
     /**
      * Checks whether is property is configurational
      *
@@ -313,17 +307,17 @@ public class GrailsDomainConfigurationUtil {
      * 
      * @return A Map of constraints
      */
-    public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
         final Class<?> theClass = instance.getClass();
         boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
-        LinkedList classChain = getSuperClassChain(theClass);
-        Class clazz;
+        LinkedList<?> classChain = getSuperClassChain(theClass);
+        Class<?> clazz;
 
         ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(instance);
 
         // Evaluate all the constraints closures in the inheritance chain
         for (Object aClassChain : classChain) {
-            clazz = (Class) aClassChain;
+            clazz = (Class<?>) aClassChain;
             Closure c = (Closure) GrailsClassUtils.getStaticPropertyValue(clazz, PROPERTY_NAME);
             if (c == null) {
                 c = getConstraintsFromScript(instance);
@@ -341,33 +335,30 @@ public class GrailsDomainConfigurationUtil {
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
         if(properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
             for (GrailsDomainClassProperty p : properties) {
-				if (p.isDerived()) {
-					if(constrainedProperties.remove(p.getName()) != null) {
+            	if (p.isDerived()) {
+            		if(constrainedProperties.remove(p.getName()) != null) {
                         // constraint is registered but cannot be applied to a derived property
                         LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
-					}
-				} else {
-					final String propertyName = p.getName();
-					ConstrainedProperty cp = constrainedProperties
-							.get(propertyName);
-					if (cp == null) {
-						cp = new ConstrainedProperty(p.getDomainClass()
-								.getClazz(), propertyName, p.getType());
-						cp.setOrder(constrainedProperties.size() + 1);
-						constrainedProperties.put(propertyName, cp);
-					}
-					// Make sure all fields are required by default, unless
-					// specified otherwise by the constraints
-					// If the field is a Java entity annotated with @Entity skip
-					// this
-					applyDefaultConstraints(propertyName, p, cp,
+            		}
+            	}
+            	else {
+            		final String propertyName = p.getName();
+            		ConstrainedProperty cp = constrainedProperties.get(propertyName);
+            		if (cp == null) {
+            			cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
+            			cp.setOrder(constrainedProperties.size() + 1);
+            			constrainedProperties.put(propertyName, cp);
+            		}
+            		// Make sure all fields are required by default, unless
+            		// specified otherwise by the constraints
+            		// If the field is a Java entity annotated with @Entity skip this
+            		applyDefaultConstraints(propertyName, p, cp,
 							defaultConstraints, delegate.getSharedConstraints());
-				}
+            	}
             }
         }
 
         return constrainedProperties;
-
     }
 
     /**
@@ -378,7 +369,7 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      */
-    public static Map evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties)  {
         return evaluateConstraints(instance, properties,null);
     }
 
@@ -389,37 +380,34 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      */
-    public static Map evaluateConstraints(Object instance)  {
-        return evaluateConstraints(instance, null,null);
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance)  {
+        return evaluateConstraints(instance, null, null);
     }
 
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
-        if(defaultConstraints != null && !defaultConstraints.isEmpty()) {
+        if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
 
-            if(sharedConstraints!=null && !sharedConstraints.isEmpty()) {
+            if (sharedConstraints != null && !sharedConstraints.isEmpty()) {
                 for (String sharedConstraintReference : sharedConstraints) {
                     final Object o = defaultConstraints.get(sharedConstraintReference);
-                    if(o instanceof Map) {
-                        applyMapOfConstraints((Map) o,propertyName, p, cp);
+                    if (o instanceof Map) {
+                        applyMapOfConstraints((Map<String, Object>) o,propertyName, p, cp);
                     }
                     else {
                         throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
                     }
                 }
             }
-            if(defaultConstraints.containsKey("*")) {
+            if (defaultConstraints.containsKey("*")) {
                 final Object o = defaultConstraints.get("*");
-                if(o instanceof Map) {
-                    Map<String, Object> globalConstraints = (Map) o;
+                if (o instanceof Map) {
+                    Map<String, Object> globalConstraints = (Map<String, Object>)o;
                     applyMapOfConstraints(globalConstraints, propertyName, p, cp);
-
                 }
             }
-
         }
 
         if (canApplyNullableConstraint(propertyName, p, cp)) {
-
             cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
                     Collection.class.isAssignableFrom(p.getType()) ||
                     Map.class.isAssignableFrom(p.getType())
@@ -451,7 +439,6 @@ public class GrailsDomainConfigurationUtil {
                     cp.applyConstraint(constraintName,constrainingValue);
                 }
             }
-
         }
     }
 
@@ -461,11 +448,10 @@ public class GrailsDomainConfigurationUtil {
                 && !((p.isOneToOne() || p.isManyToOne()) && p.isCircular());
     }
 
-    private static LinkedList getSuperClassChain(Class theClass) {
-        LinkedList<Class> classChain = new LinkedList<Class>();
-        Class clazz = theClass;
-        while (clazz != Object.class)
-        {
+    private static LinkedList<?> getSuperClassChain(Class<?> theClass) {
+        LinkedList<Class<?>> classChain = new LinkedList<Class<?>>();
+        Class<?> clazz = theClass;
+        while (clazz != Object.class) {
             classChain.addFirst( clazz);
             clazz = clazz.getSuperclass();
         }
@@ -487,10 +473,9 @@ public class GrailsDomainConfigurationUtil {
                 Binding binding = script.getBinding();
                 if(binding.getVariables().containsKey(PROPERTY_NAME)) {
                     return (Closure)binding.getVariable(PROPERTY_NAME);
-                } else {
-                    LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
-                    return null;
                 }
+                LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
+                return null;
             }
             catch (CompilationFailedException e) {
                 LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
@@ -503,9 +488,6 @@ public class GrailsDomainConfigurationUtil {
                 return null;
             }
         }
-        else {
-            return null;
-        }
+        return null;
     }
-
 }

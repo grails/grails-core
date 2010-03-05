@@ -50,12 +50,13 @@ public class HibernateBeanWrapper extends BeanWrapperImpl {
      * @return null if false or super'name value if true
      * @throws BeansException
      */
+    @Override
     public Object getPropertyValue(String name) throws BeansException {
         PropertyDescriptor desc = getPropertyDescriptor(name);
         Method method = desc.getReadMethod();
         Object owner = getWrappedInstance();
         try {
-            if (Hibernate.isInitialized(method.invoke(owner, null))) {
+            if (Hibernate.isInitialized(method.invoke(owner))) {
                 return super.getPropertyValue(name);
             }
         } catch (Exception e) {

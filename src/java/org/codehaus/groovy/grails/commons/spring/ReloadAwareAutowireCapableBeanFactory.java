@@ -35,21 +35,25 @@ import org.springframework.util.ClassUtils;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 
 /**
- * A BeanFactory that can deal with class cast exceptions that may occur due to class reload events and then
- * attempt to reload the bean being instantiated to avoid them.
- * 
- * Caches autowiring for beans (mainly controllers & domain class instances). Bypasses autowiring if there are no beans for the properties in the class. 
+ * A BeanFactory that can deal with class cast exceptions that may occur due to class reload events
+ * and then attempt to reload the bean being instantiated to avoid them.
+ *
+ * Caches autowiring for beans (mainly controllers & domain class instances). Bypasses autowiring if there
+ * are no beans for the properties in the class.
  * Caching is only used in environments where reloading is not enabled.
- * 
  *
  * @author Graeme Rocher
  * @since 1.1.1
  *        <p/>
  *        Created: May 8, 2009
  */
-public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFactory{
-    ConcurrentHashMap<Class, Set<String>> autowiringByNameCacheForClass=new ConcurrentHashMap<Class, Set<String>>();
+public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFactory {
+    ConcurrentHashMap<Class<?>, Set<String>> autowiringByNameCacheForClass =
+        new ConcurrentHashMap<Class<?>, Set<String>>();
 
+    /**
+     * Default constructor.
+     */
     public ReloadAwareAutowireCapableBeanFactory() {
         if(Environment.getCurrent().isReloadEnabled()) {
 
@@ -61,33 +65,28 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
                 public Object instantiate(RootBeanDefinition beanDefinition, String beanName, BeanFactory owner) {
                     // Don't override the class with CGLIB if no overrides.
                     if (beanDefinition.getMethodOverrides().isEmpty()) {
-                        Constructor constructorToUse;
-                        Class clazz = beanDefinition.getBeanClass();
+                        Constructor<?> constructorToUse;
+                        Class<?> clazz = beanDefinition.getBeanClass();
                         if (clazz.isInterface()) {
                             throw new BeanInstantiationException(clazz, "Specified class is an interface");
                         }
                         try {
                             constructorToUse = clazz.getDeclaredConstructor((Class[]) null);
-
                         }
                         catch (Exception ex) {
                             throw new BeanInstantiationException(clazz, "No default constructor found", ex);
                         }
 
-                        return BeanUtils.instantiateClass(constructorToUse, null);
+                        return BeanUtils.instantiateClass(constructorToUse);
                     }
-                    else {
-                        // Must generate CGLIB subclass.
-                        return instantiateWithMethodInjection(beanDefinition, beanName, owner);
-                    }
-
+                    // Must generate CGLIB subclass.
+                    return instantiateWithMethodInjection(beanDefinition, beanName, owner);
                 }
-
             });
         }
 
         setParameterNameDiscoverer(new LocalVariableTableParameterNameDiscoverer());
-        setAutowireCandidateResolver(new QualifierAnnotationAutowireCandidateResolver());        
+        setAutowireCandidateResolver(new QualifierAnnotationAutowireCandidateResolver());
     }
 
     @Override
@@ -99,7 +98,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
             catch (BeanCreationException t) {
                 if(t.getCause() instanceof TypeMismatchException)  {
                     // type mismatch probably occured because another class was reloaded
-                    final Class beanClass = mbd.getBeanClass();
+                    final Class<?> beanClass = mbd.getBeanClass();
                     if(GroovyObject.class.isAssignableFrom(beanClass)) {
                         GrailsApplication application = (GrailsApplication) getBean(GrailsApplication.APPLICATION_ID);
                         ClassLoader classLoader = application.getClassLoader();
@@ -107,14 +106,13 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
                             GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
                             gcl.reloadClass(beanClass.getName());
                             try {
-                                Class  newBeanClass = gcl.loadClass(beanClass.getName());
+                                Class<?> newBeanClass = gcl.loadClass(beanClass.getName());
                                 mbd.setBeanClass(newBeanClass);
                                 if(!newBeanClass.equals(beanClass)) {
                                     GrailsPluginManager pluginManager = (GrailsPluginManager) getBean(GrailsPluginManager.BEAN_NAME);
                                     pluginManager.informOfClassChange(newBeanClass);
                                     return super.doCreateBean(beanName, mbd, args);
                                 }
-
                             }
                             catch (ClassNotFoundException e) {
                                 throw t;
@@ -125,79 +123,81 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
                 throw t;
             }
         }
-        else {
-            return super.doCreateBean(beanName, mbd, args);
-        }
-
+        return super.doCreateBean(beanName, mbd, args);
     }
 
     @Override
-	protected boolean isExcludedFromDependencyCheck(PropertyDescriptor pd) {
-    	// exclude properties generated by the groovy compiler from autowiring checks 
-		return super.isExcludedFromDependencyCheck(pd) || pd.getName().indexOf('$') > -1;
-	}
+    protected boolean isExcludedFromDependencyCheck(PropertyDescriptor pd) {
+        // exclude properties generated by the groovy compiler from autowiring checks
+        return super.isExcludedFromDependencyCheck(pd) || pd.getName().indexOf('$') > -1;
+    }
 
-	ThreadLocal<Boolean> autowiringBeanPropertiesFlag = new ThreadLocal<Boolean>() {
-    	protected Boolean initialValue() {
-    		return Boolean.FALSE;
-    	}
+    ThreadLocal<Boolean> autowiringBeanPropertiesFlag = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
     };
-    
+
     @Override
-	public void autowireBeanProperties(Object existingBean, int autowireMode,
-			boolean dependencyCheck) throws BeansException {
-    	if(autowireMode==AUTOWIRE_BY_NAME) {
-	    	try {
-	        	autowiringBeanPropertiesFlag.set(Boolean.TRUE);
-	        	if(!Environment.getCurrent().isReloadEnabled()) {
-		        	Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(existingBean.getClass()));
-		        	if(beanProps != null && beanProps.size()==0) {
-		        		// nothing to autowire
-						if (logger.isDebugEnabled()) {
-							logger.debug("Nothing to autowire for bean of class " + existingBean.getClass().getName());
-						}
-		        		return;
-		        	}
-	        	}
-	    		super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-	    	} finally {
-	    		autowiringBeanPropertiesFlag.remove();
-	    	}
-    	} else {
-    		super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-    	}
-	}
-    
-	@Override
-	protected void autowireByName(String beanName, AbstractBeanDefinition mbd,
-			BeanWrapper bw, MutablePropertyValues pvs) {
-		if(!autowiringBeanPropertiesFlag.get() || Environment.getCurrent().isReloadEnabled()) {
-			super.autowireByName(beanName, mbd, bw, pvs);
-		} else {
-			// caching for autowired bean properties
-			
-			// list of bean properties for that a bean exists
-			Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(bw.getWrappedInstance().getClass()));
-			if(beanProps==null) {
-				beanProps=new LinkedHashSet<String>();
-				String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
-				for (String propertyName : propertyNames) {
-					if (containsBean(propertyName)) {
-						beanProps.add(propertyName);
-					}
-				}
-				autowiringByNameCacheForClass.put(ClassUtils.getUserClass(bw.getWrappedInstance().getClass()), beanProps);
-			}
-			for(String propertyName : beanProps) {
-				Object bean = getBean(propertyName);
-				pvs.addPropertyValue(propertyName, bean);
-				registerDependentBean(propertyName, beanName);
-				if (logger.isDebugEnabled()) {
-					logger.debug(
-							"Added autowiring by name from bean name '" + beanName + "' via property '" + propertyName +
-									"' to bean named '" + propertyName + "'");
-				}
-			}
-		}
-	}
+    public void autowireBeanProperties(Object existingBean, int autowireMode,
+            boolean dependencyCheck) throws BeansException {
+
+        if (autowireMode != AUTOWIRE_BY_NAME) {
+           super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
+           return;
+        }
+
+        try {
+            autowiringBeanPropertiesFlag.set(Boolean.TRUE);
+            if(!Environment.getCurrent().isReloadEnabled()) {
+                Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(existingBean.getClass()));
+                if(beanProps != null && beanProps.size()==0) {
+                    // nothing to autowire
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Nothing to autowire for bean of class " + existingBean.getClass().getName());
+                    }
+                    return;
+                }
+            }
+            super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
+        } finally {
+            autowiringBeanPropertiesFlag.remove();
+        }
+    }
+
+    @Override
+    protected void autowireByName(String beanName, AbstractBeanDefinition mbd,
+            BeanWrapper bw, MutablePropertyValues pvs) {
+
+        if (!autowiringBeanPropertiesFlag.get() || Environment.getCurrent().isReloadEnabled()) {
+            super.autowireByName(beanName, mbd, bw, pvs);
+            return;
+        }
+
+        // caching for autowired bean properties
+
+        // list of bean properties for that a bean exists
+        Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(bw.getWrappedInstance().getClass()));
+        if(beanProps==null) {
+            beanProps=new LinkedHashSet<String>();
+            String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
+            for (String propertyName : propertyNames) {
+                if (containsBean(propertyName)) {
+                    beanProps.add(propertyName);
+                }
+            }
+            autowiringByNameCacheForClass.put(ClassUtils.getUserClass(bw.getWrappedInstance().getClass()), beanProps);
+        }
+        for(String propertyName : beanProps) {
+            Object bean = getBean(propertyName);
+            pvs.addPropertyValue(propertyName, bean);
+            registerDependentBean(propertyName, beanName);
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Added autowiring by name from bean name '" + beanName + "' via property '" + propertyName +
+                                "' to bean named '" + propertyName + "'");
+            }
+        }
+    }
 }

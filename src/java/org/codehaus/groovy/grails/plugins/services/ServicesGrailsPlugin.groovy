@@ -15,17 +15,19 @@
  */ 
 package org.codehaus.groovy.grails.plugins.services
 
+import java.lang.reflect.Method
+
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.core.annotation.AnnotationUtils
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
+
+import org.codehaus.groovy.grails.commons.GrailsServiceClass
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
     import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
-    import org.codehaus.groovy.grails.commons.GrailsServiceClass
-    import org.springframework.transaction.annotation.Transactional
-    import org.springframework.core.annotation.AnnotationUtils
-    import java.lang.reflect.Method
 
     /**
- * A plug-in that configures services in the spring context 
+ * A plug-in that configures services in the spring context.
  * 
  * @author Graeme Rocher
  * @since 0.4
@@ -38,7 +40,6 @@ class ServicesGrailsPlugin {
     def watchedResources = ["file:./grails-app/services/**/*Service.groovy",
 							"file:./plugins/*/grails-app/services/**/*Service.groovy"]
 
-	                 
 	def doWithSpring = {
         xmlns tx:"http://www.springframework.org/schema/tx"
         tx.'annotation-driven'()
@@ -77,11 +78,10 @@ class ServicesGrailsPlugin {
                     if(scope) {
                         bean.scope = scope
                     }
-
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 
     def shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
         Class javaClass = serviceClass.clazz
@@ -95,12 +95,12 @@ class ServicesGrailsPlugin {
             return false
         }
     }
+	
 	def onChange = { event ->
 		if(event.source) {
 			def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
 			def serviceName = "${serviceClass.propertyName}"
             def scope = serviceClass.getPropertyValue("scope")
-
 
 			if(serviceClass.transactional && event.ctx.containsBean("transactionManager")) {
 				def beans = beans {                 

@@ -28,7 +28,7 @@
             </classpath>
             <src path="${grails.src}"/>
 
-            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.5" target="1.5" />
+            <javac deprecation="on" debug="yes" source="1.5" target="1.5" />
         </groovyc>
 
 
@@ -41,7 +41,7 @@
             </classpath>
             <src path="${grails.src.jsp21}"/>
 
-            <javac includeantruntime="false" deprecation="on" debug="yes" source="1.5" target="1.5" />
+            <javac deprecation="on" debug="yes" source="1.5" target="1.5" />
         </groovyc>
 
 

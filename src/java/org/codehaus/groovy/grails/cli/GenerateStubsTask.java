@@ -24,9 +24,8 @@ import groovy.lang.GroovyClassLoader;
 import java.io.File;
 
 /**
- *
  * Need to spin our own GenerateStubsTask because Groovy's one stupidly tries to compile properties files and anything
- * that doesn't end with Java
+ * that doesn't end with Java.
  *
  * @author Graeme Rocher
  * @since 1.1
@@ -34,15 +33,16 @@ import java.io.File;
  *        Created: Nov 26, 2008
  */
 public class GenerateStubsTask extends CompileTaskSupport {
+
+    @Override
     protected void compile() throws Exception {
        GroovyClassLoader gcl = createClassLoader();
         JavaStubCompilationUnit compilation = new JavaStubCompilationUnit(config, gcl, destdir);
 
         int count = 0;
 
-        String[] list = src.list();
-        for (int i = 0; i < list.length; i++) {
-            File basedir = getProject().resolveFile(list[i]);
+        for (String fileName : src.list()) {
+            File basedir = getProject().resolveFile(fileName);
             if (!basedir.exists()) {
                 throw new BuildException("Source directory does not exist: " + basedir, getLocation());
             }
@@ -52,13 +52,13 @@ public class GenerateStubsTask extends CompileTaskSupport {
 
             log.debug("Including files from: " + basedir);
 
-            for (int j=0; j < includes.length; j++) {
-                final String currentInclude = includes[j];
-                log.debug("    "  + currentInclude);
+            for (String currentInclude : includes) {
+                log.debug("    " + currentInclude);
 
                 File file = new File(basedir, currentInclude);
-                if(isSource(currentInclude))
-                    compilation.addSourceFile(file);
+                if (isSource(currentInclude)) {
+                    compilation.addSource(file);
+                }
 
                 // Increment the count for each non/java src we found
                 if (currentInclude.endsWith(".groovy")) {

@@ -4,24 +4,23 @@ import org.codehaus.groovy.grails.commons.*
 
 class UnidirectionalListMappingTests extends AbstractGrailsHibernateTests {
 
-	void testUniListMapping() {
-		def personClass = ga.getDomainClass("UnidirectionalListMappingPerson")
-		def emailClass = ga.getDomainClass("UnidirectionalListMappingEmailAddress")
+    void testUniListMapping() {
+        def personClass = ga.getDomainClass("UnidirectionalListMappingPerson")
+        def emailClass = ga.getDomainClass("UnidirectionalListMappingEmailAddress")
 
-		def p = personClass.newInstance()
+        def p = personClass.newInstance()
 
-		def e = emailClass.newInstance()
+        def e = emailClass.newInstance()
 
-		p.firstName = "Fred"
-		p.lastName = "Flintstone"
+        p.firstName = "Fred"
+        p.lastName = "Flintstone"
 
-		e.email = "fred@flintstones.com"
-		p.addToEmailAddresses(e)
+        e.email = "fred@flintstones.com"
+        p.addToEmailAddresses(e)
 
-		p.save()
+        p.save()
 
         session.flush()
-        println "Flushed session"
         session.clear()
 
         assert p.id
@@ -33,10 +32,10 @@ class UnidirectionalListMappingTests extends AbstractGrailsHibernateTests {
         session.flush()
 
         assert e2.id
-	}
+    }
 
-	void onSetUp() {
-		this.gcl.parseClass('''
+    protected void onSetUp() {
+        gcl.parseClass('''
 class UnidirectionalListMappingEmailAddress {
     Long id
     Long version
@@ -46,26 +45,11 @@ class UnidirectionalListMappingEmailAddress {
 class UnidirectionalListMappingPerson {
     Long id
     Long version
-        String firstName
-        String lastName
-        List emailAddresses
-        static hasMany = [emailAddresses:UnidirectionalListMappingEmailAddress]
-}
-class ApplicationDataSource {
-	   boolean pooling = true
-	   boolean logSql = true
-	   String dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-	   String url = "jdbc:hsqldb:mem:testDB"
-	   String driverClassName = "org.hsqldb.jdbcDriver"
-	   String username = "sa"
-	   String password = ""
-}
-
-'''
-		)
-	}
-	
-	void onTearDown() {
-		
-	}
+    String firstName
+    String lastName
+    List emailAddresses
+    static hasMany = [emailAddresses:UnidirectionalListMappingEmailAddress]
+}'''
+        )
+    }
 }

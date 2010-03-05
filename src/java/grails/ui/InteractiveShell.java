@@ -30,18 +30,14 @@ import java.util.Iterator;
  * Extends regular Groovy interactive shell and bootstraps Grails environment before launch
  * to allow interaction with the Grails domain model
  * 
- *
  * @author Graeme Rocher
  * @since 0.2
  * 
- * @version $Revision$
  * First Created: 02-Jun-2006
- * Last Updated: $Date$
- *
  */
-
 public class InteractiveShell {
 	
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {		
 		final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
 		GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
