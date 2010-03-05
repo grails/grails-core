@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -292,6 +293,16 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 		writer << '>'
 		writer << body()
 		writer << "</${attrs.name}>"
+	}
+
+	def join = { attrs ->
+		def collection = attrs.'in'
+		if(!collection) {
+			throw new GrailsTagException('Tag ["join"] missing required attribute ["in"]')
+		}
+		def delimiter = attrs.delimiter ?: ', '
+
+		out << collection.join(delimiter)
 	}
 
 	/**

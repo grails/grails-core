@@ -12,6 +12,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
@@ -305,6 +306,23 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals 'http://localhost:8080/testController/testAction', template
 	}
 
+	void testJoinStrings() {
+		def template = /<g:join in="['Bruce', 'Adrian', 'Dave', 'Nicko', 'Steve']" delimiter="_"\/>/
+		assertOutputEquals 'Bruce_Adrian_Dave_Nicko_Steve', template
+	}
+
+	void testJoinWithoutSpecifyingIn() {
+		def template = '<g:join delimiter="_"/>'
+		def msg = shouldFail(GrailsTagException) {
+			applyTemplate template
+		}
+		assertTrue msg?.startsWith('Tag ["join"] missing required attribute ["in"]')
+	}
+
+	void testJoinWithoutSpecifyingDelimiter() {
+		def template = /<g:join in="['Bruce', 'Adrian', 'Dave', 'Nicko', 'Steve']"\/>/
+		assertOutputEquals 'Bruce, Adrian, Dave, Nicko, Steve', template
+	}
 }
 class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
 
