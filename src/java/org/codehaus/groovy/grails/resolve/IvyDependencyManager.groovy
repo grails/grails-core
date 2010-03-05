@@ -140,8 +140,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     Set<String> configuredPlugins = [] as Set
     Set<String> usedConfigurations = [] as Set
     Set moduleExcludes = [] as Set
-    Map pluginExcludes = [:]
-    
+
     boolean readPom = false
     boolean inheritsAll = false
     boolean resolveErrors = false
@@ -447,6 +446,43 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
 
     }
+
+    boolean isExcluded(String name) {
+        def aid = createExcludeArtifactId(name)
+        return moduleDescriptor.doesExclude(configurationNames, aid)
+    }
+
+    boolean isExcludedFromPlugin(String plugin, String dependencyName) {
+        def aid = createExcludeArtifactId(dependencyName)
+        isExcludedFromPlugin(plugin, aid)
+    }
+
+    Set<String> getPluginExcludes(String plugin) {
+        def excludes = [] as Set
+        DependencyDescriptor dd = pluginNameToDescriptorMap[plugin]
+        if(dd)  {            
+            for(ExcludeRule er in dd.allExcludeRules) {
+              excludes << er.id.name
+            }
+        }
+        return excludes
+    }
+
+    protected boolean isExcludedFromPlugin(String currentPlugin, ArtifactId dependency) {
+        if(!currentPlugin) return false
+        DependencyDescriptor dd = pluginNameToDescriptorMap[currentPlugin]
+        dd?.doesExclude(configurationNames, dependency)
+    }
+
+    protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {
+        def mid = ModuleId.newInstance(group, excludeName)
+        def aid = new ArtifactId(
+                mid, PatternMatcher.ANY_EXPRESSION,
+                PatternMatcher.ANY_EXPRESSION,
+                PatternMatcher.ANY_EXPRESSION)
+        return aid
+    }
+
 
     /**
      * Adds a dependency descriptor to the project
@@ -896,7 +932,6 @@ class IvyDomainSpecificLanguageEvaluator {
 
     void plugin(String name, Closure callable) {
         configuredPlugins << name
-        pluginExcludes[name] = new HashSet()
 
         try {
             currentPluginBeingConfigured = name
@@ -1177,10 +1212,6 @@ class IvyDomainSpecificLanguageEvaluator {
                             dependencyDescriptor.inherited = inherited || inheritsAll || currentPluginBeingConfigured
 
                             if(currentPluginBeingConfigured) {
-                                if(!pluginExcludes[currentPluginBeingConfigured]) {
-                                    pluginExcludes[currentPluginBeingConfigured] = new HashSet()
-                                }
-                                pluginExcludes[currentPluginBeingConfigured] << name
                                 dependencyDescriptor.plugin = currentPluginBeingConfigured
                             }
                             configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
@@ -1245,30 +1276,6 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
 
-    boolean isExcluded(String name) {
-        def aid = createExcludeArtifactId(name)
-        return moduleDescriptor.doesExclude(configurationNames, aid)
-    }
-
-    boolean isExcludedFromPlugin(String plugin, String dependencyName) {
-        def aid = createExcludeArtifactId(dependencyName)
-        isExcludedFromPlugin(plugin, aid)
-    }
-
-    protected boolean isExcludedFromPlugin(String currentPlugin, ArtifactId dependency) {
-        if(!currentPlugin) return false
-        DependencyDescriptor dd = pluginNameToDescriptorMap[currentPlugin]
-        dd?.doesExclude(configurationNames, dependency)
-    }
-
-    protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {
-        def mid = ModuleId.newInstance(group, excludeName)
-        def aid = new ArtifactId(
-                mid, PatternMatcher.ANY_EXPRESSION,
-                PatternMatcher.ANY_EXPRESSION,
-                PatternMatcher.ANY_EXPRESSION)
-        return aid
-    }
 
 
 
