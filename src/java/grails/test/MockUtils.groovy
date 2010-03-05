@@ -762,8 +762,10 @@ class MockUtils {
             }
         }
 
-        // discard() method - doesn't need to do anything.
+        // these don't need to do anything.
         clazz.metaClass.discard = {-> delegate }
+        clazz.metaClass.refresh = {-> delegate }
+        clazz.metaClass.attach = {-> delegate }
 
         // instanceOf() method - just delegates to regular operator
         clazz.metaClass.instanceOf = { Class c -> c.isInstance(delegate) }
@@ -851,7 +853,7 @@ class MockUtils {
             DataBindingUtils.bindObjectToInstance(instance, map)
             return instance
         }
-		  null
+        null
     }
 
     private static Map findHasMany(clazz) {

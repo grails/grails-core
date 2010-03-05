@@ -181,7 +181,6 @@ class MockUtilsTests extends GroovyTestCase {
         result = TestDomain.findAllWhere(country: 'US', name: 99)
         assertEquals( [], result )
 
-
         result = TestDomain.findAllByName("Peter Parker")
         assertEquals( [], result )
 
@@ -578,7 +577,27 @@ class MockUtilsTests extends GroovyTestCase {
         MockUtils.mockDomain(TestDomain, errorsMap)
 
         def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35)
-        assertEquals domain, domain.discard()
+        assertSame domain, domain.discard()
+    }
+
+    /**
+     * Tests that the <code>refresh()</code> method is mocked.
+     */
+    void testRefresh() {
+        MockUtils.mockDomain(TestDomain, errorsMap)
+
+        def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35)
+        assertSame domain, domain.refresh()
+    }
+
+    /**
+     * Tests that the <code>attach()</code> method is mocked.
+     */
+    void testAttach() {
+        MockUtils.mockDomain(TestDomain, errorsMap)
+
+        def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35)
+        assertSame domain, domain.attach()
     }
 
     /**
