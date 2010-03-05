@@ -212,6 +212,17 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      * from the framework or other plugins
      */
     boolean hasApplicationDependencies() { this.hasApplicationDependencies }
+
+    /**
+     * Returns whether a plugin is transtive
+     */
+    boolean isPluginTransitive(String pluginName) {
+        DependencyDescriptor dd = pluginNameToDescriptorMap[pluginName]
+        if(dd) {
+            return dd.isTransitive()
+        }
+        return true
+    }
     /**
      * Serializes the parsed dependencies using the given builder.
      *
@@ -453,8 +464,13 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     }
 
     boolean isExcludedFromPlugin(String plugin, String dependencyName) {
-        def aid = createExcludeArtifactId(dependencyName)
-        isExcludedFromPlugin(plugin, aid)
+        DependencyDescriptor dd = pluginNameToDescriptorMap[plugin]
+        if(dd == null) return false
+        if(!dd.isTransitive()) return true
+        else {
+            def aid = createExcludeArtifactId(dependencyName)
+            isExcludedFromPlugin(dd, aid)
+        }
     }
 
     Set<String> getPluginExcludes(String plugin) {
@@ -468,10 +484,9 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         return excludes
     }
 
-    protected boolean isExcludedFromPlugin(String currentPlugin, ArtifactId dependency) {
+    protected boolean isExcludedFromPlugin(DependencyDescriptor currentPlugin, ArtifactId dependency) {
         if(!currentPlugin) return false
-        DependencyDescriptor dd = pluginNameToDescriptorMap[currentPlugin]
-        dd?.doesExclude(configurationNames, dependency)
+        currentPlugin?.doesExclude(configurationNames, dependency)
     }
 
     protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {

@@ -562,6 +562,20 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
     }
 
+    void testTranstiveWithPlugin() {
+        def manager = new IvyDependencyManager("test", "0.1")
+        // test simple exclude
+        manager.parseDependencies {
+            plugins {
+                runtime(":feeds:1.5") {
+                   transitive = false
+                }
+            }
+        }
+        DefaultDependencyDescriptor dd = manager.getPluginDependencyDescriptors().iterator().next()
+        assertFalse "should not be transtive",dd.isTransitive()
+
+    }
     void testExcludesWithPlugin() {
         def manager = new IvyDependencyManager("test", "0.1")
         // test simple exclude

@@ -365,7 +365,9 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             else {
                 dependencies[depName] = depVersion
                 def depDirName = GrailsNameUtils.getScriptName(depName)
-                if(settings.dependencyManager.isExcludedFromPlugin(pluginName, depDirName)) {
+                def manager = settings.dependencyManager
+
+                if(manager.isExcludedFromPlugin(pluginName, depDirName)) {
                     dependencies.remove(depName)
                 }
                 else {
