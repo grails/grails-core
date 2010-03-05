@@ -203,6 +203,17 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
 	String getName();
 
     /**
+     * Makes the plugin excluded for a particular BuildScope
+     * @param buildScope The BuildScope
+     */
+    void addExclude(BuildScope buildScope);
+
+    /**
+     * Makes the plugin excluded for a particular Environment
+     * @param env The Environment
+     */
+    void addExclude(Environment env);
+    /**
      * Return whether this plugin supports the given PluginScope
      *
      * @param buildScope The PluginScope

@@ -581,6 +581,27 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return this.pluginGrailsClass.getLogicalPropertyName();
     }
 
+    public void addExclude(BuildScope buildScope) {
+        final Map map = this.pluginScopes;
+        addExcludeRuleInternal(map, buildScope);
+    }
+
+    private void addExcludeRuleInternal(Map map, Object o) {
+        Collection excludes = (Collection) map.get(EXCLUDES);
+        if(excludes == null) {
+            excludes = new ArrayList();
+            map.put(EXCLUDES, excludes);
+        }
+        Collection includes = (Collection) map.get(INCLUDES);
+        if(includes!=null) includes.remove(o);
+        excludes.add(o);
+    }
+
+    public void addExclude(Environment env) {
+        final Map map = this.pluginEnvs;
+        addExcludeRuleInternal(map, env);        
+    }
+
     public boolean supportsScope(BuildScope buildScope) {
         return supportsValueInIncludeExcludeMap(pluginScopes, buildScope);
     }

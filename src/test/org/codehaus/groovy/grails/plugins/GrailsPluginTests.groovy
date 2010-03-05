@@ -45,6 +45,8 @@ class TestGrailsPlugin {
 
         assertTrue plugin.supportsScope(BuildScope.TEST)
         assertFalse plugin.supportsScope(BuildScope.WAR)
+        plugin.addExclude(BuildScope.TEST)
+        assertFalse plugin.supportsScope(BuildScope.TEST)
     }
 
     void testListScopeEvaluation() {
