@@ -52,6 +52,7 @@ import org.hibernate.FlushMode
 import org.hibernate.LockMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
+import org.hibernate.cfg.Environment
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.proxy.HibernateProxy
@@ -83,7 +84,7 @@ class HibernatePluginSupport {
 
     static final Log LOG = LogFactory.getLog(HibernatePluginSupport)
 
-    static hibProps = [:]
+    static hibProps = [(Environment.SESSION_FACTORY_NAME): ConfigurableLocalSessionFactoryBean.name]
     static hibConfigClass
 
     static doWithSpring = {
@@ -155,6 +156,7 @@ class HibernatePluginSupport {
 Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'"""
                     }
                 }
+
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
             }
 
@@ -249,7 +251,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
     }
 
     static final doWithDynamicMethods = {ApplicationContext ctx ->
-
         for (entry in ctx.getBeansOfType(SessionFactory)) {
             SessionFactory sessionFactory = entry.value
             enhanceSessionFactory(sessionFactory, application, ctx)
@@ -599,7 +600,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
                 def criteria = session.createCriteria(domainClassType)
-                criteria.add(org.hibernate.criterion.Expression.allEq(queryArgs))
+                criteria.add(Restrictions.allEq(queryArgs))
                 criteria.setMaxResults(1)
                 GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult())
             } as HibernateCallback)
@@ -609,11 +610,10 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
                 def criteria = session.createCriteria(domainClassType)
-                criteria.add(org.hibernate.criterion.Expression.allEq(queryArgs))
+                criteria.add(Restrictions.allEq(queryArgs))
                 criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
                 criteria.list()
             } as HibernateCallback)
-
         }
         metaClass.static.getAll = {->
             template.execute({session ->
@@ -846,7 +846,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 return template.load(dc.clazz, id)
             }
         }
-		
+        
         metaClass.static.count = {->
             template.execute({Session session ->
                 def criteria = session.createCriteria(dc.clazz)
