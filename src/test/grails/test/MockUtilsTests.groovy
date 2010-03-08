@@ -27,33 +27,23 @@ import org.springframework.validation.Errors
  * @author Peter Ledbrook
  */
 class MockUtilsTests extends GroovyTestCase {
-    private Map savedMetaClasses
+
+    private @Lazy MetaTestHelper metaTestHelper = {
+        MetaTestHelper result = new MetaTestHelper()
+        result.classesUnderTest = [TestDomain, TestController, TestCommand, A, B]
+        result.classesToReset = [MockHttpServletRequest, MockHttpServletResponse, BeanPropertyBindingResult, Errors]
+        return result
+    }()
+
     private Map errorsMap
 
-    protected void setUp() {
-        savedMetaClasses = [
-            (TestDomain): TestDomain.metaClass,
-            (TestController): TestController.metaClass,
-            (TestCommand): TestCommand.metaClass,
-            (A): A.metaClass,
-            (B): B.metaClass ]
+    void setUp() {
+        metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
     }
 
-    protected void tearDown() {
-        // Restore all the saved meta classes.
-        savedMetaClasses.each { Class clazz, MetaClass metaClass ->
-            GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
-        }
-
-        // If we don't remove the meta-classes from these classes, later
-        // tests will fail because they can't register new methods and
-        // properties.
-        GroovySystem.metaClassRegistry.removeMetaClass(MockHttpServletRequest)
-        GroovySystem.metaClassRegistry.removeMetaClass(MockHttpServletResponse)
-        GroovySystem.metaClassRegistry.removeMetaClass(BeanPropertyBindingResult)
-        GroovySystem.metaClassRegistry.removeMetaClass(Errors)
-
+    void tearDown() {
+        metaTestHelper.tearDown()
         MockUtils.resetIds()
     }
 
@@ -459,115 +449,6 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "max and offset", [], TestDomain.list(max:4)
         assertEquals "max and offset", [], TestDomain.list(offset:1, max:2)
         assertEquals "max and offset", [], TestDomain.list(sort:"country", max:4)
-    }
-
-    /**
-     * Tests the dynamically added <code>save()</code> method.
-     */
-    void testSave() {
-        MockUtils.mockDomain(TestDomain, errorsMap)
-
-        def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: "Ms.")
-        assertEquals domain, domain.save()
-        assertEquals 1, domain.id
-        assertNotNull domain.dateCreated
-        assertNull domain.lastUpdated
-
-        /* Save again and lastUpdated should be set. */
-        domain.save()
-        assertNotNull domain.lastUpdated
-    }
-
-    /**
-     * Tests the dynamically added <code>save()</code> method.
-     */
-    void testSaveWithArgs() {
-        MockUtils.mockDomain(TestDomain, errorsMap)
-
-        def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: "Ms.")
-        assertEquals domain, domain.save(flush: true)
-    }
-
-    /**
-     * Tests that the <code>save()</code> method does not add an existing
-     * test instance to the original list of test instances. In other
-     * words, if one of the original test instances is saved, the list
-     * should <i>not</i> change in size.
-     */
-    void testSaveWithExistingInstance() {
-        def testInstances = [ new TestDomain(name: "Alice Doe", country: "US", age: 35) ]
-        MockUtils.mockDomain(TestDomain, errorsMap, testInstances)
-
-        testInstances[0].save()
-        assertEquals 1, testInstances.size()
-    }
-
-    /**
-     * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
-     */
-    void testSaveWithFailOnErrorTrue() {
-        MockUtils.mockDomain(TestDomain, errorsMap)
-
-        def domain = new TestDomain()
-        shouldFail(grails.validation.ValidationException) {
-            domain.save(failOnError: true)
-        }
-    }
-
-    /**
-     * Tests the dynamically added <code>delete()</code> method.
-     */
-    void testDelete() {
-        def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)
-        def aliceSmithOz = new TestDomain(name: "Alice Smith", country: "Australia", age: 34)
-        def chrisJonesCA = new TestDomain(name: "Chris Jones", country: "Canada", age: 16)
-        def chrisJonesOz = new TestDomain(name: "Chris Jones", country: "Australia", age: 29)
-        def testInstances = [
-                aliceDoeUS,
-                chrisJonesCA,
-                aliceSmithOz,
-                chrisJonesOz ]
-
-        MockUtils.mockDomain(TestDomain, errorsMap, testInstances)
-
-        aliceSmithOz.delete()
-        assertNull TestDomain.get(3)
-        assertEquals 3, TestDomain.count()
-    }
-
-    void testSaveAfterDelete() {
-        def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: 'title')
-        def aliceSmithOz = new TestDomain(name: "Alice Smith", country: "Australia", age: 34, title: 'title')
-        def chrisJonesCA = new TestDomain(name: "Chris Jones", country: "Canada", age: 16, title: 'title')
-        def chrisJonesOz = new TestDomain(name: "Chris Jones", country: "Australia", age: 29, title: 'title')
-
-        def testInstances = [aliceDoeUS, chrisJonesCA, aliceSmithOz, chrisJonesOz]
-        MockUtils.mockDomain TestDomain, errorsMap, testInstances
-
-        chrisJonesCA.delete()
-
-        def jimBondCA = new TestDomain(name: "Jim Bond", country: "canada", age: 18, title: 'title')
-        assertNotNull jimBondCA.save()
-        assertEquals chrisJonesOz.id + 1, jimBondCA.id
-    }
-
-    /**
-     * Tests the dynamically added <code>delete()</code> method.
-     */
-    void testDeleteWithArgs() {
-        def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)
-        def aliceSmithOz = new TestDomain(name: "Alice Smith", country: "Australia", age: 34)
-        def chrisJonesCA = new TestDomain(name: "Chris Jones", country: "Canada", age: 16)
-        def chrisJonesOz = new TestDomain(name: "Chris Jones", country: "Australia", age: 29)
-
-        MockUtils.mockDomain(TestDomain, errorsMap, [
-                aliceDoeUS,
-                chrisJonesCA,
-                aliceSmithOz,
-                chrisJonesOz ])
-
-        aliceSmithOz.delete(flush: true)
-        assertNull TestDomain.get(3)
     }
 
     /**
@@ -1582,6 +1463,10 @@ class TestDomain {
     Date dateCreated
     Date lastUpdated
 
+    int beforeInserted, afterInserted
+    int beforeUpdated, afterUpdated
+    int beforeDeleted, afterDeleted
+
     static hasMany = [relations: Relation]
     Set relations
 
@@ -1600,6 +1485,15 @@ class TestDomain {
             if (val && val % 2 > 0) return "odd"
         })
     }
+
+    def beforeInsert() { beforeInserted++ }
+    def afterInsert() { afterInserted++ }
+
+    def beforeUpdate() { beforeUpdated++ }
+    def afterUpdate() { afterUpdated++ }
+
+    def beforeDelete() { beforeDeleted++ }
+    def afterDelete() { afterDeleted++ }
 
     boolean equals(Object obj) {
         if (!(obj instanceof TestDomain)) return null
@@ -1775,4 +1669,23 @@ class Timestamp {
     Timestamp(long millis) {
         this.millis = millis
     }
+}
+
+class TestDomainWithClosureEventHandlers {
+    Long id
+    Long version
+    String name
+
+    int beforeInserted, afterInserted
+    int beforeUpdated, afterUpdated
+    int beforeDeleted, afterDeleted
+
+    def beforeInsert = { beforeInserted++ }
+    def afterInsert = { afterInserted++ }
+
+    def beforeUpdate = { beforeUpdated++ }
+    def afterUpdate = { afterUpdated++ }
+
+    def beforeDelete = { beforeDeleted++ }
+    def afterDelete = { afterDeleted++ }
 }
