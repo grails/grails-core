@@ -438,6 +438,13 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     Set<DependencyDescriptor> getPluginDependencyDescriptors() { pluginDependencyDescriptors }
 
     /**
+     * Obtains a particular DependencyDescriptor by the plugin name
+     * @param pluginName The plugin name
+     * @return A DependencyDescriptor or null
+     */
+    DependencyDescriptor getPluginDependencyDescriptor(String pluginName) { pluginNameToDescriptorMap[pluginName] }
+
+    /**
      * Obtains a set of plugins this application is dependent onb
      * @return A set of plugins names
      */
