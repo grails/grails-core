@@ -387,6 +387,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 result
             }
             addValidationMethods(dc, application, ctx, sessionFactory)
+			addNamedQuerySupport(dc, application, ctx)
         }
 
     }
@@ -425,7 +426,6 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         addTransactionalMethods(dc, application, ctx)
         addValidationMethods(dc, application, ctx,sessionFactory)
         addDynamicFinderSupport(dc, application, ctx)
-        addNamedQuerySupport(dc, application, ctx)
     }
 
     private static addNamedQuerySupport(dc, application, ctx) {
