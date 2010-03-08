@@ -273,7 +273,8 @@ recompileCheck = { lastModified, callback ->
                     classpathref:classpathId,
                     encoding:"UTF-8",
                     verbose: grailsSettings.verboseCompile,
-                    listfiles: grailsSettings.verboseCompile) {
+                    listfiles: grailsSettings.verboseCompile,
+                    excludes: '**/package-info.java') {
                     src(path:"${grailsSettings.sourceDir}/groovy")
                     src(path:"${basedir}/grails-app/domain")
                     src(path:"${basedir}/grails-app/utils")
