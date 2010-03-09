@@ -57,7 +57,6 @@ import java.util.List;
  * {@link java.net.InetAddress} for that functionality.)
  * </p>
  *
- * @version $Revision: 594958 $ $Date: 2007-11-14 20:22:17 +0300 (Ср, 14 ноя 2007) $
  * @since Validator 1.4
  */
 public class DomainValidator implements Serializable {
