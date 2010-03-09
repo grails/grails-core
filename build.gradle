@@ -13,6 +13,7 @@ version = '1.3.0.BUILD-SNAPSHOT'
 
 sourceCompatibility = "1.5"
 targetCompatibility = "1.5"
+archivesBaseName = 'grails'
 
 configurations {
     compile.transitive = true
