@@ -21,7 +21,7 @@
             <fileset dir="${grails.src}" includes="**/*.properties" />
         </copy>
 
-        <groovyc destdir="${grails.build}"  encoding="UTF-8">
+        <groovyc fork='true' destdir="${grails.build}"  encoding="UTF-8">
             <classpath>
                 <pathelement location="${grails.build}"/>
                 <path refid="classpath"/>
@@ -30,7 +30,6 @@
 
             <javac deprecation="on" debug="yes" source="1.5" target="1.5" />
         </groovyc>
-
 
         <!-- Compile the JSP 2.1 classes separately because we use a slightly different classpath -->
         <groovyc destdir="${grails.build}"  encoding="UTF-8">
@@ -43,7 +42,6 @@
 
             <javac deprecation="on" debug="yes" source="1.5" target="1.5" />
         </groovyc>
-
 
         <mkdir dir="${grails.build}/META-INF"  />
         <manifest file="${grails.build}/META-INF/MANIFEST.MF">
