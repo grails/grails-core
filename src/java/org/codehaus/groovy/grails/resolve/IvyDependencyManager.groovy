@@ -55,6 +55,9 @@ import org.apache.ivy.plugins.matcher.ExactPatternMatcher
 import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
 import org.apache.ivy.core.module.id.ArtifactId
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
+import org.apache.ivy.plugins.repository.TransferListener
+import java.util.concurrent.ConcurrentLinkedQueue
+import org.apache.ivy.plugins.resolver.RepositoryResolver
 
 /**
  * Implementation that uses Apache Ivy under the hood
@@ -75,10 +78,12 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
     DefaultDependencyDescriptor currentDependencyDescriptor
-    List repositoryData = []
+    Collection repositoryData = new ConcurrentLinkedQueue()
     Set<String> configuredPlugins = [] as Set
     Set<String> usedConfigurations = [] as Set
     Set moduleExcludes = [] as Set
+    TransferListener transferListener
+
 
     boolean readPom = false
     boolean inheritsAll = false
@@ -840,10 +845,17 @@ class IvyDomainSpecificLanguageEvaluator {
             }
             fileSystemResolver.settings = ivySettings
 
-            chainResolver.add fileSystemResolver            
+            addToChainResolver(fileSystemResolver)
         }
     }
-    
+
+    private addToChainResolver(org.apache.ivy.plugins.resolver.DependencyResolver resolver) {
+        if(transferListener !=null && (resolver instanceof RepositoryResolver)) {
+            ((RepositoryResolver)resolver).repository.addTransferListener transferListener
+        }
+        chainResolver.add resolver
+    }
+
 
     void grailsPlugins() {
         if(isResolverNotAlreadyDefined('grailsPlugins')) {            
@@ -851,7 +863,7 @@ class IvyDomainSpecificLanguageEvaluator {
            if(buildSettings!=null) {               
                def pluginResolver = new GrailsPluginsDirectoryResolver(buildSettings, ivySettings)
 
-               chainResolver.add pluginResolver
+               addToChainResolver(pluginResolver)
            }
         }
 
@@ -863,8 +875,10 @@ class IvyDomainSpecificLanguageEvaluator {
             if(grailsHome) {
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
                 flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
-                if(grailsHome!='.')
-                    chainResolver.add(createLocalPluginResolver("grailsHome",grailsHome))
+                if(grailsHome!='.') {
+                    def resolver = createLocalPluginResolver("grailsHome", grailsHome)
+                    addToChainResolver(resolver)
+                }
             }
         }
     }
@@ -889,7 +903,8 @@ class IvyDomainSpecificLanguageEvaluator {
     void mavenRepo(String url) {
         if(isResolverNotAlreadyDefined(url)) {
             repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
-            chainResolver.add new IBiblioResolver(name:url, root:url, m2compatible:true, settings:ivySettings, changingPattern:".*SNAPSHOT")
+            def resolver = new IBiblioResolver(name: url, root: url, m2compatible: true, settings: ivySettings, changingPattern: ".*SNAPSHOT")
+            addToChainResolver(resolver)
         }
     }
 
@@ -898,7 +913,8 @@ class IvyDomainSpecificLanguageEvaluator {
             if(isResolverNotAlreadyDefined(args.name)) {
                 repositoryData << ( ['type':'mavenRepo'] + args )
                 args.settings = ivySettings
-                chainResolver.add new IBiblioResolver(args)
+                def resolver = new IBiblioResolver(args)
+                addToChainResolver(resolver)
             }
         }
         else {
@@ -909,7 +925,7 @@ class IvyDomainSpecificLanguageEvaluator {
     void resolver(org.apache.ivy.plugins.resolver.DependencyResolver resolver) {
         if(resolver) {
             resolver.setSettings(ivySettings)
-            chainResolver.add resolver
+            addToChainResolver(resolver)
         }        
     }
 
@@ -920,14 +936,14 @@ class IvyDomainSpecificLanguageEvaluator {
                                                                      root:"http://repository.springsource.com/maven/bundles/release",
                                                                      m2compatible:true,
                                                                      settings:ivySettings)
-            chainResolver.add ebrReleaseResolver
+            addToChainResolver(ebrReleaseResolver)
 
             IBiblioResolver ebrExternalResolver = new IBiblioResolver(name:"ebrExternal",
                                                                       root:"http://repository.springsource.com/maven/bundles/external",
                                                                       m2compatible:true,
                                                                       settings:ivySettings)
 
-            chainResolver.add ebrExternalResolver
+            addToChainResolver(ebrExternalResolver)
         }
     }
 
@@ -947,7 +963,7 @@ class IvyDomainSpecificLanguageEvaluator {
             urlResolver.latestStrategy = new org.apache.ivy.plugins.latest.LatestTimeStrategy()
             urlResolver.changingPattern = ".*"
             urlResolver.setCheckmodified(true)
-            chainResolver.add urlResolver
+            addToChainResolver(urlResolver)
         }
 
     }
@@ -966,7 +982,7 @@ class IvyDomainSpecificLanguageEvaluator {
             mavenResolver.m2compatible = true
             mavenResolver.settings = ivySettings
             mavenResolver.changingPattern = ".*SNAPSHOT"
-            chainResolver.add mavenResolver
+            addToChainResolver(mavenResolver)
 
         }
     }
@@ -985,7 +1001,7 @@ class IvyDomainSpecificLanguageEvaluator {
                     "${repoPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]")
             
             localMavenResolver.settings = ivySettings
-            chainResolver.add localMavenResolver
+            addToChainResolver(localMavenResolver)
         }
     }
 

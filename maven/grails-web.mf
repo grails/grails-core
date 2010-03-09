@@ -6,6 +6,7 @@ Bundle-SymbolicName: org.grails.web
 Import-Template:
   org.apache.log4j.*;version="${log4j.version:[=.=.=, +1.0.0)}",
   org.apache.tools.ant.*;version="${ant.version:[=.=.=, +1.0.0)}",
+  org.apache.ivy.*;version="${ivy.version:[=.=.=, +1.0.0)}",
   org.apache.commons.beanutils.*;version="${commons.beanutils.version:[=.=.=, +1.0.0)}",
   org.apache.commons.lang.*;version="${commons.lang.version:[=.=.=, +1.0.0)}",
   org.apache.commons.collections.*;version="${commons.collections.version:[=.=.=, +1.0.0)}",

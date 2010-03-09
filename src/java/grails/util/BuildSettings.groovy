@@ -21,7 +21,8 @@ import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import groovyx.gpars.Asynchronizer
-
+import org.apache.ivy.plugins.repository.TransferListener
+import org.apache.ivy.plugins.repository.TransferEvent
 
 /**
  * <p>This class represents the project paths and other build settings
@@ -707,6 +708,17 @@ class BuildSettings {
                 appVersion,
                 this,
                 metadata)
+
+        dependencyManager.transferListener = { TransferEvent e ->
+            switch(e.eventType) {
+                case TransferEvent.TRANSFER_STARTED:
+                    println "Downloading dependency: ${e.resource.name} ..."
+                break
+                case TransferEvent.TRANSFER_COMPLETED:
+                    println "Download complete."
+                break
+            }
+        } as TransferListener
 
         if (!dependenciesExternallyConfigured) {
             config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
