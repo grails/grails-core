@@ -62,6 +62,10 @@ task gdoc {
             ant(target: 'distclean', dir: "../grails-doc", inheritAll: false)
             ant(target: 'dist-nojavadoc', dir: "../grails-doc", inheritAll: false) {
                 property(name: "base.dir", value: "../grails-doc")
+                property(name: "grails.home", value:projectDir)
+            }
+            copy(todir:"$projectDir/dist") {
+                fileset(dir:"../grails-doc/dist")
             }
         }
         copy {
