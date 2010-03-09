@@ -624,7 +624,7 @@
     </library>
     <library name="JUnit">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/junit-3.8.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/junit-4.8.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/ant-junit-1.7.1.jar!/" />
       </CLASSES>
       <JAVADOC />

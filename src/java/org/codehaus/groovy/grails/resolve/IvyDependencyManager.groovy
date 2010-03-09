@@ -294,7 +294,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
 
 
                 // dependencies needed for running tests
-                test "junit:junit:3.8.2",
+                test "junit:junit:4.8.1",
                      "org.grails:grails-test:$grailsVersion",
                      "org.springframework:org.springframework.test:3.0.0.RELEASE"
 
@@ -359,7 +359,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
     }
 
     /**
-     * For usages such as addPluginDependency("foo", [group:"junit", name:"junit", version:"3.8.2"])
+     * For usages such as addPluginDependency("foo", [group:"junit", name:"junit", version:"4.8.1"])
      *
      * This method is designed to be used by the internal framework and plugins and not be end users.
      * The idea is that plugins can provide dependencies at runtime which are then inherited by

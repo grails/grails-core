@@ -250,12 +250,12 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                     excludes "junit"
                 }
             }
-            build "junit:junit:3.8.4"
+            build "junit:junit:4.8.1"
         }
 
         manager.parseDependencies("foo") {
             build "org.grails:grails-test:1.2"
-            build "junit:junit:3.8.3"
+            build "junit:junit:4.8.1"
         }
 
         final IvyNode[] buildDeps = manager.listDependencies("build")
@@ -264,7 +264,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         def junit = buildDeps.find { it.moduleId.name == "junit" }
         assertEquals "junit", junit.moduleId.name
-        assertEquals "3.8.4", junit.id.revision
+        assertEquals "4.8.1", junit.id.revision
 
         def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'junit' }
 
@@ -287,7 +287,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         manager.parseDependencies("foo") {
             build "org.grails:grails-test:1.2"
-            build "junit:junit:3.8.3"
+            build "junit:junit:4.8.1"
         }
 
         final IvyNode[] buildDeps = manager.listDependencies("build")
@@ -323,7 +323,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         manager.parseDependencies {
             inherits "test"
             runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            test( [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+            test( [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
         }
 
         manager.resolveApplicationDependencies()
@@ -340,7 +340,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         manager.parseDependencies {
             inherits "test"
             runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            test( [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+            test( [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
         }
 
         assertEquals 2, manager.getApplicationDependencyDescriptors().size()
@@ -420,7 +420,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                 mavenRepo "http://snapshots.repository.codehaus.org"
             }
             runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
-                     [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+                     [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
 
             runtime("opensymphony:foocache:2.4.1") {
                      excludes 'jms'
@@ -470,7 +470,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         // test simple exclude
         manager.parseDependencies {
             runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
-                     [group:"junit", name:"junit", version:"3.8.2", transitive:true] )
+                     [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
         }
 
 
@@ -511,7 +511,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
           def settings = new BuildSettings()
           def manager = new IvyDependencyManager("test", "0.1",settings)
           settings.config.grails.test.dependency.resolution = {
-              test "junit:junit:3.8.2"
+              test "junit:junit:4.8.1"
           }
           // test simple exclude
           manager.parseDependencies {
@@ -534,7 +534,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "junit:junit:3.8.2"
+            test "junit:junit:4.8.1"
         }
         // test simple exclude
         manager.parseDependencies {
@@ -688,7 +688,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                           "javax.servlet:jstl:1.1.2",
                           "xalan:serializer:2.7.1"
 
-                    test "junit:junit:3.8.2"
+                    test "junit:junit:4.8.1"
 
                     runtime "apache-taglibs:standard:1.1.2",
                             "org.aspectj:aspectjweaver:1.6.2",
@@ -725,7 +725,7 @@ class DummyMavenAwareDependencyManager extends IvyDependencyManager {
 
     public List readDependenciesFromPOM() {
         return [
-                [getExcludedModules:{[]}, getGroupId:{"junit"}, getArtifactId:{"junit"}, getVersion:{"3.8.3"}, getScope:{"test"}] as PomDependencyMgt
+                [getExcludedModules:{[]}, getGroupId:{"junit"}, getArtifactId:{"junit"}, getVersion:{"4.8.1"}, getScope:{"test"}] as PomDependencyMgt
         ]
     }
 

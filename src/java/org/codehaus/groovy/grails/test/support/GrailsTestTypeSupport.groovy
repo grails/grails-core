@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
 
 import org.springframework.core.io.Resource
+import org.springframework.context.ApplicationContext
 
 /**
  * Provides a convenient base for {@link GrailsTestType} implementations.
@@ -234,6 +235,18 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
             getTestClassLoader().loadClass(className)
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load class in test type '$name'", e)
+        }
+    }
+
+    /**
+     * Will return the application context if it is present, but will throw an IllegalStateException
+     * if it is not. This should only be called when Grails is bootstrapped up (i.e. not for unit tests)
+     */
+    protected ApplicationContext getApplicationContext() {
+        if (buildBinding.variables.containsKey("appCtx")) {
+            buildBinding.getProperty("appCtx")
+        } else {
+            throw new IllegalStateException("ApplicationContext requested, but is not present in the build binding")
         }
     }
     

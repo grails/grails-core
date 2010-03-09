@@ -20,8 +20,8 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestType
-import org.codehaus.groovy.grails.test.junit3.JUnit3GrailsTestTypeMode
+import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
+import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportProcessor
 
@@ -128,14 +128,14 @@ target(allTests: "Runs the project's tests.") {
                 if (rawType instanceof CharSequence) {
                     def rawTypeString = rawType.toString()
                     if (phaseName in ['integration', 'functional']) {
-                        def mode = new JUnit3GrailsTestTypeMode(
+                        def mode = new GrailsTestMode(
                             autowire: true,
                             wrapInTransaction: phaseName == "integration",
                             wrapInRequestEnvironment: phaseName == "integration"
                         )
-                        new JUnit3GrailsTestType(rawTypeString, rawTypeString, mode)
+                        new JUnit4GrailsTestType(rawTypeString, rawTypeString, mode)
                     } else {
-                        new JUnit3GrailsTestType(rawTypeString, rawTypeString)
+                        new JUnit4GrailsTestType(rawTypeString, rawTypeString)
                     }
                 } else {
                     rawType

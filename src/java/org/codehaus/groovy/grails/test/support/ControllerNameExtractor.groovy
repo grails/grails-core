@@ -29,7 +29,7 @@ class ControllerNameExtractor {
             if (testClassName.endsWith(tail)) matchingTail = tail }
         
         if (matchingTail) {
-            testClassName[0..(testClassName.size() - matchingTail.size() - 1)]
+            GrailsNameUtils.getPropertyName(testClassName[0..(testClassName.size() - matchingTail.size() - 1)])
         } else {
             null
         }

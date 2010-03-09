@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.test.junit3
+package org.codehaus.groovy.grails.test.support
 
-class JUnit3GrailsTestTypeMode {
+class GrailsTestMode {
 	boolean autowire = false
 	boolean wrapInRequestEnvironment = false
 	boolean wrapInTransaction = false

@@ -120,8 +120,8 @@ The following libraries are included in Grails because they are required either 
 - Java Transaction API
 - required for running Grails applications
 
-* junit-3.8.2.jar
-- JUnit 3.8.2 (http://junit.org) CPL 1.0 License
+* junit-4.8.1.jar
+- JUnit 4.8.1 (http://junit.org) CPL 1.0 License
 - required for building Grails core
 - required for the command line tools (Gant)
 
