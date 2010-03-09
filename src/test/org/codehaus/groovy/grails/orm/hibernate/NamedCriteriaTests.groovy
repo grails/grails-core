@@ -61,8 +61,6 @@ class Publication {
     }
 	
 	void testReferencingNamedQueryBeforeAnyDynamicMethodsAreInvoked() {
-		if(notYetImplemented()) return
-		
 		// GRAILS-5809
 		def publicationClass = ga.getDomainClass("Publication").clazz
 		

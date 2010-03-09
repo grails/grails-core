@@ -64,6 +64,24 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
     }
 
+    void testCheckPluginDependencyScope() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            plugins {
+                runtime name:"one", version:"latest.integration"
+                test name:"two", version:"latest.integration"
+            }
+        }
+
+        EnhancedDefaultDependencyDescriptor dd = manager.getPluginDependencyDescriptor("one")
+        assertNotNull "should have returned a dependency descriptor instance", dd
+
+        assertTrue "should have included configuration", dd.isSupportedInConfiguration("runtime")
+        assertFalse "should not have included configuration", dd.isSupportedInConfiguration("test ")
+    }
+
     void testDeclarePluginDependencies() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

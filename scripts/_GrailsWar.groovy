@@ -17,10 +17,10 @@
 import grails.util.BuildScope
 import grails.util.Environment
 import grails.util.Metadata
-import org.codehaus.groovy.grails.compiler.support.*
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginInfo
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import grails.util.PluginBuildSettings
+import groovy.xml.MarkupBuilder
 
 /**
  * Gant script that creates a WAR file from a Grails project
@@ -98,6 +98,8 @@ target (war: "The implementation target") {
 
         ant.mkdir(dir:stagingDir)
 
+        event("StatusUpdate", ["Building WAR file"])
+
         ant.copy(todir:stagingDir, overwrite:true) {
             // Allow the application to override the step that copies
             // 'web-app' to the staging directory.
@@ -128,6 +130,7 @@ target (war: "The implementation target") {
         }
 
         ant.mkdir(dir:"${stagingDir}/WEB-INF/spring")
+
         ant.copy(todir:"${stagingDir}/WEB-INF/spring") {
             fileset(dir:"${basedir}/grails-app/conf/spring", includes:"**/*.xml")
         }
@@ -168,13 +171,16 @@ target (war: "The implementation target") {
         ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml", overwrite:true)
         ant.delete(file:webXmlFile)
 
+        def pluginInfos = pluginSettings.supportedPluginInfos
+        // filter out plugins that aren't configured for runtime inclusion
+        IvyDependencyManager dm = grailsSettings.dependencyManager
+        pluginInfos = pluginInfos.findAll { PluginInfo info ->
+            def pluginName = info.name
+            def i = dm.getPluginDependencyDescriptor(pluginName)?.isSupportedInConfiguration("runtime")
+            i != null ? i : true
+        }
 
-        if(includeJars) {            
-        	def pluginInfos = pluginSettings.supportedPluginInfos
-
-            GrailsPluginManager pm = pluginManager
-            pluginInfos = pluginInfos.findAll { info -> pm.supportsCurrentBuildScope(info.name) }
-
+        if(includeJars) {
 
         	if(pluginInfos) {
                 ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
@@ -219,8 +225,9 @@ target (war: "The implementation target") {
             }
         }
 
-        warPlugins()
-        createDescriptor()
+        warPluginsInternal(pluginInfos)
+        def resourceList = pluginSettings.getArtefactResources()
+        createDescriptorInternal(pluginInfos, resourceList)
     	event("CreateWarStart", [warName, stagingDir])
         if (!buildExplodedWar) {
             def warFile = new File(warName)
@@ -245,17 +252,23 @@ target (war: "The implementation target") {
 
 
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
-    def resourceList = pluginSettings.getArtefactResources()
-    def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
+    PluginBuildSettings ps = pluginSettings
+    def pluginInfos = ps.supportedPluginInfos
+    def resourceList = ps.getArtefactResources()
 
-    new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
-        def xml = new groovy.xml.MarkupBuilder(writer)
+    createDescriptorInternal(pluginInfos, resourceList)
+
+}
+
+protected def createDescriptorInternal(pluginInfos, resourceList) {
+    return new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
+        def xml = new MarkupBuilder(writer)
         xml.grails {
             xml.resources {
-				
-				def addedResources = new HashSet()
-				
-                for(r in resourceList) {
+
+                def addedResources = new HashSet()
+
+                for (r in resourceList) {
                     def matcher = r.URL.toString() =~ artefactPattern
 
                     // Replace the slashes in the capture group with '.' so
@@ -273,37 +286,31 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
                     //    org.example.MyFilters
                     //
                     def name = matcher[0][1].replaceAll('/', /\./)
-                    if(name == 'spring.resources')
-                    	name='resources'
-					name = name.toString()
-					if(!addedResources.contains(name)) {
-						xml.resource(name)
-						addedResources.add name
-					} else {
-						println "\tWARNING: Duplicate resource '${name}', using the last one in compile order."
-					}
+                    if (name == 'spring.resources')
+                        name = 'resources'
+                    name = name.toString()
+                    if (!addedResources.contains(name)) {
+                        xml.resource(name)
+                        addedResources.add name
+                    }
+                    else {
+                        println "\tWARNING: Duplicate resource '${name}', using the last one in compile order."
+                    }
                 }
             }
             xml.plugins {
-
-                GrailsPluginManager pm = pluginManager
-				
-				def addedPlugins = new HashSet()
-                for(PluginInfo info in pluginInfos) {
-                        boolean supportsScope = pm.supportsCurrentBuildScope(info.name)
-                        if(supportsScope) {
-                            def name = info.descriptor.file.name - '.groovy'
-							name = name.toString()
-							if(!addedPlugins.contains(name)) {
-								xml.plugin(name)
-								addedPlugins.add name
-							}
-                        }
+                def addedPlugins = new HashSet()
+                for (PluginInfo info in pluginInfos) {
+                    def name = info.descriptor.file.name - '.groovy'
+                    name = name.toString()
+                    if (!addedPlugins.contains(name)) {
+                        xml.plugin(name)
+                        addedPlugins.add name
+                    }
                 }
             }
         }
     }
-
 }
 
 target(cleanUpAfterWar:"Cleans up after performing a WAR") {
@@ -311,58 +318,83 @@ target(cleanUpAfterWar:"Cleans up after performing a WAR") {
 }
 
 target(warPlugins:"Includes the plugins in the WAR") {
+    def pluginInfos = pluginSettings.supportedPluginInfos
+    warPluginsInternal(pluginInfos)
+}
+
+private def warPluginsInternal(pluginInfos) {
     ant.sequential {
-        def pluginInfos = pluginSettings.supportedPluginInfos
-        if(pluginInfos) {
-            for(PluginInfo info in pluginInfos) {
-                def pluginBase = info.pluginDir.file
+        if (pluginInfos) {
+            for (PluginInfo info in pluginInfos) {
+                warPluginForPluginInfo(info)
+            }
+        }
+    }
+}
 
-                // Note that with in-place plugins, the name of the plugin's
-                // directory may not match the "<name>-<version>" form that
-                // should be used in the WAR file.
+private def warPluginForPluginInfo(PluginInfo info) {
+    def pluginBase = info.pluginDir.file
+    ant.sequential {
+        // Note that with in-place plugins, the name of the plugin's
+        // directory may not match the "<name>-<version>" form that
+        // should be used in the WAR file.
 
-                // copy views and i18n to /WEB-INF/plugins/...
-                def targetPluginDir = "${stagingDir}/WEB-INF/plugins/${info.name}-${info.version}"
-                mkdir(dir:targetPluginDir)
-                copy(todir:targetPluginDir, failonerror:true) {
-                    fileset(dir:pluginBase.absolutePath) {
-                        include(name:"plugin.xml")
-                        include(name:"grails-app/views/**")
-                        exclude(name:"grails-app/**/*.groovy")
-                    }
-                    def pluginResources = new File("$resourcesDirPath/plugins/${info.name}-${info.version}")
-                    println "COPYING RESOURCES FOR PATH ${pluginResources.absolutePath}: ${pluginResources.exists()}?"
-                    if(pluginResources.exists()) {
-                        fileset(dir:pluginResources) {
-                            include(name:"grails-app/**")
-                            exclude(name:"grails-app/**/*.groovy")
-                        }
-                    }
+        // copy views and i18n to /WEB-INF/plugins/...
+        def targetPluginDir = "${stagingDir}/WEB-INF/plugins/${info.name}-${info.version}"
+        mkdir(dir: targetPluginDir)
+        copy(todir: targetPluginDir, failonerror: true) {
+            fileset(dir: pluginBase.absolutePath) {
+                include(name: "plugin.xml")
+                include(name: "grails-app/views/**")
+                exclude(name: "grails-app/**/*.groovy")
+            }
+            def pluginResources = new File("$resourcesDirPath/plugins/${info.name}-${info.version}")
+            if (pluginResources.exists()) {
+                fileset(dir: pluginResources) {
+                    include(name: "grails-app/**")
+                    exclude(name: "grails-app/**/*.groovy")
                 }
+            }
+        }        
+    }
 
-                // copy spring configs to /WEB-INF/spring/...
-                ant.copy(todir:"${stagingDir}/WEB-INF/spring", failonerror:false) {
-                    fileset(dir:"${pluginBase.absolutePath}/grails-app/conf/spring", includes:"**/*.xml")
+
+    // copy spring configs to /WEB-INF/spring/...
+    def springDir = new File("${pluginBase.absolutePath}/grails-app/conf/spring")
+    if(springDir.exists()) {        
+        ant.copy(todir: "${stagingDir}/WEB-INF/spring", failonerror: false) {
+            fileset(dir: springDir, includes: "**/*.xml")
+        }
+    }
+
+    // copy everything else from grails-app/conf to /WEB-INF/classes
+    def targetClassesDir = "${stagingDir}/WEB-INF/classes"
+    def confDir = new File("${pluginBase.absolutePath}/grails-app/conf")
+    def hibDir = new File("${pluginBase.absolutePath}/grails-app/conf/hibernate")
+    def javaDir = new File("${pluginBase.absolutePath}/src/java")
+    if(confDir.exists() || hibDir.exists() || javaDir.exists()) {
+        ant.copy(todir: targetClassesDir, failonerror: false) {
+            if(confDir.exists()) {
+                fileset(dir: confDir) {
+                    exclude(name: "*.groovy")
+                    exclude(name: "log4j.*")
+                    exclude(name: "**/hibernate/**")
+                    exclude(name: "**/spring/**")
                 }
+            }
 
-                // copy everything else from grails-app/conf to /WEB-INF/classes
-                def targetClassesDir = "${stagingDir}/WEB-INF/classes"
-                ant.copy(todir:targetClassesDir, failonerror:false) {
-                    fileset(dir:"${pluginBase.absolutePath}/grails-app/conf") {
-                        exclude(name:"*.groovy")
-                        exclude(name:"log4j.*")
-                        exclude(name:"**/hibernate/**")
-                        exclude(name:"**/spring/**")
-                    }
-                    fileset(dir:"${pluginBase.absolutePath}/grails-app/conf/hibernate", includes:"**/**")
-                    fileset(dir:"${pluginBase.absolutePath}/src/java") {
-                        include(name:"**/**")
-                        exclude(name:"**/*.java")
-                    }
+            if(hibDir.exists())
+                fileset(dir: hibDir, includes: "**/**")
+
+            if(javaDir.exists()) {
+                fileset(dir: javaDir) {
+                    include(name: "**/**")
+                    exclude(name: "**/*.java")
                 }
             }
         }
     }
+
 }
 
 target(configureWarName: "Configuring WAR name") {

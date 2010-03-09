@@ -712,52 +712,61 @@ class MockUtils {
         clazz.metaClass.'static'.create = {-> clazz.newInstance()}
     }
 
+    private static void triggerEvent(Object delegate, String eventName) {
+        if (delegate.respondsTo(eventName, [] as Object[])) {
+            delegate."$eventName"()
+        } else if (delegate.hasProperty(eventName) && delegate."$eventName" instanceof Closure) {
+            delegate."$eventName"()
+        }
+    }
+
+    private static void setTimestamp(Object delegate, String propertyName, PropertyDescriptor[] properties, Map mapping) {
+        def property = properties.find { it.name == propertyName }
+        if (property && mapping.autoTimestamp) {
+            def value = property.propertyType.newInstance(System.currentTimeMillis())
+            delegate."$propertyName" = value
+        }
+    }
+
     private static void addDynamicInstanceMethods(Class clazz, List testInstances) {
         // Add save() method.
         clazz.metaClass.save = { Map args = [:] ->
-            if (!validate()) {
-                if (args.failOnError) {
-                    throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+            if(validate()) {
+
+                def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
+                def mapping = evaluateMapping(clazz)
+
+                boolean isInsert = !delegate.id
+                if(isInsert) {
+                    triggerEvent delegate, 'beforeInsert'
+                    if (!testInstances.contains(delegate)) {
+                        testInstances << delegate
+                        setId delegate, clazz
+                    }
+                    setTimestamp delegate, 'dateCreated', properties, mapping
+                    setTimestamp delegate, 'lastUpdated', properties, mapping
+                    triggerEvent delegate, 'afterInsert'
+                } else {
+                    triggerEvent delegate, 'beforeUpdate'
+                    setTimestamp delegate, 'lastUpdated', properties, mapping
+                    triggerEvent delegate, 'afterUpdate'
                 }
-                return null
-            }
-
-            // The object passes validation, so to confirm that it
-            // has been saved we add it to the list of test instances.
-            // Note that if the instance is already in the list, we
-            // don't add it again! We also give it an ID. lastUpdated
-            // is set if the object already has an ID, dateCreated is
-            // set if it doesn't.
-            def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
-
-            def mapping = evaluateMapping(clazz)
-
-            def time = System.currentTimeMillis()
-            def lastUpdatedProperty = properties.find { it.name == "lastUpdated" }
-            if (lastUpdatedProperty && mapping.autoTimestamp && delegate.id != null) {
-                def now = lastUpdatedProperty.propertyType.newInstance([time] as Object[])
-                delegate.lastUpdated = now
-            }
-
-            if (!testInstances.contains(delegate)) {
-                testInstances << delegate
-                // If dateCreated exists and id is still null, set it
-                def dateCreatedProperty = properties.find { it.name == "dateCreated" }
-                if (dateCreatedProperty && mapping.autoTimestamp && delegate.id == null) {
-                    def now = dateCreatedProperty.propertyType.newInstance([time] as Object[])
-                    delegate.dateCreated = now
-                }
-                setId delegate, clazz
-            }
-            return delegate
+                
+                return delegate
+            } else if (args.failOnError) {
+				throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+			}
+            return null
         }
 
         // Add delete() method.
         clazz.metaClass.delete = { Map args = [:] ->
             for (int i in 0..<testInstances.size()) {
                 if (testInstances[i] == delegate) {
+                    triggerEvent delegate, 'beforeDelete'
                     testInstances.remove(i)
-                    break
+                    triggerEvent delegate, 'afterDelete'
+                    break;
                 }
             }
         }
