@@ -62,74 +62,13 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
  * @author Graeme Rocher
  * @since 1.2
  */
-public class IvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
-
-    /*
-    * Out of the box Ivy configurations are:
-    *
-    * - build: Dependencies for the build system only
-    * - compile: Dependencies for the compile step
-    * - runtime: Dependencies needed at runtime but not for compilation (see above)
-    * - test: Dependencies needed for testing but not at runtime (see above)
-    * - provided: Dependencies needed at development time, but not during WAR deployment
-    */
-    static Configuration BUILD_CONFIGURATION  = new Configuration("build",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Build system dependencies",
-                                                                ['default'] as String[],
-                                                                true, null)
-
-    static Configuration COMPILE_CONFIGURATION = new Configuration("compile",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Compile time dependencies",
-                                                                ['default'] as String[],
-                                                                true, null)
-
-    static Configuration RUNTIME_CONFIGURATION = new Configuration("runtime",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Runtime time dependencies",
-                                                                ['compile'] as String[],
-                                                                true, null)
-
-    static Configuration TEST_CONFIGURATION = new Configuration("test",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Testing dependencies",
-                                                                ['runtime'] as String[],
-                                                                true, null)
-
-    static Configuration PROVIDED_CONFIGURATION = new Configuration("provided",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Dependencies provided by the container",
-                                                                ['default'] as String[],
-                                                                true, null)
-
-    static List<Configuration> ALL_CONFIGURATIONS = [BUILD_CONFIGURATION, COMPILE_CONFIGURATION, RUNTIME_CONFIGURATION, TEST_CONFIGURATION, PROVIDED_CONFIGURATION]
+public class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
 
-    private Set<ModuleId> modules = [] as Set
-    private Set<ModuleRevisionId> dependencies = [] as Set
-    private Set<DependencyDescriptor> dependencyDescriptors = [] as Set
-    private Set<DependencyDescriptor> pluginDependencyDescriptors = [] as Set
-    private Set<String> pluginDependencyNames = [] as Set
-    private orgToDepMap = [:]
 
     private hasApplicationDependencies = false
-
-    Map configurationMappings = [ runtime:['runtime(*)','master(*)'],
-                                  build:['default'],
-                                  compile:['compile(*)', 'master(*)'],
-                                  provided:['compile(*)', 'master(*)'],
-                                  test:['runtime(*)', 'master(*)']]
-
-    Map<String, DependencyDescriptor> pluginNameToDescriptorMap = [:]
-    
-    String[] configurationNames = configurationMappings.keySet() as String[]
-
-
     ResolveEngine resolveEngine
     BuildSettings buildSettings
-    String applicationName
-    String applicationVersion
     IvySettings ivySettings
     MessageLogger logger
     Metadata metadata
@@ -213,16 +152,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
      */
     boolean hasApplicationDependencies() { this.hasApplicationDependencies }
 
-    /**
-     * Returns whether a plugin is transtive
-     */
-    boolean isPluginTransitive(String pluginName) {
-        DependencyDescriptor dd = pluginNameToDescriptorMap[pluginName]
-        if(dd) {
-            return dd.isTransitive()
-        }
-        return true
-    }
+
     /**
      * Serializes the parsed dependencies using the given builder.
      *
@@ -267,12 +197,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
     }
 
-    /**
-     * Obtains the default dependency definitions when using GRAILS_HOME or the Spring Bundle Repository
-     */
-    static Closure getBundleRepositoryDependencies(String grailsVersion) {
-
-    }
     /**
      * Obtains the default dependency definitions for the given Grails version
      */
@@ -404,10 +328,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
       }
 
     }
-    /**
-     * Obtains a list of dependencies defined in the project
-     */
-    Set<ModuleRevisionId> getDependencies() { dependencies }
 
 
     /**
@@ -427,96 +347,11 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         getApplicationDependencyDescriptors(scope).findAll { it.exported }
     }
 
-    /**
-    * Obtains a set of dependency descriptors defined in the project
-     */
-    Set<DependencyDescriptor> getDependencyDescriptors() { dependencyDescriptors }
-
-    /**
-    * Obtains a set of plugin dependency descriptors defined in the project
-     */
-    Set<DependencyDescriptor> getPluginDependencyDescriptors() { pluginDependencyDescriptors }
-
-    /**
-     * Obtains a particular DependencyDescriptor by the plugin name
-     * @param pluginName The plugin name
-     * @return A DependencyDescriptor or null
-     */
-    DependencyDescriptor getPluginDependencyDescriptor(String pluginName) { pluginNameToDescriptorMap[pluginName] }
-
-    /**
-     * Obtains a set of plugins this application is dependent onb
-     * @return A set of plugins names
-     */
-    Set<String> getPluginDependencyNames() { pluginDependencyNames }
-
-    /**
-     * Adds a dependency to the project
-     */
-    void addDependency(ModuleRevisionId revisionId) {
-        modules << revisionId.moduleId
-        dependencies << revisionId
-        if(orgToDepMap[revisionId.organisation]) {
-            orgToDepMap[revisionId.organisation] << revisionId
-        }
-        else {
-            orgToDepMap[revisionId.organisation] = [revisionId] as Set
-        }
-
-    }
 
     boolean isExcluded(String name) {
         def aid = createExcludeArtifactId(name)
         return moduleDescriptor.doesExclude(configurationNames, aid)
     }
-
-    boolean isExcludedFromPlugin(String plugin, String dependencyName) {
-        DependencyDescriptor dd = pluginNameToDescriptorMap[plugin]
-        if(dd == null) return false
-        if(!dd.isTransitive()) return true
-        else {
-            def aid = createExcludeArtifactId(dependencyName)
-            isExcludedFromPlugin(dd, aid)
-        }
-    }
-
-    Set<String> getPluginExcludes(String plugin) {
-        def excludes = [] as Set
-        DependencyDescriptor dd = pluginNameToDescriptorMap[plugin]
-        if(dd)  {            
-            for(ExcludeRule er in dd.allExcludeRules) {
-              excludes << er.id.name
-            }
-        }
-        return excludes
-    }
-
-    protected boolean isExcludedFromPlugin(DependencyDescriptor currentPlugin, ArtifactId dependency) {
-        if(!currentPlugin) return false
-        currentPlugin?.doesExclude(configurationNames, dependency)
-    }
-
-    protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {
-        def mid = ModuleId.newInstance(group, excludeName)
-        def aid = new ArtifactId(
-                mid, PatternMatcher.ANY_EXPRESSION,
-                PatternMatcher.ANY_EXPRESSION,
-                PatternMatcher.ANY_EXPRESSION)
-        return aid
-    }
-
-
-    /**
-     * Adds a dependency descriptor to the project
-     */
-    void addDependencyDescriptor(DependencyDescriptor dd) {
-        if(dd) {
-            dependencyDescriptors << dd
-            addDependency(dd.dependencyRevisionId)
-        }
-    }
-
-
 
     /**
      * For usages such as addPluginDependency("foo", [group:"junit", name:"junit", version:"3.8.2"])
@@ -557,8 +392,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         if(!usedConfigurations.contains(scope)) {
             usedConfigurations << scope
         }
-
-        
 
         try {
             this.currentDependencyDescriptor = dependencyDescriptor
@@ -605,8 +438,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
             options.confs = [conf] as String[]
         }
 
-
-
         resolveEngine.getDependencies(moduleDescriptor, options, new ResolveReport(moduleDescriptor))
     }
 
@@ -647,8 +478,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     public ResolveReport resolveDependencies() {
         resolveDependencies('')
     }
-
-
 
     /**
      * Performs a resolve of declared plugin dependencies (zip files containing plugin distributions)
@@ -798,18 +627,6 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
     }
 
-    ModuleDescriptor createModuleDescriptor() {
-        def moduleDescriptor =
-            DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion))
-
-        // TODO: make configurations extensible
-        moduleDescriptor.addConfiguration BUILD_CONFIGURATION
-        moduleDescriptor.addConfiguration COMPILE_CONFIGURATION
-        moduleDescriptor.addConfiguration RUNTIME_CONFIGURATION
-        moduleDescriptor.addConfiguration TEST_CONFIGURATION
-        moduleDescriptor.addConfiguration PROVIDED_CONFIGURATION
-        return moduleDescriptor
-    }
 
     List readDependenciesFromPOM() {
         def dependencies = null
