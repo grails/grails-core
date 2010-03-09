@@ -24,7 +24,6 @@ dependencies {
     lib = "$projectDir/lib"
     groovy files("$lib/groovy-all-1.7.1.jar")
     compile files(fileTree(dir: lib as File, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar', 'groovy-all-1.7.1.jar']), "${System.getenv('JAVA_HOME')}/lib/tools.jar")
-    testRuntime files('src/test', 'target', 'src/grails/grails-app/utils', ".", "src/war/WEB-INF")
     jsp21 files("$lib/jsp-api-2.1.jar")
 }
 
@@ -81,8 +80,8 @@ configure([compileJava, compileTestJava]) {
 
 apply {
     url 'gradle/docs.gradle'
-    url 'gradle/unit-test.gradle'
     url 'gradle/assemble.gradle'
+    url 'gradle/unit-test.gradle'
     url 'gradle/maven.gradle'
     url 'gradle/findbugs.gradle'
 }
