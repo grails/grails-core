@@ -424,8 +424,8 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
         def sessionFactory = ctx.getBean('sessionFactory')
 
         def dynamicMethods = [new FindAllByPersistentMethod(application, sessionFactory, classLoader),
-		                      new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-		                      new FindByPersistentMethod(application, sessionFactory, classLoader),
+                              new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
+                              new FindByPersistentMethod(application, sessionFactory, classLoader),
                               new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
                               new CountByPersistentMethod(application, sessionFactory, classLoader),
                               new ListOrderByPersistentMethod(sessionFactory, classLoader)]
@@ -855,6 +855,71 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 num == null ? 0 : num
             } as HibernateCallback)
         }
+
+        metaClass.isDirty = { ->
+            def session = sessionFactory.currentSession
+            def entry = findEntityEntry(delegate, session)
+            if (!entry) {
+                return false
+            }
+
+            Object[] values = entry.persister.getPropertyValues(delegate, session.entityMode)
+            def dirtyProperties = entry.persister.findDirty(values, entry.loadedState, delegate, session)
+            return dirtyProperties != null
+        }
+
+        metaClass.isDirty = { String fieldName ->
+            def session = sessionFactory.currentSession
+            def entry = findEntityEntry(delegate, session)
+            if (!entry) {
+                return false
+            }
+
+            Object[] values = entry.persister.getPropertyValues(delegate, session.entityMode)
+            int[] dirtyProperties = entry.persister.findDirty(values, entry.loadedState, delegate, session)
+            int fieldIndex = entry.persister.propertyNames.findIndexOf { fieldName == it }
+            return fieldIndex in dirtyProperties
+        }
+
+        metaClass.getDirtyPropertyNames = { ->
+            def session = sessionFactory.currentSession
+            def entry = findEntityEntry(delegate, session)
+            if (!entry) {
+                return []
+            }
+
+            Object[] values = entry.persister.getPropertyValues(delegate, session.entityMode)
+            int[] dirtyProperties = entry.persister.findDirty(values, entry.loadedState, delegate, session)
+            def names = []
+            for (index in dirtyProperties) {
+                names << entry.persister.propertyNames[index]
+            }
+            names
+        }
+
+        metaClass.getPersistentValue = { String fieldName ->
+            def session = sessionFactory.currentSession
+            def entry = findEntityEntry(delegate, session, false)
+            if (!entry) {
+                return null
+            }
+
+            int fieldIndex = entry.persister.propertyNames.findIndexOf { fieldName == it }
+            return fieldIndex == -1 ? null : entry.loadedState[fieldIndex]
+        }
+    }
+
+    private static findEntityEntry(instance, session, boolean forDirtyCheck = true) {
+        def entry = session.persistenceContext.getEntry(instance)
+        if (!entry) {
+            return null
+        }
+
+        if (forDirtyCheck && !entry.requiresDirtyCheck(instance) && entry.loadedState) {
+            return null
+        }
+
+        entry
     }
 
     /**
