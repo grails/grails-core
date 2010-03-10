@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
 
 import org.junit.internal.runners.statements.RunAfters
 import org.junit.internal.runners.statements.RunBefores
+import org.springframework.util.ReflectionUtils
 
 class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 
@@ -114,12 +115,15 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 	protected Statement withBefores(FrameworkMethod method, Object target, Statement statement) {
 		def superResult = super.withBefores(method, target, statement)
 		if (superResult.is(statement)) {
-			try {
-				def setUp = new FrameworkMethod(testClass.javaClass.getMethod('setUp'))
-				new RunAfters(statement, [setUp], target)
-			} catch (NoSuchMethodException e) {
-				superResult
-			}
+            def setupMethod = ReflectionUtils.findMethod(testClass.javaClass, 'setUp')
+            if(setupMethod) {
+                setupMethod.accessible = true
+                def setUp = new FrameworkMethod(setupMethod)
+                new RunBefores(statement, [setUp], target)
+            }
+            else {
+                superResult
+            }
 		} else {
 			superResult
 		}
@@ -128,10 +132,12 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 	protected Statement withAfters(FrameworkMethod method, Object target, Statement statement) {
 		def superResult = super.withAfters(method, target, statement)
 		if (superResult.is(statement)) {
-			try {
-				def tearDown = new FrameworkMethod(testClass.javaClass.getMethod('tearDown'))
+            def tearDownMethod = ReflectionUtils.findMethod(testClass.javaClass, 'tearDown')
+			if(tearDownMethod) {
+                tearDownMethod.accessible = true
+				def tearDown = new FrameworkMethod(tearDownMethod)
 				new RunAfters(statement, [tearDown], target)
-			} catch (NoSuchMethodException e) {
+			} else {
 				superResult
 			}
 		} else {
