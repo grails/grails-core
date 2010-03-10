@@ -14,44 +14,44 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Errors;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates a string is not blank
+ * A Constraint that validates a string is not blank.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:10:01 AM
  */
-class BlankConstraint extends AbstractVetoingConstraint {
+public class BlankConstraint extends AbstractVetoingConstraint {
 
     private boolean blank;
-
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && String.class.isAssignableFrom(type);
-
     }
 
-    public Object getParameter()
-    {
+    public Object getParameter() {
         return Boolean.valueOf(blank);
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Boolean))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.BLANK_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+        if (!(constraintParameter instanceof Boolean)) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.BLANK_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must be a boolean value");
+        }
 
-        this.blank = ((Boolean)constraintParameter).booleanValue();
+        blank = ((Boolean)constraintParameter).booleanValue();
         super.setParameter(constraintParameter);
     }
 
@@ -59,16 +59,19 @@ class BlankConstraint extends AbstractVetoingConstraint {
         return ConstrainedProperty.BLANK_CONSTRAINT;
     }
 
+    @Override
     protected boolean skipBlankValues() {
         return false;
     }
 
+    @Override
     protected boolean processValidateWithVetoing(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue instanceof String && StringUtils.isBlank((String)propertyValue)) {
-            if(!blank) {
+        if (propertyValue instanceof String && StringUtils.isBlank((String)propertyValue)) {
+            if (!blank) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
-                super.rejectValue( target,errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE, ConstrainedProperty.BLANK_CONSTRAINT, args );
-                // empty string is catched by 'blank' constraint, no addition validation needed
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE,
+                        ConstrainedProperty.BLANK_CONSTRAINT, args);
+                // empty string is caught by 'blank' constraint, no addition validation needed
                 return true;
             }
         }

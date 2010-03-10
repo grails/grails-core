@@ -51,7 +51,6 @@ import java.util.regex.Matcher;
  * Cached instances pre-compile and re-use {@link Pattern}(s) - which according
  * to the {@link Pattern} API are safe to use in a multi-threaded environment.
  *
- * @version $Revision: 595023 $ $Date: 2007-11-14 22:49:23 +0300 (Ср, 14 ноя 2007) $
  * @since Validator 1.4
  */
 public class RegexValidator implements Serializable {
