@@ -19,22 +19,19 @@ import org.apache.commons.validator.EmailValidator;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates an email address
+ * A Constraint that validates an email address.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:13:29 AM
  */
-class EmailConstraint extends AbstractConstraint {
+public class EmailConstraint extends AbstractConstraint {
 
     private boolean email;
-
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && String.class.isAssignableFrom(type);
     }
@@ -42,11 +39,16 @@ class EmailConstraint extends AbstractConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Boolean))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.EMAIL_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+        if (!(constraintParameter instanceof Boolean)) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.EMAIL_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must be a boolean value");
+        }
 
-        this.email = ((Boolean)constraintParameter).booleanValue();
+        email = ((Boolean)constraintParameter).booleanValue();
         super.setParameter(constraintParameter);
     }
 
@@ -54,15 +56,22 @@ class EmailConstraint extends AbstractConstraint {
         return ConstrainedProperty.EMAIL_CONSTRAINT;
     }
 
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(email) {
-            EmailValidator emailValidator = EmailValidator.getInstance();
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
-            String value = propertyValue.toString();
-            if(StringUtils.isBlank(value))return;
-            if(!emailValidator.isValid(value)  ) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_EMAIL_MESSAGE_CODE,ConstrainedProperty.EMAIL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,args);
-            }
+        if (!email) {
+            return;
+        }
+
+        EmailValidator emailValidator = EmailValidator.getInstance();
+        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
+        String value = propertyValue.toString();
+        if (StringUtils.isBlank(value)) {
+            return;
+        }
+
+        if (!emailValidator.isValid(value)) {
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_EMAIL_MESSAGE_CODE,
+                    ConstrainedProperty.EMAIL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
         }
     }
 }
