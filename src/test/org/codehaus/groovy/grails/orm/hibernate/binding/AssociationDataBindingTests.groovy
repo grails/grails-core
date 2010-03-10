@@ -113,6 +113,68 @@ class AssociationBindingAuthor {
         assertEquals 2, book.pages[1].number
     }
 
+    void testOneToManyListBindingWithSubscriptOperatorCanExtendExistingList() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [page1]).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[1].id": "$page2.id"]
+
+        book.properties = params
+
+        assertEquals 2, book.pages.size()
+        assertEquals 1, book.pages[0].number
+        assertEquals 2, book.pages[1].number
+    }
+
+    void testOneToManyListBindingWithSubscriptOperatorCanInsertToEmptyIndexOfList() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [null, page2]).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[0].id": "$page1.id"]
+
+        book.properties = params
+
+        assertEquals 2, book.pages.size()
+        assertEquals 1, book.pages[0].number
+        assertEquals 2, book.pages[1].number
+    }
+
+    void testOneToManyListBindingWithNestedSubscriptOperatorCanInsertToEmptyIndexOfList() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [null, page2]).save(flush: true, failOnError: true)
+        session.clear()
+        author = author.refresh()
+
+        def params = ["books[0].pages[0].id": "$page1.id"]
+
+        author.properties = params
+
+        assertEquals 2, author.books.sum { it.pages.size() }
+        assertFalse author.books.any { it.pages.contains(null) }
+    }
+
     void testOneToManyListUnBindingWithSubscriptOperator() {
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz

@@ -566,11 +566,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private Collection decorateCollectionForDomainAssociation(Collection c, final Class referencedType) {
         if(canDecorateWithLazyList(c, referencedType)) {
-            c = LazyList.decorate((List)c, new Factory() {
-                public Object create() {
-                    return autoInstantiateDomainInstance(referencedType);
-                }
-            });
+//            c = LazyList.decorate((List)c, new Factory() {
+//                public Object create() {
+//                    return autoInstantiateDomainInstance(referencedType);
+//                }
+//            });
         }
         else if(canDecorateWithListOrderedSet(c, referencedType)) {
             c = ListOrderedSet.decorate((Set) c);
@@ -653,8 +653,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                         mpvs.removePropertyValue(pv);
                     }
                     else {
-                        Class type = bean.getPropertyType(propertyName);
-
+                        Class type = determinePropertyType(propertyName);
                         Object persisted = getPersistentInstance(type, pv.getValue());
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
@@ -672,6 +671,20 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 }
             }
         }
+    }
+
+    private Class determinePropertyType(String propertyName) {
+        Class type = bean.getPropertyType(propertyName);
+        if (type == null) {
+            // TODO: this is crude
+            GrailsDomainClass gdc = domainClass;
+            for (String path : propertyName.replaceAll("\\[.+?\\]", "").split("\\.")) {
+                GrailsDomainClassProperty prop = gdc.getPropertyByName(path);
+                gdc = prop.getReferencedDomainClass();
+            }
+            type = gdc.getClazz();
+        }
+        return type;
     }
 
     private boolean isReadableAndPersistent(String propertyName) {        
