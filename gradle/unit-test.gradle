@@ -10,8 +10,8 @@ configurations {
 }
 
 dependencies {
-    files('src/test', 'src/grails/grails-app/utils', projectDir, "src/war/WEB-INF", coreJar.archivePath)
-    coverage("net.sourceforge.cobertura:cobertura:1.9.3")
+    testRuntime files('src/test', 'src/grails/grails-app/utils', projectDir, "src/war/WEB-INF", coreJar.archivePath)
+    coverage "net.sourceforge.cobertura:cobertura:1.9.3"
 }
 
 // we disable the default test task of the java plugin as we use a bunch of custom ones.
@@ -88,7 +88,7 @@ def createTestTask(name, includes, excludes) {
 def createTestTaskWithoutSuffix(String name, includes, excludes) {
     task = tasks.add(name: name, type: AntTest) {
         options.systemProperties = ['grails.cli.testing': "true"]
-        options.forkOptions.jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+        options.forkOptions.jvmArgs = ["-server", "-Xmx1500m", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
         options.systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
         include includes as String[]
         exclude excludes as String[]
