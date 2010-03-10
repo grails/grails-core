@@ -14,33 +14,31 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Errors;
-
 import java.util.List;
 
+import org.springframework.validation.Errors;
+
 /**
- *  A constraint that validates the property is contained within the supplied list
+ * A constraint that validates the property is contained within the supplied list.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:21:24 AM
  */
-class InListConstraint extends AbstractConstraint {
+public class InListConstraint extends AbstractConstraint {
 
-    List list;
+    List<?> list;
 
     /**
      * @return Returns the list.
      */
-    public List getList() {
+    public List<?> getList() {
         return list;
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null;
     }
@@ -48,11 +46,16 @@ class InListConstraint extends AbstractConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof List))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.IN_LIST_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must implement the interface [java.util.List]");
+        if (!(constraintParameter instanceof List<?>)) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.IN_LIST_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must implement the interface [java.util.List]");
+        }
 
-        this.list = (List)constraintParameter;
+        list = (List<?>)constraintParameter;
         super.setParameter(constraintParameter);
     }
 
@@ -60,13 +63,13 @@ class InListConstraint extends AbstractConstraint {
         return ConstrainedProperty.IN_LIST_CONSTRAINT;
     }
 
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        // Check that the list contains the given value. If not, add
-        // an error.
-        if(!this.list.contains(propertyValue)) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list  };
-            super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_NOT_INLIST_MESSAGE_CODE,ConstrainedProperty.NOT_PREFIX + ConstrainedProperty.IN_LIST_CONSTRAINT,args);
+        // Check that the list contains the given value. If not, add an error.
+        if (!list.contains(propertyValue)) {
+            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, list };
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_NOT_INLIST_MESSAGE_CODE,
+                    ConstrainedProperty.NOT_PREFIX + ConstrainedProperty.IN_LIST_CONSTRAINT, args);
         }
     }
-
 }

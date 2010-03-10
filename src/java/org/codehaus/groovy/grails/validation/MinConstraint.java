@@ -18,19 +18,14 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that implements a minimum value constraint
+ * A Constraint that implements a minimum value constraint.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:20:17 AM
  */
-
-class MinConstraint extends AbstractConstraint {
+public class MinConstraint extends AbstractConstraint {
 
     private Comparable minValue;
-
 
     /**
      * @return Returns the minValue.
@@ -39,31 +34,40 @@ class MinConstraint extends AbstractConstraint {
         return minValue;
     }
 
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
-        return type != null && (Comparable.class.isAssignableFrom(type) ||
-        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
+        return type != null && (
+                Comparable.class.isAssignableFrom(type) ||
+                GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
     }
-
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(constraintParameter == null) {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] cannot be null");
+        if (constraintParameter == null) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.MIN_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass + "] cannot be null");
         }
-        if(!(constraintParameter instanceof Comparable) && (!constraintParameter.getClass().isPrimitive()))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must implement the interface [java.lang.Comparable]");
 
-        Class propertyClass = GrailsClassUtils.getPropertyType( constraintOwningClass, constraintPropertyName );
-        if(!GrailsClassUtils.isAssignableOrConvertibleFrom( constraintParameter.getClass(),propertyClass ))
+        if (!(constraintParameter instanceof Comparable<?>) && (!constraintParameter.getClass().isPrimitive())) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.MIN_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must implement the interface [java.lang.Comparable]");
+        }
+
+        Class<?> propertyClass = GrailsClassUtils.getPropertyType( constraintOwningClass, constraintPropertyName );
+        if (!GrailsClassUtils.isAssignableOrConvertibleFrom( constraintParameter.getClass(),propertyClass )) {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be the same type as property: [" + propertyClass.getName() + "]");
+        }
 
-        this.minValue = (Comparable)constraintParameter;
+        minValue = (Comparable<?>)constraintParameter;
         super.setParameter(constraintParameter);
     }
 
@@ -71,10 +75,11 @@ class MinConstraint extends AbstractConstraint {
         return ConstrainedProperty.MIN_CONSTRAINT;
     }
 
-    protected void processValidate(Object target, Object propertyValue, Errors errors)		{
-        if(minValue.compareTo(propertyValue) > 0) {
+    @Override
+    protected void processValidate(Object target, Object propertyValue, Errors errors)        {
+        if (minValue.compareTo(propertyValue) > 0) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
-            super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE, ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
+            rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE, ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
         }
     }
 }

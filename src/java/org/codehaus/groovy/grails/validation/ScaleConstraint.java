@@ -39,15 +39,11 @@ import org.springframework.validation.Errors;
  * The rounding behavior described above occurs automatically when the
  * constraint is applied. This constraint does <i>not</i> generate
  * validation errors.
-
  *
  * @author Jason Rudolph
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:23:44 AM
  */
-class ScaleConstraint extends AbstractConstraint {
+public class ScaleConstraint extends AbstractConstraint {
 
     private int scale;
 
@@ -56,15 +52,16 @@ class ScaleConstraint extends AbstractConstraint {
      *
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
-        return type != null && (BigDecimal.class.isAssignableFrom(type) ||
-        		GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, type) ||
-        		GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, type));
+        return type != null && (
+                BigDecimal.class.isAssignableFrom(type) ||
+                GrailsClassUtils.isAssignableOrConvertibleFrom(Float.class, type) ||
+                GrailsClassUtils.isAssignableOrConvertibleFrom(Double.class, type));
     }
 
     /*
-     * (non-Javadoc)
-     *
+     * {@inheritDoc}
      * @see org.codehaus.groovy.grails.validation.Constraint#getName()
      */
     public String getName() {
@@ -75,39 +72,39 @@ class ScaleConstraint extends AbstractConstraint {
      * @return the scale
      */
     public int getScale() {
-        return this.scale;
+        return scale;
     }
 
     /*
-     * (non-Javadoc)
-     *
-     * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
+     * {@inheritDoc}
+     * @see org.codehaus.groovy.grails.validation.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
         if (!(constraintParameter instanceof Integer)) {
-            throw new IllegalArgumentException("Parameter for constraint [" + this.getName() + "] of property ["
-                    + this.constraintPropertyName + "] of class [" + this.constraintOwningClass
-                    + "] must be a of type [java.lang.Integer]");
+            throw new IllegalArgumentException("Parameter for constraint [" + getName() + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must be a of type [java.lang.Integer]");
         }
 
         int requestedScale = ((Integer) constraintParameter).intValue();
 
         if (requestedScale < 0) {
-            throw new IllegalArgumentException("Parameter for constraint [" + this.getName() + "] of property ["
-                    + this.constraintPropertyName + "] of class [" + this.constraintOwningClass
-                    + "] must have a nonnegative value");
+            throw new IllegalArgumentException("Parameter for constraint [" + getName() + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must have a nonnegative value");
         }
 
-        this.scale = requestedScale;
+        scale = requestedScale;
         super.setParameter(constraintParameter);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#processValidate(java.lang.Object,
-     *      java.lang.Object, org.springframework.validation.Errors)
+    /**
+     * {@inheritDoc}
+     * @see org.codehaus.groovy.grails.validation.AbstractConstraint#processValidate(
+     *     java.lang.Object, java.lang.Object, org.springframework.validation.Errors)
      */
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         BigDecimal bigDecimal;
 
@@ -116,18 +113,21 @@ class ScaleConstraint extends AbstractConstraint {
         if (propertyValue instanceof Float) {
             bigDecimal = new BigDecimal(propertyValue.toString());
             bigDecimal = getScaledValue(bigDecimal);
-            bean.setPropertyValue(this.getPropertyName(), new Float(bigDecimal.floatValue()));
-        } else if (propertyValue instanceof Double) {
+            bean.setPropertyValue(getPropertyName(), new Float(bigDecimal.floatValue()));
+        }
+        else if (propertyValue instanceof Double) {
             bigDecimal = new BigDecimal(propertyValue.toString());
             bigDecimal = getScaledValue(bigDecimal);
-            bean.setPropertyValue(this.getPropertyName(), new Double(bigDecimal.doubleValue()));
-        } else if (propertyValue instanceof BigDecimal) {
+            bean.setPropertyValue(getPropertyName(), new Double(bigDecimal.doubleValue()));
+        }
+        else if (propertyValue instanceof BigDecimal) {
             bigDecimal = (BigDecimal) propertyValue;
             bigDecimal = getScaledValue(bigDecimal);
-            bean.setPropertyValue(this.getPropertyName(), bigDecimal);
-        } else {
-            throw new IllegalArgumentException("Unsupported type detected in constraint [" + this.getName()
-                    + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "]");
+            bean.setPropertyValue(getPropertyName(), bigDecimal);
+        }
+        else {
+            throw new IllegalArgumentException("Unsupported type detected in constraint [" + getName() +
+                    "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "]");
         }
     }
 
@@ -136,6 +136,6 @@ class ScaleConstraint extends AbstractConstraint {
      * @param originalValue The original value
      */
     private BigDecimal getScaledValue(BigDecimal originalValue) {
-        return originalValue.setScale(this.scale, BigDecimal.ROUND_HALF_UP);
+        return originalValue.setScale(scale, BigDecimal.ROUND_HALF_UP);
     }
 }

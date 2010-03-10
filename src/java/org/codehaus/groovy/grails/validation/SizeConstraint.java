@@ -15,10 +15,11 @@
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.IntRange;
-import org.springframework.validation.Errors;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+
+import org.springframework.validation.Errors;
 
 /**
  * A constraint that validates size of the property, for strings and arrays
@@ -26,12 +27,8 @@ import java.util.Collection;
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:26:10 AM
  */
-
-class SizeConstraint extends AbstractConstraint {
+public class SizeConstraint extends AbstractConstraint {
 
     private IntRange range;
 
@@ -42,10 +39,10 @@ class SizeConstraint extends AbstractConstraint {
         return range;
     }
 
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && (
                 String.class.isAssignableFrom(type) ||
@@ -54,16 +51,19 @@ class SizeConstraint extends AbstractConstraint {
         );
     }
 
-
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof IntRange))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.SIZE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a of type [groovy.lang.IntRange]");
+        if (!(constraintParameter instanceof IntRange)) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.SIZE_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must be a of type [groovy.lang.IntRange]");
+        }
 
-        this.range = (IntRange)constraintParameter;
+        range = (IntRange)constraintParameter;
         super.setParameter(constraintParameter);
     }
 
@@ -71,7 +71,7 @@ class SizeConstraint extends AbstractConstraint {
         return ConstrainedProperty.SIZE_CONSTRAINT;
     }
 
-
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo() };
 
@@ -79,18 +79,18 @@ class SizeConstraint extends AbstractConstraint {
         Integer size = null;
 
         // determine the value of size based on the property's type
-        if(propertyValue.getClass().isArray()) {
-            size = new Integer(Array.getLength( propertyValue ));
+        if (propertyValue.getClass().isArray()) {
+            size = Integer.valueOf(Array.getLength(propertyValue));
         }
-        else if(propertyValue instanceof Collection) {
-            size = new Integer(((Collection)propertyValue).size());
+        else if (propertyValue instanceof Collection<?>) {
+            size = Integer.valueOf(((Collection<?>)propertyValue).size());
         }
         else if(propertyValue instanceof String) {
-            size =  new Integer(((String)propertyValue).length());
+            size = Integer.valueOf(((String)propertyValue).length());
         }
-        
-        if(!range.contains(size)) {
-            if(range.getFrom().compareTo(size) == 1) {
+
+        if (!range.contains(size)) {
+            if (range.getFrom().compareTo(size) == 1) {
                 rejectValueTooSmall(args, errors, target);
             }
             else if(range.getTo().compareTo(size) == -1) {
@@ -98,22 +98,23 @@ class SizeConstraint extends AbstractConstraint {
             }
         }
     }
-    
+
     private void rejectValueTooSmall(Object[] args, Errors errors, Object target){
         rejectValue(args, errors, target, false);
     }
-    
+
     private void rejectValueTooBig(Object[] args, Errors errors, Object target){
         rejectValue(args, errors, target, true);
     }
-    
+
     private void rejectValue(Object[] args, Errors errors, Object target, boolean tooBig) {
         String suffix;
         if (tooBig) {
             suffix = ConstrainedProperty.TOOBIG_SUFFIX;
-        } else {
+        }
+        else {
             suffix = ConstrainedProperty.TOOSMALL_SUFFIX;
         }
-        super.rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args );
+        rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args );
     }
 }
