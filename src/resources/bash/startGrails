@@ -228,7 +228,7 @@ lateInit
 startGrails() {
   CLASS=$1
   shift
-  if [[ -n $GRAILS_OPTS  ]]
+  if [ -n "$GRAILS_OPTS" ]
      then
  	GRAILS_OPTS="$GRAILS_OPTS"
      else
