@@ -9,7 +9,7 @@ buildscript {
 
 apply id: 'groovy'
 
-version = '1.3.0.BUILD-SNAPSHOT'
+version = '1.3.0.M1'
 
 sourceCompatibility = "1.5"
 targetCompatibility = "1.5"
