@@ -35,21 +35,6 @@ class DataBindingBook {
         assertEquals(["journalism", "counterculture"], book.topics)
     }
 
-    void testListElementCanBeNulled() {
-        def Book = ga.getDomainClass("DataBindingBook").clazz
-        def book = Book.newInstance(title: "Fear & Loathing in Las Vegas", topics: ["journalism", "counterculture", "satire"])
-        book.save(flush: true, failOnError: true)
-        session.clear()
-
-        def params = ["topics[1]": "null"]
-
-        book = book.refresh()
-        book.properties = params
-
-        assertEquals 3, book.topics.size()
-        assertEquals(["journalism", null, "satire"], book.topics)
-    }
-
     void testEmptyListElementCanBePopulated() {
         def Book = ga.getDomainClass("DataBindingBook").clazz
         def book = Book.newInstance(title: "Fear & Loathing in Las Vegas", topics: ["journalism", null, "satire"])
