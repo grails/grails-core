@@ -20,6 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 
@@ -335,13 +337,13 @@ public class GrailsDomainConfigurationUtil {
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
         if(properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
             for (GrailsDomainClassProperty p : properties) {
-            	if (p.isDerived()) {
+            	PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
+            	if(propertyConfig != null && propertyConfig.getFormula() != null) {
             		if(constrainedProperties.remove(p.getName()) != null) {
-                        // constraint is registered but cannot be applied to a derived property
-                        LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
+            			// constraint is registered but cannot be applied to a derived property
+            			LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
             		}
-            	}
-            	else {
+            	} else {
             		final String propertyName = p.getName();
             		ConstrainedProperty cp = constrainedProperties.get(propertyName);
             		if (cp == null) {

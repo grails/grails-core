@@ -231,8 +231,4 @@ public interface GrailsDomainClassProperty {
     boolean isBasicCollectionType();
 
     boolean isHasOne();
-
-    boolean isDerived();
-
-    void setDerived(boolean isDerived);
 }

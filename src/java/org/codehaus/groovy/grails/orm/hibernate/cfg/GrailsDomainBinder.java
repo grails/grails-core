@@ -701,7 +701,7 @@ public final class GrailsDomainBinder {
         }
     }
 
-    private static PropertyConfig getPropertyConfig(GrailsDomainClassProperty property) {
+    public static PropertyConfig getPropertyConfig(GrailsDomainClassProperty property) {
         Mapping m = getMapping(property.getDomainClass().getClazz());
         PropertyConfig config = m != null ? m.getPropertyConfig(property.getName()) : null;
         return config;
@@ -1414,8 +1414,6 @@ public final class GrailsDomainBinder {
 
         if (m != null) {
 
-        	configureDerivedProperties(domainClass, m);
-
             CacheConfig cc = m.getCache();
             if (cc != null && cc.getEnabled()) {
                 root.setCacheConcurrencyStrategy(cc.getUsage());
@@ -1469,16 +1467,6 @@ public final class GrailsDomainBinder {
 
         createClassProperties(domainClass, root, mappings);
     }
-
-	private static void configureDerivedProperties(
-			GrailsDomainClass domainClass, Mapping m) {
-		for(GrailsDomainClassProperty prop : domainClass.getPersistentProperties()) {
-			PropertyConfig propertyConfig = m.getPropertyConfig(prop.getName());
-			if(propertyConfig != null && propertyConfig.getFormula() != null) {
-				prop.setDerived(true);
-			}
-		}
-	}
 
     private static void bindIdentity(GrailsDomainClass domainClass, RootClass root, Mappings mappings, Mapping gormMapping) {
         GrailsDomainClassProperty identifierProp = domainClass.getIdentifier();
@@ -2284,7 +2272,7 @@ public final class GrailsDomainBinder {
 			GrailsDomainClassProperty parentProperty, SimpleValue simpleValue,
 			String path, PropertyConfig propertyConfig) {
 		setTypeForPropertyConfig(grailsProp, simpleValue, propertyConfig);
-		if (grailsProp.isDerived()) {
+		if (propertyConfig != null && propertyConfig.getFormula() != null) {
 			Formula formula = new Formula();
 			formula.setFormula(propertyConfig.getFormula());
 			simpleValue.addFormula(formula);
