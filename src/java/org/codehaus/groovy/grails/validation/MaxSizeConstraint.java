@@ -14,25 +14,21 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Errors;
-
 import java.lang.reflect.Array;
 import java.util.Collection;
 
-/**
- *
- * A constraint that validates maximum size of the property, for strings and arrays this is the length, collections
- * the size and numbers the value
+import org.springframework.validation.Errors;
 
+/**
+ * A constraint that validates maximum size of the property, for strings and arrays this is the length, collections
+ * the size and numbers the value.
+ *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:29:02 AM
  */
-class MaxSizeConstraint extends AbstractConstraint {
+public class MaxSizeConstraint extends AbstractConstraint {
 
-	private int maxSize;
+    private int maxSize;
 
     /**
      * @return Returns the maxSize.
@@ -40,14 +36,20 @@ class MaxSizeConstraint extends AbstractConstraint {
     public int getMaxSize() {
         return maxSize;
     }
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Integer))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MAX_SIZE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a of type [java.lang.Integer]");
+        if (!(constraintParameter instanceof Integer)) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.MAX_SIZE_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must be a of type [java.lang.Integer]");
+        }
 
-        this.maxSize = ((Integer)constraintParameter).intValue();
+        maxSize = ((Integer)constraintParameter).intValue();
         super.setParameter(constraintParameter);
     }
 
@@ -56,8 +58,9 @@ class MaxSizeConstraint extends AbstractConstraint {
     }
 
     /* (non-Javadoc)
-       * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
-       */
+     * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
+     */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && (
                 String.class.isAssignableFrom(type) ||
@@ -66,24 +69,24 @@ class MaxSizeConstraint extends AbstractConstraint {
         );
     }
 
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(maxSize) };
+        int length;
+        if (propertyValue.getClass().isArray()) {
+            length = Array.getLength(propertyValue);
+        }
+        else if (propertyValue instanceof Collection<?>) {
+            length = ((Collection<?>)propertyValue).size();
+        }
+        else { // String
+            length = ((String)propertyValue).length();
+        }
 
-        if(propertyValue.getClass().isArray()) {
-            int length = Array.getLength( propertyValue );
-            if(length > maxSize) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX,args);
-            }
-        }
-        else if(propertyValue instanceof Collection) {
-            if (((Collection) propertyValue).size() > maxSize) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args);
-            }
-        }
-        else if (propertyValue instanceof String) {
-            if (((String) propertyValue).length() > maxSize) {
-                super.rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE, ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args );
-            }
+        if (length > maxSize) {
+            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass,
+                    propertyValue, Integer.valueOf(maxSize)};
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE,
+                    ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args);
         }
     }
 }

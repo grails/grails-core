@@ -14,51 +14,51 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import java.util.List;
+
 import org.codehaus.groovy.grails.validation.routines.RegexValidator;
 import org.codehaus.groovy.grails.validation.routines.UrlValidator;
 import org.springframework.validation.Errors;
 
-import java.util.List;
-
 /**
- * A Constraint that validates a url
+ * A Constraint that validates a url.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:16:04 AM
  */
-class UrlConstraint extends AbstractConstraint {
+public class UrlConstraint extends AbstractConstraint {
 
     private boolean url;
     private UrlValidator validator;
 
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && String.class.isAssignableFrom(type);
-
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
         RegexValidator domainValidator = null;
 
         if (constraintParameter instanceof Boolean) {
             this.url = ((Boolean) constraintParameter).booleanValue();
-        } else if (constraintParameter instanceof String) {
+        }
+        else if (constraintParameter instanceof String) {
             this.url = true;
             domainValidator = new RegexValidator((String) constraintParameter);
-        } else if (constraintParameter instanceof List) {
+        }
+        else if (constraintParameter instanceof List<?>) {
             this.url = true;
-            List regexpList = (List) constraintParameter;
+            List<?> regexpList = (List<?>) constraintParameter;
             domainValidator = new RegexValidator((String[]) regexpList.toArray(new String[regexpList.size()]));
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.URL_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a boolean, string, or list value");
         }
 
@@ -74,14 +74,15 @@ class UrlConstraint extends AbstractConstraint {
         return ConstrainedProperty.URL_CONSTRAINT;
     }
 
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (url) {
-            if (!validator.isValid(propertyValue.toString())) {
-                Object[] args = new Object[]{constraintPropertyName, constraintOwningClass, propertyValue};
-                super.rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE, ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
-            }
+        if (!url) {
+            return;
+        }
+
+        if (!validator.isValid(propertyValue.toString())) {
+            Object[] args = new Object[]{constraintPropertyName, constraintOwningClass, propertyValue};
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE, ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
         }
     }
-
 }
-

@@ -17,16 +17,15 @@ package org.codehaus.groovy.grails.validation;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates not equal to something
+ * A Constraint that validates not null.
  *
  * @author Graeme Rocher
  * @author Sergey Nebolsin
  * @since 0.4
  */
-class NullableConstraint extends AbstractVetoingConstraint {
+public class NullableConstraint extends AbstractVetoingConstraint {
 
     private boolean nullable;
-
 
     public boolean isNullable() {
         return nullable;
@@ -35,6 +34,7 @@ class NullableConstraint extends AbstractVetoingConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && !type.isPrimitive();
     }
@@ -42,11 +42,13 @@ class NullableConstraint extends AbstractVetoingConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Boolean))
+        if (!(constraintParameter instanceof Boolean)) {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NULLABLE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+        }
 
-        this.nullable = ((Boolean)constraintParameter).booleanValue();
+        nullable = ((Boolean)constraintParameter).booleanValue();
         super.setParameter(constraintParameter);
     }
 
@@ -54,15 +56,18 @@ class NullableConstraint extends AbstractVetoingConstraint {
         return ConstrainedProperty.NULLABLE_CONSTRAINT;
     }
 
+    @Override
     protected boolean skipNullValues() {
         return false;
     }
 
+    @Override
     protected boolean processValidateWithVetoing(Object target, Object propertyValue, Errors errors) {
-        if(propertyValue == null) {
-            if(!nullable) {
-                Object[] args = new Object[] { constraintPropertyName, constraintOwningClass};
-                super.rejectValue(target, errors, ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE, ConstrainedProperty.NULLABLE_CONSTRAINT,args );
+        if (propertyValue == null) {
+            if (!nullable) {
+                Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE,
+                        ConstrainedProperty.NULLABLE_CONSTRAINT, args);
                 // null value is catched by 'blank' constraint, no addition validation needed
                 return true;
             }

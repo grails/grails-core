@@ -20,16 +20,15 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates a range
+ * A Constraint that validates a range.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 8:17:32 AM
  */
-class RangeConstraint extends AbstractConstraint {
+public class RangeConstraint extends AbstractConstraint {
+
     Range range;
+
     /**
      * @return Returns the range.
      */
@@ -37,24 +36,25 @@ class RangeConstraint extends AbstractConstraint {
         return range;
     }
 
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && (Comparable.class.isAssignableFrom(type) ||
-        		GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
+                GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
     }
-
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(!(constraintParameter instanceof Range))
+        if (!(constraintParameter instanceof Range)) {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.RANGE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a of type [groovy.lang.Range]");
+        }
 
-        this.range = (Range)constraintParameter;
+        range = (Range)constraintParameter;
         super.setParameter(constraintParameter);
     }
 
@@ -62,25 +62,27 @@ class RangeConstraint extends AbstractConstraint {
         return ConstrainedProperty.RANGE_CONSTRAINT;
     }
 
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(!this.range.contains(propertyValue)) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo()  };
+        if (!range.contains(propertyValue)) {
+            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass,
+                    propertyValue, range.getFrom(), range.getTo()};
 
             Comparable from = range.getFrom();
             Comparable to = range.getTo();
 
-            if(from instanceof Number && propertyValue instanceof Number) {
+            if (from instanceof Number && propertyValue instanceof Number) {
                 // Upgrade the numbers to Long, so all integer types can be compared.
                 from = new Long(((Number) from).longValue());
                 to = new Long(((Number) to).longValue());
                 propertyValue = new Long(((Number) propertyValue).longValue());
             }
 
-            if(from.compareTo(propertyValue) > 0) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args );
+            if (from.compareTo(propertyValue) > 0) {
+                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args );
             }
             else if (to.compareTo(propertyValue) < 0) {
-                super.rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
+                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
             }
         }
     }

@@ -20,11 +20,12 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 /**
  * A Constraint that validates not equal to something
  */
-class NotEqualConstraint extends AbstractConstraint {
+public class NotEqualConstraint extends AbstractConstraint {
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
+    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null;
     }
@@ -36,14 +37,19 @@ class NotEqualConstraint extends AbstractConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
+    @Override
     public void setParameter(Object constraintParameter) {
-        if(constraintParameter == null) {
+        if (constraintParameter == null) {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NOT_EQUAL_CONSTRAINT +"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] cannot be null");
         }
 
-        Class propertyClass = GrailsClassUtils.getPropertyType( constraintOwningClass, constraintPropertyName );
-        if(!GrailsClassUtils.isAssignableOrConvertibleFrom( constraintParameter.getClass(),propertyClass ))
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NOT_EQUAL_CONSTRAINT +"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be the same type as property: [" + propertyClass.getName() + "]");
+        Class<?> propertyClass = GrailsClassUtils.getPropertyType(constraintOwningClass, constraintPropertyName);
+        if (!GrailsClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(),propertyClass)) {
+            throw new IllegalArgumentException("Parameter for constraint [" +
+                    ConstrainedProperty.NOT_EQUAL_CONSTRAINT + "] of property [" +
+                    constraintPropertyName + "] of class [" + constraintOwningClass +
+                    "] must be the same type as property: [" + propertyClass.getName() + "]");
+        }
         super.setParameter(constraintParameter);
     }
 
@@ -51,14 +57,14 @@ class NotEqualConstraint extends AbstractConstraint {
      * @return Returns the notEqualTo.
      */
     public Object getNotEqualTo() {
-        return this.constraintParameter;
+        return constraintParameter;
     }
 
+    @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if(this.constraintParameter.equals( propertyValue )) {
+        if (constraintParameter.equals( propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter  };
-            super.rejectValue( target,errors,ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE, ConstrainedProperty.NOT_EQUAL_CONSTRAINT,args);
+            rejectValue( target,errors,ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE, ConstrainedProperty.NOT_EQUAL_CONSTRAINT,args);
         }
     }
-
 }

@@ -253,7 +253,7 @@ target(packageTemplates: "Packages templates into the app") {
 target(packageTlds:"packages tld definitions for the correct servlet version") {
     // We don't know until runtime what servlet version to use, so
     // install the relevant TLDs now.
-    copyGrailsResources("${basedir}/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*")
+    copyGrailsResources("${basedir}/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*", false)
 }
 
 // Checks whether the project's sources have changed since the last
@@ -272,7 +272,8 @@ recompileCheck = { lastModified, callback ->
                     classpathref:classpathId,
                     encoding:"UTF-8",
                     verbose: grailsSettings.verboseCompile,
-                    listfiles: grailsSettings.verboseCompile) {
+                    listfiles: grailsSettings.verboseCompile,
+                    excludes: '**/package-info.java') {
                     src(path:"${grailsSettings.sourceDir}/groovy")
                     src(path:"${basedir}/grails-app/domain")
                     src(path:"${basedir}/grails-app/utils")
