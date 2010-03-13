@@ -78,6 +78,160 @@ class AssociationBindingAuthor {
         assertEquals "The Shining", book.title
     }
 
+    void testManyToOneUnBinding() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+
+        def author = Author.newInstance(name:"Stephen King").save(flush:true, failOnError: true)
+        def book = Book.newInstance(title: "The Shining", author: author).save(flush:true, failOnError: true)
+
+        def params = ['author.id': "null"]
+
+        book.properties = params
+
+        assertNull "The author should have been unbound", book.author
+    }
+
+    void testOneToManyListBindingWithSubscriptOperator() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[0].id": "$page1.id", "pages[1].id": "$page2.id"]
+
+        book.properties = params
+
+        assertEquals 2, book.pages.size()
+        assertEquals 1, book.pages[0].number
+        assertEquals 2, book.pages[1].number
+    }
+
+    void testOneToManyListBindingWithSubscriptOperatorCanExtendExistingList() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [page1]).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[1].id": "$page2.id"]
+
+        book.properties = params
+
+        assertEquals 2, book.pages.size()
+        assertEquals 1, book.pages[0].number
+        assertEquals 2, book.pages[1].number
+    }
+
+    void testOneToManyListBindingWithSubscriptOperatorCanInsertToEmptyIndexOfList() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [null, page2]).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[0].id": "$page1.id"]
+
+        book.properties = params
+
+        assertEquals 2, book.pages.size()
+        assertEquals 1, book.pages[0].number
+        assertEquals 2, book.pages[1].number
+    }
+
+    void testOneToManyListBindingWithNestedSubscriptOperatorCanInsertToEmptyIndexOfList() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page1 = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def page2 = Page.newInstance(number: 2).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [null, page2]).save(flush: true, failOnError: true)
+        session.clear()
+        author = author.refresh()
+
+        def params = ["books[0].pages[0].id": "$page1.id"]
+
+        author.properties = params
+
+        assertEquals 2, author.books.sum { it.pages.size() }
+        assertFalse author.books.any { it.pages.contains(null) }
+    }
+
+    void testOneToManyListUnBindingWithSubscriptOperator() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def page = Page.newInstance(number: 1).save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: [page]).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[0].id": "null"]
+
+        book.properties = params
+
+        assertNull "Should have removed pages[0] but it is ${book.pages[0]}", book.pages[0]
+    }
+
+    void testOneToManyListBindingNewInstance() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: []).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["pages[0].number": "1", "pages[1].number": "2", "pages[2].number": "3"]
+
+        book.properties = params
+
+        assertEquals "Should bound new pages to book", 3, book.pages.size()
+
+        book.save(flush: true, failOnError: true)
+
+        assertEquals "Should have created new pages", 3, Page.count()
+    }
+
+    void testOneToManyMapUnBindingWithSubscriptOperator() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Reviewer = ga.getDomainClass("AssociationBindingReviewer").clazz
+
+        def author = Author.newInstance(name: "Peter Ledbrook").save(flush: true, failOnError: true)
+        def reviewer = Reviewer.newInstance(name: "Rob Fletcher").save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Grails In Action", author: author, reviewers: [rob: reviewer]).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = ["reviewers[rob].id": "null"]
+
+        book.properties = params
+
+        assertNull "Should have removed reviewers[rob] but it is ${book.reviewers['rob']}", book.reviewers["rob"]
+    }
+
     void testOneToManyBindingWithSubscriptOperatorAndExistingInstance() {
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz

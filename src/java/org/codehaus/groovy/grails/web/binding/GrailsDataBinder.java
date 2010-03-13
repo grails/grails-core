@@ -16,19 +16,17 @@ package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.*;
-import org.apache.commons.collections.Factory;
-import org.apache.commons.collections.list.LazyList;
 import org.apache.commons.collections.set.ListOrderedSet;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.context.ServletContextHolder;
+import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
@@ -37,6 +35,7 @@ import org.springframework.beans.PropertyValue;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
@@ -46,7 +45,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
-import org.springframework.context.ApplicationContext;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -565,14 +563,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Collection decorateCollectionForDomainAssociation(Collection c, final Class referencedType) {
-        if(canDecorateWithLazyList(c, referencedType)) {
-            c = LazyList.decorate((List)c, new Factory() {
-                public Object create() {
-                    return autoInstantiateDomainInstance(referencedType);
-                }
-            });
-        }
-        else if(canDecorateWithListOrderedSet(c, referencedType)) {
+        if(canDecorateWithListOrderedSet(c, referencedType)) {
             c = ListOrderedSet.decorate((Set) c);
         }
         return c;
@@ -582,9 +573,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && DomainClassArtefactHandler.isDomainClass(referencedType);
     }
 
-    private boolean canDecorateWithLazyList(Collection c, Class referencedType) {
-        return (c instanceof List) && !(c instanceof LazyList) && DomainClassArtefactHandler.isDomainClass(referencedType);
-    }
+    // TODO: remove
+//    private boolean canDecorateWithLazyList(Collection c, Class referencedType) {
+//        return (c instanceof List) && !(c instanceof LazyList) && DomainClassArtefactHandler.isDomainClass(referencedType);
+//    }
 
     private Object findIndexedValue(Collection c, int index) {
         if(index < c.size()) {
@@ -653,8 +645,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                         mpvs.removePropertyValue(pv);
                     }
                     else {
-                        Class type = bean.getPropertyType(propertyName);
-
+                        Class type = getPropertyTypeForPath(propertyName);
                         Object persisted = getPersistentInstance(type, pv.getValue());
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
@@ -665,13 +656,30 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
             else {
                 if (isReadableAndPersistent(propertyName)) {
-                    Class type = bean.getPropertyType(propertyName);
+                    Class type = getPropertyTypeForPath(propertyName);
                     if (Collection.class.isAssignableFrom(type)) {
                         bindCollectionAssociation(mpvs, pv);
                     }
                 }
             }
         }
+    }
+
+    private Class getPropertyTypeForPath(String propertyName) {
+        Class type = bean.getPropertyType(propertyName);
+        if (type == null) {
+            // type not available via BeanWrapper - this happens with e.g. empty list indexes - so
+            // find type by examining GrailsDomainClass
+            Object target = bean.getWrappedInstance();
+            String path = propertyName.replaceAll("\\[.+?\\]", "");
+            if (path.indexOf(PATH_SEPARATOR) > -1) {
+                // transform x.y.z into value of x.y and path z
+                target = bean.getPropertyValue(StringUtils.substringBeforeLast(propertyName, "."));
+                path = StringUtils.substringAfterLast(path, ".");
+            }
+            type = getReferencedTypeForCollection(path, target);
+        }
+        return type;
     }
 
     private boolean isReadableAndPersistent(String propertyName) {        
