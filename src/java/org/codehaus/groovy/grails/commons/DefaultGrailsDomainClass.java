@@ -75,6 +75,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
         // get mapping strategy by setting        
         this.mappingStrategy = getStaticPropertyValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class);
+        if(this.mappingStrategy == null) {
+        	this.mappingStrategy = GORM;
+        }
 
         // get any mappedBy settings
         this.mappedBy = getStaticPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
