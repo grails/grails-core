@@ -31,6 +31,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * 
  * 
  * @author Lari Hotari, Sagire Software Oy
+ * @author Graeme Rocher
  * 
  */
 public class ClassPropertyFetcher {
