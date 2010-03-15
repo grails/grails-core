@@ -73,6 +73,11 @@ class SecondCommand {
 
         assertEquals "one", model.cmd.first
         assertEquals "two", model.cmd.second
+        
+        model = ctrl.defaultRenderWithCmd(cmd1)
+
+        assertEquals "one", model.cmd.first
+        assertEquals "two", model.cmd.second        
 
         cmd2.name = "hello"
         model = ctrl.twoCommandAction(cmd1,cmd2)

@@ -17,7 +17,11 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.Closure;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
+
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 /**
  * @author Graeme Rocher
@@ -41,13 +45,13 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
      */
     public DefaultGrailsTagLibClass(Class clazz) {
         super(clazz, TAG_LIB);
-        Class supportedControllerClass = (Class)getPropertyOrStaticPropertyOrFieldValue(SUPPORTS_CONTROLLER, Class.class);
+        Class supportedControllerClass = getStaticPropertyValue(SUPPORTS_CONTROLLER, Class.class);
         if(supportedControllerClass != null) {
             supportedControllers = new ArrayList();
             supportedControllers.add(supportedControllerClass);
         }
         else {
-            List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(SUPPORTS_CONTROLLER, List.class);
+            List tmp = getStaticPropertyValue(SUPPORTS_CONTROLLER, List.class);
             if(tmp != null) {
                 supportedControllers = tmp;
             }
@@ -56,18 +60,23 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
         PropertyDescriptor[] props = getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor prop = props[i];
-            Closure tag = (Closure)getPropertyOrStaticPropertyOrFieldValue(prop.getName(),Closure.class);
-            if(tag != null) {
-                tags.add(prop.getName());
-            }
+            Method readMethod = prop.getReadMethod();
+			if(readMethod != null) {
+				if(!Modifier.isStatic(readMethod.getModifiers())) {
+					Class type = prop.getPropertyType();
+					if(type == Object.class) {
+		                tags.add(prop.getName());
+		            }					
+				}				
+			}
         }
         
-        String ns = (String) getPropertyOrStaticPropertyOrFieldValue(NAMESPACE_FIELD_NAME, String.class);
+        String ns = getStaticPropertyValue(NAMESPACE_FIELD_NAME, String.class);
         if (ns != null && !"".equals(ns.trim())) {
         	namespace = ns.trim();
         }
         
-        List returnObjectForTagsList = (List)getPropertyOrStaticPropertyOrFieldValue(RETURN_OBJECT_FOR_TAGS_FIELD_NAME, List.class);
+        List returnObjectForTagsList = getStaticPropertyValue(RETURN_OBJECT_FOR_TAGS_FIELD_NAME, List.class);
         if(returnObjectForTagsList != null) {
         	for(Object tagName : returnObjectForTagsList) {
         		returnObjectForTagsSet.add(String.valueOf(tagName));

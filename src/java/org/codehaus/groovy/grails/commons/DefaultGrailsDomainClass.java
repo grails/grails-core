@@ -73,13 +73,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
         this.defaultConstraints = defaultConstraints;         
 
 
-        // get mapping strategy by setting
-        if(getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class) != null)
-            this.mappingStrategy = (String)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class);
+        // get mapping strategy by setting        
+        this.mappingStrategy = getStaticPropertyValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class);
 
         // get any mappedBy settings
-        this.mappedBy = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
-        this.hasOneMap = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.HAS_ONE, Map.class);
+        this.mappedBy = getStaticPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
+        this.hasOneMap = getStaticPropertyValue(GrailsDomainClassProperty.HAS_ONE, Map.class);
         if(hasOneMap == null) hasOneMap = EMPTY_MAP;
         if(this.mappedBy == null)this.mappedBy = EMPTY_MAP;
 
@@ -137,14 +136,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	 * Evaluates the belongsTo property to find out who owns who
 	 */
 	private void establishRelationshipOwners() {
-		Class belongsTo = (Class)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
+		Class belongsTo = getStaticPropertyValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
         if(belongsTo == null) {
-            List ownersProp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, List.class);
+            List ownersProp = getStaticPropertyValue(GrailsDomainClassProperty.BELONGS_TO, List.class);
             if(ownersProp != null) {
                 this.owners = ownersProp;
             }
             else {
-                Map ownersMap = (Map)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.BELONGS_TO, Map.class);
+                Map ownersMap = getStaticPropertyValue(GrailsDomainClassProperty.BELONGS_TO, Map.class);
                 if(ownersMap!=null) {
                     this.owners = new ArrayList(ownersMap.values());
                 }
@@ -187,14 +186,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 	 */
     public Map getAssociationMap() {
         if(this.relationshipMap == null) {
-            relationshipMap = (Map)getPropertyOrStaticPropertyOrFieldValue( GrailsDomainClassProperty.HAS_MANY, Map.class );
+            relationshipMap = getStaticPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
             if(relationshipMap == null)
                 this.relationshipMap = new HashMap();
 
             Class theClass = getClazz();
             while(theClass != Object.class) {
                 theClass = theClass.getSuperclass();
-                Map superRelationshipMap = (Map)GrailsClassUtils.getStaticPropertyValue(theClass, GrailsDomainClassProperty.HAS_MANY);
+                ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(theClass);
+                Map superRelationshipMap = propertyFetcher.getStaticPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
                 if(superRelationshipMap != null && !superRelationshipMap.equals(relationshipMap)) {
                     relationshipMap.putAll(superRelationshipMap);
                 }
@@ -209,11 +209,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      * @return A list of embedded components
      */
     private Collection getEmbeddedList() {
-        Object potentialList = GrailsClassUtils.getStaticPropertyValue(getClazz(), GrailsDomainClassProperty.EMBEDDED);
-        if(potentialList instanceof Collection) {
-            return (Collection)potentialList;
-        }
-        return EMPTY_LIST;
+        Collection potentialList = getStaticPropertyValue(GrailsDomainClassProperty.EMBEDDED, Collection.class);
+        return potentialList != null ? potentialList : EMPTY_LIST;
     }
 
 
@@ -403,8 +400,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
      * @param relatedClassType The related type
      */
     private void establishOwnerOfManyToMany(DefaultGrailsDomainClassProperty property, Class relatedClassType) {
-    	Object related = BeanUtils.instantiateClass(relatedClassType);
-    	Object relatedBelongsTo = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(related, GrailsDomainClassProperty.BELONGS_TO);
+    	ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(relatedClassType);
+    	Object relatedBelongsTo = cpf.getPropertyValue(GrailsDomainClassProperty.BELONGS_TO);
     	boolean owningSide = false;
     	boolean relatedOwner = this.owners.contains(relatedClassType);
     	final Class propertyClass = property.getDomainClass().getClazz();
@@ -687,10 +684,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private void initializeConstraints() {
         // process the constraints
         if(defaultConstraints != null) {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), this.persistentProperties, defaultConstraints);
         }
         else {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), this.persistentProperties);
         }
     }
 
@@ -725,10 +722,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
 
     public void refreshConstraints() {
         if(defaultConstraints!=null) {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties, defaultConstraints);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), this.persistentProperties, defaultConstraints);
         }
         else {
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), this.persistentProperties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), this.persistentProperties);
         }
 
         // Embedded components have their own ComponentDomainClass

@@ -18,7 +18,7 @@ public class DefaultGrailsUrlMappingsClass extends AbstractGrailsClass implement
 	}
 
 	public Closure getMappingsClosure() {
-		Closure result = (Closure) getPropertyOrStaticPropertyOrFieldValue(MAPPINGS_CLOSURE, Closure.class);
+		Closure result = getStaticPropertyValue(MAPPINGS_CLOSURE, Closure.class);
 		if (result == null) {
 			throw new RuntimeException(MAPPINGS_CLOSURE + " closure does not exists for class " +  getClazz().getName());
 		}
@@ -26,7 +26,7 @@ public class DefaultGrailsUrlMappingsClass extends AbstractGrailsClass implement
 	}
 
     public List getExcludePatterns() {
-        return  (List) getPropertyOrStaticPropertyOrFieldValue(EXCLUDE_PATTERNS, ArrayList.class);
+        return  (List) getStaticPropertyValue(EXCLUDE_PATTERNS, ArrayList.class);
     }
 
 }

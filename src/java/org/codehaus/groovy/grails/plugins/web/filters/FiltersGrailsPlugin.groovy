@@ -52,9 +52,7 @@ class FiltersGrailsPlugin {
             }
     }
 	def doWithSpring = {
-		filterInterceptor(org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor) {
-
-        }
+		filterInterceptor(org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor)
 
         for(filter in application.getArtefacts(TYPE)) {
             def callable = BEANS.curry(filter)

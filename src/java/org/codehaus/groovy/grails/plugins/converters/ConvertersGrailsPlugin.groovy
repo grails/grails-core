@@ -139,7 +139,7 @@ class ConvertersGrailsPlugin {
         if(JdkVersion.isAtLeastJava15()) {
             targetClasses << java.lang.Enum
         }
-        targetClasses.each {Class clazz ->
+        for(Class clazz in targetClasses) {
             MetaClassRegistry registry = GroovySystem.metaClassRegistry
             def mc = registry.getMetaClass(clazz)
             if (!(mc instanceof ExpandoMetaClass)) {
