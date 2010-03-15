@@ -34,7 +34,7 @@ class Book {
 	Long version
     Map simpleAuthors
 	Map authors 
-	def hasMany = [authors:Author]
+	static hasMany = [authors:Author]
 }
 class Author {
 	Long id

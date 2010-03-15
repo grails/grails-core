@@ -28,7 +28,7 @@ class Book {
 	Long id
 	Long version
 	List authors 
-	def hasMany = [authors:Author]
+	static hasMany = [authors:Author]
 }
 class Author {
 	Long id
