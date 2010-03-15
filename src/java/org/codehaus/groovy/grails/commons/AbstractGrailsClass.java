@@ -16,11 +16,13 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+import grails.util.GrailsUtil;
 import groovy.lang.*;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +47,7 @@ import org.springframework.beans.BeanWrapperImpl;
 public abstract class AbstractGrailsClass implements GrailsClass {
 	static final Log LOG=LogFactory.getLog(AbstractGrailsClass.class);
 	private final Class clazz;
-    private final BeanWrapper reference;
+    private BeanWrapper reference;
 	private final String fullName;
     private final String name;
     private final String packageName;
@@ -66,8 +68,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         if (clazz == null) {
             throw new IllegalArgumentException("Clazz parameter should not be null");
         }
-        this.clazz = clazz;
-        this.reference = new BeanWrapperImpl(newInstance());
+        this.clazz = clazz;        
         this.fullName = clazz.getName();
         this.packageName = ClassUtils.getPackageName(clazz);
         this.naturalName = GrailsNameUtils.getNaturalName(clazz.getName());
@@ -79,11 +80,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         } else {
         	this.logicalPropertyName=GrailsNameUtils.getPropertyNameRepresentation(this.name);
         }
-        this.classPropertyFetcher=new ClassPropertyFetcher(clazz, new ClassPropertyFetcher.ReferenceInstanceCallback() {
-			public Object getReferenceInstance() {
-				return AbstractGrailsClass.this.getReferenceInstance();
-			}
-		});
+        this.classPropertyFetcher= ClassPropertyFetcher.forClass(clazz);
     }
 
 	public String getShortName() {
@@ -135,7 +132,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public Object getReferenceInstance() {
-    	Object obj=getReference().getWrappedInstance();
+    	Object obj=newInstance();
 		if(obj instanceof GroovyObject) {
 			// GrailsClassUtils.getExpandoMetaClass(clazz) removed here
             ((GroovyObject)obj).setMetaClass(getMetaClass());
@@ -144,7 +141,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
     
     public PropertyDescriptor[] getPropertyDescriptors() {
-    	return BeanUtils.getPropertyDescriptors(clazz);
+    	return classPropertyFetcher.getPropertyDescriptors();
     }
     
     public Class getPropertyType(String name) {
@@ -174,6 +171,10 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @deprecated
      */
     public BeanWrapper getReference() {
+    	GrailsUtil.deprecated(AbstractGrailsClass.class, "getReference");
+    	if(reference == null) {
+    		this.reference = new BeanWrapperImpl(newInstance());
+    	}
         return this.reference;
     }
 
@@ -197,34 +198,59 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
     
     /**
+     * Get the value of the named static property
+     * 
+     * @param name
+     * @param type
+     * @return The property value or null
+     */    
+    public <T> T getStaticPropertyValue(String name, Class<T> type) {
+    	T value = classPropertyFetcher.getStaticPropertyValue(name, type);
+    	if(value == null) {
+    		return getGroovyProperty(name, type, true);
+    	}
+    	return value;
+    }
+    /**
      * Get the value of the named property, with support for static properties in both Java and Groovy classes
      * (which as of Groovy JSR 1.0 RC 01 only have getters in the metaClass)
      * @param name
      * @param type
      * @return The property value or null
      */
-    public Object getPropertyValue(String name, Class type) {
-    	Object value=classPropertyFetcher.getPropertyValue(name);
+    public <T> T getPropertyValue(String name, Class<T> type) {
+    	T value=classPropertyFetcher.getPropertyValue(name, type);
     	if (value==null) {
-            // Groovy workaround
-            Object inst = getReferenceInstance();
-            if (inst instanceof GroovyObject) {
-            	MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
-            	if(metaProperty != null) {
-            		value=metaProperty.getProperty(inst);
-            	}
-            }
+            // Groovy workaround           
+            return getGroovyProperty(name, type, false);
         }
         return returnOnlyIfInstanceOf(value, type);
     }
+
+	private <T> T  getGroovyProperty(String name,Class<T> type, boolean onlyStatic) {
+		Object value = null;
+		if (GroovyObject.class.isAssignableFrom(getClazz())) {
+			MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
+			if(metaProperty != null) {
+				int modifiers = metaProperty.getModifiers();
+				if(Modifier.isStatic(modifiers)) {
+					value = metaProperty.getProperty(clazz);
+				}
+				else if(!onlyStatic){
+		    		value=metaProperty.getProperty(getReferenceInstance());            			
+				}
+			}
+		}
+		return returnOnlyIfInstanceOf(value, type);
+	}
     
     public Object getPropertyValueObject(String name) {
     	return getPropertyValue(name, Object.class);
     }
 
-	private Object returnOnlyIfInstanceOf(Object value, Class type) {
+	private <T> T returnOnlyIfInstanceOf(Object value, Class<T> type) {
 		if ((value != null) && (type==Object.class || GrailsClassUtils.isGroovyAssignableFrom( type, value.getClass()))) {
-            return value;
+            return (T)value;
         } else {
             return null;
         }
@@ -242,8 +268,8 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     /* (non-Javadoc)
 	 * @see org.codehaus.groovy.grails.commons.GrailsClass#hasProperty(java.lang.String)
 	 */
-	public boolean hasProperty(String name) {
-		return getReference().isReadableProperty(name);
+	public boolean hasProperty(String name) {		
+		return classPropertyFetcher.isReadableProperty(name);
 	}
 
 	/**

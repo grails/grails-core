@@ -21,6 +21,8 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 import org.apache.commons.logging.Log;
@@ -65,7 +67,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 
     private final Set commandObjectActions = new HashSet();
     private final Set commandObjectClasses = new HashSet();
-    private Map flows = new HashMap();
+    private Map<String, PropertyDescriptor> flows = new HashMap<String, PropertyDescriptor>();
 
     public void setDefaultActionName(String defaultActionName) {
         this.defaultActionName = defaultActionName;
@@ -80,7 +82,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     public DefaultGrailsControllerClass(Class clazz) {
         super(clazz, CONTROLLER);
         this.uri = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName());
-        defaultActionName = (String)getPropertyOrStaticPropertyOrFieldValue(DEFAULT_CLOSURE_PROPERTY, String.class);
+        defaultActionName = getStaticPropertyValue(DEFAULT_CLOSURE_PROPERTY, String.class);
         if(defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
@@ -95,28 +97,19 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
         PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
-            Closure closure = (Closure)getPropertyOrStaticPropertyOrFieldValue(propertyDescriptor.getName(), Closure.class);
-            if (closure != null) {
+            Method readMethod = propertyDescriptor.getReadMethod();
+            if(readMethod != null && !Modifier.isStatic(readMethod.getModifiers())) {
+            	if(propertyDescriptor.getPropertyType() == Object.class) {
+                    String closureName = propertyDescriptor.getName();
+                    if(closureName.endsWith(FLOW_SUFFIX)) {
+                        String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
+                        flows.put(flowId, propertyDescriptor);
+                        closureName = flowId;
+                    }
+                    closureNames.add(closureName);
 
-                String closureName = propertyDescriptor.getName();
-                if(closureName.endsWith(FLOW_SUFFIX)) {
-                    String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
-                    flows.put(flowId, closure);
-                    closureName = flowId;
-                }
-                else {
-                    configureCommandObjectIfPresent(closure, closureName);
-                }
-
-                closureNames.add(closureName);
-
-                configureMappingForClosureProperty(controllerPath, closureName);
-            } else if (ALLOWED_HTTP_METHODS_PROPERTY.equals(propertyDescriptor.getName())) {
-                if (!GrailsClassUtils.isStaticProperty(clazz, ALLOWED_HTTP_METHODS_PROPERTY)) {
-                    log.error("The allowedMethods property in " + clazz.getName() + " should be declared static.  " +
-                            "The non static version is supported for now but has been deprecated and may not work in " +
-                            "future versions of Grails.");
-                }
+                    configureMappingForClosureProperty(controllerPath, closureName);            		
+            	}
             }
         }
 
@@ -138,19 +131,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             this.uri2viewMap.put(controllerPath, controllerPath + defaultActionName);
             this.uri2viewMap.put(uri, controllerPath +  defaultActionName);
             this.viewNames.put( defaultActionName, controllerPath + defaultActionName );
-        }
-    }
-
-    private void configureCommandObjectIfPresent(Closure closure, String closureName) {
-        Class[] parameterTypes = closure.getParameterTypes();
-        if(parameterTypes != null && parameterTypes.length > 0) {
-            for(int j = 0; j < parameterTypes.length; j++) {
-                Class parameterType = parameterTypes[j];
-                if(GroovyObject.class.isAssignableFrom(parameterType)) {
-                    commandObjectActions.add(closureName);
-                    commandObjectClasses.add(parameterType);
-                }
-            }
         }
     }
 
@@ -281,16 +261,29 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 		return null;
 	}
 
+	/**
+	 * @deprecated This method is deprecated and will be removed in a future version of Grails
+	 */
     public Set getCommandObjectActions() {
         return commandObjectActions;
     }
 
+	/**
+	 * @deprecated This method is deprecated and will be removed in a future version of Grails
+	 */    
     public Set getCommandObjectClasses() {
         return Collections.unmodifiableSet(commandObjectClasses);
     }
 
     public Map getFlows() {
-        return this.flows;
+    	Map closureFlows = new HashMap();
+    	for (String name : flows.keySet()) {
+			Closure c = getPropertyValue(name, Closure.class);
+			if(c!=null) {
+				closureFlows.put(name, c);
+			}
+		}
+        return closureFlows;
     }
 
     public boolean isFlowAction(String actionName) {

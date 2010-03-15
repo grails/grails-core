@@ -552,18 +552,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         public ComponentDomainClass(Class type) {
             super(type, "");
 
-            PropertyDescriptor[] descriptors;
+            PropertyDescriptor[] descriptors = getPropertyDescriptors();
 
-            try {
-                descriptors = BeanUtils.getPropertyDescriptors(type);
-            } catch (BeansException e) {
-                throw new GrailsDomainException("Failed to use class ["+type+"] as a component. Cannot introspect! " + e.getMessage(), e);
-            }
-
-            List tmp = (List)getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.TRANSIENT, List.class);
+            List tmp = getPropertyValue(GrailsDomainClassProperty.TRANSIENT, List.class);
             if(tmp!=null) this.transients = tmp;
             this.properties = createDomainClassProperties(this,descriptors);
-            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getReferenceInstance(), properties);
+            this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), properties);
             DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
         }
 
@@ -670,7 +664,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         public void refreshConstraints() {
             GrailsDomainClassProperty[] props = getPersistentProperties();
             this.constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
-                    getReferenceInstance(),
+                    getClazz(),
                     props);
         }
 

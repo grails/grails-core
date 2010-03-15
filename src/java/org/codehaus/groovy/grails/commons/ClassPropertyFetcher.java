@@ -3,18 +3,23 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.ReflectionUtils.MethodCallback;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * 
@@ -33,11 +38,47 @@ public class ClassPropertyFetcher {
 	final Map<String, PropertyFetcher> staticFetchers = new HashMap<String, PropertyFetcher>();
 	final Map<String, PropertyFetcher> instanceFetchers = new HashMap<String, PropertyFetcher>();
 	private final ReferenceInstanceCallback callback;
+	private PropertyDescriptor[] propertyDescriptors;
+
+	private static Map<Class, ClassPropertyFetcher> cachedClassPropertyFetchers = new ConcurrentHashMap<Class, ClassPropertyFetcher>();
+
+	public static void clearClassPropertyFetcherCache() {
+		cachedClassPropertyFetchers.clear();
+	}
+
+	public static ClassPropertyFetcher forClass(Class c) {
+		return forClass(c, null);
+	}
+
+	public static ClassPropertyFetcher forClass(final Class c,
+			ReferenceInstanceCallback callback) {
+		ClassPropertyFetcher cpf = cachedClassPropertyFetchers.get(c);
+		if (cpf == null) {
+			if (callback == null) {
+				callback = new ReferenceInstanceCallback() {
+					private Object o;
+
+					public Object getReferenceInstance() {
+						if (o == null)
+							o = BeanUtils.instantiate(c);
+						return o;
+					}
+				};
+			}
+			cpf = new ClassPropertyFetcher(c, callback);
+			cachedClassPropertyFetchers.put(c, cpf);
+		}
+		return cpf;
+	}
 
 	ClassPropertyFetcher(Class clazz, ReferenceInstanceCallback callback) {
 		this.clazz = clazz;
 		this.callback = callback;
 		init();
+	}
+
+	public PropertyDescriptor[] getPropertyDescriptors() {
+		return propertyDescriptors;
 	}
 
 	public boolean isReadableProperty(String name) {
@@ -48,15 +89,21 @@ public class ClassPropertyFetcher {
 	private void init() {
 		FieldCallback fieldCallback = new ReflectionUtils.FieldCallback() {
 			public void doWith(Field field) {
-				if (field.getName().indexOf('$') == -1) {
-					boolean staticField = Modifier.isStatic(field
-							.getModifiers());
+				if (field.isSynthetic())
+					return;
+				final int modifiers = field.getModifiers();
+				if (!Modifier.isPublic(modifiers))
+					return;
+
+				final String name = field.getName();
+				if (name.indexOf('$') == -1) {
+					boolean staticField = Modifier.isStatic(modifiers);
 					if (staticField) {
-						staticFetchers.put(field.getName(),
-								new FieldReaderFetcher(field, staticField));
+						staticFetchers.put(name, new FieldReaderFetcher(field,
+								staticField));
 					} else {
-						instanceFetchers.put(field.getName(),
-								new FieldReaderFetcher(field, staticField));
+						instanceFetchers.put(name, new FieldReaderFetcher(
+								field, staticField));
 					}
 				}
 			}
@@ -65,15 +112,23 @@ public class ClassPropertyFetcher {
 		MethodCallback methodCallback = new ReflectionUtils.MethodCallback() {
 			public void doWith(Method method) throws IllegalArgumentException,
 					IllegalAccessException {
-                if(!Modifier.isPublic(method.getModifiers())) return;
+				if (method.isSynthetic())
+					return;
+				if (!Modifier.isPublic(method.getModifiers()))
+					return;
 				if (Modifier.isStatic(method.getModifiers())
 						&& method.getReturnType() != Void.class) {
 					if (method.getParameterTypes().length == 0) {
 						String name = method.getName();
 						if (name.indexOf('$') == -1) {
-							if (name.length() > 3 && name.startsWith("get") && Character.isUpperCase(name.charAt(3))) {
+							if (name.length() > 3 && name.startsWith("get")
+									&& Character.isUpperCase(name.charAt(3))) {
 								name = name.substring(3);
-							} else if (name.length() > 2 && name.startsWith("is") && Character.isUpperCase(name.charAt(2)) && (method.getReturnType()==Boolean.class || method.getReturnType()==boolean.class)) {
+							} else if (name.length() > 2
+									&& name.startsWith("is")
+									&& Character.isUpperCase(name.charAt(2))
+									&& (method.getReturnType() == Boolean.class || method
+											.getReturnType() == boolean.class)) {
 								name = name.substring(2);
 							}
 							PropertyFetcher fetcher = new GetterPropertyFetcher(
@@ -89,29 +144,30 @@ public class ClassPropertyFetcher {
 
 		List<Class> allClasses = resolveAllClasses(clazz);
 		for (Class c : allClasses) {
-			Field[] fields=c.getDeclaredFields();
-			for(Field field : fields) {
+			Field[] fields = c.getDeclaredFields();
+			for (Field field : fields) {
 				try {
 					fieldCallback.doWith(field);
 				} catch (IllegalAccessException ex) {
-					throw new IllegalStateException("Shouldn't be illegal to access field '" + field.getName() + "': "
-							+ ex);
+					throw new IllegalStateException(
+							"Shouldn't be illegal to access field '"
+									+ field.getName() + "': " + ex);
 				}
 			}
-			Method[] methods=c.getDeclaredMethods();
-			for(Method method : methods) {
+			Method[] methods = c.getDeclaredMethods();
+			for (Method method : methods) {
 				try {
 					methodCallback.doWith(method);
 				} catch (IllegalAccessException ex) {
-					throw new IllegalStateException("Shouldn't be illegal to access method '" + method.getName()
-							+ "': " + ex);
+					throw new IllegalStateException(
+							"Shouldn't be illegal to access method '"
+									+ method.getName() + "': " + ex);
 				}
 			}
 		}
 
-		PropertyDescriptor[] descriptors = BeanUtils
-				.getPropertyDescriptors(clazz);
-		for (PropertyDescriptor desc : descriptors) {
+		this.propertyDescriptors = BeanUtils.getPropertyDescriptors(clazz);
+		for (PropertyDescriptor desc : propertyDescriptors) {
 			Method readMethod = desc.getReadMethod();
 			if (readMethod != null) {
 				boolean staticReadMethod = Modifier.isStatic(readMethod
@@ -146,6 +202,10 @@ public class ClassPropertyFetcher {
 
 	public Object getPropertyValue(String name, boolean onlyInstanceProperties) {
 		PropertyFetcher fetcher = resolveFetcher(name, onlyInstanceProperties);
+		return getPropertyValueWithFetcher(name, fetcher);
+	}
+
+	private Object getPropertyValueWithFetcher(String name, PropertyFetcher fetcher) {
 		if (fetcher != null) {
 			try {
 				return fetcher.get(callback);
@@ -156,6 +216,27 @@ public class ClassPropertyFetcher {
 		}
 		return null;
 	}
+
+	public <T> T getStaticPropertyValue(String name, Class<T> c) {
+		PropertyFetcher fetcher = staticFetchers.get(name);
+		if(fetcher != null) {
+			Object v = getPropertyValueWithFetcher(name, fetcher);
+			return returnOnlyIfInstanceOf(v, c);
+		}
+		return null;
+	}
+	public <T> T getPropertyValue(String name, Class<T> c) {
+		return returnOnlyIfInstanceOf(getPropertyValue(name, false), c);
+	}
+	
+	private <T> T returnOnlyIfInstanceOf(Object value, Class<T> type) {
+		if ((value != null) && (type==Object.class || GrailsClassUtils.isGroovyAssignableFrom( type, value.getClass()))) {
+            return (T)value;
+        } else {
+            return null;
+        }
+	}
+	
 
 	private PropertyFetcher resolveFetcher(String name,
 			boolean onlyInstanceProperties) {
@@ -172,7 +253,7 @@ public class ClassPropertyFetcher {
 	public Class getPropertyType(String name) {
 		return getPropertyType(name, false);
 	}
-	
+
 	public Class getPropertyType(String name, boolean onlyInstanceProperties) {
 		PropertyFetcher fetcher = resolveFetcher(name, onlyInstanceProperties);
 		if (fetcher != null) {
@@ -209,8 +290,12 @@ public class ClassPropertyFetcher {
 			if (staticMethod) {
 				return readMethod.invoke(null, (Object[]) null);
 			} else {
-				return readMethod.invoke(callback.getReferenceInstance(),
-						(Object[]) null);
+				if (callback != null) {
+					return readMethod.invoke(callback.getReferenceInstance(),
+							(Object[]) null);
+				} else {
+					return null;
+				}
 			}
 		}
 
@@ -235,7 +320,11 @@ public class ClassPropertyFetcher {
 			if (staticField) {
 				return field.get(null);
 			} else {
-				return field.get(callback.getReferenceInstance());
+				if (callback != null) {
+					return field.get(callback.getReferenceInstance());
+				} else {
+					return null;
+				}
 			}
 		}
 
@@ -244,6 +333,3 @@ public class ClassPropertyFetcher {
 		}
 	}
 }
-
-
-
