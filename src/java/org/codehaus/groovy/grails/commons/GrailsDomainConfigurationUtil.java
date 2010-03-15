@@ -324,8 +324,9 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      */    
 	public static Map<String, ConstrainedProperty> evaluateConstraints(
-			final Class<?> theClass, GrailsDomainClassProperty[] properties,
-			Map<String, Object> defaultConstraints) {
+														final Class<?> theClass, 
+														GrailsDomainClassProperty[] properties,
+														Map<String, Object> defaultConstraints) {
 		boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
         LinkedList<?> classChain = getSuperClassChain(theClass);
         Class<?> clazz;
@@ -410,7 +411,19 @@ public class GrailsDomainConfigurationUtil {
      */
     public static Map<String, ConstrainedProperty> evaluateConstraints(Class theClass)  {
         return evaluateConstraints(theClass, null, null);
+    }
+    
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param theClass  The class to evaluate constraints for
+     * @return A Map of constraints
+     *          When the bean cannot be introspected
+     */
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class theClass, GrailsDomainClassProperty[] properties)  {
+        return evaluateConstraints(theClass, properties, null);
     }    
+    
 
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
