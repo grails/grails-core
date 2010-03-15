@@ -22,12 +22,14 @@ import groovy.lang.Closure;
 import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -134,51 +136,56 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public WebApplicationContext configure(ServletContext context, boolean loadExternalBeans) {
         Assert.notNull(application);
 
-        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parent, application.getClassLoader());
-        springConfig.setBeanFactory(new ReloadAwareAutowireCapableBeanFactory());
-        
-        if (context != null) {
-            springConfig.setServletContext(context);
-            this.pluginManager.setServletContext(context);
-        }
-        if (!this.pluginManager.isInitialised()) {
-            this.pluginManager.loadPlugins();
-        }
-
-        if (!application.isInitialised()) {
-            pluginManager.doArtefactConfiguration();
-            application.initialise();
-        }
-
-        this.pluginManager.registerProvidedArtefacts(application);
-
-        registerParentBeanFactoryPostProcessors(springConfig);
-        
-        this.pluginManager.doRuntimeConfiguration(springConfig);
-
-        // configure scaffolding
-        LOG.debug("[RuntimeConfiguration] Processing additional external configurations");
-
-        if (loadExternalBeans) {
-            doPostResourceConfiguration(application,springConfig);
-        }
-
-        reset();
-
-
         // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
-        WebApplicationContext ctx = (WebApplicationContext) springConfig.getApplicationContext();
+		WebApplicationContext ctx;
+		try {
+			WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parent, application.getClassLoader());
+			springConfig.setBeanFactory(new ReloadAwareAutowireCapableBeanFactory());
+			
+			if (context != null) {
+			    springConfig.setServletContext(context);
+			    this.pluginManager.setServletContext(context);
+			}
+			if (!this.pluginManager.isInitialised()) {
+			    this.pluginManager.loadPlugins();
+			}
 
-        this.application.setMainContext(ctx);
-        this.pluginManager.setApplicationContext(ctx);
-        this.pluginManager.doDynamicMethods();
+			if (!application.isInitialised()) {
+			    pluginManager.doArtefactConfiguration();
+			    application.initialise();
+			}
 
-        ctx.publishEvent(new GrailsContextEvent(ctx, GrailsContextEvent.DYNAMIC_METHODS_REGISTERED));
+			this.pluginManager.registerProvidedArtefacts(application);
+
+			registerParentBeanFactoryPostProcessors(springConfig);
+			
+			this.pluginManager.doRuntimeConfiguration(springConfig);
+
+			// configure scaffolding
+			LOG.debug("[RuntimeConfiguration] Processing additional external configurations");
+
+			if (loadExternalBeans) {
+			    doPostResourceConfiguration(application,springConfig);
+			}
+
+			reset();
 
 
-        performPostProcessing(ctx);
+			ctx = (WebApplicationContext) springConfig.getApplicationContext();
 
-        application.refreshConstraints();
+			this.application.setMainContext(ctx);
+			this.pluginManager.setApplicationContext(ctx);
+			this.pluginManager.doDynamicMethods();
+
+			ctx.publishEvent(new GrailsContextEvent(ctx, GrailsContextEvent.DYNAMIC_METHODS_REGISTERED));
+
+
+			performPostProcessing(ctx);
+
+			application.refreshConstraints();
+		} finally {
+			ClassPropertyFetcher.clearClassPropertyFetcherCache();
+		}
 
         return ctx;
     }

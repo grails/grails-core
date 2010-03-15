@@ -112,7 +112,8 @@ public class GroovyPagesGrailsPlugin {
         }
         else {
             if (developmentMode) {
-                groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) {
+                groovyPageResourceLoader(org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader) { bean ->
+                	bean.lazyInit = true
                     BuildSettings settings = BuildSettingsHolder.settings
                     def location = settings?.baseDir ? GroovyPagesGrailsPlugin.transformToValidLocation(settings.baseDir.absolutePath) : '.'
                     baseResource = "file:$location"
@@ -136,10 +137,11 @@ public class GroovyPagesGrailsPlugin {
         }
 
         // Setup the main templateEngine used to render GSPs
-        groovyPagesTemplateEngine(org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine) {
+        groovyPagesTemplateEngine(org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine) { bean ->
             classLoader = ref("classLoader")
             if (developmentMode || warDeployedWithReload) {
                 resourceLoader = groovyPageResourceLoader
+                bean.lazyInit = true
             }
             if (enableReload) {
                 reloadEnabled = enableReload
@@ -153,12 +155,13 @@ public class GroovyPagesGrailsPlugin {
         }
 
         // Setup the GroovyPagesUriService
-        groovyPagesUriService(org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService) {
-        	
+        groovyPagesUriService(org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService) { bean ->        
+        	bean.lazyInit = true	        	
         }
         
         // Configure a Spring MVC view resolver
-        jspViewResolver(GrailsViewResolver) {
+        jspViewResolver(GrailsViewResolver) { bean ->
+        	bean.lazyInit = true
             viewClass = org.springframework.web.servlet.view.JstlView.class
             prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
             suffix = ".jsp"
@@ -172,6 +175,7 @@ public class GroovyPagesGrailsPlugin {
         for(taglib in application.tagLibClasses) {
             "${taglib.fullName}"(taglib.clazz) { bean ->
                    bean.autowire = true
+                   bean.lazyInit = true
                    // Taglib scoping support could be easily added here. Scope could be based on a static field in the taglib class.
 				   //bean.scope = 'request'
             }
@@ -317,7 +321,6 @@ public class GroovyPagesGrailsPlugin {
                     throw new MissingMethodException(name, delegate.class, args)
                 }
             }
-            ctx.getBean(taglib.fullName).metaClass = mc
         }
 
     }

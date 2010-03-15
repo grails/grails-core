@@ -26,8 +26,8 @@ class Task {
 	Long version
 	Set tasks
 	Task task
-	def belongsTo = Task 
-	def hasMany = [tasks:Task]
+	static belongsTo = Task 
+	static hasMany = [tasks:Task]
 }
 '''
 		)

@@ -19,6 +19,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 import grails.util.GrailsUtil
+import groovy.lang.MissingMethodException;
+
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
@@ -100,7 +102,6 @@ class ControllersGrailsPlugin {
                     bean.scope = "prototype"
                     bean.autowire = "byName"
                 }
-
             }
 
         }
@@ -239,97 +240,90 @@ class ControllersGrailsPlugin {
                 superClass = superClass.superclass
             }
 
-            // look for actions that accept command objects and override
-            // each of the actions to make command objects binding before executing
-            for (actionName in controller.commandObjectActions) {
-                def originalAction = controller.getPropertyValue(actionName)
-                def paramTypes = originalAction.getParameterTypes()
-                def closureName = actionName
-                def commandObjectBindingAction = {Object[] varArgs ->
+            // a reusable action for handling command object binding
+            def commandObjectBindingAction = {Closure originalAction, String closureName, Object[] varArgs  ->
 
-                    def commandObjects = []
-                    for (v in varArgs) {
-                        commandObjects << v
-                    }
-                    def counter = 0
-                    for (paramType in paramTypes) {
-
-                        if (GroovyObject.class.isAssignableFrom(paramType)) {
-                            try {
-                                def commandObject;
-                                if (counter < commandObjects.size()) {
-                                    if (paramType.isInstance(commandObjects[counter])) {
-                                        commandObject = commandObjects[counter]
-                                    }
-                                }
-
-                                if (!commandObject) {
-                                    commandObject = paramType.newInstance()
-                                    ctx.autowireCapableBeanFactory?.autowireBeanProperties(commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-                                    commandObjects << commandObject
-                                }
-                                def params = RCH.currentRequestAttributes().params
-                                bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
-                                def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
-                                def constrainedProperties = commandObject.constraints?.values()
-                                constrainedProperties.each {constrainedProperty ->
-                                    constrainedProperty.messageSource = ctx.getBean("messageSource")
-                                    constrainedProperty.validate(commandObject, commandObject.getProperty(constrainedProperty.getPropertyName()), errors);
-                                }
-                                commandObject.errors = errors
-                            } catch (Exception e) {
-                                throw new ControllerExecutionException("Error occurred creating command object.", e);
-                            }
-                        }
-                        counter++
-                    }
-                    GCU.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName).call(* commandObjects)
-                }
-                mc."${GrailsClassUtils.getGetterName(actionName)}" = {->
-                    def actionDelegate = commandObjectBindingAction.clone()
-                    actionDelegate.delegate = delegate
-                    actionDelegate
-                }
+            	def paramTypes = originalAction.getParameterTypes()
+	            def commandObjects = []
+	            for (v in varArgs) {
+	                commandObjects << v
+	            }
+	            def counter = 0
+	            for (paramType in paramTypes) {
+	
+	                if (GroovyObject.class.isAssignableFrom(paramType)) {	                	
+	                    try {
+	                    	WebMetaUtils.enhanceCommandObject(ctx, paramType)
+	                        def commandObject;
+	                        if (counter < commandObjects.size()) {
+	                            if (paramType.isInstance(commandObjects[counter])) {
+	                                commandObject = commandObjects[counter]
+	                            }
+	                        }
+	
+	                        if (!commandObject) {
+	                            commandObject = paramType.newInstance()
+	                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+	                            commandObjects << commandObject
+	                        }
+	                        def params = RCH.currentRequestAttributes().params
+	                        bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
+	                        def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
+	                        def constrainedProperties = commandObject.constraints?.values()
+	                        for( constrainedProperty in constrainedProperties) {
+	                            constrainedProperty.messageSource = ctx.getBean("messageSource")
+	                            constrainedProperty.validate(commandObject, commandObject.getProperty(constrainedProperty.getPropertyName()), errors);
+	                        }
+	                        commandObject.errors = errors
+	                    } catch (Exception e) {
+	                        throw new ControllerExecutionException("Error occurred creating command object.", e);
+	                    }
+	                }
+	                counter++
+	            }
+	            def callable = GCU.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName)
+	            callable.call(* commandObjects)
+            }
+            
+            // add invoke method implementation for handling command objects
+            controllerClass.metaClass {
+            	invokeMethod { String name, args ->
+            		if(mc.hasProperty( delegate, name)) {
+            			def callable = delegate."$name"
+            			if(callable instanceof Closure) {
+            				def paramTypes = callable.parameterTypes
+            				if( paramTypes && paramTypes[0] != Object[].class) {
+            					def commandObjectAction = commandObjectBindingAction.curry( callable, name )
+	            	            mc."${GrailsClassUtils.getGetterName(name)}" = {->
+	                                def actionDelegate = commandObjectAction.clone()
+	                                actionDelegate.delegate = delegate
+	                                actionDelegate
+            					}
+            					commandObjectAction.delegate = delegate
+            					return commandObjectAction.call(args)
+            				}
+            				else {            					
+            					return callable.call( args )
+            				}
+            			}
+            			else {
+            				def mm = mc.getMetaMethod(name, args)
+            				if(mm)
+            					return mm.invoke(delegate, args)
+            				else
+            					return mc.invokeMissingMethod(delegate, name, args)
+            			}
+            		}
+            		else {
+        				def mm = mc.getMetaMethod(name, args)
+        				if(mm)
+        					return mm.invoke(delegate, args)
+        				else            			
+        					return mc.invokeMissingMethod(delegate, name, args)
+            		}            		
+            	}            	
             }
 
-            // look for actions that accept command objects and configure
-            // each of the command object types
-            def commandObjectClasses = controller.commandObjectClasses
-            for(c in commandObjectClasses) {
-                def commandObjectClass = c
-                def commandObject = commandObjectClass.newInstance()
-                def commandObjectMetaClass = commandObjectClass.metaClass
-                commandObjectMetaClass.setErrors = {Errors errors ->
-                    RCH.currentRequestAttributes().setAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
-                }
-                commandObjectMetaClass.getErrors = {->
-                    def errors = RCH.currentRequestAttributes().getAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
-					if(!errors) {
-						errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
-						RCH.currentRequestAttributes().setAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
-					}
-					return errors
-                }
-
-                commandObjectMetaClass.hasErrors = {->
-                    errors?.hasErrors() ? true : false
-                }
-                commandObjectMetaClass.validate = {->
-                    DomainClassPluginSupport.validateInstance(delegate, ctx)
-                }
-                def validationClosure = GCU.getStaticPropertyValue(commandObjectClass, 'constraints')
-                if (validationClosure) {
-                    def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
-                    validationClosure.setDelegate(constrainedPropertyBuilder)
-                    validationClosure()
-                    commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
-                } else {
-                    commandObjectMetaClass.constraints = [:]
-                }
-                commandObjectMetaClass.clearErrors = {->
-                    delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
-                }
-            }
         }
 
     }

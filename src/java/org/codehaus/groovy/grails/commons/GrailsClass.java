@@ -135,5 +135,5 @@ public interface GrailsClass {
      *
      * @return  The property value
      */
-    Object getPropertyValue(String name, Class type);
+    <T> T getPropertyValue(String name, Class<T> type);
 }

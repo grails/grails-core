@@ -49,7 +49,8 @@ class ServicesGrailsPlugin {
 
 		    def scope = serviceClass.getPropertyValue("scope")
 
-			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
+			"${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) { bean ->
+				bean.lazyInit = true
 				targetObject = ref("grailsApplication", true)
 				targetMethod = "getArtefact"
 				arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
@@ -61,7 +62,9 @@ class ServicesGrailsPlugin {
 				props."*"="PROPAGATION_REQUIRED"
 				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
 				    if(scope) bean.scope = scope
-					target = { innerBean ->   
+				    bean.lazyInit = true
+					target = { innerBean ->
+					    innerBean.lazyInit = true
 						innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
 						innerBean.factoryMethod = "newInstance"
 						innerBean.autowire = "byName"
@@ -75,6 +78,7 @@ class ServicesGrailsPlugin {
 			else {
 				"${serviceClass.propertyName}"(serviceClass.getClazz()) { bean ->
 					bean.autowire =  true
+					bean.lazyInit = true
                     if(scope) {
                         bean.scope = scope
                     }

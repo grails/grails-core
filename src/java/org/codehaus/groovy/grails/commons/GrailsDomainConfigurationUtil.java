@@ -189,12 +189,11 @@ public class GrailsDomainConfigurationUtil {
      * @return The association map
      */
     public static Map<?, ?> getAssociationMap(Class domainClass) {
-        Map<?, ?> associationMap = (Map<?, ?>) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.RELATES_TO_MANY, Map.class);
+    	ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(domainClass);
+    	
+    	Map<?, ?> associationMap = cpf.getPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
         if (associationMap == null) {
-            associationMap = (Map<?, ?>) GrailsClassUtils.getPropertyValueOfNewInstance(domainClass, GrailsDomainClassProperty.HAS_MANY, Map.class);
-            if (associationMap == null) {
-                associationMap = Collections.EMPTY_MAP;
-            }
+            associationMap = Collections.EMPTY_MAP;
         }
         return associationMap;
     }
@@ -206,8 +205,9 @@ public class GrailsDomainConfigurationUtil {
      * @return The mappedBy map
      */
     public static Map<?, ?> getMappedByMap(Class<?> domainClass) {
-        Map<?, ?> mappedByMap = (Map<?, ?>) GrailsClassUtils.getPropertyValueOfNewInstance(
-      		  domainClass, GrailsDomainClassProperty.MAPPED_BY, Map.class);
+    	ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(domainClass);
+    	
+        Map<?, ?> mappedByMap = cpf.getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
         if (mappedByMap == null) {
             return Collections.EMPTY_MAP;
         }
@@ -311,18 +311,34 @@ public class GrailsDomainConfigurationUtil {
      */
     public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
         final Class<?> theClass = instance.getClass();
-        boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
+        return evaluateConstraints(theClass, properties, defaultConstraints);
+    }
+
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param theClass  The domain class to evaluate constraints for
+     * @param properties The properties of the instance
+     * @param defaultConstraints A map that defines the default constraints
+     * 
+     * @return A Map of constraints
+     */    
+	public static Map<String, ConstrainedProperty> evaluateConstraints(
+														final Class<?> theClass, 
+														GrailsDomainClassProperty[] properties,
+														Map<String, Object> defaultConstraints) {
+		boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
         LinkedList<?> classChain = getSuperClassChain(theClass);
         Class<?> clazz;
 
-        ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(instance);
+        ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(theClass);
 
         // Evaluate all the constraints closures in the inheritance chain
         for (Object aClassChain : classChain) {
             clazz = (Class<?>) aClassChain;
             Closure c = (Closure) GrailsClassUtils.getStaticPropertyValue(clazz, PROPERTY_NAME);
             if (c == null) {
-                c = getConstraintsFromScript(instance);
+                c = getConstraintsFromScript(theClass);
             }
 
             if (c != null) {
@@ -361,7 +377,7 @@ public class GrailsDomainConfigurationUtil {
         }
 
         return constrainedProperties;
-    }
+	}
 
     /**
      * Evaluates the constraints closure to build the list of constraints
@@ -385,6 +401,29 @@ public class GrailsDomainConfigurationUtil {
     public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance)  {
         return evaluateConstraints(instance, null, null);
     }
+    
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param theClass  The class to evaluate constraints for
+     * @return A Map of constraints
+     *          When the bean cannot be introspected
+     */
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class theClass)  {
+        return evaluateConstraints(theClass, null, null);
+    }
+    
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param theClass  The class to evaluate constraints for
+     * @return A Map of constraints
+     *          When the bean cannot be introspected
+     */
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class theClass, GrailsDomainClassProperty[] properties)  {
+        return evaluateConstraints(theClass, properties, null);
+    }    
+    
 
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
@@ -460,9 +499,9 @@ public class GrailsDomainConfigurationUtil {
         return classChain;
     }
 
-    private static Closure getConstraintsFromScript(Object object) {
+    private static Closure getConstraintsFromScript(Class theClass) {
         // Fallback to xxxxConstraints.groovy script for Java domain classes
-        String className = object.getClass().getName();
+        String className = theClass.getName();
         String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY;
         InputStream stream = GrailsDomainConfigurationUtil.class.getClassLoader().getResourceAsStream(constraintsScript);
 
@@ -480,13 +519,13 @@ public class GrailsDomainConfigurationUtil {
                 return null;
             }
             catch (CompilationFailedException e) {
-                LOG.error("Compilation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                LOG.error("Compilation error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
             } catch (InstantiationException e) {
-                LOG.error("Instantiation error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                LOG.error("Instantiation error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
             } catch (IllegalAccessException e) {
-                LOG.error("Illegal access error evaluating constraints for class ["+object.getClass()+"]: " + e.getMessage(),e );
+                LOG.error("Illegal access error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
             }
         }

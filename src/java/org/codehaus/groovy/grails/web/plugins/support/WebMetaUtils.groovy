@@ -16,10 +16,15 @@
 package org.codehaus.groovy.grails.web.plugins.support
 
 import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.springframework.beans.BeanWrapperImpl
+import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport;
+import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody
@@ -38,6 +43,48 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
  */
 class WebMetaUtils {
 
+	/**
+	 * Enhances a command object with new capabilities such as validation and constraints handling
+	 * 
+	 * @param commandObjectClass The command object class
+	 */
+	static void enhanceCommandObject(ApplicationContext ctx, Class commandObjectClass) {
+		
+        def commandObjectMetaClass = commandObjectClass.metaClass
+        if(!commandObjectMetaClass.respondsTo( "grailsEnhanced" )) {
+            commandObjectMetaClass.setErrors = {Errors errors ->
+	            RCH.currentRequestAttributes().setAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
+	        }
+	        commandObjectMetaClass.getErrors = {->
+	            def errors = RCH.currentRequestAttributes().getAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
+				if(!errors) {
+					errors =  new BeanPropertyBindingResult( delegate, delegate.getClass().getName())
+					RCH.currentRequestAttributes().setAttribute("${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
+				}
+				return errors
+	        }
+	
+	        commandObjectMetaClass.hasErrors = {->
+	            errors?.hasErrors() ? true : false
+	        }
+	        commandObjectMetaClass.validate = {->
+	            DomainClassPluginSupport.validateInstance(delegate, ctx)
+	        }
+	        def validationClosure = GrailsClassUtils.getStaticPropertyValue(commandObjectClass, 'constraints')
+	        if (validationClosure) {
+	            def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObjectClass)
+	            validationClosure.setDelegate(constrainedPropertyBuilder)
+	            validationClosure()
+	            commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
+	        } else {
+	            commandObjectMetaClass.constraints = [:]
+	        }
+	        commandObjectMetaClass.clearErrors = {->
+	            delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
+	        }	
+	        commandObjectMetaClass.grailsEnhanced = {-> true }        	
+        }
+	}
 
     /**
      * This creates the difference dynamic methods and properties on the controllers. Most methods

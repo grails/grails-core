@@ -46,17 +46,20 @@ class DomainClassGrailsPlugin {
                 bean.singleton = false
                 bean.autowire = "byName"
             }
-            "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) {
+            "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
                 targetObject = ref("grailsApplication", true)
                 targetMethod = "getArtefact"
+                bean.lazyInit = true
                 arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
             }
-            "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) {
+            "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
                 targetObject = ref("${dc.fullName}DomainClass")
+                bean.lazyInit = true
                 targetMethod = "getClazz"
             }
-            "${dc.fullName}Validator"(GrailsDomainClassValidator) {
+            "${dc.fullName}Validator"(GrailsDomainClassValidator) { bean ->
                 messageSource = ref("messageSource")
+                bean.lazyInit = true
                 domainClass = ref("${dc.fullName}DomainClass")
                 grailsApplication = ref("grailsApplication", true)
             }

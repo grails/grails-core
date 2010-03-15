@@ -40,7 +40,7 @@ class Task {
 	Long id
 	Long version
 	Set tasks
-	def hasMany = [tasks:Task]
+	static hasMany = [tasks:Task]
 }
 '''
 		)

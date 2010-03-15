@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.validation;
 import grails.util.GrailsUtil;
 import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
+
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
@@ -32,17 +34,20 @@ import java.util.*;
  */
 public class ConstrainedPropertyBuilder extends BuilderSupport {
 
-	private Object target;
-	private BeanWrapper bean;
 	private Map<String, ConstrainedProperty> constrainedProperties = new HashMap<String, ConstrainedProperty>();
     private List<String> sharedConstraints = new ArrayList<String>();
 	private int order = 1;
+	private Class targetClass;
+	private ClassPropertyFetcher classPropertyFetcher;
     private static final String SHARED_CONSTRAINT = "shared";
 
-    public ConstrainedPropertyBuilder(Object target) {
-		super();
-		this.target = target;
-		this.bean = new BeanWrapperImpl(target);
+    public ConstrainedPropertyBuilder(Object target) {		
+		this(target.getClass());
+	}
+    
+    public ConstrainedPropertyBuilder(Class targetClass) {
+		this.targetClass = targetClass;
+		this.classPropertyFetcher = ClassPropertyFetcher.forClass(targetClass);
 	}
 
 
@@ -59,9 +64,8 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 			if(constrainedProperties.containsKey(property)) {
 				cp = constrainedProperties.get(property);
 			}
-			else {
-				PropertyDescriptor pd = this.bean.getPropertyDescriptor(property);
-				cp = new ConstrainedProperty(this.target.getClass(), property, pd.getPropertyType());
+			else {				
+				cp = new ConstrainedProperty(this.targetClass, property, classPropertyFetcher.getPropertyType(property));
 				cp.setOrder(order++);
 				constrainedProperties.put( property, cp );
 			}
@@ -79,7 +83,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 else {
                     if (ConstrainedProperty.hasRegisteredConstraint(constraintName)) {
                         // constraint is registered but doesn't support this property's type
-                        GrailsUtil.warn("Property [" + cp.getPropertyName() + "] of domain class " + this.target.getClass().getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation.");
+                        GrailsUtil.warn("Property [" + cp.getPropertyName() + "] of domain class " + targetClass.getName() + " has type [" + cp.getPropertyType().getName() + "] and doesn't support constraint [" + constraintName + "]. This constraint will not be checked during validation.");
                     }
                     else {
                         // in the case where the constraint is not supported we still retain meta data
@@ -91,12 +95,12 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 			return cp;
 		}
 		catch(InvalidPropertyException ipe) {
-			throw new MissingMethodException((String)name,target.getClass(),new Object[]{ attributes});
+			throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes});
 		}		
 	}
 
 	protected Object createNode(Object name, Map attributes, Object value) {
-		throw new MissingMethodException((String)name,target.getClass(),new Object[]{ attributes,value});
+		throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes,value});
 	}
 
 	protected void setParent(Object parent, Object child) {

@@ -49,7 +49,7 @@ class MappedU2mAuthor {
 	Long version
     String name
 	Set books
-	def hasMany = [books:MappedU2mBook]
+	static hasMany = [books:MappedU2mBook]
 
     static mapping = {
         books joinTable:[name:"um_author_books", key:'um_author_id', column:'um_book_id']

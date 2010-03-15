@@ -65,7 +65,7 @@ import grails.persistence.*
 @Entity
 class ListMappingBook {
 	List authors
-	def hasMany = [authors:ListMappingAuthor]
+	static hasMany = [authors:ListMappingAuthor]
 
 }
 

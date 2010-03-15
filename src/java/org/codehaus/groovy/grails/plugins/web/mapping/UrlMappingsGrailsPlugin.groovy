@@ -38,11 +38,15 @@ class UrlMappingsGrailsPlugin {
 	def dependsOn = [core:version]
 
 	def doWithSpring = {
-		grailsUrlMappingsHolderBean(UrlMappingsHolderFactoryBean) {
+		grailsUrlMappingsHolderBean(UrlMappingsHolderFactoryBean) { bean ->
+			bean.lazyInit = true
             grailsApplication = ref("grailsApplication", true)
         }
-        urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, grailsUrlMappingsHolderBean)
-        grailsUrlMappingsHolder(ProxyFactoryBean) {
+        urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, grailsUrlMappingsHolderBean) { bean ->
+        	bean.lazyInit = true
+        }
+        grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
+        	bean.lazyInit = true
             targetSource = urlMappingsTargetSource
             proxyInterfaces = [org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder]
         }
