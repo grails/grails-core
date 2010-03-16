@@ -195,7 +195,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
         String contextPath = getContextPath(webRequest, argMap);
 
-        String var = String.valueOf(argMap.get(ARGUMENT_VAR));
+        String var = null;
+        if(argMap.containsKey(ARGUMENT_VAR)) {
+        	var = String.valueOf(argMap.get(ARGUMENT_VAR));
+        }
+        
         // get the template uri
         String templateUri = webRequest.getAttributes().getTemplateURI(controller, templateName);
 
