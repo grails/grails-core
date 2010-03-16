@@ -20,6 +20,17 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
@@ -28,8 +39,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -37,22 +50,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.codehaus.groovy.grails.web.plugins.support.*;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPluginTests;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.sun.java.swing.plaf.windows.WindowsMenuUI;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.LinkedHashMap;
 
 /**
  * <p>This is a helper class that does the main job of dealing with Grails web requests
