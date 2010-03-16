@@ -573,11 +573,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && DomainClassArtefactHandler.isDomainClass(referencedType);
     }
 
-    // TODO: remove
-//    private boolean canDecorateWithLazyList(Collection c, Class referencedType) {
-//        return (c instanceof List) && !(c instanceof LazyList) && DomainClassArtefactHandler.isDomainClass(referencedType);
-//    }
-
     private Object findIndexedValue(Collection c, int index) {
         if(index < c.size()) {
             if(c instanceof List) {
@@ -727,45 +722,47 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         collection.clear();
         final Class associatedType = getReferencedTypeForCollection(pv.getName(), getTarget());
         final boolean isArray = v != null && v.getClass().isArray();
-        if(isDomainAssociation(associatedType)) {
-            if(isArray) {
+        final PropertyEditor propertyEditor = findCustomEditor(collection.getClass(), pv.getName());
+        if (propertyEditor == null) {
+            if (isDomainAssociation(associatedType)) {
+                if(isArray) {
 
-                Object[] identifiers = (Object[])v;
-                for (Object id : identifiers) {
-                    if (id != null) {
-                        associateObjectForId(pv, id,associatedType);
+                    Object[] identifiers = (Object[])v;
+                    for (Object id : identifiers) {
+                        if (id != null) {
+                            associateObjectForId(pv, id,associatedType);
+                        }
                     }
-                }
 
-                mpvs.removePropertyValue(pv);
-            }
-            else if(v!=null && (v instanceof String)) {
-                associateObjectForId(pv,v, associatedType);
-                mpvs.removePropertyValue(pv);
-            }
-        }
-        else if(GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
-            if(isArray) {
-                Object[] values = (Object[])v;
-                List list = collection instanceof List ? (List)collection : null;
-                for (int i = 0; i < values.length; i++) {
-                    Object value = values[i];
-                    try {
-                        Object newValue = getTypeConverter().convertIfNecessary(value, associatedType);
-                        if(list!=null) {
-                            if(i>list.size()-1) {
-                                list.add(i,newValue);
+                    mpvs.removePropertyValue(pv);
+                }
+                else if(v!=null && (v instanceof String)) {
+                    associateObjectForId(pv,v, associatedType);
+                    mpvs.removePropertyValue(pv);
+                }
+            } else if (GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
+                if(isArray) {
+                    Object[] values = (Object[])v;
+                    List list = collection instanceof List ? (List)collection : null;
+                    for (int i = 0; i < values.length; i++) {
+                        Object value = values[i];
+                        try {
+                            Object newValue = getTypeConverter().convertIfNecessary(value, associatedType);
+                            if(list!=null) {
+                                if(i>list.size()-1) {
+                                    list.add(i,newValue);
+                                }
+                                else {
+                                    list.set(i, newValue);
+                                }
                             }
                             else {
-                                list.set(i, newValue);
+                                collection.add(newValue);
                             }
                         }
-                        else {
-                            collection.add(newValue);
+                        catch (TypeMismatchException e) {
+                            // ignore
                         }
-                    }
-                    catch (TypeMismatchException e) {
-                        // ignore
                     }
                 }
             }

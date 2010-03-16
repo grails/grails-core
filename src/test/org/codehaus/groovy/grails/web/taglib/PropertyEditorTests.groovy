@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import java.beans.PropertyEditorSupport
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
-import java.beans.PropertyEditor
-import java.beans.PropertyEditorSupport
+import org.springframework.beans.factory.config.ConstructorArgumentValues
 import org.springframework.beans.factory.support.RootBeanDefinition
 
 /**
@@ -13,11 +14,11 @@ import org.springframework.beans.factory.support.RootBeanDefinition
  * Created: May 1, 2009
  */
 
-public class PropertyEditorTests extends AbstractGrailsTagTests{
+public class PropertyEditorTests extends AbstractGrailsTagTests {
 
     public void onSetUp() {
         gcl = new GroovyClassLoader(this.getClass().classLoader)
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 import org.codehaus.groovy.grails.web.taglib.*
 
@@ -25,7 +26,27 @@ import org.codehaus.groovy.grails.web.taglib.*
 class PropertyEditorDomain {
     CustomProperty custom
 }
-''')
+
+class CollectionPropertyEditorDomain {
+    Long id
+    Long version
+    List tags
+    static hasMany = [tags: String]
+}
+
+class Tag {
+    Long id
+    Long version
+    String name
+}
+
+class OneToManyPropertyEditorDomain {
+    Long id
+    Long version
+    List tags
+    static hasMany = [tags: Tag]
+}
+'''
     }
 
     void testUseCustomPropertyEditor() {
@@ -40,20 +61,63 @@ class PropertyEditorDomain {
         def template = '<g:fieldValue bean="${obj}" field="custom" />'
 
         assertOutputEquals 'custom:good', template, [obj:obj] 
-        
-        
     }
 
+    void testUseCustomPropertyEditorOnCollectionOfSimpleType() {
+        appCtx.registerBeanDefinition("testSimpleListEditorRegistrar", new RootBeanDefinition(TestSimpleListEditorRegistrar))
+
+        def obj = ga.getDomainClass("CollectionPropertyEditorDomain").clazz.newInstance()
+        obj.properties = [tags: "grails, groovy"]
+
+        assertEquals(["grails", "groovy"], obj.tags)
+
+        def template = '<g:fieldValue bean="${obj}" field="tags" />'
+        assertOutputEquals "grails, groovy", template, [obj: obj]
+    }
+
+    void testUseCustomPropertyEditorOnCollectionOfDomainType() {
+        def bean = new RootBeanDefinition(TestDomainListEditorRegistrar)
+        def args = new ConstructorArgumentValues()
+        args.addGenericArgumentValue ga
+        bean.constructorArgumentValues = args
+        appCtx.registerBeanDefinition("testDomainListEditorRegistrar", bean)
+
+        def obj = ga.getDomainClass("OneToManyPropertyEditorDomain").clazz.newInstance()
+        obj.properties = [tags: "grails, groovy"]
+
+        assertEquals(["grails", "groovy"], obj.tags.collect {it.name})
+
+        def template = '<g:fieldValue bean="${obj}" field="tags" />'
+        assertOutputEquals "grails, groovy", template, [obj: obj]
+    }
 
 }
-class TestCustomPropertyEditorRegistrar implements PropertyEditorRegistrar {
 
+class TestCustomPropertyEditorRegistrar implements PropertyEditorRegistrar {
     public void registerCustomEditors(PropertyEditorRegistry registry) {
         registry.registerCustomEditor CustomProperty, new TestCustomPropertyEditor()
     }
 }
-class TestCustomPropertyEditor extends PropertyEditorSupport {
 
+class TestSimpleListEditorRegistrar implements PropertyEditorRegistrar {
+    public void registerCustomEditors(PropertyEditorRegistry registry) {
+        registry.registerCustomEditor List, new TestSimpleListEditor()
+    }
+}
+
+class TestDomainListEditorRegistrar implements PropertyEditorRegistrar {
+    private final GrailsApplication ga
+
+    TestDomainListEditorRegistrar(GrailsApplication ga) {
+        this.ga = ga
+    }
+
+    public void registerCustomEditors(PropertyEditorRegistry registry) {
+        registry.registerCustomEditor List, new TestDomainListEditor(type: ga.getDomainClass("Tag").clazz)
+    }
+}
+
+class TestCustomPropertyEditor extends PropertyEditorSupport {
     public String getAsText() {
         return "custom:${value?.name}"
     }
@@ -64,9 +128,32 @@ class TestCustomPropertyEditor extends PropertyEditorSupport {
         value = v
         value.name = s
     }
-
-
 }
+
 class CustomProperty {
     String name
+}
+
+class TestSimpleListEditor extends PropertyEditorSupport {
+    String getAsText() {
+        value?.join(", ")
+    }
+
+    void setAsText(String text) {
+        value = text.split(/,\s*/) as List
+    }
+}
+
+class TestDomainListEditor extends PropertyEditorSupport {
+    Class type
+
+    String getAsText() {
+        value?.name?.join(", ")
+    }
+
+    void setAsText(String text) {
+        value = text.split(/,\s*/).collect {
+            type.newInstance(name: it)
+        }
+    }
 }
