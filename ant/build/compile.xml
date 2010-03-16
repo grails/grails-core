@@ -1,21 +1,19 @@
 <project name="grails-compile">
 
-    <taskdef name="groovyc"
-             classname="org.codehaus.groovy.ant.Groovyc">
+    <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc">
         <classpath>
             <fileset dir="${grails.lib}" includes="groovy-all*.jar"/>
         </classpath>
     </taskdef>
 
     <target name="build-init">
-		<mkdir dir="${grails.build}"/> 
-		<mkdir dir="${grails.test.build}"/>
-		<mkdir dir="${grails.test.reports}"/>
-		<mkdir dir="${grails.dist}"/>
+        <mkdir dir="${grails.build}"/>
+        <mkdir dir="${grails.test.build}"/>
+        <mkdir dir="${grails.test.reports}"/>
         <mkdir dir="${grails.stubs}" />
     </target>
 
-	<target name="build" depends="build-init" description="compile Java and Groovy sources" >
+    <target name="build" depends="build-init" description="compile Java and Groovy sources" >
 
         <copy todir="${grails.build}">
             <fileset dir="${grails.src}" includes="**/*.properties" />
@@ -45,14 +43,14 @@
 
         <mkdir dir="${grails.build}/META-INF"  />
         <manifest file="${grails.build}/META-INF/MANIFEST.MF">
-          <attribute name="Built-By" value="${user.name}"/>
-          <attribute name="Implementation-Title" value="Grails"/>
-          <attribute name="Implementation-Version" value="${grails.version}"/>
-          <attribute name="Implementation-Vendor" value="grails.org"/>
+            <attribute name="Built-By" value="${user.name}"/>
+            <attribute name="Implementation-Title" value="Grails"/>
+            <attribute name="Implementation-Version" value="${grails.version}"/>
+            <attribute name="Implementation-Vendor" value="grails.org"/>
         </manifest>
 
         <copy todir="${grails.build}">
-            <fileset dir="${grails.src}" includes="**/*.xsd" />
+            <fileset dir="${grails.src}" includes="**/*.xsd, **/*.dtd" />
         </copy>
 
         <copy todir="${grails.build}/META-INF">
@@ -61,7 +59,7 @@
                 <include name="*.schemas" />
             </fileset>
         </copy>
-        
+
     </target>
 
     <target name="build-scripts" depends="build">
@@ -74,6 +72,5 @@
             <src path="${basedir}/scripts"/>
         </groovyc>
     </target>
-
 
 </project>
