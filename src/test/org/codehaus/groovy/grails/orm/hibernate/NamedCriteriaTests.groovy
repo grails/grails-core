@@ -309,6 +309,23 @@ class Publication {
         assertEquals 'Some New Book', publication.title
     }
 
+    void testThatParameterToGetIsConverted() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+    	
+        def now = new Date()
+        def newPublication = publicationClass.newInstance(title: "Some New Book", datePublished: now - 10).save()
+        assert newPublication
+        def oldPublication = publicationClass.newInstance(title: "Some Old Book",
+        datePublished: now - 900).save()
+        assert oldPublication
+    					
+        session.clear()
+    				
+        def publication = publicationClass.recentPublications.get(newPublication.id.toString())
+        assert publication
+        assertEquals 'Some New Book', publication.title
+    }
+    
     void testGetReturnsNull() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 

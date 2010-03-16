@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 
 /**
  * A builder that implements the ORM named queries DSL
@@ -35,7 +36,7 @@ class HibernateNamedQueriesBuilder {
      * @param ctx the main spring application context
      */
     HibernateNamedQueriesBuilder(domainClass, grailsApplication, ctx) {
-        this.domainClass = domainClass
+		this.domainClass = domainClass
 
         def classLoader = grailsApplication.classLoader
         def sessionFactory = ctx.getBean('sessionFactory')
@@ -63,7 +64,7 @@ class HibernateNamedQueriesBuilder {
         domainClass.metaClass.static."get${propertyName}" = {->
             // creating a new proxy each time because the proxy class has
             // some state that cannot be shared across requests (namedCriteriaParams)
-            new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass.clazz, dynamicMethods: dynamicMethods)
+            new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass, dynamicMethods: dynamicMethods)
         }
     }
 
@@ -103,7 +104,7 @@ class NamedCriteriaProxy {
                 firstResult paramsMap.offset
             }
         }
-        domainClass.withCriteria(listClosure)
+        domainClass.clazz.withCriteria(listClosure)
     }
 
     def call(Object[] params) {
@@ -119,13 +120,14 @@ class NamedCriteriaProxy {
 
     def get(id) {
         def closureClone = getPreparedCriteriaClosure()
+		id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
             closureClone.delegate = delegate
             closureClone()
             eq 'id', id
             uniqueResult = true
         }
-        domainClass.withCriteria(getClosure)
+        domainClass.clazz.withCriteria(getClosure)
     }
 
     def count(Closure additionalCriteriaClosure = null) {
@@ -143,7 +145,7 @@ class NamedCriteriaProxy {
                 rowCount()
             }
         }
-        domainClass.withCriteria(countClosure)
+        domainClass.clazz.withCriteria(countClosure)
     }
 
     def findWhere(params) {
@@ -163,7 +165,7 @@ class NamedCriteriaProxy {
                 uniqueResult = true
             }
         }
-        domainClass.withCriteria(queryClosure)
+        domainClass.clazz.withCriteria(queryClosure)
     }
 
 
@@ -173,7 +175,7 @@ class NamedCriteriaProxy {
 
         if (method) {
             def preparedClosure = getPreparedCriteriaClosure()
-            return method.invoke(domainClass, methodName, preparedClosure, args)
+            return method.invoke(domainClass.clazz, methodName, preparedClosure, args)
         }
         throw new MissingMethodException(methodName, NamedCriteriaProxy, args)
     }
