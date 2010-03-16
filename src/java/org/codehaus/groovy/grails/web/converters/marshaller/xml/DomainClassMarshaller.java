@@ -16,8 +16,18 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -29,15 +39,11 @@ import org.hibernate.collection.AbstractPersistentCollection;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
-import java.util.*;
-
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
 public class DomainClassMarshaller implements ObjectMarshaller<XML> {
-
-    private final Log log = LogFactory.getLog(getClass());
 
     private final boolean includeVersion;
 
@@ -112,7 +118,8 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
                             asShortObject(referenceObject, xml, referencedDomainClass.getIdentifier(), referencedDomainClass);
                         } else {
                             GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
-                            String refPropertyName = referencedDomainClass.getPropertyName();
+                            @SuppressWarnings("unused")
+							String refPropertyName = referencedDomainClass.getPropertyName();
                             if (referenceObject instanceof Collection) {
                                 Collection o = (Collection) referenceObject;
                                 for (Object el : o) {

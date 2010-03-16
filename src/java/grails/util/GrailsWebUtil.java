@@ -16,7 +16,6 @@ package grails.util;
 
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;

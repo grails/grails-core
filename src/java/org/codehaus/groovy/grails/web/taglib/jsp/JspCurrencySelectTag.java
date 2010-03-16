@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspCurrencySelectTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "currencySelect";
+	private static final long serialVersionUID = -7627197546193185836L;
+
+	private static final String TAG_NAME = "currencySelect";
 
     private String name;
     private String value;

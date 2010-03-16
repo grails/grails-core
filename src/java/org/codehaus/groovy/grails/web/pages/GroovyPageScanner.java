@@ -108,18 +108,6 @@ class GroovyPageScanner implements Tokens {
 			char c = text.charAt(end1++);
 			char c1 = left > 1 ? text.charAt(end1) : 0;
 			char c2 = left > 2 ? text.charAt(end1 + 1) : 0;
-            char c3 = left > 3 ? text.charAt(end1 + 2) : 0;
-            
-            StringBuffer chars = new StringBuffer()
-                                       .append(c)
-                                       .append(c1)
-                                       .append(c2);
-            String startTag = chars.toString();
-
-            String endTag =    chars
-                                 .append(c3)
-                                 .toString();
-
             if (str1) {
 				if (c == '\\') end1++;
 				else if (c == '\'') str1 = false;

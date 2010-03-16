@@ -20,6 +20,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.exceptions.CompilationFailedException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
@@ -42,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GrailsClassLoader extends GroovyClassLoader {
 
-    private ClassLoader parent;
     private GrailsResourceLoader grailsResourceLoader;
     private Map innerClassLoaderMap = new ConcurrentHashMap();
     private Map<String,MultipleCompilationErrorsException> compilationErrors = new ConcurrentHashMap<String,MultipleCompilationErrorsException>();
@@ -52,7 +52,6 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
     public GrailsClassLoader(ClassLoader parent, CompilerConfiguration config, GrailsResourceLoader resourceLoader) {
         super(parent, config);
-        this.parent = parent;
         this.grailsResourceLoader = resourceLoader;
     }
 
@@ -76,7 +75,7 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
             try {
                 inputStream = resourceURL.getInputStream();
-                Class reloadedClass = innerLoader.parseClass(inputStream, name);
+                Class reloadedClass = innerLoader.parseClass(DefaultGroovyMethods.getText(inputStream), name);
                 compilationErrors.remove(name);
                 innerClassLoaderMap.put(name, innerLoader);
                 return reloadedClass;

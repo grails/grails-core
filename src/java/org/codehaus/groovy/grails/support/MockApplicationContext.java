@@ -198,7 +198,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
 
-    public Object getBean(String name, Object[] args) throws BeansException {
+    public Object getBean(String name, Object... args) throws BeansException {
         return getBean(name);
     }
 

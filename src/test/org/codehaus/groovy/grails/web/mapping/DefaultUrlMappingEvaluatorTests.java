@@ -5,13 +5,13 @@ import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
-import junit.framework.TestCase;
+
+import java.util.List;
+
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.mock.web.MockServletContext;
-
-import java.util.List;
 
 public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests {
 

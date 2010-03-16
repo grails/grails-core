@@ -5,6 +5,7 @@ import groovy.lang.Closure;
 
 import javax.servlet.ServletContext;
 
+@SuppressWarnings("serial")
 public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements GrailsBootstrapClass {
 
 	

@@ -73,7 +73,6 @@ public final class GrailsDomainBinder {
     private static final char UNDERSCORE = '_';
     private static final String CASCADE_ALL = "all";
     private static final String CASCADE_SAVE_UPDATE = "save-update";
-    private static final String CASCADE_MERGE = "merge";
     private static final String CASCADE_NONE = "none";
     private static final String BACKTICK = "`";
 
@@ -211,7 +210,9 @@ public final class GrailsDomainBinder {
     }
 
     static class ListSecondPass extends GrailsCollectionSecondPass {
-        public ListSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
+		private static final long serialVersionUID = -3024674993774205193L;
+
+		public ListSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
             super(property, mappings, coll);
         }
 
@@ -227,7 +228,10 @@ public final class GrailsDomainBinder {
 
     static class MapSecondPass extends GrailsCollectionSecondPass {
 
-        public MapSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
+		private static final long serialVersionUID = -3244991685626409031L;
+
+
+		public MapSecondPass(GrailsDomainClassProperty property, Mappings mappings, Collection coll) {
             super(property, mappings, coll);
         }
 
@@ -410,8 +414,6 @@ public final class GrailsDomainBinder {
             boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
 
             if (referenced != null && !referenced.isRoot() && !tablePerSubclass) {
-                // NOTE: Work around for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
-                Mapping referencedMapping = getMapping(referenced);
                 Mapping rootMapping = getRootMapping(referenced);
                 String discriminatorColumnName = RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME;
                 
@@ -947,10 +949,6 @@ public final class GrailsDomainBinder {
                 !shouldCollectionBindWithJoinColumn(property)) && !Map.class.isAssignableFrom(property.getType()) && !property.isManyToMany() && !property.isBasicCollectionType();
     }
 
-    private static boolean isListOrMapCollection(GrailsDomainClassProperty property) {
-        return Map.class.isAssignableFrom(property.getType()) || List.class.isAssignableFrom(property.getType());
-    }
-
     private static String getNameForPropertyAndPath(GrailsDomainClassProperty property, String path) {
         String propertyName;
         if (StringHelper.isNotEmpty(path)) {
@@ -1218,7 +1216,6 @@ public final class GrailsDomainBinder {
 
         for (Iterator i = subClasses.iterator(); i.hasNext();) {
             GrailsDomainClass sub = (GrailsDomainClass) i.next();
-            Set subSubs = sub.getSubClasses();
             if (sub.getClazz().getSuperclass().equals(domainClass.getClazz())) {
                 bindSubClass(sub, parent, mappings);
             }
@@ -1875,7 +1872,6 @@ public final class GrailsDomainBinder {
 
         Property prop = new Property();
 
-        PropertyConfig config = getPropertyConfig(grailsProperty);
         prop.setValue(value);
 
         bindProperty(grailsProperty, prop, mappings);
@@ -1914,7 +1910,6 @@ public final class GrailsDomainBinder {
      */
     private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one, Mappings mappings) {
         one.setReferencedEntityName(currentGrailsProp.getReferencedPropertyType().getName());
-        PropertyConfig config = getPropertyConfig(currentGrailsProp);
         one.setIgnoreNotFound(true);
     }
 

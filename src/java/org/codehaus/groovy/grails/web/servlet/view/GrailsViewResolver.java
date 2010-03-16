@@ -63,7 +63,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     // no need for static cache since GrailsViewResolver is in app context
     private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
     private static final char DOT = '.';
-    private static final char SLASH = '/';
     private GrailsPluginManager pluginManager;
 
 

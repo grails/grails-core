@@ -28,7 +28,6 @@ import org.springframework.webflow.execution.RequestContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.binding.*
 import org.springframework.web.context.request.RequestContextHolder as RCH
-import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty
 import org.springframework.validation.Errors
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 

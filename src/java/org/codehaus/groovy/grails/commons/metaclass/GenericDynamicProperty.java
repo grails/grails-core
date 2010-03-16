@@ -17,8 +17,6 @@ package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.MissingPropertyException;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

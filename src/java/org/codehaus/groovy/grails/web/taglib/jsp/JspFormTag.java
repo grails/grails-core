@@ -21,7 +21,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspFormTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "form";
+	private static final long serialVersionUID = -3045238592311090749L;
+
+	private static final String TAG_NAME = "form";
 
     private String controller;
     private String action;

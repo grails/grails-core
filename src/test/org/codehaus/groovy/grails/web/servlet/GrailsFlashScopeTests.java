@@ -125,11 +125,13 @@ public class GrailsFlashScopeTests extends TestCase {
             this.value = value;
         }
 
-        public Object getErrors() {
+        @SuppressWarnings("unused")
+		public Object getErrors() {
             return errors;
         }
 
-        public void setErrors(Object errors) {
+        @SuppressWarnings("unused")
+		public void setErrors(Object errors) {
             this.errors = errors;
         }
 

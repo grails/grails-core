@@ -62,7 +62,8 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
                 registerTagLib((GrailsTagLibClass)grailsClass);
             }
             namespaceDispatchers.put(GroovyPage.TEMPLATE_NAMESPACE, new NamespacedTagDispatcher(GroovyPage.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this) {
-                @Override
+                @SuppressWarnings("serial")
+				@Override
                 public Object invokeMethod(final String name, Object args) {
 
                     Map attrs = new HashMap() {{

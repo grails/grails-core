@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
  */
 public class GrailsQueryException extends GrailsException {
 
+	private static final long serialVersionUID = 775603608315415077L;
+
 	public GrailsQueryException() {
 		super();
 	}

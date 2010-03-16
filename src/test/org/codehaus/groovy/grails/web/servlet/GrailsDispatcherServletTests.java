@@ -40,7 +40,8 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
  */
 public class GrailsDispatcherServletTests extends TestCase {
 
-    public void testHandlerMapping() throws Exception {
+    @SuppressWarnings("serial")
+	public void testHandlerMapping() throws Exception {
         final MockApplicationContext appCtx = new MockApplicationContext();
 
         try {

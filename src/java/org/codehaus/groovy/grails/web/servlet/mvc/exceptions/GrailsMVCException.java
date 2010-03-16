@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
  */
 public abstract class GrailsMVCException extends GrailsException {
 
+	private static final long serialVersionUID = 8489513412930525030L;
+
 	public GrailsMVCException() {
 		super();
 	}

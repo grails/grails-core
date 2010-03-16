@@ -24,6 +24,8 @@ package org.codehaus.groovy.grails.exceptions;
 public class DataSourceRequiredPropertyMissingException extends
 		GrailsDataSourceException {
 
+	private static final long serialVersionUID = -1852968042072007818L;
+
 	public DataSourceRequiredPropertyMissingException() {
 		super();
 	}

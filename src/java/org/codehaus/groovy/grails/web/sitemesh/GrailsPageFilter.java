@@ -28,8 +28,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
@@ -61,8 +59,6 @@ import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
  * @since Apr 19, 2006
  */
 public class GrailsPageFilter extends SiteMeshFilter {
-
-    private static final Log LOG = LogFactory.getLog( GrailsPageFilter.class );
 
     private static final String ALREADY_APPLIED_KEY = "com.opensymphony.sitemesh.APPLIED_ONCE";
     private static final String HTML_EXT = ".html";

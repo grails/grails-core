@@ -396,7 +396,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param artefactType The type of the artefact as defined by the ArtefactHandler
      * @return The number of registered artefacts
      */
-    private int getArtefactCount(String artefactType) {
+    @SuppressWarnings("unused")
+	private int getArtefactCount(String artefactType) {
         ArtefactInfo info = getArtefactInfo(artefactType);
         return info == null ? 0 : info.getClasses().length;
     }
@@ -574,7 +575,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         
     }
 
-    private GrailsClass getFirstArtefact(String artefactType) {
+    @SuppressWarnings("unused")
+	private GrailsClass getFirstArtefact(String artefactType) {
         ArtefactInfo info = getArtefactInfo(artefactType);
         // This will throw AIOB if we have none
         return info == null ? null : info.getGrailsClasses()[0];
@@ -863,7 +865,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public void setBeanClassLoader(ClassLoader classLoader) {
-        ClassLoader beanClassLoader = classLoader;
     }
 
     public void addOverridableArtefact(Class artefact) {

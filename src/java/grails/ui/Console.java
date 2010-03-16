@@ -48,7 +48,7 @@ public class Console extends groovy.ui.Console {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
 		final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
 		GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
 		
@@ -57,7 +57,10 @@ public class Console extends groovy.ui.Console {
 		b.setVariable("ctx", ctx);
 		Console c = new Console(app.getClassLoader(), b);
         c.setBeforeExecution(new Closure(c) {
-            public Object doCall() {
+			private static final long serialVersionUID = 4773257809080703257L;
+
+			@SuppressWarnings("unused")
+			public Object doCall() {
                 Map beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
                 for (Iterator i = beans.values().iterator(); i.hasNext();) {
                     PersistenceContextInterceptor interceptor = (PersistenceContextInterceptor) i.next();
@@ -67,7 +70,9 @@ public class Console extends groovy.ui.Console {
             }
         });
         c.setAfterExecution(new Closure(c) {
-            public Object doCall() {
+			private static final long serialVersionUID = 7292229320100706377L;
+
+			public Object doCall() {
                 Map beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
                 for (Iterator i = beans.values().iterator(); i.hasNext();) {
                     PersistenceContextInterceptor interceptor = (PersistenceContextInterceptor) i.next();

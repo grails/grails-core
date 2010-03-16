@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  */
 public class IncompatibleParameterCountException extends GrailsMVCException {
 
+	private static final long serialVersionUID = -4640531429945836401L;
+
 	public IncompatibleParameterCountException() {
 		super();
 	}

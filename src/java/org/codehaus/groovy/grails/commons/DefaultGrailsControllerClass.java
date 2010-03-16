@@ -23,10 +23,15 @@ import groovy.lang.MetaProperty;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -42,12 +47,9 @@ import org.springframework.util.AntPathMatcher;
 public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 		implements GrailsControllerClass {
 
-    private final static Log log = LogFactory.getLog(DefaultGrailsControllerClass.class);
-
     public static final String CONTROLLER = "Controller";
 
     private static final String SLASH = "/";
-    private static final String VIEW = "View";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
 	private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
 

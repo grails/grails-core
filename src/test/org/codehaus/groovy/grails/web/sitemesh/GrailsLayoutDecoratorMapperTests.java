@@ -1,33 +1,33 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
+
+import javax.servlet.ServletContext;
+
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.ServletContext;
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
 
     private GrailsWebRequest buildMockRequest() throws Exception {
         MockApplicationContext appCtx = new MockApplicationContext();
-        appCtx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
         appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService());
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);

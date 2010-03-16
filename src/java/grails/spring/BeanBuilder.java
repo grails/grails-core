@@ -41,6 +41,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -314,10 +315,6 @@ public class BeanBuilder extends GroovyObjectSupport {
 		private MetaClass metaClass;
 		private BeanConfiguration beanConfig;
 
-		public ConfigurableRuntimeBeanReference(String beanName, BeanConfiguration beanConfig) {
-			this(beanName, beanConfig, false);			
-		}
-
 		public ConfigurableRuntimeBeanReference(String beanName, BeanConfiguration beanConfig, boolean toParent) {
 			super(beanName, toParent);
 			this.beanConfig = beanConfig;
@@ -360,18 +357,21 @@ public class BeanBuilder extends GroovyObjectSupport {
 				this.propertyName = propertyName;
 			}
 
+			@SuppressWarnings("unused")
 			public void leftShift(Object value) {
 				InvokerHelper.invokeMethod(propertyValue, "leftShift", value);
                 updateDeferredProperties(value);
 			}
 
-            public boolean add(Object value) {
+            @SuppressWarnings("unused")
+			public boolean add(Object value) {
                 boolean retval = (Boolean) InvokerHelper.invokeMethod(propertyValue, "add", value);
                 updateDeferredProperties(value);
                 return retval;
             }
 
-            public boolean addAll(Collection values) {
+            @SuppressWarnings("unused")
+			public boolean addAll(Collection values) {
                 boolean retval = (Boolean) InvokerHelper.invokeMethod(propertyValue, "addAll", values);
                 for (Object value : values) {
                     updateDeferredProperties(value);
@@ -442,6 +442,8 @@ public class BeanBuilder extends GroovyObjectSupport {
 	 */
 	public void loadBeans(Resource[] resources) throws IOException {
 		Closure beans = new Closure(this){
+			private static final long serialVersionUID = -2778328821635253740L;
+
 			public Object call(Object[] args) {
 				invokeBeanDefiningClosure((Closure)args[0]);
 				return null;
@@ -464,7 +466,8 @@ public class BeanBuilder extends GroovyObjectSupport {
         for (Resource resource : resources) {
             try {
                 GroovyShell shell = classLoader != null ? new GroovyShell(classLoader, b) : new GroovyShell(b);
-                shell.evaluate(resource.getInputStream());
+                
+                shell.evaluate(new InputStreamReader(resource.getInputStream()));
             }
             catch (Throwable e) {
                 throw new BeanDefinitionParsingException(new Problem("Error evaluating bean definition script: " + e.getMessage(), new Location(resource), null, e));

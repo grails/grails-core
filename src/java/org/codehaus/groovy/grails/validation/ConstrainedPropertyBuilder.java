@@ -18,13 +18,14 @@ import grails.util.GrailsUtil;
 import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
 
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.InvalidPropertyException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.beans.PropertyDescriptor;
-import java.util.*;
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.springframework.beans.InvalidPropertyException;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances 

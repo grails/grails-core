@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public abstract class GrailsDataSourceException extends GrailsException {
 
+	private static final long serialVersionUID = 3587287560396124552L;
+
 	public GrailsDataSourceException() {
 		super();
 	}

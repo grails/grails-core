@@ -55,7 +55,8 @@ import java.util.regex.Matcher;
  */
 public class RegexValidator implements Serializable {
 
-    private final Pattern[] patterns;
+	private static final long serialVersionUID = -8965678328995950151L;
+	private final Pattern[] patterns;
 
     /**
      * Construct a <i>case sensitive</i> validator for a single

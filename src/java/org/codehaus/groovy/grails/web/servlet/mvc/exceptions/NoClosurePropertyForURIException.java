@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  */
 public class NoClosurePropertyForURIException extends GrailsMVCException {
 
+	private static final long serialVersionUID = -5736020052704063202L;
+
 	public NoClosurePropertyForURIException() {
 		super();
 	}

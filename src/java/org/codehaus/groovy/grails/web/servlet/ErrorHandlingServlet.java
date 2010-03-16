@@ -54,7 +54,8 @@ import java.util.Collections;
  * @since 1.0-RC1
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
-    private static final String TEXT_HTML = "text/html";
+	private static final long serialVersionUID = 8792197458391395589L;
+	private static final String TEXT_HTML = "text/html";
     private static final String GSP_SUFFIX = ".gsp";
     private static final String JSP_SUFFIX = ".jsp";
 

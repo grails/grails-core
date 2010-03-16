@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *        Created: Mar 6, 2007
  *        Time: 8:21:00 AM
  */
+@SuppressWarnings("serial")
 public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
 
@@ -204,7 +205,6 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         if(null == mappingKeysSet) return null;
 		
     	UrlMappingKey[] mappingKeys = (UrlMappingKey[]) mappingKeysSet.toArray(new UrlMappingKey[mappingKeysSet.size()]);
-    	Set mappingConstraintNames = new HashSet();
     	for(int i=mappingKeys.length;i>0;i--){
     		UrlMappingKey mappingKey = mappingKeys[i-1];
     		if(params.keySet().containsAll(mappingKey.paramNames)) {

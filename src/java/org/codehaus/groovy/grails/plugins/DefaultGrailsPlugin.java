@@ -58,6 +58,7 @@ import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
@@ -689,7 +690,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                     }
 
                     GroovyClassLoader gcl = new GroovyClassLoader(application.getClassLoader());
-                    initialisePlugin(gcl.parseClass(conn.getInputStream()));
+                    initialisePlugin(gcl.parseClass(DefaultGroovyMethods.getText(conn.getInputStream())));
                     pluginLastModified = currentModified;
                     return true;
                 }
@@ -981,7 +982,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    public Map notifyOfEvent(int eventKind, final Object source) {
+    @SuppressWarnings("serial")
+	public Map notifyOfEvent(int eventKind, final Object source) {
         Map<String, Object> event = new HashMap<String, Object>() {{
             put(PLUGIN_CHANGE_EVENT_SOURCE, source);
             put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);

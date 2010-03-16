@@ -521,6 +521,7 @@ public class GroovyPageParser implements Tokens {
 	 * Write to the outputstream ONLY if the string is not blank, else we hold
 	 * it back in case it is to be swallowed between tags
 	 */
+	@SuppressWarnings("unused")
 	private void bufferedPrintlnToResponse(String s) {
 		if (currentlyBufferingWhitespace) {
 			whitespaceBuffer.append(s);

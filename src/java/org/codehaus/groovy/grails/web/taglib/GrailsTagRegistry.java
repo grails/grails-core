@@ -14,12 +14,10 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * A registry for holding all Grails tag implementations

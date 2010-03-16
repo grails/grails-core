@@ -28,8 +28,10 @@ import java.lang.reflect.Method;
  *        <p/>
  *        Created: Apr 22, 2009
  */
+@SuppressWarnings("serial")
 public class GroovyAwareNamedTransactionAttributeSource extends NameMatchTransactionAttributeSource {
-    private static final Set NONTRANSACTIONAL_GROOVY_METHODS = new HashSet() {{
+	private static final long serialVersionUID = 3519687998898725875L;
+	private static final Set NONTRANSACTIONAL_GROOVY_METHODS = new HashSet() {{
         add("invokeMethod");
         add("getMetaClass");
         add("getProperty");

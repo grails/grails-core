@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.control.SourceUnit;
 
 /**
  * Mainly just a marker interface for implementations that perform injection

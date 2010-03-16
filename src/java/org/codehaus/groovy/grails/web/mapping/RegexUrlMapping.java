@@ -66,7 +66,6 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private static final String CAPTURED_WILDCARD = "(*)";
     private static final String SLASH = "/";
     private static final char QUESTION_MARK = '?';
-    private static final String ENTITY_AMPERSAND = "&amp;";
     private static final char AMPERSAND = '&';
     private static final String DOUBLE_WILDCARD = "**";
     private static final String DEFAULT_ENCODING = "UTF-8";
@@ -494,7 +493,9 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         for (ConstrainedProperty constraint : constraints) {
             if (constraint.getPropertyName().equals(name)) {
                 return new Closure(this) {
-                    public Object call(Object[] objects) {
+					private static final long serialVersionUID = -2404119898659287216L;
+
+					public Object call(Object[] objects) {
                         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
                         return webRequest.getParams().get(name);
                     }

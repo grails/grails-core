@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public abstract class GrailsException extends RuntimeException {
 
+	private static final long serialVersionUID = 8909019964961528326L;
+
 	public GrailsException() {
 		super();
 	}

@@ -44,7 +44,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
     private UrlMappingEvaluator mappingEvaluator;
-    private UrlMappingParser urlParser = new DefaultUrlMappingParser();
     private ServletContext servletContext;
 
     public Object getObject() throws Exception {

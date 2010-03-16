@@ -107,9 +107,5 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader{
             return GrailsResourceUtils.WEB_APP_DIR+location;
         }
     }
-
-    private boolean isNotMessageBundle(String location) {
-        return !location.endsWith(".properties");
-    }
 }
 

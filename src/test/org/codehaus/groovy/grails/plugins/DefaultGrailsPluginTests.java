@@ -79,9 +79,11 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
     }
 
 	public void testDefaultGrailsPlugin() {
-		 GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
+		 @SuppressWarnings("unused")
+		GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
 		 
 		 try {
+			@SuppressWarnings("unused")
 			GrailsPlugin notVersionPlugin = new DefaultGrailsPlugin(notVersion, ga);
 			fail("Should have thrown IllegalArgumentException for unversioned plugin");
 		} catch (PluginException e) {
@@ -89,6 +91,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 		}
 		
 		try {
+			@SuppressWarnings("unused")
 			GrailsPlugin notPlugin = new DefaultGrailsPlugin(notPluginClass, ga);
 			fail("Should have thrown an exception for invalid plugin");
 		} catch (IllegalArgumentException e) {

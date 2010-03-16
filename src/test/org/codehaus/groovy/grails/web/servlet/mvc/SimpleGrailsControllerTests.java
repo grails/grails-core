@@ -18,12 +18,24 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import grails.util.GrailsWebUtil;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletResponse;
+
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.*;
+
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -37,9 +49,6 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.*;
 
 /**
  *
@@ -139,9 +148,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 
 		BeanDefinition grailsApplicationBean = new RootBeanDefinition(DefaultGrailsApplication.class,args,propValues);
 		localContext.registerBeanDefinition( "grailsApplication", grailsApplicationBean );
-        ConstructorArgumentValues conArgs = new ConstructorArgumentValues();
 
-        localContext.registerBeanDefinition(PluginMetaManager.BEAN_ID, new RootBeanDefinition(DefaultPluginMetaManager.class,null,null));
         this.localContext.refresh();
 
 		this.grailsApplication = (GrailsApplication)localContext.getBean("grailsApplication");

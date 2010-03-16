@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public class GrailsDomainException extends GrailsException {
 
+	private static final long serialVersionUID = -3824320541041888143L;
+
 	public GrailsDomainException() {
 		super();
 	}

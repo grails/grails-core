@@ -32,6 +32,7 @@ import javax.servlet.ServletContext
  * 
  * Created: Jun 10, 2008
  */
+@SuppressWarnings("unused")
 class PageContextFactory {
 
     static Class pageContextClass

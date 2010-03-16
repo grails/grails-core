@@ -16,7 +16,6 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -87,10 +86,6 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
         grailsApplication.setApplicationContext(ctx);
 
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
-
-
-
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 
 

@@ -16,6 +16,15 @@ package org.codehaus.groovy.grails.resolve;
 
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.ivy.core.module.descriptor.Artifact;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.plugins.repository.Repository;
@@ -23,14 +32,6 @@ import org.apache.ivy.plugins.resolver.URLResolver;
 import org.apache.ivy.plugins.resolver.util.ResolvedResource;
 import org.apache.ivy.plugins.resolver.util.ResourceMDParser;
 import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Overrides the default Ivy resolver to substitute the release tag in Grails'

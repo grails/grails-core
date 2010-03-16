@@ -3,8 +3,6 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.ContextLoaderListener;
 
@@ -16,9 +14,7 @@ import org.springframework.web.context.ContextLoaderListener;
  */
 public class GrailsContextLoaderListener extends ContextLoaderListener {
 
-    private static final Log LOG = LogFactory.getLog(GrailsContextLoaderListener.class);
-
-	protected ContextLoader createContextLoader() {
+    protected ContextLoader createContextLoader() {
 		return new GrailsContextLoader();
 	}
 }

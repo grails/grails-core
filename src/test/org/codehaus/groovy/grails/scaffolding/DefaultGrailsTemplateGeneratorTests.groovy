@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.scaffolding
 
-import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 
@@ -49,8 +50,8 @@ class ScaffoldingTest {
         gcl.parseClass(testDomain)
         def testClass = gcl.loadClass("ScaffoldingTest")
 
-        def cp = new ConstraintsEvaluatingDynamicProperty()
-        def constrainedProperties = cp.get(testClass.newInstance())
+        
+        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
         testClass.metaClass.getConstraints = {-> constrainedProperties }
 
         def domainClass = new DefaultGrailsDomainClass(testClass)
@@ -69,8 +70,8 @@ class ScaffoldingTest {
         gcl.parseClass(testDomain)
         def testClass = gcl.loadClass("ScaffoldingTest")
 
-        def cp = new ConstraintsEvaluatingDynamicProperty()
-        def constrainedProperties = cp.get(testClass.newInstance())
+        
+        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
         testClass.metaClass.getConstraints = {-> constrainedProperties }
 
         def domainClass = new DefaultGrailsDomainClass(testClass)

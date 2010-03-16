@@ -5,7 +5,8 @@ package org.codehaus.groovy.grails.cli;
  * system exit. Used for testing and Grails interactive mode.
  */
 public class ScriptExitException extends RuntimeException {
-    private int exitCode;
+	private static final long serialVersionUID = -3758957528011797779L;
+	private int exitCode;
 
     public ScriptExitException(int exitCode) { 
         this.exitCode = exitCode;

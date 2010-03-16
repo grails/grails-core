@@ -26,7 +26,6 @@ import groovy.xml.StreamingMarkupBuilder;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -39,7 +38,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,6 +55,7 @@ import java.util.regex.Pattern;
  *        <p/>
  *        Created: Oct 27, 2005
  */
+@SuppressWarnings("deprecation")
 public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "render";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^' + METHOD_SIGNATURE + '$');
@@ -108,8 +107,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
 
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        GrailsApplication application = webRequest.getAttributes().getGrailsApplication();
-        HttpServletRequest request = webRequest.getCurrentRequest();
         HttpServletResponse response = webRequest.getCurrentResponse();
 
 

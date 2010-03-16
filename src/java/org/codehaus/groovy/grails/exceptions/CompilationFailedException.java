@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public class CompilationFailedException extends GrailsException {
 
+	private static final long serialVersionUID = -6184265528308338155L;
+
 	public CompilationFailedException() {
 		super();
 	}

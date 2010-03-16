@@ -376,7 +376,8 @@ public class GrailsHibernateUtil {
         return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
     }
 
-    public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
+    @SuppressWarnings("serial")
+	public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
         GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();
 
 

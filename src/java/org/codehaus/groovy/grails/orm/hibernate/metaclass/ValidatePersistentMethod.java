@@ -61,8 +61,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
 
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
-        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
-
         Errors errors = setupErrorsProperty(target);
 
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,

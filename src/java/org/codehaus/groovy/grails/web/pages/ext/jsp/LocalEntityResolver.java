@@ -30,6 +30,7 @@ import java.util.Map;
  * 
  * @author Graeme Rocher
  */
+@SuppressWarnings("serial")
 public class LocalEntityResolver implements EntityResolver{
 
     private static final Map ENTITIES = new HashMap() {{

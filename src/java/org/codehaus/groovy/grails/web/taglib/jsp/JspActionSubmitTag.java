@@ -21,7 +21,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspActionSubmitTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "actionSubmit";
+	private static final long serialVersionUID = 8087116162719522950L;
+
+	private static final String TAG_NAME = "actionSubmit";
 
     private String value;
 

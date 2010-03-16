@@ -67,6 +67,8 @@ import java.util.Map;
  *
  */
 public class GroovyPagesServlet extends FrameworkServlet {
+	private static final long serialVersionUID = -1918149859392123495L;
+
 	private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
 	
     private ServletContext context;

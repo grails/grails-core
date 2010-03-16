@@ -15,19 +15,22 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
-import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.validation.Validator;
 
 import java.beans.PropertyDescriptor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.validation.Validator;
 
 /**
  *
@@ -40,8 +43,6 @@ import java.util.*;
  */
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
-
-    private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainClassProperty.class);
 
     private GrailsDomainClass domainClass;
     private boolean persistant;
@@ -438,11 +439,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
         this.otherSide = property;
 	}
-
-    private String getPropertyPathString(GrailsDomainClassProperty property) {
-        return property.getDomainClass().getFullName()+"."+property.getName();
-    }
-
 
     public boolean isInherited() {
 		return this.inherited;

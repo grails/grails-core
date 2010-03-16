@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  */
 public class InvalidUriException extends GrailsMVCException {
 
+	private static final long serialVersionUID = -2375321409571531238L;
+
 	public InvalidUriException() {
 		super();
 	}

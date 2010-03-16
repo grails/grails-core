@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  */
 public class UnknownControllerException extends GrailsMVCException {
 
+	private static final long serialVersionUID = -6726546157832604224L;
+
 	public UnknownControllerException() {
 		super();
 	}

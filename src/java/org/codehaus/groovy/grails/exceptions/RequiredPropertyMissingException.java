@@ -26,6 +26,8 @@ import java.lang.Throwable;
  */
 public class RequiredPropertyMissingException extends GrailsException {
 
+	private static final long serialVersionUID = 5443226306788035898L;
+
 	public RequiredPropertyMissingException() {
 		super();
 	}

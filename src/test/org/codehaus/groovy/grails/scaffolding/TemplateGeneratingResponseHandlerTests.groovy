@@ -12,7 +12,7 @@ import org.codehaus.groovy.grails.support.*
 import org.codehaus.groovy.grails.commons.*
 
 
-
+@SuppressWarnings("unused")
 class Test {
     Long id
     Long version

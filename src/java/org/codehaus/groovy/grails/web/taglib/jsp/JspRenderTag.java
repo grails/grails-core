@@ -21,7 +21,8 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspRenderTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "render";
+	private static final long serialVersionUID = -3650113799207644153L;
+	private static final String TAG_NAME = "render";
     private String template;
     private String bean;
     private String collection;

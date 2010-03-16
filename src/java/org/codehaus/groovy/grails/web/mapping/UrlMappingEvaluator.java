@@ -35,6 +35,7 @@ import java.util.HashMap;
  *        Created: Feb 28, 2007
  *        Time: 5:47:23 PM
  */
+@SuppressWarnings("serial")
 public interface UrlMappingEvaluator {
     // default HTTP method to action name mappings
     Map<String,String> DEFAULT_REST_MAPPING = new HashMap<String,String>() {{

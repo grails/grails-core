@@ -31,7 +31,8 @@ import org.hibernate.event.def.DefaultFlushEventListener;
  */
 public class PatchedDefaultFlushEventListener extends DefaultFlushEventListener{
 
-    private static final Log LOG = LogFactory.getLog(PatchedDefaultFlushEventListener.class);
+	private static final long serialVersionUID = -7413770767669684078L;
+	private static final Log LOG = LogFactory.getLog(PatchedDefaultFlushEventListener.class);
     @Override
     protected void performExecutions(EventSource session) throws HibernateException {
         session.getPersistenceContext().setFlushing(true);

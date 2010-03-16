@@ -145,7 +145,8 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         targetRegistry.registerBeanDefinition(GrailsApplication.APPLICATION_ID, grailsApplicationBean);
     }
 
-    private void registerDomainBean(final Class entityClass, BeanDefinitionRegistry targetRegistry, String messageSourceRef) {
+    @SuppressWarnings("serial")
+	private void registerDomainBean(final Class entityClass, BeanDefinitionRegistry targetRegistry, String messageSourceRef) {
         GenericBeanDefinition beanDef = new GenericBeanDefinition();
         beanDef.setBeanClass(entityClass);
         beanDef.setScope("prototype");

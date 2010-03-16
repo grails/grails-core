@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspRemoteFunctionTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "remoteFunction";
+	private static final long serialVersionUID = -4345166429867722872L;
+
+	private static final String TAG_NAME = "remoteFunction";
 
     private String controller;
     private String action;

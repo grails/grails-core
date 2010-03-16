@@ -5,7 +5,8 @@ package org.codehaus.groovy.grails.cli;
  * can't find.
  */
 public class ScriptNotFoundException extends RuntimeException {
-    private String scriptName;
+	private static final long serialVersionUID = 2794605786839371674L;
+	private String scriptName;
 
     public ScriptNotFoundException(String scriptName) {
         super();

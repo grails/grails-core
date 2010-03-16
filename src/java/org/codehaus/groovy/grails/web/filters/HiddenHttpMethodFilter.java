@@ -14,17 +14,17 @@
  */
 package org.codehaus.groovy.grails.web.filters;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
+import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Based off the Spring implementation, but this one works with Grails params object

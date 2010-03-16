@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspLocaleSelectTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "localeSelect";
+	private static final long serialVersionUID = -4480286502501857452L;
+
+	private static final String TAG_NAME = "localeSelect";
 
     private String name;
     private String value;

@@ -24,6 +24,8 @@ package org.codehaus.groovy.grails.orm.hibernate.exceptions;
 public class CouldNotDetermineHibernateDialectException extends
 		GrailsHibernateException {
 
+	private static final long serialVersionUID = -3385252525996110909L;
+
 	public CouldNotDetermineHibernateDialectException() {
 		super();
 	}

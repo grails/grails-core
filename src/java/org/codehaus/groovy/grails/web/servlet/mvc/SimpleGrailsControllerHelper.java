@@ -73,14 +73,11 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 	private GrailsWebRequest webRequest;
     
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
-    private static final char SLASH = '/';
-
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private String id;
     private String controllerName;
     private String actionName;
-    private String controllerActionURI;
-
+    
     public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
         super();
         this.application = application;
@@ -173,8 +170,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
         }
-        controllerActionURI = SLASH + controllerName + SLASH + actionName + SLASH;
-        
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
 

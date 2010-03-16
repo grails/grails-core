@@ -8,7 +8,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.springframework.web.servlet.View
 import org.codehaus.groovy.grails.scaffolding.Test
 import grails.util.GrailsWebUtil
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.springframework.core.io.DefaultResourceLoader

@@ -39,7 +39,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
  *        Time: 2:21:38 PM
  */
 public class GroovyPageTagBody extends Closure {
-    private Closure bodyClosure;
+	private static final long serialVersionUID = 4396762064131558457L;
+	private Closure bodyClosure;
     private Binding binding;
     private boolean preferSubChunkWhenWritingToOtherBuffer;
 

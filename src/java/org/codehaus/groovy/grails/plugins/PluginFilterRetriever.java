@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.plugins;
 
+import groovy.util.ConfigObject;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 
-import groovy.util.ConfigObject;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 

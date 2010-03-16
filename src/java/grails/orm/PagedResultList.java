@@ -29,7 +29,9 @@ import java.io.Serializable;
 */
 public class PagedResultList implements List, Serializable {
 
-    protected List list;
+	private static final long serialVersionUID = -5820655628956173929L;
+
+	protected List list;
 
     protected int totalCount;
 

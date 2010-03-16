@@ -1199,7 +1199,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         throw new MissingMethodException(name, getClass(), args) ;
     }
 
-    private void addToCurrentOrAliasedCriteria(Criterion criterion) {
+    @SuppressWarnings("unused")
+	private void addToCurrentOrAliasedCriteria(Criterion criterion) {
         if(!aliasInstanceStack.isEmpty()) {
             Criteria c = aliasInstanceStack.get(aliasInstanceStack.size()-1);
             c.add(criterion);

@@ -31,7 +31,8 @@ import java.util.*;
 
 public class Metadata extends Properties {
 
-    public static final String FILE = "application.properties";
+	private static final long serialVersionUID = -582452926111226898L;
+	public static final String FILE = "application.properties";
     public static final String APPLICATION_VERSION = "app.version";
     public static final String APPLICATION_NAME = "app.name";
     public static final String APPLICATION_GRAILS_VERSION = "app.grails.version";

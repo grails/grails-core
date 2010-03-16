@@ -18,8 +18,11 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -27,11 +30,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A factory bean for loading the GrailsPluginManager instance
@@ -46,9 +44,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean, Initializing
 
 	private GrailsApplication application;
 	private GrailsPluginManager pluginManager;
-    private static final Log LOG = LogFactory.getLog(GrailsPluginManagerFactoryBean.class);
     private Resource descriptor;
-    private ResourceLoader resourceLoader;
     private ApplicationContext applicationContext;
 
 

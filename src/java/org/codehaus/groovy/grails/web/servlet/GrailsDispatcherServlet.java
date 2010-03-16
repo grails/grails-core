@@ -60,7 +60,8 @@ import java.util.Map;
  * @since Jul 2, 2005
  */
 public class GrailsDispatcherServlet extends DispatcherServlet {
-    private GrailsApplication application;
+	private static final long serialVersionUID = 8295472557856192662L;
+	private GrailsApplication application;
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
     private static final String EXCEPTION_ATTRIBUTE = "exception";

@@ -15,9 +15,25 @@
 package org.codehaus.groovy.grails.web.util;
 
 import grails.util.GrailsUtil;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -41,21 +57,6 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.CharacterCodingException;
-import java.util.*;
-
 /**
  *
  * Utility methods to access commons objects and perform common web related functions for the internal framework
@@ -67,7 +68,6 @@ import java.util.*;
  */
 public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final char SLASH = '/';
-    private static final Log LOG = LogFactory.getLog(WebUtils.class);
     public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
     public static final String DISPATCH_ACTION_PARAMETER = "_action_";
     private static final String DISPATCH_URI_SUFFIX = ".dispatch";

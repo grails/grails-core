@@ -171,7 +171,8 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                 Set<Resource> result = new LinkedHashSet<Resource>(16);
 
 
-                URL classesDir = null;
+                @SuppressWarnings("unused")
+				URL classesDir = null;
 
                 final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
                 if(!warDeployed) {

@@ -67,7 +67,8 @@ public class HibernatePersistenceContextInterceptor implements
         }
     }
 
-    public void reconnect() {
+    @SuppressWarnings("deprecation")
+	public void reconnect() {
         Session session = SessionFactoryUtils.getSession(sessionFactory,true);
         session.reconnect();        
     }

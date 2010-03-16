@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
  */
 public abstract class GrailsHibernateException extends GrailsException {
 
+	private static final long serialVersionUID = -6019220941440364736L;
+
 	public GrailsHibernateException() {
 		super();
 	}

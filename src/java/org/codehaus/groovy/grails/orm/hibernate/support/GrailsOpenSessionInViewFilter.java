@@ -15,6 +15,14 @@
  */ 
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -22,15 +30,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.support.OpenSessionInViewFilter;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * <p>Uses the GrailsApplication sessionFactory to apply the filter
@@ -41,9 +40,6 @@ import java.io.IOException;
 public class GrailsOpenSessionInViewFilter extends OpenSessionInViewFilter {
 
     protected SessionFactory lookupSessionFactory() {
-        WebApplicationContext parent =
-            WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
         ApplicationContext context = (ApplicationContext)getServletContext().getAttribute(ApplicationAttributes.APPLICATION_CONTEXT);
 
         if(context != null) {

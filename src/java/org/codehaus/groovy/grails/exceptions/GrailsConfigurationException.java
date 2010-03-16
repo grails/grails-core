@@ -20,7 +20,9 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public class GrailsConfigurationException extends GrailsException {
 
-    public GrailsConfigurationException() {
+	private static final long serialVersionUID = -4535880758562704335L;
+
+	public GrailsConfigurationException() {
     }
 
     public GrailsConfigurationException(String arg0) {

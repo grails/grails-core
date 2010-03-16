@@ -9,7 +9,6 @@ import javax.xml.xpath.XPathFactory
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -161,7 +160,6 @@ abstract public class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication.setApplicationContext(ctx);
 
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
         ctx.registerMockBean("pluginManager", mockManager)
 
 

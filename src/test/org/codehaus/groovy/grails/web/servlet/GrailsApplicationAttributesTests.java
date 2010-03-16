@@ -3,10 +3,14 @@ package org.codehaus.groovy.grails.web.servlet;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.*;
+
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsControllerHelper;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -65,9 +69,6 @@ public class GrailsApplicationAttributesTests extends TestCase {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		GroovyObject controller = (GroovyObject)attrs.getApplicationContext().getBean("TestController");
-		SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(attrs.getGrailsApplication(),attrs.getApplicationContext(),attrs.getServletContext());
-
-		
 		request.setAttribute(GrailsApplicationAttributes.CONTROLLER,controller );
 		GroovyObject tagLib1 = attrs.getTagLibraryForTag(request,response,"firstTag");
 		assertNotNull(tagLib1);

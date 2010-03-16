@@ -14,8 +14,13 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -30,11 +35,8 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.AnyType;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
-import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.validation.Validator;
-
-import java.util.*;
 
 /**
  * An implementation of the GrailsDomainClass interface that allows Classes
@@ -47,8 +49,6 @@ import java.util.*;
  *        Created - 18-Feb-2006
  */
 public class GrailsHibernateDomainClass extends AbstractGrailsClass implements ExternalGrailsDomainClass {
-
-    private static final Log LOG = LogFactory.getLog(GrailsHibernateDomainClass.class);
 
     private static final String HIBERNATE = "hibernate";
 
@@ -64,8 +64,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     private Set subClasses = new HashSet();
     private Map constraints = Collections.EMPTY_MAP;
     private Map defaultConstraints = Collections.EMPTY_MAP;
-    private AnnotationMetadata metadata;
-
     /**
      * <p/>
      * Contructor to be used by all child classes to create a new instance
@@ -79,8 +77,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     public GrailsHibernateDomainClass(Class clazz, SessionFactory sessionFactory, ClassMetadata metaData, Map<String, Object> defaultContraints) {
         super(clazz, "");
 
-        // configure identity property
-        this.metadata = new StandardAnnotationMetadata(clazz);
+        new StandardAnnotationMetadata(clazz);
         String ident = metaData.getIdentifierPropertyName();
         this.defaultConstraints = defaultContraints;
 

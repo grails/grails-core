@@ -24,6 +24,8 @@ import java.util.Set;
  */
 public class SessionFactoryAdapter implements SessionFactory {
 	
+	private static final long serialVersionUID = -3905807871358255210L;
+
 	public Reference getReference() throws NamingException {
 		// TODO Auto-generated method stub
 		return null;

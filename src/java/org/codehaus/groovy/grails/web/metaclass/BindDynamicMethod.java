@@ -15,16 +15,15 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 import groovy.lang.MissingMethodException;
-import org.apache.commons.collections.CollectionUtils;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 
 /**
  * A dynamic method present in controllers allowing data binding from a map to a target instance. Example:

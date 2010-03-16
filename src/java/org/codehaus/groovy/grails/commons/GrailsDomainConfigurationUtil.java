@@ -24,9 +24,11 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import javax.persistence.Entity;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -508,7 +510,7 @@ public class GrailsDomainConfigurationUtil {
         if(stream!=null) {
             GroovyClassLoader gcl = new GroovyClassLoader();
             try {
-                Class scriptClass = gcl.parseClass(stream);
+                Class scriptClass = gcl.parseClass(DefaultGroovyMethods.getText(stream));
                 Script script = (Script)scriptClass.newInstance();
                 script.run();
                 Binding binding = script.getBinding();
@@ -527,7 +529,9 @@ public class GrailsDomainConfigurationUtil {
             } catch (IllegalAccessException e) {
                 LOG.error("Illegal access error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
-            }
+            } catch (IOException e) {
+            	LOG.error("IO error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
+			}
         }
         return null;
     }

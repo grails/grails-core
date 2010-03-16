@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public class NewInstanceCreationException extends GrailsException {
 
+	private static final long serialVersionUID = -877948309600522419L;
+
 	public NewInstanceCreationException() {
 		super();
 	}
