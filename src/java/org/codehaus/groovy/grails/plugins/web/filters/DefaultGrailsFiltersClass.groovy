@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+
 import org.codehaus.groovy.grails.commons.AbstractInjectableGrailsClass
 import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
@@ -42,6 +45,11 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
 
         return loader.filters;
     }
+    
+    @Override
+	public MetaClass getMetaClass() {
+    	GroovySystem.metaClassRegistry.getMetaClass DefaultGrailsFiltersClass
+   	}
 }
 
 class Loader {

@@ -241,65 +241,16 @@ class ControllersGrailsPlugin {
             }
 
             // a reusable action for handling command object binding
-            def commandObjectBindingAction = {Closure originalAction, String closureName, Object[] varArgs  ->
-
-            	def paramTypes = originalAction.getParameterTypes()
-	            def commandObjects = []
-	            for (v in varArgs) {
-	                commandObjects << v
-	            }
-	            def counter = 0
-	            for (paramType in paramTypes) {
-	
-	                if (GroovyObject.class.isAssignableFrom(paramType)) {	                	
-	                    try {
-	                    	WebMetaUtils.enhanceCommandObject(ctx, paramType)
-	                        def commandObject;
-	                        if (counter < commandObjects.size()) {
-	                            if (paramType.isInstance(commandObjects[counter])) {
-	                                commandObject = commandObjects[counter]
-	                            }
-	                        }
-	
-	                        if (!commandObject) {
-	                            commandObject = paramType.newInstance()
-	                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-	                            commandObjects << commandObject
-	                        }
-	                        def params = RCH.currentRequestAttributes().params
-	                        bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
-	                        def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
-	                        def constrainedProperties = commandObject.constraints?.values()
-	                        for( constrainedProperty in constrainedProperties) {
-	                            constrainedProperty.messageSource = ctx.getBean("messageSource")
-	                            constrainedProperty.validate(commandObject, commandObject.getProperty(constrainedProperty.getPropertyName()), errors);
-	                        }
-	                        commandObject.errors = errors
-	                    } catch (Exception e) {
-	                        throw new ControllerExecutionException("Error occurred creating command object.", e);
-	                    }
-	                }
-	                counter++
-	            }
-	            def callable = GCU.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName)
-	            callable.call(* commandObjects)
-            }
+            def commandObjectBindingAction = WebMetaUtils.createCommandObjectBindingAction(ctx)
             
             // add invoke method implementation for handling command objects
             controllerClass.metaClass {
             	invokeMethod { String name, args ->
             		if(mc.hasProperty( delegate, name)) {
             			def callable = delegate."$name"
-            			if(callable instanceof Closure) {
-            				def paramTypes = callable.parameterTypes
-            				if( paramTypes && paramTypes[0] != Object[].class) {
-            					def commandObjectAction = commandObjectBindingAction.curry( callable, name )
-	            	            mc."${GrailsClassUtils.getGetterName(name)}" = {->
-	                                def actionDelegate = commandObjectAction.clone()
-	                                actionDelegate.delegate = delegate
-	                                actionDelegate
-            					}
-            					commandObjectAction.delegate = delegate
+            			if(callable instanceof Closure) {            				
+            				if(WebMetaUtils.isCommandObjectAction(callable)) {
+            					def commandObjectAction = WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, name, delegate)
             					return commandObjectAction.call(args)
             				}
             				else {            					
@@ -327,8 +278,7 @@ class ControllersGrailsPlugin {
         }
 
     }
-
-
+    
     def registerControllerMethods(MetaClass mc, ApplicationContext ctx) {
         mc.getActionUri = {-> "/$controllerName/$actionName".toString()}
         mc.getControllerUri = {-> "/$controllerName".toString()}

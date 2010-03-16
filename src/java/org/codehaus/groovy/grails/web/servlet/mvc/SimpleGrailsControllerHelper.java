@@ -37,9 +37,13 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.grails.web.plugins.support.*;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPluginTests;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.sun.java.swing.plaf.windows.WindowsMenuUI;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -228,6 +232,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure action;
             try {
                 action = (Closure)controller.getProperty(actionName);
+                if(WebMetaUtils.isCommandObjectAction(action)) {
+                	action = WebMetaUtils.createAndPrepareCommandObjectAction(controller, action, actionName, this.applicationContext);                	
+                }
             }
             catch(MissingPropertyException mpe) {
                 try {

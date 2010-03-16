@@ -99,7 +99,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
             Method readMethod = propertyDescriptor.getReadMethod();
             if(readMethod != null && !Modifier.isStatic(readMethod.getModifiers())) {
-            	if(propertyDescriptor.getPropertyType() == Object.class) {
+            	final Class<?> propertyType = propertyDescriptor.getPropertyType();
+				if(propertyType == Object.class || propertyType == Closure.class) {
                     String closureName = propertyDescriptor.getName();
                     if(closureName.endsWith(FLOW_SUFFIX)) {
                         String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
@@ -278,7 +279,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     public Map getFlows() {
     	Map closureFlows = new HashMap();
     	for (String name : flows.keySet()) {
-			Closure c = getPropertyValue(name, Closure.class);
+			Closure c = getPropertyValue(name + "Flow", Closure.class);
 			if(c!=null) {
 				closureFlows.put(name, c);
 			}
