@@ -54,10 +54,10 @@ javadoc {
 
 task gdoc {
     dependsOn javadoc
+    onlyIf {
+        file('../grails-doc').isDirectory()
+    }
     doFirst {
-        onlyIf {
-            file('../grails-doc').isDirectory()
-        }
         ant {
             ant(target: 'distclean', dir: "../grails-doc", inheritAll: false)
             ant(target: 'dist-nojavadoc', dir: "../grails-doc", inheritAll: false) {
