@@ -52,7 +52,7 @@ javadoc {
     verbose = false
 }
 
-task gdoc {
+task gdoc << {
     dependsOn javadoc
     ant {
         mkdir dir: buildDir
