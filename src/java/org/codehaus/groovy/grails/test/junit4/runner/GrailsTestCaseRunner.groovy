@@ -63,6 +63,11 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         }
     }
 
+    /**
+     * This is the only suitable hook that allows us to wrap the before/after
+     * methods in transactions etc. Unfortunately, that means we have to copy
+     * most the implementation from BlockJUnit4ClassRunner.
+     */
     protected Statement methodBlock(FrameworkMethod method) {
         if (mode) {
             def test = null
