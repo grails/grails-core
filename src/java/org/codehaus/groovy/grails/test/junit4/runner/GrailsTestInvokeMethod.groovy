@@ -29,24 +29,18 @@ class GrailsTestInvokeMethod extends Statement {
 	private testMethod
 	private target
 	private mode
-	private autowirer
 	private requestEnvironmentInterceptor
 	private transactionInterceptor
 	
-	GrailsTestInvokeMethod(FrameworkMethod testMethod, Object target, GrailsTestMode mode, autowirer, requestEnvironmentInterceptor, transactionInterceptor) {
+	GrailsTestInvokeMethod(FrameworkMethod testMethod, Object target, GrailsTestMode mode, requestEnvironmentInterceptor, transactionInterceptor) {
 		this.testMethod = testMethod
 		this.target = target
 		this.mode = mode
-		this.autowirer = autowirer
 		this.requestEnvironmentInterceptor = requestEnvironmentInterceptor
 		this.transactionInterceptor = transactionInterceptor
 	}
 	
 	void evaluate() throws Throwable {
-		if (mode.autowire) {
-			autowirer.autowire(target)
-		}
-		
 		def runner = { testMethod.invokeExplosively(target) }
 		
 		def inTransactionRunner

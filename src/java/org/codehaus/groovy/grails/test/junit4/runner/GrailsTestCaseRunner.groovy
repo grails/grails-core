@@ -64,12 +64,16 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 	
 	protected Statement methodInvoker(FrameworkMethod method, Object test) {
 		if (mode) {
-			new GrailsTestInvokeMethod(method, test, mode, getAutowirer(), getRequestEnvironmentInterceptor(), getTransactionInterceptor())
+			new GrailsTestInvokeMethod(method, test, mode, getRequestEnvironmentInterceptor(), getTransactionInterceptor())
 		} else {
 			new InvokeMethod(method, test)
 		}
 	}
-		
+	
+	protected createTest() {
+		autowireIfNecessary(super.createTest())
+	}
+	
 	protected autowireIfNecessary(test) {
 		if (mode?.autowire) {
 			getAutowirer().autowire(test)
