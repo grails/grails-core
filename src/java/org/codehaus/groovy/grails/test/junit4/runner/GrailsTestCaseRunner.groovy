@@ -39,13 +39,6 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
     final mode
     final appCtx
 
-    private autowirer
-    private requestEnvironmentInterceptor
-    private transactionInterceptor
-
-    private transactional = false
-    private controllerName = null
-
     GrailsTestCaseRunner(Class testClass) {
         this(testClass, null, null)
     }
