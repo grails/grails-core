@@ -1,12 +1,12 @@
 /*
  * Copyright 2009 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,11 +19,11 @@ package org.codehaus.groovy.grails.test.support
 import org.springframework.context.ApplicationContext
 
 class GrailsTestMode {
-	boolean autowire = false
-	boolean wrapInRequestEnvironment = false
-	boolean wrapInTransaction = false
-	
-	GrailsTestInterceptor createInterceptor(Object test, ApplicationContext appCtx, String[] testClassSuffixes) {
-		new GrailsTestInterceptor(test, this, appCtx, testClassSuffixes)
-	}
+    boolean autowire = false
+    boolean wrapInRequestEnvironment = false
+    boolean wrapInTransaction = false
+
+    GrailsTestInterceptor createInterceptor(Object test, ApplicationContext appCtx, String[] testClassSuffixes) {
+        new GrailsTestInterceptor(test, this, appCtx, testClassSuffixes)
+    }
 }

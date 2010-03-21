@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *		 http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,95 +24,95 @@ import junit.framework.JUnit4TestCaseFacade
 import junit.framework.AssertionFailedError
 
 class PerTestRunListener {
-	final name
-	
-	private final eventPublisher
-	private final reports
-	private final outAndErrSwapper
-	private final testSuite
+    final name
 
-	private startTime
-	private runCount = 0
-	private failureCount = 0
-	private errorCount = 0
+    private final eventPublisher
+    private final reports
+    private final outAndErrSwapper
+    private final testSuite
 
-	private testsByDescription = [:]
+    private startTime
+    private runCount = 0
+    private failureCount = 0
+    private errorCount = 0
 
-	PerTestRunListener(name, eventPublisher, reports, outAndErrSwapper) {
-		this.name = name
-		this.eventPublisher = eventPublisher
-		this.reports = reports
-		this.outAndErrSwapper = outAndErrSwapper
-		this.testSuite = new JUnitTest(name)
-	}
+    private testsByDescription = [:]
 
-	void start() {
-		eventPublisher.testCaseStart(name)
-		outAndErrSwapper.swapIn()
-		reports.startTestSuite(testSuite)
-		startTime = System.currentTimeMillis()
-	}
+    PerTestRunListener(name, eventPublisher, reports, outAndErrSwapper) {
+        this.name = name
+        this.eventPublisher = eventPublisher
+        this.reports = reports
+        this.outAndErrSwapper = outAndErrSwapper
+        this.testSuite = new JUnitTest(name)
+    }
 
-	void finish() {
-		testSuite.runTime = System.currentTimeMillis() - startTime
-		testSuite.setCounts(runCount, failureCount, errorCount)
-		def (out, err) = outAndErrSwapper.swapOut()*.toString()
-		reports.systemOutput = out
-		reports.systemError = err
-		reports.endTestSuite(testSuite)
-		eventPublisher.testCaseEnd(name)
-	}
+    void start() {
+        eventPublisher.testCaseStart(name)
+        outAndErrSwapper.swapIn()
+        reports.startTestSuite(testSuite)
+        startTime = System.currentTimeMillis()
+    }
 
-	void testStarted(Description description) {
-		def testName = description.methodName
-		eventPublisher.testStart(testName)
-		runCount++
-		[System.out, System.err]*.println("--Output from ${testName}--")
-		reports.startTest(getTest(description))
-	}
+    void finish() {
+        testSuite.runTime = System.currentTimeMillis() - startTime
+        testSuite.setCounts(runCount, failureCount, errorCount)
+        def (out, err) = outAndErrSwapper.swapOut()*.toString()
+        reports.systemOutput = out
+        reports.systemError = err
+        reports.endTestSuite(testSuite)
+        eventPublisher.testCaseEnd(name)
+    }
 
-	void testFailure(Failure failure) {
-		def testName = failure.description.methodName
-		def testCase = getTest(failure.description)
-		def exception = failure.exception
+    void testStarted(Description description) {
+        def testName = description.methodName
+        eventPublisher.testStart(testName)
+        runCount++
+        [System.out, System.err]*.println("--Output from ${testName}--")
+        reports.startTest(getTest(description))
+    }
 
-		if (exception instanceof AssertionError) {
-			eventPublisher.testFailure(testName, exception)
-			failureCount++
-			reports.addFailure(testCase, toAssertionFailedError(exception))
-		} else {
-			eventPublisher.testFailure(testName, exception, true)
-			errorCount++
-			reports.addError(testCase, exception)
-		}
-	}
+    void testFailure(Failure failure) {
+        def testName = failure.description.methodName
+        def testCase = getTest(failure.description)
+        def exception = failure.exception
 
-	void testFinished(Description description) {
-		reports.endTest(getTest(description))
-		eventPublisher.testEnd(description.methodName)
-	}
+        if (exception instanceof AssertionError) {
+            eventPublisher.testFailure(testName, exception)
+            failureCount++
+            reports.addFailure(testCase, toAssertionFailedError(exception))
+        } else {
+            eventPublisher.testFailure(testName, exception, true)
+            errorCount++
+            reports.addError(testCase, exception)
+        }
+    }
 
-	// JUnitReports requires us to always pass the same Test instance
-	// for a test, so we cache it; this scheme also works for the case
-	// where testFailure() is invoked without a prior call to testStarted() 
-	private getTest(description) {
-		def test = testsByDescription.get(description)
-		if (test == null) {
-			test = createJUnit4TestCaseFacade(description)
-			testsByDescription.put(description, test)
-		}
-		test
-	}
+    void testFinished(Description description) {
+        reports.endTest(getTest(description))
+        eventPublisher.testEnd(description.methodName)
+    }
 
-	private toAssertionFailedError(assertionError) {
-		def result = new AssertionFailedError(assertionError.toString())
-		result.stackTrace = assertionError.stackTrace
-		result
-	}
-	
-	static createJUnit4TestCaseFacade(Description description) {
-		def ctor = JUnit4TestCaseFacade.getDeclaredConstructor(Description)
-		ctor.accessible = true
-		ctor.newInstance(description)
-	}  
+    // JUnitReports requires us to always pass the same Test instance
+    // for a test, so we cache it; this scheme also works for the case
+    // where testFailure() is invoked without a prior call to testStarted()
+    private getTest(description) {
+        def test = testsByDescription.get(description)
+        if (test == null) {
+            test = createJUnit4TestCaseFacade(description)
+            testsByDescription.put(description, test)
+        }
+        test
+    }
+
+    private toAssertionFailedError(assertionError) {
+        def result = new AssertionFailedError(assertionError.toString())
+        result.stackTrace = assertionError.stackTrace
+        result
+    }
+
+    static createJUnit4TestCaseFacade(Description description) {
+        def ctor = JUnit4TestCaseFacade.getDeclaredConstructor(Description)
+        ctor.accessible = true
+        ctor.newInstance(description)
+    }
 }
