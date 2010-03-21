@@ -24,46 +24,58 @@ import org.codehaus.groovy.grails.test.support.ControllerNameExtractor
 import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 import org.springframework.context.ApplicationContext
 
-class GrailsTestInvokeMethod extends Statement {
+class GrailsTestEnvironmentStatement extends Statement {
 
-	private testMethod
+	private testStatement
 	private target
 	private mode
+	private autowirer
 	private requestEnvironmentInterceptor
 	private transactionInterceptor
 	
-	GrailsTestInvokeMethod(FrameworkMethod testMethod, Object target, GrailsTestMode mode, requestEnvironmentInterceptor, transactionInterceptor) {
-		this.testMethod = testMethod
+	GrailsTestEnvironmentStatement(Statement testStatement, Object target, GrailsTestMode mode, autowirer, requestEnvironmentInterceptor, transactionInterceptor) {
+		this.testStatement = testStatement
 		this.target = target
 		this.mode = mode
+		this.autowirer = autowirer
 		this.requestEnvironmentInterceptor = requestEnvironmentInterceptor
 		this.transactionInterceptor = transactionInterceptor
 	}
 	
 	void evaluate() throws Throwable {
-		def runner = { testMethod.invokeExplosively(target) }
+		autowireIfNecessary(target)
+		def runner = { -> testStatement.evaluate() }
+		runner = wrapInTransactionIfNecessary(runner)
+		runner = wrapInRequestEnvironmentIfNecessary(runner)
 		
-		def inTransactionRunner
-		if (mode.wrapInTransaction && transactionInterceptor.isTransactional(target)) {
-			inTransactionRunner = { transactionInterceptor.doInTransaction(runner) }
-		} else {
-			inTransactionRunner = runner
-		}
-
-		def inRequestRunner
-		if (mode.wrapInRequestEnvironment) {
-			def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(target.class.name, JUnit4GrailsTestType.SUFFIXES as String[])
-			if (controllerName) {
-				inRequestRunner = { requestEnvironmentInterceptor.doInRequestEnvironment(controllerName, inTransactionRunner) }
-			} else {
-				inRequestRunner = { requestEnvironmentInterceptor.doInRequestEnvironment(inTransactionRunner) }
-			}
-		} else {
-			inRequestRunner = inTransactionRunner
-		}
-
-		inRequestRunner()
+		runner()
 	}
 	
-
+	protected wrapInTransactionIfNecessary(Closure body) {
+		if (mode?.wrapInTransaction && transactionInterceptor.isTransactional(target)) {
+			{ -> transactionInterceptor.doInTransaction(body) }
+		} else {
+			body
+		}
+	}
+	
+	protected wrapInRequestEnvironmentIfNecessary(Closure body) {
+		if (mode?.wrapInRequestEnvironment) {
+			def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(target.class.name, JUnit4GrailsTestType.SUFFIXES as String[])
+			if (controllerName) {
+				{ -> requestEnvironmentInterceptor.doInRequestEnvironment(controllerName, body) }
+			} else {
+				{ -> requestEnvironmentInterceptor.doInRequestEnvironment(body) }
+			}
+		} else {
+			body
+		}
+	}
+	
+	protected autowireIfNecessary(test) {
+		if (mode?.autowire) {
+			autowirer.autowire(test)
+		}
+		test
+	}
 }

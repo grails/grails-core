@@ -20,18 +20,19 @@ import org.junit.runners.BlockJUnit4ClassRunner
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
 import org.junit.runner.notification.RunNotifier
-import org.junit.internal.runners.statements.InvokeMethod
+import org.junit.internal.runners.statements.RunAfters
+import org.junit.internal.runners.statements.RunBefores
+import org.junit.internal.runners.statements.Fail
 
 import org.springframework.context.ApplicationContext
+import org.springframework.util.ReflectionUtils
 
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.codehaus.groovy.grails.test.support.GrailsTestAutowirer
 import org.codehaus.groovy.grails.test.support.GrailsTestRequestEnvironmentInterceptor
 import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
 
-import org.junit.internal.runners.statements.RunAfters
-import org.junit.internal.runners.statements.RunBefores
-import org.springframework.util.ReflectionUtils
+import java.lang.reflect.InvocationTargetException
 
 class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 
@@ -62,25 +63,36 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 		}
 	}
 	
-	protected Statement methodInvoker(FrameworkMethod method, Object test) {
+	protected Statement methodBlock(FrameworkMethod method) {
 		if (mode) {
-			new GrailsTestInvokeMethod(method, test, mode, getRequestEnvironmentInterceptor(), getTransactionInterceptor())
+			def test = null
+
+			// Create test instantiates the test object reflectively, so we unwrap
+			// the InvocationTargetException if an exception occurs.
+			try {
+				test = createTest()
+			} catch (InvocationTargetException e) {
+				return new Fail(e.targetException)
+			}
+
+			def statement = methodInvoker(method, test)
+			statement = possiblyExpectingExceptions(method, test, statement)
+			statement = withPotentialTimeout(method, test, statement)
+			statement = withBefores(method, test, statement)
+			statement = withAfters(method, test, statement)
+			statement = withRules(method, test, statement)
+
+			withGrailsTestEnvironment(statement, test, mode)
 		} else {
-			new InvokeMethod(method, test)
+			// fast lane for unit tests
+			super.methodBlock(method)
 		}
 	}
 	
-	protected createTest() {
-		autowireIfNecessary(super.createTest())
+	protected withGrailsTestEnvironment(Statement statement, Object test, GrailsTestMode mode) {
+		new GrailsTestEnvironmentStatement(statement, test, mode, getAutowirer(), getRequestEnvironmentInterceptor(), getTransactionInterceptor())
 	}
-	
-	protected autowireIfNecessary(test) {
-		if (mode?.autowire) {
-			getAutowirer().autowire(test)
-		}
-		test
-	}
-	
+
 	protected getAutowirer() {
 		ifHasApplicationContext {
 			autowirer = this.@autowirer ?: new GrailsTestAutowirer(appCtx)
