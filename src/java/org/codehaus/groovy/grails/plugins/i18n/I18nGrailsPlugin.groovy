@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
+import org.springframework.core.io.ContextResource
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import grails.util.Environment
@@ -54,7 +55,13 @@ class I18nGrailsPlugin {
             for( resource in messageResources) {
                 // Extract the file path of the file's parent directory
                 // that comes after "grails-app/i18n".
-                def path = StringUtils.substringAfter(resource.path, baseDir)
+                def path
+                if (resource instanceof ContextResource) {
+                	path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
+                }
+                else {
+                	path = StringUtils.substringAfter(resource.path, baseDir)
+                }
 
                 // look for an underscore in the file name (not the full path)
                 def fileName = resource.filename
