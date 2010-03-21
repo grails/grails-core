@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.grails.test.junit4.runner
 
+import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
+
 import org.junit.runners.BlockJUnit4ClassRunner
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
@@ -28,9 +30,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.util.ReflectionUtils
 
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
-import org.codehaus.groovy.grails.test.support.GrailsTestAutowirer
-import org.codehaus.groovy.grails.test.support.GrailsTestRequestEnvironmentInterceptor
-import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
+import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
 
 import java.lang.reflect.InvocationTargetException
 
@@ -82,37 +82,20 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 			statement = withAfters(method, test, statement)
 			statement = withRules(method, test, statement)
 
-			withGrailsTestEnvironment(statement, test, mode)
+			withGrailsTestEnvironment(statement, test)
 		} else {
 			// fast lane for unit tests
 			super.methodBlock(method)
 		}
 	}
 	
-	protected withGrailsTestEnvironment(Statement statement, Object test, GrailsTestMode mode) {
-		new GrailsTestEnvironmentStatement(statement, test, mode, getAutowirer(), getRequestEnvironmentInterceptor(), getTransactionInterceptor())
-	}
-
-	protected getAutowirer() {
-		ifHasApplicationContext {
-			autowirer = this.@autowirer ?: new GrailsTestAutowirer(appCtx)
+	protected withGrailsTestEnvironment(Statement statement, Object test) {
+		if (!mode) {
+			throw new IllegalStateException("withGrailsTestEnvironment can not be called without a test mode set")
 		}
-	}
 
-	protected getTransactionInterceptor() {
-		ifHasApplicationContext {
-			transactionInterceptor = this.@transactionInterceptor ?: new GrailsTestTransactionInterceptor(appCtx)
-		}
-	}
-
-	protected getRequestEnvironmentInterceptor() {
-		ifHasApplicationContext {
-			requestEnvironmentInterceptor = this.@requestEnvironmentInterceptor ?: new GrailsTestRequestEnvironmentInterceptor(appCtx)
-		}
-	}
-
-	protected ifHasApplicationContext(body) {
-		appCtx ? body() : null
+		def interceptor = mode.createInterceptor(test, appCtx, JUnit4GrailsTestType.SUFFIXES as String[])
+		new GrailsTestEnvironmentStatement(statement, test, interceptor)
 	}
 
 	protected List<FrameworkMethod> computeTestMethods() {

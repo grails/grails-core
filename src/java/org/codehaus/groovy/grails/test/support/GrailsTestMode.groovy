@@ -16,8 +16,14 @@
 
 package org.codehaus.groovy.grails.test.support
 
+import org.springframework.context.ApplicationContext
+
 class GrailsTestMode {
 	boolean autowire = false
 	boolean wrapInRequestEnvironment = false
 	boolean wrapInTransaction = false
+	
+	GrailsTestInterceptor createInterceptor(Object test, ApplicationContext appCtx, String[] testClassSuffixes) {
+		new GrailsTestInterceptor(test, this, appCtx, testClassSuffixes)
+	}
 }

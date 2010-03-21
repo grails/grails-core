@@ -16,66 +16,26 @@
 
 package org.codehaus.groovy.grails.test.junit4.runner
 
-import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
 
-import org.codehaus.groovy.grails.test.support.GrailsTestMode
-import org.codehaus.groovy.grails.test.support.ControllerNameExtractor
-import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
-import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
 
 class GrailsTestEnvironmentStatement extends Statement {
 
 	private testStatement
-	private target
-	private mode
-	private autowirer
-	private requestEnvironmentInterceptor
-	private transactionInterceptor
+	private test
+	private interceptor
 	
-	GrailsTestEnvironmentStatement(Statement testStatement, Object target, GrailsTestMode mode, autowirer, requestEnvironmentInterceptor, transactionInterceptor) {
+	GrailsTestEnvironmentStatement(Statement testStatement, Object test, GrailsTestInterceptor interceptor) {
 		this.testStatement = testStatement
-		this.target = target
-		this.mode = mode
-		this.autowirer = autowirer
-		this.requestEnvironmentInterceptor = requestEnvironmentInterceptor
-		this.transactionInterceptor = transactionInterceptor
+		this.test = test
+		this.interceptor = interceptor
 	}
 	
 	void evaluate() throws Throwable {
-		autowireIfNecessary(target)
-		def runner = { -> testStatement.evaluate() }
-		runner = wrapInTransactionIfNecessary(runner)
-		runner = wrapInRequestEnvironmentIfNecessary(runner)
-		
-		runner()
-	}
-	
-	protected wrapInTransactionIfNecessary(Closure body) {
-		if (mode?.wrapInTransaction && transactionInterceptor.isTransactional(target)) {
-			{ -> transactionInterceptor.doInTransaction(body) }
-		} else {
-			body
+		interceptor.wrap {
+			testStatement.evaluate()
 		}
 	}
-	
-	protected wrapInRequestEnvironmentIfNecessary(Closure body) {
-		if (mode?.wrapInRequestEnvironment) {
-			def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(target.class.name, JUnit4GrailsTestType.SUFFIXES as String[])
-			if (controllerName) {
-				{ -> requestEnvironmentInterceptor.doInRequestEnvironment(controllerName, body) }
-			} else {
-				{ -> requestEnvironmentInterceptor.doInRequestEnvironment(body) }
-			}
-		} else {
-			body
-		}
-	}
-	
-	protected autowireIfNecessary(test) {
-		if (mode?.autowire) {
-			autowirer.autowire(test)
-		}
-		test
-	}
+
 }
