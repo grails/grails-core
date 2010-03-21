@@ -28,6 +28,7 @@ Import-Template:
   com.opensymphony.sitemesh.*;version="${sitemesh.version:[=.=.=, =.+1.0)}",
   grails.*;version="${grails.version:[=.=.=, =.+1.0)}",
   javax.servlet.*;version="${servlet.version:[=.=.=, +1.0.0)}",
+  javax.servlet.jsp.*;version="${servlet.jsp.version:[=.=.=, +1.0.0)}",
   org.w3c.dom.*;version="0",
   javax.el.*;version="0",
   javax.xml.parsers.*;version="0",

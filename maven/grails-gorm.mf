@@ -19,6 +19,7 @@ Import-Template:
   org.hibernate.*;version="${hibernate.version:[=.=.=, =.+1.0)}",
   javassist.*;version="${javassist.version:[=.=.=, +1.0.0)}",
   javax.servlet.*;version="${servlet.version:[=.=.=, +1.0.0)}",
+  javax.servlet.jsp.*;version="${servlet.jsp.version:[=.=.=, +1.0.0)}",
   javax.sql.*;version="0",
   org.w3c.dom.*;version="0",
   org.springframework.*;version="${spring.version:[=.=.=, +1.0.0)}"

@@ -11,6 +11,7 @@ Import-Template:
  org.apache.tools.ant.*;version="${ant.version:[=.=.=, +1.0.0)}",
  groovy.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  javax.servlet.*;version="${servlet.version:[=.=.=, +1.0.0)}",
+ javax.servlet.jsp.*;version="${servlet.jsp.version:[=.=.=, +1.0.0)}",
  org.codehaus.groovy.runtime.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  org.codehaus.groovy.classgen.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  org.codehaus.groovy.control.*;version="${groovy.version:[=.=.=, =.+1.0)}",
