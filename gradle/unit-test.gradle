@@ -14,6 +14,10 @@ dependencies {
     coverage "net.sourceforge.cobertura:cobertura:1.9.3"
 }
 
+// we disable the default test task of the java plugin as we use a bunch of custom ones.
+// todo remove this line as soon as the java plugin is split up in two.
+test.enabled = false
+
 task instrumentForCoverage {
     instrumentedClassesDir = "${sourceSets.main.classesDir}-instrumented" as File
 
@@ -57,39 +61,71 @@ task coverageReport {
 }
 
 test {
-    dependsOn coreJar
-    forkEvery = 30
-    systemProperties = ['grails.cli.testing': "true"]
-    jvmArgs = ["-server", "-Xmx1000m", "-Xms256m", "-XX:MaxPermSize=128m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
-    testReport = true
-    ignoreFailures = false
-    classpath = classpath
-    exclude "grails/test/TestUrlMappingsTestCase.class", "grails/test/MoneyMappingTestCase.class",
-            "grails/test/MultipleMappingsTestCase.class", "grails/test/ExplicitMappingTestCase.class",
-            "grails/test/Grails5786TestCase.class"
+    options.systemProperties = ['grails.cli.testing': "true"]
+    options.forkOptions.jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
 }
 
+createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
+createTestTask("transactionalService", ["org/codehaus/groovy/grails/reload/TransactionalServiceReloadTests.class"], [])
+createTestTask("packagePlugins", ["org/codehaus/groovy/grails/cli/PackagePluginTests.class"], [])
+createTestTask("installTemplates", ["org/codehaus/groovy/grails/cli/InstallTemplatesTests.class"], [])
+createTestTask("generateAll", ["org/codehaus/groovy/grails/cli/GenerateAllTests.class"], [])
+createTestTask("cli", ["org/codehaus/groovy/grails/cli/**/*Tests.class"], ["org/codehaus/groovy/grails/cli/**/*Tests.class", "**/PackagePluginTests", "**/InstallTemplatesTests"])
+createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
+        "**/orm/hibernate/binding/*Tests.class",
+        "**/orm/hibernate/cfg/*Tests.class",
+        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", "**/UniqueConstraint*"])
+createTestTask("uniqueConstraints", ["**/UniqueConstraintTests.class"], [])
+createTestTask("webflow", ["**/webflow/**/*Tests.class"], ["**/Abstract*"])
+createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
+createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
+        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class"])
 
+def createTestTask(name, includes, excludes) {
+    createTestTaskWithoutSuffix("${name}Test", includes, excludes)
+}
 
-tasks.addRule("Pattern: testCoverage will execute the corresponding test task with coverage") {String taskName ->
-    if (taskName == 'testCoverage') {
-        tasks.add(name: taskName).dependsOn test, coverageReport
-        test.systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
-        test.dependsOn instrumentForCoverage
-        test.classpath = project.files(tasks.instrumentForCoverage.instrumentedClassesDir) + test.classpath + project.rootProject.configurations.coverage
-        coverageReport.dependsOn test
+def createTestTaskWithoutSuffix(String name, includes, excludes) {
+    task = tasks.add(name: name, type: AntTest) {
+        options.systemProperties = ['grails.cli.testing': "true"]
+        options.forkOptions.jvmArgs = ["-server", "-Xmx1500m", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+        options.systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
+        include includes as String[]
+        exclude excludes as String[]
+        testReport = true
+        ignoreFailures = false
+        coverageHtmlReport = false
+        classpath = classpath + project.rootProject.configurations.coverage
     }
+    test.dependsOn task
+    task.dependsOn coreJar
 }
 
-tasks.addRule("Pattern: testSingle<Name>[Coverage] will test **/<Name>Tests.class") {String taskName ->
-    if (taskName.startsWith("testSingle")) {
-        if (taskName.endsWith('Coverage')) {
-            tasks.add(taskName).dependsOn(testCoverage)
-            println taskName.substring(10, taskName.length() - 8)
-            test.include '**/' + taskName.substring(10, taskName.length() - 8) + 'Tests.class'
-        } else {
-            tasks.add(taskName).dependsOn(test)
-            test.include '**/' + taskName.substring(10) + 'Tests.class'
+tasks.addRule("Pattern: <testTaskName>Coverage will execute the corresponding test task with coverage") {String taskName ->
+    String coverageName = 'Coverage'
+    if (taskName.endsWith(coverageName)) {
+        def testTaskName = taskName.substring(0, taskName.length() - coverageName.length())
+        def testTask = tasks.findByName(testTaskName)
+        if (testTask) {
+            def testTasks = testTask == tasks.test ? tasks.withType(AntTest) : testTask
+            applyCoveragetToTestTasks(testTasks)
+            tasks.add(name: taskName).dependsOn testTask, coverageReport
         }
     }
 }
+
+def applyCoveragetToTestTasks(def testTasks) {
+    testTasks.each {testTask ->
+        testTask.dependsOn instrumentForCoverage
+        testTask.classpath = project.files(tasks.instrumentForCoverage.instrumentedClassesDir) + testTask.classpath + project.rootProject.configurations.coverage
+        coverageReport.dependsOn testTask
+    }
+}
+
+tasks.addRule("Pattern: testSingle<Name> will test **/<Name>Tests.class") {String taskName ->
+    if (taskName.startsWith("testSingle") && !taskName.endsWith('Coverage')) {
+        createTestTaskWithoutSuffix(taskName, ['**/' + taskName.substring(10) + 'Tests.class'], [])
+    }
+}
+
+
