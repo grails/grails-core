@@ -80,6 +80,6 @@ class ScaffoldingTest {
         templateGenerator.generateView domainClass, "create", sw
 
 
-        assertTrue "Should have rendered a select box for the number editor",sw.toString().contains('g:select name="status" from="${scaffoldingTest.constraints.status.inList}" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
+        assertTrue "Should have rendered a select box for the number editor",sw.toString().contains('g:select name="status" from="${scaffoldingTestInstance.constraints.status.inList}" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
     }
 }

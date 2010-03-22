@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *		 http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,54 +30,54 @@ import org.junit.runner.notification.RunListener
  * new TestRunListeners for each actual test class.
  */
 class SuiteRunListener extends RunListener {
-	
-	private final GrailsTestEventPublisher eventPublisher
-	private final JUnitReportsFactory reportsFactory
-	private final SystemOutAndErrSwapper outAndErrSwapper
 
-	private PerTestRunListener perTestListener
+    private final GrailsTestEventPublisher eventPublisher
+    private final JUnitReportsFactory reportsFactory
+    private final SystemOutAndErrSwapper outAndErrSwapper
 
-	SuiteRunListener(GrailsTestEventPublisher eventPublisher, JUnitReportsFactory reportsFactory, SystemOutAndErrSwapper outAndErrSwapper) {
-		this.eventPublisher = eventPublisher
-		this.reportsFactory = reportsFactory
-		this.outAndErrSwapper = outAndErrSwapper
-	}
+    private PerTestRunListener perTestListener
 
-	void testRunStarted(Description description) {
-		// nothing to do
-	}
+    SuiteRunListener(GrailsTestEventPublisher eventPublisher, JUnitReportsFactory reportsFactory, SystemOutAndErrSwapper outAndErrSwapper) {
+        this.eventPublisher = eventPublisher
+        this.reportsFactory = reportsFactory
+        this.outAndErrSwapper = outAndErrSwapper
+    }
 
-	void testStarted(Description description) {
-		if (perTestListener?.name != description.className) {
-			perTestListener?.finish()
+    void testRunStarted(Description description) {
+        // nothing to do
+    }
 
-			def testName = description.className
-			perTestListener = new PerTestRunListener(testName, eventPublisher, reportsFactory.createReports(testName), outAndErrSwapper)
-			perTestListener.start()
-		}
+    void testStarted(Description description) {
+        if (perTestListener?.name != description.className) {
+            perTestListener?.finish()
 
-		perTestListener.testStarted(description)
-	}
+            def testName = description.className
+            perTestListener = new PerTestRunListener(testName, eventPublisher, reportsFactory.createReports(testName), outAndErrSwapper)
+            perTestListener.start()
+        }
 
-	void testFailure(Failure failure) {
-		perTestListener.testFailure(failure)
-	}
+        perTestListener.testStarted(description)
+    }
 
-	void testAssumptionFailure(Failure failure) {
-		// assumptions (and AssumptionViolatedException) are specific to JUnit,
-		// and are treated as ordinary failures
-		perTestListener.testFailure(failure)
-	}
+    void testFailure(Failure failure) {
+        perTestListener.testFailure(failure)
+    }
 
-	void testFinished(Description description) {
-		perTestListener.testFinished(description)
-	}
+    void testAssumptionFailure(Failure failure) {
+        // assumptions (and AssumptionViolatedException) are specific to JUnit,
+        // and are treated as ordinary failures
+        perTestListener.testFailure(failure)
+    }
 
-	void testRunFinished(Result result) {
-		perTestListener.finish()
-	}
+    void testFinished(Description description) {
+        perTestListener.testFinished(description)
+    }
 
-	void testIgnored(Description description) {
-		// nothing to do
-	}
+    void testRunFinished(Result result) {
+        perTestListener.finish()
+    }
+
+    void testIgnored(Description description) {
+        // nothing to do
+    }
 }

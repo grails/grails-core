@@ -1,12 +1,12 @@
 /*
  * Copyright 2009 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- *		http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,79 +38,79 @@ import java.lang.reflect.Modifier
  */
 public class JUnit4GrailsTestType extends GrailsTestTypeSupport {
 
-	public static final SUFFIXES = ["Test", "Tests"].asImmutable()
-	 
-	protected suite
-	protected mode
-	
-	public JUnit4GrailsTestType(String name, String sourceDirectory) {
-		this(name, sourceDirectory, null)
-	}
-	
-	public JUnit4GrailsTestType(String name, String sourceDirectory, GrailsTestMode mode) {
-		super(name, sourceDirectory)
-		this.mode = mode
-	}
+    public static final SUFFIXES = ["Test", "Tests"].asImmutable()
 
-	protected List<String> getTestSuffixes() {
-		SUFFIXES
-	}
+    protected suite
+    protected mode
 
-	protected int doPrepare() {
-		def testClasses = getTestClasses()
-		if (testClasses) {
-			suite = createSuite(testClasses)
-			suite.testCount()
-		} else {
-			0
-		}
-	}
-	
-	protected getTestClasses() {
-		def classes = []
-		eachSourceFile { testTargetPattern, sourceFile ->
-			def testClass = sourceFileToClass(sourceFile)
-			if (!Modifier.isAbstract(testClass.modifiers)) {
-				classes << testClass
-			}
-		}
-		classes
-	}
-	
-	protected createRunnerBuilder() {
-		if (mode) {
-			new GrailsTestCaseRunnerBuilder(mode, getApplicationContext())
-		} else {
-			new GrailsTestCaseRunnerBuilder()
-		}
-	}
-	
-	protected createSuite(classes) {
-		new Suite(createRunnerBuilder(), classes as Class[])
-	}
+    public JUnit4GrailsTestType(String name, String sourceDirectory) {
+        this(name, sourceDirectory, null)
+    }
 
-	protected createJUnitReportsFactory() {
-		JUnitReportsFactory.createFromBuildBinding(buildBinding)
-	}
+    public JUnit4GrailsTestType(String name, String sourceDirectory, GrailsTestMode mode) {
+        super(name, sourceDirectory)
+        this.mode = mode
+    }
 
-	protected createListener(eventPublisher) {
-		new SuiteRunListener(eventPublisher, createJUnitReportsFactory(), createSystemOutAndErrSwapper())
-	}
-	
-	protected createNotifier(eventPublisher) {
-		def notifier = new RunNotifier()
-		notifier.addListener(createListener(eventPublisher))
-		notifier
-	}
-	
-	protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher) {
-		def notifier = createNotifier(eventPublisher)
-		def result = new Result()
-		notifier.addListener(result.createListener())
-		suite.run(notifier)
-		
-		notifier.fireTestRunFinished(result)
-		new JUnit4ResultGrailsTestTypeResultAdapter(result)
-	}
+    protected List<String> getTestSuffixes() {
+        SUFFIXES
+    }
+
+    protected int doPrepare() {
+        def testClasses = getTestClasses()
+        if (testClasses) {
+            suite = createSuite(testClasses)
+            suite.testCount()
+        } else {
+            0
+        }
+    }
+
+    protected getTestClasses() {
+        def classes = []
+        eachSourceFile { testTargetPattern, sourceFile ->
+            def testClass = sourceFileToClass(sourceFile)
+            if (!Modifier.isAbstract(testClass.modifiers)) {
+                classes << testClass
+            }
+        }
+        classes
+    }
+
+    protected createRunnerBuilder() {
+        if (mode) {
+            new GrailsTestCaseRunnerBuilder(mode, getApplicationContext())
+        } else {
+            new GrailsTestCaseRunnerBuilder()
+        }
+    }
+
+    protected createSuite(classes) {
+        new Suite(createRunnerBuilder(), classes as Class[])
+    }
+
+    protected createJUnitReportsFactory() {
+        JUnitReportsFactory.createFromBuildBinding(buildBinding)
+    }
+
+    protected createListener(eventPublisher) {
+        new SuiteRunListener(eventPublisher, createJUnitReportsFactory(), createSystemOutAndErrSwapper())
+    }
+
+    protected createNotifier(eventPublisher) {
+        def notifier = new RunNotifier()
+        notifier.addListener(createListener(eventPublisher))
+        notifier
+    }
+
+    protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher) {
+        def notifier = createNotifier(eventPublisher)
+        def result = new Result()
+        notifier.addListener(result.createListener())
+        suite.run(notifier)
+
+        notifier.fireTestRunFinished(result)
+        new JUnit4ResultGrailsTestTypeResultAdapter(result)
+    }
 
 }

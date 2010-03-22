@@ -935,7 +935,19 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             throw e
         }
     }
-
+	
+	/**
+	 * Converts an id value to the appropriate type for a domain class
+	 * 
+	 * @param grailsDomainClass a GrailsDomainClass
+	 * @param idValue an value to be converted
+	 * @return the idValue parameter converted to the type that grailsDomainClass expects
+	 * its identifiers to be
+	 */
+	public static convertValueToIdentifierType(grailsDomainClass, idValue) {
+		convertToType(idValue, grailsDomainClass.identifier.type)
+	}
+	
     private static convertToType(value, targetType) {
         SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 

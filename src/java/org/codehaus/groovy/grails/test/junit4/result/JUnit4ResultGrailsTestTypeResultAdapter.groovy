@@ -20,17 +20,17 @@ import org.codehaus.groovy.grails.test.GrailsTestTypeResult
 import org.junit.runner.Result
 
 class JUnit4ResultGrailsTestTypeResultAdapter implements GrailsTestTypeResult {
-	private final Result result
-	
-	JUnit4ResultGrailsTestTypeResultAdapter(Result result) {
-		this.result = result
-	}
+    private final Result result
 
-	int getPassCount() {
-		result.runCount - failCount
-	}
-		
-	int getFailCount() {
-		result.failureCount
-	}
+    JUnit4ResultGrailsTestTypeResultAdapter(Result result) {
+        this.result = result
+    }
+
+    int getPassCount() {
+        result.runCount - failCount
+    }
+
+    int getFailCount() {
+        result.failureCount
+    }
 }
