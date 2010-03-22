@@ -15,18 +15,24 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.DecoratorMapper;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
-import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import grails.util.Environment;
 import grails.util.Metadata;
 import groovy.lang.GroovyObject;
+import groovy.util.ConfigObject;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
@@ -46,14 +52,12 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.DecoratorMapper;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
+import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts
@@ -122,6 +126,17 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 						return d;
 					}
 					else {
+						String defaultDecoratorName = null;
+						Map config = ConfigurationHolder.getFlatConfig();
+						if(config != null && config.containsKey("grails.sitemesh.default.layout")) {
+							defaultDecoratorName = config.get("grails.sitemesh.default.layout").toString();
+						} else {
+							defaultDecoratorName = "application";
+						}
+						d = getNamedDecorator(request, defaultDecoratorName);
+						if(d != null) {
+							return d;
+						}
 						return parent != null ? super.getDecorator(request, page) : null;
 					}
 
