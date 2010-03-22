@@ -131,7 +131,7 @@ class WebMetaUtils {
 	*/
    static boolean isCommandObjectAction(Closure callable) {
    	 def paramTypes = callable.parameterTypes
-   	 paramTypes && paramTypes[0] != Object[].class    	
+   	 paramTypes && paramTypes[0] != Object[].class && paramTypes[0] != Object.class    	
    }
 	
 	/**
