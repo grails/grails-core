@@ -470,7 +470,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null;
         
         LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
-        if(type != null && val == null && DomainClassArtefactHandler.isDomainClass(type)) {
+        if(type != null && val == null && isDomainClass(type)) {
             if(!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
 
                 Object created = autoInstantiateDomainInstance(type);
@@ -504,7 +504,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                    int index = Integer.parseInt(indexString);
 
 
-                   if(DomainClassArtefactHandler.isDomainClass(referencedType)) {
+                   if(isDomainClass(referencedType)) {
                        Object instance = findIndexedValue(c, index);
                        if(instance != null) {
                            val = instance;
@@ -546,7 +546,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 if(currentKeyStart > -1 && currentKeyEnd > -1) {
                     String indexString = propertyNameWithIndex.substring(currentKeyStart+1, currentKeyEnd);
                     Class referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
-                    if(DomainClassArtefactHandler.isDomainClass(referencedType)) {
+                    if(isDomainClass(referencedType)) {
                         final Object domainInstance = autoInstantiateDomainInstance(referencedType);
                         val = domainInstance;
                         map.put(indexString, domainInstance);
@@ -557,6 +557,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         return val;
     }
+
+	private boolean isDomainClass(final Class clazz) {
+		return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz);
+	}
 
     private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
         return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
@@ -570,7 +574,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean canDecorateWithListOrderedSet(Collection c, Class referencedType) {
-        return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && DomainClassArtefactHandler.isDomainClass(referencedType);
+        return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && isDomainClass(referencedType);
     }
 
     private Object findIndexedValue(Collection c, int index) {
@@ -776,7 +780,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isDomainAssociation(Class associatedType) {
-        return associatedType != null && DomainClassArtefactHandler.isDomainClass(associatedType);
+        return associatedType != null && isDomainClass(associatedType);
     }
 
     private void addAssociationToTarget(String name, Object target, Object obj) {
