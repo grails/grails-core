@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
@@ -115,11 +118,11 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
     IvySettings ivySettings
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     DefaultModuleDescriptor moduleDescriptor
-    List repositoryData = []
-    Set<String> configuredPlugins = [] as Set
-    Set<String> usedConfigurations = [] as Set
-    Set moduleExcludes = [] as Set
-    Map pluginExcludes = [:]
+	Collection repositoryData = new ConcurrentLinkedQueue()
+	Collection<String> configuredPlugins = new ConcurrentLinkedQueue()
+	Collection<String> usedConfigurations = new ConcurrentLinkedQueue()
+	Collection moduleExcludes = new ConcurrentLinkedQueue()
+    Map pluginExcludes = new ConcurrentHashMap()
     
     boolean readPom = false
     boolean inheritsAll = false
