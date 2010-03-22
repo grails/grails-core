@@ -20,6 +20,8 @@ import java.util.regex.Pattern
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.runtime.StackTraceUtils;
+
 import groovyx.gpars.Asynchronizer
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.repository.TransferEvent
@@ -634,23 +636,30 @@ class BuildSettings {
      * returns an empty config.
      */
     public ConfigObject loadConfig(File configFile) {
-        loadSettingsFile()
-        if (configFile.exists()) {
-            // To avoid class loader issues, we make sure that the
-            // Groovy class loader used to parse the config file has
-            // the root loader as its parent. Otherwise we get something
-            // like NoClassDefFoundError for Script.
-            GroovyClassLoader gcl = obtainGroovyClassLoader();
-            ConfigSlurper slurper = createConfigSlurper()
-            
-            URL configUrl = configFile.toURI().toURL()
-            Script script = gcl.parseClass(configFile)?.newInstance();
+    	try {
+            loadSettingsFile()
+            if (configFile.exists()) {
+                // To avoid class loader issues, we make sure that the
+                // Groovy class loader used to parse the config file has
+                // the root loader as its parent. Otherwise we get something
+                // like NoClassDefFoundError for Script.
+                GroovyClassLoader gcl = obtainGroovyClassLoader();
+                ConfigSlurper slurper = createConfigSlurper()
+                
+                URL configUrl = configFile.toURI().toURL()
+                Script script = gcl.parseClass(configFile)?.newInstance();
 
-            config.setConfigFile(configUrl)
-            loadConfig(slurper.parse(script))
-        } else {
-            postLoadConfig()
-        }
+                config.setConfigFile(configUrl)
+                loadConfig(slurper.parse(script))
+            } else {
+                postLoadConfig()
+            }    		
+    	}
+    	catch(e) {
+    		StackTraceUtils.deepSanitize e
+    		throw e
+    	}
+
     }
     
     ConfigObject loadConfig(ConfigObject config) {

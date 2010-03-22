@@ -99,7 +99,13 @@ public class GrailsScriptRunner {
 
         // Now we can pick up the Grails version from the Ant project
         // properties.
-        BuildSettings build = new BuildSettings(new File(grailsHome));
+        BuildSettings build = null;
+		try {
+			build = new BuildSettings(new File(grailsHome));
+		} catch (Exception e) {
+			System.err.println("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
+			System.exit(1);
+		}
 
         // Check that Grails' home actually exists.
         final File grailsHomeInSettings = build.getGrailsHome();
@@ -281,8 +287,10 @@ public class GrailsScriptRunner {
             settings.loadConfig();
         }
         catch (Exception e) {
-            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            
             e.printStackTrace(System.err);
+            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            System.exit(1);
         }
         finally {
             System.setProperty("disable.grails.plugin.transform", "false");

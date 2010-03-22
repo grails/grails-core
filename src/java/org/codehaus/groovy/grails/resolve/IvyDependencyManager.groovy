@@ -1012,19 +1012,21 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     def invokeMethod(String name, args) {
-        if(!args || !((args[0] instanceof CharSequence)||(args[0] instanceof Map)||(args[0] instanceof Collection)))
-            throw new MissingMethodException(name, IvyDependencyManager, args)
-        
-        def dependencies = args
-        def callable
-        if(dependencies && (dependencies[-1] instanceof Closure)) {
-            callable = dependencies[-1]
-            dependencies = dependencies[0..-2]
+        if(!args || !((args[0] instanceof CharSequence)||(args[0] instanceof Map)||(args[0] instanceof Collection))) {
+        	println "WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring.."
         }
+        else {
+            def dependencies = args
+            def callable
+            if(dependencies && (dependencies[-1] instanceof Closure)) {
+                callable = dependencies[-1]
+                dependencies = dependencies[0..-2]
+            }
 
-        if(dependencies) {
+            if(dependencies) {
 
-            parseDependenciesInternal(dependencies, name, callable)
+                parseDependenciesInternal(dependencies, name, callable)
+            }        	
         }
     }
 
