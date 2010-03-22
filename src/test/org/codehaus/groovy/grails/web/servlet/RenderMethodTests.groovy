@@ -143,6 +143,34 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assertEquals "text/html;charset=utf-8", response.contentType
 	}
 
+    void testRenderTemplateWithCollectionUsingImplicitITVariable() {
+    	def mockController = ga.getControllerClass('RenderController').newInstance()
+		
+		request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
+		def resourceLoader = new MockStringResourceLoader()
+		resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${it.firstName} ${it.middleName}<br/>'
+		appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+		webRequest.controllerName = 'render'
+		mockController.renderTemplateWithCollection.call()
+		
+		def resopnse = mockController.response
+		assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
+	}
+
+	void testRenderTemplateWithCollectionUsingExplicitVariableName() {
+		def mockController = ga.getControllerClass('RenderController').newInstance()
+		
+		request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
+		def resourceLoader = new MockStringResourceLoader()
+		resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${person.firstName} ${person.middleName}<br/>'
+		appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+		webRequest.controllerName = 'render'
+		mockController.renderTemplateWithCollectionAndExplicitVarName.call()
+		
+		def resopnse = mockController.response
+		assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
+	}
+	
 	void testRenderTemplateWithContentType() {
        def mockController = ga.getControllerClass("RenderController").newInstance()
 
@@ -199,6 +227,14 @@ class RenderController {
 	def renderTemplate = {
 		render(template:"testTemplate", model:[hello:"world"])
 	}
+	def renderTemplateWithCollection = {
+		def people = [[firstName: 'Jacob', middleName: 'Ray'], [firstName: 'Zachary', middleName: 'Scott']]
+   		render(template:"peopleTemplate", collection: people)
+   	}
+	def renderTemplateWithCollectionAndExplicitVarName = {
+    		def people = [[firstName: 'Jacob', middleName: 'Ray'], [firstName: 'Zachary', middleName: 'Scott']]
+       		render(var: 'person', template:"peopleTemplate", collection: people)
+	}			
 	def renderXmlTemplate = {
 		render(template:"xmlTemplate",contentType:"text/xml")
 	}
