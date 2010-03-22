@@ -42,6 +42,11 @@ class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implement
 
         return loader.filters;
     }
+    
+    @Override
+	public MetaClass getMetaClass() {
+    	GroovySystem.metaClassRegistry.getMetaClass DefaultGrailsFiltersClass
+   	}    
 }
 
 class Loader {
