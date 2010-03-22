@@ -79,9 +79,9 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
     DefaultModuleDescriptor moduleDescriptor
     DefaultDependencyDescriptor currentDependencyDescriptor
     Collection repositoryData = new ConcurrentLinkedQueue()
-    Set<String> configuredPlugins = [] as Set
-    Set<String> usedConfigurations = [] as Set
-    Set moduleExcludes = [] as Set
+    Collection<String> configuredPlugins = new ConcurrentLinkedQueue()
+    Collection<String> usedConfigurations = new ConcurrentLinkedQueue()
+    Collection moduleExcludes = new ConcurrentLinkedQueue()
     TransferListener transferListener
 
 
