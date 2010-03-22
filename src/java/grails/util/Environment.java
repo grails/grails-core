@@ -260,7 +260,6 @@ public enum Environment {
 		public void environments(Closure callable) {
             if(callable!=null) {
                 callable.setDelegate(this);
-                callable.setResolveStrategy(Closure.DELEGATE_FIRST);
                 callable.call();
             }
         }
