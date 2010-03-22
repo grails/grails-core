@@ -131,7 +131,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public Object getReferenceInstance() {
-    	Object obj=newInstance();
+    	Object obj=classPropertyFetcher.getReference();
 		if(obj instanceof GroovyObject) {
 			// GrailsClassUtils.getExpandoMetaClass(clazz) removed here
             ((GroovyObject)obj).setMetaClass(getMetaClass());
