@@ -131,9 +131,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 	
 	    boolean hasStatus = !StringUtils.isBlank(status);	    
 	    boolean hasVar = !StringUtils.isBlank(var);
-        boolean hasSafeDeref = in!= null && in.trim().endsWith("?");
-	    
-	    if(hasStatus && !hasVar)
+        if(hasStatus && !hasVar)
 	    	throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
 	    
 		String methodName = hasStatus ? METHOD_EACH_WITH_INDEX : METHOD_EACH;

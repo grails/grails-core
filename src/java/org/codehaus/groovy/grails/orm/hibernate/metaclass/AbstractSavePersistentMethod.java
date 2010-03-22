@@ -181,7 +181,10 @@ public abstract class AbstractSavePersistentMethod extends
 		                try {
                             Serializable id = (Serializable) propBean.getPropertyValue(otherSide.getIdentifier().getName());
                             if (id != null) {
-                                bean.setPropertyValue(prop.getName(), t.get(prop.getType(), id));
+                                final Object propVal = t.get(prop.getType(), id);
+                                if(propVal != null) {
+                                	bean.setPropertyValue(prop.getName(), propVal);
+                                }
                             }
                         } catch (InvalidPropertyException ipe) {
                             // property is not accessable

@@ -36,7 +36,8 @@ import java.util.HashMap;
  */
 public class JspRenderInputTag extends RequestContextAwareTag {
 
-    private String bean;
+	private static final long serialVersionUID = 2807429431970194614L;
+	private String bean;
     private String property;
 
     protected int doStartTagInternal() throws Exception {
@@ -50,7 +51,8 @@ public class JspRenderInputTag extends RequestContextAwareTag {
          if(!ExpressionEvaluationUtils.isExpressionLanguage(bean)) {
              throw new JspTagException("Attribute [bean] of tag [scaffold] must be a JSTL expression");
          }
-         Writer out = pageContext.getOut();
+         @SuppressWarnings("unused")
+		Writer out = pageContext.getOut();
          try {
              Object beanInstance = ExpressionEvaluationUtils.evaluate("bean",this.bean,Object.class,this.pageContext);
              if(beanInstance == null)

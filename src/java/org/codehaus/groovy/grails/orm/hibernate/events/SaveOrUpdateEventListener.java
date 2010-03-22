@@ -27,4 +27,6 @@ import org.hibernate.event.def.DefaultSaveOrUpdateEventListener;
  *        Created: Oct 13, 2008
  */
 public class SaveOrUpdateEventListener extends DefaultSaveOrUpdateEventListener{
+
+	private static final long serialVersionUID = 5329080291582964284L;
 }

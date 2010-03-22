@@ -18,6 +18,7 @@ import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandl
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
@@ -40,7 +41,7 @@ class FiltersGrailsPlugin {
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
     def log = LogFactory.getLog(FiltersGrailsPlugin)
 
-    static final BEANS = { filter ->
+    static final BEANS = { GrailsClass filter ->
             "${filter.fullName}Class"(MethodInvokingFactoryBean) {
                 targetObject = ref("grailsApplication", true)
                 targetMethod = "getArtefact"

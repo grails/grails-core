@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.*
  * @author Graeme Rocher
  *
  */
+@SuppressWarnings("unused")
 class GrailsHttpSessionTests extends AbstractGrailsPluginTests {
 
 	void onSetUp() {

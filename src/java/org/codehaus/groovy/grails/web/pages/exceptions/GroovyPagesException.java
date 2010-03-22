@@ -27,7 +27,8 @@ import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
  *        Time: 10:45:39 AM
  */
 public class GroovyPagesException extends GrailsException implements SourceCodeAware {
-    private int lineNumber;
+	private static final long serialVersionUID = 6142857809397583528L;
+	private int lineNumber;
     private String fileName;
 
     public GroovyPagesException(String message, Exception e) {

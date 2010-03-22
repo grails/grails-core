@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.runtime.InvokerInvocationException;
-
 /**
  * 
  * 

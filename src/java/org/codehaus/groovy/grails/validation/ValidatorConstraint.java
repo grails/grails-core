@@ -173,7 +173,8 @@ public class ValidatorConstraint extends AbstractConstraint {
     private static class ValidatorDelegate {
         private String propertyName;
 
-        public String getPropertyName() {
+        @SuppressWarnings("unused")
+		public String getPropertyName() {
             return propertyName;
         }
 

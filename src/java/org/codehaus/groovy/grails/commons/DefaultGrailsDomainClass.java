@@ -15,30 +15,34 @@
 package org.codehaus.groovy.grails.commons;
 
 
+import static java.util.Collections.EMPTY_LIST;
+import static java.util.Collections.EMPTY_MAP;
+import static java.util.Collections.unmodifiableMap;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
-import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.validation.Validator;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Modifier;
-import java.util.*;
-import static java.util.Collections.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
+import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.springframework.validation.Validator;
 
 /**
  * @author Graeme Rocher
  * @since 05-Jul-2005
  */
 public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements GrailsDomainClass {
-
-    private static final Log LOG  = LogFactory.getLog(DefaultGrailsDomainClass.class);
-
 
     private GrailsDomainClassProperty identifier;
     private GrailsDomainClassProperty version;

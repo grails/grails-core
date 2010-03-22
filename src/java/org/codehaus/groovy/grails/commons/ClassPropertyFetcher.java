@@ -77,6 +77,12 @@ public class ClassPropertyFetcher {
 		this.callback = callback;
 		init();
 	}
+	
+	public Object getReference() {
+		if(callback != null)
+			return this.callback.getReferenceInstance();
+		return null;
+	}
 
 	public PropertyDescriptor[] getPropertyDescriptors() {
 		return propertyDescriptors;

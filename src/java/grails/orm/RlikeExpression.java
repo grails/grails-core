@@ -31,7 +31,8 @@ import org.hibernate.engine.TypedValue;
  */
 public class RlikeExpression implements Criterion
 {
-    private final String propertyName;
+ 	private static final long serialVersionUID = -214329918050957956L;
+	private final String propertyName;
     private final Object value;
 
     public RlikeExpression(String propertyName, Object value) {

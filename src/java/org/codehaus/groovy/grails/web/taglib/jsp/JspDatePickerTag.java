@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspDatePickerTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "datePicker";
+	private static final long serialVersionUID = 3331667092741188327L;
+
+	private static final String TAG_NAME = "datePicker";
 
     private String name;
     private String value;

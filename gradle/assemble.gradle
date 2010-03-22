@@ -229,30 +229,33 @@ task initBundlor(type: Copy) {
 distJars.matching({ jar -> jar.osgify } as Spec).allObjects {task ->
     task.dependsOn initBundlor
     task.doLast {
-        def bundlorPath = fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/dist") +
-                fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/lib")
-        Properties antBuildProps = new Properties()
-        antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
-        ant {
-            antBuildProps.each {key, value ->
-                if (key.startsWith('bundlor.')) {
-                    ant.properties[key] = value
-                }
-            }
-            taskdef(resource: "com/springsource/bundlor/ant/antlib.xml", uri: "antlib:com.springsource.bundlor.ant",
-                    classpath: bundlorPath.asPath)
-            'antlib:com.springsource.bundlor.ant:bundlor'(
-                    inputPath: archivePath,
-                    outputPath: archivePath,
-                    bundleVersion: version,
-                    manifestTemplatePath: "$projectDir/maven/grails-${appendix}.mf",
-                    failOnWarnings: "true") {
-                propertyset() {
-                    propertyref(prefix: "bundlor.")
-                    mapper(type: "glob", from: "bundlor.*", to: "*")
-                }
-            }
-        }
+    	if(new File("${initBundlor.dir}/bundlor-${initBundlor.version}").exists()) {
+            def bundlorPath = fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/dist") +
+            				  fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/lib")
+		    Properties antBuildProps = new Properties()
+		    antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
+		    ant {
+		        antBuildProps.each {key, value ->
+		            if (key.startsWith('bundlor.')) {
+		                ant.properties[key] = value
+		            }
+		        }
+		        taskdef(resource: "com/springsource/bundlor/ant/antlib.xml", uri: "antlib:com.springsource.bundlor.ant",
+		                classpath: bundlorPath.asPath)
+		        'antlib:com.springsource.bundlor.ant:bundlor'(
+		                inputPath: archivePath,
+		                outputPath: archivePath,
+		                bundleVersion: version,
+		                manifestTemplatePath: "$projectDir/maven/grails-${appendix}.mf",
+		                failOnWarnings: "true") {
+		            propertyset() {
+		                propertyref(prefix: "bundlor.")
+		                mapper(type: "glob", from: "bundlor.*", to: "*")
+		            }
+		        }
+		    }    		
+    	}
+
     }
 }
 
@@ -281,15 +284,19 @@ task pluginsFromSvn {
     }
 }
 
-antBinExecutables = "ant"
-binExecutables = ["cygrails", "grails", "grails-debug", "startGrails"]
+binExecutables = ["cygrails", "grails", "grails-debug"]
 
 distSpec = copySpec {
     from(projectDir) {
         into "grails-$version"
-        include 'lib/', 'ant/', 'media/', 'samples/', 'scripts/', 'conf/', 'build.gradle', 'build.properties',
-                'LICENSE', 'INSTALL', "cruise/coverage/lib/", "src/"
+        include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'conf/', 'build.gradle', 'build.properties',
+                'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
         exclude 'ant/bin'
+    }
+    from(projectDir) {
+    	into "grails-$version"
+    	include "gradlew"
+    	fileMode = 0755
     }
     from(docs.destinationDir) {
         into "grails-$version/doc"
@@ -300,20 +307,7 @@ distSpec = copySpec {
     }
     from('bin') {
         into "grails-$version/bin"
-        exclude binExecutables
-    }
-    from('ant/bin') {
-        into "grails-$version/ant/bin"
-        exclude antBinExecutables
-    }
-    from('bin') {
-        into "grails-$version/bin"
         include binExecutables
-        fileMode = 0755
-    }
-    from('ant/bin') {
-        into "grails-$version/ant/bin"
-        include antBinExecutables
         fileMode = 0755
     }
     from('src/resources/docs/README') {
@@ -324,9 +318,11 @@ distSpec = copySpec {
         include "startGrails.bat", "startGrails"
         into "grails-$version/bin"
         filter(ReplaceTokens, tokens: ["grails.version": version])
+        fileMode = 0755
     }
     from(libs.destinationDir) {
         into "grails-$version/dist"
+        exclude "*.zip"
     }
     // binary
     from("src/grails/grails-macros.xml") {

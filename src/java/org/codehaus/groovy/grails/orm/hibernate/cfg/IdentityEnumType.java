@@ -42,8 +42,9 @@ import java.util.*;
  * @since 1.1
  */
 public class IdentityEnumType implements UserType, ParameterizedType, Serializable {
+	private static final long serialVersionUID = -6625622185856547501L;
 
-    private static final Log LOG = LogFactory.getLog(IdentityEnumType.class);
+	private static final Log LOG = LogFactory.getLog(IdentityEnumType.class);
 
     public static final String ENUM_ID_ACCESSOR = "getId";
     public static final String PARAM_ENUM_CLASS = "enumClass";
@@ -168,7 +169,8 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
     @SuppressWarnings("unchecked")
     private static class BidiEnumMap implements Serializable {
 
-        private final Map enumToKey;
+		private static final long serialVersionUID = 3325751131102095834L;
+		private final Map enumToKey;
         private final Map keytoEnum;
 
         private Class keyType;

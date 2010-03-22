@@ -27,6 +27,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  */
 public class UnsupportedReturnValueException extends GrailsMVCException {
 
+	private static final long serialVersionUID = -8457258677025046919L;
+
 	public UnsupportedReturnValueException() {
 		super();
 	}

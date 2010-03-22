@@ -39,7 +39,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
  *        Time: 2:21:38 PM
  */
 public class GroovyPageTagBody extends Closure {
-    private Closure bodyClosure;
+	private static final long serialVersionUID = 4396762064131558457L;
+	private Closure bodyClosure;
     private Binding binding;
     private boolean preferSubChunkWhenWritingToOtherBuffer;
 
@@ -104,13 +105,15 @@ public class GroovyPageTagBody extends Closure {
                     // it to its original state.
                     Map currentBinding = null;
                     Map originalBinding = null;
+                    final Map argsMap = (Map) args;
 
                     if(binding!=null) {
                         currentBinding = binding.getVariables();
                         originalBinding = new HashMap(currentBinding);
                         // Add the extra variables passed into the body to the
                         // current binding.
-                        currentBinding.putAll((Map) args);
+                        
+						currentBinding.putAll(argsMap);
                     }
 
                     try {
@@ -119,8 +122,12 @@ public class GroovyPageTagBody extends Closure {
                     finally {
                         if(binding!=null) {
                             // GRAILS-2675: Restore the original binding.
-                            currentBinding.clear();
-                            currentBinding.putAll(originalBinding);
+                            for (Object key : argsMap.keySet()) {
+								Object originalVal = originalBinding.get(key);
+								if(originalVal != null) {
+									currentBinding.put(key, originalVal);
+								}
+							}
                         }
                     }
                 }

@@ -21,7 +21,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspEachErrorTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "eachError";
+	private static final long serialVersionUID = 4905214290442171610L;
+
+	private static final String TAG_NAME = "eachError";
 
     private String bean;
     private String model;

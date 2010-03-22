@@ -105,6 +105,7 @@ public final class GroovyPageOutputStack {
 			this.out=newOut;
 		}
 		
+		@SuppressWarnings("unused")
 		public GroovyPageOutputStack getOutputStack() {
 			return GroovyPageOutputStack.this;
 		}

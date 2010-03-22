@@ -34,7 +34,9 @@ import org.springframework.webflow.persistence.HibernateFlowExecutionListener;
  *        Created: Jan 18, 2008
  */
 public class FlowAwareCurrentSessionContext extends SpringSessionContext{
-    /**
+	private static final long serialVersionUID = -836141275847835219L;
+
+	/**
      * Create a new SpringSessionContext for the given Hibernate SessionFactory.
      *
      * @param sessionFactory the SessionFactory to provide current Sessions for

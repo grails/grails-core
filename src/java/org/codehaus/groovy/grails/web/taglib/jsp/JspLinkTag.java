@@ -22,7 +22,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since Jan 3, 2006
  */
 public class JspLinkTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "link";
+	private static final long serialVersionUID = 5302909740441701754L;
+
+	private static final String TAG_NAME = "link";
 
     private String controller;
     private String action;

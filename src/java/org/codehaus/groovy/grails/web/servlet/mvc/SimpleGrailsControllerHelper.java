@@ -20,6 +20,17 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
@@ -28,8 +39,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -37,18 +50,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.LinkedHashMap;
 
 /**
  * <p>This is a helper class that does the main job of dealing with Grails web requests
@@ -70,14 +73,11 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 	private GrailsWebRequest webRequest;
     
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
-    private static final char SLASH = '/';
-
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private String id;
     private String controllerName;
     private String actionName;
-    private String controllerActionURI;
-
+    
     public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
         super();
         this.application = application;
@@ -170,8 +170,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
         }
-        controllerActionURI = SLASH + controllerName + SLASH + actionName + SLASH;
-        
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
 
@@ -228,6 +226,9 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure action;
             try {
                 action = (Closure)controller.getProperty(actionName);
+                if(WebMetaUtils.isCommandObjectAction(action)) {
+                	action = WebMetaUtils.createAndPrepareCommandObjectAction(controller, action, actionName, this.applicationContext);                	
+                }
             }
             catch(MissingPropertyException mpe) {
                 try {

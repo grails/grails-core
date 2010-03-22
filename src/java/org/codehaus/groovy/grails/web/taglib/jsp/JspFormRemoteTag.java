@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspFormRemoteTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "formRemote";
+	private static final long serialVersionUID = -8341720118912122062L;
+
+	private static final String TAG_NAME = "formRemote";
 
     private String controller;
     private String action;

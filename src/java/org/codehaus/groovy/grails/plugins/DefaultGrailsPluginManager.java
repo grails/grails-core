@@ -67,6 +67,7 @@ import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -565,7 +566,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                 if(LOG.isInfoEnabled()) {
                     LOG.info("Parsing & compiling " + r.getFilename());
                 }
-                pluginClass = ((GroovyClassLoader)cl).parseClass(r.getInputStream());
+                pluginClass = ((GroovyClassLoader)cl).parseClass(DefaultGroovyMethods.getText(r.getInputStream()));
             }
             catch (CompilationFailedException e) {
                 throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);

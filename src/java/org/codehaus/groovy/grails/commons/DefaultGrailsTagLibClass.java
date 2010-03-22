@@ -14,14 +14,13 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.Closure;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
-
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Graeme Rocher

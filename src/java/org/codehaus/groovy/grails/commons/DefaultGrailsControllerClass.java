@@ -23,10 +23,15 @@ import groovy.lang.MetaProperty;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -42,12 +47,9 @@ import org.springframework.util.AntPathMatcher;
 public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
 		implements GrailsControllerClass {
 
-    private final static Log log = LogFactory.getLog(DefaultGrailsControllerClass.class);
-
     public static final String CONTROLLER = "Controller";
 
     private static final String SLASH = "/";
-    private static final String VIEW = "View";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
 	private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
 
@@ -99,7 +101,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
             PropertyDescriptor propertyDescriptor = propertyDescriptors[i];
             Method readMethod = propertyDescriptor.getReadMethod();
             if(readMethod != null && !Modifier.isStatic(readMethod.getModifiers())) {
-            	if(propertyDescriptor.getPropertyType() == Object.class) {
+            	final Class<?> propertyType = propertyDescriptor.getPropertyType();
+				if(propertyType == Object.class || propertyType == Closure.class) {
                     String closureName = propertyDescriptor.getName();
                     if(closureName.endsWith(FLOW_SUFFIX)) {
                         String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
@@ -278,7 +281,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass
     public Map getFlows() {
     	Map closureFlows = new HashMap();
     	for (String name : flows.keySet()) {
-			Closure c = getPropertyValue(name, Closure.class);
+			Closure c = getPropertyValue(name + "Flow", Closure.class);
 			if(c!=null) {
 				closureFlows.put(name, c);
 			}

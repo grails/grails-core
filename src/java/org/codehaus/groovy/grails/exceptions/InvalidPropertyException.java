@@ -25,6 +25,8 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public class InvalidPropertyException extends GrailsException {
 
+	private static final long serialVersionUID = 132133525035378206L;
+
 	public InvalidPropertyException() {
 		super();
 	}

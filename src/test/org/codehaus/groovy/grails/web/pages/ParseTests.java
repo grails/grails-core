@@ -48,7 +48,8 @@ public class ParseTests extends TestCase {
         return result.toString();
     }
     
-    private void configureKeepgen() {
+    @SuppressWarnings("unused")
+	private void configureKeepgen() {
 		File tempdir=new File(System.getProperty("java.io.tmpdir"),"gspgen");
         tempdir.mkdir();
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.keepgenerateddir = \"" + tempdir.getAbsolutePath() + "\"");
@@ -178,7 +179,8 @@ public class ParseTests extends TestCase {
 
     }
 
-    private void dumpCharValues(String str) {
+    @SuppressWarnings("unused")
+	private void dumpCharValues(String str) {
         for (int i = 0; i < str.length(); i++) {
             System.out.println("char "+i+" is: "+(int) str.charAt(i));
         }

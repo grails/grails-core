@@ -26,44 +26,50 @@ import junit.framework.TestCase;
  */
 public class GroovyPageUtilsTests extends TestCase{
     public void testGetViewURI() {
-        assertEquals("/foo/bar.gsp", GroovyPageUtils.getViewURI("foo", "bar"));
-        assertEquals("/bar/foo.gsp", GroovyPageUtils.getViewURI("foo", "/bar/foo"));
-        assertEquals("/foo/bar/foo.gsp", GroovyPageUtils.getViewURI("foo", "bar/foo"));
+    	GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        assertEquals("/foo/bar.gsp", uriSupport.getViewURI("foo", "bar"));
+        assertEquals("/bar/foo.gsp", uriSupport.getViewURI("foo", "/bar/foo"));
+        assertEquals("/foo/bar/foo.gsp", uriSupport.getViewURI("foo", "bar/foo"));
     }
 
     public void testNoSuffxGetViewURI() {
-        assertEquals("/foo/bar", GroovyPageUtils.getNoSuffixViewURI("foo", "bar"));
-        assertEquals("/bar/foo", GroovyPageUtils.getNoSuffixViewURI("foo", "/bar/foo"));
-        assertEquals("/foo/bar/foo", GroovyPageUtils.getNoSuffixViewURI("foo", "bar/foo"));
+    	GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        assertEquals("/foo/bar", uriSupport.getNoSuffixViewURI("foo", "bar"));
+        assertEquals("/bar/foo", uriSupport.getNoSuffixViewURI("foo", "/bar/foo"));
+        assertEquals("/foo/bar/foo", uriSupport.getNoSuffixViewURI("foo", "bar/foo"));
     }
 
 
     public void testGetTemplateURI() {
-        assertEquals("/foo/_bar.gsp", GroovyPageUtils.getTemplateURI("foo", "bar"));
-        assertEquals("/bar/_foo.gsp", GroovyPageUtils.getTemplateURI("foo", "/bar/foo"));
-        assertEquals("/foo/bar/_foo.gsp", GroovyPageUtils.getTemplateURI("foo", "bar/foo"));
+    	GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        assertEquals("/foo/_bar.gsp", uriSupport.getTemplateURI("foo", "bar"));
+        assertEquals("/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "/bar/foo"));
+        assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "bar/foo"));
 
     }
 
     public void testGetTemplateURIForController() throws IllegalAccessException, InstantiationException {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
-        assertEquals("/foo/_bar.gsp", GroovyPageUtils.getTemplateURI(controller, "bar"));
-        assertEquals("/bar/_foo.gsp", GroovyPageUtils.getTemplateURI(controller, "/bar/foo"));
-        assertEquals("/foo/bar/_foo.gsp", GroovyPageUtils.getTemplateURI(controller, "bar/foo"));
+        GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        assertEquals("/foo/_bar.gsp", uriSupport.getTemplateURI(controller, "bar"));
+        assertEquals("/bar/_foo.gsp", uriSupport.getTemplateURI(controller, "/bar/foo"));
+        assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI(controller, "bar/foo"));
 
     }
 
     public void testGetViewURIForController() throws IllegalAccessException, InstantiationException {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
-        assertEquals("/foo/bar.gsp", GroovyPageUtils.getViewURI(controller, "bar"));
-        assertEquals("/bar/foo.gsp", GroovyPageUtils.getViewURI(controller, "/bar/foo"));
-        assertEquals("/foo/bar/foo.gsp", GroovyPageUtils.getViewURI(controller, "bar/foo"));
+        GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        assertEquals("/foo/bar.gsp", uriSupport.getViewURI(controller, "bar"));
+        assertEquals("/bar/foo.gsp", uriSupport.getViewURI(controller, "/bar/foo"));
+        assertEquals("/foo/bar/foo.gsp", uriSupport.getViewURI(controller, "bar/foo"));
     }
 
    public void testNoSuffixGetViewURIForController() throws IllegalAccessException, InstantiationException {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
-        assertEquals("/foo/bar", GroovyPageUtils.getNoSuffixViewURI(controller, "bar"));
-        assertEquals("/bar/foo", GroovyPageUtils.getNoSuffixViewURI(controller, "/bar/foo"));
-        assertEquals("/foo/bar/foo", GroovyPageUtils.getNoSuffixViewURI(controller, "bar/foo"));
+        GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        assertEquals("/foo/bar", uriSupport.getNoSuffixViewURI(controller, "bar"));
+        assertEquals("/bar/foo", uriSupport.getNoSuffixViewURI(controller, "/bar/foo"));
+        assertEquals("/foo/bar/foo", uriSupport.getNoSuffixViewURI(controller, "bar/foo"));
     }
 }

@@ -11,8 +11,6 @@ import java.io.Writer;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.runtime.InvokerInvocationException;
-
 import junit.framework.TestCase;
 
 public class JSonBuilderTests extends TestCase {

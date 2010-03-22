@@ -71,7 +71,9 @@ import java.util.regex.Pattern;
  */
 public class UrlValidator implements Serializable {
 
-    /**
+	private static final long serialVersionUID = 7154620567871023850L;
+
+	/**
      * Allows all validly formatted schemes to pass validation instead of
      * supplying a set of valid schemes.
      */

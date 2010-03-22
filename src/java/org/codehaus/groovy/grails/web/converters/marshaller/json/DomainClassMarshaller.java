@@ -16,29 +16,35 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
-import org.hibernate.collection.AbstractPersistentCollection;
 import org.hibernate.Hibernate;
+import org.hibernate.collection.AbstractPersistentCollection;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.util.*;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
 public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
-
-    private final Log log = LogFactory.getLog(getClass());
 
     private boolean includeVersion = false;
 
@@ -126,7 +132,8 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                             asShortObject(referenceObject, json, referencedDomainClass.getIdentifier(), referencedDomainClass);
                         } else {
                             GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
-                            String refPropertyName = referencedDomainClass.getPropertyName();
+                            @SuppressWarnings("unused")
+							String refPropertyName = referencedDomainClass.getPropertyName();
                             if (referenceObject instanceof Collection) {
                                 Collection o = (Collection) referenceObject;
                                 writer.array();

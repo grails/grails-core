@@ -22,7 +22,8 @@ import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
  * @since 11-Jan-2006
  */
 public class GrailsTagException extends GrailsException implements SourceCodeAware {
-    private String fileName;
+	private static final long serialVersionUID = -2340187595590923592L;
+	private String fileName;
     private int lineNumber;
 
     public GrailsTagException(String s) {

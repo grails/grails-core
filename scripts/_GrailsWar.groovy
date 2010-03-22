@@ -197,6 +197,49 @@ target (war: "The implementation target") {
         ant.mkdir(dir:metaInfo)
         String manifestFile = "$metaInfo/MANIFEST.MF"
         ant.manifest(file:manifestFile) {
+        	// OSGi bundle headers
+    		attribute(name:"Bundle-ManifestVersion",value:"2")
+    		attribute(name:"Bundle-Name",value:"${grailsAppName}")
+    		attribute(name:"Bundle-SymbolicName",value:"${grailsAppName}")
+    		// note that the version must be a valid OSGi version, e.g. major.minor.micro.qualifier,
+    		// where major, minor, and micro must be numbers and qualifier can be any string
+    		// minor, micro and qualifier are optional
+    		attribute(name:"Bundle-Version",value:"${metadata.getApplicationVersion()}")
+    		// determine servlet and jsp versions
+    		def optionalPackage = "resolution:=optional"
+    		def servletVersion = ''
+    		def jspVersion = ''
+    		switch (metadata.getServletVersion()) {
+    		case '2.4': servletVersion='version="[2.4,3.0)"'; jspVersion = 'version="[2.0,3.0)"'; break;
+    		case '2.5': servletVersion='version="[2.5,3.0)"'; jspVersion = 'version="[2.1,3.0)"'; break;
+    		case '3.0': servletVersion='version="[3.0,4.0)"'; jspVersion = 'version="[2.2,3.0)"'; break;
+    		}
+    		// imported packages
+    		def importedPackageList = [
+				"javax.servlet;$servletVersion",
+				"javax.servlet.http;$servletVersion",
+				"javax.servlet.resources;$servletVersion",
+				"javax.servlet.jsp;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.el;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.jstl;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.jstl.core;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.jstl.fmt;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.jstl.sql;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.jstl.tlv;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.tagext;$jspVersion;$optionalPackage",
+				"javax.servlet.jsp.resources;$jspVersion;$optionalPackage",
+				"javax.xml.parsers",
+				"org.w3c.dom",
+				"org.xml.sax",
+				"org.xml.sax.ext",
+				"org.xml.sax.helpers",
+			];
+			def importedPackages = importedPackageList.join(',')
+			attribute(name:"Import-Package", value:"${importedPackages}")
+			// Webapp context, this is used as URL prefix
+			attribute(name:"Webapp-Context",value:"${grailsAppName}")
+
+    		// Grails sub-section
             section(name:"Grails Application") {
                 attribute(name:"Implementation-Title",value:"${grailsAppName}")
                 attribute(name:"Implementation-Version",value:"${metadata.getApplicationVersion()}")
@@ -228,6 +271,20 @@ target (war: "The implementation target") {
         warPluginsInternal(pluginInfos)
         def resourceList = pluginSettings.getArtefactResources()
         createDescriptorInternal(pluginInfos, resourceList)
+
+        // update OSGi bundle classpath in MANIFEST.MF after event
+        // handlers had a chance to modify included jars
+        // add all jars in WEB-INF/lib
+		def libDir = new File("${stagingDir}/WEB-INF/lib")
+		def classPathEntries = [ ".", "WEB-INF/classes" ]
+		if(includeJars) {
+			libDir.eachFileMatch(~/.*\.jar/) { classPathEntries << "WEB-INF/lib/${it.name}" }
+		}
+		def classPath = classPathEntries.join(',')
+        ant.manifest(file:manifestFile, mode:'update') {
+			attribute(name:"Bundle-ClassPath",value:"${classPath}")
+        }
+
     	event("CreateWarStart", [warName, stagingDir])
         if (!buildExplodedWar) {
             def warFile = new File(warName)

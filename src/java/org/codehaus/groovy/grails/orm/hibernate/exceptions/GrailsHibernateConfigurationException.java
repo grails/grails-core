@@ -23,7 +23,9 @@ package org.codehaus.groovy.grails.orm.hibernate.exceptions;
  */
 public class GrailsHibernateConfigurationException extends GrailsHibernateException{
 
-    public GrailsHibernateConfigurationException() {
+	private static final long serialVersionUID = 5212907914995954558L;
+
+	public GrailsHibernateConfigurationException() {
         super();
     }
 

@@ -14,12 +14,30 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.Script;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.plugins.support.aware.ClassLoaderAware;
@@ -27,15 +45,9 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
-
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -82,7 +94,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         InputStream inputStream = null;
         try {
             inputStream = resource.getInputStream();
-            return evaluateMappings(classLoader.parseClass(inputStream));
+            return evaluateMappings(classLoader.parseClass(DefaultGroovyMethods.getText(inputStream)));
         } catch (IOException e) {
             throw new UrlMappingException("Unable to read mapping file [" + resource.getFilename() + "]: " + e.getMessage(), e);
         }
@@ -139,9 +151,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private void configureUrlMappingDynamicObjects(Script script) {
         GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
         if (manager != null) {
-            GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
-            GroovyObject pluginInstance = controllerPlugin.getInstance();
-
             WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()), null);
 
         }
@@ -150,9 +159,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private void configureUrlMappingDynamicObjects(Object object) {
         GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
         if (manager != null) {
-            GrailsPlugin controllerPlugin = manager.getGrailsPlugin("controllers");
-            GroovyObject pluginInstance = controllerPlugin.getInstance();
-
             WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null);
 
         }
@@ -171,7 +177,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
      */
     class MappingCapturingClosure extends Closure {
 
-        private Closure mappings;
+		private static final long serialVersionUID = 2108155626252742722L;
+		private Closure mappings;
 
         public Closure getMappings() {
             return mappings;

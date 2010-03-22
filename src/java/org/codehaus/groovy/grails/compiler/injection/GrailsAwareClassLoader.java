@@ -15,14 +15,12 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyClassLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import java.security.CodeSource;
+
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
-
-
-import java.security.CodeSource;
 
 /**
  * A class loader that is aware of Groovy sources and injection operations
@@ -53,8 +51,6 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
     public GrailsAwareClassLoader(ClassLoader loader, CompilerConfiguration config) {
         super(loader, config);
     }
-
-    private static final Log LOG = LogFactory.getLog(GrailsAwareClassLoader.class);
 
     private ClassInjector[] classInjectors = new ClassInjector[0];
     

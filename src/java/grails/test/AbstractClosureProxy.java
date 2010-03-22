@@ -21,6 +21,7 @@ import groovy.lang.Closure;
  * you to intercept invocations of the closure. The wrapper can be used
  * anywhere that the target closure can be used.
  */
+@SuppressWarnings("serial")
 public abstract class AbstractClosureProxy extends Closure {
     private Closure target;
 

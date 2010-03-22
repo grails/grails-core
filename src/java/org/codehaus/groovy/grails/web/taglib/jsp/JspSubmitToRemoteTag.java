@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspSubmitToRemoteTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "submitToRemote";
+	private static final long serialVersionUID = -5463152702299747113L;
+
+	private static final String TAG_NAME = "submitToRemote";
 
     private String name;
     private String value;

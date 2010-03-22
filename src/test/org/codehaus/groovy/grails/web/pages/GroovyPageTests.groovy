@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.io.IOException;
-import java.util.*;
 
 import groovy.lang.MissingPropertyException;
 import groovy.lang.GroovyClassLoader;

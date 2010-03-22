@@ -57,14 +57,14 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 					Long id
 					Long version
 					Set others
-					def hasMany = [others:Other]
+					static hasMany = [others:Other]
 				}
 				class Other {
 					Long id
 					Long version
 					Set tests
-					def belongsTo = Test
-					def hasMany = [tests:Test]
+					static belongsTo = Test
+					static hasMany = [tests:Test]
 				}
 			"""
 			
@@ -179,7 +179,7 @@ class OneToOneTest1 {
 		Class a = gcl.parseClass("class A { \n" +
 									" Long id\n" +
 									" Long version\n" +
-									" def hasMany = [ children : A]\n" +
+									" static hasMany = [ children : A]\n" +
 									" A parent\n" +
 									" Set children\n" +
 									"}");
@@ -205,7 +205,7 @@ class OneToOneTest1 {
 
         this.gcl.parseClass('''
 class RelationshipsTest2 {
-   def hasMany = [ 	"ones" : OneToManyTest2.class,
+   static hasMany = [ 	"ones" : OneToManyTest2.class,
   								"manys" : ManyToManyTest2.class,
   								"uniones" : UniOneToManyTest2.class ];
 

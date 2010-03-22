@@ -16,10 +16,8 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.MissingPropertyException;
-import org.apache.commons.collections.map.ReferenceMap;
 
 import java.lang.ref.SoftReference;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

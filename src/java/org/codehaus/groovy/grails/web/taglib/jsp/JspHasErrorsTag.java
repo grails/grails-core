@@ -21,7 +21,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspHasErrorsTag extends JspInvokeGrailsTagLibTag {
-    private static final String TAG_NAME = "hasErrors";
+	private static final long serialVersionUID = -5226668051247749800L;
+
+	private static final String TAG_NAME = "hasErrors";
 
     private String bean;
     private String model;

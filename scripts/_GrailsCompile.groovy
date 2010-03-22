@@ -42,11 +42,18 @@ compilerPaths = { String classpathId, boolean compilingTests ->
     }
     // Handle conf/ separately to exclude subdirs/package misunderstandings
     src(path: "${basedir}/grails-app/conf")
-    // This stops resources.groovy becoming "spring.resources"
-    src(path: "${basedir}/grails-app/conf/spring")
+    
+	if (new File("${basedir}/grails-app/conf/spring").exists()) {
+        src(path: "${basedir}/grails-app/conf/spring")     // This stops resources.groovy becoming "spring.resources"
+    }
 
-    src(path:"${grailsSettings.sourceDir}/groovy")
-    src(path:"${grailsSettings.sourceDir}/java")
+    if (new File("${grailsSettings.sourceDir}/groovy").exists()) {
+        src(path:"${grailsSettings.sourceDir}/groovy")
+    }
+    if (new File("${grailsSettings.sourceDir}/java").exists()) {    
+        src(path:"${grailsSettings.sourceDir}/java")
+    }
+    
     javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
 	if(compilingTests) {
         src(path:"${grailsSettings.testSourceDir}/unit")

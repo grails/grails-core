@@ -33,6 +33,7 @@ import java.util.Locale;
  *        <p/>
  *        Created: Dec 12, 2008
  */
+@SuppressWarnings("serial")
 public enum Environment {
     DEVELOPMENT, PRODUCTION, TEST, APPLICATION, CUSTOM;
     /**
@@ -255,30 +256,34 @@ public enum Environment {
             this.current = e;
         }
 
-        void environments(Closure callable) {
+        @SuppressWarnings("unused")
+		public void environments(Closure callable) {
             if(callable!=null) {
                 callable.setDelegate(this);
-                callable.setResolveStrategy(Closure.DELEGATE_FIRST);
                 callable.call();
             }
         }
-        void production(Closure callable) {
+        @SuppressWarnings("unused")
+		public void production(Closure callable) {
             if(current == Environment.PRODUCTION) {
                  this.callable = callable;
             }
         }
-        void development(Closure callable) {
+        @SuppressWarnings("unused")
+		public void development(Closure callable) {
             if(current == Environment.DEVELOPMENT) {
                  this.callable = callable;
             }
         }
-        void test(Closure callable) {
+        @SuppressWarnings("unused")
+		public void test(Closure callable) {
             if(current == Environment.TEST) {
                  this.callable = callable;
             }
         }
 
-        Object methodMissing(String name, Object args) {
+        @SuppressWarnings("unused")
+		public Object methodMissing(String name, Object args) {
         	Object[] argsArray = (Object[])args;
             if(args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
                 if(current == Environment.CUSTOM && current.getName().equals(name)) {

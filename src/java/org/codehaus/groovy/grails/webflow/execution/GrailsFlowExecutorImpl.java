@@ -90,7 +90,6 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
     }
 
     private boolean isNotValidFlowDefinitionId(FlowExecution flowExecution, GrailsWebRequest webRequest) {
-        final String flowId = flowExecution.getDefinition().getId();
         final FlowDefinitionLocator locator = getDefinitionLocator();
         final String requestPath = webRequest.getControllerName() + "/" + webRequest.getActionName();
 

@@ -34,23 +34,6 @@ import java.io.StringWriter;
  */
 public class GrailsUtilTests extends TestCase {
 
-    public void testEnvironment() {
-
-        System.setProperty(Environment.KEY, "");
-        assertEquals(Environment.DEVELOPMENT.getName(), GrailsUtil.getEnvironment());
-
-        System.setProperty(Environment.KEY, "prod");
-        assertEquals(Environment.PRODUCTION.getName(), GrailsUtil.getEnvironment());
-
-        System.setProperty(Environment.KEY, "dev");
-        assertEquals(Environment.DEVELOPMENT.getName(), GrailsUtil.getEnvironment());
-
-        System.setProperty(Environment.KEY, "test");
-        assertEquals(Environment.TEST.getName(), GrailsUtil.getEnvironment());
-
-        System.setProperty(Environment.KEY, "myenvironment");
-        assertEquals("myenvironment", GrailsUtil.getEnvironment());        
-    }
 
     public void testGrailsVersion() {
         assertEquals("1.3.0.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
@@ -60,7 +43,8 @@ public class GrailsUtilTests extends TestCase {
         System.setProperty(Environment.KEY, "");
     }
 
-    public void testWriteSlurperResult() throws SAXException, ParserConfigurationException, IOException {
+    @SuppressWarnings("deprecation")
+	public void testWriteSlurperResult() throws SAXException, ParserConfigurationException, IOException {
         String testXml = "<root><books><book isbn=\"45734957\">" +
                 "<title>Misery</title><author>Stephen King</author>" +
                 "</book></books></root>";

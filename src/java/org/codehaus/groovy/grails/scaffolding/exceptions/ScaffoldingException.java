@@ -24,6 +24,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
  */
 public class ScaffoldingException extends GrailsException {
 
+	private static final long serialVersionUID = 6083705799873251045L;
+
 	public ScaffoldingException() {
 		super();
 	}

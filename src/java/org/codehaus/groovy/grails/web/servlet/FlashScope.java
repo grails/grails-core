@@ -14,9 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * An interface that represents flash scope and allows a flash scope map to be set to the next

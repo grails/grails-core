@@ -28,7 +28,9 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
  *        Time: 6:22:38 PM
  */
 public class UrlMappingException extends GrailsException {
-    public UrlMappingException(String message) {
+	private static final long serialVersionUID = -2062478398945064606L;
+
+	public UrlMappingException(String message) {
         super(message);
     }
 

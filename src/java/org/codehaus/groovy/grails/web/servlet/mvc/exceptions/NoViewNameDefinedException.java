@@ -23,6 +23,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  */
 public class NoViewNameDefinedException extends GrailsMVCException {
 
+	private static final long serialVersionUID = 5155794823680803729L;
+
 	public NoViewNameDefinedException() {
 		super();
 	}

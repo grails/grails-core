@@ -40,12 +40,20 @@ class Publication {
            between 'datePublished', start, end
        }
 
+        publishedAfter { date ->
+           gt 'datePublished', date
+        }
+
        paperbackOrRecent {
            or {
         		def now = new Date()
         		gt 'datePublished', now - 365
         		eq 'paperback', true
            }
+       }
+
+       paperbacks {
+          eq 'paperback', true
        }
 
        paperbackAndRecent {
@@ -60,6 +68,130 @@ class Publication {
 ''')
     }
 	
+	void testFindAllWhereAttachedToChainedNamedQueries() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+		def now = new Date()
+
+		assert publicationClass.newInstance(title: "Some Book",
+				datePublished: now - 10, paperback: false).save()
+		assert publicationClass.newInstance(title: "Some Book",
+				datePublished: now - 1000, paperback: true).save()
+		assert publicationClass.newInstance(title: "Some Book",
+				datePublished: now - 10, paperback: true).save()
+
+		assert publicationClass.newInstance(title: "Some Title",
+				datePublished: now - 10, paperback: false).save()
+		assert publicationClass.newInstance(title: "Some Title",
+				datePublished: now - 1000, paperback: false).save()
+		assert publicationClass.newInstance(title: "Some Title",
+				datePublished: now - 10, paperback: true).save()
+		session.clear()
+
+		def results = publicationClass.recentPublications().publicationsWithBookInTitle().findAllWhere(paperback: true)
+
+		assertEquals 1, results?.size()
+	}
+
+	void testGetAttachedToChainedNamedQueries() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+		def now = new Date()
+
+		def oldPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
+				datePublished: now - 1000, paperback: true).save().id
+		def newPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
+				datePublished: now, paperback: true).save().id
+
+		assertNull publicationClass.publicationsWithBookInTitle().publishedAfter(now - 5).get(oldPaperBackWithBookInTitleId)
+		assertNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(oldPaperBackWithBookInTitleId)
+		assertNotNull publicationClass.publicationsWithBookInTitle().publishedAfter(now - 5).get(newPaperBackWithBookInTitleId)
+		assertNotNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(newPaperBackWithBookInTitleId)
+	}
+
+	void testChainingNamedQueries() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+
+		def now = new Date()
+		[true, false].each { isPaperback ->
+			4.times {
+				assert publicationClass.newInstance(title: "Some Book",
+						datePublished: now - 10, paperback: isPaperback).save()
+				assert publicationClass.newInstance(title: "Some Other Book",
+						datePublished: now - 10, paperback: isPaperback).save()
+				assert publicationClass.newInstance(title: "Some Other Title",
+						datePublished: now - 10, paperback: isPaperback).save()
+				assert publicationClass.newInstance(title: "Some Book",
+						datePublished: now - 1000, paperback: isPaperback).save()
+				assert publicationClass.newInstance(title: "Some Other Book",
+						datePublished: now - 1000, paperback: isPaperback).save()
+				assert publicationClass.newInstance(title: "Some Other Title",
+						datePublished: now - 1000, paperback: isPaperback).save()
+			}
+		}
+		session.clear()
+
+		def results = publicationClass.recentPublications().publicationsWithBookInTitle().list()
+		assertEquals 'wrong number of books were returned from chained queries', 16, results?.size()
+		results = publicationClass.recentPublications().publicationsWithBookInTitle().count()
+		assertEquals 16, results
+
+		results = publicationClass.recentPublications.publicationsWithBookInTitle.list()
+		assertEquals 'wrong number of books were returned from chained queries', 16, results?.size()
+		results = publicationClass.recentPublications.publicationsWithBookInTitle.count()
+		assertEquals 16, results
+
+		results = publicationClass.paperbacks().recentPublications().publicationsWithBookInTitle().list()
+		assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
+		results = publicationClass.paperbacks().recentPublications().publicationsWithBookInTitle().count()
+		assertEquals 8, results
+
+		results = publicationClass.recentPublications().publicationsWithBookInTitle().findAllByPaperback(true)
+		assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
+
+		results = publicationClass.paperbacks.recentPublications.publicationsWithBookInTitle.list()
+		assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
+		results = publicationClass.paperbacks.recentPublications.publicationsWithBookInTitle.count()
+		assertEquals 8, results
+	}
+
+	void testChainingQueriesWithParams() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+
+		def now = new Date()
+		def lastWeek = now - 7
+		def longAgo = now - 1000
+		2.times {
+			assert publicationClass.newInstance(title: 'Some Book',
+					datePublished: now).save()
+			assert publicationClass.newInstance(title: 'Some Title',
+					datePublished: now).save()
+		}
+		3.times {
+			assert publicationClass.newInstance(title: 'Some Book',
+					datePublished: lastWeek).save()
+			assert publicationClass.newInstance(title: 'Some Title',
+					datePublished: lastWeek).save()
+		}
+		4.times {
+			assert publicationClass.newInstance(title: 'Some Book',
+					datePublished: longAgo).save()
+			assert publicationClass.newInstance(title: 'Some Title',
+					datePublished: longAgo).save()
+		}
+		session.clear()
+
+		def results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(now - 2).list()
+		assertEquals 'wrong number of books were returned from chained queries', 2, results?.size()
+
+		results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(now - 2).count()
+		assertEquals 2, results
+
+		results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(lastWeek - 2).list()
+		assertEquals 'wrong number of books were returned from chained queries', 5, results?.size()
+
+		results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(lastWeek - 2).count()
+		assertEquals 5, results
+	}
+
 	void testReferencingNamedQueryBeforeAnyDynamicMethodsAreInvoked() {
 		// GRAILS-5809
 		def publicationClass = ga.getDomainClass("Publication").clazz
@@ -309,6 +441,23 @@ class Publication {
         assertEquals 'Some New Book', publication.title
     }
 
+    void testThatParameterToGetIsConverted() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+    	
+        def now = new Date()
+        def newPublication = publicationClass.newInstance(title: "Some New Book", datePublished: now - 10).save()
+        assert newPublication
+        def oldPublication = publicationClass.newInstance(title: "Some Old Book",
+        datePublished: now - 900).save()
+        assert oldPublication
+    					
+        session.clear()
+    				
+        def publication = publicationClass.recentPublications.get(newPublication.id.toString())
+        assert publication
+        assertEquals 'Some New Book', publication.title
+    }
+    
     void testGetReturnsNull() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 

@@ -470,7 +470,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null;
         
         LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
-        if(type != null && val == null && DomainClassArtefactHandler.isDomainClass(type)) {
+        if(type != null && val == null && isDomainClass(type)) {
             if(!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
 
                 Object created = autoInstantiateDomainInstance(type);
@@ -504,7 +504,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                    int index = Integer.parseInt(indexString);
 
 
-                   if(DomainClassArtefactHandler.isDomainClass(referencedType)) {
+                   if(isDomainClass(referencedType)) {
                        Object instance = findIndexedValue(c, index);
                        if(instance != null) {
                            val = instance;
@@ -546,7 +546,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 if(currentKeyStart > -1 && currentKeyEnd > -1) {
                     String indexString = propertyNameWithIndex.substring(currentKeyStart+1, currentKeyEnd);
                     Class referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
-                    if(DomainClassArtefactHandler.isDomainClass(referencedType)) {
+                    if(isDomainClass(referencedType)) {
                         final Object domainInstance = autoInstantiateDomainInstance(referencedType);
                         val = domainInstance;
                         map.put(indexString, domainInstance);
@@ -557,6 +557,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         return val;
     }
+
+	private boolean isDomainClass(final Class clazz) {
+		return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz);
+	}
 
     private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
         return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
@@ -570,13 +574,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean canDecorateWithListOrderedSet(Collection c, Class referencedType) {
-        return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && DomainClassArtefactHandler.isDomainClass(referencedType);
+        return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && isDomainClass(referencedType);
     }
-
-    // TODO: remove
-//    private boolean canDecorateWithLazyList(Collection c, Class referencedType) {
-//        return (c instanceof List) && !(c instanceof LazyList) && DomainClassArtefactHandler.isDomainClass(referencedType);
-//    }
 
     private Object findIndexedValue(Collection c, int index) {
         if(index < c.size()) {
@@ -727,45 +726,47 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         collection.clear();
         final Class associatedType = getReferencedTypeForCollection(pv.getName(), getTarget());
         final boolean isArray = v != null && v.getClass().isArray();
-        if(isDomainAssociation(associatedType)) {
-            if(isArray) {
+        final PropertyEditor propertyEditor = findCustomEditor(collection.getClass(), pv.getName());
+        if (propertyEditor == null) {
+            if (isDomainAssociation(associatedType)) {
+                if(isArray) {
 
-                Object[] identifiers = (Object[])v;
-                for (Object id : identifiers) {
-                    if (id != null) {
-                        associateObjectForId(pv, id,associatedType);
+                    Object[] identifiers = (Object[])v;
+                    for (Object id : identifiers) {
+                        if (id != null) {
+                            associateObjectForId(pv, id,associatedType);
+                        }
                     }
-                }
 
-                mpvs.removePropertyValue(pv);
-            }
-            else if(v!=null && (v instanceof String)) {
-                associateObjectForId(pv,v, associatedType);
-                mpvs.removePropertyValue(pv);
-            }
-        }
-        else if(GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
-            if(isArray) {
-                Object[] values = (Object[])v;
-                List list = collection instanceof List ? (List)collection : null;
-                for (int i = 0; i < values.length; i++) {
-                    Object value = values[i];
-                    try {
-                        Object newValue = getTypeConverter().convertIfNecessary(value, associatedType);
-                        if(list!=null) {
-                            if(i>list.size()-1) {
-                                list.add(i,newValue);
+                    mpvs.removePropertyValue(pv);
+                }
+                else if(v!=null && (v instanceof String)) {
+                    associateObjectForId(pv,v, associatedType);
+                    mpvs.removePropertyValue(pv);
+                }
+            } else if (GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
+                if(isArray) {
+                    Object[] values = (Object[])v;
+                    List list = collection instanceof List ? (List)collection : null;
+                    for (int i = 0; i < values.length; i++) {
+                        Object value = values[i];
+                        try {
+                            Object newValue = getTypeConverter().convertIfNecessary(value, associatedType);
+                            if(list!=null) {
+                                if(i>list.size()-1) {
+                                    list.add(i,newValue);
+                                }
+                                else {
+                                    list.set(i, newValue);
+                                }
                             }
                             else {
-                                list.set(i, newValue);
+                                collection.add(newValue);
                             }
                         }
-                        else {
-                            collection.add(newValue);
+                        catch (TypeMismatchException e) {
+                            // ignore
                         }
-                    }
-                    catch (TypeMismatchException e) {
-                        // ignore
                     }
                 }
             }
@@ -779,7 +780,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isDomainAssociation(Class associatedType) {
-        return associatedType != null && DomainClassArtefactHandler.isDomainClass(associatedType);
+        return associatedType != null && isDomainClass(associatedType);
     }
 
     private void addAssociationToTarget(String name, Object target, Object obj) {

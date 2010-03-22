@@ -52,6 +52,7 @@ import java.util.*;
  * Date: Jan 10, 2004
  *
  */
+@SuppressWarnings("serial")
 public abstract class GroovyPage extends Script {
     private static final Log LOG = LogFactory.getLog(GroovyPage.class);
 

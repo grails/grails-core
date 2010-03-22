@@ -16,24 +16,23 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
-import grails.util.Metadata;
-import groovy.lang.GroovyClassLoader;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * <p>Factory bean that creates a Grails application object based on Groovy files.

@@ -53,7 +53,6 @@ public class ConfigurableLocalSessionFactoryBean extends
     private ClassLoader classLoader = null;
     private GrailsApplication grailsApplication;
     private Class configClass;
-    private ApplicationContext applicationContext;
     private Class currentSessionContextClass;
 
     /**
@@ -158,7 +157,6 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 
     @Override

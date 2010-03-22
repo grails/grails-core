@@ -62,7 +62,8 @@ public class GenerateUtils {
         // bootstrap application to try hibernate domain classes
         if(domainClass == null) {
         	GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
-            ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(new MockServletContext());
+            @SuppressWarnings("unused")
+			ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(new MockServletContext());
         }
 
         // retry

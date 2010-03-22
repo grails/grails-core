@@ -31,7 +31,6 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,7 +49,6 @@ import java.util.regex.Pattern;
 
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
-import org.codehaus.gant.GantState;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -100,7 +98,13 @@ public class GrailsScriptRunner {
 
         // Now we can pick up the Grails version from the Ant project
         // properties.
-        BuildSettings build = new BuildSettings(new File(grailsHome));
+        BuildSettings build = null;
+		try {
+			build = new BuildSettings(new File(grailsHome));
+		} catch (Exception e) {
+			System.err.println("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
+			System.exit(1);
+		}
 
         // Check that Grails' home actually exists.
         final File grailsHomeInSettings = build.getGrailsHome();
@@ -282,8 +286,10 @@ public class GrailsScriptRunner {
             settings.loadConfig();
         }
         catch (Exception e) {
-            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            
             e.printStackTrace(System.err);
+            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            System.exit(1);
         }
         finally {
             System.setProperty("disable.grails.plugin.transform", "false");
@@ -506,7 +512,6 @@ public class GrailsScriptRunner {
                 gant.setUseCache(true);
                 gant.setCacheDirectory(scriptCacheDir);
                 gant.loadScript(scriptFile);
-                gant.setVerbosity(GantState.WARNINGS_AND_ERRORS);
 
                 // Invoke the default target.
                 return gant.processTargets().intValue();
@@ -538,7 +543,6 @@ public class GrailsScriptRunner {
             // Set up the script to call.
             Gant gant = new Gant(binding, classLoader);
             gant.loadScript((File) potentialScripts.get(number - 1));
-            gant.setVerbosity(GantState.WARNINGS_AND_ERRORS);
 
             // Invoke the default target.
             return gant.processTargets().intValue();
@@ -564,7 +568,6 @@ public class GrailsScriptRunner {
                 }
             }
         }
-        gant.setVerbosity(GantState.WARNINGS_AND_ERRORS);
         return gant.processTargets().intValue();
     }
 

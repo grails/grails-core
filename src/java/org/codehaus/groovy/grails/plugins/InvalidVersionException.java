@@ -22,7 +22,9 @@ package org.codehaus.groovy.grails.plugins;
  */
 public class InvalidVersionException extends RuntimeException{
 
-    public InvalidVersionException() {
+	private static final long serialVersionUID = 7913782067211066121L;
+
+	public InvalidVersionException() {
     }
 
     public InvalidVersionException(String s) {

@@ -5,6 +5,7 @@ import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.json.JSONArray;
 
 /** Token Manager. */
+@SuppressWarnings("unused")
 public class JsonParserTokenManager implements JsonParserConstants
 {
 

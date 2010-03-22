@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Graeme Rocher
  * @since 1.3
  */
+@SuppressWarnings("serial")
 abstract public class AbstractIvyDependencyManager {
 
    /*

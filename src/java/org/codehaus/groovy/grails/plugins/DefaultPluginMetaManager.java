@@ -32,11 +32,6 @@ import org.springframework.core.io.Resource;
  */
 public class DefaultPluginMetaManager implements PluginMetaManager{
 
-    private static final String PLUGINS_PATH = "/plugins/";
-
-    private GrailsApplication grailsApplication;
-    private String resourcePattern;
-
     public DefaultPluginMetaManager() {
         super();
     }
@@ -47,11 +42,9 @@ public class DefaultPluginMetaManager implements PluginMetaManager{
 
 
     public void setResourcePattern(String resourcePattern) {
-        this.resourcePattern = resourcePattern;
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
     }
 
     public String[] getPluginResources(String pluginName) {

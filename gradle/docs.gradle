@@ -52,26 +52,26 @@ javadoc {
     verbose = false
 }
 
-task gdoc {
+task gdoc << {
     dependsOn javadoc
-    doFirst {
-        onlyIf {
-            file('../grails-doc').isDirectory()
+    ant {
+        mkdir dir: buildDir
+        get src:"http://github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
+        unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
+            mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
         }
-        ant {
-            ant(target: 'distclean', dir: "../grails-doc", inheritAll: false)
-            ant(target: 'dist-nojavadoc', dir: "../grails-doc", inheritAll: false) {
-                property(name: "base.dir", value: "../grails-doc")
-                property(name: "grails.home", value:projectDir)
-            }
-            copy(todir:"$projectDir/dist") {
-                fileset(dir:"../grails-doc/dist")
-            }
+        ant(target: 'distclean', dir: "${buildDir}/grails-docs-src/", inheritAll: false)
+        ant(target: 'dist-nojavadoc', dir: "${buildDir}/grails-docs-src/", inheritAll: false) {
+            property(name: "base.dir", value: "${buildDir}/grails-docs-src/")
+            property(name: "grails.home", value:projectDir)
         }
-        copy {
-            from(new File(projectDir.parentFile, 'grails-doc/output'))
-            into docs.destinationDir
+        copy(todir:"$projectDir/dist") {
+            fileset(dir: "${buildDir}/grails-docs-src/dist")
         }
+    }
+    copy {
+        from(new File("${buildDir}/grails-docs-src/output"))
+        into docs.destinationDir
     }
 }
 

@@ -24,6 +24,8 @@ package org.codehaus.groovy.grails.exceptions;
 public class MoreThanOneActiveDataSourceException extends
 		GrailsDataSourceException {
 
+	private static final long serialVersionUID = 2848937428489863779L;
+
 	public MoreThanOneActiveDataSourceException() {
 		super();
 	}

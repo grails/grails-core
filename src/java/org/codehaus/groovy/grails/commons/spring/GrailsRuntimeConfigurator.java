@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryB
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -82,9 +81,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
     private GrailsApplication application;
     private ApplicationContext parent;
-    private boolean parentDataSource;
     private GrailsPluginManager pluginManager;
-    private boolean loadExternalPersistenceConfig;
     private static final String DEVELOPMENT_SPRING_RESOURCES_XML = "file:./grails-app/conf/spring/resources.xml";
 
     public GrailsRuntimeConfigurator(GrailsApplication application) {
@@ -95,9 +92,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         super();
         this.application = application;
         this.parent = parent;
-        parentDataSource = false;
         if (parent != null)
-            this.parentDataSource = parent.containsBean(DATA_SOURCE_BEAN);
+			parent.containsBean(DATA_SOURCE_BEAN);
         try {
             this.pluginManager = PluginManagerHolder.getPluginManager();
             if (this.pluginManager == null) {
@@ -382,7 +378,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     }
 
     public void setLoadExternalPersistenceConfig(boolean b) {
-        this.loadExternalPersistenceConfig = b;
     }
 
     public void setPluginManager(GrailsPluginManager manager) {

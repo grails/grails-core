@@ -12,6 +12,7 @@ import org.springframework.validation.*
 import org.springframework.web.servlet.*
 import grails.util.GrailsWebUtil
 
+@SuppressWarnings("unused")
 class CommandObjectsTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {

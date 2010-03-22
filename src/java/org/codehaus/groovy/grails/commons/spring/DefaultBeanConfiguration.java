@@ -38,6 +38,7 @@ import java.util.*;
  * @since 0.3
  *
  */
+@SuppressWarnings("serial")
 public class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfiguration {
 
 	private static final String AUTOWIRE = "autowire";
@@ -64,6 +65,7 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     private String parentName;
 
     public Object getProperty(String property) {
+		@SuppressWarnings("unused")
 		AbstractBeanDefinition bd = getBeanDefinition();
 		if(wrapper.isReadableProperty(property)) {
 			return wrapper.getPropertyValue(property);

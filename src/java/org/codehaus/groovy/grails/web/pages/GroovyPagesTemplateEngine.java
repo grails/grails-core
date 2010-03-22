@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -586,7 +587,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         // Compile the script into an object
         Class<?> scriptClass;
         try {
-            scriptClass = groovyClassLoader.parseClass(in, name);
+            scriptClass = groovyClassLoader.parseClass(DefaultGroovyMethods.getText(in), name);
         } catch (CompilationFailedException e) {
             LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
 
@@ -597,7 +598,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                 lineNumber = lineMappings[lineNumber-1];
             }
             throw new GroovyPagesException("Could not parse script [" + name + "]: " + e.getMessage(),e, lineNumber, pageName);
-        }
+        } catch (IOException e) {
+			throw new GroovyPagesException("IO exception parsing script ["+ name + "]: " + e.getMessage(), e);
+		}
         return scriptClass;
     }
 

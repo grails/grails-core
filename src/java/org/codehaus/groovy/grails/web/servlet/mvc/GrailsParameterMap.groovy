@@ -27,7 +27,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;

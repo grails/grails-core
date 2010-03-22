@@ -25,7 +25,8 @@ import org.springframework.web.context.WebApplicationContext;
 * @since 1.0
 */
 public class GrailsContextEvent extends ApplicationEvent {
-    public static final int DYNAMIC_METHODS_REGISTERED = 0;
+	private static final long serialVersionUID = -2686144042443671643L;
+	public static final int DYNAMIC_METHODS_REGISTERED = 0;
     private int eventType;
 
     public GrailsContextEvent(WebApplicationContext ctx, int eventType) {

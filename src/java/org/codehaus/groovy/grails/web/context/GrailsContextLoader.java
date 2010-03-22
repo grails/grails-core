@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
+import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.grape.Grape;
@@ -70,9 +71,18 @@ public class GrailsContextLoader extends ContextLoader {
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         } catch (Throwable e) {
             GrailsUtil.deepSanitize(e);
-            if(e instanceof BeansException) throw (BeansException)e;
+            final Environment env = Environment.getCurrent();
+			if(env.isDevelopmentMode()) {
+				LOG.error("Error executing bootstraps: " + e.getMessage(), e);
+				// bail out early in order to show appropriate error
+            	System.exit(1);
+            	return null;
+            }
             else {
-                throw new BootstrapException("Error executing bootstraps", e);
+                if(e instanceof BeansException) throw (BeansException)e;
+                else {
+                    throw new BootstrapException("Error executing bootstraps", e);
+                }            	
             }
         }
         return ctx;

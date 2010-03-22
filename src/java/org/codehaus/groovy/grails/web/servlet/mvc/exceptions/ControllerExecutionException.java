@@ -26,6 +26,8 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
 
 public class ControllerExecutionException extends GrailsMVCException {
 
+	private static final long serialVersionUID = 4625710641559921836L;
+
 	public ControllerExecutionException() {
 		super();
 	}

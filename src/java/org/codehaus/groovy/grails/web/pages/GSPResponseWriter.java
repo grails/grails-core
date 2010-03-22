@@ -101,6 +101,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 	 * @param max
 	 * @return  A GSPResponseWriter instance
 	 */
+	@SuppressWarnings("unused")
 	private static GSPResponseWriter getInstance(Writer target, int max) {
 		if(BUFFERING_ENABLED && !(target instanceof GrailsRoutablePrintWriter) && !(target instanceof StreamCharBufferWriter)) {
 			StreamCharBuffer streamBuffer=new StreamCharBuffer(max, 0, max);

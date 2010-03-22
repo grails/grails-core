@@ -30,7 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 07-Feb-2006
  */
 public class GrailsFlashScope implements FlashScope {
-    private Map current = new ConcurrentHashMap();
+	private static final long serialVersionUID = 1457772347769500476L;
+	private Map current = new ConcurrentHashMap();
     private Map next = new ConcurrentHashMap();
     public static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
     private static final String ERRORS_PROPERTY = "errors";

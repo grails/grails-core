@@ -25,7 +25,8 @@ import groovy.mock.interceptor.LooseExpectation;
  * @author Peter Ledbrook
  */
 public class MockClosureProxy extends AbstractClosureProxy {
-    String methodName;
+	private static final long serialVersionUID = -1373536726646006925L;
+	String methodName;
     Object expectation;
 
     public MockClosureProxy(Closure target, String methodName, Object expectation) {

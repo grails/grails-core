@@ -29,10 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
@@ -60,7 +58,6 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
  */
 public class GroovyPageView extends AbstractUrlBasedView  {
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
-    private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+ GroovyPage.EXTENSION;
     public static final String EXCEPTION_MODEL_KEY = "exception";
     private GroovyPagesTemplateEngine templateEngine;
 

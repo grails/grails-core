@@ -40,6 +40,7 @@ import java.util.*;
  *
  * Created: 07-Nov-2005
  */
+@SuppressWarnings("serial")
 public class GrailsDomainClassValidator implements Validator, CascadingValidator, GrailsApplicationAware{
 
 

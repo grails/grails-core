@@ -70,6 +70,25 @@ grails upgrade
 
 ...for each project.
 
+
+3. BUILDING GRAILS FROM SOURCES
+=============================================================================
+
+
+To build Grails from sources use the Gradle build from the root of your Grails distribution. 
+
+The 'assemble' target will create a new distribution in build/distributions:
+
+./gradlew assemble
+
+The 'libs' target will rebuild the JAR files located in the 'dist' directory:
+
+./gradlew libs
+
+The 'test' target will run Grails' test cases:
+
+./gradlew test  
+
 =============================================================================
 Enjoy working with Grails.
 

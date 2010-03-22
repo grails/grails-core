@@ -119,6 +119,8 @@ class LoadMethodZeroIdTest {
         String className = 'LoadMethodZeroIdTest'
         def clazz = ga.getDomainClass(className).clazz
 
+        def o = clazz.newInstance()
+        
         def instance = clazz.load(null)
         assertNull 'null id should return null instance', instance
 

@@ -28,6 +28,7 @@ import java.util.*;
  *
  * @author Graeme Rocher
  */
+@SuppressWarnings("serial")
 public class LazyMetaPropertyMap implements Map {
     private MetaClass metaClass;
     private Object instance;

@@ -16,6 +16,26 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.JspTagException;
+import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.tagext.BodyContent;
+import javax.servlet.jsp.tagext.BodyTagSupport;
+import javax.servlet.jsp.tagext.DynamicAttributes;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
@@ -30,21 +50,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.util.ExpressionEvaluationUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.JspTagException;
-import javax.servlet.jsp.JspWriter;
-import javax.servlet.jsp.tagext.BodyContent;
-import javax.servlet.jsp.tagext.BodyTagSupport;
-import javax.servlet.jsp.tagext.DynamicAttributes;
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A tag that invokes a tag defined in a the Grails dynamic tag library. Authors of Grails tags
@@ -62,7 +67,8 @@ import java.util.regex.Pattern;
  */
 public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicAttributes  {
 
-    private static final String ZERO_ARGUMENTS = "zeroArgumentsFlag";
+	private static final long serialVersionUID = 4688821761801666631L;
+	private static final String ZERO_ARGUMENTS = "zeroArgumentsFlag";
     private static final String GROOVY_DEFAULT_ARGUMENT = "it";
     private static final String NAME_ATTRIBUTE = "tagName";
     private static final Pattern ATTRIBUTE_MAP = Pattern.compile("(\\s*(\\S+)\\s*:\\s*(\\S+?)(,|$){1}){1}");
@@ -134,7 +140,6 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
         if(this.application == null)
             initPageState();
 
-        HttpServletRequest request = (HttpServletRequest)this.pageContext.getRequest();
         Map tagLibs = (Map)pageContext.getAttribute(TAG_LIBS_ATTRIBUTE);
         if(tagLibs == null) {
             tagLibs = new HashMap();
@@ -177,13 +182,17 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             }
             if(tagLibProp instanceof Closure) {
                 Closure body = new Closure(this) {
-                    public Object doCall() {
+					private static final long serialVersionUID = 1861498565854341886L;
+					@SuppressWarnings("unused")
+					public Object doCall() {
                         return call();
                     }
-                    public Object doCall(Object o) {
+                    @SuppressWarnings("unused")
+					public Object doCall(Object o) {
                         return call(new Object[]{o});
                     }
-                    public Object doCall(Object[] args) {
+                    @SuppressWarnings("unused")
+					public Object doCall(Object[] args) {
                         return call(args);
                     }
                     public Object call(Object[] args) {

@@ -45,7 +45,8 @@ import java.util.regex.Pattern;
  */
 public class GrailsWrappedRuntimeException extends GrailsException {
 
-    private static final Pattern PARSE_DETAILS_STEP1 = Pattern.compile("\\((\\w+)\\.groovy:(\\d+)\\)");
+	private static final long serialVersionUID = 7284065617154554366L;
+	private static final Pattern PARSE_DETAILS_STEP1 = Pattern.compile("\\((\\w+)\\.groovy:(\\d+)\\)");
     private static final Pattern PARSE_DETAILS_STEP2 = Pattern.compile("at\\s{1}(\\w+)\\$_closure\\d+\\.doCall\\(\\1:(\\d+)\\)");
     private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("(\\S+?)_\\S+?_gsp.run\\((\\S+?\\.gsp):(\\d+)\\)");
     public static final String URL_PREFIX = "/WEB-INF/grails-app/";

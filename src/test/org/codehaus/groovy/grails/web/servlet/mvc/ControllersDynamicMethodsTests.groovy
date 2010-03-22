@@ -13,6 +13,7 @@ import org.springframework.validation.*
 import org.springframework.web.servlet.*
 import org.springframework.core.io.Resource
 
+@SuppressWarnings("unused")
 class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 	
 	

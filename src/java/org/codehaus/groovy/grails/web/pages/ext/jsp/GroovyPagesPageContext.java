@@ -141,7 +141,8 @@ public class GroovyPagesPageContext extends PageContext {
         return (JspWriter) getAttribute(OUT);
     }
 
-    public GroovyPagesPageContext(Binding pageScope) {
+    @SuppressWarnings("serial")
+	public GroovyPagesPageContext(Binding pageScope) {
         this(new GenericServlet() {
             public ServletConfig getServletConfig() {
                 return this;

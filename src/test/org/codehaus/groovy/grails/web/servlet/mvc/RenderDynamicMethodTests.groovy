@@ -11,6 +11,7 @@ import org.springframework.mock.web.*
 import org.springframework.validation.*
 import org.springframework.web.servlet.*
 
+@SuppressWarnings("unused")
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
     protected void tearDown() {

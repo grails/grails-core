@@ -10,7 +10,7 @@ import org.codehaus.groovy.grails.web.errors.*
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.support.*
 
-
+@SuppressWarnings("unused")
 class GroovyPageViewTests extends GroovyTestCase {
 
     void testGroovyPageView() {

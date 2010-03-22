@@ -9,8 +9,6 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager;
-import org.codehaus.groovy.grails.plugins.PluginMetaManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.springframework.context.ApplicationContext;
@@ -59,7 +57,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
         parent.registerMockBean("classLoader", gcl);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+
         app.setApplicationContext(parent);
         
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
@@ -113,7 +111,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         ApplicationContext ctx = conf.configure(new MockServletContext());
@@ -128,7 +126,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
@@ -155,7 +153,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{ds}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
@@ -173,7 +171,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
 
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
@@ -193,8 +190,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
-
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         conf.setLoadExternalPersistenceConfig(false);
         GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());

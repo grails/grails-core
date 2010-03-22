@@ -29,6 +29,7 @@ import org.springframework.webflow.scope.*;
  */
 public class ScopeRegistrar implements BeanFactoryPostProcessor, Ordered {
 
+	@SuppressWarnings("deprecation")
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		beanFactory.registerScope(ScopeType.FLASH.getLabel().toLowerCase(), new FlashScope());
 		beanFactory.registerScope(ScopeType.VIEW.getLabel().toLowerCase(), new ViewScope());

@@ -572,7 +572,7 @@ def addPluginZipAndMetadataIfNeccessary(File pluginXml, File pluginFile) {
 
 
 target(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
-   def result = confirmInput("""
+   def result = !isInteractive || confirmInput("""
 This command will perform the following steps to release your plug-in to Grails' SVN repository:
 * Update your sources to the HEAD revision
 * Commit any changes you've made to SVN
@@ -635,7 +635,7 @@ target(importToSVN:"Imports a plugin project to Grails' remote SVN repository") 
     }
 
     try {
-        def result = confirmInput("""
+        def result = !isInteractive || confirmInput("""
     This plug-in project is not currently in the repository, this command will now:
     * Perform an SVN import into the repository
     * Checkout the imported version of the project from SVN to '${checkOutDir}'
@@ -670,7 +670,7 @@ def checkoutFromSVN(File checkOutDir, SVNURL svnURL) {
 
 SVNURL importBaseToSVN(File importBaseDirectory) {
     importClient = new SVNCommitClient((ISVNAuthenticationManager) authManager, null)
-    askForMessage()
+    if (!commitMessage) askForMessage()
 
     println "Importing project to ${remoteLocation}. Please wait..."
 
