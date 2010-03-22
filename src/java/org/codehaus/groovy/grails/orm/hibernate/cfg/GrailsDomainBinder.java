@@ -2008,12 +2008,13 @@ public final class GrailsDomainBinder {
         }
 
         oneToOne.setReferencedEntityName(otherSide.getDomainClass().getFullName());
-        if(otherSide.isHasOne()) {
+        oneToOne.setPropertyName(property.getName());
+        
+        if(otherSide.isHasOne()) {        	
             PropertyConfig pc = getPropertyConfig(property);
             bindSimpleValue(property, oneToOne, path, pc);
         }
         else {
-
             oneToOne.setReferencedPropertyName(otherSide.getName());
         }
     }
