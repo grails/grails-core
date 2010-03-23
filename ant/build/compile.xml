@@ -10,6 +10,7 @@
         <mkdir dir="${grails.build}"/>
         <mkdir dir="${grails.test.build}"/>
         <mkdir dir="${grails.test.reports}"/>
+        <mkdir dir="${grails.dist}"/>
         <mkdir dir="${grails.stubs}" />
     </target>
 
