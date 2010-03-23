@@ -20,6 +20,7 @@ import groovy.util.BuilderSupport;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
@@ -169,6 +170,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      * @throws ConverterException
      */
     public void value(Object o) throws ConverterException {
+    	o = this.config.getProxyHandler().unwrapIfProxy(o);
         try {
             if (o == null || o.equals(JSONObject.NULL)) {
                 writer.value(null);

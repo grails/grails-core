@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
+
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
@@ -24,6 +26,11 @@ public class DeepDomainClassMarshaller extends DomainClassMarshaller {
     public DeepDomainClassMarshaller(boolean includeVersion) {
         super(includeVersion);
     }
+    
+    public DeepDomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
+        super(includeVersion, proxyHandler);
+    }
+    
 
     protected boolean isRenderDomainClassRelations() {
         return true;

@@ -31,12 +31,12 @@ import java.util.TreeSet;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
-import org.hibernate.Hibernate;
-import org.hibernate.collection.AbstractPersistentCollection;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
@@ -47,10 +47,17 @@ import org.springframework.beans.BeanWrapperImpl;
 public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
 
     private boolean includeVersion = false;
+    private ProxyHandler proxyHandler;
 
     public DomainClassMarshaller(boolean includeVersion) {
-        this.includeVersion = includeVersion;
+        this(includeVersion, new DefaultProxyHandler());
     }
+    
+    public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
+        this.includeVersion = includeVersion;
+        this.proxyHandler = proxyHandler;
+    }
+
 
     public boolean isIncludeVersion() {
         return includeVersion;
@@ -66,7 +73,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
 
     public void marshalObject(Object value, JSON json) throws ConverterException {
         JSONWriter writer = json.getWriter();
-
+        value = proxyHandler.unwrapIfProxy(value);
         Class clazz = value.getClass();
         GrailsDomainClass domainClass = ConverterUtil.getDomainClass(clazz.getName());
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
@@ -99,23 +106,17 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                     if (referenceObject == null) {
                         writer.value(null);
                     } else {
-                        if (referenceObject instanceof AbstractPersistentCollection) {
-                            // Force initialisation and get a non-persistent Collection Type
-                            AbstractPersistentCollection acol = (AbstractPersistentCollection) referenceObject;
-                            acol.forceInitialization();
-                            if (referenceObject instanceof SortedMap) {
-                                referenceObject = new TreeMap((SortedMap) referenceObject);
-                            } else if (referenceObject instanceof SortedSet) {
-                                referenceObject = new TreeSet((SortedSet) referenceObject);
-                            } else if (referenceObject instanceof Set) {
-                                referenceObject = new HashSet((Set) referenceObject);
-                            } else if (referenceObject instanceof Map) {
-                                referenceObject = new HashMap((Map) referenceObject);
-                            } else {
-                                referenceObject = new ArrayList((Collection) referenceObject);
-                            }
-                        } else if(!Hibernate.isInitialized(referenceObject)) {
-                            Hibernate.initialize(referenceObject);
+                    	referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
+                        if (referenceObject instanceof SortedMap) {
+                            referenceObject = new TreeMap((SortedMap) referenceObject);
+                        } else if (referenceObject instanceof SortedSet) {
+                            referenceObject = new TreeSet((SortedSet) referenceObject);
+                        } else if (referenceObject instanceof Set) {
+                            referenceObject = new HashSet((Set) referenceObject);
+                        } else if (referenceObject instanceof Map) {
+                            referenceObject = new HashMap((Map) referenceObject);
+                        } else if (referenceObject instanceof Collection){
+                            referenceObject = new ArrayList((Collection) referenceObject);
                         }
                         json.convertAnother(referenceObject);
                     }

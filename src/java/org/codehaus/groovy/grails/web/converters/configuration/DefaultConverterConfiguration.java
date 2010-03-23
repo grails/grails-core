@@ -16,6 +16,9 @@
 package org.codehaus.groovy.grails.web.converters.configuration;
 
 import groovy.lang.Closure;
+
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
@@ -44,6 +47,8 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     private final SortedSet<Entry> objectMarshallers = new TreeSet<Entry>();
 
     private Converter.CircularReferenceBehaviour circularReferenceBehaviour;
+
+	private ProxyHandler proxyHandler;
 
     public String getEncoding() {
         return encoding != null ? encoding : (delegate != null ? delegate.getEncoding() : null);
@@ -83,21 +88,42 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public DefaultConverterConfiguration() {
+    	proxyHandler = new DefaultProxyHandler();
     }
 
     public DefaultConverterConfiguration(ConverterConfiguration<C> delegate) {
+    	this();
         this.delegate = delegate;
         this.prettyPrint = delegate.isPrettyPrint();
         this.circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
         this.encoding = delegate.getEncoding();
     }
+    
+    public DefaultConverterConfiguration(ProxyHandler proxyHandler) {
+    	this.proxyHandler = proxyHandler;
+    }
+
+    public DefaultConverterConfiguration(ConverterConfiguration<C> delegate, ProxyHandler proxyHandler) {
+    	this(proxyHandler);
+        this.delegate = delegate;
+        this.prettyPrint = delegate.isPrettyPrint();
+        this.circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
+        this.encoding = delegate.getEncoding();
+    }    
 
     public DefaultConverterConfiguration(List<ObjectMarshaller<C>> oms) {
+    	this();
         int initPriority = -1;
         for(ObjectMarshaller<C> om : oms) {
             registerObjectMarshaller(om, initPriority--);
         }
     }
+    
+    public DefaultConverterConfiguration(List<ObjectMarshaller<C>> oms, ProxyHandler proxyHandler) {
+    	this(oms);
+    	this.proxyHandler = proxyHandler;
+    }
+    
 
     public void registerObjectMarshaller(ObjectMarshaller<C> marshaller) {
         registerObjectMarshaller(marshaller, DEFAULT_PRIORITY);
@@ -142,5 +168,9 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
             return priority == entry.priority ? entry.seq - seq : entry.priority - priority;
         }
     }
+    
+	public ProxyHandler getProxyHandler() {
+		return this.proxyHandler;
+	}
 
 }
