@@ -63,6 +63,9 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
  *
  * @since 1.1
  */
+if (getBinding().variables.containsKey("_plugin_dependencies_called")) return
+_plugin_dependencies_called = true
+
 
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsArgParsing")

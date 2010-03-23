@@ -31,6 +31,10 @@ import grails.util.PluginBuildSettings
  * @since 0.4
  */
 
+if (getBinding().variables.containsKey("_grails_package_called")) return
+_grails_package_called = true
+
+
 includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
