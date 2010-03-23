@@ -23,6 +23,8 @@ import grails.util.GrailsNameUtils
  * @author Peter Ledbrook
  */
 
+includeTargets << grailsScript("_GrailsPackage")
+
 createArtifact = { Map args = [:] ->
     def suffix = args["suffix"]
     def type = args["type"]
@@ -37,25 +39,23 @@ createArtifact = { Map args = [:] ->
     if (pos != -1) {
         pkg = name[0..<pos]
         name = name[(pos + 1)..-1]
+        if(pkg.startsWith("~")) {
+        	pkg = pkg.replace("~", createRootPackage())
+        }
+    }
+    else {
+    	pkg = createRootPackage()
     }
 
     // Convert the package into a file path.
-    def pkgPath = ''
-    if (pkg) {
-        pkgPath = pkg.replace('.' as char, '/' as char)
+    def pkgPath = pkg.replace('.' as char, '/' as char)
 
-        // Make sure that the package path exists! Otherwise we won't
-        // be able to create a file there.
-        ant.mkdir(dir: "${basedir}/${artifactPath}/${pkgPath}")
+    // Make sure that the package path exists! Otherwise we won't
+    // be able to create a file there.
+    ant.mkdir(dir: "${basedir}/${artifactPath}/${pkgPath}")
 
-        // Future use of 'pkgPath' requires a trailing slash.
-        pkgPath += '/'
-    }
-    else if(!args.skipPackagePrompt && isInteractive) {
-        if(!confirmInput("WARNING: You have not specified a package. It is good practise to place classes in packages (eg. mycompany.Book). Do you want to continue?", "no.package.warning")) {
-            exit(1)
-        }
-    }
+    // Future use of 'pkgPath' requires a trailing slash.
+    pkgPath += '/'
 
     // Convert the given name into class name and property name
     // representations.
@@ -102,6 +102,11 @@ createArtifact = { Map args = [:] ->
     event("CreatedArtefact", [ type, className])
 }
 
+private createRootPackage() {
+	compile()
+	createConfig()
+	return (config.grails.project.groupId ?: grailsAppName).replace('-','.').toLowerCase()	
+}
 createIntegrationTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GrailsUnitTestCase"
 	createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests", path: "test/integration", superClass: superClass)

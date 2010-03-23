@@ -42,6 +42,9 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
  *
  * @since 1.1
  */
+if (getBinding().variables.containsKey("_plugin_dependencies_called")) return
+_plugin_dependencies_called = true
+
 
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsArgParsing")
