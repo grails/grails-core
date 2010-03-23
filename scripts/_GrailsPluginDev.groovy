@@ -18,6 +18,8 @@
 import groovy.xml.MarkupBuilder
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import grails.util.GrailsNameUtils
+import grails.util.PluginBuildSettings;
+
 import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
@@ -50,19 +52,7 @@ pluginIncludes = [
 	"docs/gapi/**"
 ]
 
-pluginExcludes = [
-	"web-app/WEB-INF/**",
-	"web-app/plugins/**",
-    "grails-app/conf/spring/resources.groovy",
-	"grails-app/conf/*DataSource.groovy",
-    "grails-app/conf/BootStrap.groovy",
-    "grails-app/conf/Config.groovy",
-    "grails-app/conf/BuildConfig.groovy",
-    "grails-app/conf/UrlMappings.groovy",
-	"**/.svn/**",
-	"test/**",
-	"**/CVS/**"
-]
+pluginExcludes = PluginBuildSettings.EXCLUDED_RESOURCES
 
 target(packagePlugin:"Implementation target") {
     depends (checkVersion, packageApp)

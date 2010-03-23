@@ -28,6 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.ivy.core.module.descriptor.Artifact;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.plugins.repository.Repository;
+import org.apache.ivy.plugins.repository.Resource;
 import org.apache.ivy.plugins.resolver.URLResolver;
 import org.apache.ivy.plugins.resolver.util.ResolvedResource;
 import org.apache.ivy.plugins.resolver.util.ResourceMDParser;
@@ -89,7 +90,9 @@ public class GrailsRepoResolver extends URLResolver{
                     for (Object current : metaList) {
                         url = current.toString();
                         if(url.contains("plugins-list.xml")) {
-                            repo.get(url, localFile);
+                        	Resource remoteFile = repo.getResource(url);
+                        	if(localFile.lastModified() < remoteFile.getLastModified())
+                        		repo.get(url, localFile);
                             return new XmlSlurper().parse(localFile);
                         }
                     }

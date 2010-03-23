@@ -472,19 +472,23 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         def engine = groovyPagesTemplateEngine
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
-        def contextPath = attrs.contextPath ? attrs.contextPath : null
-        
-        if(attrs.plugin) {
-            contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
-        }
-        else if (contextPath == null) {
-            contextPath = pageScope.pluginContextPath ?: ""
-        }
 
         Template t = TEMPLATE_CACHE[uri]
 
-        def templatePath = "${contextPath}${uri}"
         if(t==null) {
+            def contextPath = attrs.contextPath ? attrs.contextPath : null
+            		                    
+            if(attrs.plugin) {
+                contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
+            }
+            else if (contextPath == null) {
+            	if(uri.startsWith("/plugins/")) contextPath = ""
+            	else {
+            		contextPath = pageScope.pluginContextPath ?: ""
+            	}            
+            }
+            def templatePath = "${contextPath}${uri}"
+        	
             t = engine.createTemplateForUri([templatePath, "${contextPath}/grails-app/views/${uri}"] as String[])
 			  if(!engine.isReloadEnabled() && t!=null) {
 				  def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
@@ -495,7 +499,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         }
 
         if(!t) {
-            throwTagError("Template not found for name [$attrs.template] and path [$templatePath]")            
+            throwTagError("Template not found for name [$attrs.template] and path [$uri]")            
         }
         else {
             if(attrs.containsKey('bean')) {
