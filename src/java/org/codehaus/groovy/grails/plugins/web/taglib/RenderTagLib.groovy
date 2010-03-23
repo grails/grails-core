@@ -499,7 +499,7 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         }
 
         if(!t) {
-            throwTagError("Template not found for name [$attrs.template] and path [$templatePath]")            
+            throwTagError("Template not found for name [$attrs.template] and path [$uri]")            
         }
         else {
             if(attrs.containsKey('bean')) {
