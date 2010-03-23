@@ -40,6 +40,23 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 class PluginBuildSettings {
 
+	/**
+	 * Resources to be excluded from the final packaged plugin. Defined as Ant paths.
+	 */
+    public static final EXCLUDED_RESOURCES = [
+                                          	"web-app/WEB-INF/**",
+                                         	"web-app/plugins/**",
+                                             "grails-app/conf/spring/resources.groovy",
+                                         	 "grails-app/conf/*DataSource.groovy",
+                                         	 "grails-app/conf/DataSource.groovy",
+                                             "grails-app/conf/BootStrap.groovy",
+                                             "grails-app/conf/Config.groovy",
+                                             "grails-app/conf/BuildConfig.groovy",
+                                             "grails-app/conf/UrlMappings.groovy",
+                                         	"**/.svn/**",
+                                         	"test/**",
+                                         	"**/CVS/**"
+                                         ]	
     private static final PathMatchingResourcePatternResolver RESOLVER = new PathMatchingResourcePatternResolver()
 
    /**
@@ -290,7 +307,7 @@ class PluginBuildSettings {
         if(!sourceFiles) {
             cache['sourceFilesPerPlugin'] = [:]
             sourceFiles = new Resource[0]
-            sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, pluginDirPath) { pluginDir ->
+            sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, pluginDirPath, true) { pluginDir ->
                 Resource[] pluginSourceFiles = resourceResolver("file:${pluginDir}/grails-app/*")
                 pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
                 pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
@@ -439,7 +456,7 @@ class PluginBuildSettings {
             def resources = [] as Resource[]
 
             // first scan plugin sources. These need to be loaded first
-            resources = resolvePluginResourcesAndAdd(resources) { String pluginDir ->
+            resources = resolvePluginResourcesAndAdd(resources, this.pluginDirPath, true) { String pluginDir ->
                 getArtefactResourcesForOne(pluginDir)
             }
 
@@ -580,6 +597,7 @@ class PluginBuildSettings {
         return descriptor
     }
 
+
    /**
      * Takes a Resource[] and optional pluginsDirPath and goes through each plugin directory. It will then used the provided
      * resolving resolving closures to attempt to resolve a new set of resources to add to the original passed array.
@@ -588,13 +606,21 @@ class PluginBuildSettings {
      * in the closure
      */
     private resolvePluginResourcesAndAdd(Resource[] originalResources, String pluginsDirPath = this.pluginDirPath, Closure resolver) {
+    	resolvePluginResourcesAndAdd originalResources, pluginsDirPath, false, resolver 
+    }
+    
+    private resolvePluginResourcesAndAdd(Resource[] originalResources, String pluginsDirPath = this.pluginDirPath, boolean processExcludes, Closure resolver) {
         Resource[] pluginDirs = getPluginDirectories()
         for (dir in pluginDirs) {
             def newResources = dir ? resolver(dir.file.absolutePath) : null
             if (newResources) {
-                originalResources = ArrayUtils.addAll(originalResources, newResources)
+            	if(processExcludes) {
+                	def excludes = EXCLUDED_RESOURCES
+                	newResources = newResources.findAll { Resource r ->  !excludes.any { r.file.absolutePath.endsWith(it) } }            		
+            	}
+                originalResources = ArrayUtils.addAll(originalResources, newResources as Resource[])
             }
         }
         return originalResources
-    }
+    }    
 }
