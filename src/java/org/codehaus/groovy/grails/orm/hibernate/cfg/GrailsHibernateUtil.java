@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
+import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.hibernate.*;
 import org.hibernate.criterion.Order;
 import org.hibernate.engine.EntityEntry;
@@ -71,6 +73,7 @@ public class GrailsHibernateUtil {
     public static final String CONFIG_PROPERTY_CACHE_QUERIES="grails.hibernate.cache.queries";
     public static final Class[] EMPTY_CLASS_ARRAY=new Class[0];
 
+    private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map hibernateDomainClassMap = new HashMap();
@@ -316,11 +319,7 @@ public class GrailsHibernateUtil {
      * @param proxy The proxy
      */
     public static Object unwrapProxy(HibernateProxy proxy) {
-        LazyInitializer lazyInitializer = proxy.getHibernateLazyInitializer();
-        if(lazyInitializer.isUninitialized()) {
-            lazyInitializer.initialize();
-        }
-        return lazyInitializer.getImplementation();
+    	return proxyHandler.unwrapProxy(proxy);
     }
 
 
@@ -332,20 +331,7 @@ public class GrailsHibernateUtil {
      * @return A proxy
      */
     public static HibernateProxy getAssociationProxy(Object obj, String associationName) {
-        try {
-            Object proxy = PropertyUtils.getProperty(obj, associationName);
-            if(proxy instanceof HibernateProxy) return (HibernateProxy) proxy;
-            else return null;
-        }
-        catch (IllegalAccessException e) {
-            return null;
-        }
-        catch (InvocationTargetException e) {
-            return null;
-        }
-        catch (NoSuchMethodException e) {
-            return null;
-        }
+        return proxyHandler.getAssociationProxy(obj, associationName);
     }
 
     /**
@@ -356,19 +342,7 @@ public class GrailsHibernateUtil {
      * @return True if is initialized
      */
     public static boolean isInitialized(Object obj, String associationName) {
-        try {
-            Object proxy = PropertyUtils.getProperty(obj, associationName);
-            return Hibernate.isInitialized(proxy);
-        }
-        catch (IllegalAccessException e) {
-            return false;
-        }
-        catch (InvocationTargetException e) {
-            return false;
-        }
-        catch (NoSuchMethodException e) {
-            return false;
-        }
+    	return proxyHandler.isInitialized(obj, associationName);
     }
 
     public static boolean isCacheQueriesByDefault() {
@@ -414,11 +388,6 @@ public class GrailsHibernateUtil {
     }
 
     public static Object unwrapIfProxy(Object instance) {
-        if(instance instanceof HibernateProxy) {
-            return unwrapProxy((HibernateProxy)instance);
-        }
-        else {
-            return instance;
-        }
+    	return proxyHandler.unwrapIfProxy(instance);
     }
 }
