@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
@@ -22,10 +23,18 @@ import java.util.List;
 
 /**
  * @author Siegfried Puchbauer
+ * @author Graeme Rocher
+ * 
  * @since 1.1
  */
 public interface ConverterConfiguration<C extends Converter> {
 
+	/**
+	 * Lookup the ProxyHandler used to deal with proxies instances 
+	 * @return The proxy handler
+	 */
+	public ProxyHandler getProxyHandler();
+	
     /**
      * Lookup the ObjectMarshaller with the highest priority that support to marshall the given object
      * @param o the object which is about to be converted

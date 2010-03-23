@@ -21,11 +21,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.hibernate.Hibernate;
-import org.hibernate.collection.AbstractPersistentCollection;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
@@ -40,6 +39,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
     private final Log log = LogFactory.getLog(getClass());
 
     private final boolean includeVersion;
+	private ProxyHandler proxyHandler;
 
     public DomainClassMarshaller() {
         this.includeVersion = false;
@@ -48,6 +48,12 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
     public DomainClassMarshaller(boolean includeVersion) {
         this.includeVersion = includeVersion;
     }
+    
+    public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
+        this(includeVersion);
+        this.proxyHandler = proxyHandler;
+    }
+    
 
     public boolean supports(Object object) {
         return ConverterUtil.isDomainClass(object.getClass());
@@ -81,23 +87,17 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
                 if (isRenderDomainClassRelations()) {
                     if (referenceObject == null) {
                     } else {
-                        if (referenceObject instanceof AbstractPersistentCollection) {
-                            // Force initialisation and get a non-persistent Collection Type
-                            AbstractPersistentCollection acol = (AbstractPersistentCollection) referenceObject;
-                            acol.forceInitialization();
-                            if (referenceObject instanceof SortedMap) {
-                                referenceObject = new TreeMap((SortedMap) referenceObject);
-                            } else if (referenceObject instanceof SortedSet) {
-                                referenceObject = new TreeSet((SortedSet) referenceObject);
-                            } else if (referenceObject instanceof Set) {
-                                referenceObject = new HashSet((Set) referenceObject);
-                            } else if (referenceObject instanceof Map) {
-                                referenceObject = new HashMap((Map) referenceObject);
-                            } else {
-                                referenceObject = new ArrayList((Collection) referenceObject);
-                            }
-                        } else if(!Hibernate.isInitialized(referenceObject)) {
-                            Hibernate.initialize(referenceObject);
+                    	referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
+                        if (referenceObject instanceof SortedMap) {
+                            referenceObject = new TreeMap((SortedMap) referenceObject);
+                        } else if (referenceObject instanceof SortedSet) {
+                            referenceObject = new TreeSet((SortedSet) referenceObject);
+                        } else if (referenceObject instanceof Set) {
+                            referenceObject = new HashSet((Set) referenceObject);
+                        } else if (referenceObject instanceof Map) {
+                            referenceObject = new HashMap((Map) referenceObject);
+                        } else if(referenceObject instanceof Collection) {
+                            referenceObject = new ArrayList((Collection) referenceObject);
                         }
                         xml.convertAnother(referenceObject);
                     }

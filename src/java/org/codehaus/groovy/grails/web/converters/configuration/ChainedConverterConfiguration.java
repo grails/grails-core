@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
@@ -27,6 +29,8 @@ import java.util.List;
  * An immutable ConverterConfiguration which chains the lookup calls for ObjectMarshallers for performance reasons
  *
  * @author Siegfried Puchbauer
+ * @author Graeme Rocher
+ * 
  * @since 1.1
  */
 public class ChainedConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
@@ -41,8 +45,14 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
 
     private final boolean prettyPrint;
 
+	private ProxyHandler proxyHandler;
+
     public ChainedConverterConfiguration(ConverterConfiguration<C> cfg) {
+    	this(cfg, new DefaultProxyHandler());
+    }
+    public ChainedConverterConfiguration(ConverterConfiguration<C> cfg, ProxyHandler proxyHandler) {
         this.marshallerList = cfg.getOrderedObjectMarshallers();
+        this.proxyHandler = proxyHandler;
 
         encoding = cfg.getEncoding();
         prettyPrint = cfg.isPrettyPrint();
@@ -105,4 +115,8 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         }
 
     }
+
+	public ProxyHandler getProxyHandler() {
+		return this.proxyHandler;
+	}
 }

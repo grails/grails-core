@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
@@ -37,12 +39,20 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
 
     private final boolean prettyPrint;
 
+	private ProxyHandler proxyHandler;
+
     public ImmutableConverterConfiguration(ConverterConfiguration<C> cfg) {
+    	this(cfg, new DefaultProxyHandler());
+    }
+    
+    public ImmutableConverterConfiguration(ConverterConfiguration<C> cfg, ProxyHandler proxyHandler) {
         marshallers = Collections.unmodifiableList(cfg.getOrderedObjectMarshallers());
         encoding = cfg.getEncoding();
         prettyPrint = cfg.isPrettyPrint();
         circularReferenceBehaviour = cfg.getCircularReferenceBehaviour();
+        this.proxyHandler = proxyHandler;
     }
+    
 
     /**
      * @see ConverterConfiguration#getMarshaller(Object) 
@@ -80,4 +90,8 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
     public List<ObjectMarshaller<C>> getOrderedObjectMarshallers() {
         return marshallers;
     }
+
+	public ProxyHandler getProxyHandler() {
+		return this.proxyHandler;
+	}
 }
