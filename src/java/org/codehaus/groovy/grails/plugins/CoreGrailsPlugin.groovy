@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
+
 import grails.util.Environment
 import grails.util.Metadata;
 
@@ -91,6 +93,7 @@ class CoreGrailsPlugin {
 		customEditors(CustomEditorConfigurer) {
 			customEditors = [(java.lang.Class.name):ClassEditor.name]
 		}
+        proxyHandler(DefaultProxyHandler)
 	}
 	
 	def doWithDynamicMethods = {

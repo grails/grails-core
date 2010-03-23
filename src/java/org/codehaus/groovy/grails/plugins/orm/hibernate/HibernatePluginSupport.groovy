@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.orm.hibernate
 
 import grails.orm.HibernateCriteriaBuilder
@@ -41,6 +40,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
@@ -170,6 +170,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 pooledConnection =  ds && ds.pooled ?: false
                 nativeJdbcExtractor = ref("nativeJdbcExtractor")
             }
+            proxyHandler(HibernateProxyHandler)
             eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
             entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
