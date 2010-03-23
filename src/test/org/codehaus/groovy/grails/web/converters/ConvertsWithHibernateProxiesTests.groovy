@@ -13,9 +13,9 @@ class ConvertsWithHibernateProxiesTests extends AbstractGrailsHibernateTests {
 import grails.persistence.*
 		
 @Entity
-class Parent {
+class ConvertsWithHibernateProxiesParent {
 
-  static hasMany = [children:Child]
+  static hasMany = [children:ConvertsWithHibernateProxiesChild]
 
   String name = "Bob"
 
@@ -24,9 +24,9 @@ class Parent {
 }
 		
 @Entity
-class Child {
+class ConvertsWithHibernateProxiesChild {
 
-	  static belongsTo = [parent: Parent]
+	  static belongsTo = [parent: ConvertsWithHibernateProxiesParent]
 
 	  String name = "Bob Junior"
 
@@ -38,8 +38,8 @@ class Child {
 	}
 	
 	void testMarshDomainModelContainingProxiesToJSON() {
-		def Parent = ga.getDomainClass("Parent").clazz
-		def Child =  ga.getDomainClass("Child").clazz
+		def Parent = ga.getDomainClass("ConvertsWithHibernateProxiesParent").clazz
+		def Child =  ga.getDomainClass("ConvertsWithHibernateProxiesChild").clazz
 	    def parent = Parent.newInstance()
 	    def child = Child.newInstance()
 	    parent.addToChildren child
@@ -59,8 +59,8 @@ class Child {
 	}
 	
 	void testMarshDomainModelContainingProxiesToXML() {
-		def Parent = ga.getDomainClass("Parent").clazz
-		def Child =  ga.getDomainClass("Child").clazz
+		def Parent = ga.getDomainClass("ConvertsWithHibernateProxiesParent").clazz
+		def Child =  ga.getDomainClass("ConvertsWithHibernateProxiesChild").clazz
 	    def parent = Parent.newInstance()
 	    def child = Child.newInstance()
 	    parent.addToChildren child
