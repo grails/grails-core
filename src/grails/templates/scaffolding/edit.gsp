@@ -29,12 +29,12 @@
                 <div class="dialog">
                     <table>
                         <tbody>
-                        <%  excludedProps = Event.allEvents.toList() << 'version' << 'id'
+                        <%  excludedProps = Event.allEvents.toList() << 'version' << 'id' << 'dateCreated' << 'lastUpdated'
                             props = domainClass.properties.findAll { !excludedProps.contains(it.name) }
                             Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
                             props.each { p ->
                                 cp = domainClass.constrainedProperties[p.name]
-                                display = (cp ? cp.display : true)        
+                                display = (cp?.display ?: true)
                                 if (display) { %>
                             <tr class="prop">
                                 <td valign="top" class="name">
