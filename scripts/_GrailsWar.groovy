@@ -165,7 +165,15 @@ target (war: "The implementation target") {
                 }
             }
         }
+
         ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml", overwrite:true)
+
+        def webXML = new File("${stagingDir}/WEB-INF/web.xml")
+        def xmlInput = new XmlParser().parse(webXML)
+        webXML.withWriter { xmlOutput ->
+            new XmlNodePrinter(new PrintWriter(xmlOutput), '\t').print(xmlInput)
+        }
+
         ant.delete(file:webXmlFile)
 
 
