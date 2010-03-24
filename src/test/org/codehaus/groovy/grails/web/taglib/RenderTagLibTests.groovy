@@ -98,6 +98,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         resourceLoader.registerMockResource('/foo/book/_book.gsp', 'foo ${foo}: ${body()}')
         resourceLoader.registerMockResource("/plugins/controllers-${GrailsUtil.grailsVersion}/foo/book/_book.gsp".toString(), 'plugin foo ${foo}: ${body()}')
+        resourceLoader.registerMockResource("/plugins/controllers-${GrailsUtil.grailsVersion}/foo/book/_two.gsp".toString(), 'plugin foo ${foo}: ${body()}')
 
 
         template = '<g:render plugin="controllers" template="/foo/book/book" model="[foo: \'bar\']">hello</g:render>'
@@ -105,12 +106,14 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         template = '<g:render contextPath="" template="/foo/book/book" model="[foo: \'bar\']">hello</g:render>'
 
-        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugins/controllers-${GrailsUtil.grailsVersion}"))
-        assertOutputEquals 'plugin foo bar: hello', template
-
-        request.removeAttribute GrailsApplicationAttributes.PAGE_SCOPE
-
         assertOutputEquals 'foo bar: hello', template
+        	
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugins/controllers-${GrailsUtil.grailsVersion}"))
+        assertOutputEquals 'foo bar: hello', template // application template should be able to override plugin template
+        template = '<g:render contextPath="" template="/foo/book/two" model="[foo: \'bar\']">hello</g:render>'
+
+        assertOutputEquals 'plugin foo bar: hello', template // should resolve to plugin template
+        request.removeAttribute GrailsApplicationAttributes.PAGE_SCOPE
     }
 
     void testRenderTagWithBody() {
