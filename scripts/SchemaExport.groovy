@@ -2,6 +2,7 @@ import org.hibernate.dialect.DialectFactory
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.support.JdbcUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsPackage")
@@ -54,6 +55,17 @@ def populateProperties = {
         }
         else {
             configClassName = dsConfig.dataSource.configClass
+        }
+    }
+
+    def namingStrategy = dsConfig?.hibernate?.naming_strategy
+    if (namingStrategy) {
+        try {
+            GrailsDomainBinder.configureNamingStrategy namingStrategy
+        }
+        catch (Throwable t) {
+            println """WARNING: You've configured a custom Hibernate naming strategy '$namingStrategy' in DataSource.groovy, however the class cannot be found.
+Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getClass().name}'"""
         }
     }
 

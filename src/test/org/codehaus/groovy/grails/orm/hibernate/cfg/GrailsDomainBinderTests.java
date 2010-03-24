@@ -15,25 +15,35 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.TestClass;
-import org.hibernate.mapping.*;
+import org.hibernate.cfg.ImprovedNamingStrategy;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.ForeignKey;
+import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Property;
+import org.hibernate.mapping.SimpleValue;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
+import org.hibernate.util.StringHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Jason Rudolph
@@ -119,6 +129,18 @@ public class GrailsDomainBinderTests extends TestCase {
         "   }\n" +
         "}";
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ExpandoMetaClass.enableGlobally();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
+    }
+
     public void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
         assertEquals("Tables created", 1, getTableCount(config));
@@ -127,7 +149,7 @@ public class GrailsDomainBinderTests extends TestCase {
         Table mapping = (Table) config.getTableMappings().next();
         int cnt = 0;
         boolean found1 = false, found2 = false;
-        for (Iterator i = mapping.getUniqueKeyIterator(); i.hasNext();) {
+        for (Iterator<?> i = mapping.getUniqueKeyIterator(); i.hasNext();) {
             UniqueKey key = (UniqueKey) i.next();
             List keyColumns = key.getColumns();
             if(keyColumns.equals(expectedKeyColumns1)){
@@ -223,11 +245,11 @@ public class GrailsDomainBinderTests extends TestCase {
         column = (Column) otherProperty.getColumnIterator().next();
         assertEquals("other", column.getName());
         assertEquals("wrapper-characters", column.getSqlType());
-	assertEquals(MyUserType.class.getName(), column.getValue().getType().getName());
-	assertTrue(column.getValue() instanceof SimpleValue);
-	SimpleValue v = (SimpleValue)column.getValue();
-	assertEquals("myParam1", v.getTypeParameters().get("param1"));
-	assertEquals("myParam2", v.getTypeParameters().get("param2"));
+        assertEquals(MyUserType.class.getName(), column.getValue().getType().getName());
+        assertTrue(column.getValue() instanceof SimpleValue);
+        SimpleValue v = (SimpleValue)column.getValue();
+        assertEquals("myParam1", v.getTypeParameters().get("param1"));
+        assertEquals("myParam2", v.getTypeParameters().get("param2"));
 
         // And now for the "price" property, which should have two
         // columns.
@@ -235,7 +257,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertEquals(2, priceProperty.getColumnSpan());
         assertEquals("price", priceProperty.getName());
 
-        Iterator colIter = priceProperty.getColumnIterator();
+        Iterator<?> colIter = priceProperty.getColumnIterator();
         column = (Column) colIter.next();
         assertEquals("value", column.getName());
         assertNull("SQL type should have been 'null' for 'value' column.", column.getSqlType());
@@ -246,26 +268,26 @@ public class GrailsDomainBinderTests extends TestCase {
     }
 
     public void testDomainClassBinding() {
-		GroovyClassLoader cl = new GroovyClassLoader();
-		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
-			cl.parseClass(
-				"public class BinderTestClass {\n" +
-	            "    Long id; \n" +
-	            "    Long version; \n" +
-	            "\n" +
-	            "    String firstName; \n" +
-	            "    String lastName; \n" +
-	            "    String comment; \n" +
-	            "    Integer age;\n" +
-	            "    boolean active = true" +
-	            "\n" +
-	            "    static constraints = {\n" +
-	            "        firstName(nullable:true,size:4..15)\n" +
-	            "        lastName(nullable:false)\n" +
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "public class BinderTestClass {\n" +
+                "    Long id; \n" +
+                "    Long version; \n" +
+                "\n" +
+                "    String firstName; \n" +
+                "    String lastName; \n" +
+                "    String comment; \n" +
+                "    Integer age;\n" +
+                "    boolean active = true" +
+                "\n" +
+                "    static constraints = {\n" +
+                "        firstName(nullable:true,size:4..15)\n" +
+                "        lastName(nullable:false)\n" +
                 "        age(nullable:true)\n" +
-	            "    }\n" +
-	            "}")
-		);
+                "    }\n" +
+                "}")
+        );
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl, cl.getLoadedClasses());
 
         // Test database mappings
@@ -280,35 +302,34 @@ public class GrailsDomainBinderTests extends TestCase {
         assertFalse("Property [lastName] must be optional", domainClass.getPropertyByName("lastName").isOptional());
         assertFalse("Property [comment] must be required", domainClass.getPropertyByName("comment").isOptional());
         assertTrue("Property [age] must be optional", domainClass.getPropertyByName("age").isOptional());
+    }
 
-	}
-
-	public void testForeignKeyColumnBinding() {
-		GroovyClassLoader cl = new GroovyClassLoader();
-		GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
-				cl.parseClass(
-						"class TestOneSide {\n" +
-			            "    Long id \n" +
-			            "    Long version \n" +
-			            "    String name \n" +
-			            "    String description \n" +
-			            "}")
-		);
-		GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
-				cl.parseClass(
-						"class TestManySide {\n" +
-			            "    Long id \n" +
-			            "    Long version \n" +
-						"    String name \n" +
-			            "    TestOneSide testOneSide \n" +
-			            "\n" +
-			            "    static mapping = {\n" +
-			            "        columns {\n" +
-			            "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
-			            "        }\n" +
-			            "    }\n" +
-			            "}")
-		);
+    public void testForeignKeyColumnBinding() {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+                cl.parseClass(
+                        "class TestOneSide {\n" +
+                        "    Long id \n" +
+                        "    Long version \n" +
+                        "    String name \n" +
+                        "    String description \n" +
+                        "}")
+        );
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+                cl.parseClass(
+                        "class TestManySide {\n" +
+                        "    Long id \n" +
+                        "    Long version \n" +
+                        "    String name \n" +
+                        "    TestOneSide testOneSide \n" +
+                        "\n" +
+                        "    static mapping = {\n" +
+                        "        columns {\n" +
+                        "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}")
+        );
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
             new Class[]{ oneClass.getClazz(), domainClass.getClazz() });
@@ -317,15 +338,15 @@ public class GrailsDomainBinderTests extends TestCase {
 
         Column column = (Column) persistentClass.getProperty("testOneSide").getColumnIterator().next();
         assertEquals("EXPECTED_COLUMN_NAME", column.getName());
-	}
+    }
 
-	/**
+    /**
      * @see GrailsDomainBinder#bindStringColumnConstraints(Column, ConstrainedProperty)
      */
     public void testBindStringColumnConstraints() {
         // Verify that the correct length is set when a maxSize constraint is applied
         ConstrainedProperty constrainedProperty = getConstrainedStringProperty();
-        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(30));
+        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 30);
         assertColumnLength(constrainedProperty, 30);
 
         // Verify that the correct length is set when a size constraint is applied
@@ -346,7 +367,7 @@ public class GrailsDomainBinderTests extends TestCase {
         // Verify that the correct length is set when a maxSize constraint *and* an inList constraint are *both* applied
         constrainedProperty = getConstrainedStringProperty();
         constrainedProperty.applyConstraint(ConstrainedProperty.IN_LIST_CONSTRAINT, validValuesList);
-        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(30));
+        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 30);
         assertColumnLength(constrainedProperty, 30);
     }
 
@@ -356,8 +377,8 @@ public class GrailsDomainBinderTests extends TestCase {
     public void testBindNumericColumnConstraints() {
         ConstrainedProperty constrainedProperty = getConstrainedBigDecimalProperty();
         // maxSize and minSize constraint has the number with the most digits
-        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(123));
-        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(0));
+        constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 123);
+        constrainedProperty.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, 0);
         assertColumnPrecisionAndScale(constrainedProperty, Column.DEFAULT_PRECISION, Column.DEFAULT_SCALE);
 
         // Verify that the correct precision is set when the max constraint has the number with the most digits
@@ -384,7 +405,7 @@ public class GrailsDomainBinderTests extends TestCase {
 
         // Verify that the correct scale is set when the scale constraint is specified in isolation
         constrainedProperty = getConstrainedBigDecimalProperty();
-        constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, new Integer(4));
+        constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, 4);
         assertColumnPrecisionAndScale(constrainedProperty, Column.DEFAULT_PRECISION, 4);
 
         // Verify that the precision is set correctly for a floating point number with a min/max constraint and a scale...
@@ -392,14 +413,14 @@ public class GrailsDomainBinderTests extends TestCase {
         constrainedProperty = getConstrainedBigDecimalProperty();
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("123.45"));
         constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("0"));
-        constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, new Integer(3));
+        constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, 3);
         assertColumnPrecisionAndScale(constrainedProperty, 6, 3); // precision (6) = number of integer digits in max constraint ("123.45") + scale (3)
 
         //  2) where the min/max constraint includes more decimal places than the scale constraint
         constrainedProperty = getConstrainedBigDecimalProperty();
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("123.4567"));
         constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("0"));
-        constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, new Integer(3));
+        constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, 3);
         assertColumnPrecisionAndScale(constrainedProperty, 7, 3); // precision (7) = number of digits in max constraint ("123.4567") 
 
         // Verify that the correct precision is set when the only one of 'min' and 'max' constraint specified
@@ -417,15 +438,134 @@ public class GrailsDomainBinderTests extends TestCase {
         assertColumnPrecisionAndScale(constrainedProperty, 24, Column.DEFAULT_SCALE);
     }
 
+    public void testDefaultNamingStrategy() {
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestOneSide {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    String fooName \n" +
+                "    String barDescriPtion \n" +
+                "}")
+        );
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestManySide {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    TestOneSide testOneSide \n" +
+                "\n" +
+                "    static mapping = {\n" +
+                "        columns {\n" +
+                "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
+                "        }\n" +
+                "    }\n" +
+                "}")
+        );
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
+                new Class[]{ oneClass.getClazz(), domainClass.getClazz() });
+
+        PersistentClass persistentClass = config.getClassMapping("TestOneSide");
+        assertEquals("test_one_side", persistentClass.getTable().getName());
+
+        Column column = (Column)persistentClass.getProperty("id").getColumnIterator().next();
+        assertEquals("id", column.getName());
+
+        column = (Column)persistentClass.getProperty("version").getColumnIterator().next();
+        assertEquals("version", column.getName());
+
+        column = (Column)persistentClass.getProperty("fooName").getColumnIterator().next();
+        assertEquals("foo_name", column.getName());
+
+        column = (Column)persistentClass.getProperty("barDescriPtion").getColumnIterator().next();
+        assertEquals("bar_descri_ption", column.getName());
+
+        persistentClass = config.getClassMapping("TestManySide");
+        assertEquals("test_many_side", persistentClass.getTable().getName());
+
+        column = (Column)persistentClass.getProperty("id").getColumnIterator().next();
+        assertEquals("id", column.getName());
+
+        column = (Column)persistentClass.getProperty("version").getColumnIterator().next();
+        assertEquals("version", column.getName());
+
+        column = (Column)persistentClass.getProperty("testOneSide").getColumnIterator().next();
+        assertEquals("EXPECTED_COLUMN_NAME", column.getName());
+    }
+
+    public void testCustomNamingStrategy() throws Exception {
+
+        // somewhat artificial in that it doesn't test that setting the property
+        // in DataSource.groovy works, but that's handled in DataSourceConfigurationTests 
+        GrailsDomainBinder.configureNamingStrategy(CustomNamingStrategy.class);
+
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestOneSide {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    String fooName \n" +
+                "    String barDescriPtion \n" +
+                "}")
+        );
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestManySide {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    TestOneSide testOneSide \n" +
+                "\n" +
+                "    static mapping = {\n" +
+                "        columns {\n" +
+                "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
+                "        }\n" +
+                "    }\n" +
+                "}")
+        );
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
+                new Class[] { oneClass.getClazz(), domainClass.getClazz() });
+
+        PersistentClass persistentClass = config.getClassMapping("TestOneSide");
+        assertEquals("table_TestOneSide", persistentClass.getTable().getName());
+
+        Column column = (Column)persistentClass.getProperty("id").getColumnIterator().next();
+        assertEquals("col_id", column.getName());
+
+        column = (Column)persistentClass.getProperty("version").getColumnIterator().next();
+        assertEquals("col_version", column.getName());
+
+        column = (Column)persistentClass.getProperty("fooName").getColumnIterator().next();
+        assertEquals("col_fooName", column.getName());
+
+        column = (Column)persistentClass.getProperty("barDescriPtion").getColumnIterator().next();
+        assertEquals("col_barDescriPtion", column.getName());
+
+        persistentClass = config.getClassMapping("TestManySide");
+        assertEquals("table_TestManySide", persistentClass.getTable().getName());
+
+        column = (Column)persistentClass.getProperty("id").getColumnIterator().next();
+        assertEquals("col_id", column.getName());
+
+        column = (Column)persistentClass.getProperty("version").getColumnIterator().next();
+        assertEquals("col_version", column.getName());
+
+        column = (Column)persistentClass.getProperty("testOneSide").getColumnIterator().next();
+        assertEquals("EXPECTED_COLUMN_NAME", column.getName());
+    }
+
     private DefaultGrailsDomainConfiguration getDomainConfig(String classesDefinition) {
         GroovyClassLoader cl = new GroovyClassLoader();
         cl.parseClass(classesDefinition);
         return getDomainConfig(cl, cl.getLoadedClasses());
     }
 
-    private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, Class[] classes) {
-        GrailsApplication grailsApplication = new DefaultGrailsApplication(
-                classes, cl);
+    private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, Class<?>[] classes) {
+        GrailsApplication grailsApplication = new DefaultGrailsApplication(classes, cl);
         grailsApplication.initialise();
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration();
         config.setGrailsApplication(grailsApplication);
@@ -435,7 +575,7 @@ public class GrailsDomainBinderTests extends TestCase {
 
     private Table getTableMapping(String tablename, DefaultGrailsDomainConfiguration config) {
         Table result = null;
-        for (Iterator tableMappings = config.getTableMappings(); tableMappings.hasNext(); ) {
+        for (Iterator<?> tableMappings = config.getTableMappings(); tableMappings.hasNext(); ) {
             Table table = (Table) tableMappings.next();
             if (tablename.equals(table.getName())) {
                 result = table;
@@ -446,7 +586,7 @@ public class GrailsDomainBinderTests extends TestCase {
 
     private int getTableCount(DefaultGrailsDomainConfiguration config) {
         int count = 0;
-        for (Iterator tables = config.getTableMappings(); tables.hasNext(); tables.next()) {
+        for (Iterator<?> tables = config.getTableMappings(); tables.hasNext(); tables.next()) {
             count++;
         }
         return count;
@@ -455,7 +595,7 @@ public class GrailsDomainBinderTests extends TestCase {
     private void assertForeignKey(String parentTablename, String childTablename, DefaultGrailsDomainConfiguration config) {
         boolean fkFound = false;
         Table childTable = getTableMapping(childTablename, config);
-        for (Iterator fks = childTable.getForeignKeyIterator(); fks.hasNext(); ) {
+        for (Iterator<?> fks = childTable.getForeignKeyIterator(); fks.hasNext(); ) {
             ForeignKey fk = (ForeignKey) fks.next();
             if (parentTablename.equals(fk.getReferencedTable().getName())) {
                 fkFound = true;
@@ -495,4 +635,18 @@ public class GrailsDomainBinderTests extends TestCase {
         BeanWrapper constrainedBean = new BeanWrapperImpl(new TestClass());
         return new ConstrainedProperty(constrainedBean.getWrappedClass(), propertyName, constrainedBean.getPropertyType(propertyName));
     }
+
+    public static class CustomNamingStrategy extends ImprovedNamingStrategy {
+       private static final long serialVersionUID = 1L;
+
+       @Override
+       public String classToTableName(String className) {
+           return "table_" + StringHelper.unqualify(className);
+       }
+
+       @Override
+       public String propertyToColumnName(String propertyName) {
+           return "col_" + StringHelper.unqualify(propertyName);
+       }
+   }
 }

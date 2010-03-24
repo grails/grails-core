@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
@@ -152,8 +153,19 @@ class HibernatePluginSupport {
                         def cacheClass = getClass().classLoader.loadClass(cacheProvider)
                     } catch (Throwable t) {
                         hibConfig.cache.provider_class='net.sf.ehcache.hibernate.EhCacheProvider'
-                        log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the classes for this provider cannot be found.
+                        log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the class for this provider cannot be found.
 Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'"""
+                    }
+                }
+
+                def namingStrategy = hibConfig.naming_strategy
+                if (namingStrategy) {
+                    try {
+                        GrailsDomainBinder.configureNamingStrategy namingStrategy
+                    }
+                    catch (Throwable t) {
+                        log.error """WARNING: You've configured a custom Hibernate naming strategy '$namingStrategy' in DataSource.groovy, however the class cannot be found.
+Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getClass().name}'"""
                     }
                 }
 
@@ -368,7 +380,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 result
             }
             addValidationMethods(dc, application, ctx, sessionFactory)
-			addNamedQuerySupport(dc, application, ctx)
+            addNamedQuerySupport(dc, application, ctx)
         }
     }
 
@@ -847,7 +859,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                 return template.load(dc.clazz, id)
             }
         }
-        
+
         metaClass.static.count = {->
             template.execute({Session session ->
                 def criteria = session.createCriteria(dc.clazz)
@@ -936,19 +948,19 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             throw e
         }
     }
-	
-	/**
-	 * Converts an id value to the appropriate type for a domain class
-	 * 
-	 * @param grailsDomainClass a GrailsDomainClass
-	 * @param idValue an value to be converted
-	 * @return the idValue parameter converted to the type that grailsDomainClass expects
-	 * its identifiers to be
-	 */
-	public static convertValueToIdentifierType(grailsDomainClass, idValue) {
-		convertToType(idValue, grailsDomainClass.identifier.type)
-	}
-	
+
+    /**
+     * Converts an id value to the appropriate type for a domain class
+     * 
+     * @param grailsDomainClass a GrailsDomainClass
+     * @param idValue an value to be converted
+     * @return the idValue parameter converted to the type that grailsDomainClass expects
+     * its identifiers to be
+     */
+    static convertValueToIdentifierType(grailsDomainClass, idValue) {
+        convertToType(idValue, grailsDomainClass.identifier.type)
+    }
+
     private static convertToType(value, targetType) {
         SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 
