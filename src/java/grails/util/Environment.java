@@ -343,7 +343,7 @@ public enum Environment {
             return location;
         }
         else {
-            throw new IllegalStateException("Cannot check reload enabled, ["+RELOAD_LOCATION+"] or ["+BuildSettings.APP_BASE_DIR+"] not set! Specify the system property.") ;
+            return "."; // default to the current directory
         }
     }
 
@@ -357,6 +357,11 @@ public enum Environment {
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
         if(!isNotBlank(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
+        if(!isNotBlank(location)) {
+        	BuildSettings settings = BuildSettingsHolder.getSettings();
+        	if(settings != null)
+        		location = settings.getBaseDir().getAbsolutePath();
+        }
         return location;
     }
 }
