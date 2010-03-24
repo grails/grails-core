@@ -478,8 +478,9 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
         if(t==null) {
             def contextPath = attrs.contextPath ? attrs.contextPath : null
             		                    
-            if(attrs.plugin) {
-                contextPath = pluginManager?.getPluginPath(attrs.plugin) ?: ''
+            def pluginName = attrs.plugin
+            if(pluginName) {
+                contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
             }
             else if (contextPath == null) {
             	if(uri.startsWith("/plugins/")) contextPath = ""
@@ -488,14 +489,21 @@ class RenderTagLib implements com.opensymphony.module.sitemesh.RequestConstants 
             	}            
             }
             def templatePath = "${contextPath}${uri}"
+            def templateResolveOrder
+            if(pluginName) {
+            	templateResolveOrder = [templatePath, "${contextPath}/grails-app/views/${uri}"]
+            }
+            else {
+            	templateResolveOrder = [uri, templatePath, "${contextPath}/grails-app/views/${uri}"]
+            }
         	
-            t = engine.createTemplateForUri([templatePath, "${contextPath}/grails-app/views/${uri}"] as String[])
-			  if(!engine.isReloadEnabled() && t!=null) {
+            t = engine.createTemplateForUri(templateResolveOrder as String[])
+			if(!engine.isReloadEnabled() && t!=null) {
 				  def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
 				  if(prevt != null) {
 					  t = prevt
 				  }
-			  }
+			}
         }
 
         if(!t) {
