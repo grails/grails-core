@@ -45,6 +45,7 @@ target ( cleanCompiledSources: "Cleans compiled Java and Groovy sources" ) {
     ant.delete(dir:"${webInf}/lib")
     ant.delete(dir:"${basedir}/web-app/plugins")
     ant.delete(dir:classesDirPath)
+    ant.delete(dir:pluginClassesDirPath, failonerror:false)
     ant.delete(dir:resourcesDirPath)
     ant.delete(dir:testDirPath)
 }

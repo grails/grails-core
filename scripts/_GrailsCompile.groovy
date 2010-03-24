@@ -67,7 +67,7 @@ target(setCompilerSettings: "Updates the compile build settings based on args") 
 target(compile : "Implementation of compilation phase") {
     depends(compilePlugins)
 
-    def classesDirPath = grailsSettings.classesDir.path
+    def classesDirPath = new File(grailsSettings.classesDir.path)
     ant.mkdir(dir:classesDirPath)
 
     profile("Compiling sources to location [$classesDirPath]") {
@@ -84,7 +84,9 @@ target(compile : "Implementation of compilation phase") {
             event("StatusFinal", ["Compilation error: ${e.message}"])
             exit(1)
         }
+        
         classLoader.addURL(grailsSettings.classesDir.toURI().toURL())
+        classLoader.addURL(grailsSettings.pluginClassesDir.toURI().toURL())
 
         // If this is a plugin project, the descriptor is not included
         // in the compiler's source path. So, we manually compile it
@@ -97,7 +99,7 @@ target(compile : "Implementation of compilation phase") {
 target(compilePlugins: "Compiles source files of all referenced plugins.") {
     depends(setCompilerSettings, resolveDependencies)
 
-    def classesDirPath = grailsSettings.classesDir.path
+    def classesDirPath = pluginClassesDirPath
     ant.mkdir(dir:classesDirPath)
 
     profile("Compiling sources to location [$classesDirPath]") {
@@ -129,6 +131,8 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
                 exclude(name: "**/resources.groovy")
                 javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
             }
+            
+            
         }
     }
 }

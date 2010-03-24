@@ -120,15 +120,22 @@ target (war: "The implementation target") {
             fileset(dir:"${basedir}/grails-app", includes:"views/**")
             fileset(dir:"${resourcesDirPath}/grails-app", includes:"i18n/**")
         }
-        ant.copy(todir:"${stagingDir}/WEB-INF/classes") {
-            fileset(dir:classesDirPath) {
+        
+        def classesDirExcludes = {
                 exclude(name:"hibernate")
                 exclude(name:"spring")
                 exclude(name:"hibernate/*")
                 exclude(name:"spring/*")
-            }
         }
-
+        
+        ant.copy(todir:"${stagingDir}/WEB-INF/classes") {
+            fileset(dir:pluginClassesDirPath, classesDirExcludes) 
+        }
+        
+        ant.copy(todir:"${stagingDir}/WEB-INF/classes", overwrite:true) {
+            fileset(dir:classesDirPath, classesDirExcludes) 
+        }
+        
         ant.mkdir(dir:"${stagingDir}/WEB-INF/spring")
 
         ant.copy(todir:"${stagingDir}/WEB-INF/spring") {
@@ -356,9 +363,6 @@ protected def createDescriptorInternal(pluginInfos, resourceList) {
                     if (!addedResources.contains(name)) {
                         xml.resource(name)
                         addedResources.add name
-                    }
-                    else {
-                        println "\tWARNING: Duplicate resource '${name}', using the last one in compile order."
                     }
                 }
             }

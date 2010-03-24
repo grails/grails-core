@@ -197,9 +197,11 @@ void setClasspath() {
         cpath << dir.file.absolutePath << File.pathSeparator
         // Adding the grails-app folders to the root loader causes re-load issues as
         // root loader returns old class before the grails GCL attempts to recompile it
-        //rootLoader?.addURL(dir.URL)
+        // rootLoader?.addURL(dir.URL)
     }
     cpath << classesDirPath << File.pathSeparator
+    cpath << pluginClassesDirPath << File.pathSeparator
+    
     cpath << "${basedir}/web-app/WEB-INF" << File.pathSeparator
     for (jar in jarFiles) {
         cpath << jar.file.absolutePath << File.pathSeparator
@@ -211,9 +213,6 @@ void setClasspath() {
     compConfig = new CompilerConfiguration()
     compConfig.setClasspath(cpath.toString());
     compConfig.sourceEncoding = "UTF-8"
-
-//    rootLoader?.addURL(new File("${basedir}/grails-app/conf/hibernate").toURI().toURL())
-//    rootLoader?.addURL(new File("${basedir}/src/java").toURI().toURL())
 
     // The resources directory must be created before it is added to
     // the root loader, otherwise it is quietly ignored. In other words,
