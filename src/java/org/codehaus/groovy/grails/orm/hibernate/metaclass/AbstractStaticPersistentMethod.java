@@ -17,6 +17,9 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.orm.HibernateCriteriaBuilder;
 import groovy.lang.Closure;
+
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
@@ -24,8 +27,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
-
-import java.util.regex.Pattern;
 
 /**
  * Abstract base class for static persistent methods
@@ -35,38 +36,38 @@ import java.util.regex.Pattern;
  * 
  * @since Aug 8, 2005
  */
-public abstract class AbstractStaticPersistentMethod extends
-		AbstractStaticMethodInvocation {
-	private ClassLoader classLoader = null;
-	private HibernateTemplate hibernateTemplate;
+public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation {
+
+    private ClassLoader classLoader = null;
+    private HibernateTemplate hibernateTemplate;
 
     public AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
-		super();
-		setPattern(pattern);
-		this.classLoader = classLoader;
+        setPattern(pattern);
+        this.classLoader = classLoader;
         Assert.notNull(sessionFactory, "Session factory is required!");
         hibernateTemplate=new HibernateTemplate(sessionFactory);
         hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault());
     }
 
     protected HibernateTemplate getHibernateTemplate() {
-    	return hibernateTemplate;
+        return hibernateTemplate;
     }
     
-	public Object invoke(Class clazz, String methodName, Object[] arguments) {
+    @Override
+    public Object invoke(Class clazz, String methodName, Object[] arguments) {
         return invoke(clazz, methodName, null, arguments);
     }
 
-	public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(this.classLoader);
-			return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
-		}   
-		finally {
-			Thread.currentThread().setContextClassLoader(originalClassLoader);      			
-		}
-	}
+    public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.classLoader);
+            return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
+        }   
+        finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);                  
+        }
+    }
 
     protected Criteria getCriteria(Session session, Closure additionalCriteria, Class clazz) {
         final Criteria crit;
@@ -79,6 +80,5 @@ public abstract class AbstractStaticPersistentMethod extends
         return crit;
     }
 
-	protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
-
+    protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
 }
