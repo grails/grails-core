@@ -329,7 +329,7 @@ readPluginXmlMetadata = { String pluginName ->
  * Reads all installed plugin descriptors returning a list
  */
 readAllPluginXmlMetadata = {->
-    pluginSettings.pluginXmlMetadata.collect { new XmlSlurper().parse(it.file) }
+    pluginSettings.pluginXmlMetadata.findAll { it.file.exists() }.collect { new XmlSlurper().parse(it.file) }
 }
 
 /**

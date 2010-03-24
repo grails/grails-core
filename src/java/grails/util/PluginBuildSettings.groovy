@@ -159,8 +159,11 @@ class PluginBuildSettings {
     PluginInfo getPluginInfo(String pluginBaseDir) {
         if(!pluginInfosMap) getPluginInfos() // initialize the infos
         def dir = new FileSystemResource(pluginBaseDir)
-        def pluginName = GrailsNameUtils.getPluginName(getDescriptorForPlugin(dir).filename)
-        return pluginInfosMap[pluginName]
+        def descLocation = getDescriptorForPlugin(dir)
+        if(descLocation) {
+            def pluginName = GrailsNameUtils.getPluginName(descLocation.filename)
+            return pluginInfosMap[pluginName]        	
+        }
     }
 
     /**
