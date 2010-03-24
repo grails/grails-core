@@ -306,7 +306,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         if(this.pluginBean.isReadableProperty(ON_CHANGE)) {
             this.onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, ON_CHANGE);
         }
-        if(Environment.getCurrent().isReloadEnabled() || !Metadata.getCurrent().isWarDeployed()) {
+        
+        final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
+		final boolean reloadEnabled = Environment.getCurrent().isReloadEnabled();
+		
+		if(reloadEnabled || !warDeployed) {
             if(this.onChangeListener!=null) {
                 Object referencedResources = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this.plugin, WATCHED_RESOURCES);
 
@@ -325,54 +329,49 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
                     if(resourceList!=null) {
 
-                        this.resourcesReferences = new String[resourceList.size()];
-                        this.resourceCount = new int[resourceList.size()];
+                    	List<String> resourceListTmp = new ArrayList<String>();
+                    	final Resource[] pluginDirs = GrailsPluginUtils.getPluginDirectories();
+                        final Environment env = Environment.getCurrent();
+                        final String baseLocation = env.getReloadLocation();
+                    	
+                    	for (Object ref : resourceList) {
+							String stringRef = ref.toString();
+							if(!warDeployed) {
+                                for (Resource pluginDir : pluginDirs) {
+                                    if(pluginDir !=null) {
+                                        String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
+                                        resourceListTmp.add(pluginResources);
+                                    }
+                                }								
+                                addBaseLocationPattern(resourceListTmp,
+                                						baseLocation, stringRef);
+
+							}
+							else {
+                                addBaseLocationPattern(resourceListTmp,
+                						baseLocation, stringRef);
+							}
+						}
+                    	
+                    	
+                    	
+                        this.resourcesReferences = new String[resourceListTmp.size()];
+                        this.resourceCount = new int[resourceListTmp.size()];
                         for (int i = 0; i < resourcesReferences.length; i++) {
-                            String resRef = resourceList.get(i).toString();
+                            String resRef = resourceListTmp.get(i);
                             resourcesReferences[i]=resRef;
                         }
-                        final Resource[] pluginDirs = GrailsPluginUtils.getPluginDirectories();
                         for (int i = 0; i < resourcesReferences.length; i++) {
                             String res = resourcesReferences[i];
 
                             // Try to load the resources that match the "res" pattern.
                             Resource[] tmp = new Resource[0];
                             try {
-                                final Environment env = Environment.getCurrent();
-                                final String baseLocation = env.getReloadLocation();
-                                if(Metadata.getCurrent().isWarDeployed() && env.isReloadEnabled()) {
-                                    res = getResourcePatternForBaseLocation(baseLocation, res);
-                                    tmp = resolver.getResources(res);
+                                try {
+                                    tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
                                 }
-                                else {
-                                    for (Resource pluginDir : pluginDirs) {
-                                        if(pluginDir !=null) {
-                                            String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), res);
-                                            try {
-                                                final Resource[] pluginResourceInstances = resolver.getResources(pluginResources);
-                                                tmp = (Resource[]) ArrayUtils.addAll(tmp, pluginResourceInstances);
-                                            }
-                                            catch (IOException e) {
-                                                // ignore. Plugin has no resources of the type
-                                            }
-                                        }
-                                    }
-                                    try {
-                                        tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
-                                    }
-                                    catch (IOException e) {
-                                        // ignore, no resources at default location
-                                    }
-                                    if(baseLocation!=null) {
-                                        final String reloadLocationResourcePattern = getResourcePatternForBaseLocation(baseLocation, res);
-                                        try {
-                                            final Resource[] reloadLocationResources = resolver.getResources(reloadLocationResourcePattern);
-                                            tmp = (Resource[]) ArrayUtils.addAll(tmp, reloadLocationResources);
-                                        }
-                                        catch (IOException e) {
-                                            // ignore, no resources at base location
-                                        }
-                                    }
+                                catch (IOException e) {
+                                    // ignore, no resources at default location
                                 }
                             }
                             catch (Exception ex) {
@@ -414,6 +413,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
         }
     }
+
+	private void addBaseLocationPattern(List<String> resourceList,
+			final String baseLocation, String pattern) {
+		if(baseLocation!=null) {
+		    final String reloadLocationResourcePattern = getResourcePatternForBaseLocation(baseLocation, pattern);
+		    resourceList.add(reloadLocationResourcePattern);
+		}
+		else {
+			resourceList.add(pattern);
+		}
+	}
 
     private String getResourcePatternForBaseLocation(String baseLocation, String resourcePath) {
         String location = baseLocation;
