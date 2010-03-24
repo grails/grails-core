@@ -19,7 +19,6 @@ import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.EMPTY_MAP;
 import static java.util.Collections.unmodifiableMap;
 import grails.util.GrailsNameUtils;
-import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
 import java.beans.PropertyDescriptor;
@@ -37,7 +36,6 @@ import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.validation.Validator;
 
 /**
