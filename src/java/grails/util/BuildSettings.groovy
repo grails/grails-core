@@ -87,6 +87,10 @@ class BuildSettings {
      * The name of the system property for {@link #classesDir}.
      */
     public static final String PROJECT_CLASSES_DIR = "grails.project.class.dir"
+    /**
+     * The name of the system property for {@link #pluginClassesDir}.
+     */
+    public static final String PROJECT_PLUGIN_CLASSES_DIR = "grails.project.plugin.class.dir"
 
     /**
      * The name of the system property for {@link #testClassesDir}.
@@ -179,6 +183,9 @@ class BuildSettings {
     /** The location to which Grails compiles a project's test classes. */
     File testClassesDir
 
+    /** The location to which Grails compiles a project's plugin classes. */
+    File pluginClassesDir
+    
     /** The location where Grails keeps temporary copies of a project's resources. */
     File resourcesDir
 
@@ -377,6 +384,7 @@ class BuildSettings {
     private boolean projectWarExplodedDirSet
     private boolean classesDirSet
     private boolean testClassesDirSet
+    private boolean pluginClassesDirSet
     private boolean resourcesDirSet
     private boolean sourceDirSet
     private boolean webXmlFileSet
@@ -552,6 +560,15 @@ class BuildSettings {
         this.testClassesDir = dir
         this.testClassesDirSet = true
     }
+    
+    public File getPluginClassesDir() {
+        return this.pluginClassesDir
+    }
+
+    public void setPluginClassesDir(File dir) {
+        this.pluginClassesDir = dir
+        this.pluginClassesDirSet = true
+    }    
 
     public File getResourcesDir() {
         return this.resourcesDir
@@ -875,6 +892,10 @@ class BuildSettings {
             testClassesDir = new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes"))
         }
 
+        if (!pluginClassesDirSet) {
+            pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
+        }
+        
         if (!resourcesDirSet) {
             resourcesDir = new File(getPropertyValue(PROJECT_RESOURCES_DIR, props, "$projectWorkDir/resources"))
         }

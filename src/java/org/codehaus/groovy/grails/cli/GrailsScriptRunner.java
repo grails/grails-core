@@ -622,8 +622,10 @@ public class GrailsScriptRunner {
         binding.setVariable("projectWorkDir", settings.getProjectWorkDir().getPath());
         binding.setVariable("projectTargetDir", settings.getProjectTargetDir());
         binding.setVariable("classesDir", settings.getClassesDir());
+        binding.setVariable("pluginClassesDir", settings.getPluginClassesDir());
         binding.setVariable("grailsTmp", grailsWork +"/tmp");
         binding.setVariable("classesDirPath", settings.getClassesDir().getPath());
+        binding.setVariable("pluginClassesDirPath", settings.getPluginClassesDir().getPath());
         binding.setVariable("testDirPath", settings.getTestClassesDir().getPath());
         final String resourcesDir = settings.getResourcesDir().getPath();
         binding.setVariable("resourcesDirPath", resourcesDir);
