@@ -19,6 +19,7 @@ import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.EMPTY_MAP;
 import static java.util.Collections.unmodifiableMap;
 import grails.util.GrailsNameUtils;
+import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
 import java.beans.PropertyDescriptor;
@@ -36,6 +37,7 @@ import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.validation.Validator;
 
 /**
@@ -56,7 +58,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     private Map mappedBy;
     private Validator validator;
     private String mappingStrategy = GrailsDomainClass.GORM;
-    private List owners = new ArrayList();
+    private List<Class> owners = new ArrayList<Class>();
     private boolean root = true;
     private Set subClasses = new HashSet();
     private Collection embedded;
@@ -410,13 +412,16 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     	ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(relatedClassType);
     	Object relatedBelongsTo = cpf.getPropertyValue(GrailsDomainClassProperty.BELONGS_TO);
     	boolean owningSide = false;
-    	boolean relatedOwner = this.owners.contains(relatedClassType);
+    	boolean relatedOwner = isOwningSide(relatedClassType, this.owners);
     	final Class propertyClass = property.getDomainClass().getClazz();
     	if(relatedBelongsTo instanceof Collection) {
-			owningSide = ((Collection)relatedBelongsTo).contains(propertyClass);
+			final Collection associatedOwners = (Collection)relatedBelongsTo;
+			owningSide = isOwningSide(propertyClass, associatedOwners);
     	}
-    	else if (relatedBelongsTo != null) {
-    		owningSide = relatedBelongsTo.equals(propertyClass);
+    	else if (relatedBelongsTo instanceof Class) {
+    		final Collection associatedOwners = new ArrayList();
+    		associatedOwners.add(relatedBelongsTo);
+    		owningSide = isOwningSide(propertyClass, associatedOwners);
     	}
     	property.setOwningSide(owningSide);
     	if(relatedOwner && property.isOwningSide()) {
@@ -425,6 +430,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     	else if(!relatedOwner && !property.isOwningSide() && !(property.isCircular() && property.isManyToMany())) {
     		throw new GrailsDomainException("No owner defined between domain classes ["+propertyClass+"] and ["+relatedClassType+"] in a many-to-many relationship. Example: def belongsTo = "+relatedClassType.getName());
     	}
+	}
+	private boolean isOwningSide(Class relatedClassType, Collection<Class> owners) {
+		boolean relatedOwner = false;
+    	for (Class relatedClass : owners) {
+			if(relatedClass.isAssignableFrom(relatedClassType)) {
+				relatedOwner = true; break;
+			}
+		}
+		return relatedOwner;
 	}
 
 	/**
