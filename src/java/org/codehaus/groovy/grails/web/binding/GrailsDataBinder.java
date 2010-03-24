@@ -885,4 +885,41 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return (String)value ;
     }
 
+    /**
+     * This overrides the method from WebDataBinder to allow for nested checkbox handling, so property paths such as
+     * a._b will result in the boolean b on object a getting set to false.
+     */
+    @Override protected void checkFieldMarkers(MutablePropertyValues mpvs) {
+        if (getFieldMarkerPrefix() != null) {
+            String fieldMarkerPrefix = getFieldMarkerPrefix();
+            PropertyValue[] pvArray = mpvs.getPropertyValues();
+            for (PropertyValue pv : pvArray) {
+                // start of variation from superclass method
+                if (propertyStartsWithFieldMarkerPrefix(pv, fieldMarkerPrefix)) {
+                    String field = stripFieldMarkerPrefix(pv.getName(), fieldMarkerPrefix);
+                    // end of variation from superclass method
+                    if (getPropertyAccessor().isWritableProperty(field) && !mpvs.contains(field)) {
+                        Class fieldType = getPropertyAccessor().getPropertyType(field);
+                        mpvs.add(field, getEmptyValue(field, fieldType));
+                    }
+                    mpvs.removePropertyValue(pv);
+                }
+            }
+        }
+    }
+
+    private boolean propertyStartsWithFieldMarkerPrefix(PropertyValue pv, String fieldMarkerPrefix) {
+        String propertyName = pv.getName().indexOf(PATH_SEPARATOR) > -1 ? StringUtils.substringAfterLast(pv.getName(), ".") : pv.getName();
+        return propertyName.startsWith(fieldMarkerPrefix);
+    }
+
+    private String stripFieldMarkerPrefix(String path, String fieldMarkerPrefix) {
+        String[] pathElements = StringUtils.split(path, PATH_SEPARATOR);
+        for (int i = 0; i < pathElements.length; i++) {
+            if (pathElements[i].startsWith(fieldMarkerPrefix)) {
+                pathElements[i] = pathElements[i].substring(fieldMarkerPrefix.length());
+            }
+        }
+        return StringUtils.join(pathElements, PATH_SEPARATOR);
+    }
 }

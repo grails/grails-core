@@ -32,7 +32,7 @@ includeTargets << grailsScript("_GrailsArgParsing")
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
 ant.path(id: "grails.compile.classpath", compileClasspath)
 
-compilerPaths = { String classpathId, boolean compilingTests ->
+compilerPaths = { String classpathId ->
 
 	def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
 
@@ -55,10 +55,6 @@ compilerPaths = { String classpathId, boolean compilingTests ->
     }
     
     javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
-	if(compilingTests) {
-        src(path:"${grailsSettings.testSourceDir}/unit")
-        src(path:"${grailsSettings.testSourceDir}/integration")
-	}
 }
 
 target(setCompilerSettings: "Updates the compile build settings based on args") {
@@ -82,7 +78,7 @@ target(compile : "Implementation of compilation phase") {
 	                    encoding:"UTF-8",
 	                    verbose: grailsSettings.verboseCompile,
                         listfiles: grailsSettings.verboseCompile,
-	                    compilerPaths.curry(classpathId, false))
+	                    compilerPaths.curry(classpathId))
         }
         catch(Exception e) {
             event("StatusFinal", ["Compilation error: ${e.message}"])
