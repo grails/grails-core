@@ -49,8 +49,7 @@ class TransactionalService {
     }
 
     protected void onSetUp() {
-        gcl.parseClass
-'''
+        gcl.parseClass '''
 class TransactionalService {
     def transactional = true
 
