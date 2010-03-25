@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.plugins.web.filters
-
-import grails.util.GrailsUtil
-
-import org.apache.commons.logging.LogFactory
-
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
+import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 /**
  * @author Mike
@@ -39,36 +33,34 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
  * Created: Oct 10, 2007
  */
 class FiltersGrailsPlugin {
+    private static TYPE = FiltersConfigArtefactHandler.TYPE
 
-    private static final TYPE = FiltersConfigArtefactHandler.TYPE
-
-    def version = GrailsUtil.getGrailsVersion()
+    def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [:]
     def artefacts = [ FiltersConfigArtefactHandler ]
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
     def log = LogFactory.getLog(FiltersGrailsPlugin)
 
     static final BEANS = { GrailsClass filter ->
-        "${filter.fullName}Class"(MethodInvokingFactoryBean) {
-            targetObject = ref("grailsApplication", true)
-            targetMethod = "getArtefact"
-            arguments = [TYPE, filter.fullName]
-        }
-        "${filter.fullName}"(filter.clazz) { bean ->
-            bean.singleton = true
-            bean.autowire = "byName"
-        }
+            "${filter.fullName}Class"(MethodInvokingFactoryBean) {
+                targetObject = ref("grailsApplication", true)
+                targetMethod = "getArtefact"
+                arguments = [TYPE, filter.fullName]
+            }
+            "${filter.fullName}"(filter.clazz) { bean ->
+                bean.singleton = true
+                bean.autowire = "byName"
+            }
     }
-
-    def doWithSpring = {
-        filterInterceptor(CompositeInterceptor)
+	def doWithSpring = {
+		filterInterceptor(org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor)
 
         for(filter in application.getArtefacts(TYPE)) {
             def callable = BEANS.curry(filter)
             callable.delegate = delegate
             callable.call()
         }
-    }
+	}
 
     def doWithDynamicMethods = { applicationContext ->
         def mc = FilterConfig.metaClass
@@ -110,36 +102,35 @@ class FiltersGrailsPlugin {
         }
     }
 
-    def doWithApplicationContext = { applicationContext ->
+	def doWithApplicationContext = { applicationContext ->
         reloadFilters(application, applicationContext)
-    }
+	}
 
-    def onChange = { event ->
+	def onChange = { event ->
+	    if (log.debugEnabled) log.debug("onChange: ${event}")
 
-        log.debug("onChange: $event")
-
-        // Get the new or modified filter and (re-)register the associated beans
+        // Get the new or modified filter and (re-)register the associated
+        // beans.
         def newFilter = event.application.addArtefact(TYPE, event.source)
         beans(BEANS.curry(newFilter)).registerBeans(event.ctx)
         reloadFilters(event.application, event.ctx)
-    }
+	}
 
     private reloadFilters(GrailsApplication application, applicationContext) {
-
         log.info "reloadFilters"
         def filterConfigs = application.getArtefacts(TYPE)
         def handlers = []
-        for (c in filterConfigs) {
+        for(c in filterConfigs) {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
             def bean = applicationContext.getBean(c.fullName)
-            for (filterConfig in filterClass.getConfigs(bean)) {
+            for(filterConfig in filterClass.getConfigs(bean)) {
                 def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
                 handlerAdapter.afterPropertiesSet()
                 handlers <<  handlerAdapter
             }
         }
 
-        log.debug("resulting handlers: $handlers")
+        if (log.isDebugEnabled()) log.debug("resulting handlers: ${handlers}")
         applicationContext.getBean('filterInterceptor').handlers = handlers
     }
 }

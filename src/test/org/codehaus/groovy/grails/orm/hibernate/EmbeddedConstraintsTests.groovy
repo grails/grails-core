@@ -1,13 +1,17 @@
 package org.codehaus.groovy.grails.orm.hibernate
-
 /**
- * @author Graeme Rocher
+ * Created by IntelliJ IDEA.
+ * User: grocher
+ * Date: Jan 22, 2008
+ * Time: 10:28:15 PM
+ * To change this template use File | Settings | File Templates.
  */
-class EmbeddedConstraintsTests extends AbstractGrailsHibernateTests {
+class EmbeddedConstraintsTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
         gcl.parseClass '''
-class Customer {
+class Customer
+{
     Long id
     Long version
     String name
@@ -33,24 +37,28 @@ class Address {
 '''
     }
 
+
     void testEmbeddedCascadingValidation() {
-        def customerClass = ga.getDomainClass("Customer").clazz
-        def addressClass = ga.classLoader.loadClass("Address")
+          def customerClass = ga.getDomainClass("Customer").clazz
+          def addressClass = ga.classLoader.loadClass("Address")
 
-        def cust = customerClass.newInstance(name:"Fred")
+          def cust = customerClass.newInstance(name:"Fred")
 
-        assertFalse cust.validate()
+          assert !cust.validate()
 
-        cust.headOffice = addressClass.newInstance()
-        cust.deliverySite = addressClass.newInstance()
+          cust.headOffice = addressClass.newInstance()
+          cust.deliverySite = addressClass.newInstance()
 
-        assertFalse cust.validate()
+          assert !cust.validate()
 
         cust.headOffice.street = "22"
         cust.deliverySite.street = "47"
         cust.headOffice.postcode = "34334"
         cust.deliverySite.postcode = "33343"
 
-        assertTrue cust.validate()
+           assert cust.validate()
+           cust.errors.allErrors.each { println it }
     }
+
+
 }

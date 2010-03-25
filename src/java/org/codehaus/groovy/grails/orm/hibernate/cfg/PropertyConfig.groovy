@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 
 import org.hibernate.FetchMode
 
+
 /**
  * Custom mapping for a single domain property. Note that a property
  * can have multiple columns via a component or a user type.
@@ -25,7 +26,6 @@ import org.hibernate.FetchMode
  * @author pledbrook
  */
 class PropertyConfig {
-
     /**
      * The Hibernate type or user type of the property. This can be
      * a string or a class.
@@ -43,7 +43,7 @@ class PropertyConfig {
      */
     String sort
 
-    String formula
+	String formula
 
     /**
      * The default sort order
@@ -169,4 +169,7 @@ class PropertyConfig {
             throw new RuntimeException("Cannot treat multi-column property as a single-column property")
         }
     }
+
+
+
 }

@@ -13,39 +13,40 @@ class ComponentValidationTests extends AbstractGrailsHibernateTests{
     protected void onSetUp() {
         gcl.parseClass '''
 class ComponentValidationTestsPerson {
-    Long id
-    Long version
-    String name
+       Long id
+       Long version
+       String name
 
-    ComponentValidationTestsAuditInfo auditInfo
-    static embedded = ['auditInfo']
+       ComponentValidationTestsAuditInfo auditInfo
+       static embedded = ['auditInfo']
 
-    static constraints = {
-        name(nullable:false, maxSize:35)
-    }
+       static constraints = {
+               name(nullable:false, maxSize:35)
+       }
 }
 class ComponentValidationTestsAuditInfo{
-    Long id
-    Long version
+       Long id
+       Long version
 
-    Date dateEntered
-    Date dateUpdated
-    String enteredBy
-    String updatedBy
+       Date dateEntered
+       Date dateUpdated
+       String enteredBy
+       String updatedBy
 
-    static constraints = {
-        dateEntered(nullable:false)
-        dateUpdated(nullable:false)
-        enteredBy(nullable:false,maxSize:20,custom: true)
-        updatedBy(nullable:false,maxSize:20)
-    }
+       static constraints = {
+               dateEntered(nullable:false)
+               dateUpdated(nullable:false)
+               enteredBy(nullable:false,maxSize:20,custom: true)
+               updatedBy(nullable:false,maxSize:20)
+       }
 
-    String toString(){
-        "$enteredBy $dateEntered $updatedBy $dateUpdated"
-    }
+       String toString(){
+               return "$enteredBy $dateEntered $updatedBy $dateUpdated"
+       }
 }
 '''
     }
+
 
      void testComponentValidation() {
         def personClass = ga.getDomainClass("ComponentValidationTestsPerson").clazz
@@ -55,10 +56,18 @@ class ComponentValidationTestsAuditInfo{
         person.name = 'graeme'
         def date = new Date()
         person.auditInfo = auditClass.newInstance(dateEntered:date,dateUpdated:date,enteredBy:'chris',updatedBy:'chris')
+        println "auditInfo: " + person.auditInfo
+
+
+        if(!person.validate()) {
+           person.errors.each {
+                 println it
+           }
+        }
 
         person.save()
 
-        assertNotNull person.id
+        assert person.id != null
      }
 
     void testCustomConstraint() {
@@ -74,7 +83,7 @@ class CustomConstraint extends AbstractConstraint {
     boolean active
     String name = "custom"
 
-    void setParameter(Object constraintParameter) {
+    public void setParameter(Object constraintParameter) {
         assert constraintParameter instanceof Boolean
 
         this.active = constraintParameter.booleanValue()
@@ -85,13 +94,18 @@ class CustomConstraint extends AbstractConstraint {
         if (this.active) {
             if (propertyValue != "fred") {
                 def args = [constraintPropertyName, constraintOwningClass, propertyValue] as Object[]
-                super.rejectValue(target, errors, "some.error.message", "invalid.custom", args)
+                super.rejectValue(
+                    target,
+                    errors,
+                    "some.error.message",
+                    "invalid.custom",
+                    args)
             }
         }
     }
 
     boolean supports(Class type) {
-        type == String
+        return type == String
     }
 }
 ''')

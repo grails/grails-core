@@ -1,12 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate
-
 /**
  * @author Graeme Rocher
  * @since 1.0
  * 
  * Created: Jan 22, 2009
  */
-class ComponentMappingWithInheritenceTests extends AbstractGrailsHibernateTests {
+
+public class ComponentMappingWithInheritenceTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
         gcl.parseClass('''
@@ -49,5 +49,9 @@ class Address {
         // this simply tests that it is possibly to save a super class in table-per-heirarchy inheritance
         // with table-per-heirarchy inheritance the embedded items columns should be nullable
         assertNotNull "Validation should have succeeded",newuser.save(flush:true)
+
+
     }
+
+
 }

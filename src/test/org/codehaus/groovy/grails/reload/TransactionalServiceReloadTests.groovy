@@ -1,15 +1,16 @@
 package org.codehaus.groovy.grails.reload;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.commons.*
-import org.apache.commons.logging.*
-import org.codehaus.groovy.grails.plugins.web.*
+ import org.codehaus.groovy.grails.web.servlet.mvc.*
+ import org.codehaus.groovy.grails.commons.*
+ import org.apache.commons.logging.*
+ import org.codehaus.groovy.grails.plugins.web.*
 
 /**
  * Tests for auto-reloading of transactional services
  *
  * @author Graeme Rocher
- */
+ **/
+
 class TransactionalServiceReloadTests extends AbstractGrailsPluginTests {
 
     def service1 = '''
@@ -21,35 +22,39 @@ class TransactionalService {
     }
 }
     '''
-
     void testReloadTransactionalService() {
-        def testService = appCtx.getBean("transactionalService")
+            def testService = appCtx.getBean("transactionalService")
 
-        assertEquals "foo", testService.myMethod()
+            assertEquals "foo", testService.myMethod()
 
-        testService = ga.getServiceClass("TransactionalService").newInstance()
+            testService = ga.getServiceClass("TransactionalService").newInstance()
 
-        assertEquals "foo", testService.myMethod()
+            assertEquals "foo", testService.myMethod()
 
-        def event = [source:gcl.parseClass(service1), ctx:appCtx]
 
-        def plugin = mockManager.getGrailsPlugin("services")
+             def event = [source:gcl.parseClass(service1),
+                         ctx:appCtx]
 
-        def eventHandler = plugin.instance.onChange
-        eventHandler.delegate = plugin
-        eventHandler.call(event)
+            def plugin = mockManager.getGrailsPlugin("services")
 
-        def newService = ga.getServiceClass("TransactionalService").newInstance()
+            def eventHandler = plugin.instance.onChange
+            eventHandler.delegate = plugin
+            eventHandler.call(event)
 
-        assertEquals "bar", newService.myMethod()
 
-        newService = appCtx.getBean("transactionalService")
+            def newService = ga.getServiceClass("TransactionalService").newInstance()
 
-        assertEquals "bar", newService.myMethod()
+            assertEquals "bar", newService.myMethod()
+
+            newService = appCtx.getBean("transactionalService")
+
+            assertEquals "bar", newService.myMethod()
+            
     }
 
-    protected void onSetUp() {
-        gcl.parseClass '''
+	void onSetUp() {
+		gcl.parseClass(
+'''
 class TransactionalService {
     def transactional = true
 
@@ -57,9 +62,9 @@ class TransactionalService {
         "foo"
     }
 }
-'''
+''')
 
-    gcl.parseClass '''\
+        gcl.parseClass('''\
 dataSource {
 	   pooling = true
 	   logSql = true
@@ -69,7 +74,7 @@ dataSource {
 	   username = "sa"
 	   password = ""
 }
-''', "DataSource"
+''', "DataSource")
 
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
@@ -78,4 +83,5 @@ dataSource {
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
     }
+
 }

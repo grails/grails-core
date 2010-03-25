@@ -43,7 +43,7 @@ public class DateMarshaller implements ObjectMarshaller<JSON> {
 
     public void marshalObject(Object object, JSON converter) throws ConverterException {
         try {
-            converter.getWriter().value(JSON_DATE_FORMAT.format(object));
+            converter.getWriter().value(JSON_DATE_FORMAT.format((Date) object));
         } catch (JSONException e) {
             throw new ConverterException(e);
         }

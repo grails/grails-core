@@ -1,64 +1,59 @@
-package org.codehaus.groovy.grails.plugins.web
+package org.codehaus.groovy.grails.plugins.web;
 
-import grails.util.MockHttpServletResponse
-
-import javax.servlet.ServletContext
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
-import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.support.MockResourceLoader
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.support.*
+import org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.spring.*
+import org.springframework.mock.web.*
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockServletContext
+import org.springframework.core.io.Resource
+import org.codehaus.groovy.runtime.*
+import org.codehaus.groovy.grails.web.servlet.*
+import org.springframework.context.ApplicationContext
+import javax.servlet.ServletContext
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 
-    ServletContext servletContext
-    GrailsWebRequest webRequest
-    MockHttpServletRequest request
-    MockHttpServletResponse response
-    def gcl = new GroovyClassLoader()
-    def ga
-    def mockManager
-    def ctx
-    def originalHandler
-    def springConfig
-    ApplicationContext appCtx
-    def pluginsToLoad = []
-    def resolver = new PathMatchingResourcePatternResolver()
+	ServletContext servletContext
+	GrailsWebRequest webRequest
+	MockHttpServletRequest request
+	MockHttpServletResponse response
+	def gcl = new GroovyClassLoader()
+    def ga;
+	def mockManager
+    def ctx;	
+	def originalHandler
+	def springConfig
+	ApplicationContext appCtx
+	def pluginsToLoad = []
+	def resolver = new PathMatchingResourcePatternResolver()
+	
+	void onSetUp() {
+	}
 
-    protected void onSetUp() {
-    }
+	final void setUp() {		
+		
+        super.setUp();
+        
+		ExpandoMetaClass.enableGlobally()
+        
 
-    final void setUp() {
-        super.setUp()
-
-        ExpandoMetaClass.enableGlobally()
-
-        ctx = new MockApplicationContext()
-        onSetUp()
-        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl)
+        ctx = new MockApplicationContext();
+        onSetUp();
+        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         mockManager = new MockGrailsPluginManager(ga)
         def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
-        mockManager.doArtefactConfiguration()
+        mockManager.doArtefactConfiguration();
         ga.initialise()
         ApplicationHolder.application = ga
-        ga.setApplicationContext(ctx)
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+        ga.setApplicationContext(ctx);
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl)
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
 
         ctx.registerMockBean("manager", mockManager )
 
@@ -69,33 +64,35 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         springConfig = new WebRuntimeSpringConfiguration(ctx)
         servletContext = new MockServletContext(new MockResourceLoader())
         springConfig.servletContext = servletContext
-        mockManager.registerProvidedArtefacts(ga)
+        mockManager.registerProvidedArtefacts(ga) 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
 
-        appCtx = springConfig.getApplicationContext()
-        mockManager.applicationContext = appCtx
-        servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
-        dependentPlugins*.doWithDynamicMethods(appCtx)
-        dependentPlugins*.doWithApplicationContext(appCtx)
-    }
+		appCtx = springConfig.getApplicationContext()
+		mockManager.applicationContext = appCtx
+		servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+		dependentPlugins*.doWithDynamicMethods(appCtx)
+		dependentPlugins*.doWithApplicationContext(appCtx)
 
-    protected final void tearDown() {
-        servletContext = null
-        webRequest = null
-        request = null
-        response = null
-        gcl = null
-        ga = null
-        mockManager = null
-        ctx = null
-        pluginsToLoad = []
-        appCtx = null
-        springConfig = null
-        resolver = null
+	}
+	
+	final void tearDown() {
+		servletContext = null
+		webRequest = null
+		request = null
+		response = null
+		gcl = null
+		ga = null
+		mockManager = null
+		ctx = null
+		pluginsToLoad = []
+		appCtx = null
+    	springConfig = null
+    	resolver = null
+		
+		ExpandoMetaClass.disableGlobally()
 
-        ExpandoMetaClass.disableGlobally()
+    	originalHandler = null
 
-        originalHandler = null
-    }
+	}
 }

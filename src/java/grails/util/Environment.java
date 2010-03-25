@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package grails.util;
+
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
@@ -21,9 +23,7 @@ import groovy.lang.MissingMethodException;
 
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
-import org.springframework.util.StringUtils;
 
 /**
  * An enum that represents the current environment
@@ -35,25 +35,7 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("serial")
 public enum Environment {
-
-    /** The development environment */
-    DEVELOPMENT,
-
-    /** The production environment */
-    PRODUCTION,
-
-    /** The test environment */
-    TEST,
-
-    /**
-     * For the application data source, primarly for backward compatability for those applications
-     * that use ApplicationDataSource.groovy.
-     */
-    APPLICATION,
-
-    /** A custom environment */
-    CUSTOM;
-
+    DEVELOPMENT, PRODUCTION, TEST, APPLICATION, CUSTOM;
     /**
      * Constant used to resolve the environment via System.getProperty(Environment.KEY)
      */
@@ -69,16 +51,16 @@ public enum Environment {
      */
     public static final String RELOAD_LOCATION = "grails.reload.location";
 
+
     /**
      * Constants that indicates whether this GrailsApplication is running in the default environment
      */
     public static final String DEFAULT = "grails.env.default";
-
     private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
     private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
 
     private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
-    private static Map<String, String> envNameMappings = new HashMap<String, String>() {{
+    private static HashMap<String, String> envNameMappings = new HashMap<String, String>() {{
         put(DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName());
         put(PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName());
         put(TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
@@ -94,36 +76,37 @@ public enum Environment {
 
         String envName = System.getProperty(Environment.KEY);
         Metadata metadata = Metadata.getCurrent();
-        if (metadata!=null && isBlank(envName)) {
+        if(metadata!=null && isBlank(envName)) {
             envName = metadata.getEnvironment();
         }
 
-        if (isBlank(envName)) {
+        if(isBlank(envName)) {
             return DEVELOPMENT;
         }
+        else {
+            Environment env = getEnvironment(envName);
+            if(env == null) {
+                try {
+                    env = Environment.valueOf(envName.toUpperCase());
+                }
+                catch (IllegalArgumentException e) {
+                    // ignore
+                }
+            }
+            if(env == null) {
+                env = Environment.CUSTOM;
+                env.setName(envName);
+            }
+            return env;
+        }
 
-        Environment env = getEnvironment(envName);
-        if (env == null) {
-            try {
-                env = Environment.valueOf(envName.toUpperCase());
-            }
-            catch (IllegalArgumentException e) {
-                // ignore
-            }
-        }
-        if (env == null) {
-            env = Environment.CUSTOM;
-            env.setName(envName);
-        }
-        return env;
     }
 
     /**
      * @see #getCurrent()
-     * @return the current environment
      */
     public static Environment getCurrentEnvironment() {
-        return getCurrent();
+        return getCurrent();        
     }
 
     /**
@@ -131,15 +114,14 @@ public enum Environment {
      * @return True if the application is running in development mode
      */
     public static boolean isDevelopmentMode() {
-        return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
-             System.getProperty("grails.home") != null;
+        return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) && System.getProperty("grails.home")!=null;
     }
 
     /**
      * @return Return true if the environment has been set as a Systme property
      */
     public static boolean isSystemSet() {
-        return System.getProperty(KEY) != null;
+        return System.getProperty(KEY) !=null;
     }
 
     /**
@@ -149,7 +131,7 @@ public enum Environment {
      */
     public static Environment getEnvironment(String shortName) {
         final String envName = envNameMappings.get(shortName);
-        if (envName != null) {
+        if(envName !=null) {
             return Environment.valueOf(envName.toUpperCase());
         }
         return null;
@@ -175,6 +157,7 @@ public enum Environment {
         return getEnvironmentSpecificBlock(env, closure);
     }
 
+
     /**
      * Takes an environment specific DSL block like:
      *
@@ -192,12 +175,12 @@ public enum Environment {
      * @return The environment specific block or null if non exists
      */
     public static Closure getEnvironmentSpecificBlock(Environment env, Closure closure) {
-        if (closure == null) {
-            return null;
-        }
+        if(closure != null) {
+            final EnvironmentBlockEvaluator evaluator = evaluateEnvironmentSpecificBlock(env, closure);
+            return evaluator.getCallable();
 
-        final EnvironmentBlockEvaluator evaluator = evaluateEnvironmentSpecificBlock(env, closure);
-        return evaluator.getCallable();
+        }
+        return null;
     }
 
     /**
@@ -218,6 +201,7 @@ public enum Environment {
     public static Object executeForCurrentEnvironment(Closure closure) {
         final Environment env = getCurrent();
         return executeForEnvironment(env, closure);
+
     }
 
     /**
@@ -237,12 +221,12 @@ public enum Environment {
      * @return The result of the closure execution
      */
     public static Object executeForEnvironment(Environment env, Closure closure) {
-        if (closure == null) {
-            return null;
-        }
+        if(closure != null) {
+            final EnvironmentBlockEvaluator evaluator = evaluateEnvironmentSpecificBlock(env, closure);
+            return evaluator.execute();
 
-        final EnvironmentBlockEvaluator evaluator = evaluateEnvironmentSpecificBlock(env, closure);
-        return evaluator.execute();
+        }
+        return null;
     }
 
     private static EnvironmentBlockEvaluator evaluateEnvironmentSpecificBlock(Environment environment, Closure closure) {
@@ -262,7 +246,10 @@ public enum Environment {
         }
 
         Object execute() {
-            return callable == null ? null : callable.call();
+            if(callable!=null) {
+                return callable.call();
+            }
+            return null;
         }
 
         private EnvironmentBlockEvaluator(Environment e) {
@@ -270,41 +257,44 @@ public enum Environment {
         }
 
         @SuppressWarnings("unused")
-        public void environments(Closure c) {
-            if (c != null) {
-                c.setDelegate(this);
-                c.call();
+		public void environments(Closure callable) {
+            if(callable!=null) {
+                callable.setDelegate(this);
+                callable.call();
             }
         }
         @SuppressWarnings("unused")
-        public void production(Closure c) {
-            if (current == Environment.PRODUCTION) {
-                this.callable = c;
+		public void production(Closure callable) {
+            if(current == Environment.PRODUCTION) {
+                 this.callable = callable;
             }
         }
         @SuppressWarnings("unused")
-        public void development(Closure c) {
-            if (current == Environment.DEVELOPMENT) {
-                this.callable = c;
+		public void development(Closure callable) {
+            if(current == Environment.DEVELOPMENT) {
+                 this.callable = callable;
             }
         }
         @SuppressWarnings("unused")
-        public void test(Closure c) {
-            if (current == Environment.TEST) {
-                this.callable = c;
+		public void test(Closure callable) {
+            if(current == Environment.TEST) {
+                 this.callable = callable;
             }
         }
 
         @SuppressWarnings("unused")
-        public Object methodMissing(String name, Object args) {
-            Object[] argsArray = (Object[])args;
-            if (args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
-                if (current == Environment.CUSTOM && current.getName().equals(name)) {
+		public Object methodMissing(String name, Object args) {
+        	Object[] argsArray = (Object[])args;
+            if(args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
+                if(current == Environment.CUSTOM && current.getName().equals(name)) {
                     this.callable = (Closure) argsArray[0];
                 }
                 return null;
             }
-            throw new MissingMethodException(name, Environment.class, argsArray);
+            else {
+                throw new MissingMethodException(name, Environment.class, argsArray);
+            }
+
         }
     }
 
@@ -312,22 +302,19 @@ public enum Environment {
         return value == null || value.trim().length() == 0;
     }
 
+
     private String name;
 
     /**
-     * @return  the name of the environment
+     * @return The name of the environment 
      */
     public String getName() {
-        if (name == null) {
+        if(name == null) {
             return this.toString().toLowerCase(Locale.getDefault());
         }
         return name;
     }
 
-    /**
-     * Set the name.
-     * @param name  the name
-     */
     public void setName(String name) {
         this.name = name;
     }
@@ -339,9 +326,12 @@ public enum Environment {
         final boolean reloadOverride = Boolean.getBoolean(RELOAD_ENABLED);
 
         final String reloadLocation = getReloadLocationInternal();
-        final boolean reloadLocationSpecified = StringUtils.hasLength(reloadLocation);
-        return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() ||
-                reloadOverride && reloadLocationSpecified;
+        final boolean reloadLocationSpecified = isNotBlank(reloadLocation);
+        return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() || reloadOverride && reloadLocationSpecified;
+    }
+
+    private boolean isNotBlank(String reloadLocation) {
+        return (reloadLocation !=null && reloadLocation.length()>0 );
     }
 
     /**
@@ -349,27 +339,28 @@ public enum Environment {
      */
     public String getReloadLocation() {
         String location = getReloadLocationInternal();
-        if (StringUtils.hasLength(location)) {
+        if(isNotBlank(location)) {
             return location;
         }
-        return "."; // default to the current directory
+        else {
+            return "."; // default to the current directory
+        }
     }
 
     /**
      * @return Whether a reload location is specified
      */
     public boolean hasReloadLocation() {
-        return StringUtils.hasLength(getReloadLocationInternal());
+        return isNotBlank(getReloadLocationInternal());
     }
 
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
-        if (!StringUtils.hasLength(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
-        if (!StringUtils.hasLength(location)) {
-            BuildSettings settings = BuildSettingsHolder.getSettings();
-            if (settings != null) {
-                location = settings.getBaseDir().getAbsolutePath();
-            }
+        if(!isNotBlank(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
+        if(!isNotBlank(location)) {
+        	BuildSettings settings = BuildSettingsHolder.getSettings();
+        	if(settings != null)
+        		location = settings.getBaseDir().getAbsolutePath();
         }
         return location;
     }

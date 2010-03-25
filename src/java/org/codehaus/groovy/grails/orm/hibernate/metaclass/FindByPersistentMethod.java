@@ -15,12 +15,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.Closure;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
@@ -30,6 +24,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The "findBy*" static persistent method. This method allows querying for
@@ -41,44 +40,40 @@ import org.springframework.orm.hibernate3.HibernateCallback;
  * 
  * @author Graeme Rocher
  * @since 31-Aug-2005
+ *
  */
 public class FindByPersistentMethod extends AbstractClausedStaticPersistentMethod {
-    
-    private static final String OPERATOR_OR = "Or";
-    private static final String OPERATOR_AND = "And";
-    
-    private static final String METHOD_PATTERN = "(findBy)(\\w+)";
-    private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
+	
+	private static final String OPERATOR_OR = "Or";
+	private static final String OPERATOR_AND = "And";
+	
+	private static final String METHOD_PATTERN = "(findBy)(\\w+)";
+	private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
 
-    /**
-     * Constructor.
-     * @param application
-     * @param sessionFactory
-     * @param classLoader
-     */
-    public FindByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
-    }
+	public FindByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
+ 		super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
+	}
 
-    @Override
-    protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
+	protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
+
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
-        return getHibernateTemplate().execute(new HibernateCallback<Object>() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+        return super.getHibernateTemplate().execute( new HibernateCallback() {
 
-                Criteria crit = getCriteria(session, additionalCriteria, clazz);
-                if (arguments.length > 0) {
-                    if (arguments[0] instanceof Map<?, ?>) {
-                        Map<?, ?> argMap = (Map<?, ?>)arguments[0];
-                        GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit,argMap);
-                        if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+
+				
+				Criteria crit = getCriteria(session, additionalCriteria, clazz);
+				if(arguments.length > 0) {
+					if(arguments[0] instanceof Map) {
+						Map argMap = (Map)arguments[0];
+						GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit,argMap);
+                        if(!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
                             crit.setMaxResults(1);
                         }
-                    }
-                }
-
-                if (operator.equals(OPERATOR_OR)) {
-                    if (firstExpressionIsRequiredBoolean()) {
+					}
+				}
+                if(operator.equals(OPERATOR_OR)) {
+                    if(firstExpressionIsRequiredBoolean()) {
                         GrailsMethodExpression expression = (GrailsMethodExpression) expressions.remove(0);
                         crit.add(expression.getCriterion());
                     }
@@ -93,17 +88,19 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
                     for (Object expression : expressions) {
                         GrailsMethodExpression current = (GrailsMethodExpression) expression;
                         crit.add(current.getCriterion());
+
                     }
                 }
 
-                final List<?> list = crit.list();
-                if (!list.isEmpty()) {
+
+                final List list = crit.list();
+                if(!list.isEmpty()) {
                     return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
                 }
                 return null;
             }
-        });
-    }
+		});
+	}
 
     /**
      * Indicates if the first expression in the query is a required boolean property and as such should
@@ -115,4 +112,5 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
     protected boolean firstExpressionIsRequiredBoolean() {
         return false;
     }
+
 }

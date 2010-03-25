@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package grails.build.eclipse
 
 class EclipseClasspathTests extends GroovyTestCase {
-
     void testClasspath() {
-        if (Boolean.getBoolean("groovy.grails.joint")) return
-
+        if(Boolean.getBoolean("groovy.grails.joint")) return;
         def result = new XmlSlurper().parse(new File('.classpath'))
         def libs = result.classpathentry.grep {it.'@kind' == 'lib'}
         String errorMessage = ''
         libs.'@path'.each {
-            errorMessage = "Library $it is referenced in the .classpath file but is not present"
-            assertTrue errorMessage, new File(it.toString()).exists()
+            errorMessage = 'Library ' + it + ' is referenced in the .classpath '
+            errorMessage += ' file but is not present'
+            assertTrue(errorMessage, new File(it.toString()).exists())
         }
     }
+
+
 }

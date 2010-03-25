@@ -16,21 +16,18 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import java.util.regex.Pattern
-
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.view.NullView
 import org.codehaus.groovy.grails.web.util.WebUtils
-
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.AntPathMatcher
+import org.codehaus.groovy.grails.web.servlet.view.NullView
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 /**
  * Adapter between a FilterConfig object and a Spring HandlerInterceptor.
@@ -38,19 +35,19 @@ import org.springframework.web.util.UrlPathHelper
  * @author Graeme Rocher
  */
 class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
-    def filterConfig
-    def configClass
+    def filterConfig;
+    def configClass;
 
-    def controllerRegex
-    def actionRegex
-    def uriPattern
+    def controllerRegex;
+    def actionRegex;
+    def uriPattern;
     def urlPathHelper = new UrlPathHelper()
     def pathMatcher = new AntPathMatcher()
     def useRegex  // standard regex
     def invertRule // invert rule
     def useRegexFind // use find instead of match
 
-    void afterPropertiesSet() {
+    public void afterPropertiesSet() {
         def scope = filterConfig.scope
 
         useRegex = scope.regex
@@ -75,7 +72,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             uriPattern = scope.uri.toString()
         }
     }
-
+    
     /**
      * Returns the name of the controller targeted by the given request.
      */
@@ -92,7 +89,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
 
     String uri(HttpServletRequest request) {
         def uri = request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE)
-        if (!uri) uri = request.getRequestURI()
+        if(!uri) uri = request.getRequestURI()
         return uri.substring(request.getContextPath().length())
     }
 
@@ -103,49 +100,49 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             String actionName = actionName(request)
             String uri = uri(request)
 
-            if (!accept(controllerName, actionName, uri)) return true
+            if (!accept(controllerName, actionName, uri)) return true;
 
             def callable = filterConfig.before.clone()
-            def result = callable.call()
-            if (result instanceof Boolean) {
-                if (!result && filterConfig.modelAndView) {
+            def result = callable.call();
+            if(result instanceof Boolean) {
+                if(!result && filterConfig.modelAndView) {
                     renderModelAndView(filterConfig, request, response, controllerName)
                 }
                 return result
             }
         }
 
-        return true
+        return true;
     }
 
-    void postHandle(HttpServletRequest request, HttpServletResponse response, o, ModelAndView modelAndView) {
-        if (!filterConfig.after) {
-            return
-        }
+    void postHandle(HttpServletRequest request, HttpServletResponse response, o, ModelAndView modelAndView) throws java.lang.Exception {
+        if (filterConfig.after) {
 
-        String controllerName = controllerName(request)
-        String actionName = actionName(request)
-        String uri = uri(request)
+            String controllerName = controllerName(request)
+            String actionName = actionName(request)
+            String uri = uri(request)
 
-        if (!accept(controllerName, actionName, uri)) return
+            if (!accept(controllerName, actionName, uri)) return;
 
-        def callable = filterConfig.after.clone()
-        def result = callable.call(modelAndView?.model)
-        if (result instanceof Boolean) {
-            // if false is returned don't render a view
-            if (!result) {
-                modelAndView.viewName = null
-                modelAndView.view = new NullView(response.contentType)
+            def callable = filterConfig.after.clone()
+            def result = callable.call(modelAndView?.model);
+            if(result instanceof Boolean) {
+                // if false is returned don't render a view
+                if(!result) {
+                    modelAndView.viewName = null
+                    modelAndView.view = new NullView(response.contentType)
+                }
             }
-        }
-        else if (filterConfig.modelAndView && modelAndView) {
-            if (filterConfig.modelAndView.viewName) {
-                modelAndView.viewName = filterConfig.modelAndView.viewName
+            else if(filterConfig.modelAndView && modelAndView) {
+                if(filterConfig.modelAndView.viewName) {
+                    modelAndView.viewName = filterConfig.modelAndView.viewName
+                }
+                modelAndView.model.putAll(filterConfig.modelAndView.model)
             }
-            modelAndView.model.putAll(filterConfig.modelAndView.model)
-        }
-        else if (filterConfig.modelAndView?.viewName) {
-            renderModelAndView(filterConfig, request, response, controllerName)
+            else if(filterConfig.modelAndView?.viewName) {
+                renderModelAndView(filterConfig, request, response, controllerName)
+            }
+
         }
     }
 
@@ -153,60 +150,56 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
         def viewResolver = WebUtils.lookupViewResolver(delegate.servletContext)
         def view
         ModelAndView modelAndView = delegate.modelAndView
-        if (modelAndView.viewName) {
+        if (modelAndView.viewName)
             view = WebUtils.resolveView(request, modelAndView.viewName, controllerName, viewResolver)
-        }
-        else if (modelAndView.view) {
+        else if (modelAndView.view)
             view = modelAndView.view
-        }
         view?.render(modelAndView.model, request, response)
     }
 
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws java.lang.Exception {
-        if (!filterConfig.afterView) {
-            return
+        if (filterConfig.afterView) {
+
+            String controllerName = controllerName(request)
+            String actionName = actionName(request)
+            String uri = uri(request)
+
+            if (!accept(controllerName, actionName, uri)) return;
+            def callable = filterConfig.afterView.clone()
+            callable.call(e);
         }
-
-        String controllerName = controllerName(request)
-        String actionName = actionName(request)
-        String uri = uri(request)
-
-        if (!accept(controllerName, actionName, uri)) return
-
-        def callable = filterConfig.afterView.clone()
-        callable.call(e)
     }
 
     boolean accept(String controllerName, String actionName, String uri) {
-        boolean matched=true
-
-        if (uriPattern) {
-            matched = pathMatcher.match(uriPattern, uri)
+    	boolean matched=true
+        if(uriPattern) {
+        	matched=pathMatcher.match(uriPattern, uri)
         }
-        else if (controllerRegex && actionRegex) {
-            if (controllerName == null) {
-                matched = ('/' == uri)
-            }
-            if (matched) {
-                matched = doesMatch(controllerRegex, controllerName)
-            }
-            if (matched && filterConfig.scope.action) {
-                if (!actionName && controllerName) {
-                    def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(
-                       DefaultGrailsControllerClass.CONTROLLER, controllerName)
+        else if(controllerRegex && actionRegex) {
+			if(controllerName == null) {
+				matched = ('/' == uri)
+        	}
+			if(matched) {
+        		matched = doesMatch(controllerRegex, controllerName)
+			}
+			if(matched && filterConfig.scope.action) {
+				if(!actionName && controllerName) {
+                    def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, controllerName)
                     actionName = controllerClass?.getDefaultAction()
                 }
                 matched = doesMatch(actionRegex, actionName)
-            }
+        	}
         }
-
-        invertRule ? !matched : matched
+    	if(invertRule)
+    		return !matched
+    	else	
+    		return matched
     }
-
-    boolean doesMatch(Pattern pattern, CharSequence string) {
-        def matcher=pattern.matcher(string ?: '')
-        useRegexFind ? matcher.find() : matcher.matches()
-    }
+	
+	boolean doesMatch(Pattern pattern, CharSequence string) {
+		def matcher=pattern.matcher(string?:'')
+		return (useRegexFind ? matcher.find() : matcher.matches())
+	}
 
     String toString() {
         return "FilterToHandlerAdapter[$filterConfig, $configClass]"

@@ -6,7 +6,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  * @author Graeme Rocher
  * @since 1.1
  */
-class BindToObjectWithEmbeddableTests extends AbstractGrailsControllerTests {
+
+public class BindToObjectWithEmbeddableTests extends AbstractGrailsControllerTests{
 
     protected void onSetUp() {
         gcl.parseClass('''
@@ -20,6 +21,7 @@ class Person {
     String name
     int age
     Address address = new Address()
+
 }
 
 class Address {
@@ -41,8 +43,10 @@ class PersonController {
         [person:p]
     }
 }
+
 ''')
     }
+
 
     void testBindToObjectWithEmbedded() {
         def controller = ga.getControllerClass("PersonController").newInstance()
@@ -56,5 +60,7 @@ class PersonController {
         assertEquals "Joe", model.person.name
         assertEquals 45, model.person.age
         assertEquals "Brighton", model.person.address.city
+
     }
+
 }

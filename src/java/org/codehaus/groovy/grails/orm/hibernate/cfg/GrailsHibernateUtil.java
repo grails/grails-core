@@ -17,37 +17,16 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-
-import java.lang.reflect.Modifier;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
-import org.hibernate.Criteria;
-import org.hibernate.EntityMode;
-import org.hibernate.FetchMode;
-import org.hibernate.FlushMode;
-import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
+import org.hibernate.*;
 import org.hibernate.criterion.Order;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.SessionImplementor;
@@ -58,10 +37,16 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.property.Getter;
 import org.hibernate.property.Setter;
 import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.LazyInitializer;
 import org.hibernate.type.AbstractComponentType;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * A class containing utility methods for configuring Hibernate inside Grails
@@ -116,7 +101,8 @@ public class GrailsHibernateUtil {
         for (Object o : hibernateDomainClassMap.values()) {
             GrailsDomainClass baseClass = (GrailsDomainClass) o;
             if (!baseClass.isRoot()) {
-                Class superClass = baseClass.getClazz().getSuperclass();
+                Class superClass = baseClass
+                        .getClazz().getSuperclass();
 
 
                 while (!superClass.equals(Object.class) && !superClass.equals(GroovyObject.class)) {
@@ -142,7 +128,8 @@ public class GrailsHibernateUtil {
                 GrailsHibernateDomainClass ghdc = new
                         GrailsHibernateDomainClass(persistentClass, sessionFactory, cmd, defaultContraints);
 
-                hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
+                hibernateDomainClassMap.put(persistentClass.getName(),
+                        ghdc);
 
                 dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
             }
@@ -153,10 +140,10 @@ public class GrailsHibernateUtil {
        Integer maxParam = null;
         Integer offsetParam = null;
         if(argMap.containsKey(ARGUMENT_MAX)) {
-            maxParam = converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
+            maxParam = (Integer)converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
         }
         if(argMap.containsKey(ARGUMENT_OFFSET)) {
-            offsetParam = converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
+            offsetParam = (Integer)converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
         }
         String orderParam = (String)argMap.get(ARGUMENT_ORDER);
         Object fetchObj = argMap.get(ARGUMENT_FETCH);
@@ -287,8 +274,9 @@ public class GrailsHibernateUtil {
     public static void setObjectToReadWrite(final Object target, SessionFactory sessionFactory) {
         HibernateTemplate template = new HibernateTemplate(sessionFactory);
         template.setExposeNativeSession(true);
-        template.execute(new HibernateCallback<Void>() {
-            public Void doInHibernate(Session session) throws HibernateException, SQLException {
+        template.execute(new HibernateCallback() {
+
+            public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 if(canModifyReadWriteState(session, target)) {
                     SessionImplementor sessionImpl = (SessionImplementor) session;
                     EntityEntry ee = sessionImpl.getPersistenceContext().getEntry(target);
@@ -305,8 +293,10 @@ public class GrailsHibernateUtil {
                     }
                 }
                 return null;
+
             }
         });
+
     }
 
     /**
@@ -364,10 +354,12 @@ public class GrailsHibernateUtil {
 	public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
         GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();
 
+
         Set<Class> proxyInterfaces = new HashSet<Class>() {{
             add(HibernateProxy.class);
           }
         };
+
 
         final Class javaClass = persistentClass.getMappedClass();
         final Property identifierProperty = persistentClass.getIdentifierProperty();

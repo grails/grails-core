@@ -1,4 +1,5 @@
-package org.codehaus.groovy.grails.orm.hibernate
+package org.codehaus.groovy.grails.orm.hibernate;
+
 
 class InheritanceQueryingTests extends AbstractGrailsHibernateTests {
 
@@ -22,10 +23,10 @@ class InheritanceQueryingTests extends AbstractGrailsHibernateTests {
 		assertEquals 1, cityClass.clazz.findAll().size() 
 		assertEquals 1, countryClass.clazz.findAll().size() 
 		assertEquals 3, locationClass.clazz.findAll().size() 
-    }
-
-    protected void onSetUp() {
-        gcl.parseClass '''
+	
+	}
+	void onSetUp() {
+		this.gcl.parseClass('''
 class InheritanceQueryingCity extends InheritanceQueryingLocation {
     BigDecimal latitude
     BigDecimal longitude
@@ -41,6 +42,19 @@ abstract class InheritanceQueryingVersioned {
 	Long id
 	Long version
 }
+class ApplicationDataSource {
+   boolean pooling = true
+   String dbCreate = "create-drop" // one of 'create', 'create-drop','update'
+   String url = "jdbc:hsqldb:mem:devDB"
+   String driverClassName = "org.hsqldb.jdbcDriver"
+   String username = "sa"
+   String password = ""
+}
 '''
-    }
+		)
+	}	
+	
+	void onTearDown() {
+		
+	}
 }
