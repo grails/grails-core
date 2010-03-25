@@ -297,14 +297,13 @@ class MockUtils {
         mockAttributeAccess(MockHttpSession)
         def mockRequest = new GrailsMockHttpServletRequest()
         def mockResponse = new GrailsMockHttpServletResponse()
-        def mockSession = new MockHttpSession()
         def mockParams = new GroovyPageAttributes()
         def mockFlash = [:]
         def mockChainModel = [:]
 
         clazz.metaClass.getRequest = {-> mockRequest}
         clazz.metaClass.getResponse = {-> mockResponse}
-        clazz.metaClass.getSession = {-> mockSession}
+        clazz.metaClass.getSession = {-> mockRequest.getSession() }
         clazz.metaClass.getParams = {-> mockParams}
         clazz.metaClass.getFlash = {-> mockFlash}
         clazz.metaClass.getChainModel = {-> mockChainModel}
