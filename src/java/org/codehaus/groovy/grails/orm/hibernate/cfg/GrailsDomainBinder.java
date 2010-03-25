@@ -449,7 +449,7 @@ public final class GrailsDomainBinder {
                 }
                 //NOTE: this will build the set for the in clause if it has sublcasses
                 Set<String> discSet = buildDiscriminatorSet(referenced);
-                String inclause = StringUtils.join(discSet, ',') ;
+                String inclause = StringUtils.join(discSet, ',');
 
                 collection.setWhere(discriminatorColumnName + " in (" + inclause + ")");
             }
@@ -917,7 +917,7 @@ public final class GrailsDomainBinder {
             collection.setElement(oneToMany);
             bindOneToMany(property, oneToMany, mappings);
         } else {
-            bindCollectionTable(property, mappings, collection);
+            bindCollectionTable(property, mappings, collection, owner.getTable());
 
             if (!property.isOwningSide()) {
                 collection.setInverse(true);
@@ -959,8 +959,11 @@ public final class GrailsDomainBinder {
         return propertyName;
     }
 
-    private static void bindCollectionTable(GrailsDomainClassProperty property, Mappings mappings, Collection collection) {
-        String tableName = calculateTableForMany(property);
+    private static void bindCollectionTable(GrailsDomainClassProperty property, Mappings mappings,
+   		 Collection collection, Table ownerTable) {
+
+        String prefix = ownerTable.getSchema();
+        String tableName = (prefix == null ? "" : prefix + '.') + calculateTableForMany(property);
         Table t = mappings.addTable(
                 mappings.getSchemaName(),
                 mappings.getCatalogName(),
@@ -972,7 +975,7 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * This method will calculate the mapping table for a many-to-many. One side of
+     * Calculates the mapping table for a many-to-many. One side of
      * the relationship has to "own" the relationship so that there is not a situation
      * where you have two mapping tables for left_right and right_left
      */
@@ -2312,6 +2315,7 @@ public final class GrailsDomainBinder {
             ColumnConfig cc,
             String path,
             Table table) {
+
         Class<?> userType = getUserType(property);
         String columnName = getColumnNameForPropertyAndPath(property, path, cc);
         if ((property.isAssociation() || property.isBasicCollectionType()) && userType == null) {
@@ -2442,8 +2446,7 @@ public final class GrailsDomainBinder {
                 columnName = cc.getName();
             }
         } else {
-            // No column config given, so try to fetch it from the
-            // mapping.
+            // No column config given, so try to fetch it from the mapping
             GrailsDomainClass domainClass = grailsProp.getDomainClass();
             Mapping m = getMapping(domainClass.getClazz());
             if (m != null) {
@@ -2489,15 +2492,15 @@ public final class GrailsDomainBinder {
 
             if (!property.isBidirectional() && property.isOneToMany()) {
                 String prefix = namingStrategy.classToTableName(property.getDomainClass().getName());
-                return prefix+ UNDERSCORE +columnName + FOREIGN_KEY_SUFFIX;
+                return prefix + UNDERSCORE + columnName + FOREIGN_KEY_SUFFIX;
             }
 
-                if (property.isInherited() && isBidirectionalManyToOne(property)) {
-                    return namingStrategy.propertyToColumnName(property.getDomainClass().getName()) + '_'+ columnName + FOREIGN_KEY_SUFFIX ;
-                }
+            if (property.isInherited() && isBidirectionalManyToOne(property)) {
+                return namingStrategy.propertyToColumnName(property.getDomainClass().getName()) + '_'+ columnName + FOREIGN_KEY_SUFFIX;
+            }
 
-                    return columnName + FOREIGN_KEY_SUFFIX ;
-                }
+            return columnName + FOREIGN_KEY_SUFFIX;
+        }
 
         if (property.isBasicCollectionType()) {
             return getForeignKeyForPropertyDomainClass(property);
