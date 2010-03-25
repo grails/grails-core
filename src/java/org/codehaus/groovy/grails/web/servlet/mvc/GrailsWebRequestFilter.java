@@ -15,6 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
@@ -22,36 +29,31 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 /**
- * A filter that binds a GrailsWebRequest to the currently executing thread
+ * Binds a {@link GrailsWebRequestFilter} to the currently executing thread.
  *
  * @author Graeme Rocher
  * @since 0.4
- *
  */
 public class GrailsWebRequestFilter extends OncePerRequestFilter {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.web.filter.OncePerRequestFilter#doFilterInternal(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
-	 */
-	protected void doFilterInternal(
-			HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
+    /* (non-Javadoc)
+     * @see org.springframework.web.filter.OncePerRequestFilter#doFilterInternal(
+     *     javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
+     */
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-		LocaleContextHolder.setLocale(request.getLocale());
-		GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
+        LocaleContextHolder.setLocale(request.getLocale());
+        GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
         configureParameterCreationListeners(webRequest);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Bound Grails request context to thread: " + request);
-		}
-		try {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Bound Grails request context to thread: " + request);
+        }
+
+        try {
             WebUtils.storeGrailsWebRequest(webRequest);
 
             // Set the flash scope instance to its next state. We do
@@ -63,16 +65,16 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
             // Pass control on to the next filter (or the servlet if
             // there are no more filters in the chain).
             filterChain.doFilter(request, response);
-		}
-		finally {
-			webRequest.requestCompleted();
+        }
+        finally {
+            webRequest.requestCompleted();
             WebUtils.clearGrailsWebRequest();
             LocaleContextHolder.setLocale(null);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Cleared Grails thread-bound request context: " + request);
-			}
-		}
-	}
+            if (logger.isDebugEnabled()) {
+                logger.debug("Cleared Grails thread-bound request context: " + request);
+            }
+        }
+    }
 
     private void configureParameterCreationListeners(GrailsWebRequest webRequest) {
         ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
@@ -82,5 +84,4 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
             webRequest.addParameterListener(creationListenerBean);
         }
     }
-
 }
