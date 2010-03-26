@@ -46,7 +46,7 @@ import java.util.Collection;
  * @since 0.2
  * @see BeanDefinitionRegistry
  */
-public interface GrailsPlugin extends ApplicationContextAware, Comparable {
+public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo {
 
     int EVENT_ON_CHANGE = 0;
     int EVENT_ON_CONFIG_CHANGE = 1;
@@ -116,14 +116,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
 	 */
 	String DO_WITH_WEB_DESCRIPTOR = "doWithWebDescriptor";
     /**
-	 * Defines the convention that appears within plugin class names
-	 */
-	String TRAILING_NAME = "GrailsPlugin";
-    /**
-	 * Defines the name of the property that specifies the plugin version
-	 */
-	String VERSION = "version";
-    /**
 	 * Defines the name of the property that defines the closure that will be invoked during runtime spring configuration
 	 */
 	String DO_WITH_SPRING = "doWithSpring";
@@ -167,11 +159,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
     String TYPE_FILTERS = "typeFilters";
 
     /**
-     * The name of the plugin
-     */
-    String NAME = "name";
-
-    /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s
      * to the {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}.</p>
      *
@@ -195,12 +182,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
      * @param webXml The GPathResult representing web.xml
      */
     void doWithWebDescriptor(GPathResult webXml);
-    
-    /**
-     * 
-     * @return The name of the plug-in
-     */
-	String getName();
 
     /**
      * Makes the plugin excluded for a particular BuildScope
@@ -234,12 +215,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable {
      */
     boolean supportsCurrentScopeAndEnvironment();
 
-
-	/**
-	 * 
-	 * @return The version of the plug-in
-	 */
-	String getVersion();
 
     /**
      * Write some documentation to the DocumentationContext
