@@ -240,7 +240,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                 def propertyNames = persister.propertyNames.toList()
                 def state = updateEvent.state
                 for (p in propertyNames) {
-                    if (IGNORED.contains(p)) {
+                    if (IGNORED.contains(p) || !entity.hasProperty(p)) {
                         continue
                     }
                     def i = propertyNames.indexOf(p)
@@ -258,7 +258,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                         def propertyNames = entry.persister.propertyNames.toList()
                         def state = entry.loadedState
                         for (p in propertyNames) {
-                            if (IGNORED.contains(p)) {
+                            if (IGNORED.contains(p) || !entity.hasProperty(p)) {
                                 continue
                             }
                             def i = propertyNames.indexOf(p)
