@@ -317,15 +317,16 @@ class ControllersGrailsPlugin {
                 commandObjectMetaClass.validate = {->
                     DomainClassPluginSupport.validateInstance(delegate, ctx)
                 }
-                def validationClosure = GCU.getStaticPropertyValue(commandObjectClass, 'constraints')
-                if (validationClosure) {
-                    def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
-                    validationClosure.setDelegate(constrainedPropertyBuilder)
-                    validationClosure()
-                    commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
-                } else {
-                    commandObjectMetaClass.constraints = [:]
+                def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObject)
+                def classes = GrailsDomainConfigurationUtil.getSuperClassChain(commandObjectClass)
+                classes.each { clz ->
+                	def validationClosure = GCU.getStaticPropertyValue(clz, 'constraints')
+                	if (validationClosure) {
+                		validationClosure.setDelegate(constrainedPropertyBuilder)
+                		validationClosure()
+                	}
                 }
+                commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
                 commandObjectMetaClass.clearErrors = {->
                     delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
                 }
@@ -424,7 +425,6 @@ class ControllersGrailsPlugin {
         }
 
     }
-
 
     def onChange = {event ->
         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
