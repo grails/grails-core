@@ -803,37 +803,33 @@ class BuildSettings {
         def handlePluginDirectory = {File dir ->
             def pluginName = dir.name
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
-            if(matcher) {
-                pluginName = matcher[0][1]
+            pluginName = matcher ? matcher[0][1] : pluginName 
+            // Try BuildConfig.groovy first, which should work
+            // work for in-place plugins.
+            def path = dir.absolutePath
+            def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
 
-                // Try BuildConfig.groovy first, which should work
-                // work for in-place plugins.
-                def path = dir.absolutePath
-                def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
-
-                if (!pluginDependencyDescriptor.exists()) {
-                    // OK, that doesn't exist, so try dependencies.groovy.
-                    pluginDependencyDescriptor = new File("$path/dependencies.groovy")
-                }
-
-                if (pluginDependencyDescriptor.exists()) {
-                    def gcl = obtainGroovyClassLoader()
-
-                    try {
-                        Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
-                        def pluginConfig = pluginSlurper.parse(script)
-                        def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
-                        if (pluginDependencyConfig instanceof Closure) {
-                            dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
-                        }
-                    }
-                    catch (e) {
-                        println "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}"
-                    }
-
-                }
+            if (!pluginDependencyDescriptor.exists()) {
+                // OK, that doesn't exist, so try dependencies.groovy.
+                pluginDependencyDescriptor = new File("$path/dependencies.groovy")
             }
 
+            if (pluginDependencyDescriptor.exists()) {
+                def gcl = obtainGroovyClassLoader()
+
+                try {
+                    Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
+                    def pluginConfig = pluginSlurper.parse(script)
+                    def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
+                    if (pluginDependencyConfig instanceof Closure) {
+                        dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
+                    }
+                }
+                catch (e) {
+                    println "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}"
+                }
+
+            }
         }
         return handlePluginDirectory
     }
