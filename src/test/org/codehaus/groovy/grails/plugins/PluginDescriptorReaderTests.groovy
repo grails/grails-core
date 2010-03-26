@@ -8,6 +8,7 @@ class PluginDescriptorReaderTests extends GroovyTestCase {
 		def pluginReader = new AstPluginDescriptorReader()
 		
 		def plugin = pluginReader.readPluginInfo(new ByteArrayResource('''
+import org.codehaus.groovy.grails.plugins.springsecurity.AuthorizeTools				
 class FooGrailsPlugin {
   String version = "0.1"
   String grailsVersion = "1.3"				

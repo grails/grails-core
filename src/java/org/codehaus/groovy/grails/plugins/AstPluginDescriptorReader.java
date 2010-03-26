@@ -58,8 +58,8 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 		
 		try {
 			compilationUnit.addSource("dummy",pluginLocation.getInputStream());
-			compilationUnit.addPhaseOperation(new PluginReadingPhaseOperation(pluginInfo), Phases.SEMANTIC_ANALYSIS);
-			compilationUnit.compile(Phases.SEMANTIC_ANALYSIS);
+			compilationUnit.addPhaseOperation(new PluginReadingPhaseOperation(pluginInfo), Phases.CONVERSION);
+			compilationUnit.compile(Phases.CONVERSION);
 			return pluginInfo;
 		} catch (IOException e) {
 			throw new PluginException("Cannot read plugin info: " + e.getMessage());
