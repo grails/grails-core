@@ -242,7 +242,7 @@ public class GrailsNameUtils {
         if (name.endsWith(".groovy")) {
             name = name.substring(0, name.length()-7);
         }
-        String naturalName = getNaturalName(getShortName(name));
+        String naturalName = getNaturalName(name);
         return naturalName.replaceAll("\\s", "-").toLowerCase();
     }
 
@@ -287,6 +287,7 @@ public class GrailsNameUtils {
      * @return The converted property name
      */
     public static String getNaturalName(String name) {
+        name = getShortName(name);
         List<String> words = new ArrayList<String>();
         int i = 0;
         char[] chars = name.toCharArray();
