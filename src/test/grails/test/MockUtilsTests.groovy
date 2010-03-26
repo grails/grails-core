@@ -915,10 +915,11 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "square_suffix", controller.session.getAttribute("attr2")
         assertEquals "Last attribute", controller.session.getAttribute("attr3")
 
+        def session = controller.session
         // Now a quick check that the session can be invalidated.
         controller.testSessionInvalidate()
 
-        assertTrue controller.session.isInvalid()
+        assertTrue session.isInvalid()
         assertNull controller.session.getAttribute("attr1")
     }
 

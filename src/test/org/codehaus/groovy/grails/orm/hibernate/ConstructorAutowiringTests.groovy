@@ -1,48 +1,45 @@
-package org.codehaus.groovy.grails.orm.hibernate;
-
-import org.codehaus.groovy.grails.commons.*
+package org.codehaus.groovy.grails.orm.hibernate
 
 class ConstructorAutowiringTests extends AbstractGrailsHibernateTests {
 
-	void testDomainClassAutowiring() {
-	    def factory = ga.classLoader.loadClass("BookFactory").newInstance()
+    void testDomainClassAutowiring() {
+        def factory = ga.classLoader.loadClass("BookFactory").newInstance()
 
-	    def b = factory.newBook()
-	    assertNotNull "Service autowiring failed", b.bookService
-	    assertEquals( "foo", b.talkToService() )
+        def b = factory.newBook()
+        assertNotNull "Service autowiring failed", b.bookService
+        assertEquals( "foo", b.talkToService() )
 
-	    b = factory.newBook(title:"gina")
-	    assert b.bookService
-	    assertEquals "gina", b.title
-	    assertEquals "foo", b.talkToService()
-	}
+        b = factory.newBook(title:"gina")
+        assertNotNull b.bookService
+        assertEquals "gina", b.title
+        assertEquals "foo", b.talkToService()
+    }
 
-	void testAutowiringFromGet() {
+    void testAutowiringFromGet() {
         def bookClass = ga.getDomainClass("Book").clazz
 
-        assert bookClass.newInstance(title:"The Stand").save(flush:true)
+        assertNotNull bookClass.newInstance(title:"The Stand").save(flush:true)
 
         assertEquals 1, bookClass.count()
         session.clear()
 
         def b = bookClass.get(1)
-	    assertNotNull "Service autowiring failed", b.bookService
-	    assertEquals "The Stand", b.title
-	    assertEquals "foo", b.talkToService()        
-
+        assertNotNull "Service autowiring failed", b.bookService
+        assertEquals "The Stand", b.title
+        assertEquals "foo", b.talkToService()        
     }
 
-	void onSetUp() {
-		this.gcl.parseClass('''
+    protected void onSetUp() {
+        gcl.parseClass '''
 class Book {
-	Long id
-	Long version
-	String title
+    Long id
+    Long version
+    String title
 
-	def bookService
-	def talkToService() {
-	    bookService.testMethod()
-	}
+    def bookService
+    def talkToService() {
+        bookService.testMethod()
+    }
 }
 
 class BookService {
@@ -56,20 +53,6 @@ class BookFactory {
         return new Book(args)
     }
 }
-class ApplicationDataSource {
-	   boolean pooling = true
-	   boolean logSql = true
-	   String dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-	   String url = "jdbc:hsqldb:mem:testDB"
-	   String driverClassName = "org.hsqldb.jdbcDriver"
-	   String username = "sa"
-	   String password = ""  
-}
 '''
-		)
-	}
-	
-	void onTearDown() {
-		
-	}
+    }
 }

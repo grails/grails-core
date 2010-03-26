@@ -1,4 +1,3 @@
-
 /* Copyright 2004-2005 the original author or authors.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +16,15 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
@@ -35,32 +38,28 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
-
 /**
- * A SessionFactory bean that allows the configuration class to be changed and customise for usage within Grails
+ * A SessionFactory bean that allows the configuration class to
+ * be changed and customise for usage within Grails.
  *
  * @author Graeme Rocher
  * @since 07-Jul-2005
  */
 public class ConfigurableLocalSessionFactoryBean extends
-		LocalSessionFactoryBean implements ApplicationContextAware {
-
+        LocalSessionFactoryBean implements ApplicationContextAware {
 
     private static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
     private ClassLoader classLoader = null;
     private GrailsApplication grailsApplication;
-    private Class configClass;
-    private Class currentSessionContextClass;
+    private Class<?> configClass;
+    private Class<?> currentSessionContextClass;
 
     /**
      * Sets class to be used for the Hibernate CurrentSessionContext
      *
      * @param currentSessionContextClass An implementation of the CurrentSessionContext interface
      */
-    public void setCurrentSessionContextClass(Class currentSessionContextClass) {
+    public void setCurrentSessionContextClass(Class<?> currentSessionContextClass) {
         this.currentSessionContextClass = currentSessionContextClass;
     }
 
@@ -68,37 +67,31 @@ public class ConfigurableLocalSessionFactoryBean extends
      * Sets the class to be used for Hibernate Configuration
      * @param configClass A subclass of the Hibernate Configuration class
      */
-    public void setConfigClass(Class configClass) {
+    public void setConfigClass(Class<?> configClass) {
         this.configClass = configClass;
     }
 
     /**
-	 * 
-	 */
-	public ConfigurableLocalSessionFactoryBean() {
-		super();		
-	}
-	
-	/**
-	 * @return Returns the grailsApplication.
-	 */
-	public GrailsApplication getGrailsApplication() {
-		return grailsApplication;
-	}
+     * @return Returns the grailsApplication.
+     */
+    public GrailsApplication getGrailsApplication() {
+        return grailsApplication;
+    }
 
-	/**
-	 * @param grailsApplication The grailsApplication to set.
-	 */
-	public void setGrailsApplication(GrailsApplication grailsApplication) {
-		this.grailsApplication = grailsApplication;
-	}
-	
-	/**
-	 * Overrides default behaviour to allow for a configurable configuration class 
-	 */
-	protected Configuration newConfiguration() {
+    /**
+     * @param grailsApplication The grailsApplication to set.
+     */
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
+    
+    /**
+     * Overrides default behaviour to allow for a configurable configuration class 
+     */
+     @Override
+    protected Configuration newConfiguration() {
         ClassLoader cl = this.classLoader != null ? this.classLoader : Thread.currentThread().getContextClassLoader();
-        if(configClass == null) {
+        if (configClass == null) {
             try {
                 configClass = cl.loadClass("org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration");
             }
@@ -108,34 +101,34 @@ public class ConfigurableLocalSessionFactoryBean extends
             }
         }
         Object config = BeanUtils.instantiateClass(configClass);
-        if(config instanceof GrailsDomainConfiguration) {
-            GrailsDomainConfiguration grailsConfig = (GrailsDomainConfiguration) config;
-            grailsConfig.setGrailsApplication(grailsApplication);
+        if (config instanceof GrailsDomainConfiguration) {
+            ((GrailsDomainConfiguration)config).setGrailsApplication(grailsApplication);
         }
-        if(currentSessionContextClass != null) {
+        if (currentSessionContextClass != null) {
             ((Configuration)config).setProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, currentSessionContextClass.getName());
             // don't allow Spring's LocaalSessionFactoryBean to override setting
             setExposeTransactionAwareSessionFactory(false);
         }
         return (Configuration)config;
-	}
+    }
 
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
-	public void setClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
-
+    @Override
     protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
         try {
             return super.newSessionFactory(config);
         }
         catch (HibernateException e) {
             Throwable cause = e.getCause();
-            if(isCacheConfigurationError(cause)) {
+            if (isCacheConfigurationError(cause)) {
                 LOG.fatal("There was an error configuring the Hibernate second level cache: " + getCauseMessage(e));
                 LOG.fatal("This is normally due to one of two reasons. Either you have incorrectly specified the cache provider class name in [DataSource.groovy] or you do not have the cache provider on your classpath (eg. runtime (\"net.sf.ehcache:ehcache:1.6.1\"))");
-                if(grails.util.Environment.isDevelopmentMode())
+                if (grails.util.Environment.isDevelopmentMode()) {
                     System.exit(1);
+                }
             }
             throw e;
         }
@@ -143,29 +136,30 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     private String getCauseMessage(HibernateException e) {
         Throwable cause = e.getCause();
-        if(cause instanceof InvocationTargetException) {
+        if (cause instanceof InvocationTargetException) {
             cause = ((InvocationTargetException)cause).getTargetException();
         }        
         return cause.getMessage();
     }
 
     private boolean isCacheConfigurationError(Throwable cause) {
-        if(cause instanceof InvocationTargetException) {
+        if (cause instanceof InvocationTargetException) {
             cause = ((InvocationTargetException)cause).getTargetException();
         }
         return cause != null && (cause instanceof CacheException);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-	}
+        // not used
+    }
 
     @Override
     public void destroy() throws HibernateException {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-        Map classMetaData = getSessionFactory().getAllClassMetadata();
+        Map<?, ?> classMetaData = getSessionFactory().getAllClassMetadata();
         for (Object o : classMetaData.values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
-            Class mappedClass = classMetadata.getMappedClass(EntityMode.POJO);
+            Class<?> mappedClass = classMetadata.getMappedClass(EntityMode.POJO);
             registry.removeMetaClass(mappedClass);
         }
         super.destroy();

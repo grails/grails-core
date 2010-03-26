@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
+
 /**
- * A class that models the mapping from GORM classes to the db 
+ * Models the mapping from GORM classes to the db.
+ * 
  * @author Graeme Rocher
  * @since 1.0
-  *
- * Created: Sep 26, 2007
- * Time: 2:26:57 PM
- *
  */
 class Mapping {
 
@@ -33,15 +31,10 @@ class Mapping {
     /**
      * Return a type name of the known custom user types
      */
-    String getTypeName ( Class theClass ) {
+    String getTypeName (Class theClass) {
         def type = userTypes[theClass]
-        if(type!=null) {
-            if(type instanceof Class) {
-                return type.name 
-            }
-            else {
-                return type.toString()
-            }
+        if (type != null) {
+            return type instanceof Class ? type.name : type.toString()
         }
         return null
     }
@@ -55,7 +48,6 @@ class Mapping {
      * The table name
      */
     String getTableName() { table?.name }
-
 
     /**
      * Set the table name
@@ -83,10 +75,12 @@ class Mapping {
     boolean autoImport = true
 
     Map columns = [:]
+
     /**
      * The identity definition
      */
     def identity = new Identity()
+
     /**
      * Caching config
      */
@@ -107,7 +101,7 @@ class Mapping {
      */
     String discriminator
 
-	/**
+    /**
      * Used to hold the attributes for Discriminator, such as formula, type and insertable
      */
     Map discriminatorMap = [:]
@@ -126,6 +120,7 @@ class Mapping {
      * The name of the column used for the version number
      */
     String versionColumn
+
     /**
      * The batch size to use for lazy loading
      */
@@ -139,6 +134,5 @@ class Mapping {
     /**
      * Whether to use dynamically created insert queries, at the cost of some performance
      */    
-    boolean dynamicInsert= false
+    boolean dynamicInsert = false
 }
-
