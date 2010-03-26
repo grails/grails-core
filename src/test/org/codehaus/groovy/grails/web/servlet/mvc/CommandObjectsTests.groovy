@@ -33,6 +33,9 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
            def action4 = { AutoWireCapableCommand c ->
                 [command:c]
             }
+           def action5 = { ConstrainedCommandSubclass co ->
+              [command: co]
+           }
         }
         class Command {
             String name
@@ -44,6 +47,12 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
             String data
             static constraints = {
                 data(size:5..10)
+            }
+        }
+        class ConstrainedCommandSubclass extends ConstrainedCommand {
+            Integer age
+            static constraints = {
+                age range: 10..50
             }
         }
         ''')
@@ -129,4 +138,16 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         def codes = result.command2.errors.getFieldError('data').codes.toList()
         assertTrue codes.contains("constrainedCommand.data.size.error")
     }
+
+	void testValidationWithInheritedConstraints() {
+		def testCtrl = ga.getControllerClass("TestController").newInstance()
+		// command objects validation should pass
+		request.setParameter('age', '10')
+		request.setParameter('data', 'Some')
+		def result = testCtrl.action5()
+		assertNotNull result.command
+		assertTrue result.command.hasErrors()
+		def codes = result.command.errors.getFieldError('data').codes.toList()
+		assertTrue codes.contains("constrainedCommandSubclass.data.size.error")
+	}
 }

@@ -491,7 +491,7 @@ public class GrailsDomainConfigurationUtil {
                 && !((p.isOneToOne() || p.isManyToOne()) && p.isCircular());
     }
 
-    private static LinkedList<?> getSuperClassChain(Class<?> theClass) {
+    public static LinkedList<?> getSuperClassChain(Class<?> theClass) {
         LinkedList<Class<?>> classChain = new LinkedList<Class<?>>();
         Class<?> clazz = theClass;
         while (clazz != Object.class) {

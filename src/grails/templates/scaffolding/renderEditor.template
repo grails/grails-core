@@ -67,7 +67,7 @@
     }
 
     private renderManyToMany(domainClass, property) {
-        return "<g:select name=\"${property.name}\" from=\"\${${property.referencedDomainClass.fullName}.list()}\" multiple=\"yes\" optionKey=\"id\" size=\"5\" value=\"\${${domainInstance}?.${property.name}}\" />"
+        return "<g:select name=\"${property.name}\" from=\"\${${property.referencedDomainClass.fullName}.list()}\" multiple=\"yes\" optionKey=\"id\" size=\"5\" value=\"\${${domainInstance}?.${property.name}*.id}\" />"
     }
 
     private renderOneToMany(domainClass, property) {

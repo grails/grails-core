@@ -16,13 +16,14 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
-import org.codehaus.groovy.grails.web.converters.ConverterUtil;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.apache.commons.lang.time.FastDateFormat;
 
 import java.text.Format;
 import java.util.Date;
+
+import org.apache.commons.lang.time.FastDateFormat;
+import org.codehaus.groovy.grails.web.converters.ConverterUtil;
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
@@ -30,12 +31,19 @@ import java.util.Date;
  */
 public class DateMarshaller implements ObjectMarshaller<XML> {
 
-    private final Format XML_DATE_FORMAT;
+    private final Format formatter;
 
-    public DateMarshaller(Format XML_DATE_FORMAT) {
-        this.XML_DATE_FORMAT = XML_DATE_FORMAT;
+    /**
+     * Constructor with a custom formatter.
+     * @param formatter  the formatter
+     */
+    public DateMarshaller(Format formatter) {
+        this.formatter = formatter;
     }
 
+    /**
+     * Default constructor.
+     */
     public DateMarshaller() {
         this(FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S z"));
     }
@@ -46,7 +54,7 @@ public class DateMarshaller implements ObjectMarshaller<XML> {
 
     public void marshalObject(Object object, XML xml) throws ConverterException {
         try {
-            xml.chars(XML_DATE_FORMAT.format(object));
+            xml.chars(formatter.format(object));
         } catch (Exception e) {
             throw ConverterUtil.resolveConverterException(e);
         }

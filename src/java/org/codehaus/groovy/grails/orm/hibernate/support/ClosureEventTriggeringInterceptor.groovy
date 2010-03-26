@@ -15,23 +15,24 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support
 
+import grails.validation.ValidationException
+
 import org.apache.commons.lang.ArrayUtils
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
 import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
 import org.hibernate.EntityMode
 import org.hibernate.engine.EntityEntry
 import org.hibernate.persister.entity.EntityPersister
+import org.hibernate.event.*
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.hibernate.event.*
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
-import grails.validation.ValidationException
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 
 /**
  * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
@@ -41,24 +42,26 @@ import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
  * @author Graeme Rocher
  * @since 1.0
  */
-class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implements  ApplicationContextAware,
-                                                                                      GrailsConfigurationAware,
-                                                                                        PreLoadEventListener,
-                                                                                        PostLoadEventListener,
-                                                                                        PostInsertEventListener,
-                                                                                        PostUpdateEventListener,
-                                                                                        PostDeleteEventListener,
-                                                                                        PreDeleteEventListener,
-                                                                                        PreUpdateEventListener{
+class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implements ApplicationContextAware,
+                                                                                     GrailsConfigurationAware,
+                                                                                     PreLoadEventListener,
+                                                                                     PostLoadEventListener,
+                                                                                     PostInsertEventListener,
+                                                                                     PostUpdateEventListener,
+                                                                                     PostDeleteEventListener,
+                                                                                     PreDeleteEventListener,
+                                                                                     PreUpdateEventListener {
+
+    private static final List IGNORED = ['version', 'id']
 
     ConfigObject config
     boolean failOnError = false
     List failOnErrorPackages = []
 
-    public void setConfiguration(ConfigObject co) {
+    void setConfiguration(ConfigObject co) {
         this.config = co
         def failOnErrorConfig = co?.grails?.gorm?.failOnError
-        if(failOnErrorConfig instanceof List)  {
+        if (failOnErrorConfig instanceof List)  {
             failOnError = true
             failOnErrorPackages = failOnErrorConfig
         }
@@ -67,13 +70,13 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         }
     }
 
-    public void onSaveOrUpdate(SaveOrUpdateEvent event) {
+    void onSaveOrUpdate(SaveOrUpdateEvent event) {
 
         def entity = event.getObject()
 
-        if(shouldTrigger(entity)) {
+        if (shouldTrigger(entity)) {
             boolean newEntity = !event.session.contains(entity)
-            if(newEntity) {
+            if (newEntity) {
                 triggerEvent(BEFORE_INSERT_EVENT, entity, null)
 
                 def metaClass = entity.metaClass
@@ -82,13 +85,13 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
                 MetaProperty property = metaClass.hasProperty(entity, GrailsDomainClassProperty.DATE_CREATED)
                 def time = System.currentTimeMillis()
-                if(property && shouldTimestamp && newEntity) {
-                    def now = property.getType().newInstance([time] as Object[] )
+                if (property && shouldTimestamp && newEntity) {
+                    def now = property.getType().newInstance([time] as Object[])
                     entity."$property.name" = now
                 }
                 property = metaClass.hasProperty(entity,GrailsDomainClassProperty.LAST_UPDATED)
-                if(property && shouldTimestamp) {
-                    def now = property.getType().newInstance([time] as Object[] )
+                if (property && shouldTimestamp) {
+                    def now = property.getType().newInstance([time] as Object[])
                     entity."$property.name" = now
                 }
             }
@@ -99,7 +102,8 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     private boolean shouldTrigger(entity) {
         Class clazz = entity?.class
-        return entity && entity?.metaClass!=null && (DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz) )
+        return entity && entity?.metaClass != null &&
+                (DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz))
     }
 
     static final String ONLOAD_EVENT = 'onLoad'
@@ -113,56 +117,59 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     static final String AFTER_DELETE_EVENT = 'afterDelete'
     static final String AFTER_LOAD_EVENT = "afterLoad"
 
-    public void onPreLoad(PreLoadEvent event) {
+    void onPreLoad(PreLoadEvent event) {
         def entity = event.getEntity()
 
-        if(shouldTrigger(entity)) {
-            if(entity.metaClass.hasProperty(entity, ONLOAD_EVENT))
+        if (shouldTrigger(entity)) {
+            if (entity.metaClass.hasProperty(entity, ONLOAD_EVENT)) {
                 triggerEvent(ONLOAD_EVENT, event.entity, event)
-            else if(entity.metaClass.hasProperty(entity, BEFORE_LOAD_EVENT))
+            }
+            else if (entity.metaClass.hasProperty(entity, BEFORE_LOAD_EVENT)) {
                 triggerEvent(BEFORE_LOAD_EVENT, event.entity, event)
+            }
         }
     }
 
-    public void onPostLoad(PostLoadEvent event) {
+    void onPostLoad(PostLoadEvent event) {
         def entity = event.getEntity()
 
-        if(shouldTrigger(entity)) {
-            applicationContext?.autowireCapableBeanFactory?.autowireBeanProperties(entity,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+        if (shouldTrigger(entity)) {
+            applicationContext?.autowireCapableBeanFactory?.autowireBeanProperties(
+                    entity, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
             triggerEvent(AFTER_LOAD_EVENT, entity, event)
         }
     }
 
-    public void onPostInsert(PostInsertEvent event) {
-        if(shouldTrigger(event.entity)) {
+    void onPostInsert(PostInsertEvent event) {
+        if (shouldTrigger(event.entity)) {
             triggerEvent(AFTER_INSERT_EVENT, event.entity, event)
         }
     }
 
-    public boolean onPreUpdate(PreUpdateEvent event) {
+    boolean onPreUpdate(PreUpdateEvent event) {
         def entity = event.getEntity()
         def evict = false
-        if(shouldTrigger(entity)) {
+        if (shouldTrigger(entity)) {
             evict = triggerEvent(BEFORE_UPDATE_EVENT, event.entity, event)
 
             Mapping m = GrailsDomainBinder.getMapping(entity.getClass())
             boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
             MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
-            if(property && shouldTimestamp) {
+            if (property && shouldTimestamp) {
 
-                def now = property.getType().newInstance([System.currentTimeMillis()] as Object[] )
-                event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now;
+                def now = property.getType().newInstance([System.currentTimeMillis()] as Object[])
+                event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now
                 entity."$property.name" = now
             }
-
         }
 
-        if(!entity.validate(deepValidate:false)) {
+        if (!entity.validate(deepValidate:false)) {
             evict = true
-            if(failOnError) {
-                if(failOnErrorPackages) {
-                    if(GrailsClassUtils.isClassBelowPackage(entity.class, failOnErrorPackages))
+            if (failOnError) {
+                if (failOnErrorPackages) {
+                    if (GrailsClassUtils.isClassBelowPackage(entity.class, failOnErrorPackages)) {
                         throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
+                    }
                 }
                 else {
                     throw new ValidationException("Validation error whilst flushing entity [${entity.class.name}]", entity.errors)
@@ -173,93 +180,97 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         return evict
     }
 
-    public void onPostUpdate(PostUpdateEvent event) {
-        if(shouldTrigger(event.entity))
+    void onPostUpdate(PostUpdateEvent event) {
+        if (shouldTrigger(event.entity)) {
             triggerEvent(AFTER_UPDATE_EVENT, event.entity, event)
+        }
     }
 
-    public void onPostDelete(PostDeleteEvent event) {
-        if(shouldTrigger(event.entity))
+    void onPostDelete(PostDeleteEvent event) {
+        if (shouldTrigger(event.entity)) {
             triggerEvent(AFTER_DELETE_EVENT, event.entity, event)
+        }
     }
 
-    public boolean onPreDelete(PreDeleteEvent event) {
-        if(shouldTrigger(event.entity))
+    boolean onPreDelete(PreDeleteEvent event) {
+        if (shouldTrigger(event.entity)) {
             return triggerEvent(BEFORE_DELETE_EVENT,event.entity, event)
+        }
     }
 
     private transient ApplicationContext applicationContext
 
-    public void setApplicationContext(ApplicationContext applicationContext) {
+    void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
     }
-
 
     private boolean triggerEvent(String event, entity, Object eventObject) {
         def result = false
         boolean eventTriggered = false
-        if(entity.respondsTo(event, [] as Object[])) {
+        if (entity.respondsTo(event, [] as Object[])) {
             eventTriggered = true
             result = entity."$event"()
-            if(result instanceof Boolean) result = !result
+            if (result instanceof Boolean) {
+                result = !result
+            }
             else {
                 result = false
             }            
         }
-        else if(entity.hasProperty(event)) {
-             eventTriggered = true
-             def callable = entity."$event"
-             if(callable instanceof Closure) {
-                 callable.resolveStrategy = Closure.DELEGATE_FIRST
-                 callable.delegate = entity
-                 result = callable.call()
-                 if(result instanceof Boolean) result = !result
-                 else {
-                     result = false
-                 }
-             }
+        else if (entity.hasProperty(event)) {
+            eventTriggered = true
+            def callable = entity."$event"
+            if (callable instanceof Closure) {
+                callable.resolveStrategy = Closure.DELEGATE_FIRST
+                callable.delegate = entity
+                result = callable.call()
+                if (result instanceof Boolean) {
+                    result = !result
+                }
+                else {
+                    result = false
+                }
+            }
         }
 
-        if(eventTriggered) {
-            if(eventObject instanceof PreUpdateEvent) {
+        if (eventTriggered) {
+            if (eventObject instanceof PreUpdateEvent) {
                 PreUpdateEvent updateEvent = eventObject
                 EntityPersister persister = updateEvent.persister
                 def propertyNames = persister.propertyNames.toList()
                 def state = updateEvent.state
-                for(p in propertyNames) {
-                    if(['version','id'].contains(p)) continue
-                   def i = propertyNames.indexOf(p)
-                   def value = entity."$p"
-                   state[i] = value
-                   persister.setPropertyValue(entity,i,value,EntityMode.POJO)
+                for (p in propertyNames) {
+                    if (IGNORED.contains(p) || !entity.hasProperty(p)) {
+                        continue
+                    }
+                    def i = propertyNames.indexOf(p)
+                    def value = entity."$p"
+                    state[i] = value
+                    persister.setPropertyValue(entity, i, value, EntityMode.POJO)
                 }
             }
-            else if(eventObject instanceof SaveOrUpdateEvent) {
+            else if (eventObject instanceof SaveOrUpdateEvent) {
                 SaveOrUpdateEvent updateEvent = eventObject
 
-                if(updateEvent.session.contains(entity)) {
+                if (updateEvent.session.contains(entity)) {
                     EntityEntry entry = updateEvent.getEntry()
-                    if(entry) {
+                    if (entry) {
                         def propertyNames = entry.persister.propertyNames.toList()
                         def state = entry.loadedState
-                        for(p in propertyNames) {
-                           if(['version','id'].contains(p)) continue
-                           def i = propertyNames.indexOf(p)
-                           def value = entity."$p"
-                           state[i] = value
-                           entry.persister.setPropertyValue(entity,i,value,EntityMode.POJO)
+                        for (p in propertyNames) {
+                            if (IGNORED.contains(p) || !entity.hasProperty(p)) {
+                                continue
+                            }
+                            def i = propertyNames.indexOf(p)
+                            def value = entity."$p"
+                            state[i] = value
+                            entry.persister.setPropertyValue(entity, i, value, EntityMode.POJO)
                         }
-
                     }
                 }
             }
         }
 
         return result
-
     }
-
-
-
-
 }

@@ -26,14 +26,14 @@ public class GrailsNameUtilsTests extends TestCase {
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("MyClass"));
     }
 
-    public void testGetNaturalName() throws Exception
-    {
+    public void testGetNaturalName() {
         assertEquals("First Name", GrailsNameUtils.getNaturalName("firstName"));
         assertEquals("URL", GrailsNameUtils.getNaturalName("URL"));
         assertEquals("Local URL", GrailsNameUtils.getNaturalName("localURL"));
         assertEquals("URL local", GrailsNameUtils.getNaturalName("URLlocal"));
+        assertEquals("My Domain Class", GrailsNameUtils.getNaturalName("MyDomainClass"));
+        assertEquals("My Domain Class", GrailsNameUtils.getNaturalName("com.myco.myapp.MyDomainClass"));
     }
-
 
     public void testGetLogicalName() {
         assertEquals("Test", GrailsNameUtils.getLogicalName("TestController", "Controller"));
@@ -47,18 +47,18 @@ public class GrailsNameUtilsTests extends TestCase {
     }
 
     public void testGetScriptName() {
-    	assertEquals("grails-name-utils-tests", GrailsNameUtils.getScriptName(getClass()));
-    	assertEquals("", GrailsNameUtils.getScriptName(""));
-    	assertNull(GrailsNameUtils.getScriptName((String) null));
-        assertNull(GrailsNameUtils.getScriptName((Class) null));
+        assertEquals("grails-name-utils-tests", GrailsNameUtils.getScriptName(getClass()));
+        assertEquals("", GrailsNameUtils.getScriptName(""));
+        assertNull(GrailsNameUtils.getScriptName((String) null));
+        assertNull(GrailsNameUtils.getScriptName((Class<?>) null));
     }
 
     public void testGetNameFromScript() {
-    	assertEquals("GrailsClassUtilsTests", GrailsNameUtils.getNameFromScript("grails-class-utils-tests"));
-    	assertEquals("Grails", GrailsNameUtils.getNameFromScript("grails"));
+        assertEquals("GrailsClassUtilsTests", GrailsNameUtils.getNameFromScript("grails-class-utils-tests"));
+        assertEquals("Grails", GrailsNameUtils.getNameFromScript("grails"));
         assertEquals("CreateApp", GrailsNameUtils.getNameFromScript("create-app"));
-    	assertEquals("", GrailsNameUtils.getNameFromScript(""));
-    	assertNull(GrailsNameUtils.getNameFromScript(null));
+        assertEquals("", GrailsNameUtils.getNameFromScript(""));
+        assertNull(GrailsNameUtils.getNameFromScript(null));
     }
 
     public void testGetPluginName() {
@@ -77,7 +77,7 @@ public class GrailsNameUtilsTests extends TestCase {
             // Expected!
         }
     }
-    
+
     public void testIsBlank() {
         assertTrue("'null' value should count as blank.", GrailsNameUtils.isBlank(null));
         assertTrue("Empty string should count as blank.", GrailsNameUtils.isBlank(""));

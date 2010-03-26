@@ -31,9 +31,11 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -161,16 +163,18 @@ class WebMetaUtils {
 	        commandObjectMetaClass.validate = {->
 	            DomainClassPluginSupport.validateInstance(delegate, ctx)
 	        }
-	        def validationClosure = GrailsClassUtils.getStaticPropertyValue(commandObjectClass, 'constraints')
-	        if (validationClosure) {
-	            def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObjectClass)
-	            validationClosure.setDelegate(constrainedPropertyBuilder)
-	            validationClosure()
-	            commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
-	        } else {
-	            commandObjectMetaClass.constraints = [:]
-	        }
-	        commandObjectMetaClass.clearErrors = {->
+            def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObjectClass)
+            def classes = GrailsDomainConfigurationUtil.getSuperClassChain(commandObjectClass)
+            classes.each { clz ->
+                def validationClosure = GrailsClassUtils.getStaticPropertyValue(clz, 'constraints')
+                if (validationClosure) {
+                    validationClosure.setDelegate(constrainedPropertyBuilder)
+                    validationClosure()
+                }
+            }
+            commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
+            
+            commandObjectMetaClass.clearErrors = {->
 	            delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
 	        }	
 	        commandObjectMetaClass.grailsEnhanced = {-> true }        	
