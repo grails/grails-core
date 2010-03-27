@@ -98,9 +98,9 @@ public class ValidatorConstraint extends AbstractConstraint {
             if (result instanceof Boolean) {
                 bad = !((Boolean)result).booleanValue();
             }
-            else if (result instanceof String) {
+            else if (result instanceof CharSequence) {
                 bad = true;
-                errmsg = (String)result;
+                errmsg = result.toString();
             }
             else if ((result instanceof Collection<?>) || result.getClass().isArray()) {
                 bad = true;
