@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
@@ -79,32 +78,33 @@ public class GrailsScriptRunner {
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
     private static final Pattern pluginDescriptorPattern = Pattern.compile("^(\\S+)GrailsPlugin.groovy$");
 
+    /**
+     * Evaluate the arguments to get the name of the script to execute, which environment
+     * to run it in, and the arguments to pass to the script. This also evaluates arguments
+     * of the form "-Dprop=value" and creates system properties from each one.
+     * @param args
+     * @throws MalformedURLException
+     */
     public static void main(String[] args) throws MalformedURLException {
-        // Evaluate the arguments to get the name of the script to
-        // execute, which environment to run it in, and the arguments
-        // to pass to the script. This also evaluates arguments of the
-        // form "-Dprop=value" and creates system properties from each
-        // one.
         StringBuilder allArgs = new StringBuilder("");
         for(String arg : args) {
-            allArgs.append( " " + arg);
+            allArgs.append(" ").append(arg);
         }
 
         ScriptAndArgs script = processArgumentsAndReturnScriptName(allArgs.toString().trim());
 
-        // Get hold of the GRAILS_HOME environment variable if it is
-        // available.
+        // Get hold of the GRAILS_HOME environment variable if it is available.
         String grailsHome = System.getProperty("grails.home");
 
-        // Now we can pick up the Grails version from the Ant project
-        // properties.
+        // Now we can pick up the Grails version from the Ant project properties.
         BuildSettings build = null;
-		try {
-			build = new BuildSettings(new File(grailsHome));
-		} catch (Exception e) {
-			System.err.println("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
-			System.exit(1);
-		}
+        try {
+            build = new BuildSettings(new File(grailsHome));
+        }
+        catch (Exception e) {
+            System.err.println("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
+            System.exit(1);
+        }
 
         // Check that Grails' home actually exists.
         final File grailsHomeInSettings = build.getGrailsHome();
@@ -286,7 +286,6 @@ public class GrailsScriptRunner {
             settings.loadConfig();
         }
         catch (Exception e) {
-            
             e.printStackTrace(System.err);
             System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
             System.exit(1);
@@ -487,6 +486,7 @@ public class GrailsScriptRunner {
 
         // Prep the binding with important variables.
         initBinding(binding);
+        binding.setVariable("scriptName", scriptName);
 
         // First try to load the script from its file. If there is no
         // file, then attempt to load it as a pre-compiled script. If
@@ -495,7 +495,7 @@ public class GrailsScriptRunner {
             potentialScripts = (List) DefaultGroovyMethods.unique(potentialScripts);
             if (potentialScripts.size() == 1) {
                 final File scriptFile = potentialScripts.get(0);
-                if(!isGrailsProject() && !isExternalScript(scriptFile)) {
+                if (!isGrailsProject() && !isExternalScript(scriptFile)) {
                     out.println(settings.getBaseDir().getPath() + " does not appear to be part of a Grails application.");
                     out.println("The following commands are supported outside of a project:");
                     Collections.sort(scriptsAllowedOutsideOfProject);
@@ -525,7 +525,7 @@ public class GrailsScriptRunner {
                         "cannot continue in non-interactive mode.");
                 return 1;
             }
-             
+
             out.println("Multiple options please select:");
             String[] validArgs = new String[potentialScripts.size()];
             for (int i = 0; i < validArgs.length; i++) {
@@ -538,11 +538,11 @@ public class GrailsScriptRunner {
 
             int number = Integer.parseInt(enteredValue);
 
-            out.println("Running script "+ ((File) potentialScripts.get(number - 1)).getAbsolutePath());
+            out.println("Running script "+ potentialScripts.get(number - 1).getAbsolutePath());
 
             // Set up the script to call.
             Gant gant = new Gant(binding, classLoader);
-            gant.loadScript((File) potentialScripts.get(number - 1));
+            gant.loadScript(potentialScripts.get(number - 1));
 
             // Invoke the default target.
             return gant.processTargets().intValue();
@@ -740,21 +740,21 @@ public class GrailsScriptRunner {
 
         // Add build-only dependencies to the project
         final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
-        if(!dependenciesExternallyConfigured)
+        if (!dependenciesExternallyConfigured)
             System.out.println("Resolving dependencies...");
         long now = System.currentTimeMillis();
         // add dependencies required by the build system
         final List<File> buildDependencies = settings.getBuildDependencies();
-        if(!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
+        if (!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
             exitWithError("Required Grails build dependencies were not found. Either GRAILS_HOME is not set or your dependencies are misconfigured in grails-app/conf/BuildConfig.groovy");
         }
         addDependenciesToURLs(excludes, urls, buildDependencies);
         // add dependencies required at development time, but not at deployment time
-        addDependenciesToURLs(excludes, urls, settings.getProvidedDependencies());                                                                                    
+        addDependenciesToURLs(excludes, urls, settings.getProvidedDependencies());
         // Add the project's test dependencies (which include runtime dependencies) because most of them
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
-        if(!dependenciesExternallyConfigured)
+        if (!dependenciesExternallyConfigured)
             System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
 
         // Add the libraries of both project and global plugins.
@@ -791,6 +791,7 @@ public class GrailsScriptRunner {
      * @return A list of all known plugin directories, or an empty
      * list if there are none.
      */
+    @SuppressWarnings("unchecked")
     private static List<File> listKnownPluginDirs(BuildSettings settings) {
         List<File> dirs = new ArrayList<File>();
 
@@ -826,7 +827,7 @@ public class GrailsScriptRunner {
         if (libDir.exists()) {
             final IvyDependencyManager dependencyManager = settings.getDependencyManager();
             String pluginName = getPluginName(pluginDir);
-            Collection excludes = dependencyManager.getPluginExcludes(pluginName);
+            Collection<?> excludes = dependencyManager.getPluginExcludes(pluginName);
             addLibs(libDir, urls, excludes != null ? excludes : Collections.emptyList());
         }
     }
@@ -838,17 +839,16 @@ public class GrailsScriptRunner {
      * on the servlet version of the app and so need to be treated
      * specially.
      */
-    private static void addLibs(File dir, List<URL> urls, Collection excludes) throws MalformedURLException {
+    private static void addLibs(File dir, List<URL> urls, Collection<?> excludes) throws MalformedURLException {
         if (!dir.exists()) {
             return;
         }
-        File[] files = dir.listFiles();
 
-        for (File file : files) {
+        for (File file : dir.listFiles()) {
             boolean include = true;
             for (Object me : excludes) {
                 String exclude = me.toString();
-                if(file.getName().contains(exclude)) {
+                if (file.getName().contains(exclude)) {
                     include = false; break;
                 }
             }
