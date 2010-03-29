@@ -22,6 +22,7 @@ import grails.util.GrailsNameUtils
 import groovy.util.slurpersupport.GPathResult
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.lang.ArrayUtils
+import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
@@ -119,18 +120,20 @@ class PluginBuildSettings {
         }
         else {
             pluginInfos = []
-            Resource[] pluginDirs = getPluginDirectories()
-            for(dir in pluginDirs) {
+            Resource[] pluginDescriptors = getPluginDescriptors()
+            def pluginDescriptorReader = new CompositePluginDescriptorReader(this);
+            for(desc in pluginDescriptors) {
                 try {
-                    PluginInfo info = new PluginInfo(dir, this)
-                    pluginInfos << info
-                    pluginInfosMap.put(info.name, info)
-                    pluginInfosMap.put("${info.name}-${info.version}".toString(), info)
+                    PluginInfo info = pluginDescriptorReader.readPluginInfo(desc)
+                    if(info != null) {
+                        pluginInfos << info
+                        pluginInfosMap.put(info.name, info)
+                        pluginInfosMap.put(info.fullName, info)                    	
+                    }
                 }
                 catch (e) {
                     // ignore, not a valid plugin directory
                 }
-
             }
             cache['pluginInfoList'] = pluginInfos as GrailsPluginInfo[]
         }
