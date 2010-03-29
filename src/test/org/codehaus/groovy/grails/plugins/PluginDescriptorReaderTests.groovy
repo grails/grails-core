@@ -19,7 +19,7 @@ class FooBarGrailsPlugin {
 		assert "0.1" == plugin.version : "plugin version should have been 0.1"
 		assert "foo-bar" == plugin.name : "plugin name should have been 'foo-bar'"
 		assert "1.3" == plugin.grailsVersion : "grails version should have been '1.2'"
-		assert "foo-bar-1.3" == plugin.fullName : "The full plugin name should be 'foo-bar-1.3'"
+		assertEquals "The full plugin name should be 'foo-bar-0.1'","foo-bar-0.1" ,plugin.fullName 
 	}
 
 }
