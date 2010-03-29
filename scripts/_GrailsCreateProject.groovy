@@ -33,20 +33,20 @@ grailsAppName = ""
 projectType = "app"
 
 target(createApp: "Creates a Grails application for the given name")  {
-    depends(parseArguments, appName)    
+    depends(parseArguments, appName)
     initProject()
 
     // Create a message bundle to get the user started.
     touch(file: metadataFile)
 
-	// Set the default version number for the application
+    // Set the default version number for the application
     updateMetadata(
             "app.version": grailsAppVersion ?: "0.1",
             "app.servlet.version": servletVersion)
 
 
     installDefaultPluginSet()
-    
+
     event("StatusFinal", ["Created Grails Application at $basedir"])
 }
 
@@ -114,13 +114,14 @@ target(initProject: "Initialise an application or plugin project") {
 
 target ( appName : "Evaluates the application name") {
     if(!argsMap["params"]) {
-		ant.input(message:"Application name not specified. Please enter:",
-				  addProperty:"grails.app.name")
-		grailsAppName = ant.antProject.properties."grails.app.name"
-	}
-	else {
-		grailsAppName = argsMap["params"].join(" ")
-	}
+        String type = scriptName.toLowerCase().indexOf('plugin') > -1 ? 'Plugin' : 'Application'
+        ant.input(message:"$type name not specified. Please enter:",
+                  addProperty:"grails.app.name")
+        grailsAppName = ant.antProject.properties."grails.app.name"
+    }
+    else {
+        grailsAppName = argsMap["params"].join(" ")
+    }
 
     if (!argsMap["inplace"]) {
         basedir = "${basedir}/${grailsAppName}"

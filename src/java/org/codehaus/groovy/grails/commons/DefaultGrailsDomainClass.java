@@ -426,7 +426,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass  implements Gr
     		throw new GrailsDomainException("Domain classes ["+propertyClass+"] and ["+relatedClassType+"] cannot own each other in a many-to-many relationship. Both contain belongsTo definitions that reference each other.");
     	}
     	else if(!relatedOwner && !property.isOwningSide() && !(property.isCircular() && property.isManyToMany())) {
-    		throw new GrailsDomainException("No owner defined between domain classes ["+propertyClass+"] and ["+relatedClassType+"] in a many-to-many relationship. Example: def belongsTo = "+relatedClassType.getName());
+    		throw new GrailsDomainException("No owner defined between domain classes ["+propertyClass+"] and ["+relatedClassType+"] in a many-to-many relationship. Example: static belongsTo = "+relatedClassType.getName());
     	}
 	}
 	private boolean isOwningSide(Class relatedClassType, Collection<Class> owners) {
