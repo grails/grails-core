@@ -487,6 +487,21 @@ public class GrailsScriptRunner {
 
         // Prep the binding with important variables.
         initBinding(binding);
+        final Closure doNothingClosure = new Closure(this) {
+			private static final long serialVersionUID = 1L;
+			@Override
+        	public Object call(Object arguments) {
+            	return null; // do nothing
+        	}			
+			@Override
+			public Object call() {
+				return null;
+			}			
+			@Override
+			public Object call(Object[] args) {
+				return null;
+			}
+        };
 
         // First try to load the script from its file. If there is no
         // file, then attempt to load it as a pre-compiled script. If
@@ -512,9 +527,7 @@ public class GrailsScriptRunner {
                 gant.setUseCache(true);
                 gant.setCacheDirectory(scriptCacheDir);
                 gant.loadScript(scriptFile);
-
-                // Invoke the default target.
-                return gant.processTargets().intValue();
+                return executeWithGantInstance(gant, doNothingClosure);
             }
 
             // If there are multiple scripts to choose from and we
@@ -543,9 +556,7 @@ public class GrailsScriptRunner {
             // Set up the script to call.
             Gant gant = new Gant(binding, classLoader);
             gant.loadScript((File) potentialScripts.get(number - 1));
-
-            // Invoke the default target.
-            return gant.processTargets().intValue();
+            return executeWithGantInstance(gant, doNothingClosure);
         }
 
         out.println("Running pre-compiled script");
@@ -568,8 +579,17 @@ public class GrailsScriptRunner {
                 }
             }
         }
-        return gant.processTargets().intValue();
+        return executeWithGantInstance(gant, doNothingClosure);
     }
+
+	private int executeWithGantInstance(Gant gant,
+			final Closure doNothingClosure) {
+		gant.prepareTargets();
+		gant.setAllPerTargetPostHooks(doNothingClosure);
+		gant.setAllPerTargetPreHooks(doNothingClosure);
+		// Invoke the default target.
+		return gant.executeTargets().intValue();
+	}
 
     private boolean isGrailsProject() {
         return new File(settings.getBaseDir(), "grails-app").exists();

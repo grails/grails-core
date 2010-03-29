@@ -34,7 +34,7 @@ includeTargets << grailsScript("_GrailsSettings")
 classpathSet = false
 includePluginJarsOnClasspath = true
 
-target(classpath: "Sets the Grails classpath") {
+target(name:'classpath', description: "Sets the Grails classpath", prehook:null, posthook:null) {
     setClasspath()
 }
 
