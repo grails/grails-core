@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-import org.codehaus.groovy.grails.plugins.PluginInfo
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 
 /**
  * Gant script that handles the packaging of Grails plug-ins
@@ -68,14 +68,17 @@ packageFiles = { String from ->
 target( packagePlugins : "Packages any Grails plugins that are installed for this project") {
 	depends( classpath, resolveDependencies )
     def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
-    for(PluginInfo info in pluginInfos) {
+    for(GrailsPluginInfo info in pluginInfos) {
         try {
-            def pluginBase = info.pluginDir.file
-            packageFiles(pluginBase.path)
+        	def pluginDir = info.pluginDir
+        	if(pluginDir) {
+                def pluginBase = pluginDir.file
+                packageFiles(pluginBase.path)        		
+        	}
         }
         catch(Exception e) {
-            e.printStackTrace(System.out)
             println "Error packaging plugin [${info.name}] : ${e.message}"
+            exit 1
         }
 
     }
@@ -83,7 +86,7 @@ target( packagePlugins : "Packages any Grails plugins that are installed for thi
 
 packagePluginsForWar = { targetDir ->
     def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
-    for(PluginInfo info in pluginInfos) {
+    for(GrailsPluginInfo info in pluginInfos) {
         try {
 
             def pluginBase = info.pluginDir.file
