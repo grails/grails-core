@@ -61,7 +61,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 		
 	public GrailsPluginInfo readPluginInfo(Resource pluginLocation) {
 		CompilationUnit compilationUnit = new CompilationUnit(classLoader);
-		BasicGrailsPluginInfo pluginInfo = new BasicGrailsPluginInfo();
+		BasicGrailsPluginInfo pluginInfo = new BasicGrailsPluginInfo(pluginLocation);
 		
 		try {
 			compilationUnit.addSource("dummy",pluginLocation.getInputStream());

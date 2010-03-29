@@ -17,7 +17,8 @@
 import grails.util.BuildScope
 import grails.util.Environment
 import grails.util.Metadata
-import org.codehaus.groovy.grails.plugins.PluginInfo
+
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import grails.util.PluginBuildSettings
 import groovy.xml.MarkupBuilder
@@ -189,7 +190,7 @@ target (war: "The implementation target") {
         def pluginInfos = pluginSettings.supportedPluginInfos
         // filter out plugins that aren't configured for runtime inclusion
         IvyDependencyManager dm = grailsSettings.dependencyManager
-        pluginInfos = pluginInfos.findAll { PluginInfo info ->
+        pluginInfos = pluginInfos.findAll { GrailsPluginInfo info ->
             def pluginName = info.name
             def i = dm.getPluginDependencyDescriptor(pluginName)?.isSupportedInConfiguration("runtime")
             i != null ? i : true
@@ -198,7 +199,7 @@ target (war: "The implementation target") {
         if(includeJars) {
             if(pluginInfos) {
                 ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
-                    for(PluginInfo info in pluginInfos) {
+                    for(GrailsPluginInfo info in pluginInfos) {
                         fileset(dir: info.pluginDir.file.path) {
                             include(name:"lib/*.jar")
                         }
@@ -368,7 +369,7 @@ protected def createDescriptorInternal(pluginInfos, resourceList) {
             }
             xml.plugins {
                 def addedPlugins = new HashSet()
-                for (PluginInfo info in pluginInfos) {
+                for (GrailsPluginInfo info in pluginInfos) {
                     def name = info.descriptor.file.name - '.groovy'
                     name = name.toString()
                     if (!addedPlugins.contains(name)) {
@@ -393,14 +394,14 @@ target(warPlugins:"Includes the plugins in the WAR") {
 private def warPluginsInternal(pluginInfos) {
     ant.sequential {
         if (pluginInfos) {
-            for (PluginInfo info in pluginInfos) {
+            for (GrailsPluginInfo info in pluginInfos) {
                 warPluginForPluginInfo(info)
             }
         }
     }
 }
 
-private def warPluginForPluginInfo(PluginInfo info) {
+private def warPluginForPluginInfo(GrailsPluginInfo info) {
     def pluginBase = info.pluginDir.file
     ant.sequential {
         // Note that with in-place plugins, the name of the plugin's

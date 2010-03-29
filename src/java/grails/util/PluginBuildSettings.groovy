@@ -124,7 +124,7 @@ class PluginBuildSettings {
             def pluginDescriptorReader = new CompositePluginDescriptorReader(this);
             for(desc in pluginDescriptors) {
                 try {
-                    PluginInfo info = pluginDescriptorReader.readPluginInfo(desc)
+                    GrailsPluginInfo info = pluginDescriptorReader.readPluginInfo(desc)
                     if(info != null) {
                         pluginInfos << info
                         pluginInfosMap.put(info.name, info)
@@ -160,7 +160,7 @@ class PluginBuildSettings {
     /**
      * Obtains a PluginInfo for the installed plugin directory
      */
-    PluginInfo getPluginInfo(String pluginBaseDir) {
+    GrailsPluginInfo getPluginInfo(String pluginBaseDir) {
         if(!pluginInfosMap) getPluginInfos() // initialize the infos
         def dir = new FileSystemResource(pluginBaseDir)
         def descLocation = getDescriptorForPlugin(dir)
@@ -173,7 +173,7 @@ class PluginBuildSettings {
     /**
      * Obtains a PluginInfo for the installed plugin directory
      */
-    PluginInfo getPluginInfoForName(String pluginName) {
+    GrailsPluginInfo getPluginInfoForName(String pluginName) {
         if(!pluginInfosMap) getPluginInfos() // initialize the infos
         return pluginInfosMap[pluginName]
     }
@@ -181,7 +181,7 @@ class PluginBuildSettings {
     /**
      * Gets a PluginInfo for a particular source file if its contained within that plugin
      */
-    PluginInfo getPluginInfoForSource(String sourceFile) {
+    GrailsPluginInfo getPluginInfoForSource(String sourceFile) {
         if(pluginInfoToSourceMap[sourceFile]) {
             return pluginInfoToSourceMap[sourceFile]
         }
@@ -199,7 +199,7 @@ class PluginBuildSettings {
                     // a refactor of the plugin management.
                     sourcePath = sourcePath.substring(pluginPath.length() + 1)
                     if(!sourcePath.startsWith("test" + File.separator)) {
-                        PluginInfo info = getPluginInfo(pluginPath)
+                        GrailsPluginInfo info = getPluginInfo(pluginPath)
                         if(info) {
                             pluginInfoToSourceMap[sourceFile] = info
                         }
@@ -400,14 +400,14 @@ class PluginBuildSettings {
      * @see grails.util.Environment
      * @see grails.util.BuildScope
      */
-    PluginInfo[] getSupportedPluginInfos() {
+    GrailsPluginInfo[] getSupportedPluginInfos() {
         if(pluginManager == null) return getPluginInfos()
         else {
-            def pluginInfos = getPluginInfos().findAll {PluginInfo info ->
+            def pluginInfos = getPluginInfos().findAll {GrailsPluginInfo info ->
                 GrailsPlugin plugin = pluginManager.getGrailsPlugin(info.getName())
                 return plugin?.supportsCurrentScopeAndEnvironment()
             }
-            return pluginInfos as PluginInfo[]
+            return pluginInfos as GrailsPluginInfo[]
         }
     }
 
@@ -547,7 +547,7 @@ class PluginBuildSettings {
 
             try {
 
-                PluginInfo pluginInfo = getPluginInfoForName(pluginName)
+                GrailsPluginInfo pluginInfo = getPluginInfoForName(pluginName)
                 File pluginFile = pluginInfo?.pluginDir?.file
 
                 // If the plugin can't be found in one of the standard

@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.plugins;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.core.io.Resource;
+
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingPropertyException;
 
@@ -33,7 +35,12 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
 	private String name;
 	private String version;
 	private Map<String,Object> attributes = new ConcurrentHashMap<String,Object>();
+	private Resource descriptor;
 	
+	public BasicGrailsPluginInfo(Resource pluginLocation) {
+		this.descriptor = pluginLocation;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -72,5 +79,9 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
 	public String getFullName() {
 		
 		return this.name + '-' + this.version;
+	}
+
+	public Resource getDescriptor() {
+		return this.descriptor;
 	}
 }

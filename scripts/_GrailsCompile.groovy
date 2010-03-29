@@ -15,7 +15,7 @@
 */
 
 import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.grails.plugins.PluginInfo
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import grails.util.GrailsNameUtils
 
 /**
@@ -194,7 +194,7 @@ target(compilegsp : "Compile GSP files") {
 	loadPlugins()
 	def pluginInfos = pluginSettings.supportedPluginInfos
 	if(pluginInfos) {
-		for(PluginInfo info in pluginInfos) {
+		for(GrailsPluginInfo info in pluginInfos) {
             File pluginViews = new File(info.pluginDir.file, "grails-app/views")
             if(pluginViews.exists()) {                
                 def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"

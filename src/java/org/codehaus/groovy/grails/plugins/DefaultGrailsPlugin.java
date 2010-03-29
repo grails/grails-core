@@ -110,11 +110,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
     private Collection<? extends TypeFilter> typeFilters = new ArrayList<TypeFilter>();
+	private Resource pluginDescriptor;
 
     public DefaultGrailsPlugin(Class pluginClass, Resource resource, GrailsApplication application) {
         super(pluginClass, application);
         // create properties
         this.dependencies = Collections.EMPTY_MAP;
+        this.pluginDescriptor = resource;
         this.resolver = new PathMatchingResourcePatternResolver();
         if(resource != null) {
             try {
@@ -1089,5 +1091,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
 	public String getFullName() {		
 		return getName() + '-' + getVersion();
+	}
+
+	public Resource getDescriptor() {
+		return pluginDescriptor;
 	}
 }

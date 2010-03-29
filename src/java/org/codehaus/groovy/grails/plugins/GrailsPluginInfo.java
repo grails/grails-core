@@ -15,6 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import org.springframework.core.io.Resource;
+
 /**
  * Base interface that just contains information about a particular plugin 
  * @author Graeme Rocher
@@ -53,4 +55,10 @@ public interface GrailsPluginInfo {
 	 * @return The full name of the plugin including version
 	 */
 	String getFullName();
+	
+	/**
+	 * Returns the location of the Resource that represents the plugin descriptor (the *GrailsPlugin.groovy file)
+	 * @return The resource
+	 */
+	Resource getDescriptor();
 }
