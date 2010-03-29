@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.PluginInfo;
@@ -225,7 +226,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 					resource = new FileSystemResource(absolutePathToResource + '/');
 				final Resource layoutPath = resource.createRelative(pathToLayoutInPlugin);
 				if(layoutPath.exists()) {
-					PluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfo(absolutePathToResource);
+					GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfo(absolutePathToResource);
 					pluginViewLocation = GrailsResourceUtils.WEB_INF + "/plugins/" + info.getFullName() + '/' + pathToLayoutInPlugin; 
 				}
 			} catch (IOException e) {

@@ -152,7 +152,7 @@ public class GrailsPluginUtils {
     /**
      * Returns an array of PluginInfo objects
      */
-    static PluginInfo[] getPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
+    static GrailsPluginInfo[] getPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
         return getPluginBuildSettings().getPluginInfos()
     }
 
@@ -162,7 +162,7 @@ public class GrailsPluginUtils {
      * @see grails.util.Environment
      * @see grails.util.BuildScope
      */
-    static PluginInfo[] getSupportedPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
+    static GrailsPluginInfo[] getSupportedPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
         final PluginBuildSettings settings = getPluginBuildSettings()
         if(!settings.pluginManager) {
             settings.pluginManager = PluginManagerHolder.currentPluginManager()

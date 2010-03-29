@@ -27,7 +27,7 @@ import groovy.util.slurpersupport.GPathResult
  * @since 1.1
  */
 
-public class PluginInfo {
+public class PluginInfo implements GrailsPluginInfo {
 
     Resource pluginDir
     grails.util.PluginBuildSettings pluginBuildSettings

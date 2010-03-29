@@ -48,4 +48,9 @@ public interface GrailsPluginInfo {
 	 * @return The version of the plug-in
 	 */
 	String getVersion();
+
+	/**
+	 * @return The full name of the plugin including version
+	 */
+	String getFullName();
 }

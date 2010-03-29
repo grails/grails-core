@@ -9,7 +9,7 @@ class PluginDescriptorReaderTests extends GroovyTestCase {
 		
 		def plugin = pluginReader.readPluginInfo(new ByteArrayResource('''
 import org.codehaus.groovy.grails.plugins.springsecurity.AuthorizeTools				
-class FooGrailsPlugin {
+class FooBarGrailsPlugin {
   String version = "0.1"
   String grailsVersion = "1.3"				
 }
@@ -17,8 +17,9 @@ class FooGrailsPlugin {
 
 	
 		assert "0.1" == plugin.version : "plugin version should have been 0.1"
-		assert "foo" == plugin.name : "plugin name should have been 'foo'"
+		assert "foo-bar" == plugin.name : "plugin name should have been 'foo-bar'"
 		assert "1.3" == plugin.grailsVersion : "grails version should have been '1.2'"
+		assert "foo-bar-1.3" == plugin.fullName : "The full plugin name should be 'foo-bar-1.3'"
 	}
 
 }

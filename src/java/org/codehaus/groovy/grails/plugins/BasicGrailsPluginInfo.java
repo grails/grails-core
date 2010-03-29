@@ -68,4 +68,9 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
 			return attributes.get(property);			
 		}
 	}
+
+	public String getFullName() {
+		
+		return this.name + '-' + this.version;
+	}
 }

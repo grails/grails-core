@@ -23,6 +23,7 @@ import groovy.util.slurpersupport.GPathResult
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.springframework.core.io.FileSystemResource
@@ -111,7 +112,7 @@ class PluginBuildSettings {
    /**
      * Returns an array of PluginInfo objects
      */
-    PluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
+    GrailsPluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
         def pluginInfos
         if(pluginInfosMap) {
             return cache['pluginInfoList']
@@ -131,9 +132,9 @@ class PluginBuildSettings {
                 }
 
             }
-            cache['pluginInfoList'] = pluginInfos as PluginInfo[]
+            cache['pluginInfoList'] = pluginInfos as GrailsPluginInfo[]
         }
-        return pluginInfos as PluginInfo[]
+        return pluginInfos as GrailsPluginInfo[]
     }
 
     /**

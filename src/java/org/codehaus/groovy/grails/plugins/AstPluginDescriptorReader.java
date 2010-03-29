@@ -100,8 +100,8 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 			};
 			classNode.visitContents(visitor);	
 			String className = classNode.getNameWithoutPackage();			
-			String logicalName = GrailsNameUtils.getLogicalName(className, GrailsPluginInfo.TRAILING_NAME);
-			wrapper.setPropertyValue("name", GrailsNameUtils.getPropertyNameRepresentation(logicalName));
+			
+			wrapper.setPropertyValue("name", GrailsNameUtils.getPluginName(className + ".groovy"));
 			
 		}
 	}

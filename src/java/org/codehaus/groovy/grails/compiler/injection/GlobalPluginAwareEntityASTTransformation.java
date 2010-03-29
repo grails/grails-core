@@ -22,6 +22,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.PluginInfo;
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
@@ -59,7 +60,7 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
                     PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
                     if(pluginBuildSettings!=null) {
 
-                        PluginInfo info = pluginBuildSettings.getPluginInfoForSource(absolutePath);
+                        GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(absolutePath);
 
                         if(info!=null) {
                             final ClassNode annotation = new ClassNode(GrailsPlugin.class);

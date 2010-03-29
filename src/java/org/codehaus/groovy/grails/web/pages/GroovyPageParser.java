@@ -23,8 +23,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.grails.plugins.PluginInfo;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -173,7 +173,7 @@ public class GroovyPageParser implements Tokens {
 	public GroovyPageParser(String name, String uri, String filename, InputStream in)
 			throws IOException {
 		Map config = ConfigurationHolder.getFlatConfig();
-        PluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+		GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
         if(info!=null) {
             pluginAnnotation = "@GrailsPlugin(name='"+info.getName()+"', version='"+info.getVersion()+"')";
         }
