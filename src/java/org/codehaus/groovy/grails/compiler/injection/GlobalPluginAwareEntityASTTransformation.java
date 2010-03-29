@@ -24,7 +24,6 @@ import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.grails.plugins.PluginInfo;
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
