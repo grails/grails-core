@@ -1096,4 +1096,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 	public Resource getDescriptor() {
 		return pluginDescriptor;
 	}
+	
+	public Resource getPluginDir() {
+		try {
+			return pluginDescriptor.createRelative(".");
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	public Map getProperties() {
+		return DefaultGroovyMethods.getProperties(plugin);
+	}
 }

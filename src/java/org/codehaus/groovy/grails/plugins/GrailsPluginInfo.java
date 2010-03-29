@@ -15,6 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import java.util.Map;
+
 import org.springframework.core.io.Resource;
 
 /**
@@ -61,4 +63,15 @@ public interface GrailsPluginInfo {
 	 * @return The resource
 	 */
 	Resource getDescriptor();
+	
+	/**
+	 * @return The directory where the plugin exists or null if it cannot be read 
+	 */
+	Resource getPluginDir();
+	
+	/**
+	 * Gets the properties of the plugin as a map
+	 * @return A map of the properties
+	 */
+	Map getProperties();
 }

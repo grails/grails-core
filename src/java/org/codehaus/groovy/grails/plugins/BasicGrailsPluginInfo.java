@@ -15,6 +15,8 @@
  */ 
 package org.codehaus.groovy.grails.plugins;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,5 +85,21 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
 
 	public Resource getDescriptor() {
 		return this.descriptor;
+	}
+	
+	public Resource getPluginDir() {
+		try {
+			return this.descriptor.createRelative(".");
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	public Map getProperties() {
+		Map props = new HashMap();
+		props.putAll(attributes);
+		props.put(NAME, name);
+		props.put(VERSION, version);
+		return props;
 	}
 }
