@@ -15,6 +15,8 @@
 */
 
 import groovy.xml.dom.DOMCategory
+
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.resolve.PluginResolveEngine
 import grails.util.BuildSettings
 
@@ -164,9 +166,9 @@ Plug-ins you currently have installed are listed below:
 '''
 
   def installedPlugins = []
-  def pluginXmls = readAllPluginXmlMetadata()
-  for (p in pluginXmls) {
-    installedPlugins << formatPluginForPrint(p.@name.text(), p.@version.text(), p.title.text())
+  def pluginInfos = pluginSettings.getPluginInfos()
+  for (GrailsPluginInfo info in pluginInfos) {
+    installedPlugins << formatPluginForPrint(info.name, info.version, info.title)
   }
 
   if (installedPlugins) {
