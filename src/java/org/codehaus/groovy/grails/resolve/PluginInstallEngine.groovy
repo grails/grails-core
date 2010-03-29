@@ -572,7 +572,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 pluginsToInstall << p
             }
             else if (pluginLoc) {
-                def dirName = pluginLoc.filename
+                def dirName = pluginLoc.file.canonicalFile.name
                 PluginBuildSettings settings = pluginSettings
                 if (!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
                     eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
