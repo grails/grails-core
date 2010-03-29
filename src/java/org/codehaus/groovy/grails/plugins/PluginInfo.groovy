@@ -41,8 +41,14 @@ public class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo 
 
     public PluginInfo(Resource pluginXml, grails.util.PluginBuildSettings pluginBuildSettings) {
         super();
-        if(pluginXml)
-        	this.pluginDir = pluginXml.createRelative(".");
+        if(pluginXml) {
+        	try {
+        		this.pluginDir = pluginXml.createRelative(".");
+        	}catch(e) {
+        		// ignore
+        	}        	
+        }
+        	
         this.metadata = parseMetadata(pluginXml)
         this.pluginBuildSettings = pluginBuildSettings
     }
