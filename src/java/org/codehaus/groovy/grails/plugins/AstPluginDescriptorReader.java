@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyClassLoader;
@@ -23,6 +24,10 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -32,6 +37,8 @@ import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.core.io.Resource;
+
+import com.sun.tools.jdi.LinkedHashMap;
 
 /**
  * Used to read plugin information from the AST
@@ -82,7 +89,25 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 				@Override
 				public void visitProperty(PropertyNode node) {					
 					String name = node.getName();
-					final String value = node.getField().getInitialExpression().getText();
+					final Expression expr = node.getField().getInitialExpression();
+					Object value;
+					if(expr instanceof ListExpression) {
+						final ArrayList list = new ArrayList();
+						value = list;						
+						for (Expression i : ((ListExpression)expr).getExpressions()) {
+							list.add(i.getText());
+						}
+					} else if(expr instanceof MapExpression) {
+						final LinkedHashMap map = new LinkedHashMap();
+						value = map;
+						for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
+							map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
+						}
+					}
+					else {
+						value = expr.getText();
+					}
+					
 					if(wrapper.isWritableProperty(name)) {
 						wrapper.setPropertyValue(name, value);
 					}
