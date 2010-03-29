@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.plugins;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyClassLoader;
@@ -38,7 +40,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.core.io.Resource;
 
-import com.sun.tools.jdi.LinkedHashMap;
 
 /**
  * Used to read plugin information from the AST
@@ -98,7 +99,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 							list.add(i.getText());
 						}
 					} else if(expr instanceof MapExpression) {
-						final LinkedHashMap map = new LinkedHashMap();
+						final Map map = new LinkedHashMap<String, String>();
 						value = map;
 						for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
 							map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
