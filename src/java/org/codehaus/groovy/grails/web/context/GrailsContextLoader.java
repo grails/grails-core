@@ -71,8 +71,7 @@ public class GrailsContextLoader extends ContextLoader {
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         } catch (Throwable e) {
             GrailsUtil.deepSanitize(e);
-            final Environment env = Environment.getCurrent();
-			if(env.isDevelopmentMode()) {
+            if(Environment.isDevelopmentMode()) {
 				LOG.error("Error executing bootstraps: " + e.getMessage(), e);
 				// bail out early in order to show appropriate error
             	System.exit(1);

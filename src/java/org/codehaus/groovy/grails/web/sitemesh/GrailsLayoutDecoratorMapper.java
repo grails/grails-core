@@ -18,8 +18,6 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import grails.util.Environment;
 import grails.util.Metadata;
 import groovy.lang.GroovyObject;
-import groovy.util.ConfigObject;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -39,7 +37,6 @@ import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.grails.plugins.PluginInfo;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
