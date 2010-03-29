@@ -490,8 +490,9 @@ class PluginBuildSettings {
     Resource[] getPluginDescriptors() {
         def pluginDescriptors = cache['pluginDescriptors']
         if(!pluginDescriptors) {
-            def pluginDirs = getPluginDirectories().toList() 
-            pluginDirs << new FileSystemResource(this.buildSettings.baseDir)
+            def pluginDirs = getPluginDirectories().toList()
+            if(this.buildSettings?.baseDir)
+            	pluginDirs << new FileSystemResource(this.buildSettings.baseDir)
             def descriptors = []
             for(Resource dir in pluginDirs) {
             	def desc = getPluginDescriptor(dir)
