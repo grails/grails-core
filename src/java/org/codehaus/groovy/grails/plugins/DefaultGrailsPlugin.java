@@ -1086,4 +1086,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     public Collection<? extends TypeFilter> getTypeFilters() {
         return this.typeFilters;
     }
+
+	public String getFullName() {		
+		return getName() + '-' + getVersion();
+	}
 }
