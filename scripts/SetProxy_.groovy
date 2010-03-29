@@ -45,7 +45,7 @@ target(setProxy:"Implementation target") {
         ant.input(addProperty:"proxy.host", message:"Enter HTTP proxy host [${proxyHost}]: ",defaultvalue:proxyHost)
         ant.input(addProperty:"proxy.port", message:"Enter HTTP proxy port [${proxyPort}]: ",defaultvalue:proxyPort)
         ant.input(addProperty:"proxy.user", message:"Enter HTTP proxy username [${proxyUser}]: ",defaultvalue:proxyUser)
-        ant.input(addProperty:"proxy.password", message:"Enter HTTP proxy password [${proxyPassword}]: ",defaultvalue:proxyPassword)
+        ant.input(addProperty:"proxy.password", message:"Enter HTTP proxy password: ")
         scriptFile.delete()
         scriptFile << "// This file is generated automatically with 'grails set-proxy' command\n"
         scriptFile << "proxyConfig = [proxyHost:'${ant.antProject.properties.'proxy.host'}',proxyPort:'${ant.antProject.properties.'proxy.port'}',proxyUser:'${ant.antProject.properties.'proxy.user'}',proxyPassword:'${ant.antProject.properties.'proxy.password'}']"
