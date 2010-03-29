@@ -83,6 +83,6 @@ public class PluginInfo implements GrailsPluginInfo {
     }
 
     String getFullName() {
-		"${name}-${version}"
+		"${getName()}-${getVersion()}"
 	}
 }
