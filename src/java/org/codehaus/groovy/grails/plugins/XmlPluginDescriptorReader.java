@@ -39,7 +39,7 @@ public class XmlPluginDescriptorReader implements PluginDescriptorReader {
 		try {
 			Resource pluginXml = pluginDescriptor.createRelative("plugin.xml");
 			if(pluginXml.exists()) {
-				return new PluginInfo(pluginDescriptor.createRelative("."), pluginSettings);
+				return new PluginInfo(pluginXml, pluginSettings);
 			}
 			
 		} catch (IOException e) {
