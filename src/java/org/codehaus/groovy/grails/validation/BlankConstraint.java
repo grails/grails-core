@@ -39,6 +39,10 @@ public class BlankConstraint extends AbstractVetoingConstraint {
         return Boolean.valueOf(blank);
     }
 
+    public boolean isBlank() {
+        return blank;
+    }
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#setParameter(java.lang.Object)
      */
