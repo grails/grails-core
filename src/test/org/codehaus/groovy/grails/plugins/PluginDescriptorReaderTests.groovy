@@ -1,10 +1,13 @@
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.BuildSettings;
+import grails.util.PluginBuildSettings;
+
 import org.springframework.core.io.ByteArrayResource;
 
 class PluginDescriptorReaderTests extends GroovyTestCase {
 	
-	void testReadPluginInfoFromDescriptor() {
+	void testReadPluginInfoFromDescriptorAst() {
 		def pluginReader = new AstPluginDescriptorReader()
 		
 		def plugin = pluginReader.readPluginInfo(new ByteArrayResource('''
@@ -25,6 +28,34 @@ class FooBarGrailsPlugin {
 		
 		assertEquals( ['hibernate', 'domainClass'], plugin.evicts )
 		assertEquals( ['hibernate':'1.3', 'domainClass':'1.2'], plugin.dependsOn)
+		
+		assertEquals 5, plugin.properties.size()
+	}
+	
+	void testReadPluginInfoFromDescriptorXml() {
+		def xml = '''\
+<plugin name='acegi' version='0.5.2'>
+  <author>Tsuyoshi Yamamoto</author>
+  <authorEmail>tyama@xmldo.jp</authorEmail>
+  <title>Grails Spring Security 2.0 Plugin</title>
+  <description>Plugin to use Grails domain class and secure your applications with Spring Security filters.</description>
+  <documentation>http://grails.org/plugin/acegi</documentation>
+</plugin>			
+			'''
+			
+	    def pluginSettings = new PluginBuildSettings(new BuildSettings())
+		def pluginDescriptorReader = new XmlPluginDescriptorReader(pluginSettings)
+		
+	    def info = pluginDescriptorReader.readPluginInfo( new ByteArrayResource(xml.bytes) {
+	    	public org.springframework.core.io.Resource createRelative(String relativePath) throws java.io.IOException {
+	    		new ByteArrayResource(xml.bytes)
+	    	};
+	    })
+	    
+	    assertEquals "acegi", info.name
+	    assertEquals "0.5.2", info.version
+	    assertEquals "Tsuyoshi Yamamoto", info.author
+		
 	}
 
 }

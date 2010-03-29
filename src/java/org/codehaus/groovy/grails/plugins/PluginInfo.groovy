@@ -15,7 +15,11 @@
 
 package org.codehaus.groovy.grails.plugins
 
+import java.util.Map;
+
 import org.springframework.core.io.Resource
+
+import groovy.lang.MissingPropertyException;
 import groovy.util.slurpersupport.GPathResult
 
 
@@ -27,7 +31,7 @@ import groovy.util.slurpersupport.GPathResult
  * @since 1.1
  */
 
-public class PluginInfo implements GrailsPluginInfo {
+public class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
 
     Resource pluginDir
     grails.util.PluginBuildSettings pluginBuildSettings
@@ -35,16 +39,21 @@ public class PluginInfo implements GrailsPluginInfo {
     String name
     String version
 
-    public PluginInfo(Resource pluginDir, grails.util.PluginBuildSettings pluginBuildSettings) {
+    public PluginInfo(Resource pluginXml, grails.util.PluginBuildSettings pluginBuildSettings) {
         super();
         if(pluginDir)
-        this.pluginDir = pluginDir
-        this.metadata = parseMetadata(pluginDir)
+        this.pluginDir = pluginXml.createRelative(".");
+        this.metadata = parseMetadata(pluginXml)
         this.pluginBuildSettings = pluginBuildSettings
     }
 
-    GPathResult parseMetadata(Resource pluginDir) {
-        return new XmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
+    GPathResult parseMetadata(Resource pluginXml) {
+    	InputStream input 
+    	try {
+    		input = pluginXml.getInputStream()
+    		return new XmlSlurper().parse(input)
+    	}
+        finally { input?.close() }
     }
 
 
@@ -84,5 +93,18 @@ public class PluginInfo implements GrailsPluginInfo {
 
     String getFullName() {
 		"${getName()}-${getVersion()}"
+	}
+    
+    Map getProperties() {
+    	return [name:getName(), version:getVersion()];
+    }
+    
+    def getProperty(String name) {
+    	try {
+    		return super.getProperty(name)
+    	}
+    	catch(MissingPropertyException mpe) {
+    		return metadata[name].text()
+    	}
 	}
 }
