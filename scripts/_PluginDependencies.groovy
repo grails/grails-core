@@ -66,24 +66,6 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
     depends(classpath)
 
-    // Ensure that the "plugin.xml" is up-to-date for plugins
-    // that haven't been installed, i.e. their path is declared
-    // explicitly by the project.
-
-    // TODO: At the moment we simple check whether plugin.xml exists for each plugin
-    // TODO: otherwise fail
-    PluginBuildSettings settings = pluginSettings
-
-    Resource[] pluginDirs = settings.getInlinePluginDirectories()
-    pluginDirs.each { Resource r ->
-        def dir = r.file
-        def pluginXml = new File(dir, "plugin.xml")
-        if(!pluginXml.exists()) {
-            println "The inplace plugin at [$dir.absolutePath] does not have a plugin.xml. Please run the package-plugin command inside the plugin directory."
-            exit 1
-        }
-    }
-
 }
 
 /**
@@ -137,34 +119,38 @@ compileInplacePlugin = { File pluginDir ->
  * Generates the 'plugin.xml' file for a plugin. Returns an instance
  * of the plugin descriptor.
  */
-generatePluginXml = { File descriptor ->
+generatePluginXml = { File descriptor, boolean compilePlugin = true ->
     // Load the plugin descriptor class and instantiate it so we can
     // access its properties.
     Class pluginClass
     def plugin
-    try {
-        // Rather than compiling the descriptor via Ant, we just load
-        // the Groovy file into a GroovyClassLoader. We add the classes
-        // directory to the class loader in case it didn't exist before
-        // the associated plugin's sources were compiled.
-        def gcl = new GroovyClassLoader(classLoader)
-        gcl.addURL(grailsSettings.classesDir.toURI().toURL())
+    
+    if(compilePlugin) {
+        try {
+            // Rather than compiling the descriptor via Ant, we just load
+            // the Groovy file into a GroovyClassLoader. We add the classes
+            // directory to the class loader in case it didn't exist before
+            // the associated plugin's sources were compiled.
+            def gcl = new GroovyClassLoader(classLoader)
+            gcl.addURL(grailsSettings.classesDir.toURI().toURL())
 
-        pluginClass = gcl.parseClass(descriptor)
-        plugin = pluginClass.newInstance()
+            pluginClass = gcl.parseClass(descriptor)
+            plugin = pluginClass.newInstance()
+        }
+        catch (Throwable t) {
+            event("StatusError", [ t.message])
+            t.printStackTrace(System.out)
+            ant.fail("Cannot instantiate plugin file")
+        }    	
     }
-    catch (Throwable t) {
-        event("StatusError", [ t.message])
-        t.printStackTrace(System.out)
-        ant.fail("Cannot instantiate plugin file")
-    }
+
 
     // Work out what the name of the plugin is from the name of the
     // descriptor file.
     pluginName = GrailsNameUtils.getPluginName(descriptor.name)
-
+    def pluginBaseDir = descriptor.parentFile
     // Remove the existing 'plugin.xml' if there is one.
-    def pluginXml = new File(descriptor.parentFile, "plugin.xml")
+    def pluginXml = new File(pluginBaseDir, "plugin.xml")
     pluginXml.delete()
 
     // Use MarkupBuilder with indenting to generate the file.
@@ -179,13 +165,14 @@ generatePluginXml = { File descriptor ->
     Arrays.sort(resourceList, rcComparator)
 
     pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
-    if(plugin.metaClass.hasProperty(plugin,"grailsVersion")) {
-        pluginGrailsVersion = plugin.grailsVersion
+    def pluginProps = compilePlugin ? plugin.properties : pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
+    if(pluginProps["grailsVersion"]) {
+        pluginGrailsVersion = pluginProps["grailsVersion"]
     }
 
-    xml.plugin(name:"${pluginName}",version:"${plugin.version}", grailsVersion:pluginGrailsVersion) {
-        props.each {
-            if( plugin.properties[it] ) "${it}"(plugin.properties[it])
+    xml.plugin(name:"${pluginName}",version:"${pluginProps.version}", grailsVersion:pluginGrailsVersion) {
+        for( p in props) {
+            if( pluginProps[p] ) "${p}"(pluginProps[p])
         }
         resources {
             for(r in resourceList) {
@@ -195,14 +182,11 @@ generatePluginXml = { File descriptor ->
             }
         }
         dependencies {        
-            if(plugin.metaClass.hasProperty(plugin,'dependsOn')) {
-                for(d in plugin.dependsOn) {
+            if(pluginProps["dependsOn"]) {
+                for(d in pluginProps.dependsOn) {
                     delegate.plugin(name:d.key, version:d.value)
                 }
-            }
-
-            IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-            dependencyManager.serialize(delegate, false) 
+            } 
         }
 
         def docContext = DocumentationContext.instance
