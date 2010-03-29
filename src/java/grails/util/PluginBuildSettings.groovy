@@ -490,19 +490,31 @@ class PluginBuildSettings {
     Resource[] getPluginDescriptors() {
         def pluginDescriptors = cache['pluginDescriptors']
         if(!pluginDescriptors) {
-            def pluginDirs = getPluginDirectories() as List
+            def pluginDirs = getPluginDirectories().toList() 
             pluginDirs << new FileSystemResource(this.buildSettings.baseDir)
-
             def descriptors = []
-            pluginDirs.each {
-                descriptors += resourceResolver("file:${it.file}/*GrailsPlugin.groovy") as List
+            for(Resource dir in pluginDirs) {
+            	def desc = getPluginDescriptor(dir)
+            	if(desc)
+            		descriptors << desc 
             }
+            
             pluginDescriptors = descriptors as Resource[]
             cache['pluginDescriptors'] = pluginDescriptors
         }
         return pluginDescriptors
     }
 
+    /**
+     * Returns the plugin descriptor for the Given plugin directory
+     * 
+     * @param pluginDir The plugin directory
+     * @return The plugin descriptor
+     */
+    Resource getPluginDescriptor(Resource pluginDir) {
+    	File f = pluginDir?.file.listFiles()?.find { it.name.endsWith("GrailsPlugin.groovy") }
+    	if(f) return new FileSystemResource(f)
+    }
     /**
      * Obtains an array of all plug-in lib directories
      */
