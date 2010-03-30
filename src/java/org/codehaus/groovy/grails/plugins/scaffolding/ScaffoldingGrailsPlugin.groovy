@@ -77,7 +77,7 @@ class ScaffoldingGrailsPlugin {
         def javaClass = controllerClass.clazz
         def metaClass = javaClass.metaClass
 
-        def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Boolean)
+        def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
         if (scaffoldProperty) {
             GrailsDomainClass domainClass = getScaffoldedDomainClass(application, controllerClass, scaffoldProperty)
             scaffoldedActionMap[controllerClass.logicalPropertyName] = []
