@@ -180,7 +180,9 @@ target (war: "The implementation target") {
         def webXML = new File("${stagingDir}/WEB-INF/web.xml")
         def xmlInput = new XmlParser().parse(webXML)
         webXML.withWriter { xmlOutput ->
-            new XmlNodePrinter(new PrintWriter(xmlOutput), '\t').print(xmlInput)
+            def printer = new XmlNodePrinter(new PrintWriter(xmlOutput), '\t')
+            printer.preserveWhitespace = true
+            printer.print(xmlInput)
         }
 
         ant.delete(file:webXmlFile)
