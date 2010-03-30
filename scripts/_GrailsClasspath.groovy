@@ -151,6 +151,7 @@ testClasspath = {
     }
 
     pathelement(location: "${classesDir.absolutePath}")
+    pathelement(location: "${pluginClassesDir.absolutePath}")
 }
 
 runtimeClasspath = {
@@ -165,6 +166,7 @@ runtimeClasspath = {
         }
     }
 
+    pathelement(location: "${pluginClassesDir.absolutePath}")    
     pathelement(location: "${classesDir.absolutePath}")
 }
 
