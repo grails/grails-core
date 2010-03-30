@@ -738,7 +738,7 @@ class BuildSettings {
         dependencyManager.transferListener = { TransferEvent e ->
             switch(e.eventType) {
                 case TransferEvent.TRANSFER_STARTED:
-                    println "Downloading dependency: ${e.resource.name} ..."
+                    println "Downloading: ${e.resource.name} ..."
                 break
                 case TransferEvent.TRANSFER_COMPLETED:
                     println "Download complete."
