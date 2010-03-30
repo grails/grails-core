@@ -289,9 +289,10 @@ class PluginInstallEngine {
 
     protected void checkExistingPluginInstall(String name, version) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
-        def pluginDir = currentInstall.file.canonicalFile
+        
         PluginBuildSettings pluginSettings = pluginSettings
         if (currentInstall?.exists()) {
+        	def pluginDir = currentInstall.file.canonicalFile
             if (pluginSettings.isInlinePluginLocation(currentInstall)) {
                 errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
             }
