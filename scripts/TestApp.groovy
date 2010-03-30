@@ -56,25 +56,25 @@ target('default': "Run a Grails applications unit tests") {
     def phaseAndTypeTargeters = []
     
     // Separate the type/phase targeters from the test targeters
-    argsMap["params"].each { 
-        def destination = it.contains(TEST_PHASE_AND_TYPE_SEPARATOR) ? phaseAndTypeTargeters : testTargeters
-        destination << it
+    for(p in argsMap["params"]) { 
+        def destination = p.contains(TEST_PHASE_AND_TYPE_SEPARATOR) ? phaseAndTypeTargeters : testTargeters
+        destination << p
     }
 
     // If we are targeting tests, set testNames (from _GrailsTest)
     if (testTargeters) testNames = testTargeters
     
-    // treat pre 1.2 phase targeting args as '«phase»:' for backwards compatibility
-    ["unit", "integration", "functional", "other"].each {
-        if (argsMap[it]) {
+    // treat pre 1.2 phase targeting args as '[phase]:' for backwards compatibility
+    for(type in ["unit", "integration", "functional", "other"]) {
+        if (argsMap[type]) {
             phaseAndTypeTargeters << "${it}${TEST_PHASE_AND_TYPE_SEPARATOR}"
-            argsMap.remove(it) // these are not test "options"
+            argsMap.remove(type) // these are not test "options"
         }
     }
     
     // process the phaseAndTypeTargeters, populating the targetPhasesAndTypes map from _GrailsTest
-    phaseAndTypeTargeters.each {
-        def parts = it.split(TEST_PHASE_AND_TYPE_SEPARATOR, 2)
+    for(t in phaseAndTypeTargeters) {
+        def parts = t.split(TEST_PHASE_AND_TYPE_SEPARATOR, 2)
         def targetPhase = parts[0] ?: TEST_PHASE_WILDCARD
         def targetType = parts[1] ?: TEST_TYPE_WILDCARD
         
@@ -83,9 +83,9 @@ target('default': "Run a Grails applications unit tests") {
     }
     
     // Any switch style args are "test options" (from _GrailsTest)
-    argsMap.each {
-        if (it.key != 'params') {
-            testOptions[it.key] = it.value
+    for(a in argsMap) {
+        if (a.key != 'params') {
+            testOptions[a.key] = a.value
         }
     }
 

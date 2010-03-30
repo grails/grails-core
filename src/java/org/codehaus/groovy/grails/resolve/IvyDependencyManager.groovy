@@ -509,17 +509,19 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                 def report = new ResolveReport(md)
                 def ivyNodes = resolveEngine.getDependencies(md, options, report)
                 for(IvyNode node in ivyNodes) {
-                    for(Artifact a in node.allArtifacts) {
-                        def origin = resolveEngine.locate(a)
-                        def cr = new ConfigurationResolveReport(resolveEngine, md, conf, date, options)
-                        def dr = new DownloadReport()
-                        def adr = new ArtifactDownloadReport(a)
-                        adr.artifactOrigin = origin
-                        adr.downloadStatus = DownloadStatus.NO
-                        dr.addArtifactReport(adr)
-                        cr.addDependency(node, dr)
-                        report.addReport(conf, cr)
-                    }
+                	if(node.isLoaded()) {
+                        for(Artifact a in node.allArtifacts) {
+                            def origin = resolveEngine.locate(a)
+                            def cr = new ConfigurationResolveReport(resolveEngine, md, conf, date, options)
+                            def dr = new DownloadReport()
+                            def adr = new ArtifactDownloadReport(a)
+                            adr.artifactOrigin = origin
+                            adr.downloadStatus = DownloadStatus.NO
+                            dr.addArtifactReport(adr)
+                            cr.addDependency(node, dr)
+                            report.addReport(conf, cr)
+                        }                		
+                	}
                 }
                 return report
             }
