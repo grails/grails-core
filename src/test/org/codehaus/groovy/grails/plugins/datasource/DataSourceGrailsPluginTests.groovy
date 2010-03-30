@@ -4,10 +4,14 @@ import grails.spring.BeanBuilder
 
 import javax.sql.DataSource
 
+import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
+import org.springframework.jndi.JndiObjectFactoryBean
 
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -23,7 +27,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                 passwordEncryptionCodec = 'org.codehaus.groovy.grails.plugins.datasource.MockCodec'
                 dbCreate = "create-drop"
             }
-""")
+        """)
 
         ConfigurationHolder.config = config
         gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -89,8 +93,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
-
-        assertEquals "org.apache.commons.dbcp.BasicDataSource", beanDef.beanClassName
+        assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
+        
+        beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals BasicDataSource.name, beanDef.beanClassName
 
         assertNotNull beanDef.propertyValues.getPropertyValue('username')
         assertNotNull beanDef.propertyValues.getPropertyValue('password')
@@ -121,8 +127,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        assertEquals "org.apache.commons.dbcp.BasicDataSource", beanDef.beanClassName
+        beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals BasicDataSource.name, beanDef.beanClassName
 
         assertNull beanDef.propertyValues.getPropertyValue('username')
         assertNull beanDef.propertyValues.getPropertyValue('password')
@@ -149,8 +157,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        assertEquals "org.apache.commons.dbcp.BasicDataSource", beanDef.beanClassName
+        beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals BasicDataSource.name, beanDef.beanClassName
 
         assertEquals "org.hsqldb.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
@@ -199,8 +209,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        assertEquals "org.apache.commons.dbcp.BasicDataSource", beanDef.beanClassName
+        beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals BasicDataSource.name, beanDef.beanClassName
 
         assertEquals "org.hsqldb.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
@@ -249,8 +261,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        assertEquals "org.springframework.jdbc.datasource.DriverManagerDataSource", beanDef.beanClassName
+        beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals DriverManagerDataSource.name, beanDef.beanClassName
 
         assertEquals "org.hsqldb.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
@@ -275,8 +289,11 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        assertEquals "org.springframework.jndi.JndiObjectFactoryBean", beanDef.beanClassName
+        beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals JndiObjectFactoryBean.name, beanDef.beanClassName
+
         assertEquals "java:comp/env/myDataSource", beanDef.propertyValues.getPropertyValue('jndiName').value
         assertEquals DataSource, beanDef.propertyValues.getPropertyValue('expectedType').value
     }

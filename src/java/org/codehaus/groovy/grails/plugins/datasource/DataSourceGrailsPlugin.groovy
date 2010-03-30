@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.datasource;
+package org.codehaus.groovy.grails.plugins.datasource
 
 import grails.util.Environment
 import grails.util.GrailsUtil
@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
 import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
 
 /**
@@ -48,17 +49,22 @@ class DataSourceGrailsPlugin {
     def doWithSpring = {
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
+        if (parentCtx?.containsBean("dataSource")) {
+            return
+        }
+
         def ds = application.config.dataSource
-        if (!ds && application.domainClasses.isEmpty()) {
+        if (!ds && application.domainClasses.size() == 0) {
             log.info "No data source or domain classes found. Data source configuration skipped"
             return
         }
 
         if (ds.jndiName) {
-            dataSource(JndiObjectFactoryBean) {
+            dataSourceUnproxied(JndiObjectFactoryBean) {
                 jndiName = ds.jndiName
                 expectedType = DataSource
             }
+            dataSource(TransactionAwareDataSourceProxy, dataSourceUnproxied)
             return
         }
 
@@ -121,15 +127,15 @@ class DataSourceGrailsPlugin {
             }
         }
 
-        if (ds && !parentCtx?.containsBean("dataSource")) {
+        if (ds) {
             log.info("[RuntimeConfiguration] Configuring data source for environment: ${Environment.current}")
             def bean
             if (ds.pooled) {
-                bean = dataSource(BasicDataSource, properties)
+                bean = dataSourceUnproxied(BasicDataSource, properties)
                 bean.destroyMethod = "close"
             }
             else {
-                bean = dataSource(DriverManagerDataSource, properties)
+                bean = dataSourceUnproxied(DriverManagerDataSource, properties)
             }
             // support for setting custom properties (for example maxActive) on the dataSource bean
             def dataSourceProperties = ds.properties
@@ -145,10 +151,12 @@ class DataSourceGrailsPlugin {
                 }
             }
         }
-        else if (!parentCtx?.containsBean("dataSource")) {
-            def bean = dataSource(BasicDataSource, properties)
+        else {
+            def bean = dataSourceUnproxied(BasicDataSource, properties)
             bean.destroyMethod = "close"
         }
+
+        dataSource(TransactionAwareDataSourceProxy, dataSourceUnproxied)
     }
 
     def onChange = {
@@ -185,7 +193,7 @@ class DataSourceGrailsPlugin {
             try {
                 DriverManager.deregisterDriver(driver)
             } catch (SQLException e) {
-                log.error("Error deregisetring JDBC driver ["+driver+"]: " + e.getMessage(), e)
+                log.error("Error deregistering JDBC driver ["+driver+"]: " + e.getMessage(), e)
             }
         }
     }
