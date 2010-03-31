@@ -62,8 +62,10 @@
 	
 	<target name="--gdoc" if="grails.doc.present">
 		<ant target="distclean" dir="../grails-doc" inheritAll="false" />
+		<property name="base.location" location="." />
 		<ant target="dist-nojavadoc" dir="../grails-doc" inheritAll="false">		
 			<property name="base.dir" value="../grails-doc" />
+			<property name="grails.home" value="${base.location}" />
 		</ant>
 		<copy todir="doc">
 			<fileset dir="../grails-doc/output" />
