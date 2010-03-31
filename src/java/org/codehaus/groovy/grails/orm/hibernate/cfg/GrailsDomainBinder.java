@@ -56,6 +56,9 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Table;
 import org.hibernate.type.ForeignKeyDirection;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.LongType;
+import org.hibernate.type.TimestampType;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeFactory;
 import org.hibernate.util.StringHelper;
@@ -960,7 +963,7 @@ public final class GrailsDomainBinder {
     }
 
     private static void bindCollectionTable(GrailsDomainClassProperty property, Mappings mappings,
-   		 Collection collection, Table ownerTable) {
+            Collection collection, Table ownerTable) {
 
         String prefix = ownerTable.getSchema();
         String tableName = (prefix == null ? "" : prefix + '.') + calculateTableForMany(property);
@@ -1653,7 +1656,7 @@ public final class GrailsDomainBinder {
                 enumProperties.put(ENUM_TYPE_PROP, String.valueOf(Types.VARCHAR));
             }
             else if (!"ordinal".equalsIgnoreCase(enumType)) {
-                LOG.warn("Invalid enumType specified when mapping property ["+property.getName()+"] of class ["+property.getDomainClass().getClazz()+"]. Using defaults instead.");
+                LOG.warn("Invalid enumType specified when mapping property ["+property.getName()+"] of class ["+property.getDomainClass().getClazz().getName()+"]. Using defaults instead.");
             }
         }
 
@@ -2014,7 +2017,16 @@ public final class GrailsDomainBinder {
 
         bindSimpleValue(version, null, val, EMPTY_PATH, mappings);
 
-        if (!val.isTypeSpecified()) {
+        if (val.isTypeSpecified()) {
+            if (!(val.getType() instanceof IntegerType ||
+                  val.getType() instanceof LongType ||
+                  val.getType() instanceof TimestampType)) {
+                LOG.warn("Invalid version class specified in " + version.getDomainClass().getClazz().getName() +
+                         "; must be one of [int, Integer, long, Long, Timestamp, Date]. Not mapping the version.");
+                return;
+            }
+        }
+        else {
             val.setTypeName("version".equals(version.getName()) ? "integer" : "timestamp");
         }
         Property prop = new Property();
