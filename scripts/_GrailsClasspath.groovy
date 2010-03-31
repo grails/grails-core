@@ -133,7 +133,7 @@ compileClasspath = {
                 pathelement(location: f.absolutePath)
         }
     }
-
+    pathelement(location: "${pluginClassesDir.absolutePath}")
 }
 
 testClasspath = {
