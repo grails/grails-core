@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping
 import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod
 import org.hibernate.EntityMode
 import org.hibernate.engine.EntityEntry
 import org.hibernate.persister.entity.EntityPersister
@@ -157,7 +158,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
         }
 
-        if(!entity.validate(deepValidate:false)) {
+        if(!AbstractSavePersistentMethod.isAutoValidationDisabled(entity) && !entity.validate(deepValidate:false)) {
             evict = true
             if(failOnError) {
                 if(failOnErrorPackages) {

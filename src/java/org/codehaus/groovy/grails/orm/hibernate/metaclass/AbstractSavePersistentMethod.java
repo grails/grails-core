@@ -52,6 +52,20 @@ public abstract class AbstractSavePersistentMethod extends
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
     private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.failOnError";
     private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.autoFlush";
+
+    /**
+     * When a domain instance is saved without validation, we put it
+     * into this thread local variable. Any code that needs to know
+     * whether the domain instance should be validated can just check
+     * the value. Note that this only works because the session is
+     * flushed when a domain instance is saved without validation.
+     */
+    private static ThreadLocal<Object> disableAutoValidationFor = new ThreadLocal<Object>();
+
+    public static boolean isAutoValidationDisabled(Object obj) {
+        return obj != null && obj == disableAutoValidationFor.get();
+    }
+
     private boolean shouldFail;
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
@@ -89,7 +103,9 @@ public abstract class AbstractSavePersistentMethod extends
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
             target.getClass().getName() );
 
-        if(shouldValidate(arguments, domainClass)) {
+        boolean shouldFlush = shouldFlush(arguments);
+        boolean shouldValidate = shouldValidate(arguments, domainClass);
+        if(shouldValidate) {
         	Validator validator = domainClass.getValidator();
             Errors errors = setupErrorsProperty(target);
 
@@ -125,6 +141,13 @@ public abstract class AbstractSavePersistentMethod extends
                 }
             }
         }
+        else {
+            // If validation is skipped, force a flush. This is a bit
+            // of a hack so that ClosureEventTriggeringInterceptor can
+            // determine that the target domain instance should not be
+            // automatically validated.
+            shouldFlush = true;
+        }
 
         // this piece of code will retrieve a persistent instant
         // of a domain class property is only the id is set thus
@@ -133,12 +156,18 @@ public abstract class AbstractSavePersistentMethod extends
             autoRetrieveAssocations(domainClass, target);
         }
 
+        if (!shouldValidate) disableAutoValidationFor.set(target);
+
+        Object retval;
         if(shouldInsert(arguments)) {
-            return performInsert(target, shouldFlush(arguments));
+            retval = performInsert(target, shouldFlush);
         }
         else {
-            return performSave(target, shouldFlush(arguments));
+            retval = performSave(target, shouldFlush);
         }
+
+        if (!shouldValidate) disableAutoValidationFor.remove();
+        return retval;
 	}
 
     private boolean shouldInsert(Object[] arguments) {
