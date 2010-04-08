@@ -83,16 +83,17 @@ class NamedCriteriaProxy {
     private dynamicMethods
     private namedCriteriaParams
 	private previousInChain
+    private queryBuilder
 
-	private invokeCriteriaClosure(delegate, additionalCriteriaClosure = null) {
+	private invokeCriteriaClosure(additionalCriteriaClosure = null) {
 		def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
-		crit.delegate = delegate
 		crit()
 	}
 
     def list(Object[] params, Closure additionalCriteriaClosure = null) {
         def listClosure = {
-			invokeCriteriaClosure(delegate, additionalCriteriaClosure)
+            queryBuilder = delegate
+			invokeCriteriaClosure(additionalCriteriaClosure)
 			def paramsMap
 			if (params && params[-1] instanceof Map) {
 				paramsMap = params[-1]
@@ -121,7 +122,8 @@ class NamedCriteriaProxy {
     def get(id) {
 		id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
-			invokeCriteriaClosure(delegate)
+            queryBuilder = delegate
+            invokeCriteriaClosure()
 			eq 'id', id
             uniqueResult = true
         }
@@ -130,7 +132,8 @@ class NamedCriteriaProxy {
 
     def count(Closure additionalCriteriaClosure = null) {
         def countClosure = {
-			invokeCriteriaClosure(delegate, additionalCriteriaClosure)
+            queryBuilder = delegate
+            invokeCriteriaClosure(additionalCriteriaClosure)
             uniqueResult = true
             projections {
                 rowCount()
@@ -145,7 +148,8 @@ class NamedCriteriaProxy {
 
     def findAllWhere(Map params, Boolean uniq = false) {
         def queryClosure = {
-			invokeCriteriaClosure(delegate)
+            queryBuilder = delegate
+            invokeCriteriaClosure()
 			params.each {key, val ->
                 eq key, val
             }
@@ -173,13 +177,17 @@ class NamedCriteriaProxy {
         if (method) {
             def preparedClosure = getPreparedCriteriaClosure()
             return method.invoke(domainClass.clazz, methodName, preparedClosure, args)
-        } else if(domainClass.metaClass.getMetaProperty(methodName)) {
+        } else if(!queryBuilder && domainClass.metaClass.getMetaProperty(methodName)) {
         	def nextInChain = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass)
 			nextInChain.previousInChain = this
 		    return nextInChain(args)
+        } else if (domainClass.metaClass.getMetaProperty(methodName)) {
+        	def nestedCriteria = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass).criteriaClosure.clone()
+            nestedCriteria.delegate = queryBuilder
+            nestedCriteria(*args)
+        } else {
+            queryBuilder."${methodName}"(*args)
         }
-
-        throw new MissingMethodException(methodName, NamedCriteriaProxy, args)
     }
 
     private getPreparedCriteriaClosure(additionalCriteriaClosure = null) {
