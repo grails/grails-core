@@ -91,6 +91,7 @@ target (war: "The implementation target") {
 
     includeJars = argsMap.nojars ? !argsMap.nojars : true
     stagingDir = grailsSettings.projectWarExplodedDir
+    includeOsgiHeaders = grailsSettings.projectWarOsgiHeaders
 
     try {
         configureWarName()
@@ -212,14 +213,16 @@ target (war: "The implementation target") {
         ant.mkdir(dir:metaInfo)
         String manifestFile = "$metaInfo/MANIFEST.MF"
         ant.manifest(file:manifestFile) {
-        	// OSGi bundle headers
-    		attribute(name:"Bundle-ManifestVersion",value:"2")
-    		attribute(name:"Bundle-Name",value:"${grailsAppName}")
-    		attribute(name:"Bundle-SymbolicName",value:"${grailsAppName}")
-    		// note that the version must be a valid OSGi version, e.g. major.minor.micro.qualifier,
-    		// where major, minor, and micro must be numbers and qualifier can be any string
-    		// minor, micro and qualifier are optional
-    		attribute(name:"Bundle-Version",value:"${metadata.getApplicationVersion()}")
+            if (includeOsgiHeaders) {
+                // OSGi bundle headers
+                attribute(name:"Bundle-ManifestVersion",value:"2")
+                attribute(name:"Bundle-Name",value:"${grailsAppName}")
+                attribute(name:"Bundle-SymbolicName",value:"${grailsAppName}")
+                // note that the version must be a valid OSGi version, e.g. major.minor.micro.qualifier,
+                // where major, minor, and micro must be numbers and qualifier can be any string
+                // minor, micro and qualifier are optional
+                attribute(name:"Bundle-Version",value:"${metadata.getApplicationVersion()}")
+            }
     		// determine servlet and jsp versions
     		def optionalPackage = "resolution:=optional"
     		def servletVersion = ''

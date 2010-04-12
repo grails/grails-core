@@ -123,6 +123,11 @@ class BuildSettings {
     public static final String PROJECT_WAR_FILE = "grails.project.war.file"
 
     /**
+     * The name of the system property for enabling osgi headers in the WAR Manifest
+     */
+    public static final String PROJECT_WAR_OSGI_HEADERS = "grails.project.war.osgi.headers"
+
+    /**
      * The name of the system property for multiple {@link #buildListeners}.
      */
     public static final String BUILD_LISTENERS = "grails.build.listeners"
@@ -181,6 +186,11 @@ class BuildSettings {
      * The WAR file of the project
      */
     File projectWarFile
+    
+    /**
+     * Setting for whether or not to enable OSGI headers in the WAR Manifest, can be overridden via -verboseCompile(=[true|false])?
+     */
+    boolean projectWarOsgiHeaders = false
 
     /** The location to which Grails compiles a project's classes. */
     File classesDir
@@ -402,6 +412,7 @@ class BuildSettings {
     private boolean docsOutputDirSet
     private boolean testSourceDirSet
     private boolean projectWarFileSet
+    private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
 
@@ -550,6 +561,15 @@ class BuildSettings {
     public void setProjectWarExplodedDir(File dir) {
         this.projectWarExplodedDir = dir
         this.projectWarExplodedDirSet = true
+    }
+
+	public boolean getProjectWarOsgiHeaders() {
+		return this.projectWarOsgiHeaders;
+	}
+
+    void setProjectWarOsgiHeaders(boolean flag) {
+        projectWarOsgiHeaders = flag
+        projectWarOsgiHeadersSet = true
     }
 
     public File getClassesDir() {
@@ -887,6 +907,10 @@ class BuildSettings {
 
         if (!projectWarExplodedDirSet) {
             projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
+        }
+        
+        if (!projectWarOsgiHeadersSet) {
+            projectWarOsgiHeaders = getPropertyValue(PROJECT_WAR_OSGI_HEADERS, props, 'true').toBoolean()
         }
 
         if (!classesDirSet) {
