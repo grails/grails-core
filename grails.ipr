@@ -25,33 +25,6 @@
         <option name="WHILE_ON_NEW_LINE" value="true" />
         <option name="CATCH_ON_NEW_LINE" value="true" />
         <option name="FINALLY_ON_NEW_LINE" value="true" />
-        <ADDITIONAL_INDENT_OPTIONS fileType="">
-          <option name="INDENT_SIZE" value="4" />
-          <option name="CONTINUATION_INDENT_SIZE" value="8" />
-          <option name="TAB_SIZE" value="4" />
-          <option name="USE_TAB_CHARACTER" value="false" />
-          <option name="SMART_TABS" value="false" />
-          <option name="LABEL_INDENT_SIZE" value="0" />
-          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-        </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="">
-          <option name="INDENT_SIZE" value="4" />
-          <option name="CONTINUATION_INDENT_SIZE" value="8" />
-          <option name="TAB_SIZE" value="4" />
-          <option name="USE_TAB_CHARACTER" value="false" />
-          <option name="SMART_TABS" value="false" />
-          <option name="LABEL_INDENT_SIZE" value="0" />
-          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-        </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="">
-          <option name="INDENT_SIZE" value="2" />
-          <option name="CONTINUATION_INDENT_SIZE" value="8" />
-          <option name="TAB_SIZE" value="4" />
-          <option name="USE_TAB_CHARACTER" value="false" />
-          <option name="SMART_TABS" value="false" />
-          <option name="LABEL_INDENT_SIZE" value="0" />
-          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
-        </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="groovy">
           <option name="INDENT_SIZE" value="4" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
@@ -71,6 +44,24 @@
           <option name="LABEL_INDENT_ABSOLUTE" value="false" />
         </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="java">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="js">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="jsp">
           <option name="INDENT_SIZE" value="4" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
           <option name="TAB_SIZE" value="4" />
@@ -489,8 +480,8 @@
         <root url="jar://$PROJECT_DIR$/lib/jta-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-core-3.3.1.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.4.0.GA.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.3.0.ga.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/javassist-3.8.0.GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.1.0.GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/javassist-3.11.0.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -606,7 +597,7 @@
     </library>
     <library name="Ivy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/ivy-2.0.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/ivy-2.1.0.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
