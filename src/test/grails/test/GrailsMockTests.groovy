@@ -240,10 +240,28 @@ class GrailsMockTests extends GroovyTestCase {
 
         assertEquals "dynamic", testClass.testNullArgument()
     }
+
+    /**
+     * Tests that mocking an interface works.
+     */
+    void testInterface() {
+        def mockControl = new GrailsMock(GrailsMockInterface)
+        mockControl.demand.testMethod(1..1) { String name, int qty ->
+            assert name == "brussels"
+            assert qty == 5
+            return "brussels-5"
+        }
+
+        def testClass = new GrailsMockTestClass()
+        testClass.gmi = mockControl.createMock()
+
+        assertEquals "brussels-5", testClass.testInterfaceCollaborator()
+    }
 }
 
 class GrailsMockTestClass {
     GrailsMockCollaborator collaborator
+    GrailsMockInterface gmi
 
     boolean testMethod() {
         return this.collaborator.save()
@@ -285,6 +303,10 @@ class GrailsMockTestClass {
         return this.collaborator.multiMethod(null)
     }
 
+    String testInterfaceCollaborator() {
+        return this.gmi.testMethod("brussels", 5)
+    }
+
     List testMultiMethod() {
         List methodReturns = []
         methodReturns << this.collaborator.multiMethod()
@@ -309,5 +331,15 @@ class GrailsMockCollaborator {
 
     String multiMethod(String str, Map map) {
         return "static"
+    }
+}
+
+interface GrailsMockInterface {
+    String testMethod(String name, int quantity)
+}
+
+class GrailsMockImpl implements GrailsMockInterface {
+    String testMethod(String name, int quantity) {
+        return name * quantity
     }
 }
