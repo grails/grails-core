@@ -212,10 +212,8 @@ def readPluginMetadataForDocs(DocPublisher publisher) {
 }
 
 def readDocProperties(DocPublisher publisher) {
-    readIfSet(publisher,"copyright")
-    readIfSet(publisher,"license")
-    readIfSet(publisher,"authors")
-    readIfSet(publisher,"footer")
+    ['copyright', 'license', 'authors', 'footer', 'images',
+     'css', 'style', 'encoding', 'logo', 'sponsorLogo'].each { readIfSet publisher, it }
 }
 
 private readIfSet(DocPublisher publisher,String prop) {
