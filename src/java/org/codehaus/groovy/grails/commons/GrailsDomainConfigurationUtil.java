@@ -342,16 +342,19 @@ public class GrailsDomainConfigurationUtil {
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
         if(properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
             for (GrailsDomainClassProperty p : properties) {
-                final String propertyName = p.getName();
-                ConstrainedProperty cp = constrainedProperties.get(propertyName);
-                if (cp == null) {
-                    cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
-                    cp.setOrder(constrainedProperties.size() + 1);
-                    constrainedProperties.put(propertyName, cp);
-                }
-                // Make sure all fields are required by default, unless specified otherwise by the constraints
-                // If the field is a Java entity annotated with @Entity skip this
-                applyDefaultConstraints(propertyName, p, cp, defaultConstraints, delegate.getSharedConstraints());
+        		final String propertyName = p.getName();
+        		ConstrainedProperty cp = constrainedProperties.get(propertyName);
+        		if (cp == null) {
+        			cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
+        			cp.setOrder(constrainedProperties.size() + 1);
+        			constrainedProperties.put(propertyName, cp);
+        		}
+        		// Make sure all fields are required by default, unless
+        		// specified otherwise by the constraints
+        		// If the field is a Java entity annotated with @Entity skip this
+        		applyDefaultConstraints(propertyName, p, cp,
+						defaultConstraints, delegate.getSharedConstraint(propertyName));
+
             }
         }
 
@@ -382,21 +385,10 @@ public class GrailsDomainConfigurationUtil {
         return evaluateConstraints(instance, null,null);
     }
 
-    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
-        if(defaultConstraints != null && !defaultConstraints.isEmpty()) {
+    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
+        if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
 
-            if(sharedConstraints!=null && !sharedConstraints.isEmpty()) {
-                for (String sharedConstraintReference : sharedConstraints) {
-                    final Object o = defaultConstraints.get(sharedConstraintReference);
-                    if(o instanceof Map) {
-                        applyMapOfConstraints((Map) o,propertyName, p, cp);
-                    }
-                    else {
-                        throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
-                    }
-                }
-            }
-            if(defaultConstraints.containsKey("*")) {
+            if (defaultConstraints.containsKey("*")) {
                 final Object o = defaultConstraints.get("*");
                 if(o instanceof Map) {
                     Map<String, Object> globalConstraints = (Map) o;
@@ -404,8 +396,18 @@ public class GrailsDomainConfigurationUtil {
 
                 }
             }
+            if(sharedConstraintReference!=null) {
+                final Object o = defaultConstraints.get(sharedConstraintReference);
+                if(o instanceof Map) {
+                    applyMapOfConstraints((Map) o,propertyName, p, cp);
+                }
+                else {
+                    throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
+                }
+            }            
 
         }
+        
 
         if (canApplyNullableConstraint(propertyName, p, cp)) {
 

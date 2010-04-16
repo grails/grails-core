@@ -35,7 +35,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 	private Object target;
 	private BeanWrapper bean;
 	private Map<String, ConstrainedProperty> constrainedProperties = new HashMap<String, ConstrainedProperty>();
-    private List<String> sharedConstraints = new ArrayList<String>();
+	private Map<String, String> sharedConstraints = new HashMap<String, String>();
 	private int order = 1;
     private static final String SHARED_CONSTRAINT = "shared";
 
@@ -46,8 +46,8 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 	}
 
 
-    public List<String> getSharedConstraints() {
-        return Collections.unmodifiableList(sharedConstraints);
+    public String getSharedConstraint(String propertyName) {
+        return sharedConstraints.get(propertyName);
     }
 
     protected Object createNode(Object name, Map attributes) {
@@ -70,7 +70,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 final Object value = attributes.get(constraintName);
                 if(SHARED_CONSTRAINT.equals(constraintName)) {
                     if(value != null)
-                        sharedConstraints.add(value.toString());
+                    	sharedConstraints.put(property, value.toString());
                     continue;
                 }
                 if (cp.supportsContraint(constraintName)) {
