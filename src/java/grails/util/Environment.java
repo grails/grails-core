@@ -248,7 +248,6 @@ public enum Environment {
     private static EnvironmentBlockEvaluator evaluateEnvironmentSpecificBlock(Environment environment, Closure closure) {
         final EnvironmentBlockEvaluator evaluator = new EnvironmentBlockEvaluator(environment);
         closure.setDelegate(evaluator);
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
         return evaluator;
     }
