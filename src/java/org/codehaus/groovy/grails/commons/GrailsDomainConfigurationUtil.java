@@ -373,7 +373,7 @@ public class GrailsDomainConfigurationUtil {
             		// specified otherwise by the constraints
             		// If the field is a Java entity annotated with @Entity skip this
             		applyDefaultConstraints(propertyName, p, cp,
-							defaultConstraints, delegate.getSharedConstraints());
+							defaultConstraints, delegate.getSharedConstraint(propertyName));
             	}
             }
         }
@@ -427,20 +427,9 @@ public class GrailsDomainConfigurationUtil {
     }    
     
 
-    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, List<String> sharedConstraints) {
+    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
 
-            if (sharedConstraints != null && !sharedConstraints.isEmpty()) {
-                for (String sharedConstraintReference : sharedConstraints) {
-                    final Object o = defaultConstraints.get(sharedConstraintReference);
-                    if (o instanceof Map) {
-                        applyMapOfConstraints((Map<String, Object>) o,propertyName, p, cp);
-                    }
-                    else {
-                        throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
-                    }
-                }
-            }
             if (defaultConstraints.containsKey("*")) {
                 final Object o = defaultConstraints.get("*");
                 if (o instanceof Map) {
@@ -448,7 +437,17 @@ public class GrailsDomainConfigurationUtil {
                     applyMapOfConstraints(globalConstraints, propertyName, p, cp);
                 }
             }
+            if(sharedConstraintReference!=null) {
+                final Object o = defaultConstraints.get(sharedConstraintReference);
+                if(o instanceof Map) {
+                    applyMapOfConstraints((Map) o,propertyName, p, cp);
+                }
+                else {
+                    throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
+                }
+            }            
         }
+        
 
         if (canApplyNullableConstraint(propertyName, p, cp)) {
             cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
