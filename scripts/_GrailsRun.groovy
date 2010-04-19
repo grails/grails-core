@@ -244,7 +244,10 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
                     grailsServer.stop()
                     compile()
                     Thread currentThread = Thread.currentThread()
-                    classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader)
+                    def classesDirs = [classesDir,
+                                       pluginClassesDir].collect { it.toURI().toURL() }
+                    
+                    classLoader = new URLClassLoader(classesDirs as URL[], rootLoader)
                     currentThread.setContextClassLoader classLoader
                     PluginManagerHolder.pluginManager = null
                     // reload plugins
