@@ -54,7 +54,7 @@ task coverageReport {
     doFirst {
         project.ant.taskdef(resource: 'tasks.properties', classpath: configurations.coverage.asPath)
         ant.'cobertura-report'(destdir: destinationDir,
-                format: 'html', datafile: instrumentForCoverage.cobSerFile) {
+                format: 'xml', datafile: instrumentForCoverage.cobSerFile) {
             sourceSets.main.allJava.addToAntBuilder(ant, 'fileset')
         }
     }
