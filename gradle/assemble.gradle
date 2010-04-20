@@ -292,6 +292,9 @@ distSpec = copySpec {
         include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'conf/', 'build.gradle', 'build.properties',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
         exclude 'ant/bin'
+
+        // this file is accounted for later with special handling to do some token replacement
+        exclude 'src/grails/grails-macros.xml'
     }
     from(projectDir) {
     	into "grails-$version"
