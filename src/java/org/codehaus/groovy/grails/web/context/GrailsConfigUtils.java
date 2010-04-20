@@ -14,13 +14,18 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
+import java.lang.reflect.Constructor;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
@@ -84,11 +89,18 @@ public class GrailsConfigUtils {
 			application.setApplicationContext(parent);
 		}
 
-	    GrailsRuntimeConfigurator configurator;
+	    GrailsRuntimeConfigurator configurator = null;
         if(parent.containsBean(GrailsRuntimeConfigurator.BEAN_ID)) {
+        	// get configurator from parent application context
             configurator = (GrailsRuntimeConfigurator)parent.getBean(GrailsRuntimeConfigurator.BEAN_ID);
         }
         else {
+        	// get configurator from servlet context
+        	configurator = determineGrailsRuntimeConfiguratorFromServletContext(application, servletContext, parent);
+        }
+        
+        if (configurator == null) {
+        	// no configurator, use default
             configurator = new GrailsRuntimeConfigurator(application,parent);
             if(parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
                 GrailsPluginManager pluginManager = (GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME);
@@ -118,5 +130,29 @@ public class GrailsConfigUtils {
 
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,webContext );
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
+    }
+    
+    public static GrailsRuntimeConfigurator determineGrailsRuntimeConfiguratorFromServletContext(GrailsApplication application, ServletContext servletContext, ApplicationContext parent) {
+    	GrailsRuntimeConfigurator configurator = null;
+    	
+    	if (servletContext.getInitParameter(GrailsRuntimeConfigurator.BEAN_ID + "Class") != null) {
+        	// try to load configurator class as specified in servlet context
+        	String configuratorClassName = servletContext.getInitParameter(GrailsRuntimeConfigurator.BEAN_ID + "Class").toString();
+        	Class<?> configuratorClass = null;
+        	try {
+				configuratorClass = ClassUtils.forName(configuratorClassName, application.getClassLoader());
+			} catch (Exception e) {
+				String msg = "failed to create Grails runtime configurator as specified in web.xml: " + configuratorClassName;
+				LOG.error("[GrailsContextLoader] " + msg, e);
+				throw new IllegalArgumentException(msg);
+			}
+			if (!GrailsRuntimeConfigurator.class.isAssignableFrom(configuratorClass)) {
+				throw new IllegalArgumentException("class " + configuratorClassName + " is not assignable to " + GrailsRuntimeConfigurator.class.getName());
+			}
+			Constructor<?> constr = ClassUtils.getConstructorIfAvailable(configuratorClass, GrailsApplication.class, ApplicationContext.class);
+			configurator = (GrailsRuntimeConfigurator) BeanUtils.instantiateClass(constr, application, parent);
+        }
+    	
+    	return configurator;
     }
 }
