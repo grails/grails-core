@@ -315,22 +315,21 @@ distSpec = copySpec {
     }
     from('src/resources/docs/README') {
         into "grails-$version"
-        filter(ReplaceTokens, tokens: ["@grails.version@": version])
+        filter(ReplaceTokens, tokens: ['grails.version': version])
     }
     from("src/resources/bash") {
         include "startGrails.bat", "startGrails"
         into "grails-$version/bin"
-        filter(ReplaceTokens, tokens: ["grails.version": version])
+        filter(ReplaceTokens, tokens: ['grails.version': version])
         fileMode = 0755
     }
     from(libs.destinationDir) {
         into "grails-$version/dist"
         exclude "*.zip"
     }
-    // binary
     from("src/grails/grails-macros.xml") {
         into "grails-$version/src/grails"
-        filter(ReplaceTokens, tokens: ["@grails.version@": version])
+        filter(ReplaceTokens, tokens: ['grails.version': version])
     }
 }
 
