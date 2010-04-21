@@ -26,6 +26,7 @@ Import-Template:
  org.codehaus.groovy.grails.*;version="${grails.version:[=.=.=, =.+1.0)}",
  grails.*;version="${grails.version:[=.=.=, =.+1.0)}",
  javax.servlet.*;version="${servlet.version:[=.=.=, +1.0.0)}",
+ javax.naming.*;version="${jndi.version:[=.=.=, +1.0.0)}",
  javax.servlet.jsp.*;version="${servlet.jsp.version:[=.=.=, +1.0.0)}",
  javax.persistence.*;version="${javax.persistence.version:[=.=.=, =.+1.0)}",
  javax.sql.*;version="0",
