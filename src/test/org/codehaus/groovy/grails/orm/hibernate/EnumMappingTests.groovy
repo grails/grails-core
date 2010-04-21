@@ -36,14 +36,31 @@ class SubClassWithStringProperty extends SuperClass {
 class SubClassWithEnumProperty extends SuperClass {
 	VehicleStatus vehicalStatus
 }
+class SubClassWithOptionalEnumProperty extends SuperClass {
+    VehicleStatus optionalVehicalStatus
+    static constraints = {
+        optionalVehicalStatus nullable: true
+    }
+}
 ''')
     }
 
     void testEnumNullabilityWithTablePerHierarchy() {
-    	if(notYetImplemented()) return
-    	def domainClass = ga.getDomainClass('SubClassWithStringProperty').clazz
-    	def domainObject = domainClass.newInstance()
+        def vehicleEnum = ga.classLoader.loadClass("VehicleStatus")
+    	def domainClassWithStringProperty = ga.getDomainClass('SubClassWithStringProperty').clazz
+    	def domainClassWithEnumProperty = ga.getDomainClass('SubClassWithEnumProperty').clazz
+    	def domainClassWithOptionalEnumProperty = ga.getDomainClass('SubClassWithOptionalEnumProperty').clazz
+
+    	def domainObject = domainClassWithStringProperty.newInstance()
     	domainObject.someProperty = 'data'
+        assertNotNull domainObject.save()
+
+        domainObject = domainClassWithEnumProperty.newInstance()
+        assertNull domainObject.save()
+        domainObject.vehicalStatus = vehicleEnum.IDLING
+        assertNotNull domainObject.save()
+
+        domainObject = domainClassWithOptionalEnumProperty.newInstance()
         assertNotNull domainObject.save()
     }
 
