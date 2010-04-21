@@ -571,7 +571,7 @@
     </library>
     <library name="Groovy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.7.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.7.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>

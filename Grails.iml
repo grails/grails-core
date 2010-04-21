@@ -91,7 +91,7 @@
     <orderEntry type="module-library">
       <library name="Gant">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gant_groovy1.7-1.9.2-SNAPSHOT.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gant_groovy1.7-1.9.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
