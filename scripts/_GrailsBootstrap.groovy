@@ -16,6 +16,7 @@
 
 import grails.spring.WebBeanBuilder
 import org.codehaus.groovy.grails.support.CommandLineResourceLoader
+import org.codehaus.groovy.grails.cli.support.JndiBindingSupport;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -79,12 +80,10 @@ target(configureApp:"Configures the Grails application and builds an Application
 	profile("Performing runtime Spring configuration") {
 	    def configurer = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
         def jndiEntries = config?.grails?.naming?.entries
+        
         if(jndiEntries instanceof Map) {            
-            def builder = new SimpleNamingContextBuilder()
-            jndiEntries.each { key, val ->
-                builder.bind("java:comp/env/$key", val)
-            }
-            builder.activate()
+        	def jndiBindingSupport = new JndiBindingSupport(jndiEntries)
+        	jndiBindingSupport.bind()
         }
         appCtx = configurer.configure(servletContext)
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx );
