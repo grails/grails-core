@@ -30,6 +30,8 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.web.mapping.AbstractGrailsMappingTests
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.view.InternalResourceView;
 
 /**
  * Tests for the UrlMappingsFilter
@@ -103,7 +105,7 @@ class OtherController {
         super.setUp()
         appCtx = new MockApplicationContext()
         appCtx.registerMockBean (DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME, new ContentLengthAwareCommonsMultipartResolver())
-
+        appCtx.registerMockBean "viewResolver", { String name, Locale l -> new InternalResourceView()} as ViewResolver
     }
 
     def uriMappingScript = '''
