@@ -108,7 +108,8 @@ public class GrailsExceptionResolver  extends SimpleMappingExceptionResolver imp
                         if(LOG.isDebugEnabled()) {
                             LOG.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], forwarding to ["+forwardUrl+"] with response ["+response.getClass()+"]");
                         }
-                        return null;
+                        // return an empty ModelAndView since the error handler has been processed
+                        return new ModelAndView();
                     }
                 }
             } catch (Exception e) {
