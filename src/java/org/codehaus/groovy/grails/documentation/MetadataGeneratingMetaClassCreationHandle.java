@@ -41,13 +41,13 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
 
     public static boolean isExcludedClass(Class theClass) {
         return theClass == MetadataGeneratingExpandoMetaClass.class
-                && theClass == ExpandoMetaClass.class
-                && theClass == DocumentationContext.class
-                && theClass == DocumentedMethod.class
-                && theClass == DocumentedProperty.class
-                && theClass == DocumentedElement.class
-                && theClass == DocumentationContextThreadLocal.class
-                && Closure.class.isAssignableFrom(theClass);
+                || theClass == ExpandoMetaClass.class
+                || theClass == DocumentationContext.class
+                || theClass == DocumentedMethod.class
+                || theClass == DocumentedProperty.class
+                || theClass == DocumentedElement.class
+                || theClass == DocumentationContextThreadLocal.class
+                || Closure.class.isAssignableFrom(theClass);
     }
 
     /**
