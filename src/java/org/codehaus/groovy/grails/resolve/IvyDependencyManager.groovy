@@ -1076,6 +1076,9 @@ class IvyDomainSpecificLanguageEvaluator {
                             configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
                         }
                     }
+                    else {
+                    	println "WARNING: Specified dependency definition ${scope}(${depDefinition.inspect()}) is invalid! Skipping.."
+                    }
 
                 }
                 else if(dependency instanceof Map) {
