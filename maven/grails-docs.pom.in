@@ -69,5 +69,12 @@
             <version>1.7.1</version>
         </dependency>
 
+        <!-- for PDF doc generation -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>core-renderer</artifactId>
+            <version>R8pre2</version>
+        </dependency>
+
     </dependencies>
 </project>

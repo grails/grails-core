@@ -241,7 +241,9 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                        "org.grails:grails-web:$grailsVersion",
                        "org.slf4j:slf4j-api:1.5.8",
                        "org.slf4j:slf4j-log4j12:1.5.8",
-                       "org.springframework:org.springframework.test:3.0.0.RELEASE"
+                       "org.springframework:org.springframework.test:3.0.0.RELEASE",
+                       "org.xhtmlrenderer:core-renderer:R8",
+                       "com.lowagie:itext:2.0.8"
 
                 // dependencies needed during development, but not for deployment
                 provided "javax.servlet:servlet-api:2.5",
@@ -384,7 +386,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                  for(ex in excludes) {
                      dd.exclude(ex)
                  }                 
-             }
+            }
              addDependencyDescriptor dd
         }
     }

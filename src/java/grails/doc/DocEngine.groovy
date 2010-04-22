@@ -29,20 +29,20 @@ import org.radeox.macro.parameter.MacroParameter
 import org.radeox.regex.MatchResult
 import org.radeox.filter.*
 
-
 /**
- * A Radeox Wiki engine for generating documentation using a confluence style syntax
- * 
+ * A Radeox Wiki engine for generating documentation using a confluence style syntax.
+ *
  * @author Graeme Rocher
  * @since 1.2
  */
 class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
+
     static final CONTEXT_PATH = "contextPath"
     static final SOURCE_FILE = "sourceFile"
     static final BASE_DIR = "base.dir"
 
-    static EXTERNAL_DOCS = 	[:]
-	static ALIAS = [:]
+    static EXTERNAL_DOCS = [:]
+    static ALIAS = [:]
 
     private basedir
 
@@ -55,52 +55,49 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     boolean exists(String name) {
         int barIndex = name.indexOf('|')
-        if(barIndex >-1) {
+        if (barIndex >-1) {
             def refItem = name[0..barIndex-1]
-            def refCategory = name[barIndex+1..-1]
+            def refCategory = name[barIndex + 1..-1]
 
+            if (refCategory.startsWith("http://") || refCategory.startsWith("https://")) {
+                return true
+            }
 
-            if(refCategory.startsWith("http://")) return true
-            else if(refCategory.startsWith("guide:")) {
-				def alias = refCategory[6..-1]
+            if (refCategory.startsWith("guide:")) {
+                def alias = refCategory[6..-1]
 
-
-				if(ALIAS[alias]) {
-					alias = ALIAS[alias]
-				}
+                if (ALIAS[alias]) {
+                    alias = ALIAS[alias]
+                }
                 def ref = "${basedir}/guide/${alias}.gdoc"
                 def file = new File(ref)
-                if(file.exists()) {
+                if (file.exists()) {
                     return true
                 }
-                else {
-                    emitWarning(name,ref,"page")
-                }
+
+                emitWarning(name,ref,"page")
             }
-			else if(refCategory.startsWith("api:")) {
-				def ref = refCategory[4..-1]
-				if(EXTERNAL_DOCS.keySet().find { ref.startsWith(it) }) {
-					return true
-				}
-                else {
-                    emitWarning(name,ref,"class")
+            else if (refCategory.startsWith("api:")) {
+                def ref = refCategory[4..-1]
+                if (EXTERNAL_DOCS.keySet().find { ref.startsWith(it) }) {
+                    return true
                 }
-			}
+
+                emitWarning(name,ref,"class")
+            }
             else {
                 String dir = getNaturalName(refCategory)
                 def ref = "${basedir}/ref/${dir}/${refItem}.gdoc"
                 File file = new File(ref)
-                if(file.exists()) {
+                if (file.exists()) {
                     return true
                 }
-                else {
-                    emitWarning(name,ref,"page")
-                }
+
+                emitWarning(name,ref,"page")
             }
         }
 
-         return false
-
+        return false
     }
 
     private void emitWarning(String name, String ref, String type) {
@@ -111,7 +108,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     static private Properties defaultPropsInternal
     static Properties getDefaultProps() {
-       if(!defaultPropsInternal) {
+       if (!defaultPropsInternal) {
            defaultPropsInternal = new Properties()
            try {
                defaultPropsInternal.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
@@ -123,13 +120,13 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
        }
        return defaultPropsInternal
     }
-    
+
     protected void init() {
         def props = DocEngine.getDefaultProps()
-        if(engineProperties) {
+        if (engineProperties) {
             props.putAll engineProperties
         }
-        
+
         props.findAll { it.key.startsWith("api.")}.each {
             EXTERNAL_DOCS[it.key[4..-1]] = it.value
         }
@@ -138,34 +135,33 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
         }
 
         if (null == fp) {
-          fp = new FilterPipe(initialContext);
+            fp = new FilterPipe(initialContext)
 
-            def filters = [
-                            ParamFilter,
-                            MacroFilter,
-                            TextileLinkFilter,
-                            HeaderFilter,
-                            BlockQuoteFilter,
-                            ListFilter,
-                            LineFilter,
-                            StrikeThroughFilter,
-                            NewlineFilter,
-                            ParagraphFilter,
-                            BoldFilter,
-                            CodeFilter,
-                            ItalicFilter,
-                            LinkTestFilter,
-                            ImageFilter,
-                            MarkFilter,
-                            KeyFilter,
-                            TypographyFilter,
-                            EscapeFilter]
+            def filters = [ParamFilter,
+                           MacroFilter,
+                           TextileLinkFilter,
+                           HeaderFilter,
+                           BlockQuoteFilter,
+                           ListFilter,
+                           LineFilter,
+                           StrikeThroughFilter,
+                           NewlineFilter,
+                           ParagraphFilter,
+                           BoldFilter,
+                           CodeFilter,
+                           ItalicFilter,
+                           LinkTestFilter,
+                           ImageFilter,
+                           MarkFilter,
+                           KeyFilter,
+                           TypographyFilter,
+                           EscapeFilter]
 
-            for(f in filters) {
+            for (f in filters) {
                 RegexFilter filter = f.newInstance()
                 fp.addFilter(filter)
 
-                if(filter instanceof MacroFilter) {
+                if (filter instanceof MacroFilter) {
                     MacroLoader loader = new MacroLoader()
                     def repository = filter.getMacroRepository()
 
@@ -173,39 +169,37 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                     loader.add(repository, new NoteMacro())
                 }
             }
-            fp.init();
-
+            fp.init()
         }
-
     }
 
     void appendLink(StringBuffer buffer, String name, String view, String anchor) {
         def contextPath = initialContext.get(CONTEXT_PATH)
 
-        if(name.startsWith("guide:")) {
-			def alias = name[6..-1]
-			if(ALIAS[alias]) {
-				alias = ALIAS[alias]
-			}
+        if (name.startsWith("guide:")) {
+            def alias = name[6..-1]
+            if (ALIAS[alias]) {
+                alias = ALIAS[alias]
+            }
 
-            buffer <<  "<a href=\"$contextPath/guide/single.html#${alias}\" class=\"guide\">$view</a>"
+            buffer << "<a href=\"$contextPath/guide/single.html#${alias}\" class=\"guide\">$view</a>"
         }
-		else if(name.startsWith("api:")) {
-			def link = name[4..-1]
+        else if (name.startsWith("api:")) {
+            def link = name[4..-1]
 
-			def externalKey = EXTERNAL_DOCS.keySet().find { link.startsWith(it) }
-			link =link.replace('.' as char, '/' as char) + ".html"
+            def externalKey = EXTERNAL_DOCS.keySet().find { link.startsWith(it) }
+            link =link.replace('.' as char, '/' as char) + ".html"
 
-			if(externalKey) {
-				buffer <<  "<a href=\"${EXTERNAL_DOCS[externalKey]}/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
-			}
-			else {
-				buffer <<  "<a href=\"$contextPath/api/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
-			}
-		}
+            if (externalKey) {
+                buffer << "<a href=\"${EXTERNAL_DOCS[externalKey]}/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
+            }
+            else {
+                buffer << "<a href=\"$contextPath/api/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
+            }
+        }
         else {
             String dir = getNaturalName(name)
-			def link = "$contextPath/ref/${dir}/${view}.html"
+            def link = "$contextPath/ref/${dir}/${view}.html"
             buffer <<  "<a href=\"$link\" class=\"$name\">$view</a>"
         }
     }
@@ -224,134 +218,138 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
      * @return The converted property name
      */
     static final nameCache = [:]
+
     String getNaturalName(String name) {
-	    if(nameCache[name]) {
-			return nameCache[name]
-     	}
-		else {
-	        List words = new ArrayList();
-	        int i = 0;
-	        char[] chars = name.toCharArray();
-	        for (int j = 0; j < chars.length; j++) {
-	            char c = chars[j];
-	            String w;
-	            if(i >= words.size()) {
-	                w = "";
-	                words.add(i, w);
-	            }
-	            else {
-	                w = (String)words.get(i);
-	            }
+        if (nameCache[name]) {
+            return nameCache[name]
+        }
 
-	            if(Character.isLowerCase(c) || Character.isDigit(c)) {
-	                if(Character.isLowerCase(c) && w.length() == 0)
-	                    c = Character.toUpperCase(c);
-	                else if(w.length() > 1 && Character.isUpperCase(w.charAt(w.length() - 1)) ) {
-	                    w = "";
-	                    words.add(++i,w);
-	                }
+        List words = []
+        int i = 0
+        char[] chars = name.toCharArray()
+        for (int j = 0; j < chars.length; j++) {
+            char c = chars[j]
+            String w
+            if (i >= words.size()) {
+                w = ""
+                words.add(i, w)
+            }
+            else {
+                w = words.get(i)
+            }
 
-	                words.set(i, w + c);
-	            }
-	            else if(Character.isUpperCase(c)) {
-	                if((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1)) ) 	{
-	                    words.set(i, w + c);
-	                }
-	                else {
-	                    words.add(++i, String.valueOf(c));
-	                }
-	            }
+            if (Character.isLowerCase(c) || Character.isDigit(c)) {
+                if (Character.isLowerCase(c) && w.length() == 0) {
+                    c = Character.toUpperCase(c)
+                }
+                else if (w.length() > 1 && Character.isUpperCase(w.charAt(w.length() - 1))) {
+                    w = ""
+                    words.add(++i,w)
+                }
 
-	        }
+                words.set(i, w + c)
+            }
+            else if (Character.isUpperCase(c)) {
+                if ((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1)))     {
+                    words.set(i, w + c)
+                }
+                else {
+                    words.add(++i, String.valueOf(c))
+                }
+            }
+        }
 
-	        nameCache[name] = words.join(' ')
-			return nameCache[name]
-		}
+        nameCache[name] = words.join(' ')
+        return nameCache[name]
     }
 }
 
-public class WarningMacro extends BaseMacro {
+class WarningMacro extends BaseMacro {
     String getName() {"warning"}
     void execute(Writer writer, MacroParameter params) {
-    writer << '<blockquote class="warning">' << params.content << "</blockquote>"
-  }
+        writer << '<blockquote class="warning">' << params.content << "</blockquote>"
+    }
 }
-public class NoteMacro extends BaseMacro {
+
+class NoteMacro extends BaseMacro {
     String getName() {"note"}
     void execute(Writer writer, MacroParameter params) {
-    writer << '<blockquote class="note">' << params.content << "</blockquote>"
-  }
+        writer << '<blockquote class="note">' << params.content << "</blockquote>"
+    }
 }
+
 class BlockQuoteFilter extends RegexTokenFilter {
-    public BlockQuoteFilter() {
+    BlockQuoteFilter() {
         super(/(?m)^bc.\s*?(.*?)\n\n/);
     }
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         buffer << "<pre class=\"bq\"><code>${result.group(1)}</code></pre>\n\n"
     }
-
 }
+
 class ItalicFilter extends RegexTokenFilter {
-    public ItalicFilter() {
+    ItalicFilter() {
         super(/\s_([^\n]*?)_\s/);
     }
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         buffer << " <em class=\"italic\">${result.group(1)}</em> "
     }
 }
+
 class BoldFilter extends RegexTokenFilter {
-    public BoldFilter() {
+    BoldFilter() {
         super(/\*([^\n]*?)\*/);
     }
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         buffer << "<strong class=\"bold\">${result.group(1)}</strong>"
     }
 }
-class CodeFilter extends RegexTokenFilter {
 
-    public CodeFilter() {
+class CodeFilter extends RegexTokenFilter {
+    CodeFilter() {
         super(/@([^\n]*?)@/);
     }
 
-
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
-		def text = result.group(1)
-		// are we inside a code block?
-		if(text.indexOf('class="code"') > -1) buffer << "@$text@"
-		else buffer << "<code>${text}</code>"
+    void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+        def text = result.group(1)
+        // are we inside a code block?
+        if (text.indexOf('class="code"') > -1) {
+            buffer << "@$text@"
+        }
+        else {
+            buffer << "<code>${text}</code>"
+        }
     }
 }
-class ImageFilter  extends RegexTokenFilter {
 
-    public ImageFilter() {
+class ImageFilter extends RegexTokenFilter {
+    ImageFilter() {
         super(/!([^\n]*?\.(jpg|png|gif))!/);
     }
 
-
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         def img = result.group(1)
-        if(img.startsWith("http://")) {
+        if (img.startsWith("http://") || img.startsWith("https://")) {
             buffer << "<img border=\"0\" class=\"center\" src=\"$img\"></img>"
         }
-        else {            
+        else {
             def path = context.renderContext.get("contextPath") ?: "."
             buffer << "<img border=\"0\" class=\"center\" src=\"$path/img/$img\"></img>"
         }
     }
 }
-class TextileLinkFilter extends RegexTokenFilter {
 
-    public TextileLinkFilter() {
+class TextileLinkFilter extends RegexTokenFilter {
+    TextileLinkFilter() {
         super(/"([^"]+?)":(\S+?)(\s)/);
     }
 
-
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         def text = result.group(1)
         def link = result.group(2)
         def space = result.group(3)
 
-        if(link.startsWith("http://")) {
+        if (link.startsWith("http://") || link.startsWith("https://")) {
             buffer << "<a href=\"$link\" target=\"blank\">$text</a>$space"
         }
         else {
@@ -359,4 +357,3 @@ class TextileLinkFilter extends RegexTokenFilter {
         }
     }
 }
-

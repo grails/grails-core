@@ -73,6 +73,7 @@
 	<classpathentry kind="lib" path="lib/aspectjrt-1.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjweaver-1.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-core-1.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/core-renderer-R8.jar"/>
 	<classpathentry kind="var" path="ASPECTJRT_LIB"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.7.2.jar"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>

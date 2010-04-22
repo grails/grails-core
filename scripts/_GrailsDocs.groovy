@@ -1,10 +1,9 @@
-import grails.util.GrailsUtil
-import org.radeox.engine.context.BaseInitialRenderContext
-import grails.doc.DocEngine
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
+
 import grails.util.GrailsNameUtils
 import grails.doc.DocPublisher
+import grails.doc.PdfBuilder
 
 /*
 * Copyright 2004-2005 the original author or authors.
@@ -40,11 +39,11 @@ links = [
         ]
 
 docsDisabled = { argsMap.nodoc == true }
+pdfEnabled = { argsMap.pdf == true }
 
 target(docs: "Produces documentation for a Grails project") {
-    depends(parseArguments, compile, javadoc, groovydoc, refdocs)
+    depends(parseArguments, compile, javadoc, groovydoc, refdocs, pdf)
 }
-
 
 target(setupDoc:"Sets up the doc directories") {
     ant.mkdir(dir:"${basedir}/docs")
@@ -63,7 +62,8 @@ target(groovydoc:"Produces groovydoc documentation") {
     ant.taskdef(name:"groovydoc", classname:"org.codehaus.groovy.ant.Groovydoc")
     event("DocStart", ['groovydoc'])
     try {
-        ant.groovydoc(destdir:groovydocDir, sourcepath:".", use:"true", windowtitle:grailsAppName,'private':"true")
+        ant.groovydoc(destdir:groovydocDir, sourcepath:".", use:"true",
+                      windowtitle:grailsAppName,'private':"true")
     }
     catch(Exception e) {
        event("StatusError", ["Error generating groovydoc: ${e.message}"])
@@ -78,11 +78,11 @@ target(javadoc:"Produces javadoc documentation") {
         event("DocSkip", ['javadoc'])
         return
     }
-    
+
     setupDoc()
     event("DocStart", ['javadoc'])
     File javaDir = new File("${grailsSettings.sourceDir}/java")
-    if(javaDir.listFiles().find{ !it.name.startsWith(".")}) {
+    if (javaDir.listFiles().find{ !it.name.startsWith(".")}) {
        try {
            ant.javadoc( access:"protected",
                         destdir:javadocDir,
@@ -106,30 +106,27 @@ target(javadoc:"Produces javadoc documentation") {
        }
        catch(Exception e) {
           event("StatusError", ["Error generating javadoc: ${e.message}"])
-          // ignore, empty src/java directory 
+          // ignore, empty src/java directory
        }
    }
     event("DocEnd", ['javadoc'])
-
 }
 
 target(refdocs:"Generates Grails style reference documentation") {
     depends(parseArguments, createConfig,loadPlugins)
-    
+
     if (docsDisabled()) return
-    
+
     def srcDocs = new File("${basedir}/src/docs")
 
-
-
     def context = DocumentationContext.getInstance()
-    if(context?.hasMetadata()) {
+    if (context?.hasMetadata()) {
         for(DocumentedMethod m in context.methods) {
-            if(m.artefact && m.artefact != 'Unknown') {
+            if (m.artefact && m.artefact != 'Unknown') {
                 String refDir = "${srcDocs}/ref/${GrailsNameUtils.getNaturalName(m.artefact)}"
                 ant.mkdir(dir:refDir)
                 def refFile = new File("${refDir}/${m.name}.gdoc")
-                if(!refFile.exists()) {
+                if (!refFile.exists()) {
                     println "Generating documentation ${refFile}"
                     refFile.write """
 h1. ${m.name}
@@ -156,7 +153,8 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
             }
         }
     }
-    if(srcDocs.exists()) {
+
+    if (srcDocs.exists()) {
         File refDocsDir = new File("${basedir}/docs/manual")
         def publisher = new DocPublisher(srcDocs, refDocsDir)
         publisher.ant = ant
@@ -172,16 +170,30 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)
 
-
         publisher.publish()
 
-
-        println "Built user manual at ${refDocsDir}/index.html"        
+        println "Built user manual at ${refDocsDir}/index.html"
     }
-
 }
 
+target(pdf: "Produces PDF documentation") {
+   depends(parseArguments)
 
+   File refDocsDir = new File("${basedir}/docs/manual")
+   File singleHtml = new File(refDocsDir, 'guide/single.html')
+
+   if (docsDisabled() || !pdfEnabled() || !singleHtml.exists()) {
+       event("DocSkip", ['pdf'])
+       return
+   }
+
+   event("DocStart", ['pdf'])
+
+   PdfBuilder.build(basedir, grailsHome)
+   println "Built user manual PDF at ${refDocsDir}/guide/single.pdf"
+
+   event("DocEnd", ['pdf'])
+}
 
 def readPluginMetadataForDocs(DocPublisher publisher) {
     def basePlugin = loadBasePlugin()
@@ -200,18 +212,16 @@ def readPluginMetadataForDocs(DocPublisher publisher) {
 }
 
 def readDocProperties(DocPublisher publisher) {
-    readIfSet(publisher,"copyright")
-    readIfSet(publisher,"license")
-    readIfSet(publisher,"authors")
-    readIfSet(publisher,"footer")
-
+    ['copyright', 'license', 'authors', 'footer', 'images',
+     'css', 'style', 'encoding', 'logo', 'sponsorLogo'].each { readIfSet publisher, it }
 }
+
 private readIfSet(DocPublisher publisher,String prop) {
-    if(config.grails.doc."$prop") { 
+    if (config.grails.doc."$prop") {
         publisher[prop] = config.grails.doc."$prop"
     }
-
 }
-private def loadBasePlugin() {
-		pluginManager?.allPlugins?.find { it.basePlugin }
+
+private loadBasePlugin() {
+    pluginManager?.allPlugins?.find { it.basePlugin }
 }
