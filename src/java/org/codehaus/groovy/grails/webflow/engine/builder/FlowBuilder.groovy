@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.webflow.engine.builder
 
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.PropertyExpression
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -41,6 +42,9 @@ import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.ViewFactory
 import org.springframework.beans.BeanUtils
+
+import grails.util.GrailsNameUtils;
+
 import java.beans.PropertyDescriptor
 
 /**
@@ -183,7 +187,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                      }
                      else if(flowInfo.subflow) {
                          def i = flowId.indexOf('/')
-                         def subflowId = i>-1 ? "${flowId[0..i-1]}/$name" : "${flowId}/$name"
+                         def subflowClass = flowInfo.subflow.getThisObject().getClass()
+                         def controllerName = GrailsNameUtils.getLogicalPropertyName(subflowClass.name, "Controller")
+                         def subflowId = "${controllerName}/$name"
                          FlowBuilder subFlowBuilder = new FlowBuilder(subflowId, flowBuilderServices, getContext().getFlowDefinitionLocator())
                          subFlowBuilder.viewPath = this.viewPath
                          Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
