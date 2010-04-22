@@ -486,7 +486,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertEquals 53, manager.listDependencies('runtime').size()
         assertEquals 56, manager.listDependencies('test').size()
-        assertEquals 18, manager.listDependencies('build').size()
+        assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
 
         // This should be a functional test since it relies on the Grails
