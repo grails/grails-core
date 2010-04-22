@@ -394,7 +394,7 @@
       <module fileurl="file://$PROJECT_DIR$//JSP21.iml" filepath="$PROJECT_DIR$//JSP21.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/idea" />
   </component>
   <component name="ResourceManagerContainer">
@@ -501,9 +501,9 @@
         <root url="jar://$PROJECT_DIR$/lib/jta-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-core-3.3.1.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.4.0.GA.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/javassist-3.8.0.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.1.0.GA.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/hibernate-ehcache-3.3.1.GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/javassist-3.11.0.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>

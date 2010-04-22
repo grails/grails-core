@@ -7,6 +7,8 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/cruise" />
       <excludeFolder url="file://$MODULE_DIR$/doc" />
       <excludeFolder url="file://$MODULE_DIR$/downloads" />
@@ -20,7 +22,7 @@
     </content>
     <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Groovy" level="project" />
+    <orderEntry type="library" exported="" name="Groovy" level="project" />
     <orderEntry type="library" exported="" name="Apache Commons" level="project" />
     <orderEntry type="library" exported="" name="Spring" level="project" />
     <orderEntry type="library" exported="" name="Hibernate 3" level="project" />
@@ -29,7 +31,6 @@
       <library name="XStream">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/xpp3_min-1.1.3.4.O.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/xstream-1.2.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
@@ -48,18 +49,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="XML APIs">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/xalan.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/serializer.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/xercesImpl-2.9.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library name="Javassist">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/javassist-3.11.0.GA.jar!/" />
@@ -79,7 +69,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library name="SVNKit">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/svnkit-1.3.1.jar!/" />
@@ -88,7 +78,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library name="Gant">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/gant_groovy1.7-1.9.2.jar!/" />
@@ -97,14 +87,14 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="GParallelizer" level="project" />
-    <orderEntry type="library" name="DOM4J" level="project" />
-    <orderEntry type="library" name="JPA" level="project" />
-    <orderEntry type="library" name="Sitemesh" level="project" />
-    <orderEntry type="library" name="Radeox" level="project" />
-    <orderEntry type="library" name="Ivy" level="project" />
-    <orderEntry type="library" name="JUnit" level="project" />
-    <orderEntry type="module-library">
+    <orderEntry type="library" exported="" name="GParallelizer" level="project" />
+    <orderEntry type="library" exported="" name="DOM4J" level="project" />
+    <orderEntry type="library" exported="" name="JPA" level="project" />
+    <orderEntry type="library" exported="" name="Sitemesh" level="project" />
+    <orderEntry type="library" exported="" name="Radeox" level="project" />
+    <orderEntry type="library" exported="" name="Ivy" level="project" />
+    <orderEntry type="library" exported="" name="JUnit" level="project" />
+    <orderEntry type="module-library" exported="">
       <library name="HSQLDB">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/hsqldb-1.8.0.10.jar!/" />
@@ -113,16 +103,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/src/jar" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library name="Ehcache">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/ehcache-core-1.7.1.jar!/" />
@@ -131,7 +112,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library name="AspectJ">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/aspectjrt-1.6.6.jar!/" />
@@ -141,12 +122,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <javadoc-paths>
-      <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
-      <root url="file://$MODULE_DIR$/../hibernate-3.2/doc/api" />
-      <root url="file://$MODULE_DIR$/../sitemesh-2.2.1/docs/api" />
-      <root url="file://$MODULE_DIR$/../spring-framework-2.0/docs/api" />
-    </javadoc-paths>
   </component>
 </module>
 
