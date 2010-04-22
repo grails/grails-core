@@ -1663,7 +1663,14 @@ public final class GrailsDomainBinder {
         simpleValue.setTypeParameters(enumProperties);
         Table t = simpleValue.getTable();
         Column column = new Column();
-        column.setNullable(property.isOptional());
+
+        if (property.getDomainClass().isRoot()) {
+        	column.setNullable(property.isOptional());
+        } else {
+            if (LOG.isDebugEnabled())
+                LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
+            column.setNullable(true);
+        }
         column.setValue(simpleValue);
         column.setName(columnName);
         if (t != null) t.addColumn(column);

@@ -27,7 +27,41 @@ class Vehicle2 {
         status enumType:'ordinal'
     }
 }
+class SuperClass {Long id; Long version;}
+class SubClassWithStringProperty extends SuperClass {
+    Long id
+    Long version
+    String someProperty
+}
+class SubClassWithEnumProperty extends SuperClass {
+	VehicleStatus vehicalStatus
+}
+class SubClassWithOptionalEnumProperty extends SuperClass {
+    VehicleStatus optionalVehicalStatus
+    static constraints = {
+        optionalVehicalStatus nullable: true
+    }
+}
 ''')
+    }
+
+    void testEnumNullabilityWithTablePerHierarchy() {
+        def vehicleEnum = ga.classLoader.loadClass("VehicleStatus")
+    	def domainClassWithStringProperty = ga.getDomainClass('SubClassWithStringProperty').clazz
+    	def domainClassWithEnumProperty = ga.getDomainClass('SubClassWithEnumProperty').clazz
+    	def domainClassWithOptionalEnumProperty = ga.getDomainClass('SubClassWithOptionalEnumProperty').clazz
+
+    	def domainObject = domainClassWithStringProperty.newInstance()
+    	domainObject.someProperty = 'data'
+        assertNotNull domainObject.save()
+
+        domainObject = domainClassWithEnumProperty.newInstance()
+        assertNull domainObject.save()
+        domainObject.vehicalStatus = vehicleEnum.IDLING
+        assertNotNull domainObject.save()
+
+        domainObject = domainClassWithOptionalEnumProperty.newInstance()
+        assertNotNull domainObject.save()
     }
 
     void testDefaultEnumMapping() {
