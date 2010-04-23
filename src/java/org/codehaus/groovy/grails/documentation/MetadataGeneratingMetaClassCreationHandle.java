@@ -47,6 +47,7 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
                 || theClass == DocumentedProperty.class
                 || theClass == DocumentedElement.class
                 || theClass == DocumentationContextThreadLocal.class
+                || theClass == Boolean.class
                 || Closure.class.isAssignableFrom(theClass);
     }
 
