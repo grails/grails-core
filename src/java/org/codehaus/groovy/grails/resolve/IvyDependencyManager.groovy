@@ -231,9 +231,9 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                        "org.apache.ant:ant-junit:1.7.1",
                        "org.apache.ant:ant-nodeps:1.7.1",
                        "org.apache.ant:ant-trax:1.7.1",
-                       "radeox:radeox:1.0-b2",
                        "jline:jline:0.9.91",
                        "xalan:serializer:2.7.1",
+                       "org.grails:grails-docs:$grailsVersion",
                        "org.grails:grails-bootstrap:$grailsVersion",
                        "org.grails:grails-scripts:$grailsVersion",
                        "org.grails:grails-core:$grailsVersion",
@@ -241,9 +241,12 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                        "org.grails:grails-web:$grailsVersion",
                        "org.slf4j:slf4j-api:1.5.8",
                        "org.slf4j:slf4j-log4j12:1.5.8",
-                       "org.springframework:org.springframework.test:3.0.0.RELEASE",
-                       "org.xhtmlrenderer:core-renderer:R8",
-                       "com.lowagie:itext:2.0.8"
+                       "org.springframework:org.springframework.test:3.0.0.RELEASE"
+                       
+                docs   "org.xhtmlrenderer:core-renderer:R8",
+                	   "com.lowagie:itext:2.0.8",
+                	   "radeox:radeox:1.0-b2"
+
 
                 // dependencies needed during development, but not for deployment
                 provided "javax.servlet:servlet-api:2.5",
@@ -269,7 +272,6 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                          "org.grails:grails-bootstrap:$grailsVersion",
                          "org.grails:grails-core:$grailsVersion",
                          "org.grails:grails-crud:$grailsVersion",
-                         "org.grails:grails-docs:$grailsVersion",
                          "org.grails:grails-gorm:$grailsVersion",
                          "org.grails:grails-resources:$grailsVersion",
                          "org.grails:grails-spring:$grailsVersion",
@@ -452,6 +454,53 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
     public ResolveReport resolveDependencies(Configuration conf) {
         resolveDependencies(conf.name)
     }
+    
+    /**
+     * Performs a resolve of all dependencies for the given configuration,
+     * potentially going out to the internet to download jars if they are not found locally
+     */
+    public ResolveReport resolveDependencies(String conf) {
+        resolveErrors = false
+        if(usedConfigurations.contains(conf) || conf == '') {
+            def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
+            if(conf)
+                options.confs = [conf] as String[]
+
+
+            ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
+            resolveErrors = resolve.hasError()
+            return resolve
+        }
+        else {
+            // return an empty resolve report
+            return new ResolveReport(moduleDescriptor)
+        }
+    }
+    
+    /**
+     * Similar to resolveDependencies, but will load the resolved dependencies into the 
+     * application RootLoader if it exists
+     * 
+     * @return The ResolveReport
+     * @throws IllegalStateException If no RootLoader exists
+     */
+    public ResolveReport loadDependencies(String conf = '') {
+    	
+    	URLClassLoader rootLoader = getClass().classLoader.rootLoader
+    	if(rootLoader) {
+    		def urls = rootLoader.URLs.toList()
+    		ResolveReport report = resolveDependencies(conf)
+        	for(ArtifactDownloadReport downloadReport in report.allArtifactsReports) {
+        		def url = downloadReport.localFile.toURL()
+        		if(!urls.contains(url))
+        			rootLoader.addURL(url)
+        	}
+    	}
+    	else {
+    		throw new IllegalStateException("No root loader found. Could not load dependencies. Note this method cannot be called when running in a WAR.")
+    	}
+    	
+    }
 
     /**
      * Resolves only application dependencies and returns a list of the resolves JAR files
@@ -540,31 +589,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
 
     }
     
-    /**
-     * Performs a resolve of all dependencies for the given configuration,
-     * potentially going out to the internet to download jars if they are not found locally
-     */
-    public ResolveReport resolveDependencies(String conf) {
-        resolveErrors = false
-        if(usedConfigurations.contains(conf) || conf == '') {
-            def options = new ResolveOptions(checkIfChanged:false, outputReport:true, validate:false)
-            if(conf)
-                options.confs = [conf] as String[]
-
-
-            ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
-            resolveErrors = resolve.hasError()
-            return resolve
-        }
-        else {
-            // return an empty resolve report
-            return new ResolveReport(moduleDescriptor)
-        }
-    }
-
-
-
-    /**
+     /**
      * Tests whether the given ModuleId is defined in the list of dependencies
      */
     boolean hasDependency(ModuleId mid) {

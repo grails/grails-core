@@ -71,6 +71,13 @@ abstract public class AbstractIvyDependencyManager {
                                                                 "Dependencies provided by the container",
                                                                 new String[]{"default"},
                                                                 true, null);
+    
+    public static Configuration DOCS_CONFIGURATION = new Configuration("docs",
+            Configuration.Visibility.PUBLIC,
+            "Dependencies for the documenation engine",
+            new String[]{"build"},
+            true, null);
+    
 
     public static List<Configuration> ALL_CONFIGURATIONS = new ArrayList<Configuration>() {{
         add(BUILD_CONFIGURATION);
@@ -78,6 +85,7 @@ abstract public class AbstractIvyDependencyManager {
         add(RUNTIME_CONFIGURATION);
         add(TEST_CONFIGURATION);
         add(PROVIDED_CONFIGURATION);
+        add(DOCS_CONFIGURATION);
     }};
 
     Map<String, List> configurationMappings = new HashMap<String, List>() {{
@@ -93,6 +101,9 @@ abstract public class AbstractIvyDependencyManager {
         put("provided", new ArrayList<String>() {{
             add("'compile(*)"); add("master(*)");
         }});
+        put("docs", new ArrayList<String>() {{
+            add("'compile(*)"); add("master(*)");
+        }});        
         put("test", new ArrayList<String>() {{
             add("''runtime(*)'(*)"); add("master(*)");
         }});
@@ -234,6 +245,7 @@ abstract public class AbstractIvyDependencyManager {
         moduleDescriptor.addConfiguration( RUNTIME_CONFIGURATION );
         moduleDescriptor.addConfiguration( TEST_CONFIGURATION );
         moduleDescriptor.addConfiguration( PROVIDED_CONFIGURATION );
+        moduleDescriptor.addConfiguration( DOCS_CONFIGURATION );
         return moduleDescriptor;
     }
 

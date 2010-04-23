@@ -116,7 +116,7 @@ class DocPublisher {
         }
 
         if (images) {
-            ant.copy(todir: imgsDir, overwrite: true) {
+            ant.copy(todir: imgsDir, overwrite: true, failonerror:false) {
                 fileset(dir: images)
             }
         }
@@ -124,12 +124,12 @@ class DocPublisher {
             fileset(dir: "${docResources}/css")
         }
         if (css) {
-            ant.copy(todir: cssDir, overwrite: true) {
+            ant.copy(todir: cssDir, overwrite: true, failonerror:false) {
                 fileset(dir: css)
             }
         }
         if (style) {
-            ant.copy(todir: "${docResources}/style", overwrite: true) {
+            ant.copy(todir: "${docResources}/style", overwrite: true, failonerror:false) {
                 fileset(dir: style)
             }
         }

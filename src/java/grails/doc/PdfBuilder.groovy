@@ -13,8 +13,8 @@ class PdfBuilder {
     static void build(String baseDir, String grailsHome) {
         baseDir = new File(baseDir).canonicalPath
 
-        File htmlFile = new File("${baseDir}/docs/manual/guide/single.html")
-        File outputFile = new File("${baseDir}/docs/manual/guide/single.pdf")
+        File htmlFile = new File("${baseDir}/manual/guide/single.html")
+        File outputFile = new File("${baseDir}/manual/guide/single.pdf")
         String urlBase = "file://${grailsHome}/src/grails/docs/style"
 
         String xml = createXml(htmlFile)

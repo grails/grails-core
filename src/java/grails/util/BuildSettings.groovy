@@ -103,6 +103,11 @@ class BuildSettings {
     public static final String PROJECT_TEST_REPORTS_DIR = "grails.project.test.reports.dir"
 
     /**
+     * The name of the system property for {@link #testReportsDir}.
+     */
+    public static final String PROJECT_DOCS_OUTPUT_DIR = "grails.project.docs.output.dir"
+    	
+    /**
      * The name of the system property for {@link #testSourceDir}.
      */
     public static final String PROJECT_TEST_SOURCE_DIR = "grails.project.test.source.dir"
@@ -200,6 +205,9 @@ class BuildSettings {
 
     /** The location of the test reports. */
     File testReportsDir
+    
+    /** The location of the documentation output. */
+    File docsOutputDir
 
     /** The location of the test source. */
     File testSourceDir
@@ -391,6 +399,7 @@ class BuildSettings {
     private boolean projectPluginsDirSet
     private boolean globalPluginsDirSet
     private boolean testReportsDirSet
+    private boolean docsOutputDirSet
     private boolean testSourceDirSet
     private boolean projectWarFileSet
     private boolean buildListenersSet
@@ -915,6 +924,11 @@ class BuildSettings {
         if (!testReportsDirSet) {
             testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
         }
+        
+        if (!docsOutputDirSet) {
+            docsOutputDir = new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs"))
+        }
+        
         
         if (!testSourceDirSet) {
             testSourceDir = new File(getPropertyValue(PROJECT_TEST_SOURCE_DIR, props, "${baseDir}/test"))

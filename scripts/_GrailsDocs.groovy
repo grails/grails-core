@@ -1,5 +1,6 @@
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 import grails.util.GrailsNameUtils
 import grails.doc.DocPublisher
@@ -30,8 +31,8 @@ import grails.doc.PdfBuilder
 
 includeTargets << grailsScript("_GrailsPackage")
 
-javadocDir = "${basedir}/docs/api"
-groovydocDir = "${basedir}/docs/gapi"
+javadocDir = "${grailsSettings.docsOutputDir}/api"
+groovydocDir = "${grailsSettings.docsOutputDir}/gapi"
 docEncoding = "UTF-8"
 docSourceLevel = "1.5"
 links = [
@@ -42,17 +43,67 @@ docsDisabled = { argsMap.nodoc == true }
 pdfEnabled = { argsMap.pdf == true }
 
 target(docs: "Produces documentation for a Grails project") {
-    depends(parseArguments, compile, javadoc, groovydoc, refdocs, pdf)
+	parseArguments()
+	if(argsMap.init) {
+		ant.mkdir(dir:"${basedir}/src/docs/guide")
+		ant.mkdir(dir:"${basedir}/src/docs/ref/Items")
+		new File("${basedir}/src/docs/guide/1. Introduction.gdoc").write '''
+This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
+		
+You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
+		
+* Bullet 1 
+* Bullet 2
+		
+As well as numbered lists:
+		
+# Number 1
+# Number 2
+		
+The documentation also handles links to [guide items|guide:1. Introduction] as well as [reference|items]		
+		'''
+		
+		new File("${basedir}/src/docs/ref/Items/reference.gdoc").write '''
+h1. example
+
+h2. Purpose
+
+This is an example reference item. 
+
+h2. Examples
+
+You can use code snippets:
+	
+{code}
+def example = new Example()
+{code}
+		
+h2. Description
+
+And provide a detailed description		
+		'''
+		
+		println "Example documentation created in ${basedir}/src/docs. Use 'grails doc' to publish."
+	}
+	else {
+		docsInternal()
+	}	
+}
+
+target(docsInternal:"Actual documentation task") {
+	depends(compile, javadoc, groovydoc, refdocs, pdf)
 }
 
 target(setupDoc:"Sets up the doc directories") {
-    ant.mkdir(dir:"${basedir}/docs")
+    ant.mkdir(dir:grailsSettings.docsOutputDir)
     ant.mkdir(dir:groovydocDir)
     ant.mkdir(dir:javadocDir)
+    IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+    dependencyManager.loadDependencies('docs')
 }
 
 target(groovydoc:"Produces groovydoc documentation") {
-    depends(parseArguments)
+    depends(parseArguments, setupDoc)
 
     if (docsDisabled()) {
         event("DocSkip", ['groovydoc'])
@@ -72,14 +123,13 @@ target(groovydoc:"Produces groovydoc documentation") {
 }
 
 target(javadoc:"Produces javadoc documentation") {
-    depends(parseArguments)
+    depends(parseArguments, setupDoc)
 
     if (docsDisabled()) {
         event("DocSkip", ['javadoc'])
         return
     }
 
-    setupDoc()
     event("DocStart", ['javadoc'])
     File javaDir = new File("${grailsSettings.sourceDir}/java")
     if (javaDir.listFiles().find{ !it.name.startsWith(".")}) {
@@ -113,7 +163,7 @@ target(javadoc:"Produces javadoc documentation") {
 }
 
 target(refdocs:"Generates Grails style reference documentation") {
-    depends(parseArguments, createConfig,loadPlugins)
+    depends(parseArguments, createConfig,loadPlugins, setupDoc)
 
     if (docsDisabled()) return
 
@@ -155,7 +205,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
     }
 
     if (srcDocs.exists()) {
-        File refDocsDir = new File("${basedir}/docs/manual")
+        File refDocsDir = new File("${grailsSettings.docsOutputDir}/manual")
         def publisher = new DocPublisher(srcDocs, refDocsDir)
         publisher.ant = ant
         publisher.title = grailsAppName
@@ -179,7 +229,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 target(pdf: "Produces PDF documentation") {
    depends(parseArguments)
 
-   File refDocsDir = new File("${basedir}/docs/manual")
+   File refDocsDir = new File("${grailsSettings.docsOutputDir}/manual")
    File singleHtml = new File(refDocsDir, 'guide/single.html')
 
    if (docsDisabled() || !pdfEnabled() || !singleHtml.exists()) {
@@ -189,7 +239,7 @@ target(pdf: "Produces PDF documentation") {
 
    event("DocStart", ['pdf'])
 
-   PdfBuilder.build(basedir, grailsHome)
+   PdfBuilder.build(grailsSettings.docsOutputDir.canonicalPath, grailsHome)
    println "Built user manual PDF at ${refDocsDir}/guide/single.pdf"
 
    event("DocEnd", ['pdf'])
