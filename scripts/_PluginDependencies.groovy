@@ -174,11 +174,11 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
         for( p in props) {
             if( pluginProps[p] ) "${p}"(pluginProps[p])
         }
-        resources {
+        xml.resources {
             for(r in resourceList) {
                  def matcher = r.URL.toString() =~ artefactPattern
                  def name = matcher[0][1].replaceAll('/', /\./)
-                 resource(name)
+                 xml.resource(name)
             }
         }
         dependencies {        
