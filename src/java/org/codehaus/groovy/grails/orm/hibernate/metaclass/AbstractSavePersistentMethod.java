@@ -156,18 +156,22 @@ public abstract class AbstractSavePersistentMethod extends
             autoRetrieveAssocations(domainClass, target);
         }
 
-        if (!shouldValidate) disableAutoValidationFor.set(target);
+        try {
+            if (!shouldValidate) disableAutoValidationFor.set(target);
 
-        Object retval;
-        if(shouldInsert(arguments)) {
-            retval = performInsert(target, shouldFlush);
-        }
-        else {
-            retval = performSave(target, shouldFlush);
-        }
+            Object retval;
+            if(shouldInsert(arguments)) {
+                retval = performInsert(target, shouldFlush);
+            }
+            else {
+                retval = performSave(target, shouldFlush);
+            }
 
-        if (!shouldValidate) disableAutoValidationFor.remove();
-        return retval;
+            return retval;
+        }
+        finally {
+            if (!shouldValidate) disableAutoValidationFor.remove();
+        }
 	}
 
     private boolean shouldInsert(Object[] arguments) {
