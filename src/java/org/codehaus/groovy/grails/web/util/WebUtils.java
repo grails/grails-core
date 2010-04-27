@@ -76,7 +76,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
 
-        return wac.getBean(ViewResolver.class);
+        String[] beanNames = wac.getBeanNamesForType(ViewResolver.class);
+        if (beanNames.length > 0) {
+            String beanName = beanNames[0];
+            return (ViewResolver)wac.getBean(beanName);
+        }
+        return null;
     }
 
     /**
