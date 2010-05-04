@@ -29,19 +29,30 @@ task mavenInstall(dependsOn: [generatePoms, tasks.withType(Jar).all]) << {
             pom(file: "$generatePoms.pomsDir/$jar.baseName${jar.appendix ? '-' + jar.appendix : ""}.pom")
         }
     }
+    
+    // install the grails parent POM
+    artifact.install(file: "${libs.destinationDir}/grails-${version}.jar") {
+    	pom(file: "$generatePoms.pomsDir/grails.pom")
+    }
 }
 
 task mavenDeploy(dependsOn: [generatePoms, tasks.withType(Jar).all]) << {
+	def antBuilderClasspath = services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('ANT') +
+	services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('LOCAL_GROOVY') + 
+	configurations.deployerJars.files
+	def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
+	
     tasks.withType(Jar).matching({task -> task.mavenArtifact } as Spec).each {jar ->
-        // todo Once we have better classpath isolation and/or we have migrated to Maven 3 we don't need to execute the below with the IsolatedAntBuilder
-        def antBuilderClasspath = services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('ANT') +
-                				  services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('LOCAL_GROOVY') + 
-                                  configurations.deployerJars.files
-        def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
         isolatedAnt.execute(antBuilderClasspath) {
             'antlib:org.apache.maven.artifact.ant:deploy'(file: jar.archivePath) {
                 pom(file: "$generatePoms.pomsDir/$jar.baseName${jar.appendix ? '-' + jar.appendix : ""}.pom")
             }
         }
     }
+    // deploy the grails parent POM
+	isolatedAnt.execute(antBuilderClasspath) {
+	'antlib:org.apache.maven.artifact.ant:deploy'(file: "${libs.destinationDir}/grails-${version}.jar") {
+		pom(file:"$generatePoms.pomsDir/grails.pom")
+	 }
+   }
 }
