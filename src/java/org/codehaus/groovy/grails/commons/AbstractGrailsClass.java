@@ -55,6 +55,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     private final String propertyName;
     private final String logicalPropertyName;
     private final ClassPropertyFetcher classPropertyFetcher;
+    private final MetaClass grailsClassMetaClass;
     
     /**
      * <p>Contructor to be used by all child classes to create a
@@ -67,7 +68,8 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         if (clazz == null) {
             throw new IllegalArgumentException("Clazz parameter should not be null");
         }
-        this.clazz = clazz;        
+        this.clazz = clazz;      
+        this.grailsClassMetaClass = GrailsClassUtils.getExpandoMetaClass(clazz);
         this.fullName = clazz.getName();
         this.packageName = ClassUtils.getPackageName(clazz);
         this.naturalName = GrailsNameUtils.getNaturalName(clazz.getName());
@@ -275,8 +277,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 	 * @return the metaClass
 	 */
 	public MetaClass getMetaClass() {
-		return GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
-		//return GrailsClassUtils.getExpandoMetaClass(clazz);
+		return grailsClassMetaClass;
 	}
 
     public String toString() {
