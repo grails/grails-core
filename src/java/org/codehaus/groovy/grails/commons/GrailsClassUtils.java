@@ -912,6 +912,7 @@ public class GrailsClassUtils {
             if(!(mc instanceof ExpandoMetaClass)) {
             	registry.removeMetaClass(clazz);
             	mc = new ExpandoMetaClass(clazz,true, true);
+            	mc.initialize();
             	registry.setMetaClass(clazz, mc);
             }
             if(adapter != null) {
