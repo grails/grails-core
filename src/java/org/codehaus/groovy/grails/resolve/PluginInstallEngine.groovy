@@ -117,7 +117,7 @@ class PluginInstallEngine {
      */
     void installPlugins(List<ModuleRevisionId> plugins) {
         if (plugins) {
-            eventHandler "StatusUpdate", "Downloading new plugins. Please wait..."
+            eventHandler "StatusUpdate", "Resolving new plugins. Please wait..."
             ResolveReport report = resolveEngine.resolvePlugins(plugins)
             if (report.hasError()) {
                 errorHandler "Failed to resolve plugins."
@@ -165,7 +165,7 @@ class PluginInstallEngine {
      * @param globalInstall Whether it is a global install or not (optional)
      */
     void installPlugin(File zipFile, boolean globalInstall = false) {
-        eventHandler "StatusUpdate", "Installing zip ${zipFile}..."
+        
         if(zipFile.exists()) {
             def (name, version) = readMetadataFromZip(zipFile.absolutePath)
             installPluginZipInternal name, version, zipFile, globalInstall
@@ -204,7 +204,10 @@ class PluginInstallEngine {
 
         assertNoExistingInlinePlugin(name)
 
-        checkExistingPluginInstall(name, fullPluginName)
+        def abort = checkExistingPluginInstall(name, version)
+        if(abort) return
+        
+        eventHandler "StatusUpdate", "Installing zip ${pluginZip}..."
 
         installedPlugins << pluginInstallPath
 
@@ -287,22 +290,39 @@ class PluginInstallEngine {
 
     }
 
-    protected void checkExistingPluginInstall(String name, version) {
+    /**
+     * Checks an existing plugin path to install and returns true if the installation should be aborted or false if it should continue
+     * 
+     * If an error occurs the errorHandler is invoked.
+     * 
+     * @param name The plugin name
+     * @param version The plugin version
+     * @return True if the installation should be aborted
+     */
+    protected boolean checkExistingPluginInstall(String name, version) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
         
-        PluginBuildSettings pluginSettings = pluginSettings
         if (currentInstall?.exists()) {
+        	
         	def pluginDir = currentInstall.file.canonicalFile
+            PluginBuildSettings pluginSettings = pluginSettings
+            def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
+            // if the versions are the same no need to continue
+            if(version == pluginInfo?.version) return true
+        	
             if (pluginSettings.isInlinePluginLocation(currentInstall)) {
                 errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
+                return true
             }
             else if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to upgrade this version?")) {
                 ant.delete(dir: currentInstall.file)
             }
             else {
                 errorHandler("Plugin $name-$version install aborted");
+                return true
             }
         }
+        return false
     }
 
     protected void assertNoExistingInlinePlugin(String name) {
@@ -465,8 +485,13 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
      * @param pluginVersion the version of the plugin
      */
     void registerPluginWithMetadata(String pluginName, pluginVersion) {
-        metadata['plugins.' + pluginName] = pluginVersion
-        metadata.persist()
+    	IvyDependencyManager dependencyManager = settings.getDependencyManager()
+    	
+    	// only register in metadata if not specified in BuildConfig.groovy
+    	if(!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
+            metadata['plugins.' + pluginName] = pluginVersion
+            metadata.persist()    		
+    	}
     }
 
 
@@ -577,7 +602,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 def dirName = pluginLoc.file.canonicalFile.name
                 PluginBuildSettings settings = pluginSettings
                 if (!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
-                    eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
+                	// only print message if the version doesn't start with "latest." since we have
+                	// to do a check for a new version when there version is specified as "latest.integration" etc.
+                	if(!version.startsWith("latest."))
+                		eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
                     pluginsToInstall << p
                 }
             }
