@@ -69,15 +69,13 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-annotations</artifactId>
-            <version>3.4.0.ga</version>
-            <optional>true</optional>
+            <version>3.4.0.ga</version>            
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
             <version>3.4.0.ga</version>
-            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <artifactId>hibernate-core</artifactId>
@@ -158,25 +156,27 @@
             <groupId>org.hibernate</groupId>
             <artifactId>ejb3-persistence</artifactId>
             <version>1.0.2.GA</version>
-            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-annotations</artifactId>
+            <version>3.4.0.ga</version>            
+        </dependency>
+
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.11.0.GA</version>            
         </dependency>
 
         <!--
-          Two options for the Hibernate second-level cache. If you don't
-          enable the cache, you don't need either of them. Grails defaults
-          to OSCache.
+          If you don't enable the cache Grails defaults to Ehcache.
         -->
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>echache</artifactId>
-            <version>1.3.0</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>opensymphony</groupId>
-            <artifactId>oscache</artifactId>
-            <version>2.4</version>
+            <version>1.7.1</version>
             <optional>true</optional>
         </dependency>
 
