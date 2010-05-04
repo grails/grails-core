@@ -188,7 +188,7 @@ class PluginInstallEngine {
         file.deleteOnExit()
         eventHandler "StatusUpdate", "Downloading zip ${zipURL}. Please wait..."
         try {
-            ant.get(src: zipURL, dest: file, verbose:"on", overwrite:true)
+            ant.get(src: zipURL, dest: file, verbose:"on")
         }
         catch (e) {
             errorHandler "Error downloading plugin ${zipURL}: ${e.message}"
