@@ -897,7 +897,8 @@ public class GrailsClassUtils {
 
     public static MetaClass getExpandoMetaClass(Class clazz) {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-
+        Assert.isTrue(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle, "Grails requires an instance of [ExpandoMetaClassCreationHandle] to be set in Groovy's MetaClassRegistry!");
+      
         MetaClass mc = registry.getMetaClass(clazz);
         AdaptingMetaClass adapter = null;
         if(mc instanceof AdaptingMetaClass) {
@@ -909,12 +910,6 @@ public class GrailsClassUtils {
             // removes cached version
             registry.removeMetaClass(clazz);
             mc= registry.getMetaClass(clazz);
-            if(!(mc instanceof ExpandoMetaClass)) {
-            	registry.removeMetaClass(clazz);
-            	mc = new ExpandoMetaClass(clazz,true, true);
-            	mc.initialize();
-            	registry.setMetaClass(clazz, mc);
-            }
             if(adapter != null) {
                 adapter.setAdaptee(mc);
             }
