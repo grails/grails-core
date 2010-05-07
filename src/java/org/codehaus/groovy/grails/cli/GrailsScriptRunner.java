@@ -932,7 +932,7 @@ public class GrailsScriptRunner {
             Method method = clazz.getMethod("deepSanitize", Throwable.class);
             method.invoke(null, t);
         }
-        catch (Exception ex) {
+        catch (Throwable ex) {
             // cannot sanitize, ignore
         }
     }
