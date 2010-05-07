@@ -14,16 +14,16 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-public class GroovyIfTag extends GroovyConditionalTag {
-    public static final String TAG_NAME = "if";
+public class GroovyUnlessTag extends GroovyConditionalTag {
+    public static final String TAG_NAME = "unless";
 
     @Override
     protected void outputStartTag(String envExpression, String testExpression) {
-        out.print("if(");
+        out.print("if(!(");
         out.print(envExpression);
         out.print(" && ");
         out.print(testExpression);
-        out.println(") {");
+        out.println(")) {");
     }
 
     public String getName() {

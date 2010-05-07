@@ -14,41 +14,16 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-
-/**
- * @author Graeme Rocher
- * @since 18-Jan-2006
- */
-public class GroovyElseIfTag extends GroovySyntaxTag {
+public class GroovyElseIfTag extends GroovyConditionalTag {
     public static final String TAG_NAME = "elseif";
-    private static final String ATTRIBUTE_TEST = "test";
-    private static final String ATTRIBUTE_ENV = "env";
 
-    public void doStartTag() {
-        String env = (String) attributes.get(ATTRIBUTE_ENV);
-        String test = (String) attributes.get(ATTRIBUTE_TEST);
-        env = StringUtils.isBlank(env) ? null : env;
-        test = StringUtils.isBlank(test) ? null : test; 
-        if((env == null) && (test == null))
-            throw new GrailsTagException(
-                "Tag ["+TAG_NAME+"] must have one or both of the attributes ["+ATTRIBUTE_TEST+"] or ["+ATTRIBUTE_ENV+"]");
-        if (env != null) {
-            env = calculateExpression(env);
-        }
-        if ((env != null) && (test != null)) {
-            out.print("else if((GrailsUtil.environment == '"+env+"') && (");
-            out.print(test);
-            out.println(")) {");
-        } else if (env != null) {
-            // double (( is deliberate... to avoid thorny logic
-            out.print("else if(GrailsUtil.environment == '"+env+"') {");
-        } else {
-            out.print("else if(");
-            out.print(test);
-            out.println(") {");
-        }
+    @Override
+    protected void outputStartTag(String env, String test) {
+        out.print("else if(");
+        out.print(env);
+        out.print(" && ");
+        out.print(test);
+        out.println(") {");
     }
 
     public void doEndTag() {
