@@ -9,8 +9,8 @@ The following libraries are included in Grails because they are required either 
 - ANTLR 2.7.6 (http://www.antlr.org) BSD License
 - required for running Grails applications (Hibernate)
 
-* aspectjrt-1.6.6.jar, aspectjweaver-1.6.6.jar
-- AspectJ 1.6.6 (http://www.eclipse.org/aspectj/) Eclipse Public License (EPL) 
+* aspectjrt-1.6.8.jar, aspectjweaver-1.6.8.jar
+- AspectJ 1.6.8 (http://www.eclipse.org/aspectj/) Eclipse Public License (EPL) 
 - required for running Grails applications
 
 * cglib-nodep-2.1_3.jar
@@ -148,7 +148,7 @@ The following libraries are included in Grails because they are required either 
 - required for running Grails applications
 
 * org.springframework.*.jar
-- Spring Framework 3.0.0.RC2 (http://www.springframework.org) Apache 2.0 License
+- Spring Framework 3.0.2 (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for the command line tools (Gant)
 - required for running Grails applications
