@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import grails.util.GrailsUtil
+import java.util.ArrayList
 
 import org.apache.commons.logging.LogFactory
 
@@ -129,17 +130,107 @@ class FiltersGrailsPlugin {
         log.info "reloadFilters"
         def filterConfigs = application.getArtefacts(TYPE)
         def handlers = []
-        for (c in filterConfigs) {
+
+        def sortedFilterConfigs = [] // the new ordered filter list
+        def list = new ArrayList(Arrays.asList(filterConfigs))
+		def addedDeps = [:]
+
+        while (list.size() > 0) {
+            def filtersAdded = 0;
+
+            log.debug("Current filter order is '"+filterConfigs.join(",")+"'")
+
+            for (Iterator iter = list.iterator(); iter.hasNext(); ) {
+                def c = iter.next();
+                def filterClass = applicationContext.getBean("${c.fullName}Class")
+                def bean = applicationContext.getBean(c.fullName)
+                log.debug("Processing filter '${bean.class.name}'")
+
+                def dependsOn = null
+                if (bean.metaClass.hasProperty(bean, "dependsOn")) {
+                    dependsOn = bean.dependsOn
+                    log.debug("  depends on '"+dependsOn.join(",")+"'")
+                }
+                
+                if (dependsOn != null) {
+                    // check dependencies to see if all the filters it depends on are already in the list
+                    log.debug("  Checking filter '${bean.class.name}' dependencies (${dependsOn.size()})")
+
+            		def failedDep = false;
+                    for (dep in dependsOn) {
+                    	log.debug("  Checking filter '${bean.class.name}' dependencies: ${dep.name}")
+                        //if (sortedFilterConfigs.find{def b = applicationContext.getBean(it.fullName); b.class == dep} == null) {
+                        if (!addedDeps.containsKey(dep)) {
+                            // dep not in the list yet, we need to skip adding this to the list for now
+                            log.debug("  Skipped Filter '${bean.class.name}', since dependency '${dep.name}' not yet added")
+                            failedDep = true
+                            break
+                        } else {
+                            log.debug("  Filter '${bean.class.name}' dependency '${dep.name}' already added")
+						}
+                    }
+
+                    if (failedDep) {
+                        // move on to next dependency
+                        continue
+                    }
+                }
+
+                log.debug("  Adding filter '${bean.class.name}', since all dependencies have been added")
+                sortedFilterConfigs.add(c)
+				addedDeps.put(bean.class, null);
+                iter.remove()
+                filtersAdded++
+            }
+
+            // if we didn't add any filters this iteration, then we have a cyclical dep problem
+            if (filtersAdded == 0) {
+                // we have a cyclical dependency, warn the user and load in the order they appeared originally
+                log.warn(":::::::::::::::::::::::::::::::::::::::::::::::")
+                log.warn("::   Cyclical Filter dependencies detected   ::")
+                log.warn("::   Continuing with original filter order   ::")
+                log.warn(":::::::::::::::::::::::::::::::::::::::::::::::")
+                for (c in list) {
+                    def filterClass = applicationContext.getBean("${c.fullName}Class")
+                    def bean = applicationContext.getBean(c.fullName)
+
+                    // display this as a cyclical dep
+                    log.warn("::   Filter "+bean.class.name)
+                    def dependsOn = null
+                    if (bean.metaClass.hasProperty(bean, "dependsOn")) {
+                        dependsOn = bean.dependsOn
+                        for (dep in dependsOn) {
+                            log.warn("::    depends on "+dep.name)
+                        }
+                    } else {
+                        // we should only have items left in the list with deps, so this should never happen
+                        // but a wise man once said...check for true, false and otherwise...just in case
+                        log.warn("::   Problem while resolving cyclical dependencies.")
+                        log.warn("::   Unable to resolve dependency hierarchy.")
+                    }
+                    log.warn(":::::::::::::::::::::::::::::::::::::::::::::::")
+                }
+                break
+            // if we have processed all the filters, we are done
+            } else if (sortedFilterConfigs.size() == filterConfigs.size()) {
+                log.debug("Filter dependency ordering complete")
+                break
+            }
+        }
+        
+        // add the filter configs in dependency sorted order
+        log.debug("Resulting handlers:")
+        for (c in sortedFilterConfigs) {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
             def bean = applicationContext.getBean(c.fullName)
             for (filterConfig in filterClass.getConfigs(bean)) {
                 def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
                 handlerAdapter.afterPropertiesSet()
                 handlers <<  handlerAdapter
+        		log.debug("  $handlerAdapter")
             }
         }
 
-        log.debug("resulting handlers: $handlers")
         applicationContext.getBean('filterInterceptor').handlers = handlers
     }
 }

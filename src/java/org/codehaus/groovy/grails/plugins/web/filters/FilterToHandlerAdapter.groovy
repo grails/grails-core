@@ -49,6 +49,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     def useRegex  // standard regex
     def invertRule // invert rule
     def useRegexFind // use find instead of match
+    def dependsOn = [] // any filters that need to be processed before this one
 
     void afterPropertiesSet() {
         def scope = filterConfig.scope
