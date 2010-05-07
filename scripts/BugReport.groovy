@@ -49,6 +49,7 @@ target ('default': "Creates a ZIP containing source artifacts for reporting bugs
 	    fileset(dir: "${basedir}", includes: "scripts/**/*")
 	    fileset(dir: "${basedir}", includes: "spring/**/*")
 	    fileset(dir: "${basedir}", includes: "src/**/*")
+	    fileset(file: "${basedir}/application.properties")
 	}
 
     event("StatusFinal", ["Created bug-report ZIP at ${zipName}"])
