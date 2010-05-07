@@ -82,7 +82,8 @@ public class GrailsUtil {
     };
 
     static {
-        String version = GrailsUtil.class.getPackage().getImplementationVersion();
+    	Package p = GrailsUtil.class.getPackage();
+        String version =  p != null ? p.getImplementationVersion() : null;
         if(version==null || isBlank(version)) {
 	        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 	        try {
@@ -113,7 +114,7 @@ public class GrailsUtil {
 	                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? " );
 	                version = "Unknown";
 	            }
-	        } catch (IOException e) {
+	        } catch (Exception e) {
 	            version = "Unknown";
 	            LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
 	        }
