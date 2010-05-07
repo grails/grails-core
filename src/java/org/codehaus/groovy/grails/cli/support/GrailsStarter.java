@@ -139,20 +139,18 @@ public class GrailsStarter {
         // create loader and execute main class
         RootLoader loader = null;
         File loaderFile = new File(LOADER_FILE);
+        String loaderClassName = null;
         if(loaderFile.exists()) {
             Properties loaderProps = new Properties();
             FileInputStream input = null;
             try {
                 input = new FileInputStream(loaderFile);
                 loaderProps.load(input);
-                String loaderClassName = loaderProps.getProperty(GRAILS_ROOT_CLASSLOADER);
-                if(loaderClassName!=null) {
-                    Class loaderClass = GrailsStarter.class.getClassLoader().loadClass(loaderClassName);
-                    loader = (RootLoader) loaderClass.newInstance();
-                }
+                loaderClassName = loaderProps.getProperty(GRAILS_ROOT_CLASSLOADER);
             }
             catch (Exception e) {
-                System.out.println("ERROR: There was an error loading a Grails custom classloader using the properties file ["+loaderFile.getAbsolutePath()+"]: " + e.getMessage());
+            	e.printStackTrace();
+                System.out.println("ERROR: There was an error loading a Grails custom classloader using the properties file ["+loaderFile.getAbsolutePath()+"]: " + e.getClass().getName() + ":" + e.getMessage());
             }
             finally {
                 try {
@@ -163,6 +161,19 @@ public class GrailsStarter {
                 }
             }
         }
+        if(loaderClassName == null) {
+        	loaderClassName = System.getProperty(GRAILS_ROOT_CLASSLOADER);
+        }
+        if(loaderClassName!=null) {
+            try {
+				Class loaderClass = GrailsStarter.class.getClassLoader().loadClass(loaderClassName);
+				loader = (RootLoader) loaderClass.newInstance();
+			} catch (Exception e) {
+            	e.printStackTrace();
+                System.out.println("ERROR: There was an error loading a Grails custom classloader using the properties file ["+loaderFile.getAbsolutePath()+"]: " + e.getClass().getName() + ":" + e.getMessage());
+			} 
+        }
+        
         if(loader == null)
             loader = new GrailsRootLoader();
         Thread.currentThread().setContextClassLoader(loader);
