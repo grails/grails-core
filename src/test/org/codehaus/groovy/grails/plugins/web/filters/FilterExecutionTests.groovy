@@ -23,6 +23,7 @@ class FilterExecutionTests extends AbstractGrailsControllerTests {
 
 		gcl.parseClass(
 '''
+import junit.framework.Assert
 class ItemController {
     def count = {
         render(view:'testView')
@@ -32,15 +33,17 @@ class ItemController {
 		render(template:"xmlTemplate",contentType:"text/xml")
 	}
 }
-''')
-
-        gcl.parseClass('''\
-import junit.framework.Assert
 
 class AuthorController {
     def index = {}
     def list = {}
 }
+		        
+class TestController {
+    def index = {}
+    def list = {}
+}
+
 class Filters {
     // Test property on the filters definition.
     def myName = "John Doe"
@@ -157,114 +160,72 @@ class Filters {
 		}
     }
 }
-        ''')
-
-        gcl.parseClass('''\
-import junit.framework.Assert
-
-class TestController {
-    def index = {}
-    def list = {}
-}
 
 class Group1Filters {
-    def dependsOn = [Group3Filters.class]
+    def dependsOn = [Group3Filters]
 
-	def afterClosure = {
-		println "afterClosure!!!"
-	}
-
-	def afterCompleteClosure = {
-		println "afterCompleteClosure!!!"
-	}
-
+    // these filters should run last since Group1Filters depends on them
     def filters = {
         filter1(uri:"/dependsOn") {
             before = {
-                Assert.assertTrue(request.filter3); // should come first, since we have deps and it doesn't
-                Assert.assertNull(request.filter4);// shouldn't be called for /dependsOn
-                Assert.assertTrue(request.filter5); // depends on filter
-                Assert.assertTrue(request.filter6); // depends on filter
-                request.filter1 = true
+		        request.testString = request.testString + '4'
             }
-            after = afterClosure
-            afterView = afterCompleteClosure
         }
         filter2(uri:"/dependsOn") {
             before = {
-                Assert.assertTrue(request.filter1); // declared earlier in this filter
-                Assert.assertTrue(request.filter3); // should come first, since we have deps and it doesn't
-                Assert.assertNull(request.filter4);// shouldn't be called for /dependsOn
-                Assert.assertTrue(request.filter5); // depends on filter
-                Assert.assertTrue(request.filter6); // depends on filter
-                request.filter2 = true
+		        request.testString = request.testString + '5'
             }
-            after = afterClosure
-            afterView = afterCompleteClosure
         }
     }
 }
 
 class Group2Filters {
-	def afterClosure = {
-		println "afterClosure!!!"
-	}
 
-	def afterCompleteClosure = {
-		println "afterCompleteClosure!!!"
-	}
-
+    // these filters should run first since they have no dependencies
     def filters = {
         filter3(uri:"/dependsOn") {
             before = {
-                request.filter3 = true
+		        request.testString = '1'
             }
-            after = afterClosure
-            afterView = afterCompleteClosure
         }
         filter4(uri:"/neverCall") {
             before = {
-                request.filter4 = true
+		        // uri doesn't match so this should not be called
+		        request.testString = request.testString + 'SHOULD_NEVER_HAPPEN'
             }
-            after = afterClosure
-            afterView = afterCompleteClosure
         }
 	}
 }
 
 class Group3Filters {
-	def afterClosure = {
-		println "afterClosure!!!"
-	}
 
-	def afterCompleteClosure = {
-		println "afterCompleteClosure!!!"
-	}
-
+    // these filters should run after Group2Filters and before Group1Filters
     def filters = {
         filter5(uri:"/dependsOn") {
             before = {
-                Assert.assertTrue(request.filter3); // should come first, since we are defined second
-                Assert.assertNull(request.filter4);// shouldn't be called for /dependsOn
-                request.filter5 = true
+		        request.testString = request.testString + '2'
             }
-            after = afterClosure
-            afterView = afterCompleteClosure
         }
         filter6(uri:"/dependsOn") {
             before = {
-                Assert.assertTrue(request.filter3); // should come first, since we are defined second
-                Assert.assertNull(request.filter4);// shouldn't be called for /dependsOn
-                request.filter6 = true
+		        request.testString = request.testString + '3'
             }
-            after = afterClosure
-            afterView = afterCompleteClosure
         }
     }
 }
         ''')
     }
 
+    void testFilterOrdering() {
+        HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/dependsOn")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "test")
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "index")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertEquals 'filters did not run in the expected order', '12345', request.testString
+    }
 
     void testFilterMatching() {
         HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
@@ -392,20 +353,5 @@ class Group3Filters {
         ModelAndView mv = new ModelAndView()
         filterInterceptor.postHandle(request, response, null, mv)
         assertEquals "/item/happyPath", mv.viewName
-
-        // check dependsOn filters
-        request.clearAttributes()
-
-        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/dependsOn")
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "test")
-        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "index")
-
-        filterInterceptor.preHandle(request, response, null)
-        assertTrue request.filter1
-        assertTrue request.filter2
-        assertTrue request.filter3
-        assertNull request.filter4
-        assertTrue request.filter5
-        assertTrue request.filter6
     }
 }
