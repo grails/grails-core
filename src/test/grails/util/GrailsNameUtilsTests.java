@@ -46,6 +46,11 @@ public class GrailsNameUtilsTests extends TestCase {
         assertEquals("payRoll", GrailsNameUtils.getLogicalPropertyName("org.something.PayRollController", "Controller"));
     }
 
+    public void testGetLogicalPropertyNameForArtefactWithSingleCharacterName() {
+        assertEquals("a", GrailsNameUtils.getLogicalPropertyName("AController", "Controller"));
+        assertEquals("b", GrailsNameUtils.getLogicalPropertyName("BService", "Service"));
+    }
+    
     public void testGetScriptName() {
         assertEquals("grails-name-utils-tests", GrailsNameUtils.getScriptName(getClass()));
         assertEquals("", GrailsNameUtils.getScriptName(""));

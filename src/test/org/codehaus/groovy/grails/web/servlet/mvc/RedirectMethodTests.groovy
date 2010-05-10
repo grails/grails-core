@@ -167,11 +167,10 @@ class UrlMappings {
     }
     
     void testRedirectInControllerWithOneLetterClassName() {
-        if(notYetImplemented()) return
         def c = ga.getControllerClass("AController").newInstance()
         webRequest.controllerName = 'a'
         c.index.call()
-        assertEquals "/test/a/list", response.redirectedUrl
+        assertEquals "/a/list", response.redirectedUrl
     }
 
     void testRedirectToAction() {

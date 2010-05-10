@@ -121,6 +121,11 @@ public class GrailsNameUtils {
     }
 
     public static String getLogicalPropertyName(String className, String trailingName) {
+        if(!isBlank(className) && !isBlank(trailingName)) {
+            if(className.length() == trailingName.length() + 1 && className.endsWith(trailingName)) {
+                return className.substring(0, 1).toLowerCase();
+            }
+        }
         return getLogicalName(getPropertyName(className), trailingName);
     }
 
