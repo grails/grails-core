@@ -5,22 +5,6 @@
 	<classpathentry kind="src" path="scripts"/>
 	<classpathentry kind="src" output="target/eclipse/test-output" path="src/test"/>
 	<classpathentry kind="lib" path="lib/hibernate-core-3.3.1.GA.jar" sourcepath="/Developer/hibernate-distribution-3.3.1.GA/project/core/src/main/java"/>
-	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aop-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.asm-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.asm-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.aspects-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.aspects-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.beans-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.beans-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.context-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.context.support-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.context.support-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.core-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.expression-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.instrument-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.instrument-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.jdbc-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jdbc-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.jms-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.jms-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.orm-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.orm-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.test-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.test-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.transaction-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.transaction-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web-sources-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.0.RELEASE.jar" sourcepath="/Developer/springsource/spring-framework-3.0.0.RELEASE/src/org.springframework.web.servlet-sources-3.0.0.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/ant-junit-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ant-nodeps-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ant-1.7.1.jar"/>
@@ -56,7 +40,6 @@
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.binding-2.0.8.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.js-2.0.8.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.webflow-2.0.8.RELEASE.jar" sourcepath="/Developer/spring-webflow-2.0.8.RELEASE/src/org.springframework.webflow-sources-2.0.8.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/standard-1.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/svnkit-1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xpp3_min-1.1.3.4.O.jar"/>
@@ -70,11 +53,30 @@
 	<classpathentry kind="lib" path="lib/jline-0.9.91.jar"/>
 	<classpathentry kind="lib" path="lib/ivy-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gpars-0.9.jar"/>
-	<classpathentry kind="lib" path="lib/aspectjrt-1.6.6.jar"/>
-	<classpathentry kind="lib" path="lib/aspectjweaver-1.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-core-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/core-renderer-R8.jar"/>
 	<classpathentry kind="var" path="ASPECTJRT_LIB"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/aspectjrt-1.6.8.jar"/>
+	<classpathentry kind="lib" path="lib/aspectjweaver-1.6.8.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.asm-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aspects-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.beans-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context.support-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.instrument-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.instrument.tomcat-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jdbc-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jms-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.orm-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.oxm-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.test-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.transaction-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.2.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.webflow-2.0.8.RELEASE.jar"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>
