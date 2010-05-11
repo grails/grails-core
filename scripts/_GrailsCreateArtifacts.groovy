@@ -44,7 +44,7 @@ createArtifact = { Map args = [:] ->
         }
     }
     else {
-    	pkg = createRootPackage()
+    		pkg = args.skipPackagePrompt ? '' : createRootPackage()
     }
 
     // Convert the package into a file path.
