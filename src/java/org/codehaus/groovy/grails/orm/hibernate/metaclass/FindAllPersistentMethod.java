@@ -122,6 +122,7 @@ public class FindAllPersistentMethod
 					Map queryNamedArgs = null;
 					int max = retrieveMaxValue(arguments);
 					int offset = retrieveOffsetValue(arguments);
+					boolean useCache = useCache(arguments);
 					if (arguments.length > 1) {
 						if (arguments[1] instanceof Collection) {
 							queryArgs = GrailsClassUtils.collectionToObjectArray((Collection) arguments[1]);
@@ -148,7 +149,7 @@ public class FindAllPersistentMethod
 										+ queryNamedArgs.toString());
 							String stringKey = (String) entry.getKey();
 							// Won't try to bind these parameters since they are processed separately
-							if( GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) ) continue;
+							if( GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_CACHE.equals(stringKey)) continue;
 							Object value = entry.getValue();
                             if(value == null) {
                                q.setParameter(stringKey, null); 
@@ -170,10 +171,19 @@ public class FindAllPersistentMethod
 					if (offset > 0) {
 						q.setFirstResult(offset);
 					}
+				    q.setCacheable(useCache);
 					return q.list();
 
 				}
 
+				private boolean useCache(Object[] arguments) {
+				    boolean useCache = false;
+				    if(arguments.length > 1 && arguments[arguments.length - 1] instanceof Map) {
+				        useCache = retrieveBoolean(arguments[arguments.length - 1], GrailsHibernateUtil.ARGUMENT_CACHE);
+				    }
+				    return useCache;
+				}
+				
 				private int retrieveMaxValue(Object[] arguments) {
 					int result = -1;
 					if( arguments.length > 1) { 
@@ -207,6 +217,13 @@ public class FindAllPersistentMethod
 					return result;
 				}
 
+				private boolean retrieveBoolean(Object param, String key) {
+				    boolean value = false;
+				    if(isMapWithValue(param, key)) {
+				        value = converter.convertIfNecessary(((Map)param).get(key), Boolean.class);
+				    }
+				    return value;
+				}
 				private int retrieveInt( Object param, String key ) {
 					if( isMapWithValue(param, key) ) {
                         Integer convertedParam = converter.convertIfNecessary(((Map) param).get(key),Integer.class);

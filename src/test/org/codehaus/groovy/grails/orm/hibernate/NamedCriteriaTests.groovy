@@ -26,8 +26,7 @@ class Publication {
        }
 
        recentPublicationsByTitle { title ->
-           def now = new Date()
-           gt 'datePublished', now - 365
+           recentPublications()
            eq 'title', title
        }
 
@@ -48,7 +47,7 @@ class Publication {
            or {
         		def now = new Date()
         		gt 'datePublished', now - 365
-        		eq 'paperback', true
+        		paperbacks()
            }
        }
 
@@ -57,16 +56,20 @@ class Publication {
        }
 
        paperbackAndRecent {
-           and {
-               def now = new Date()
-               gt 'datePublished', now - 365
-               eq 'paperback', true
-           }
+           paperbacks()
+           recentPublications()
+       }
+
+       thisWeeksPaperbacks() {
+           paperbacks()
+           def today = new Date()
+           publishedBetween(today - 7, today)
        }
    }
 }
 ''')
     }
+    
 	
 	void testFindAllWhereAttachedToChainedNamedQueries() {
 		def publicationClass = ga.getDomainClass("Publication").clazz
@@ -92,6 +95,30 @@ class Publication {
 		assertEquals 1, results?.size()
 	}
 
+	void testNamedQueryPassingMultipleParamsToNestedNamedQuery() {
+		def publicationClass = ga.getDomainClass("Publication").clazz
+		def now = new Date()
+		
+		assert publicationClass.newInstance(title: "Some Book",
+		datePublished: now - 10, paperback: false).save()
+		assert publicationClass.newInstance(title: "Some Book",
+											datePublished: now - 1000, paperback: true).save()
+	    assert publicationClass.newInstance(title: "Some Book",
+	    									datePublished: now - 2, paperback: true).save()
+								
+	    assert publicationClass.newInstance(title: "Some Title",
+                                            datePublished: now - 2, paperback: false).save()
+        assert publicationClass.newInstance(title: "Some Title",
+                                            datePublished: now - 1000, paperback: false).save()
+        assert publicationClass.newInstance(title: "Some Title",
+		                                    datePublished: now - 2, paperback: true).save()
+        session.clear()
+														
+		def results = publicationClass.thisWeeksPaperbacks().list()
+														
+        assertEquals 2, results?.size()
+	}
+	
 	void testGetAttachedToChainedNamedQueries() {
 		def publicationClass = ga.getDomainClass("Publication").clazz
 		def now = new Date()

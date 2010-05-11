@@ -23,6 +23,7 @@ class FilterExecutionTests extends AbstractGrailsControllerTests {
 
 		gcl.parseClass(
 '''
+import junit.framework.Assert
 class ItemController {
     def count = {
         render(view:'testView')
@@ -32,15 +33,17 @@ class ItemController {
 		render(template:"xmlTemplate",contentType:"text/xml")
 	}
 }
-''')
-
-        gcl.parseClass('''\
-import junit.framework.Assert
 
 class AuthorController {
     def index = {}
     def list = {}
 }
+		        
+class TestController {
+    def index = {}
+    def list = {}
+}
+
 class Filters {
     // Test property on the filters definition.
     def myName = "John Doe"
@@ -157,9 +160,72 @@ class Filters {
 		}
     }
 }
+
+class Group1Filters {
+    def dependsOn = [Group3Filters]
+
+    // these filters should run last since Group1Filters depends on them
+    def filters = {
+        filter1(uri:"/dependsOn") {
+            before = {
+		        request.testString = request.testString + '4'
+            }
+        }
+        filter2(uri:"/dependsOn") {
+            before = {
+		        request.testString = request.testString + '5'
+            }
+        }
+    }
+}
+
+class Group2Filters {
+
+    // these filters should run first since they have no dependencies
+    def filters = {
+        filter3(uri:"/dependsOn") {
+            before = {
+		        request.testString = '1'
+            }
+        }
+        filter4(uri:"/neverCall") {
+            before = {
+		        // uri doesn't match so this should not be called
+		        request.testString = request.testString + 'SHOULD_NEVER_HAPPEN'
+            }
+        }
+	}
+}
+
+class Group3Filters {
+
+    // these filters should run after Group2Filters and before Group1Filters
+    def filters = {
+        filter5(uri:"/dependsOn") {
+            before = {
+		        request.testString = request.testString + '2'
+            }
+        }
+        filter6(uri:"/dependsOn") {
+            before = {
+		        request.testString = request.testString + '3'
+            }
+        }
+    }
+}
         ''')
     }
 
+    void testFilterOrdering() {
+        HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/dependsOn")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "test")
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "index")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertEquals 'filters did not run in the expected order', '12345', request.testString
+    }
 
     void testFilterMatching() {
         HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")

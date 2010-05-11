@@ -16,6 +16,12 @@ class RedirectMethodTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
         gcl.parseClass('''
+class ABCController {
+    def index = { redirect action: 'list' }
+}                
+class AController {
+    def index = { redirect action: 'list' }
+}                
 class RedirectController {
 
     static defaultAction = 'toAction'
@@ -50,7 +56,6 @@ class RedirectController {
     def toControllerAndActionWithFragment = {
         redirect(controller:'test', action:'foo', fragment:"frag")
     }
-
     def toControllerWithParams = {
         redirect(controller:'test',action:'foo', params:[one:'two', two:'three'])
     }
@@ -163,7 +168,21 @@ class UrlMappings {
         c.toControllerAndActionWithFragment.call()
         assertEquals "/test/foo#frag", response.redirectedUrl
     }
+    
+    void testRedirectInControllerWithOneLetterClassName() {
+        def c = ga.getControllerClass("AController").newInstance()
+        webRequest.controllerName = 'a'
+        c.index.call()
+        assertEquals "/a/list", response.redirectedUrl
+    }
 
+    void testRedirectInControllerWithAllUpperCaseClassName() {
+        def c = ga.getControllerClass("ABCController").newInstance()
+        webRequest.controllerName = 'ABC'
+            c.index.call()
+            assertEquals "/ABC/list", response.redirectedUrl
+    }
+    
     void testRedirectToAction() {
         def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'

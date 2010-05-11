@@ -35,6 +35,7 @@ public class GrailsTagRegistry {
         tagRegistry.registerTag(RenderInputTag.TAG_NAME, RenderInputTag.class);
         tagRegistry.registerTag(GroovyEachTag.TAG_NAME, GroovyEachTag.class);
         tagRegistry.registerTag(GroovyIfTag.TAG_NAME, GroovyIfTag.class);
+        tagRegistry.registerTag(GroovyUnlessTag.TAG_NAME, GroovyUnlessTag.class);
         tagRegistry.registerTag(GroovyElseTag.TAG_NAME, GroovyElseTag.class);
         tagRegistry.registerTag(GroovyElseIfTag.TAG_NAME, GroovyElseIfTag.class);
         tagRegistry.registerTag(GroovyFindAllTag.TAG_NAME, GroovyFindAllTag.class);

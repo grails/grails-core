@@ -17,6 +17,29 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 class CoreTagsTests extends AbstractGrailsTagTests {
 
+	void testUnlessWithTestCondition() {
+		def template = '<g:unless test="${cond}">body text</g:unless>'
+		assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}	
+		assertOutputEquals '', template, [cond: true], {it.toString().trim()}	
+	}
+	
+	void testUnlessWithEnvCondition() {
+		def template = '<g:unless env="production">body text</g:unless>'
+		assertOutputEquals 'body text', template, [:], {it.toString().trim()}	
+		template = '<g:unless env="development">body text</g:unless>'
+		assertOutputEquals '', template, [:], {it.toString().trim()}	
+	}
+	
+	void testUnlessWithEnvAndTestConditions() {
+		def template = '<g:unless env="production" test="${cond}">body text</g:unless>'
+		assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
+		assertOutputEquals 'body text', template, [cond: true], {it.toString().trim()}
+		
+		template = '<g:unless env="development" test="${cond}">body text</g:unless>'
+		assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
+		assertOutputEquals '', template, [cond: true], {it.toString().trim()}
+	}
+	
     void testIfElse() {
 
 
@@ -28,7 +51,7 @@ class CoreTagsTests extends AbstractGrailsTagTests {
         assertOutputEquals("foo", template, [foo:true], { it.toString().trim() })
         assertOutputEquals("bar", template, [foo:false], { it.toString().trim() })
     }
-
+    
    void testIfElseWithSpace() {
        def template = '''
 <g:if test="${foo}">
