@@ -97,6 +97,7 @@ private EmbeddableServerFactory loadServerFactory() {
             doInstallPlugin "tomcat", GrailsUtil.grailsVersion
             pluginSettings.clearCache()
             compilePlugins()
+            loadPlugins()
             serverFactory = load(containerClass)            
         }
     }
