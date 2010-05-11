@@ -205,7 +205,10 @@ class PluginInstallEngine {
         assertNoExistingInlinePlugin(name)
 
         def abort = checkExistingPluginInstall(name, version)
-        if(abort) return
+        if(abort)  {
+        	registerPluginWithMetadata(name, version)	        	
+        	return
+        }
         
         eventHandler "StatusUpdate", "Installing zip ${pluginZip}..."
 
@@ -304,9 +307,8 @@ class PluginInstallEngine {
         
         if (currentInstall?.exists()) {
         	
-        	def pluginDir = currentInstall.file.canonicalFile
             PluginBuildSettings pluginSettings = pluginSettings
-            def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
+            def pluginInfo = pluginSettings.getPluginInfo(currentInstall.file.absolutePath)
             // if the versions are the same no need to continue
             if(version == pluginInfo?.version) return true
         	
@@ -488,7 +490,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
     	IvyDependencyManager dependencyManager = settings.getDependencyManager()
     	
     	// only register in metadata if not specified in BuildConfig.groovy
-    	if(!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
+    	if(dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)) {
             metadata['plugins.' + pluginName] = pluginVersion
             metadata.persist()    		
     	}

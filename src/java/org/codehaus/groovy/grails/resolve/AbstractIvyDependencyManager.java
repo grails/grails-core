@@ -114,6 +114,7 @@ abstract public class AbstractIvyDependencyManager {
     protected Set<DependencyDescriptor> dependencyDescriptors = new HashSet<DependencyDescriptor>();
     protected Set<DependencyDescriptor> pluginDependencyDescriptors = new HashSet<DependencyDescriptor>();
     protected Set<String> pluginDependencyNames = new HashSet<String>();
+    protected Set<String> metadataRegisteredPluginNames = new HashSet<String>();
     protected Map<String, Collection<ModuleRevisionId>> orgToDepMap = new HashMap<String, Collection<ModuleRevisionId>>();
 
 
@@ -128,7 +129,19 @@ abstract public class AbstractIvyDependencyManager {
         return dependencyDescriptors;
     };
 
-    /**
+    
+    public Set<String> getMetadataRegisteredPluginNames() {
+		return metadataRegisteredPluginNames;
+	}
+
+
+	public void setMetadataRegisteredPluginNames(
+			Set<String> metadataRegisteredPluginNames) {
+		this.metadataRegisteredPluginNames = metadataRegisteredPluginNames;
+	}
+
+
+	/**
     * Obtains a set of plugin dependency descriptors defined in the project
      */
     Set<DependencyDescriptor> getPluginDependencyDescriptors() {

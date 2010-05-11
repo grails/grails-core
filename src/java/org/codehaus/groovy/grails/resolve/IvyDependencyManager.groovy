@@ -650,7 +650,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                         def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
                         def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
                         dd.addDependencyArtifact(scope, artifact)
-
+                        metadataRegisteredPluginNames << name
                         configureDependencyDescriptor(dd, scope, null, true)
                         pluginDependencyDescriptors << dd
                     }
