@@ -16,6 +16,9 @@ class RedirectMethodTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
         gcl.parseClass('''
+class ABCController {
+    def index = { redirect action: 'list' }
+}                
 class AController {
     def index = { redirect action: 'list' }
 }                
@@ -173,6 +176,13 @@ class UrlMappings {
         assertEquals "/a/list", response.redirectedUrl
     }
 
+    void testRedirectInControllerWithAllUpperCaseClassName() {
+        def c = ga.getControllerClass("ABCController").newInstance()
+        webRequest.controllerName = 'ABC'
+            c.index.call()
+            assertEquals "/ABC/list", response.redirectedUrl
+    }
+    
     void testRedirectToAction() {
         def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'
