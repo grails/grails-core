@@ -187,7 +187,7 @@ Plugins available in the $name repository are listed below:
 """
   def plugins = []
   use(DOMCategory) {
-    pluginsList.'plugin'.each {plugin ->
+    pluginsList?.'plugin'.each {plugin ->
       def version
       def pluginLine = plugin.'@name'
       def versionLine = "<no releases>"
