@@ -308,7 +308,7 @@ class PluginInstallEngine {
         if (currentInstall?.exists()) {
         	
             PluginBuildSettings pluginSettings = pluginSettings
-            def pluginDir = currentInstall.file
+            def pluginDir = currentInstall.file.canonicalFile
             def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
             // if the versions are the same no need to continue
             if(version == pluginInfo?.version) return true
