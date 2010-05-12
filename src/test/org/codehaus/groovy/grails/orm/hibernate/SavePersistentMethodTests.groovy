@@ -268,6 +268,38 @@ Validation Error(s) occurred during save():
 ''', msg
     }
 
+    void testSaveWithoutValidation() {
+        def dcClass = ga.getDomainClass('grails.tests.SaveCustomValidation')
+        def dc = dcClass.newInstance()
+        dc.properties = [ title: 'Test' ]
+
+        // The custom validator for SaveCustomValidation throws an
+        // exception if it's triggered, but that shouldn't happen
+        // if we explicitly disable validation. 
+        dc.save(validate: false)
+        session.flush()
+
+        // Once its attached to the session, dirty checking applies.
+        // Here we test that the validation doesn't occur even though
+        // the domain instance has been modified.
+        dc.title = "A different title"
+        dc.save(validate: false)
+        session.flush()
+
+        // Let's check that the validation kicks in if we don't disable
+        // it...
+        dc.title = "Another title"
+        shouldFail(IllegalStateException) {
+            dc.save()
+        }
+
+        // ...and make sure that this also happens with dirty-checking.
+        dc.title = "Dirty check"
+        shouldFail(IllegalStateException) {
+            session.flush()
+        }
+    }
+
     void onSetUp() {
 		this.gcl.parseClass('''
 package grails.tests
@@ -314,6 +346,15 @@ class SaveAddress {
     static constraints = {
        author(nullable:true)
        location(blank:false)
+    }
+}
+
+@Entity
+class SaveCustomValidation {
+    String title
+
+    static constraints = {
+        title(validator: { val, obj -> throw new IllegalStateException() })
     }
 }
 '''
