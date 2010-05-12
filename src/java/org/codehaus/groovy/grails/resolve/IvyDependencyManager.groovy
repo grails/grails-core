@@ -232,6 +232,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                        "org.apache.ant:ant-nodeps:1.7.1",
                        "org.apache.ant:ant-trax:1.7.1",
                        "jline:jline:0.9.91",
+                       "org.fusesource.jansi:jansi:1.2.1",
                        "xalan:serializer:2.7.1",
                        "org.grails:grails-docs:$grailsVersion",
                        "org.grails:grails-bootstrap:$grailsVersion",
