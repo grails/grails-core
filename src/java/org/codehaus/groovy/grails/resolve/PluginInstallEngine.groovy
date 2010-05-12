@@ -495,6 +495,12 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             metadata['plugins.' + pluginName] = pluginVersion
             metadata.persist()    		
     	}
+    	else {
+    		if(!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
+                metadata['plugins.' + pluginName] = pluginVersion
+                metadata.persist()    		    			
+    		}
+    	}
     }
 
 
