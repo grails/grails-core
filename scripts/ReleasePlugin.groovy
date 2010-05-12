@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.documentation.MetadataGeneratingMetaClassCreat
 import org.codehaus.groovy.grails.plugins.publishing.DefaultPluginPublisher
 import org.springframework.core.io.FileSystemResource
 import groovy.xml.DOMBuilder
+import groovy.xml.dom.DOMCategory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.Transformer
