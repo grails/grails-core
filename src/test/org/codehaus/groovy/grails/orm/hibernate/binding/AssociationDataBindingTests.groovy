@@ -397,4 +397,25 @@ class AssociationBindingAuthor {
         assertTrue "element is not an instance of a book, no binding occured!", Book.isInstance(author.moreBooks.iterator().next())
         assertEquals "Stephen King", author.name
     }
+
+    void testOneToManyWithIndexedParams() {
+        if(notYetImplemented()) return
+        def Book = ga.getDomainClass("AssociationBindingBook2").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+
+        assert Book.newInstance(title:"The Shining").save(flush:true)
+        assert Book.newInstance(title:"The Stand").save(flush:true)
+
+        def params = ['moreBooks[0]':'1', name:'Stephen King']
+
+        def author = Author.newInstance()
+
+        author.properties = params
+
+        assertNotNull "The books association should have been bound", author.moreBooks
+
+        assertEquals 1, author.moreBooks.size()
+        assertTrue "element is not an instance of a book, no binding occured!", Book.isInstance(author.moreBooks.iterator().next())
+        assertEquals "Stephen King", author.name
+    }
 }
