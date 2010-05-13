@@ -62,6 +62,28 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		
 	}
 	
+	public void testDecoratedByApplicationConventionForViewsNotRenderedByAController() throws Exception {
+        GrailsWebRequest webRequest = buildMockRequest();
+        MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
+        appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/");
+        ServletContext context = webRequest.getServletContext();
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
+        Config c = new Config(new MockServletConfig(context));
+        m.init(c, null, null);
+        HTMLPageParser parser = new HTMLPageParser();
+        String html = "<html><head><title>Foo title</title></head><body>here is the body</body></html>";
+
+        Page page = parser.parse( html.toCharArray() );
+        Decorator d = m.getDecorator(request, page);
+        assertNotNull(d);
+        assertEquals("/WEB-INF/grails-app/views/layouts/application.gsp", d.getPage());
+        assertEquals("application", d.getName());
+	}
+	
 	public void testDecoratedByApplicationConvention() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest();
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();

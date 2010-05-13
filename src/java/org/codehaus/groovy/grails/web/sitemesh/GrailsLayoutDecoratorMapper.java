@@ -124,14 +124,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 						return d;
 					}
 					else {
-						String defaultDecoratorName = null;
-						Map config = ConfigurationHolder.getFlatConfig();
-						if(config != null && config.containsKey("grails.sitemesh.default.layout")) {
-							defaultDecoratorName = config.get("grails.sitemesh.default.layout").toString();
-						} else {
-							defaultDecoratorName = "application";
-						}
-						d = getNamedDecorator(request, defaultDecoratorName);
+						d = getApplicationDefaultDecorator(request);
 						if(d != null) {
 							return d;
 						}
@@ -142,6 +135,10 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 
 			}
 			else {
+                Decorator d = getApplicationDefaultDecorator(request);
+                if(d != null) {
+                    return d;
+                }
 				return parent != null ? super.getDecorator(request, page) : null;
 			}
 		}
@@ -157,6 +154,20 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 			return parent != null ? super.getDecorator(request, page) : null;
 		}
 	}
+
+    protected Decorator getApplicationDefaultDecorator(
+            HttpServletRequest request) {
+        Decorator d;
+        String defaultDecoratorName = null;
+        Map config = ConfigurationHolder.getFlatConfig();
+        if(config != null && config.containsKey("grails.sitemesh.default.layout")) {
+        	defaultDecoratorName = config.get("grails.sitemesh.default.layout").toString();
+        } else {
+        	defaultDecoratorName = "application";
+        }
+        d = getNamedDecorator(request, defaultDecoratorName);
+        return d;
+    }
 
 	public Decorator getNamedDecorator(HttpServletRequest request, String name) {
 		if(StringUtils.isBlank(name))return null;
