@@ -140,11 +140,11 @@ public class FormTagLib3Tests extends AbstractGrailsTagTests {
 
         template = '<g:checkBox name="foo.bar" value="${test}" checked="${true}"/>'
 
-        assertOutputEquals('<input type="hidden" name="foo._bar" /><input type="checkbox" name="foo.bar" checked="checked" value="hello" id="foo.bar"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="_foo.bar" /><input type="checkbox" name="foo.bar" checked="checked" value="hello" id="foo.bar"  />', template, [test:"hello"])
 
         template = '<g:checkBox name="foo.bar" value="${test}" checked="${null}"/>'
 
-        assertOutputEquals('<input type="hidden" name="foo._bar" /><input type="checkbox" name="foo.bar" value="hello" id="foo.bar"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="_foo.bar" /><input type="checkbox" name="foo.bar" value="hello" id="foo.bar"  />', template, [test:"hello"])
     }
 
     void testCheckBoxUsesExpressionForDisable() {

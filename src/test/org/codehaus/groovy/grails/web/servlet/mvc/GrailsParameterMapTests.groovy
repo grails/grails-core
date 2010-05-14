@@ -23,6 +23,19 @@ class GrailsParameterMapTests extends GroovyTestCase {
 		assertTrue newMap.containsKey('vocalist')
 	}
 
+    void testMultiDimensionParamsWithUnderscore() {
+        mockRequest.addParameter("a.b.c", "on")
+        mockRequest.addParameter("_a.b.c", "")
+        theMap = new GrailsParameterMap(mockRequest);
+        assert theMap['a.b.c'] == "on"
+        assert theMap['_a.b.c'] == ""
+        assert theMap['a'] instanceof Map
+        assert theMap['a']['b'] instanceof Map
+        assert theMap['a']['b']['c'] == "on"
+        assert theMap['a']['_b.c'] == ""
+        assert theMap['a']['b']['_c'] == ""
+    }
+
     void testConversionHelperMethods() {
         def map = new GrailsParameterMap(mockRequest)
 

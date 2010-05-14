@@ -95,8 +95,14 @@ class GrailsParameterMap extends TypeConvertingMap  {
             // We have at least one sub-key, so extract the first element
             // of the nested key as the prfix. In other words, if we have
             // 'nestedKey' == "a.b.c", the prefix is "a".
-            final String nestedPrefix = nestedKey.substring(0, nestedIndex);
+            String nestedPrefix = nestedKey.substring(0, nestedIndex);
+            boolean prefixedByUnderscore = false;
 
+            // Use the same prefix even if it starts with an '_'
+            if(nestedPrefix.startsWith('_')) {
+                prefixedByUnderscore = true;
+                nestedPrefix = nestedPrefix[1..-1];
+            }
             // Let's see if we already have a value in the current map
             // for the prefix.
             Object prefixValue = nestedLevel.get(nestedPrefix);
@@ -112,10 +118,14 @@ class GrailsParameterMap extends TypeConvertingMap  {
             if (prefixValue instanceof Map) {
                 Map nestedMap = (Map)prefixValue;
                 if(nestedIndex < nestedKey.length()-1) {
-                    final String remainderOfKey = nestedKey.substring(nestedIndex + 1, nestedKey.length());
+                    String remainderOfKey = nestedKey.substring(nestedIndex + 1, nestedKey.length());
+                    // GRAILS-2486 Cascade the '_' prefix in order to bind checkboxes properly
+                    if (prefixedByUnderscore) {
+                        remainderOfKey = '_' + remainderOfKey;
+                    }
                     nestedMap.put(remainderOfKey,getParameterValue(requestMap, key) );
                     if(remainderOfKey.indexOf('.') >-1) {
-                        processNestedKeys(request, requestMap,key,remainderOfKey,nestedMap);
+                        processNestedKeys(request, requestMap, key, remainderOfKey, nestedMap);
                     }
                 }
             }
