@@ -42,6 +42,7 @@ target ( cleanCompiledSources: "Cleans compiled Java and Groovy sources" ) {
     ant.delete(dir:"${webInf}/classes")
     ant.delete(file:webXmlFile.absolutePath, failonerror:false)
     ant.delete(dir:"${projectWorkDir}/gspcompile", failonerror:false)
+    ant.delete(dir:"${projectWorkDir}/scriptCache", failonerror:false)
     ant.delete(dir:"${webInf}/lib")
     ant.delete(dir:"${basedir}/web-app/plugins")
     ant.delete(dir:classesDirPath)

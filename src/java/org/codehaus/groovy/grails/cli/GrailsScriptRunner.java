@@ -399,7 +399,7 @@ public class GrailsScriptRunner {
 
     private int callPluginOrGrailsScript(String scriptName) {
         // The directory where scripts are cached.
-        File scriptCacheDir = new File(settings.getGrailsWorkDir(), "scriptCache");
+        File scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
 
         // The class loader we will use to run Gant. It's the root
         // loader plus all the application's compiled classes.
