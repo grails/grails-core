@@ -111,6 +111,65 @@ class Publication {
         assertEquals 'leafy', results[0].name
 	}
 	
+    void testListDistinct() {
+        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+
+        assert plantCategoryClass.newInstance(name:"leafy")
+                       .addToPlants(goesInPatch:true, name:"lettuce")
+                       .addToPlants(goesInPatch:true, name:"cabbage")
+                       .save(flush:true)
+
+        assert plantCategoryClass.newInstance(name:"orange")
+                       .addToPlants(goesInPatch:true, name:"carrots")
+                       .addToPlants(goesInPatch:true, name:"pumpkin")
+                       .save(flush:true)
+
+        assert plantCategoryClass.newInstance(name:"grapes")
+                       .addToPlants(goesInPatch:false, name:"red")
+                       .addToPlants(goesInPatch:false, name:"white")
+                       .save(flush:true)
+
+        session.clear()
+
+        def categories = plantCategoryClass.withPlantsInPatch().listDistinct()
+        
+        assertEquals 2, categories.size()
+        def names = categories*.name
+        assertEquals 2, names.size()
+        assertTrue 'leafy' in names
+        assertTrue 'orange' in names
+    }
+    
+    void testListDistinct2() {
+        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+
+        assert plantCategoryClass.newInstance(name:"leafy")
+                       .addToPlants(goesInPatch:true, name:"lettuce")
+                       .addToPlants(goesInPatch:true, name:"cabbage")
+                       .save(flush:true)
+
+        assert plantCategoryClass.newInstance(name:"orange")
+                       .addToPlants(goesInPatch:true, name:"carrots")
+                       .addToPlants(goesInPatch:true, name:"pumpkin")
+                       .save(flush:true)
+
+        assert plantCategoryClass.newInstance(name:"grapes")
+                       .addToPlants(goesInPatch:false, name:"red")
+                       .addToPlants(goesInPatch:true, name:"white")
+                       .save(flush:true)
+
+        session.clear()
+
+        def categories = plantCategoryClass.withPlantsInPatch.listDistinct()
+
+        assertEquals 3, categories.size()
+        def names = categories*.name
+        assertEquals 3, names.size()
+        assertTrue 'leafy' in names
+        assertTrue 'orange' in names
+        assertTrue 'grapes' in names
+    }
+	
 	void testFindAllWhereAttachedToChainedNamedQueries() {
 		def publicationClass = ga.getDomainClass("Publication").clazz
 		def now = new Date()

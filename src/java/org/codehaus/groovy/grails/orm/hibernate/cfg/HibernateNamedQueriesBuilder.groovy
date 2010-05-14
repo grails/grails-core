@@ -16,7 +16,8 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
-import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
+import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
+import org.hibernate.criterion.CriteriaSpecification
 
 /**
  * A builder that implements the ORM named queries DSL
@@ -90,22 +91,33 @@ class NamedCriteriaProxy {
 		crit()
 	}
 
-    def list(Object[] params, Closure additionalCriteriaClosure = null) {
+    private listInternal(Object[] params, Closure additionalCriteriaClosure, Boolean isDistinct) {
         def listClosure = {
             queryBuilder = delegate
-			invokeCriteriaClosure(additionalCriteriaClosure)
-			def paramsMap
-			if (params && params[-1] instanceof Map) {
-				paramsMap = params[-1]
-			}
-			if (paramsMap?.max) {
+            invokeCriteriaClosure(additionalCriteriaClosure)
+            def paramsMap
+            if (params && params[-1] instanceof Map) {
+                paramsMap = params[-1]
+            }
+            if (paramsMap?.max) {
                 maxResults(paramsMap.max)
             }
             if (paramsMap?.offset) {
                 firstResult paramsMap.offset
             }
+            if(isDistinct) {
+                resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
+            }
         }
         domainClass.clazz.withCriteria(listClosure)
+    }
+
+    def list(Object[] params, Closure additionalCriteriaClosure = null) {
+        listInternal params, additionalCriteriaClosure, false
+    }
+
+    def listDistinct(Object[] params, Closure additionalCriteriaClosure = null) {
+        listInternal params, additionalCriteriaClosure, true
     }
 
     def call(Object[] params) {
