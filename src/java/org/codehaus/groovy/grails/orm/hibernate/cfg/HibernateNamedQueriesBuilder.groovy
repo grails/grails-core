@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
+import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.hibernate.criterion.CriteriaSpecification
@@ -193,14 +194,18 @@ class NamedCriteriaProxy {
         	def nextInChain = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass)
 			nextInChain.previousInChain = this
 		    return nextInChain(args)
-        } else if (domainClass.metaClass.getMetaProperty(methodName) &&
-                   !Collection.isAssignableFrom(domainClass.metaClass.getMetaProperty(methodName).type)) {
-        	def nestedCriteria = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass).criteriaClosure.clone()
-            nestedCriteria.delegate = queryBuilder
-            nestedCriteria(*args)
         } else {
-            queryBuilder."${methodName}"(*args)
+            def metaProperty = domainClass.metaClass.getMetaProperty(methodName)
+            if(metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
+                def staticProperty = metaProperty.getProperty(domainClass)
+                if(staticProperty instanceof NamedCriteriaProxy) {
+                    def nestedCriteria = staticProperty.criteriaClosure.clone()
+                    nestedCriteria.delegate = queryBuilder
+                    return nestedCriteria(*args)
+                }
+            }
         }
+        queryBuilder."${methodName}"(*args)
     }
 
     private getPreparedCriteriaClosure(additionalCriteriaClosure = null) {
