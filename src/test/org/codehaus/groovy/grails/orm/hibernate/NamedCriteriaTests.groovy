@@ -7,6 +7,29 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+class PlantCategory {
+    Long id
+    Long version
+    Set plants
+    String name
+
+    static hasMany = [plants:Plant]
+                                
+    static namedQueries = {
+        withPlantsInPatch {
+            plants {
+                eq 'goesInPatch', true
+            }
+        }
+    }
+}
+
+class Plant {
+    Long id
+    Long version
+    boolean goesInPatch
+    String name
+}
 
 class Publication {
    Long id
@@ -70,6 +93,23 @@ class Publication {
 ''')
     }
     
+	void testNamedQueryWithRelationshipInCriteria() {
+        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+
+        assert plantCategoryClass.newInstance(name:"leafy")
+                       .addToPlants(goesInPatch:true, name:"lettuce")
+                       .save(flush:true)
+
+        assert plantCategoryClass.newInstance(name:"grapes")
+                       .addToPlants(goesInPatch:false, name:"white")
+                       .save(flush:true)
+
+        session.clear()
+
+        def results = plantCategoryClass.withPlantsInPatch.list()
+        assertEquals 1, results.size()
+        assertEquals 'leafy', results[0].name
+	}
 	
 	void testFindAllWhereAttachedToChainedNamedQueries() {
 		def publicationClass = ga.getDomainClass("Publication").clazz

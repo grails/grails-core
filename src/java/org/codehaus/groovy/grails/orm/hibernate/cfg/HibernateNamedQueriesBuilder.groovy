@@ -181,7 +181,8 @@ class NamedCriteriaProxy {
         	def nextInChain = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass)
 			nextInChain.previousInChain = this
 		    return nextInChain(args)
-        } else if (domainClass.metaClass.getMetaProperty(methodName)) {
+        } else if (domainClass.metaClass.getMetaProperty(methodName) &&
+                   !Collection.isAssignableFrom(domainClass.metaClass.getMetaProperty(methodName).type)) {
         	def nestedCriteria = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass).criteriaClosure.clone()
             nestedCriteria.delegate = queryBuilder
             nestedCriteria(*args)
