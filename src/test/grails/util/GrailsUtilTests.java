@@ -36,7 +36,7 @@ public class GrailsUtilTests extends TestCase {
 
 
     public void testGrailsVersion() {
-        assertEquals("1.3.1", GrailsUtil.getGrailsVersion());
+        assertEquals("1.3.2.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
     }
 
     protected void tearDown() throws Exception {
