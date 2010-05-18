@@ -422,8 +422,14 @@ public abstract class AbstractClausedStaticPersistentMethod extends
         // get the sequence clauses
         final String querySequence;
         int groupCount = match.groupCount();
-        if (groupCount == 4) {
-            String booleanProperty = match.group(2);
+        if (groupCount == 6) {
+            String booleanProperty = match.group(3);
+            if(booleanProperty == null) {
+                booleanProperty = match.group(6);
+                querySequence = null;
+            } else {
+                querySequence = match.group(5);
+            }
             Boolean arg = Boolean.TRUE;
             if (booleanProperty.matches("Not[A-Z].*")) {
                 booleanProperty = booleanProperty.substring(3);
@@ -432,54 +438,59 @@ public abstract class AbstractClausedStaticPersistentMethod extends
             GrailsMethodExpression booleanExpression = GrailsMethodExpression.create(this.application, clazz, booleanProperty );
             booleanExpression.setArguments(new Object[]{arg});
             expressions.add(booleanExpression);
-            querySequence = match.group(4);
         } else {
             querySequence = match.group(2);
         }
         // if it contains operator and split
         boolean containsOperator = false;
         String operatorInUse = null;
+        if (querySequence != null) {
+            for (int i = 0; i < operators.length; i++) {
+                Matcher currentMatcher = operatorPatterns[i]
+                        .matcher(querySequence);
+                if (currentMatcher.find()) {
+                    containsOperator = true;
+                    operatorInUse = this.operators[i];
 
-        for (int i = 0; i < operators.length; i++) {
-            Matcher currentMatcher = operatorPatterns[i].matcher( querySequence );
-            if (currentMatcher.find()) {
-                containsOperator = true;
-                operatorInUse = this.operators[i];
+                    queryParameters = new String[2];
+                    queryParameters[0] = currentMatcher.group(1);
+                    queryParameters[1] = currentMatcher.group(3)
+                            + currentMatcher.group(4);
 
-                queryParameters = new String[2];
-                queryParameters[0] = currentMatcher.group(1);
-                queryParameters[1] = currentMatcher.group(3) + currentMatcher.group(4);
+                    // loop through query parameters and create expressions
+                    // calculating the numBer of arguments required for the
+                    // expression
+                    int argumentCursor = 0;
+                    for (String queryParameter : queryParameters) {
+                        GrailsMethodExpression currentExpression = GrailsMethodExpression
+                                .create(this.application, clazz, queryParameter);
+                        totalRequiredArguments += currentExpression.argumentsRequired;
+                        // populate the arguments into the GrailsExpression from
+                        // the argument list
+                        Object[] currentArguments = new Object[currentExpression.argumentsRequired];
+                        if ((argumentCursor + currentExpression.argumentsRequired) > arguments.length)
+                            throw new MissingMethodException(methodName, clazz,
+                                    arguments);
 
-                // loop through query parameters and create expressions
-                // calculating the numBer of arguments required for the expression
-                int argumentCursor = 0;
-                for (String queryParameter : queryParameters) {
-                    GrailsMethodExpression currentExpression = GrailsMethodExpression.create(this.application, clazz, queryParameter);
-                    totalRequiredArguments += currentExpression.argumentsRequired;
-                    // populate the arguments into the GrailsExpression from the argument list
-                    Object[] currentArguments = new Object[currentExpression.argumentsRequired];
-                    if ((argumentCursor + currentExpression.argumentsRequired) > arguments.length)
-                        throw new MissingMethodException(methodName, clazz, arguments);
-
-                    for (int k = 0; k < currentExpression.argumentsRequired; k++, argumentCursor++) {
-                        currentArguments[k] = arguments[argumentCursor];
+                        for (int k = 0; k < currentExpression.argumentsRequired; k++, argumentCursor++) {
+                            currentArguments[k] = arguments[argumentCursor];
+                        }
+                        try {
+                            currentExpression.setArguments(currentArguments);
+                        } catch (IllegalArgumentException iae) {
+                            LOG.debug(iae.getMessage(), iae);
+                            throw new MissingMethodException(methodName, clazz,
+                                    arguments);
+                        }
+                        // add to list of expressions
+                        expressions.add(currentExpression);
                     }
-                    try {
-                        currentExpression.setArguments(currentArguments);
-                    }
-                    catch (IllegalArgumentException iae) {
-                        LOG.debug(iae.getMessage(), iae);
-                        throw new MissingMethodException(methodName, clazz, arguments);
-                    }
-                    // add to list of expressions
-                    expressions.add(currentExpression);
+                    break;
                 }
-                break;
             }
         }
-
         // otherwise there is only one expression
-        if (!containsOperator) {
+        if (!containsOperator && querySequence != null) {
             GrailsMethodExpression solo = GrailsMethodExpression.create(this.application, clazz,querySequence );
 
             if (solo.argumentsRequired > arguments.length)

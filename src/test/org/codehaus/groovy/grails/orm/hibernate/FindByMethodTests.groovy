@@ -104,8 +104,19 @@ class FindByBooleanPropertyBook {
         book = bookClass.findPublishedByTitleOrAuthor('Fly Fishing For Everyone', 'Dierk')
         assertEquals 'GINA', book.title
 
+        assertNotNull bookClass.findPublished()
+
+        book = bookClass.findNotPublished()
+        assertEquals 'Fly Fishing For Everyone', book?.title
+
         def books = bookClass.findAllPublishedByTitle('DGGv2')
         assertEquals 2, books?.size()
+
+        books = bookClass.findAllPublished()
+        assertEquals 3, books?.size()
+
+        books = bookClass.findAllNotPublished()
+        assertEquals 1, books?.size()
 
         books = bookClass.findAllPublishedByTitleAndAuthor('DGGv2', 'Graeme')
         assertEquals 1, books?.size()

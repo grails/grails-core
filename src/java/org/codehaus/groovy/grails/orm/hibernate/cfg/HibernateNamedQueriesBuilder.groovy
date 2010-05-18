@@ -45,8 +45,8 @@ class HibernateNamedQueriesBuilder {
         def sessionFactory = ctx.getBean('sessionFactory')
 
         dynamicMethods = [
-                new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
                 new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
                 new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
                 new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
                 new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
