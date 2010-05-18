@@ -114,6 +114,30 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     }
 
     @Override
+    protected void initStrategies(ApplicationContext context) {
+        super.initStrategies(context);
+        initLocaleResolver(context);
+    }
+
+    // copied from base class since it's private
+    private void initLocaleResolver(ApplicationContext context) {
+        try {
+            localeResolver = context.getBean(LOCALE_RESOLVER_BEAN_NAME, LocaleResolver.class);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Using LocaleResolver [" + localeResolver + "]");
+            }
+        }
+        catch (NoSuchBeanDefinitionException ex) {
+            // We need to use the default.
+            localeResolver = getDefaultStrategy(context, LocaleResolver.class);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Unable to locate LocaleResolver with name '" + LOCALE_RESOLVER_BEAN_NAME +
+                        "': using default [" + localeResolver + "]");
+            }
+        }
+    }
+
+    @Override
     protected WebApplicationContext createWebApplicationContext(WebApplicationContext parent) throws BeansException {
         WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
         // construct the SpringConfig for the container managed application
@@ -197,10 +221,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     @Override
     protected void doDispatch(final HttpServletRequest request, HttpServletResponse response) throws Exception {
 
+        request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, localeResolver);
+
         HttpServletRequest processedRequest = request;
         HandlerExecutionChain mappedHandler = null;
         int interceptorIndex = -1;
-        final LocaleResolver localeResolver = (LocaleResolver)request.getAttribute(LOCALE_RESOLVER_ATTRIBUTE);
 
         // Expose current LocaleResolver and request as LocaleContext.
         LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
@@ -414,3 +439,4 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return super.getHandler(request, cache);
     }
 }
+
