@@ -21,6 +21,15 @@ class PlantCategory {
                 eq 'goesInPatch', true
             }
         }
+        withPlantsThatStartWithG {
+            plants {
+                like 'name', 'G%'
+            }
+        }
+        withPlantsInPatchThatStartWithG {
+            withPlantsInPatch()
+            withPlantsThatStartWithG()
+        }
     }
 }
 
@@ -97,18 +106,32 @@ class Publication {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
-                       .addToPlants(goesInPatch:true, name:"lettuce")
+                       .addToPlants(goesInPatch:true, name:"Lettuce")
+                       .save(flush:true)
+
+        assert plantCategoryClass.newInstance(name:"groovy")
+                       .addToPlants(goesInPatch: true, name: 'Gplant')
                        .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"grapes")
-                       .addToPlants(goesInPatch:false, name:"white")
+                       .addToPlants(goesInPatch:false, name:"Gray")
                        .save(flush:true)
 
         session.clear()
 
         def results = plantCategoryClass.withPlantsInPatch.list()
+        assertEquals 2, results.size()
+        assertTrue 'leafy' in results*.name
+        assertTrue 'groovy' in results*.name
+
+        results = plantCategoryClass.withPlantsThatStartWithG.list()
+        assertEquals 2, results.size()
+        assertTrue 'groovy' in results*.name
+        assertTrue 'grapes' in results*.name
+
+        results = plantCategoryClass.withPlantsInPatchThatStartWithG.list()
         assertEquals 1, results.size()
-        assertEquals 'leafy', results[0].name
+        assertEquals 'groovy', results[0].name
 	}
 	
     void testListDistinct() {

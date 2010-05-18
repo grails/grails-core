@@ -31,6 +31,7 @@ class HibernateNamedQueriesBuilder {
 
     private final domainClass
     private final dynamicMethods
+    private boolean initialized = false
 
     /**
      * @param domainClass the GrailsDomainClass defining the named queries
@@ -59,6 +60,7 @@ class HibernateNamedQueriesBuilder {
         closure.resolveStrategy = Closure.DELEGATE_ONLY
         closure.delegate = this
         closure.call()
+        initialized = true
     }
 
     private handleMethodMissing = {String name, args ->
@@ -71,7 +73,7 @@ class HibernateNamedQueriesBuilder {
     }
 
     def methodMissing(String name, args) {
-        if (args && args[0] instanceof Closure) {
+        if (args && args[0] instanceof Closure && !initialized) {
             return handleMethodMissing(name, args)
         }
         throw new MissingMethodException(name, HibernateNamedQueriesBuilder, args)
