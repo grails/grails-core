@@ -32,7 +32,7 @@ public class FindAllByPersistentMethod extends AbstractClausedStaticPersistentMe
 
     private static final String OPERATOR_OR = "Or";
     private static final String OPERATOR_AND = "And";
-    private static final String METHOD_PATTERN = "(findAllBy)(\\w+)";
+    private static final String METHOD_PATTERN = "(findAllBy)([A-Z]\\w*)";
     private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
 
     /**

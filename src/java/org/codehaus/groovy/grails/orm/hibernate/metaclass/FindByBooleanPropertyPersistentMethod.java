@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  */
 public class FindByBooleanPropertyPersistentMethod extends FindByPersistentMethod {
 
-	private static final String METHOD_PATTERN = "(find)((\\w+)(By)(\\w+)|(\\w++))";
+	private static final String METHOD_PATTERN = "(find)((\\w+)(By)([A-Z]\\w*)|(\\w++))";
 
 	public FindByBooleanPropertyPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
  		super(application,sessionFactory, classLoader);

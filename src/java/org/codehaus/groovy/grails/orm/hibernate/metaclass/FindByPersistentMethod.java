@@ -47,7 +47,7 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
     private static final String OPERATOR_OR = "Or";
     private static final String OPERATOR_AND = "And";
     
-    private static final String METHOD_PATTERN = "(findBy)(\\w+)";
+    private static final String METHOD_PATTERN = "(findBy)([A-Z]\\w*)";
     private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
 
     /**

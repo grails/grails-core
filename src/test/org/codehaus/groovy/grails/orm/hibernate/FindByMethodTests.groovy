@@ -35,6 +35,12 @@ class FindByBooleanPropertyBook {
     String title
     Boolean published
 }
+class Highway {
+    Long id
+    Long version
+    Boolean bypassed
+    String name
+}
 '''
     }
 
@@ -80,6 +86,50 @@ class FindByBooleanPropertyBook {
     }
 
     void testBooleanPropertyQuery() {
+        def highwayClass = ga.getDomainClass('Highway').clazz
+        assert highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
+        assert highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
+        assert highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
+        assert highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
+
+        def highways = highwayClass.findAllBypassedByName('Not Bypassed Highway')
+        assertEquals 0, highways?.size()
+
+        highways = highwayClass.findAllNotBypassedByName('Not Bypassed Highway')
+        assertEquals 2, highways?.size()
+        assertEquals 'Not Bypassed Highway', highways[0].name
+        assertEquals 'Not Bypassed Highway', highways[1].name
+
+        highways = highwayClass.findAllBypassedByName('Bypassed Highway')
+        assertEquals 2, highways?.size()
+        assertEquals 'Bypassed Highway', highways[0].name
+        assertEquals 'Bypassed Highway', highways[1].name
+
+        highways = highwayClass.findAllNotBypassedByName('Bypassed Highway')
+        assertEquals 0, highways?.size()
+
+        highways = highwayClass.findAllBypassed()
+        assertEquals 2, highways?.size()
+        assertEquals 'Bypassed Highway', highways[0].name
+        assertEquals 'Bypassed Highway', highways[1].name
+
+        highways = highwayClass.findAllNotBypassed()
+        assertEquals 2, highways?.size()
+        assertEquals 'Not Bypassed Highway', highways[0].name
+        assertEquals 'Not Bypassed Highway', highways[1].name
+
+        def highway = highwayClass.findNotBypassed()
+        assertEquals 'Not Bypassed Highway', highway?.name
+
+        highway = highwayClass.findBypassed()
+        assertEquals 'Bypassed Highway', highway?.name
+
+        highway = highwayClass.findNotBypassedByName('Not Bypassed Highway')
+        assertEquals 'Not Bypassed Highway', highway?.name
+
+        highway = highwayClass.findBypassedByName('Bypassed Highway')
+        assertEquals 'Bypassed Highway', highway?.name
+
         def bookClass = ga.getDomainClass("FindByBooleanPropertyBook").clazz
         assert bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
         assert bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
