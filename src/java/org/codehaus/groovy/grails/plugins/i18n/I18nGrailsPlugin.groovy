@@ -16,109 +16,114 @@
 package org.codehaus.groovy.grails.plugins.i18n
 
 import grails.util.BuildSettingsHolder
+import grails.util.Environment
 import grails.util.GrailsUtil
+
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
+
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
+
 import org.springframework.core.io.ContextResource
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
-import grails.util.Environment
 
 /**
- * A plug-in that configures Grails' internationalisation support 
- * 
+ * A plugin that configures Grails' internationalisation support.
+ *
  * @author Graeme Rocher
  * @since 0.4
  */
 class I18nGrailsPlugin {
+
     private static LOG = LogFactory.getLog(I18nGrailsPlugin)
-    def baseDir = "grails-app/i18n"
-	def version = grails.util.GrailsUtil.getGrailsVersion()
-	def watchedResources = "file:./${baseDir}/**/*.properties".toString()
-	
-	def doWithSpring = {
-		// find i18n resource bundles and resolve basenames
-		def baseNames = [] as Set
+
+    String baseDir = "grails-app/i18n"
+    String version = GrailsUtil.getGrailsVersion()
+    String watchedResources = "file:./${baseDir}/**/*.properties".toString()
+
+    def doWithSpring = {
+        // find i18n resource bundles and resolve basenames
+        Set baseNames = []
 
         def messageResources
-        if(application.warDeployed) {
+        if (application.warDeployed) {
             messageResources = parentCtx?.getResources("**/WEB-INF/${baseDir}/**/*.properties")?.toList()
         }
         else {
             messageResources = plugin.watchedResources
         }
 
-        if(messageResources) {
-
-            for( resource in messageResources) {
+        if (messageResources) {
+            for (resource in messageResources) {
                 // Extract the file path of the file's parent directory
                 // that comes after "grails-app/i18n".
-                def path
+                String path
                 if (resource instanceof ContextResource) {
-                	path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
+                    path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
                 }
                 else {
-                	path = StringUtils.substringAfter(resource.path, baseDir)
+                    path = StringUtils.substringAfter(resource.path, baseDir)
                 }
 
                 // look for an underscore in the file name (not the full path)
-                def fileName = resource.filename
-                def firstUnderscore = fileName.indexOf('_')
+                String fileName = resource.filename
+                int firstUnderscore = fileName.indexOf('_')
 
-                if(firstUnderscore > 0) {
-					// grab everyting up to but not including
-					// the first underscore in the file name
-					def numberOfCharsToRemove = fileName.length() - firstUnderscore
-					def lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
-				    path = path[0..lastCharacterToRetain]
-				} else {
-					// Lop off the extension - the "basenames" property in the
-					// message source cannot have entries with an extension.
-					path -= ".properties"
-				}
+                if (firstUnderscore > 0) {
+                    // grab everyting up to but not including
+                    // the first underscore in the file name
+                    int numberOfCharsToRemove = fileName.length() - firstUnderscore
+                    int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
+                    path = path[0..lastCharacterToRetain]
+                }
+                else {
+                    // Lop off the extension - the "basenames" property in the
+                    // message source cannot have entries with an extension.
+                    path -= ".properties"
+                }
                 baseNames << "WEB-INF/" + baseDir + path
             }
         }
 
-		LOG.debug("Creating messageSource with basenames: " + baseNames);
+        LOG.debug "Creating messageSource with basenames: $baseNames"
 
         messageSource(PluginAwareResourceBundleMessageSource) {
-			basenames = baseNames.toArray()
+            basenames = baseNames.toArray()
             pluginManager = manager
-            if(Environment.current.isReloadEnabled()) {
+            if (Environment.current.isReloadEnabled()) {
                 cacheSeconds = 5
             }
         }
-		localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
-			paramName = "lang"
-		}
-		localeResolver(SessionLocaleResolver) 
-	}
 
+        localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
+            paramName = "lang"
+        }
+
+        localeResolver(SessionLocaleResolver) 
+    }
 
     def onChange = { event ->
-		def context = event.ctx
-		if (!context) {
-			log.debug("Application context not found. Can't reload")
-			return
-		}
+        def context = event.ctx
+        if (!context) {
+            log.debug("Application context not found. Can't reload")
+            return
+        }
 
         def resourcesDir = BuildSettingsHolder?.settings?.resourcesDir?.path
-        if(resourcesDir) {            
-            def i18nDir = "${resourcesDir}/grails-app/i18n"
+        if (resourcesDir) {            
+            String i18nDir = "${resourcesDir}/grails-app/i18n"
 
             def ant = new AntBuilder()
 
             def nativeascii = event.application.config.grails.enable.native2ascii
             nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
-            if(nativeascii) {
+            if (nativeascii) {
                 ant.native2ascii(src:"./grails-app/i18n",
                                  dest:i18nDir,
                                  includes:"*.properties",
                                  encoding:"UTF-8")
-
             }
             else {
                 ant.copy(todir:i18nDir) {
@@ -127,13 +132,12 @@ class I18nGrailsPlugin {
             }
         }
 
-        def messageSource = context.getBean("messageSource")
-		if (messageSource instanceof ReloadableResourceBundleMessageSource) {
-			messageSource.clearCache()
-		}
-		else {
-			LOG.warn("Bean messageSource is not an instance of org.springframework.context.support.ReloadableResourceBundleMessageSource. Can't reload")
-		}
-	}
+        def messageSource = context.messageSource
+        if (messageSource instanceof ReloadableResourceBundleMessageSource) {
+            messageSource.clearCache()
+        }
+        else {
+            LOG.warn "Bean messageSource is not an instance of ${ReloadableResourceBundleMessageSource.name}. Can't reload"
+        }
+    }
 }
-
