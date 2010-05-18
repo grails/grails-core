@@ -68,13 +68,18 @@ public class FindAllByPersistentMethod extends AbstractClausedStaticPersistentMe
                     }
                     for (Object expression : expressions) {
                         GrailsMethodExpression current = (GrailsMethodExpression) expression;
-                        dis.add(current.getCriterion());
+                        if (GrailsMethodExpression.FORCE_NO_RESULTS != current.getCriterion()) {
+                            dis.add(current.getCriterion());
+                        }
                     }
                     c.add(dis);
                 }
                 else {
                     for (Object expression : expressions) {
                         GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                        if (GrailsMethodExpression.FORCE_NO_RESULTS == current.getCriterion()) {
+                            return Collections.emptyList();
+                        }
                         c.add(current.getCriterion());
                     }
                 }

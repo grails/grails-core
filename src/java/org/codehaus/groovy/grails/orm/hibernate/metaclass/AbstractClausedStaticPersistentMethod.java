@@ -76,6 +76,15 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         private GrailsApplication application;
         private TypeConverter converter = new SimpleTypeConverter();
 
+        /**
+         * Used as an indication that an expression will return no results, so stop processing and return nothing.
+         */
+        static final Criterion FORCE_NO_RESULTS = new Criterion() {
+            private static final long serialVersionUID = 1L;
+            public TypedValue[] getTypedValues(Criteria c, CriteriaQuery q) { return null; }
+            public String toSqlString(Criteria c, CriteriaQuery q) { return null; }
+        };
+
         GrailsMethodExpression(GrailsApplication application, Class<?> targetClass,
                 String propertyName, String type, int argumentsRequired, boolean negation) {
             this.application = application;
@@ -332,7 +341,11 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                     @SuppressWarnings("unchecked")
                     @Override
                     Criterion createCriterion() {
-                        return Restrictions.in(propertyName, (Collection)arguments[0]);
+                        Collection collection = (Collection)arguments[0];
+                        if (collection.isEmpty()) {
+                            return FORCE_NO_RESULTS;
+                        }
+                        return Restrictions.in(propertyName, collection);
                     }
                 };
             }
