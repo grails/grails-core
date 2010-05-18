@@ -1280,7 +1280,6 @@ class MappingBuilder {
     def mapping = [autoTimestamp: true]
 
     void methodMissing(String name, args) {
-        println "mapping $name = $args"
         mapping[name] = args[0]
     }
 }
