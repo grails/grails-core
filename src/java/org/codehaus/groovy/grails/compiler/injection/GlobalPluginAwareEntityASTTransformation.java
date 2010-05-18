@@ -15,6 +15,11 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.PluginBuildSettings;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -28,62 +33,70 @@ import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 /**
  * This AST transformation automatically annotates any class
- * with @Plugin(name="foo") if it is a plugin resource
+ * with @Plugin(name="foo") if it is a plugin resource.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class GlobalPluginAwareEntityASTTransformation implements ASTTransformation {
+
     private boolean disableTransformation = Boolean.getBoolean("disable.grails.plugin.transform");
+
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
-        if(disableTransformation) return;
-        ASTNode astNode = astNodes[0];
-
-        if(astNode instanceof ModuleNode) {
-            ModuleNode moduleNode = (ModuleNode) astNode;
-
-            List classes = moduleNode.getClasses();
-            if(classes.size()>0) {
-                ClassNode classNode = (ClassNode) classes.get(0);
-                if(classNode.isAnnotationDefinition()) return;
-                File sourcePath = new File(sourceUnit.getName());
-                try {
-                    String absolutePath = sourcePath.getCanonicalPath();
-                    PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
-                    if(pluginBuildSettings!=null) {
-
-                        GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(absolutePath);
-
-                        if(info!=null) {
-                            final ClassNode annotation = new ClassNode(GrailsPlugin.class);
-                            final List list = classNode.getAnnotations(annotation);
-                            if(list.size()==0) {
-                                final AnnotationNode annotationNode = new AnnotationNode(annotation);
-                                annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.NAME, new ConstantExpression(info.getName()));
-                                annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.VERSION, new ConstantExpression(info.getVersion()));
-                                annotationNode.setRuntimeRetention(true);
-                                annotationNode.setClassRetention(true);
-
-
-                                classNode.addAnnotation(annotationNode);
-                            }
-                        }
-                    }
-                }
-                catch (IOException e) {
-                    // ignore
-                }
-
-            }
-
+        if (disableTransformation) {
+            return;
         }
 
+        ASTNode astNode = astNodes[0];
+        if (!(astNode instanceof ModuleNode)) {
+            return;
+        }
+
+        ModuleNode moduleNode = (ModuleNode) astNode;
+        List<?> classes = moduleNode.getClasses();
+        if (classes.isEmpty()) {
+            return;
+        }
+
+        ClassNode classNode = (ClassNode) classes.get(0);
+        if (classNode.isAnnotationDefinition()) {
+            return;
+        }
+
+        File sourcePath = new File(sourceUnit.getName());
+        try {
+            String absolutePath = sourcePath.getCanonicalPath();
+            PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
+            if (pluginBuildSettings == null) {
+                return;
+            }
+
+            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(absolutePath);
+            if (info == null) {
+                return;
+            }
+
+            final ClassNode annotation = new ClassNode(GrailsPlugin.class);
+            final List<?> list = classNode.getAnnotations(annotation);
+            if (!list.isEmpty()) {
+                return;
+            }
+
+            final AnnotationNode annotationNode = new AnnotationNode(annotation);
+            annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.NAME,
+                    new ConstantExpression(info.getName()));
+            annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.VERSION,
+                    new ConstantExpression(info.getVersion()));
+            annotationNode.setRuntimeRetention(true);
+            annotationNode.setClassRetention(true);
+
+            classNode.addAnnotation(annotationNode);
+        }
+        catch (IOException e) {
+            // ignore
+        }
     }
 }

@@ -15,6 +15,14 @@
 package org.codehaus.groovy.grails.scaffolding.view;
 
 import grails.util.GrailsUtil;
+
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -26,13 +34,6 @@ import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.View;
 
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Overrides the default Grails view resolver and resolves scaffolded views at runtime
  *
@@ -41,11 +42,11 @@ import java.util.concurrent.ConcurrentHashMap;
  *        <p/>
  *        Created: Nov 24, 2008
  */
-public class ScaffoldingViewResolver extends GrailsViewResolver implements ApplicationContextAware{
+public class ScaffoldingViewResolver extends GrailsViewResolver implements ApplicationContextAware {
 
     GrailsTemplateGenerator templateGenerator;
-    Map scaffoldedActionMap = Collections.EMPTY_MAP;
-    Map scaffoldedDomains = Collections.EMPTY_MAP;
+    Map<String, List<String>> scaffoldedActionMap = Collections.emptyMap();
+    Map<String, GrailsDomainClass> scaffoldedDomains = Collections.emptyMap();
 
     static final Map<ViewKey, View> scaffoldedViews = new ConcurrentHashMap<ViewKey, View>();
     static final Log LOG = LogFactory.getLog(ScaffoldingViewResolver.class);
@@ -57,58 +58,45 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         scaffoldedViews.clear();
     }
 
-    public void setTemplateGenerator(GrailsTemplateGenerator templateGenerator) {
-        this.templateGenerator = templateGenerator;
-    }
-
-    public void setScaffoldedActionMap(Map scaffoldedActionMap) {
-        this.scaffoldedActionMap = scaffoldedActionMap;
-    }
-
-    public void setScaffoldedDomains(Map scaffoldedDomains) {
-        this.scaffoldedDomains = scaffoldedDomains;
-    }
-
     @Override
     protected View loadView(String viewName, Locale locale) throws Exception {
         final View resolvedView = super.loadView(viewName, locale);
-        if(templateGenerator == null || resolvedView instanceof GroovyPageView) {
+        if (templateGenerator == null || resolvedView instanceof GroovyPageView) {
             return resolvedView;
         }
-        else {
-            GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-            List controllerActions = (List) scaffoldedActionMap.get(webRequest.getControllerName());
-            if(controllerActions != null && controllerActions.contains(webRequest.getActionName())) {
-                GrailsDomainClass domainClass = (GrailsDomainClass) scaffoldedDomains.get(webRequest.getControllerName());
-                if(domainClass!=null) {
-                    String viewFileName;
-                    final int i = viewName.lastIndexOf('/');
-                    if(i > -1) {
-                        viewFileName = viewName.substring(i, viewName.length());
-                    }
-                    else {
-                        viewFileName = viewName;
-                    }
-                    final ViewKey viewKey = new ViewKey(webRequest.getControllerName(), viewFileName);
-                    View v = scaffoldedViews.get(viewKey);
-                    if( v == null) {
-                        String viewCode = null;
-                        try {
-                            viewCode = generateViewSource(webRequest, domainClass);
-                        }
-                        catch (Exception e) {
-                            GrailsUtil.deepSanitize(e);
-                            LOG.error("Error generating scaffolded view [" + viewName + "]: " + e.getMessage(),e);        
-                            return resolvedView;
-                        }
-                        v = createScaffoldedView(viewName, viewCode);
-                        scaffoldedViews.put(viewKey, v);
-                    }
-                    if(v!=null) return v;
 
+        GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+        List<String> controllerActions = scaffoldedActionMap.get(webRequest.getControllerName());
+        if (controllerActions != null && controllerActions.contains(webRequest.getActionName())) {
+            GrailsDomainClass domainClass = scaffoldedDomains.get(webRequest.getControllerName());
+            if (domainClass != null) {
+                String viewFileName;
+                final int i = viewName.lastIndexOf('/');
+                if (i > -1) {
+                    viewFileName = viewName.substring(i, viewName.length());
+                }
+                else {
+                    viewFileName = viewName;
+                }
+                final ViewKey viewKey = new ViewKey(webRequest.getControllerName(), viewFileName);
+                View v = scaffoldedViews.get(viewKey);
+                if (v == null) {
+                    String viewCode = null;
+                    try {
+                        viewCode = generateViewSource(webRequest, domainClass);
+                    }
+                    catch (Exception e) {
+                        GrailsUtil.deepSanitize(e);
+                        LOG.error("Error generating scaffolded view [" + viewName + "]: " + e.getMessage(),e);
+                        return resolvedView;
+                    }
+                    v = createScaffoldedView(viewName, viewCode);
+                    scaffoldedViews.put(viewKey, v);
+                }
+                if (v != null) {
+                    return v;
                 }
             }
-            
         }
         return resolvedView;
     }
@@ -156,5 +144,16 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
             return result;
         }
     }
-}
 
+     public void setTemplateGenerator(GrailsTemplateGenerator templateGenerator) {
+        this.templateGenerator = templateGenerator;
+    }
+
+    public void setScaffoldedActionMap(Map scaffoldedActionMap) {
+        this.scaffoldedActionMap = scaffoldedActionMap;
+    }
+
+    public void setScaffoldedDomains(Map scaffoldedDomains) {
+        this.scaffoldedDomains = scaffoldedDomains;
+    }
+}

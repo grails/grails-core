@@ -15,6 +15,15 @@
 package org.codehaus.groovy.grails.compiler;
 
 import groovy.lang.GroovyClassLoader;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
@@ -24,30 +33,20 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * A GroovyClassLoader that supports reloading using inner class loaders
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jul 27, 2007
- *        Time: 11:53:02 AM
  */
 public class GrailsClassLoader extends GroovyClassLoader {
 
     private GrailsResourceLoader grailsResourceLoader;
-    private Map innerClassLoaderMap = new ConcurrentHashMap();
+    private Map<String, GroovyClassLoader> innerClassLoaderMap = new ConcurrentHashMap<String, GroovyClassLoader>();
     private Map<String,MultipleCompilationErrorsException> compilationErrors = new ConcurrentHashMap<String,MultipleCompilationErrorsException>();
 
     public GrailsClassLoader() {
+        // default
     }
 
     public GrailsClassLoader(ClassLoader parent, CompilerConfiguration config, GrailsResourceLoader resourceLoader) {
@@ -60,13 +59,13 @@ public class GrailsClassLoader extends GroovyClassLoader {
     }
 
     public MultipleCompilationErrorsException getCompilationError() {
-        if(hasCompilationErrors()) {
+        if (hasCompilationErrors()) {
             return compilationErrors.values().iterator().next();
         }
         return null;
     }
 
-    public Class reloadClass(String name) {
+    public Class<?> reloadClass(String name) {
         try {
             Resource resourceURL = loadGroovySource(name);
             GroovyClassLoader innerLoader = new GrailsAwareClassLoader(this);
@@ -75,12 +74,13 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
             try {
                 inputStream = resourceURL.getInputStream();
-                Class reloadedClass = innerLoader.parseClass(DefaultGroovyMethods.getText(inputStream), name);
+                Class<?> reloadedClass = innerLoader.parseClass(
+                        DefaultGroovyMethods.getText(inputStream), name);
                 compilationErrors.remove(name);
                 innerClassLoaderMap.put(name, innerLoader);
                 return reloadedClass;
             }
-            catch(MultipleCompilationErrorsException e) {
+            catch (MultipleCompilationErrorsException e) {
                 compilationErrors.put(name, e);
                 throw e;
             }
@@ -88,16 +88,10 @@ public class GrailsClassLoader extends GroovyClassLoader {
                 throw new CompilationFailedException("Error opening stream to class " + name + " with URL " + resourceURL, e);
             }
             finally {
-                try {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
-                } catch (IOException e) {
-                   // ignore
-                }
+                IOUtils.closeQuietly(inputStream);
             }
-
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             throw new CompilationFailedException("Error opening stream to class " + name + ":" + e.getMessage(), e);
         }
     }
@@ -107,13 +101,14 @@ public class GrailsClassLoader extends GroovyClassLoader {
         return new UrlResource(resourceURL);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        GroovyClassLoader innerLoader = (GroovyClassLoader)innerClassLoaderMap.get(name);
-        if(innerLoader != null) {
+        GroovyClassLoader innerLoader = innerClassLoaderMap.get(name);
+        if (innerLoader != null) {
             return innerLoader.loadClass(name);
         }
         return super.loadClass(name, resolve);
-
     }
 
     public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
