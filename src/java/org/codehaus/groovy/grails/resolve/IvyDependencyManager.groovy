@@ -693,14 +693,11 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
         }
     }
 
-
     boolean getBooleanValue(dependency, String name) {
         return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
     }
-    
-
-
 }
+
 class IvyDomainSpecificLanguageEvaluator {
 
     static final String WILDCARD = '*'

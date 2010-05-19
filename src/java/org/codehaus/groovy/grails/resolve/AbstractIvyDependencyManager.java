@@ -249,8 +249,15 @@ abstract public class AbstractIvyDependencyManager {
     }
 
     public ModuleDescriptor createModuleDescriptor() {
+        // This is a blatant hack: we use an organisation that is highly
+        // unlikely to conflict with the project's dependencies. The
+        // truth is, the dependency manager doesn't really care what the
+        // organisation is. See:
+        //
+        //    http://jira.codehaus.org/browse/GRAILS-6270
+        //
         DefaultModuleDescriptor moduleDescriptor =
-            DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion));
+            DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance("org.grails.internal", applicationName, applicationVersion));
 
         // TODO: make configurations extensible
         moduleDescriptor.addConfiguration( BUILD_CONFIGURATION );
