@@ -880,7 +880,10 @@ class IvyDomainSpecificLanguageEvaluator {
         if(transferListener !=null && (resolver instanceof RepositoryResolver)) {
             ((RepositoryResolver)resolver).repository.addTransferListener transferListener
         }
-        chainResolver.add resolver
+        // Fix for GRAILS-5805
+        synchronized(chainResolver.resolvers) {
+          chainResolver.add resolver          
+        }
     }
 
 
@@ -921,7 +924,12 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     private boolean isResolverNotAlreadyDefined(String name) {
-        if(chainResolver.resolvers.any { it.name == name }) {
+        def resolver
+        // Fix for GRAILS-5805
+        synchronized(chainResolver.resolvers) {
+          resolver = chainResolver.resolvers.any { it.name == name }
+        }
+        if(resolver) {
             Message.debug("Dependency resolver $name already defined. Ignoring...")
             return false
         }
