@@ -482,7 +482,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
     void testListDependencies() {
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
-        assertEquals 12, manager.listDependencies("build").size()
+        assertEquals 13, manager.listDependencies("build").size()
         assertEquals 21, manager.listDependencies("runtime").size()
         assertEquals 22, manager.listDependencies("test").size()
     }
@@ -540,7 +540,8 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                           "javax.servlet:servlet-api:2.5",
                           "javax.servlet:jsp-api:2.1",
                           "javax.servlet:jstl:1.1.2",
-                          "xalan:serializer:2.7.1"
+                          "xalan:serializer:2.7.1",
+                          "test:test:0.5"
 
                     test "junit:junit:3.8.2"
 
