@@ -1,10 +1,11 @@
+package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 11, 2008
  */
-package org.codehaus.groovy.grails.orm.hibernate
 class CustomCascadeMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
@@ -13,8 +14,8 @@ class CustomCascadeMappingOne {
     Long id
     Long version
 
-    Set foos = new HashSet()
-    Set bars = new HashSet()
+    Set foos = []
+    Set bars = []
     static hasMany = [foos:CustomCascadeMappingTwo, bars:CustomCascadeMappingTwo]
 
     static mapping = {
@@ -32,7 +33,6 @@ class CustomCascadeMappingTwo {
 '''
     }
 
-
     void testCascadingBehaviour() {
         def oneClass = ga.getDomainClass("CustomCascadeMappingOne").clazz
         def twoClass = ga.getDomainClass("CustomCascadeMappingTwo").clazz
@@ -41,20 +41,19 @@ class CustomCascadeMappingTwo {
 
         shouldFail {
             one.addToFoos(name:"foo1")
-                    .addToFoos(name:"foo2")
-                    .save(flush:true)
+               .addToFoos(name:"foo2")
+               .save(flush:true)
         }
         one.foos.clear()
-       one.addToBars(name:"bar1")
-            .addToBars(name:"bar2")
-            .save(flush:true)
-
+        one.addToBars(name:"bar1")
+           .addToBars(name:"bar2")
+           .save(flush:true)
 
         session.clear()
 
-       one = oneClass.get(1)
+        one = oneClass.get(1)
 
-            assertEquals 0, one.foos.size()
-            assertEquals 2, one.bars.size()
+        assertEquals 0, one.foos.size()
+        assertEquals 2, one.bars.size()
     }
 }

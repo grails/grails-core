@@ -9,13 +9,11 @@ class DynamicFinderOrTests extends AbstractGrailsHibernateTests {
         def bookClass = ga.getDomainClass("Book")
 
         def b = bookClass.newInstance()
-
         b.title = "Groovy in Action"
         b.publisher = "Manning"
         b.save(flush:true)
 
         def b2 = bookClass.newInstance()
-
         b2.title = "Ajax in Action"
         b2.publisher = "Manning"
         b2.save(flush:true)
@@ -29,13 +27,11 @@ class DynamicFinderOrTests extends AbstractGrailsHibernateTests {
         def bookClass = ga.getDomainClass("Book")
 
         def b = bookClass.newInstance()
-
         b.title = "Groovy in Action"
         b.publisher = "Manning"
         b.save(flush:true)
 
         def b2 = bookClass.newInstance()
-
         b2.title = "Ajax in Action"
         b2.publisher = "Manning"
         b2.save(flush:true)
@@ -46,13 +42,13 @@ class DynamicFinderOrTests extends AbstractGrailsHibernateTests {
     }
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class Book {
     Long id
     Long version
     String title
     String publisher
 }
-''')
+'''
     }
 }

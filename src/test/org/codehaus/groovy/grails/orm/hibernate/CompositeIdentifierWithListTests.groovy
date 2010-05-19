@@ -1,23 +1,21 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 22, 2009
  */
-
-public class CompositeIdentifierWithListTests extends AbstractGrailsHibernateTests{
+class CompositeIdentifierWithListTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class Article {
-
-    
     List revisions
-	static hasMany = [ revisions: ArticleRevision ]
+    static hasMany = [ revisions: ArticleRevision ]
 
     static constraints = {
         revisions(minSize:1)
@@ -25,10 +23,9 @@ class Article {
 }
 
 @Entity
-class ArticleRevision implements Serializable{
+class ArticleRevision implements Serializable {
 
     String title
-
     int revision
 
     static belongsTo = [article:Article]
@@ -36,9 +33,8 @@ class ArticleRevision implements Serializable{
     static mapping = {
        id composite:['article','revision']
     }
-
 }
-''')
+'''
     }
 
     void testCompositeIdentifierWithList() {
@@ -54,18 +50,12 @@ class ArticleRevision implements Serializable{
         session.clear()
 
         article = articleClass.get(1)
-
         assertEquals "one",article.revisions[0].title
 
         session.clear()
 
         article = articleClass.get(1)
-
         def revision = revisionClass.get(revisionClass.newInstance(article:article, revision:1))
-
         assertNotNull "many-to-one should have been loaded",revision.article
-        
     }
-
-
 }

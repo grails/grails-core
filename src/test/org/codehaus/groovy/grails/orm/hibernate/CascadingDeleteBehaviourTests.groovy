@@ -1,30 +1,21 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Jul 23, 2007
- * Time: 4:46:49 PM
- * 
- */
-
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
 
-
-
     void testDeleteToOne() {
-        def companyClass = ga.getDomainClass("Company")  
+        def companyClass = ga.getDomainClass("Company")
         def projectClass = ga.getDomainClass("Project")
         def memberClass = ga.getDomainClass("Member")
-        def c = companyClass.newInstance()     
+        def c = companyClass.newInstance()
         def p = projectClass.newInstance()
         def m = memberClass.newInstance()
-        c.save()                       
+        c.save()
         p.company = c
         p.member = m
         p.save()
@@ -37,7 +28,6 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         assertEquals 1, companyClass.clazz.count()
         assertEquals 0, memberClass.clazz.count()
         assertEquals 0, projectClass.clazz.count()
-
     }
 
     void testDeleteToManyUnidirectional() {
@@ -47,13 +37,13 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
 
         def c = companyClass.newInstance()
 
-        c.addToLocations(locationClass.newInstance()) 
+        c.addToLocations(locationClass.newInstance())
         c.addToPeople(personClass.newInstance())
         c.save()
         session.flush()
 
         assertEquals 1, companyClass.clazz.count()
-         assertEquals 1, locationClass.clazz.count()
+        assertEquals 1, locationClass.clazz.count()
         assertEquals 1, personClass.clazz.count()
 
         c.delete()
@@ -62,8 +52,7 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         assertEquals 0, companyClass.clazz.count()
         assertEquals 1, locationClass.clazz.count()
         assertEquals 0, personClass.clazz.count()
-
-    }  
+    }
 
     void testDomainModel() {
         GrailsDomainClass companyClass = ga.getDomainClass("Company")
@@ -72,63 +61,59 @@ class CascadingDeleteBehaviourTests extends AbstractGrailsHibernateTests {
         GrailsDomainClass locationClass = ga.getDomainClass("Location")
         GrailsDomainClass personClass = ga.getDomainClass("Person")
 
+        assertFalse companyClass.isOwningClass(memberClass.clazz)
+        assertFalse companyClass.isOwningClass(projectClass.clazz)
+        assertFalse companyClass.isOwningClass(locationClass.clazz)
+        assertFalse companyClass.isOwningClass(personClass.clazz)
 
-        assert !companyClass.isOwningClass(memberClass.clazz)
-        assert !companyClass.isOwningClass(projectClass.clazz)
-        assert !companyClass.isOwningClass(locationClass.clazz)
-        assert !companyClass.isOwningClass(personClass.clazz)
+        assertFalse projectClass.isOwningClass(companyClass.clazz)
+        assertFalse projectClass.isOwningClass(memberClass.clazz)
+        assertFalse projectClass.isOwningClass(locationClass.clazz)
+        assertFalse projectClass.isOwningClass(personClass.clazz)
 
-        assert !projectClass.isOwningClass(companyClass.clazz)
-        assert !projectClass.isOwningClass(memberClass.clazz)
-        assert !projectClass.isOwningClass(locationClass.clazz)
-        assert !projectClass.isOwningClass(personClass.clazz)
+        assertTrue memberClass.isOwningClass(projectClass.clazz)
+        assertFalse memberClass.isOwningClass(companyClass.clazz)
+        assertFalse memberClass.isOwningClass(personClass.clazz)
+        assertFalse memberClass.isOwningClass(locationClass.clazz)
 
-        assert memberClass.isOwningClass(projectClass.clazz)
-        assert !memberClass.isOwningClass(companyClass.clazz)
-        assert !memberClass.isOwningClass(personClass.clazz)
-        assert !memberClass.isOwningClass(locationClass.clazz)
-
-        assert personClass.isOwningClass(companyClass.clazz)
-        assert !personClass.isOwningClass(locationClass.clazz)
-        assert !personClass.isOwningClass(memberClass.clazz)
-        assert !personClass.isOwningClass(projectClass.clazz)
-
-
+        assertTrue personClass.isOwningClass(companyClass.clazz)
+        assertFalse personClass.isOwningClass(locationClass.clazz)
+        assertFalse personClass.isOwningClass(memberClass.clazz)
+        assertFalse personClass.isOwningClass(projectClass.clazz)
     }
 
     void onSetUp() {
-		this.gcl.parseClass('''
+        gcl.parseClass '''
 class Company {
-	Long id
-	Long version
+    Long id
+    Long version
 
     static hasMany = [locations:Location, people:Person]
     Set locations
     Set people
 }
 class Person {
-	Long id
-	Long version
+    Long id
+    Long version
     static belongsTo = Company
 }
 class Location {
-	Long id
-	Long version
+    Long id
+    Long version
 }
 class Project {
-	Long id
-	Long version
+    Long id
+    Long version
 
     Company company
     Member member
 }
 class Member {
-	Long id
-	Long version
+    Long id
+    Long version
 
     static belongsTo = Project
 }
 '''
-		)
-	}
+    }
 }

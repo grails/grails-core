@@ -1,10 +1,11 @@
+package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  *
  * Created: Nov 28, 2007
  */
-package org.codehaus.groovy.grails.orm.hibernate
 class FindByMethodTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
@@ -44,15 +45,13 @@ class Highway {
 '''
     }
 
-
     void testNullParameters() {
         def bookClass = ga.getDomainClass("FindByMethodBook").clazz
 
-        assert bookClass.newInstance(title:"The Stand").save()
+        assertNotNull bookClass.newInstance(title:"The Stand").save()
 
-        assert bookClass.findByReleaseDate(null)
-        assert bookClass.findByTitleAndReleaseDate("The Stand", null)
-
+        assertNotNull bookClass.findByReleaseDate(null)
+        assertNotNull bookClass.findByTitleAndReleaseDate("The Stand", null)
     }
 
     void testFindByIsNotNull() {
@@ -74,23 +73,22 @@ class Highway {
         def User = ga.getDomainClass("FindByMethodUser").clazz
 
         def user = User.newInstance(firstName:"Stephen")
-        assert user.addToBooks(title:"The Shining")
-                 .addToBooks(title:"The Stand")
-                 .save(flush:true)
+        assertNotNull user.addToBooks(title:"The Shining")
+                          .addToBooks(title:"The Stand")
+                          .save(flush:true)
 
         session.clear()
 
         user = User.findByFirstName("Stephen", [fetch:[books:'eager']])
-
         assertEquals 2, user.books.size()
     }
 
     void testBooleanPropertyQuery() {
         def highwayClass = ga.getDomainClass('Highway').clazz
-        assert highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
-        assert highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
-        assert highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
-        assert highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
+        assertNotNull highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
+        assertNotNull highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
+        assertNotNull highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
+        assertNotNull highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
 
         def highways = highwayClass.findAllBypassedByName('Not Bypassed Highway')
         assertEquals 0, highways?.size()
@@ -131,10 +129,10 @@ class Highway {
         assertEquals 'Bypassed Highway', highway?.name
 
         def bookClass = ga.getDomainClass("FindByBooleanPropertyBook").clazz
-        assert bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
-        assert bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
-        assert bookClass.newInstance(author: 'Graeme', title: 'DGGv2', published: true).save()
-        assert bookClass.newInstance(author: 'Dierk', title: 'GINA', published: true).save()
+        assertNotNull bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
+        assertNotNull bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
+        assertNotNull bookClass.newInstance(author: 'Graeme', title: 'DGGv2', published: true).save()
+        assertNotNull bookClass.newInstance(author: 'Dierk', title: 'GINA', published: true).save()
 
         def book = bookClass.findPublishedByAuthor('Jeff')
         assertEquals 'Jeff', book.author
@@ -181,14 +179,13 @@ class Highway {
         assertEquals 0, books?.size()
     }
 
-	void testQueryByPropertyWith_By_InName() {
-		// GRAILS-5929
-		def bookClass = ga.getDomainClass("FindByMethodBook").clazz
+    void testQueryByPropertyWith_By_InName() {
+        // GRAILS-5929
+        def bookClass = ga.getDomainClass("FindByMethodBook").clazz
 
-		assert bookClass.newInstance(title:"The Stand", writtenBy: 'Stephen King').save()
+        assertNotNull bookClass.newInstance(title:"The Stand", writtenBy: 'Stephen King').save()
 
         def results = bookClass.findAllByWrittenByAndTitle('Stephen King', 'The Stand')
-		assertEquals 1, results?.size()
-	}
-
+        assertEquals 1, results?.size()
+    }
 }

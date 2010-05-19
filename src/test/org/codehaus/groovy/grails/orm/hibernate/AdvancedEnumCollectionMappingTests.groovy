@@ -1,15 +1,15 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Feb 10, 2009
  */
-
-public class AdvancedEnumCollectionMappingTests extends AbstractGrailsHibernateTests{
+class AdvancedEnumCollectionMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -27,17 +27,15 @@ class User {
     String toString() { name}
 }
 
-
 enum Role {
     ADMIN("0"), MANAGER("2"), EMPLOYEE("4")
     Role(String id) { this.id = id }
     final String id
 }
-''')
+'''
     }
 
-
-    void testAdvancedEnumCollectionMapping() {        
+    void testAdvancedEnumCollectionMapping() {
         def User = ga.getDomainClass("User").clazz
         def Role = ga.classLoader.loadClass("Role")
 
@@ -65,7 +63,5 @@ enum Role {
         rs.next()
 
         assertEquals "4", rs.getString("primary_role")
-
     }
-
 }

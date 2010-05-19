@@ -6,11 +6,10 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class CircularOneToOneWithInheritanceLazinessTests extends AbstractGrailsHibernateTests{
+class CircularOneToOneWithInheritanceLazinessTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -27,7 +26,7 @@ class VirtualContent extends Content {
         target lazy:false
     }
 }
-''')
+'''
     }
 
     void testForLazyProxies() {
@@ -35,19 +34,14 @@ class VirtualContent extends Content {
         def VirtualContent = ga.getDomainClass("VirtualContent").clazz
 
         def c = Content.newInstance().save(flush:true)
-
-        assert c : "should have saved c"
+        assertNotNull "should have saved c", c
 
         def vc = VirtualContent.newInstance(target:c).save(flush:true)
-
-        assert vc : "should have saved vc"
+        assertNotNull "should have saved vc", vc
 
         session.clear()
 
         def c1 = VirtualContent.get(2)
-
-        assert GrailsHibernateUtil.isInitialized(c1, "target") : "should not be a proxy!"
+        assertTrue "should not be a proxy!", GrailsHibernateUtil.isInitialized(c1, "target")
     }
-
-
 }

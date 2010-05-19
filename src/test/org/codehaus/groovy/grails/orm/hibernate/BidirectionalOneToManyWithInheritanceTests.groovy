@@ -1,19 +1,18 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
- *
- * test for GRAILS-2734
+ * test for GRAILS-2734.
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Apr 9, 2008
  */
 class BidirectionalOneToManyWithInheritanceTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
-class ConfigurationItem
-{
+        gcl.parseClass '''
+class ConfigurationItem {
     Long id
     Long version
     ConfigurationItem parent
@@ -38,15 +37,14 @@ class ConfigurationItem
 class Documentation extends ConfigurationItem{
     Long id
     Long version
-
 }
+
 class ChangeRequest extends ConfigurationItem{
     Long id
     Long version
-
 }
 
-''')
+'''
     }
 
     void testBidirectionalOneToManyWithInheritance() {
@@ -57,17 +55,13 @@ class ChangeRequest extends ConfigurationItem{
 
         def doc = docClass.newInstance()
 
-
-        assert doc.addToConfigurationItems(changeRequestClass.newInstance())
-                    .addToConfigurationItems(docClass.newInstance())
-                    .save(flush:true)
+        assertNotNull doc.addToConfigurationItems(changeRequestClass.newInstance())
+                         .addToConfigurationItems(docClass.newInstance())
+                         .save(flush:true)
 
         session.clear()
 
         doc = docClass.get(1)
-
         assertEquals 2,doc.configurationItems.size()
-        
     }
-
 }

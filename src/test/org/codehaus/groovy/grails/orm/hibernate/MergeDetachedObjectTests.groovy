@@ -10,7 +10,7 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils
 *
 * Created: Mar 13, 2008
 */
-class MergeDetachedObjectTests extends AbstractGrailsHibernateTests{
+class MergeDetachedObjectTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -21,6 +21,7 @@ class DetachedQuestion {
     Set answers
     static hasMany = [answers:DetachedAnswer]
 }
+
 class DetachedAnswer {
     Long id
     Long version
@@ -29,74 +30,52 @@ class DetachedAnswer {
 '''
     }
 
-
     void testMergeDetachedObject() {
 
         def questionClass = ga.getDomainClass("DetachedQuestion").clazz
-
-        def question = questionClass
-                            .newInstance(name:"What is the capital of France?")
-                            .addToAnswers(name:"London")
-                            .addToAnswers(name:"Paris")
-                            .save(flush:true)
-
-
-        assert question
+        def question = questionClass.newInstance(name:"What is the capital of France?")
+                                    .addToAnswers(name:"London")
+                                    .addToAnswers(name:"Paris")
+                                    .save(flush:true)
+        assertNotNull question
 
         session.clear()
 
         question = questionClass.get(1)
-
-        TransactionSynchronizationManager.unbindResource(this.sessionFactory);
-        SessionFactoryUtils.releaseSession(session, this.sessionFactory);
-
-
+        TransactionSynchronizationManager.unbindResource sessionFactory
+        SessionFactoryUtils.releaseSession session, sessionFactory
 
         session = sessionFactory.openSession()
-        TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(session))
+        TransactionSynchronizationManager.bindResource sessionFactory, new SessionHolder(session)
 
         question = question.merge()
-
         assertEquals 2, question.answers.size()
-
         question.name = "changed"
-
         question.save(flush:true)
-
     }
 
     void testStaticMergeMethod() {
-       def questionClass = ga.getDomainClass("DetachedQuestion").clazz
+        def questionClass = ga.getDomainClass("DetachedQuestion").clazz
 
-        def question = questionClass
-                            .newInstance(name:"What is the capital of France?")
-                            .addToAnswers(name:"London")
-                            .addToAnswers(name:"Paris")
-                            .save(flush:true)
-
-
-        assert question
+        def question = questionClass.newInstance(name:"What is the capital of France?")
+                                    .addToAnswers(name:"London")
+                                    .addToAnswers(name:"Paris")
+                                    .save(flush:true)
+        assertNotNull question
 
         session.clear()
 
         question = questionClass.get(1)
-
-        TransactionSynchronizationManager.unbindResource(this.sessionFactory);
-        SessionFactoryUtils.releaseSession(session, this.sessionFactory);
-
-
+        TransactionSynchronizationManager.unbindResource sessionFactory
+        SessionFactoryUtils.releaseSession session, sessionFactory
 
         session = sessionFactory.openSession()
-        TransactionSynchronizationManager.bindResource(this.sessionFactory, new SessionHolder(session))
+        TransactionSynchronizationManager.bindResource sessionFactory, new SessionHolder(session)
 
         question = questionClass.merge(question)
         assertEquals 2, question.answers.size()
 
         question.name = "changed"
-
         question.save(flush:true)
-        
     }
-    
-
 }

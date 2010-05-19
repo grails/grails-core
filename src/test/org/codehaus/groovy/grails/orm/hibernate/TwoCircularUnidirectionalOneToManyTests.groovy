@@ -1,19 +1,19 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Dec 5, 2007
- */
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
-class TwoCircularUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests { 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ *
+ * Created: Dec 5, 2007
+ */
+class TwoCircularUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class  TwoCircularUnidirectionalOneToManyUser {
+class TwoCircularUnidirectionalOneToManyUser {
 
     Long id
     Long version
@@ -38,7 +38,6 @@ class  TwoCircularUnidirectionalOneToManyUser {
 '''
     }
 
-
     void testAssociation() {
         GrailsDomainClass userDomainClass = ga.getDomainClass("TwoCircularUnidirectionalOneToManyUser")
 
@@ -59,8 +58,6 @@ class  TwoCircularUnidirectionalOneToManyUser {
         def user4 = userClass.newInstance(name:'D')
         def user5 = userClass.newInstance(name:'E')
 
-
-
         user1.addChild(user3)
         user1.addChild(user4)
         user1.addChild(user5)
@@ -69,37 +66,32 @@ class  TwoCircularUnidirectionalOneToManyUser {
         user2.addChild(user4)
         user2.addChild(user5)
 
-        assert user1.children.contains(user3)
-        assert user1.children.contains(user4)
-        assert user1.children.contains(user5)
+        assertTrue user1.children.contains(user3)
+        assertTrue user1.children.contains(user4)
+        assertTrue user1.children.contains(user5)
 
-        assert user2.children.contains(user3)
-        assert user2.children.contains(user4)
-        assert user2.children.contains(user5)
+        assertTrue user2.children.contains(user3)
+        assertTrue user2.children.contains(user4)
+        assertTrue user2.children.contains(user5)
 
         user1.save()
         user2.save()
         user3.save()
         user4.save(flush:true)
 
-
         session.clear()
-        
 
-        def userA = userClass.findByName("A");
-        def userB = userClass.findByName("B");
-        def userC = userClass.findByName("C");
-        def userD = userClass.findByName("D");
-        def userE = userClass.findByName("E");
+        def userA = userClass.findByName("A")
+        def userB = userClass.findByName("B")
+        def userC = userClass.findByName("C")
+        def userD = userClass.findByName("D")
+        def userE = userClass.findByName("E")
 
-        assert userA.children.contains(userE) // success
-        assert userA.children.contains(userD) //success
-        assert userB.children.contains(userC) //success
-        assert userB.children.contains(userE) //success
-        assert userB.children.contains(userD) //fails
-        assert userA.children.contains(userC) //fails
-
+        assertTrue userA.children.contains(userE) // success
+        assertTrue userA.children.contains(userD) //success
+        assertTrue userB.children.contains(userC) //success
+        assertTrue userB.children.contains(userE) //success
+        assertTrue userB.children.contains(userD) //fails
+        assertTrue userA.children.contains(userC) //fails
     }
-
-
 }

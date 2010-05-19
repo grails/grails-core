@@ -1,19 +1,18 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.hibernate.type.YesNoType
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+
+import org.hibernate.type.YesNoType
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class MappingDefaultsTests extends AbstractGrailsHibernateTests{
+class MappingDefaultsTests extends AbstractGrailsHibernateTests {
 
     protected void onTearDown() {
         ConfigurationHolder.setConfig(null)
@@ -21,11 +20,11 @@ public class MappingDefaultsTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
         ConfigurationHolder.setConfig(null)
-        gcl.parseClass("""
+        gcl.parseClass """
 grails.gorm.default.mapping = {
    cache true
    id generator:'sequence'
-   'user-type'( type:org.hibernate.type.YesNoType, class:Boolean )
+   'user-type'( type: org.hibernate.type.YesNoType, class: Boolean )
 
 }
 grails.gorm.default.constraints = {
@@ -33,22 +32,21 @@ grails.gorm.default.constraints = {
    test blank:false
    another email:true
 }
-""","Config")
+""", "Config"
 
-        gcl.parseClass('''
+    gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class MappingDefaults {
-       String name
-       Boolean test
+    String name
+    Boolean test
 
-       static constraints = {
-            name(shared:"test")
-       }
+    static constraints = {
+        name(shared:"test")
+    }
 }
-''')
-
+'''
     }
 
     void testGlobalUserTypes() {
@@ -58,7 +56,7 @@ class MappingDefaults {
         assertEquals YesNoType, mapping.userTypes[Boolean]
 
         def i = domain.clazz.newInstance(name:"helloworld", test:true)
-        assert i.save(flush:true) : "should have saved instance"
+        assertNotNull "should have saved instance", i.save(flush:true)
 
         session.clear()
         def rs = session.connection().prepareStatement("select test from mapping_defaults").executeQuery()
@@ -73,32 +71,30 @@ class MappingDefaults {
         assertEquals "read-write", mapping?.cache?.usage
         assertEquals 'sequence',mapping?.identity?.generator
 
-
         ConstrainedProperty cp = domain.constrainedProperties['name']
 
-        assert cp.nullable : "should have been nullable"
-        assert !cp.blank : "should have inherited blank from shared constraint"
-        assert 1..20 == cp.size : "size should have been in the specified range"
-        assert !cp.email : "should not have inherited matches from [another] shared constraint"
+        assertTrue "should have been nullable", cp.nullable
+        assertTrue "should have inherited blank from shared constraint", !cp.blank
+        assertTrue "size should have been in the specified range", 1..20 == cp.size
+        assertTrue "should not have inherited matches from [another] shared constraint", !cp.email
     }
 
     void testReloadMappings() {
         testMappingDefaults()
 
         ga.config.grails.gorm.default.constraints = {
-           '*'(nullable:true, blank:true, size:1..20)
-           test matches:/foo/
-           another email:true
+            '*'(nullable:true, blank:true, size:1..20)
+            test matches:/foo/
+            another email:true
         }
 
         ga.configChanged()
-        
+
         mockManager.getGrailsPlugin("domainClass").notifyOfEvent(GrailsPlugin.EVENT_ON_CONFIG_CHANGE, ga.config)
 
         GrailsDomainClass domain = ga.getDomainClass("MappingDefaults")
         ConstrainedProperty cp = domain.constrainedProperties['name']
-        assert cp.nullable : "should have been nullable"
-        assert cp.blank : "should have not have been blank"
-
+        assertTrue "should have been nullable", cp.nullable
+        assertTrue "should have not have been blank", cp.blank
     }
 }

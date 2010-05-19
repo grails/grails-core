@@ -5,14 +5,13 @@ import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Feb 4, 2009
  */
-
-public class CascadingValidationWithInheritance2Tests extends AbstractGrailsHibernateTests{
+class CascadingValidationWithInheritance2Tests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -24,13 +23,12 @@ class Content implements Serializable {
     Date dateCreated
     Date lastUpdated
 
-    List revisions    
+    List revisions
 
-	static hasMany = [
-	    revisions: ContentRevision
-	]
+    static hasMany = [
+        revisions: ContentRevision
+    ]
 }
-
 
 @Entity
 class ContentRevision implements Serializable {
@@ -40,7 +38,6 @@ class ContentRevision implements Serializable {
     static belongsTo = [
         content: Content
     ]
-
 }
 
 @Entity
@@ -51,7 +48,6 @@ class ArticleRevision extends ContentRevision {
         body(blank:false)
     }
 
-
     static mapping = {
         body(type:"text")
     }
@@ -59,10 +55,8 @@ class ArticleRevision extends ContentRevision {
     String title
     String body
 }
-
-''')
+'''
     }
-
 
     void testCascadingValidationFromSubclasses() {
         def Article = ga.getDomainClass("Article").clazz
@@ -76,7 +70,5 @@ class ArticleRevision extends ContentRevision {
 
         assertNotNull "title should not have been allowed to be blank", article.errors.getFieldError("revisions.title")
         assertNotNull "body should not have been allowed to be blank", article.errors.getFieldError("revisions.body")
-
     }
-
 }

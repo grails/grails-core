@@ -1,21 +1,21 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: May 29, 2008
  */
 class CascadeToCompositeIdAssociationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 
 class CascadeToCompositeIdAssociationTrade {
     Long id
     Long version
     Set segments
     static hasMany = [segments:CascadeToCompositeIdAssociationSegment]
-
 }
 
 class CascadeToCompositeIdAssociationSegment{
@@ -35,16 +35,15 @@ class CascadeToCompositeIdAssociationProduct implements Serializable{
     static mapping = {
         id composite:['country','segment']
     }
-
 }
+
 class CascadeToCompositeIdAssociationCountry implements Serializable{
     Long id
     Long version
     String name
 }
-''')
+'''
     }
-
 
     void testCascadeToCompositeIdEntity() {
         def tradeClass = ga.getDomainClass("CascadeToCompositeIdAssociationTrade").clazz
@@ -57,12 +56,12 @@ class CascadeToCompositeIdAssociationCountry implements Serializable{
 
         def product = productClass.newInstance()
         def country = countryClass.newInstance(name:"UK")
-        assert country.save(flush:true)
+        assertNotNull country.save(flush:true)
         product.country = country
         segment.addToProducts(product)
         trade.addToSegments(segment)
 
-        assert trade.save(flush:true)
+        assertNotNull trade.save(flush:true)
 
         session.clear()
 
@@ -70,6 +69,5 @@ class CascadeToCompositeIdAssociationCountry implements Serializable{
         assertEquals 1, segmentClass.count()
         assertEquals 1, productClass.count()
         assertEquals 1, countryClass.count()
-
     }
 }

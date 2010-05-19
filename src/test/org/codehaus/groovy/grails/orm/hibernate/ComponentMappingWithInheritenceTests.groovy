@@ -3,13 +3,13 @@ package org.codehaus.groovy.grails.orm.hibernate
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 22, 2009
  */
 class ComponentMappingWithInheritenceTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -36,9 +36,8 @@ class Address {
     String zipcode
     String country
 }
-''')
+'''
     }
-
 
     // test for GRAILS-1217
     void testEmbeddedColumnsNullableWithTablePerHeirarchyInheritance() {

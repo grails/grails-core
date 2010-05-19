@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class CompositeIdentifierNoVersionTests extends AbstractGrailsHibernateTests{
+class CompositeIdentifierNoVersionTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -44,9 +44,8 @@ class ContentRevision implements Serializable {
        id composite: [ 'content', 'revision' ]
    }
 }
-''')
+'''
     }
-
 
     void testCompositeIdentifierWithNoVersion() {
         def BlogArticle = ga.getDomainClass("BlogArticle").clazz
@@ -55,8 +54,7 @@ class ContentRevision implements Serializable {
         def content = BlogArticle.newInstance()
         def revision = BlogArticleRevision.newInstance(title:"Test",body:"The Body", revision:0)
         content.addToRevisions(revision)
-        
+
         assertNotNull content.save(flush:true)
-        
     }
 }

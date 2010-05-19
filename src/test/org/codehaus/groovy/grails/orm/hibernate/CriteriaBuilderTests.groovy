@@ -1,18 +1,17 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.hibernate.Hibernate
-import org.hibernate.Criteria
 
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 27, 2008
  */
-class CriteriaBuilderTests extends AbstractGrailsHibernateTests{
+class CriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class CriteriaBuilderBook {
     Long id
     Long version
@@ -36,31 +35,26 @@ class CriteriaBuilderAuthor {
     static mapping = {
         cache true
     }
-    
 }
-''')
+'''
     }
-
 
     void testIdEq() {
         def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
         def bookClass = ga.getDomainClass("CriteriaBuilderBook").clazz
 
-        assert authorClass.newInstance(name:"Stephen King")
-                                    .addToBooks(title:"The Shining")
-                                    .addToBooks(title:"The Stand")
-                                    .addToBooks(title:"Rose Madder")
-                                    .save(flush:true)
+        assertNotNull authorClass.newInstance(name:"Stephen King")
+                                 .addToBooks(title:"The Shining")
+                                 .addToBooks(title:"The Stand")
+                                 .addToBooks(title:"Rose Madder")
+                                 .save(flush:true)
 
-        assert authorClass.newInstance(name:"James Patterson")
-                                    .addToBooks(title:"Along Came a Spider")
-                                    .addToBooks(title:"A Time to Kill")
-                                    .addToBooks(title:"Killing Me Softly")
-                                    .addToBooks(title:"The Quickie")
-                                    .save(flush:true)
-
-
-        
+        assertNotNull authorClass.newInstance(name:"James Patterson")
+                                 .addToBooks(title:"Along Came a Spider")
+                                 .addToBooks(title:"A Time to Kill")
+                                 .addToBooks(title:"Killing Me Softly")
+                                 .addToBooks(title:"The Quickie")
+                                 .save(flush:true)
 
         session.clear()
         def book = bookClass.findByTitle("The Quickie")
@@ -74,7 +68,6 @@ class CriteriaBuilderAuthor {
         }
 
         assertNotNull "should have returned a list of authors", authors
-
         assertEquals 1, authors.size()
         assertEquals "James Patterson", authors[0].name
     }
@@ -82,37 +75,32 @@ class CriteriaBuilderAuthor {
     void testSizeCriterion() {
         def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
 
-        assert authorClass.newInstance(name:"Stephen King")
-                                    .addToBooks(title:"The Shining")
-                                    .addToBooks(title:"The Stand")
-                                    .addToBooks(title:"Rose Madder")
-                                    .save(flush:true)
+        assertNotNull authorClass.newInstance(name:"Stephen King")
+                                 .addToBooks(title:"The Shining")
+                                 .addToBooks(title:"The Stand")
+                                 .addToBooks(title:"Rose Madder")
+                                 .save(flush:true)
 
-        assert authorClass.newInstance(name:"James Patterson")
-                                    .addToBooks(title:"Along Came a Spider")
-                                    .addToBooks(title:"A Time to Kill")
-                                    .addToBooks(title:"Killing Me Softly")
-                                    .addToBooks(title:"The Quickie")
-                                    .save(flush:true)
-
+        assertNotNull authorClass.newInstance(name:"James Patterson")
+                                 .addToBooks(title:"Along Came a Spider")
+                                 .addToBooks(title:"A Time to Kill")
+                                 .addToBooks(title:"Killing Me Softly")
+                                 .addToBooks(title:"The Quickie")
+                                 .save(flush:true)
 
         def results = authorClass.withCriteria {
             sizeGt('books', 3)
         }
-
-
         assertEquals 1, results.size()
 
         results = authorClass.withCriteria {
             sizeGe('books', 3)
         }
-
         assertEquals 2, results.size()
 
         results = authorClass.withCriteria {
             sizeNe('books', 1)
         }
-
         assertEquals 2, results.size()
 
         results = authorClass.withCriteria {
@@ -123,13 +111,11 @@ class CriteriaBuilderAuthor {
         results = authorClass.withCriteria {
             sizeLt('books', 4)
         }
-
         assertEquals 1, results.size()
 
         results = authorClass.withCriteria {
             sizeLe('books', 4)
         }
-
         assertEquals 2, results.size()
     }
 
@@ -137,12 +123,11 @@ class CriteriaBuilderAuthor {
         def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
 
         def author = authorClass.newInstance(name:"Stephen King")
-                                    .addToBooks(title:"The Shining")
-                                    .addToBooks(title:"The Stand")
-                                    .save(flush:true)
+                                .addToBooks(title:"The Shining")
+                                .addToBooks(title:"The Stand")
+                                .save(flush:true)
 
-        assert author
-
+        assertNotNull author
 
         session.clear()
 
@@ -153,14 +138,11 @@ class CriteriaBuilderAuthor {
             assertTrue criteriaInstance.cacheable
         }
 
-
         assertEquals 1, authors.size()
-        
 
         // NOTE: note sure how to actually test the cache, I'm testing
         // that invoking the cache method works but need a better test
         // that ensure entries are pulled from the cache
-        println "Second query"
 
         authors = authorClass.withCriteria {
             eq('name', 'Stephen King')
@@ -168,7 +150,6 @@ class CriteriaBuilderAuthor {
 
             def criteriaInstance = getInstance()
             assertFalse criteriaInstance.cacheable
-            
         }
 
         assertEquals 1, authors.size()
@@ -178,23 +159,20 @@ class CriteriaBuilderAuthor {
 
         // NOTE: HSQLDB doesn't support the SQL SELECT..FOR UPDATE syntax so this test
         // is basically just testing that the lock method can be called without error
-        
+
         def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
 
         def author = authorClass.newInstance(name:"Stephen King")
-                                    .addToBooks(title:"The Shining")
-                                    .addToBooks(title:"The Stand")
-                                    .save(flush:true)
-
-
-        assert author
+                                .addToBooks(title:"The Shining")
+                                .addToBooks(title:"The Stand")
+                                .save(flush:true)
+        assertNotNull author
 
         session.clear()
 
         def authors = authorClass.withCriteria {
             eq('name', 'Stephen King')
             lock true
-
         }
 
         assert authors
@@ -211,24 +189,21 @@ class CriteriaBuilderAuthor {
         assert authors
     }
 
-    void testJoinMethod() {        
+    void testJoinMethod() {
         def authorClass = ga.getDomainClass("CriteriaBuilderAuthor").clazz
 
         def author = authorClass.newInstance(name:"Stephen King")
-                                    .addToBooks(title:"The Shining")
-                                    .addToBooks(title:"The Stand")
-                                    .save(flush:true)
+                                .addToBooks(title:"The Shining")
+                                .addToBooks(title:"The Stand")
+                                .save(flush:true)
 
-
-        assert author
+        assertNotNull author
 
         session.clear()
 
         def authors = authorClass.withCriteria {
             eq('name', 'Stephen King')
         }
-
-
         assert authors
         author = authors[0]
 
@@ -237,13 +212,11 @@ class CriteriaBuilderAuthor {
         session.clear()
 
         authors = authorClass.withCriteria {
-           eq('name', 'Stephen King')
-           join "books"
+            eq('name', 'Stephen King')
+            join "books"
         }
         author = authors[0]
 
         assertTrue "books association loaded with join query and should be initialized",Hibernate.isInitialized(author.books)
-
     }
-
 }

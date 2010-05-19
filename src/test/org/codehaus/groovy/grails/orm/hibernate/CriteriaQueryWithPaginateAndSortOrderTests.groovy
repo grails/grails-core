@@ -1,41 +1,34 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.criterion.Example
-
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class CriteriaQueryWithPaginateAndSortOrderTests extends AbstractGrailsHibernateTests{
+class CriteriaQueryWithPaginateAndSortOrderTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class CriteriaQueryWithPaginateAndSortOrderExample {
     String toSort
 }
-''')
+'''
     }
 
     void testCriteriaWithSortOrderAndPagination() {
         def Example = ga.getDomainClass("CriteriaQueryWithPaginateAndSortOrderExample").clazz
-        assert Example.newInstance(toSort:"string 1").save(flush:true) : "should have saved"
-        assert Example.newInstance(toSort:"string 2").save(flush:true) : "should have saved"
-
+        assertNotNull "should have saved", Example.newInstance(toSort:"string 1").save(flush:true)
+        assertNotNull "should have saved", Example.newInstance(toSort:"string 2").save(flush:true)
 
         session.clear()
 
-        Example.createCriteria().list(
-                max: 32,
-                offset: 0) {
+        Example.createCriteria().list(max: 32, offset: 0) {
             and {
                 like('toSort', '%string%')
             }
             order("toSort", "asc")
         }
     }
-
 }

@@ -1,14 +1,15 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jun 2, 2008
  */
-class PolymorphicQueryWithAssocationTests  extends AbstractGrailsHibernateTests{
+class PolymorphicQueryWithAssocationTests  extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class PolymorphicQueryWithAssocationPerson {
     Long id
     Long version
@@ -22,14 +23,10 @@ class PolymorphicQueryWithAssocationBase {
     static belongsTo = PolymorphicQueryWithAssocationPerson
     PolymorphicQueryWithAssocationPerson person
 }
-class PolymorphicQueryWithAssocationHyperBase extends PolymorphicQueryWithAssocationBase {
-}
-class PolymorphicQueryWithAssocationSpecialBase extends PolymorphicQueryWithAssocationBase {
-}
-''')
+class PolymorphicQueryWithAssocationHyperBase extends PolymorphicQueryWithAssocationBase {}
+class PolymorphicQueryWithAssocationSpecialBase extends PolymorphicQueryWithAssocationBase {}
+'''
     }
-
-
 
     void testQueryPolymorphicAssocation() {
         def baseClass = ga.getDomainClass("PolymorphicQueryWithAssocationBase").clazz
@@ -38,14 +35,13 @@ class PolymorphicQueryWithAssocationSpecialBase extends PolymorphicQueryWithAsso
         def specialBaseClass = ga.getDomainClass("PolymorphicQueryWithAssocationSpecialBase").clazz
 
         def p = personClass.newInstance().save()
-        assert hyperBaseClass.newInstance( person: p).save()
-        assert specialBaseClass.newInstance(person: p).save()
+        assertNotNull hyperBaseClass.newInstance( person: p).save()
+        assertNotNull specialBaseClass.newInstance(person: p).save()
 
         assertEquals personClass.findAll().size(), 1
         assertEquals hyperBaseClass.findAll().size(), 1
         assertEquals specialBaseClass.findAll().size(), 1
         assertEquals baseClass.findAll().size(), 2
-
 
         assertEquals baseClass.findAllByPerson(p).size(), 2
     }

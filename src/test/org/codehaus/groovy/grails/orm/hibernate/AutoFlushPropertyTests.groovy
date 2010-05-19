@@ -3,163 +3,122 @@ package org.codehaus.groovy.grails.orm.hibernate
 import org.hibernate.event.FlushEventListener
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
-public class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
+class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
-    void onSetUp() {
-        this.gcl.parseClass('''
-          import grails.persistence.*
+    protected void onSetUp() {
+        gcl.parseClass '''
+import grails.persistence.*
 
-          @Entity
-          class Band {
-              String name
-          }
-          '''
-        )
+@Entity
+class Band {
+    String name
+}
+'''
     }
+
+   protected void onTearDown() {
+        ConfigurationHolder.config = null
+   }
 
     void testFlushIsDisabledByDefault() {
         def flushCount = 0
-        def listener = { flushEvent ->
-            ++flushCount
-        } as FlushEventListener
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
         def band = createBand('Tool')
-        assert band.save()
+        assertNotNull band.save()
         band.merge()
         band.delete()
         assertEquals 'Wrong flush count', 0, flushCount
     }
 
     void testFlushPropertyTrue() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true");
+        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true")
 
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = { flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.flushEventListeners = listener as FlushEventListener[]
-            def band = createBand('Tool')
-            assert band.save()
-            assertEquals 'Wrong flush count after save', 1, flushCount
-            band.merge()
-            assertEquals 'Wrong flush count after merge', 2, flushCount
-            band.delete()
-            assertEquals 'Wrong flush count after delete', 3, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def flushCount = 0
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
+        def band = createBand('Tool')
+        assertNotNull band.save()
+        assertEquals 'Wrong flush count after save', 1, flushCount
+        band.merge()
+        assertEquals 'Wrong flush count after merge', 2, flushCount
+        band.delete()
+        assertEquals 'Wrong flush count after delete', 3, flushCount
     }
 
     void testFlushPropertyFalse() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false");
+        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false")
 
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = { flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.flushEventListeners = listener as FlushEventListener[]
-            def band = createBand('Tool')
-            assert band.save()
-            band.merge()
-            band.delete()
-            assertEquals 'Wrong flush count', 0, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def flushCount = 0
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
+        def band = createBand('Tool')
+        assertNotNull band.save()
+        band.merge()
+        band.delete()
+        assertEquals 'Wrong flush count', 0, flushCount
     }
 
     void testTrueFlushArgumentOverridesFalsePropertySetting() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false");
+        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false")
 
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = { flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.flushEventListeners = listener as FlushEventListener[]
-            def band = createBand('Tool')
-            assert band.save(flush: true)
-            assertEquals 'Wrong flush count after save', 1, flushCount
-            band.merge(flush: true)
-            assertEquals 'Wrong flush count after merge', 2, flushCount
-            band.delete(flush: true)
-            assertEquals 'Wrong flush count after delete', 3, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def flushCount = 0
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
+        def band = createBand('Tool')
+        assert band.save(flush: true)
+        assertEquals 'Wrong flush count after save', 1, flushCount
+        band.merge(flush: true)
+        assertEquals 'Wrong flush count after merge', 2, flushCount
+        band.delete(flush: true)
+        assertEquals 'Wrong flush count after delete', 3, flushCount
     }
 
     void testFalseFlushArgumentOverridesTruePropertySetting() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true");
+        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true")
 
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = { flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.flushEventListeners = listener as FlushEventListener[]
-            def band = createBand('Tool')
-            assert band.save(flush: false)
-            band.merge(flush: false)
-            band.delete(flush: false)
-            assertEquals 'Wrong flush count', 0, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def flushCount = 0
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
+        def band = createBand('Tool')
+        assertNotNull band.save(flush: false)
+        band.merge(flush: false)
+        band.delete(flush: false)
+        assertEquals 'Wrong flush count', 0, flushCount
     }
 
     void testMapWithoutFlushEntryRespectsTruePropertySetting() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true");
+        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true")
 
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = { flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.flushEventListeners = listener as FlushEventListener[]
-            def band = createBand('Tool')
-            assert band.save([:])
-            assertEquals 'Wrong flush count after save', 1, flushCount
-            band.merge([:])
-            assertEquals 'Wrong flush count after merge', 2, flushCount
-            band.delete([:])
-            assertEquals 'Wrong flush count after delete', 3, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def flushCount = 0
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
+        def band = createBand('Tool')
+        assertNotNull band.save([:])
+        assertEquals 'Wrong flush count after save', 1, flushCount
+        band.merge([:])
+        assertEquals 'Wrong flush count after merge', 2, flushCount
+        band.delete([:])
+        assertEquals 'Wrong flush count after delete', 3, flushCount
     }
 
     void testMapWithoutFlushEntryRespectsFalsePropertySetting() {
-        try {
-            def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false");
+        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false")
 
-            ConfigurationHolder.config = config
-            def flushCount = 0
-            def listener = { flushEvent ->
-                ++flushCount
-            } as FlushEventListener
-            session.listeners.flushEventListeners = listener as FlushEventListener[]
-            def band = createBand('Tool')
-            assert band.save([:])
-            band.merge([:])
-            band.delete([:])
-            assertEquals 'Wrong flush count', 0, flushCount
-        }
-        finally {
-            ConfigurationHolder.config = null
-        }
+        ConfigurationHolder.config = config
+        def flushCount = 0
+        def listener = { flushEvent -> ++flushCount } as FlushEventListener
+        session.listeners.flushEventListeners = listener as FlushEventListener[]
+        def band = createBand('Tool')
+        assertNotNull band.save([:])
+        band.merge([:])
+        band.delete([:])
+        assertEquals 'Wrong flush count', 0, flushCount
     }
 
     private createBand(name) {

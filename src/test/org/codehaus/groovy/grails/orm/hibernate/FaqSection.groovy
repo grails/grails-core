@@ -5,8 +5,7 @@ import org.hibernate.annotations.IndexColumn
 
 @Entity
 @Table(name="faq_section")
-class FaqSection
-{
+class FaqSection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id
@@ -16,7 +15,7 @@ class FaqSection
 
     String title
 
-    @OneToMany(cascade = [CascadeType.ALL], targetEntity = FaqElement.class)
+    @OneToMany(cascade = [CascadeType.ALL], targetEntity = FaqElement)
     @JoinColumn(name = "section_id", nullable = false)
     @IndexColumn(name = "pos", base = 0)
     List elements

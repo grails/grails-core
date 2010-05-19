@@ -1,12 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  */
-
-public class IdentityNameMappingTests extends AbstractGrailsHibernateTests{
+class IdentityNameMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class IdentityNameMapping {
     Long id
     Long version
@@ -16,9 +16,8 @@ class IdentityNameMapping {
         id name:'test', generator:'assigned'
     }
 }
-''')
+'''
     }
-
 
     void testIdentityNameMapping() {
 
@@ -28,8 +27,7 @@ class IdentityNameMapping {
         assertNotNull "Persistent instance with named and assigned identifier should have validated", test.save(flush: true)
 
         session.clear()
-        
+
         assertNotNull "Persistent instance with named and assigned identifier should have been saved", testClass.get("John")
     }
-
 }

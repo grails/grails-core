@@ -8,56 +8,43 @@ import org.hibernate.usertype.ParameterizedType
 /**
  * Example single-column Hibernate user type for use in testing.
  */
-public class MyUserType implements UserType, ParameterizedType {
+class MyUserType implements UserType, ParameterizedType {
 
-    private static final int[] SQL_TYPES = [ Types.VARCHAR ] as int[];
+    private static final int[] SQL_TYPES = [ Types.VARCHAR ] as int[]
 
     /** Parameter for testing ParameterizedType. */
     private String param1
     /** Parameter for testing ParameterizedType. */
     private String param2
 
-    public int[] sqlTypes() { return SQL_TYPES }
-    public Class returnedClass() { return MyType }
-    public boolean equals(Object x, Object y) { return x.name == y.name }
-    public int hashCode(Object x) { return x.name.hashCode(); }
-    public Object deepCopy(Object value) { return value; }
-    public boolean isMutable() { return true }
+    int[] sqlTypes() { SQL_TYPES }
+    Class returnedClass() { MyType }
+    boolean equals(Object x, Object y) { x.name == y.name }
+    int hashCode(Object x) { x.name.hashCode() }
+    Object deepCopy(Object value) { value }
+    boolean isMutable() { true }
 
-    public Object nullSafeGet(ResultSet resultSet,
-                              String[] names,
-                              Object owner)
-            throws HibernateException, SQLException {
-
-      String name = resultSet.getString(names[0]);
-      return resultSet.wasNull() ? null : new MyType(name: name)
+    Object nullSafeGet(ResultSet resultSet, String[] names, owner) throws SQLException {
+        String name = resultSet.getString(names[0])
+      resultSet.wasNull() ? null : new MyType(name: name)
     }
 
-    public void nullSafeSet(PreparedStatement statement,
-                            Object value,
-                            int index)
-            throws HibernateException, SQLException {
-
+    void nullSafeSet(PreparedStatement statement, value, int index) throws SQLException {
         if (value == null) {
-            statement.setNull(index, Types.VARCHAR);
-        } else {
-            statement.setString(index, value.name);
+            statement.setNull(index, Types.VARCHAR)
+        }
+        else {
+            statement.setString(index, value.name)
         }
     }
 
-    public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable) value;
-    }
+    Serializable disassemble(Object value) { value }
 
-    public Object assemble(Serializable cached, Object owner) throws HibernateException {
-        return cached;
-    }
+    Object assemble(Serializable cached, Object owner) { cached }
 
-    public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        return original;
-    } 
+    Object replace(Object original, Object target, Object owner) { original }
 
-    public void setParameterValues(Properties params) {
+    void setParameterValues(Properties params) {
         param1 = params.param1
         param2 = params.param2
     }

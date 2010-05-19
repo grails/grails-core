@@ -5,14 +5,13 @@ import org.springframework.orm.hibernate3.HibernateQueryException
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 21, 2009
  */
-
-public class AutoImportPackedDomainTests extends AbstractGrailsHibernateTests{
+class AutoImportPackedDomainTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.*
@@ -30,10 +29,8 @@ class Model2 {
         autoImport false
     }
 }
-
-''')
+'''
     }
-
 
     void testAutoImport() {
         def Model = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.Model").clazz
@@ -48,15 +45,11 @@ class Model2 {
         models = Model.findAll("from Model as m where m.name = 'Name'")
         assertTrue models.size() == 1
 
-
         models = Model2.findAll("from org.codehaus.groovy.grails.orm.hibernate.Model2 as m where m.name = 'Name'")
         assertTrue models.size() == 1
 
         shouldFail(HibernateQueryException) {
             models = Model2.findAll("from Model2 as m where m.name = 'Name'")
         }
-
-
     }
-
 }

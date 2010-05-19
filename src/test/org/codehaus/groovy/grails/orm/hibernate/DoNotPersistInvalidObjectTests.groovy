@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class DoNotPersistInvalidObjectTests extends AbstractGrailsHibernateTests{
+class DoNotPersistInvalidObjectTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -18,9 +18,8 @@ class DoNotPersist {
         name size:1..5
     }
 }
-''')
+'''
     }
-
 
     void testDoNoPersistInvalidInstanceUsingDirtyChecking() {
         def testDomain = ga.getDomainClass("DoNotPersist").clazz
@@ -59,5 +58,4 @@ class DoNotPersist {
         t = testDomain.get(1)
         assertEquals "fred", t.name
     }
-
 }

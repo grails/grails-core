@@ -1,50 +1,42 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class AssertionFailureInEventTests extends AbstractGrailsHibernateTests{
+class AssertionFailureInEventTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class AssertionParent {
-    static hasMany = [ childs : AssertionChild ]
+    static hasMany = [childs : AssertionChild]
 
-    def beforeUpdate =
-    {
+    def beforeUpdate = {
         calc()
     }
 
-    def calc =
-    {
-        this.childs.each {
-            it.s = "change"
-        }
-
+    def calc = {
+        childs.each { it.s = "change" }
     }
 }
 
 @Entity
 class AssertionChild {
-    static belongsTo = [AssertionParent];
+    static belongsTo = [AssertionParent]
     static hasMany = [ subChilds : AssertionSubChild ]
     String s
 }
 
 @Entity
 class AssertionSubChild {
-    static belongsTo = [AssertionChild];
+    static belongsTo = [AssertionChild]
     String s
 }
-''')
+'''
     }
-
 
     // test for HHH-2763 and GRAILS-4453
     void testNoAssertionErrorInEvent() {
@@ -66,6 +58,4 @@ class AssertionSubChild {
         p = Parent.get(1)
         p.childs.each { println it.s }
     }
-
-
 }

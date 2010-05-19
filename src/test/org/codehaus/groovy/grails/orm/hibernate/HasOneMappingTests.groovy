@@ -6,25 +6,24 @@ import java.sql.Connection
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class HasOneMappingTests extends AbstractGrailsHibernateTests{
+class HasOneMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class HasOneFace {
     String name
     static hasOne = [nose:HasOneNose]
-
 }
+
 @Entity
 class HasOneNose {
     String shape
     HasOneFace face
 }
-''')
+'''
     }
 
     void testHasOneMapping() {
@@ -40,9 +39,6 @@ class HasOneNose {
         session.clear()
 
         f = Face.get(1)
-
-
-
         assertNotNull "should have been able to read back nose",f.nose
 
         // now test table structure
@@ -63,15 +59,10 @@ class HasOneNose {
         r.getString("shape")
         r.getLong("face_id") // association key stored in child
 
-        
-
         // now test delete
         f.delete(flush:true)
 
         assertEquals 0, Face.count()
         assertEquals 0, Nose.count()
-
     }
-
-
 }

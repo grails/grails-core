@@ -7,11 +7,10 @@ import org.springframework.dao.DataAccessException
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class DontFlushAfterDataAccessExceptionTests extends AbstractGrailsHibernateTests{
+class DontFlushAfterDataAccessExceptionTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -35,19 +34,18 @@ class DontFlushAfterDataAccessExceptionBook {
 
    String name
 }
-''')
+'''
     }
-
 
     void testDontFlushAfterDataAccessException() {
         def Author = ga.getDomainClass("DontFlushAfterDataAccessExceptionAuthor").clazz
 
         session.setFlushMode(FlushMode.AUTO)
-        assert Author.newInstance(name:"bob")
-                      .addToBooks(name:"my story")
-                      .save(flush:true)
+        assertNotNull Author.newInstance(name:"bob")
+                            .addToBooks(name:"my story")
+                            .save(flush:true)
 
-        assert session.getFlushMode() == FlushMode.AUTO : "should be a flush mode of auto"
+        assertEquals FlushMode.AUTO, session.getFlushMode()
 
         session.clear()
 
@@ -57,7 +55,6 @@ class DontFlushAfterDataAccessExceptionBook {
             author.delete(flush:true)
         }
 
-        assert session.getFlushMode() == FlushMode.MANUAL : "should be a flush mode of manual after exception!"
-
+        assertEquals FlushMode.MANUAL, session.getFlushMode()
     }
 }

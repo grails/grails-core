@@ -1,39 +1,30 @@
-package org.codehaus.groovy.grails.orm.hibernate;
-
+package org.codehaus.groovy.grails.orm.hibernate
 
 class CircularOneToManyTests extends AbstractGrailsHibernateTests  {
 
-	void testCircularDomain() {
-		def taskDomain = ga.getDomainClass("Task")
+    void testCircularDomain() {
+        def taskDomain = ga.getDomainClass("Task")
+        def tasks = taskDomain?.getPropertyByName("tasks")
+        def task = taskDomain?.getPropertyByName("task")
+        assertNotNull tasks
+        assertNotNull task
 
-		
-		def tasks = taskDomain?.getPropertyByName("tasks")
-		def task = taskDomain?.getPropertyByName("task")
-		assert tasks
-		assert task
-		
-		assert tasks.isOneToMany()
-		assert tasks.isBidirectional()
-		assert task.isManyToOne()
-		assert task.isBidirectional()
-		
-	}
+        assertTrue tasks.isOneToMany()
+        assertTrue tasks.isBidirectional()
+        assertTrue task.isManyToOne()
+        assertTrue task.isBidirectional()
+    }
 
-	void onSetUp() {
-		this.gcl.parseClass('''
+    void onSetUp() {
+        gcl.parseClass '''
 class Task {
-	Long id
-	Long version
-	Set tasks
-	Task task
-	static belongsTo = Task 
-	static hasMany = [tasks:Task]
+    Long id
+    Long version
+    Set tasks
+    Task task
+    static belongsTo = Task
+    static hasMany = [tasks:Task]
 }
 '''
-		)
-	}	
-	
-	void onTearDown() {
-		
-	}
+    }
 }

@@ -1,4 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -8,7 +9,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 class GetMethodTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class GetMethodTest {
     Long id
     Long version
@@ -22,9 +23,8 @@ class GetMethodZeroIdTest {
         id generator:'assigned'
     }
 }
-''')
+'''
     }
-
 
     void testGetMethod() {
         def testClass = ga.getDomainClass("GetMethodTest").clazz
@@ -33,7 +33,7 @@ class GetMethodZeroIdTest {
         assertNull testClass.get(1)
         assertNull testClass.get(1L)
 
-        assert testClass.newInstance(name:"Foo").save(flush: true)
+        assertNotNull testClass.newInstance(name:"Foo").save(flush: true)
 
         assertNotNull testClass.get(1)
     }
@@ -45,23 +45,19 @@ class GetMethodZeroIdTest {
         assertNull testClass.read(1)
         assertNull testClass.read(1L)
 
-        assert testClass.newInstance(name:"Foo").save(flush: true)
+        assertNotNull testClass.newInstance(name:"Foo").save(flush: true)
 
         assertNotNull testClass.read(1L)
 
         def test = testClass.read(1)
-
         test.name = "Bar"
 
         session.flush()
         session.clear()
 
         test = testClass.read(1)
-
         assertEquals "Foo", test.name
-
     }
-
 
     void testGetMethodZeroId() {
         def testZeroIdClass = ga.getDomainClass("GetMethodZeroIdTest").clazz
@@ -72,7 +68,7 @@ class GetMethodZeroIdTest {
 
         def zeroInstance = testZeroIdClass.newInstance()
         zeroInstance.id = 0
-        assert zeroInstance.save(flush: true)
+        assertNotNull zeroInstance.save(flush: true)
 
         assertNotNull testZeroIdClass.get(0)
     }

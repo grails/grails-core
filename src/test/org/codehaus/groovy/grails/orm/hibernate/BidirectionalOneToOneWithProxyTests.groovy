@@ -1,37 +1,32 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jun 9, 2009
  */
-
-public class BidirectionalOneToOneWithProxyTests extends AbstractGrailsHibernateTests{
+class BidirectionalOneToOneWithProxyTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class Face {
-  Integer height
-  Integer width
-  Nose nose
-  static constraints = {
-  }
+    Integer height
+    Integer width
+    Nose nose
 }
 
 @Entity
 class Nose {
-  Integer length
-  static belongsTo = [face:Face]
-  static constraints = {
-  }
+    Integer length
+    static belongsTo = [face:Face]
 }
 
-''')
+'''
     }
-
 
     // test for GRAILS-4580
     void testBidirectionalOneToOneWithProxy() {
@@ -44,15 +39,11 @@ class Nose {
         assertEquals 1, Nose.count()
         session.clear()
 
-
-
         def faces = Face.list()
-        print faces
         face = faces[0]
         nose = face.nose
         nose.length = 3
-       
-        assertNotNull "saving nose should have been successful",nose.save()
-    }
 
+        assertNotNull "saving nose should have been successful", nose.save()
+    }
 }

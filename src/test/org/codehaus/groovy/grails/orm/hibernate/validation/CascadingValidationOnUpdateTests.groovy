@@ -15,14 +15,14 @@ class CascadingValidationOnUpdateTests extends AbstractGrailsHibernateTests {
 class Pirate {
     Long id
     Long version
-	String name
-	Parrot parrot
+    String name
+    Parrot parrot
 }
 class Parrot {
     Long id
     Long version
-	String name
-	static belongsTo = Pirate
+    String name
+    static belongsTo = Pirate
     static constraints = {
         name blank: false
     }
@@ -48,6 +48,5 @@ class Parrot {
         assertTrue pirate.hasErrors()
         assertEquals 1, pirate.errors.errorCount
         assertEquals "blank", pirate.errors.getFieldError("parrot.name").code
-
     }
 }

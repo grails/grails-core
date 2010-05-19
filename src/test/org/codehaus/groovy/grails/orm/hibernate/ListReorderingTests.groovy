@@ -1,14 +1,15 @@
+package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Nov 14, 2007
  */
-package org.codehaus.groovy.grails.orm.hibernate
 class ListReorderingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class Bar {
 
     Long id
@@ -17,6 +18,7 @@ class Bar {
     Foo foo
     static belongsTo = Foo
 }
+
 class Foo {
     Long id
     Long version
@@ -25,21 +27,17 @@ class Foo {
     List bars
     static hasMany = [bars : Bar]
 }
-
-''')
+'''
     }
-
-
 
     void testReorderList() {
         def fooClass = ga.getDomainClass("Foo").clazz
         def foo = fooClass.newInstance(name:"foo")
-                            .addToBars(name:"bar1")
-                            .addToBars(name:"bar2")
+                          .addToBars(name:"bar1")
+                          .addToBars(name:"bar2")
 
         assertEquals foo,foo.bars[0].foo
         assertEquals foo,foo.bars[1].foo
-
 
         foo.save()
 
@@ -47,9 +45,7 @@ class Foo {
         session.clear()
 
         foo = fooClass.get(1)
-
-
-        assert foo
+        assertNotNull foo
         assertEquals 2, foo.bars.size()
         assertEquals "bar1", foo.bars[0].name
         assertEquals "bar2", foo.bars[1].name
@@ -66,7 +62,5 @@ class Foo {
 
         assertEquals "bar2", foo.bars[0].name
         assertEquals "bar1", foo.bars[1].name
-
     }
-
 }

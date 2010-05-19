@@ -1,22 +1,19 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
-                                                                    
+
 class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
 
-	void testCountInDeepHeirarchy() {
-		def p = ga.getDomainClass("Personnel")
-		def a = ga.getDomainClass("Approver")
-		def h = ga.getDomainClass("Handler")
-
+    void testCountInDeepHeirarchy() {
+        def p = ga.getDomainClass("Personnel")
+        def a = ga.getDomainClass("Approver")
+        def h = ga.getDomainClass("Handler")
 
         def p1 = p.newInstance()
-
         p1.name = "Joe Bloggs"
         p1.save()
         session.flush()
-
 
         def a1 = a.newInstance()
         a1.name = "Fred Flinstone"
@@ -36,20 +33,17 @@ class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
         assertEquals 3, p.clazz.count()
         assertEquals 2, a.clazz.count()
         assertEquals 1, h.clazz.count()
-	}
+    }
 
-	void testPersistentValuesInDeepHeirarchy() {
-		def p = ga.getDomainClass("Personnel")
-		def a = ga.getDomainClass("Approver")
-		def h = ga.getDomainClass("Handler")
-
+    void testPersistentValuesInDeepHeirarchy() {
+        def p = ga.getDomainClass("Personnel")
+        def a = ga.getDomainClass("Approver")
+        def h = ga.getDomainClass("Handler")
 
         def p1 = p.newInstance()
-
         p1.name = "Joe Bloggs"
         p1.save()
         session.flush()
-
 
         def a1 = a.newInstance()
         a1.name = "Fred Flinstone"
@@ -70,7 +64,6 @@ class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
 
         session.clear()
 
-
         def p2 = p.clazz.get(pId)
         assertEquals "Joe Bloggs", p2.name
 
@@ -82,34 +75,27 @@ class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
         assertEquals "Barney Rubble", h2.name
         assertEquals "dormant", h2.status
         assertEquals 10, h2.strength
-
     }
 
-	void onSetUp() {
-		this.gcl.parseClass('''
-class Personnel{
+    void onSetUp() {
+        gcl.parseClass '''
+class Personnel {
     Long id
     Long version
     String name
 }
 
-class Approver extends Personnel{
+class Approver extends Personnel {
     Long id
     Long version
     String status
 }
 
-class Handler extends Approver{
+class Handler extends Approver {
     Long id
     Long version
     int strength
 }
-
 '''
-		)
-	}
-	
-	void onTearDown() {
-		
-	}
+    }
 }

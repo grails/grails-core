@@ -1,15 +1,15 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
-public class PersistentMethodTestClass {
-	 Long id;
-	 Long version;
-	
-	 String firstName;
-	 String lastName;
-	 Integer age;
-	 boolean active = true
+class PersistentMethodTestClass {
+    Long id
+    Long version
 
-	 static constraints = {
-	    firstName(size:4..15)
-     }
+    String firstName
+    String lastName
+    Integer age
+    boolean active = true
+
+    static constraints = {
+        firstName(size:4..15)
+    }
 }

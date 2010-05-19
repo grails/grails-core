@@ -1,17 +1,11 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Jul 13, 2007
- * Time: 9:24:42 AM
- * 
- */
-
 package org.codehaus.groovy.grails.orm.hibernate
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class ClassHeirarchyInheritanceTests extends AbstractGrailsHibernateTests {
+
     void testPolymorphicQuery() {
         def carClass = ga.getDomainClass("Car").clazz
         def alpha = ga.getDomainClass("Alpha").newInstance()
@@ -35,14 +29,12 @@ class ClassHeirarchyInheritanceTests extends AbstractGrailsHibernateTests {
         assertEquals 1, fiats.size()
     }
 
-    void onTearDown() {}
-    
     void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class Car { Long id;Long version;String type;}
 class Alpha extends Car { }
 class Fiat extends Car { }
 class Ferrari extends Car { }
-        ''')
+'''
     }
 }

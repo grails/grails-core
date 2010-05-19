@@ -7,11 +7,10 @@ import org.springframework.dao.DataIntegrityViolationException
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class NaturalIdentifierTests extends AbstractGrailsHibernateTests{
+class NaturalIdentifierTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -38,16 +37,14 @@ class NaturalBook2 {
         id natural:[properties:['title', 'author'], mutable:true]
     }
 }
-''')
+'''
     }
-
 
     void testNaturalIdentifier() {
         def Book = ga.getDomainClass("NaturalBook").clazz
         def Author = ga.getDomainClass("NaturalAuthor").clazz
 
         def a = Author.newInstance(name:"Stephen King").save(flush:true)
-
         def b = Book.newInstance(author:a, title:"The Stand").save(flush:true)
 
         assertNotNull b
@@ -63,11 +60,10 @@ class NaturalBook2 {
         shouldFail(DataIntegrityViolationException) {
             Book.newInstance(author:a, title:"The Stand").save(flush:true)
         }
-
     }
 
     void testMutalbeNaturalIdentifier() {
-       def Book = ga.getDomainClass("NaturalBook2").clazz
+        def Book = ga.getDomainClass("NaturalBook2").clazz
         def Author = ga.getDomainClass("NaturalAuthor").clazz
 
         def a = Author.newInstance(name:"Stephen King").save(flush:true)
@@ -85,5 +81,4 @@ class NaturalBook2 {
             Book.newInstance(author:a, title:"Changed").save(flush:true)
         }
     }
-
 }

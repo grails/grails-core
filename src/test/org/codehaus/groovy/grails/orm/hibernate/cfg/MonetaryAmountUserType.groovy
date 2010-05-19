@@ -7,36 +7,30 @@ import org.hibernate.usertype.UserType
 /**
  * Example multi-column Hibernate user type for use in testing.
  */
-public class MonetaryAmountUserType implements UserType {
+class MonetaryAmountUserType implements UserType {
 
-    private static final int[] SQL_TYPES = [ Types.NUMERIC, Types.VARCHAR ] as int[];
+    private static final int[] SQL_TYPES = [ Types.NUMERIC, Types.VARCHAR ] as int[]
 
-    public int[] sqlTypes() { return SQL_TYPES }
-    public Class returnedClass() { return MonetaryAmount }
-    public boolean equals(Object x, Object y) { return x == y }
-    public int hashCode(Object x) { return x.hashCode() }
-    public Object deepCopy(Object value) { return value }
-    public boolean isMutable() { return false }
+    int[] sqlTypes() { SQL_TYPES }
+    Class returnedClass() { MonetaryAmount }
+    boolean equals(Object x, Object y) { x == y }
+    int hashCode(Object x) { x.hashCode() }
+    Object deepCopy(Object value) { value }
+    boolean isMutable() { false }
 
-    public Object nullSafeGet(ResultSet resultSet,
-                              String[] names,
-                              Object owner)
-            throws HibernateException, SQLException {
+    Object nullSafeGet(ResultSet resultSet, String[] names, owner) throws SQLException {
+
         if (resultSet.wasNull()) return null
 
         BigDecimal value = resultSet.getBigDecimal(names[0])
         Currency currency = Currency.getInstance(resultSet.getString(names[1]))
-        return new MonetaryAmount(value, currency)
+        new MonetaryAmount(value, currency)
     }
 
-    public void nullSafeSet(PreparedStatement statement,
-                            Object amount,
-                            int index)
-            throws HibernateException, SQLException {
-
+    void nullSafeSet(PreparedStatement statement, amount, int index) throws SQLException {
         if (value == null) {
-            statement.setNull(index, SQL_TYPES[index]);
-            statement.setNull(index + 1, SQL_TYPES[index + 1]);
+            statement.setNull(index, SQL_TYPES[index])
+            statement.setNull(index + 1, SQL_TYPES[index + 1])
         }
         else {
             String currencyCode = amount.currency.currencyCode
@@ -45,15 +39,9 @@ public class MonetaryAmountUserType implements UserType {
         }
     }
 
-    public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable) value;
-    }
+    Serializable disassemble(Object value) { value }
 
-    public Object assemble(Serializable cached, Object owner) throws HibernateException {
-        return cached;
-    }
+    Object assemble(Serializable cached, Object owner) { cached }
 
-    public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        return original;
-    } 
+    Object replace(Object original, Object target, Object owner) { original }
 }

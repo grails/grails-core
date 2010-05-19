@@ -5,14 +5,13 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 23, 2009
  */
-
-public class BidirectionalOneToManyAndUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests{
+class BidirectionalOneToManyAndUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -25,7 +24,6 @@ class Group {
     static hasMany = [ members : User ]
 }
 
-
 @Entity
 class User {
 
@@ -33,7 +31,7 @@ class User {
     static hasMany = [ groups: Group ]
     static mappedBy = [ groups:"owner" ]
 }
-''')
+'''
     }
 
     void testDomain() {
@@ -48,7 +46,5 @@ class User {
 
         assertTrue "property [groups] should be a one-to-many", userDomain.getPropertyByName("groups").isOneToMany()
         assertTrue "property [groups] should be a bidirectional", userDomain.getPropertyByName("groups").isBidirectional()
-
     }
-
 }

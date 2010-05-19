@@ -5,7 +5,7 @@ import javax.sql.DataSource
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Mar 18, 2008
  */
 class TablePerSubclassIdentityMappingTests extends AbstractGrailsHibernateTests {

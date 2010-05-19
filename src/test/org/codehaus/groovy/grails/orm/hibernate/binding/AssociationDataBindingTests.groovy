@@ -6,15 +6,13 @@ import org.springframework.mock.web.MockHttpServletRequest
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Dec 8, 2008
  */
-
-public class AssociationDataBindingTests extends AbstractGrailsHibernateTests{
+class AssociationDataBindingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
-
+        gcl.parseClass '''
 class AssociationBindingReviewer {
     Long id
     Long version
@@ -56,22 +54,17 @@ class AssociationBindingAuthor {
     Set moreBooks
     static hasMany = [books: AssociationBindingBook, moreBooks:AssociationBindingBook2]
 }
-''')
-
+'''
     }
-
-
 
     void testManyToOneBinding() {
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
-        assert Author.newInstance(name:"Stephen King").save(flush:true)
+        assertNotNull Author.newInstance(name:"Stephen King").save(flush:true)
 
         def book = Book.newInstance()
-
         def params = ['author.id':1, title:'The Shining']
-
         book.properties = params
 
         assertNotNull "The author should have been bound", book.author
@@ -86,9 +79,7 @@ class AssociationBindingAuthor {
         def book = Book.newInstance(title: "The Shining", author: author).save(flush:true, failOnError: true)
 
         def params = ['author.id': "null"]
-
         book.properties = params
-
         assertNull "The author should have been unbound", book.author
     }
 
@@ -187,7 +178,6 @@ class AssociationBindingAuthor {
         book = book.refresh()
 
         def params = ["pages[0].id": "null"]
-
         book.properties = params
 
         assertNull "Should have removed pages[0] but it is ${book.pages[0]}", book.pages[0]
@@ -204,13 +194,10 @@ class AssociationBindingAuthor {
         book = book.refresh()
 
         def params = ["pages[0].number": "1", "pages[1].number": "2", "pages[2].number": "3"]
-
         book.properties = params
-
         assertEquals "Should bound new pages to book", 3, book.pages.size()
 
         book.save(flush: true, failOnError: true)
-
         assertEquals "Should have created new pages", 3, Page.count()
     }
 
@@ -226,7 +213,6 @@ class AssociationBindingAuthor {
         book = book.refresh()
 
         def params = ["reviewers[rob].id": "null"]
-
         book.properties = params
 
         assertNull "Should have removed reviewers[rob] but it is ${book.reviewers['rob']}", book.reviewers["rob"]
@@ -239,20 +225,17 @@ class AssociationBindingAuthor {
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
 
         def author = Author.newInstance(name: "Stephen King").save(flush: true)
-        assert author
+        assertNotNull author
         def book = Book.newInstance(title: "The Shining", author: author).save(flush:true)
-        assert book
+        assertNotNull book
 
-
-        assert Reviewer.newInstance(name:"Joe Bloggs", age:41).save(flush:true)
-        assert Page.newInstance(number:11).save(flush:true)
+        assertNotNull Reviewer.newInstance(name:"Joe Bloggs", age:41).save(flush:true)
+        assertNotNull Page.newInstance(number:11).save(flush:true)
 
         session.clear()
 
         author = Author.get(1)
-
         assertEquals 1, author.books.size()
-
 
         def request = new MockHttpServletRequest()
         request.addParameter("books[1].title", "The Stand")
@@ -260,15 +243,10 @@ class AssociationBindingAuthor {
         request.addParameter("books[1].reviewers['joe'].name", "Joseph Bloggs")
         request.addParameter("books[1].pages[0].id", "1")
 
-
         author.properties = request
-
-
         assertEquals 2, author.books.size()
 
-
         def b2 = author.books.find { it.title == "The Stand" }
-
         assertNotNull b2
 
         assertNotNull b2.reviewers['joe']
@@ -283,21 +261,16 @@ class AssociationBindingAuthor {
         session.clear()
 
         author = Author.get(1)
-
         assertEquals 2, author.books.size()
 
-
         b2 = author.books.find { it.title == "The Stand" }
-
         assertNotNull b2
-
         assertNotNull b2.reviewers['joe']
         assertEquals 41, b2.reviewers['joe'].age
         assertEquals "Joseph Bloggs", b2.reviewers['joe'].name
 
         assertNotNull b2.pages[0]
         assertEquals 11, b2.pages[0].number
-
     }
 
     void testOneToManyBindingWithSubscriptOperatorAndNewInstance() {
@@ -336,8 +309,6 @@ class AssociationBindingAuthor {
         session.clear()
 
         author = Author.get(1)
-
-
         assertEquals 2, author.books.size()
 
         b1 = author.books.find { it.title == 'The Shining'}
@@ -352,8 +323,6 @@ class AssociationBindingAuthor {
         assertEquals 3, b1.reviewers.size()
         assertEquals "Fred Bloggs", b1.reviewers['fred'].name
         assertEquals "The Stand", b2.title
-        
-
     }
 
     void testOneToManyBindingWithAnArrayOfStrings() {
@@ -362,56 +331,49 @@ class AssociationBindingAuthor {
 
         def author = Author.newInstance(name:"Stephen King")
 
-        assert Book.newInstance(title:"The Shining").save(flush:true)
-        assert Book.newInstance(title:"The Stand").save(flush:true)
+        assertNotNull Book.newInstance(title:"The Shining").save(flush:true)
+        assertNotNull Book.newInstance(title:"The Stand").save(flush:true)
 
         def params = ['moreBooks':['1','2'] as String[], name:'Stephen King']
-
         author.properties = params
 
         assertNotNull "The books association should have been bound", author.moreBooks
-
         assertEquals 2, author.moreBooks.size()
         assertTrue "element is not an instance of a book, no binding occured!", Book.isInstance(author.moreBooks.iterator().next())
         assertEquals "Stephen King", author.name
-
     }
 
     void testOneToManyWithAString() {
 
         def Book = ga.getDomainClass("AssociationBindingBook2").clazz
-        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz        
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
-        assert Book.newInstance(title:"The Shining").save(flush:true)
-        assert Book.newInstance(title:"The Stand").save(flush:true)
+        assertNotNull Book.newInstance(title:"The Shining").save(flush:true)
+        assertNotNull Book.newInstance(title:"The Stand").save(flush:true)
 
         def params = ['moreBooks':'1', name:'Stephen King']
-
         def author = Author.newInstance()
-
         author.properties = params
-
         assertNotNull "The books association should have been bound", author.moreBooks
-
         assertEquals 1, author.moreBooks.size()
         assertTrue "element is not an instance of a book, no binding occured!", Book.isInstance(author.moreBooks.iterator().next())
         assertEquals "Stephen King", author.name
     }
 
     void testOneToManyWithIndexedParams() {
+
         if(notYetImplemented()) return
+
         def Book = ga.getDomainClass("AssociationBindingBook2").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
-        assert Book.newInstance(title:"The Shining").save(flush:true)
-        assert Book.newInstance(title:"The Stand").save(flush:true)
+        assertNotNull Book.newInstance(title:"The Shining").save(flush:true)
+        assertNotNull Book.newInstance(title:"The Stand").save(flush:true)
 
         def params = ['moreBooks[0]':'1', name:'Stephen King']
-
         def author = Author.newInstance()
 
         author.properties = params
-
         assertNotNull "The books association should have been bound", author.moreBooks
 
         assertEquals 1, author.moreBooks.size()

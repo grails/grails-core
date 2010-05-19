@@ -1,17 +1,17 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class OneToManyWithSelfAndInheritanceTests extends AbstractGrailsHibernateTests{
+class OneToManyWithSelfAndInheritanceTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
-class Party{
+class Party {
     String name
     String description
 }
@@ -23,11 +23,9 @@ class Organization extends Party {
 }
 
 @Entity
-class ExtOrganization extends Organization{
-}
-''')
+class ExtOrganization extends Organization{}
+'''
     }
-
 
     // test for GRAILS-3210
     void testSubclassAssociationsWork() {
@@ -44,27 +42,13 @@ class ExtOrganization extends Organization{
         def xorgB = ExtOrganization.newInstance(name:'ExtOrg B', description:'child B of Org 1', parent: xorg1).save()
         def xorgaa = ExtOrganization.newInstance(name:'ExtOrg aa', description:'child aa of Org A (granchild of root)', parent: xorgA).save()
 
-
         session.flush()
-
-
         session.clear()
 
         org1 = Organization.findByName("Org 1")
-
         assertEquals 2, org1.children.size()
 
-        // TODO: The following is broken due to the workaround that is in place for http://opensource.atlassian.com/projects/hibernate/browse/HHH-2855
-        // Even though the issue is resolved the problem still remains. If you remove the line:
-        // collection.setWhere(RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME + " = '" + referenced.getFullName() + "'");
-        // from GrailsDomainBinder the problem goes away, but causes other regressions. The current workaround is to use table-per-subclass inheritance
-
-		//FIXED
-        //if(notYetImplemented()) return
         xorg1 = ExtOrganization.findByName('ExtOrg 1')
-
         assertEquals 2, xorg1.children.size()
     }
-
-
 }

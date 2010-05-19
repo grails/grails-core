@@ -1,19 +1,12 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Aug 29, 2007
- * Time: 7:36:48 PM
- * 
- */
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class CascadingDeleteBehaviour3Tests extends AbstractGrailsHibernateTests {
-
 
     void testDeleteToOne() {
         def roleClass = ga.getDomainClass("Role")
@@ -38,14 +31,11 @@ class CascadingDeleteBehaviour3Tests extends AbstractGrailsHibernateTests {
         session.flush()
 
         r = roleClass.clazz.get(1)
-        assert r
-
-
+        assertNotNull r
     }
 
-
     void onSetUp() {
-		this.gcl.parseClass('''
+        gcl.parseClass '''
 class Role {
     Long id
     Long version
@@ -60,6 +50,5 @@ class UserRole {
     static belongsTo = [ role: Role ]
 }
 '''
-		)
-	}
+    }
 }

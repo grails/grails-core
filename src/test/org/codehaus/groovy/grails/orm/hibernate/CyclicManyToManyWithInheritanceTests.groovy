@@ -2,21 +2,15 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
-
 /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: Dec 4, 2008
- * Time: 12:03:41 PM
- * To change this template use File | Settings | File Templates.
+ * @author graemerocher
  */
-
-public class CyclicManyToManyWithInheritanceTests extends AbstractGrailsHibernateTests{
+class CyclicManyToManyWithInheritanceTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
-class CyclicManyToManyWithInheritanceIndividual extends CyclicManyToManyWithInheritanceUser {
-}
+        gcl.parseClass '''
+class CyclicManyToManyWithInheritanceIndividual extends CyclicManyToManyWithInheritanceUser {}
+
 class CyclicManyToManyWithInheritanceUser {
 
     Long id
@@ -27,18 +21,18 @@ class CyclicManyToManyWithInheritanceUser {
     Set groups
     static hasMany = [ groups: CyclicManyToManyWithInheritanceUserGroup ]
 }
+
 class CyclicManyToManyWithInheritanceUserGroup extends CyclicManyToManyWithInheritanceUser {
 
-    static belongsTo = [ CyclicManyToManyWithInheritanceIndividual, CyclicManyToManyWithInheritanceUser, CyclicManyToManyWithInheritanceUserGroup ]
+    static belongsTo = [CyclicManyToManyWithInheritanceIndividual,
+                        CyclicManyToManyWithInheritanceUser,
+                        CyclicManyToManyWithInheritanceUserGroup]
 
     Set members
     static hasMany = [ members: CyclicManyToManyWithInheritanceUser ]
-
 }
-
-''')
+'''
     }
-
 
     void testDomain() {
         GrailsDomainClass individualDomain = ga.getDomainClass("CyclicManyToManyWithInheritanceIndividual")
@@ -48,7 +42,6 @@ class CyclicManyToManyWithInheritanceUserGroup extends CyclicManyToManyWithInher
         assertTrue "should be a many-to-many assocation",userGroupDomain.getPropertyByName("members").isManyToMany()
         assertTrue "should be a many-to-many assocation",userDomain.getPropertyByName("groups").isManyToMany()
         assertTrue "should be a many-to-many assocation",individualDomain.getPropertyByName("groups").isManyToMany()
-
     }
 
     void testCyclicManyToManyWithInheritance() {
@@ -69,5 +62,4 @@ class CyclicManyToManyWithInheritanceUserGroup extends CyclicManyToManyWithInher
         gromit.save()
         cooker.save()
     }
-
 }

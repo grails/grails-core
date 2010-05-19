@@ -14,7 +14,7 @@ class PlantCategory {
     String name
 
     static hasMany = [plants:Plant]
-                                
+
     static namedQueries = {
         withPlantsInPatch {
             plants {
@@ -101,7 +101,7 @@ class Publication {
 }
 ''')
     }
-    
+
 	void testNamedQueryWithRelationshipInCriteria() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 

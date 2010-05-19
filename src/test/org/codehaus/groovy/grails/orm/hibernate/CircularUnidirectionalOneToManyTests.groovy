@@ -1,53 +1,44 @@
-package org.codehaus.groovy.grails.orm.hibernate;
-
+package org.codehaus.groovy.grails.orm.hibernate
 
 class CircularUnidirectionalOneToManyTests extends AbstractGrailsHibernateTests {
 
-	void testCircularDomain() {
-		def taskDomain = ga.getDomainClass("Task")
+    void testCircularDomain() {
+        def taskDomain = ga.getDomainClass("Task")
+        def tasks = taskDomain?.getPropertyByName("tasks")
 
-		
-		def tasks = taskDomain?.getPropertyByName("tasks")
+        assertNotNull tasks
+        assertTrue tasks.isOneToMany()
+        assertFalse tasks.isBidirectional()
+    }
 
-		assert tasks		
-		assert tasks.isOneToMany()
-		assert !tasks.isBidirectional()
-		
-	}
-	
-	void testOneToMany() {
-		def taskClass = ga.getDomainClass("Task")
-		
-		def taskParent = taskClass.newInstance()
-		def taskChild = taskClass.newInstance()
-		
-		taskParent.addToTasks(taskChild)
-		taskParent.save(true)
-		session.flush()
-		
-		session.evict(taskParent)
-		session.evict(taskChild)
-		
-		taskParent = taskClass.clazz.get(1)
-		
-		assert taskParent
-		assert taskParent.tasks
-	}
+    void testOneToMany() {
+        def taskClass = ga.getDomainClass("Task")
 
-	void onSetUp() {
-		this.gcl.parseClass('''
+        def taskParent = taskClass.newInstance()
+        def taskChild = taskClass.newInstance()
+
+        taskParent.addToTasks(taskChild)
+        taskParent.save()
+        session.flush()
+
+        session.evict(taskParent)
+        session.evict(taskChild)
+
+        taskParent = taskClass.clazz.get(1)
+
+        assertNotNull taskParent
+        assertNotNull taskParent.tasks
+    }
+
+    void onSetUp() {
+        gcl.parseClass '''
 class Task {
-	Long id
-	Long version
-	Set tasks
-	static hasMany = [tasks:Task]
+    Long id
+    Long version
+    Set tasks
+    static hasMany = [tasks:Task]
 }
 '''
-		)
-	}	
-	
-	void onTearDown() {
-		
-	}
-
+    }
 }
+

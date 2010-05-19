@@ -59,10 +59,6 @@ class User {
                 isSupervisor: "N",
                 isAgent: "N",
                 isSuperUser: "N")
-        def retval = user.validate()
-        if (!retval) {
-            println "Errors: ${user.errors}"
-        }
         assertTrue "User validation failed but it should have passed.", user.validate()
     }
 

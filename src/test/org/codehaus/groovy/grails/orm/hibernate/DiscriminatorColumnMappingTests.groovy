@@ -6,11 +6,10 @@ import java.sql.ResultSet
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class DiscriminatorColumnMappingTests extends AbstractGrailsHibernateTests{
+class DiscriminatorColumnMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -22,7 +21,7 @@ class Root {
 }
 
 @Entity
-class Child1 extends Root{
+class Child1 extends Root {
 
     static mapping = {
        discriminator "2"
@@ -37,9 +36,8 @@ class Child2 extends Root {
     }
 }
 
-''')
+'''
     }
-
 
     void testDiscriminatorMapping() {
         def Root = ga.getDomainClass("Root").clazz
@@ -49,7 +47,6 @@ class Child2 extends Root {
         assertNotNull "should have saved root", Root.newInstance().save(flush:true)
 
         def conn = session.connection()
-
         ResultSet rs = conn.prepareStatement("select tree from root").executeQuery()
         rs.next()
         assertEquals 1, rs.getInt("tree")
@@ -59,13 +56,10 @@ class Child2 extends Root {
         assertNotNull "should have saved child1", Child1.newInstance().save(flush:true)
 
         rs = conn.prepareStatement("select tree from root").executeQuery()
-
         rs.next()
         assertEquals 1, rs.getInt("tree")
 
         rs.next()
         assertEquals 2, rs.getInt("tree")
-
     }
-
 }

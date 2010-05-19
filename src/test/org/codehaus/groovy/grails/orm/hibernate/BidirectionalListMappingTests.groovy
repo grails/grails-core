@@ -2,49 +2,50 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+
+import org.hibernate.FetchMode
+import org.hibernate.engine.CascadeStyle
+import org.hibernate.mapping.Backref
+import org.hibernate.mapping.Column
+import org.hibernate.mapping.DependantValue
+import org.hibernate.mapping.IndexBackref
+import org.hibernate.mapping.KeyValue
+import org.hibernate.mapping.List
+import org.hibernate.mapping.ManyToOne
+import org.hibernate.mapping.OneToMany
 import org.hibernate.mapping.PersistentClass
 import org.hibernate.mapping.Property
-import org.hibernate.mapping.ManyToOne
-import org.hibernate.mapping.Column
-import org.hibernate.mapping.Table
-import org.hibernate.mapping.SimpleValue
-import org.hibernate.mapping.KeyValue
-import org.hibernate.mapping.OneToMany
-import org.hibernate.engine.CascadeStyle
 import org.hibernate.mapping.PropertyGeneration
-import org.hibernate.FetchMode
-import org.hibernate.type.ManyToOneType
-import org.hibernate.mapping.List
+import org.hibernate.mapping.SimpleValue
+import org.hibernate.mapping.Table
 import org.hibernate.type.IntegerType
 import org.hibernate.type.LongType
-import org.hibernate.mapping.IndexBackref
-import org.hibernate.mapping.Backref
-import org.hibernate.mapping.DependantValue
+import org.hibernate.type.ManyToOneType
 
 /**
-* @author Graeme Rocher
-* @since 1.0
-*
-* Created: Mar 12, 2008
-*/
-class BidirectionalListMappingTests extends GroovyTestCase {       
+ * @author Graeme Rocher
+ * @since 1.0
+ *
+ * Created: Mar 12, 2008
+ */
+class BidirectionalListMappingTests extends GroovyTestCase {
+
     DefaultGrailsDomainConfiguration config
 
     protected void setUp() {
-    	ExpandoMetaClass.enableGlobally()
+        ExpandoMetaClass.enableGlobally()
 
         def gcl = new GroovyClassLoader()
         gcl.parseClass '''
-class TestFaqSection
-{
+class TestFaqSection {
     Long id
     Long version
     String title
     List elements
     static hasMany = [elements:TestFaqElement]
 }
-class TestFaqElement
-{
+
+class TestFaqElement {
     Long id
     Long version
     String question
@@ -59,12 +60,8 @@ class TestFaqElement
         application.initialise()
         config.grailsApplication = application
 
-
         config.buildMappings()
-
     }
-
-
 
     void testIndexBackrefMapping() {
         PersistentClass faqSection = config.getClassMapping("TestFaqSection")
@@ -133,7 +130,6 @@ class TestFaqElement
         assertEquals LongType, elementsBackref.getType().getClass()
         assertEquals DependantValue, elementsBackref.getValue().getClass()
 
-
         DependantValue value = elementsBackref.getValue()
 
         assertFalse value.isAlternateUniqueKey()
@@ -153,10 +149,6 @@ class TestFaqElement
         assertEquals "assigned", value.getIdentifierGeneratorStrategy()
         assertNull value.getNullValue()
         assertEquals LongType, value.getType().getClass()
-
-
-
-
     }
 
     void testManySidePropertyMapping() {
@@ -198,7 +190,6 @@ class TestFaqElement
         assertEquals 2, sectionColumn.getScale()
         assertEquals "section_id",  sectionColumn.getText()
         assertEquals 0, sectionColumn.getTypeIndex()
-
     }
 
     void testManyToOneMapping() {
@@ -212,7 +203,6 @@ class TestFaqElement
         assertEquals 1,manyToOne.getColumnUpdateability().size()
         assertTrue manyToOne.getColumnUpdateability()[0]
 
-
         assertFalse manyToOne.isAlternateUniqueKey()
         assertFalse manyToOne.isCascadeDeleteEnabled()
         assertFalse manyToOne.isEmbedded()
@@ -222,7 +212,6 @@ class TestFaqElement
         assertTrue manyToOne.isTypeSpecified()
         assertFalse manyToOne.isUnwrapProxy()
         assertTrue manyToOne.isUpdateable()
-
 
         assertEquals 1, manyToOne.getConstraintColumns().size()
         assertEquals FetchMode.DEFAULT, manyToOne.getFetchMode()
@@ -235,11 +224,7 @@ class TestFaqElement
         assertEquals "TestFaqSection", manyToOne.getTypeName()
     }
 
-
-
-
     void testListMapping() {
-
 
         List list = config.getCollectionMapping("TestFaqSection.elements")
 
@@ -266,11 +251,10 @@ class TestFaqElement
         assertFalse list.isSorted()
         assertFalse list.isSubselectLoadable()
 
-
         assertEquals 0,list.getBaseIndex()
 //        assertEquals FaqElement,list.getCollectionPersisterClass()
         Table t = list.getCollectionTable()
-        assert t
+        assertNotNull t
         assertEquals 0, list.getColumnInsertability().size()
         assertNull list.getCacheConcurrencyStrategy()
         assertEquals "TestFaqSection.elements", list.getCacheRegionName()
@@ -278,7 +262,6 @@ class TestFaqElement
         assertEquals 0, list.getColumnUpdateability().size()
         assertNull list.getElementNodeName()
         SimpleValue index = list.getIndex()
-
 
         assertEquals 1,index.getColumnInsertability().size()
         assertTrue index.getColumnInsertability()[0]
@@ -308,8 +291,6 @@ class TestFaqElement
         assertEquals "integer", index.getTypeName()
         assertNull index.getTypeParameters()
 
-
-
         KeyValue key = list.getKey()
 
         assertEquals 1,key.getColumnInsertability().size()
@@ -322,7 +303,6 @@ class TestFaqElement
         assertNull key.getNullValue()
         assertEquals LongType, key.getType().getClass()
 
-
         OneToMany element = list.getElement()
 
         assertEquals 1, element.getColumnSpan()
@@ -330,8 +310,5 @@ class TestFaqElement
         PersistentClass associatedClass = element.getAssociatedClass()
         assertEquals "TestFaqElement", associatedClass.getClassName()
         assertEquals ManyToOneType, element.getType().getClass()
-
     }
-
 }
-

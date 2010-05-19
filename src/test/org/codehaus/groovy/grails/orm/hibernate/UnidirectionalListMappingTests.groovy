@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.*
 
@@ -35,11 +35,11 @@ class UnidirectionalListMappingTests extends AbstractGrailsHibernateTests {
     }
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class UnidirectionalListMappingEmailAddress {
     Long id
     Long version
-        String email
+    String email
 }
 
 class UnidirectionalListMappingPerson {
@@ -50,6 +50,5 @@ class UnidirectionalListMappingPerson {
     List emailAddresses
     static hasMany = [emailAddresses:UnidirectionalListMappingEmailAddress]
 }'''
-        )
     }
 }

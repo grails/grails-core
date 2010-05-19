@@ -6,11 +6,10 @@ import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class DataBindingAutoCreationTests extends AbstractGrailsHibernateTests{
+class DataBindingAutoCreationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -27,26 +26,21 @@ class DataBindingAutoCreationBook {
         author(nullable:true)
     }
 }
-
-
-''')
+'''
     }
-
 
     void testBindToNullIfNullable() {
         def Author = ga.getDomainClass("DataBindingAutoCreationAuthor").clazz
         def Book = ga.getDomainClass("DataBindingAutoCreationBook").clazz
 
         def a = Author.newInstance(name:"Stephen King")
-        assert a.save(flush:true) : 'should have saved author'
+        assertNotNull 'should have saved author', a.save(flush:true)
 
         session.clear()
-                    
+
         // should bind to null
         def params = [title:"It", 'author.id':'']
-
         def b1 = Book.newInstance(params)
-
-        assert b1.save(flush:true) : "should have saved book"
+        assertNotNull "should have saved book", b1.save(flush:true)
     }
 }

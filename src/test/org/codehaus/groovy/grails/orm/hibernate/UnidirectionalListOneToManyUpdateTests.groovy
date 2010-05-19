@@ -1,29 +1,29 @@
+package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Dec 3, 2007
  */
-package org.codehaus.groovy.grails.orm.hibernate
 class UnidirectionalListOneToManyUpdateTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class Customer
-{
+class Customer {
     Long id
     Long version
     List orders
-	static hasMany = [ orders : Order]
-	String email
-	String password
+    static hasMany = [ orders : Order]
+    String email
+    String password
 }
-class  Order
-{
+
+class Order {
     Long id
     Long version
-     String number
-     Date date = new Date()
+    String number
+    Date date = new Date()
 
     static mapping = {
         table "`order`"
@@ -32,15 +32,14 @@ class  Order
 '''
     }
 
-
-
     void testAssociateOneToMany() {
+
         def custClass = ga.getDomainClass("Customer").clazz
         def orderClass = ga.getDomainClass("Order").clazz
 
-        assert custClass.newInstance(email:"foo@bar.com", password:"letmein").save()
-        assert orderClass.newInstance(number:"12345").save(flush:true)
-        assert orderClass.newInstance(number:"12345234").save(flush:true)
+        assertNotNull custClass.newInstance(email:"foo@bar.com", password:"letmein").save()
+        assertNotNull orderClass.newInstance(number:"12345").save(flush:true)
+        assertNotNull orderClass.newInstance(number:"12345234").save(flush:true)
 
         session.clear()
 
@@ -51,14 +50,11 @@ class  Order
             cust.addToOrders(it)
         }
 
-
         cust.save(flush:true)
 
         session.clear()
 
         cust = custClass.get(1)
-
         assertEquals 2, cust.orders.size()
     }
-
 }

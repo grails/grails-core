@@ -1,20 +1,21 @@
+package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 4, 2007
  */
-package org.codehaus.groovy.grails.orm.hibernate
 class OneToManyWithJoinTableTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class Thing {
     Long id
     Long version
     String name
-
 }
+
 class ThingGroup {
     Long id
     Long version
@@ -29,9 +30,8 @@ class ThingGroup {
     }
     String name
 }
-        ''')
+'''
     }
-
 
     void testOneToManyJoinTableMapping() {
         def groupClass = ga.getDomainClass("ThingGroup")
@@ -59,7 +59,6 @@ class ThingGroup {
         session.clear()
 
         g = groupClass.clazz.get(1)
-        assertEquals 2, g.things.size()                
+        assertEquals 2, g.things.size()
     }
-
 }

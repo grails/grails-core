@@ -1,8 +1,9 @@
-package org.codehaus.groovy.grails.orm.hibernate.validation;
+package org.codehaus.groovy.grails.orm.hibernate.validation
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.*
 import org.codehaus.groovy.grails.orm.hibernate.*
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintException
 
 class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
@@ -17,15 +18,18 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
                 value.appliedConstraints.each {
                     if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertTrue it.unique
                 }
-            } else if (key == 'login') {
+            }
+            else if (key == 'login') {
                 value.appliedConstraints.each {
                     if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertTrue it.unique
                 }
-            } else if (key == 'department') {
+            }
+            else if (key == 'department') {
                 value.appliedConstraints.each {
                     if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertTrue it.unique
                 }
-            } else if (key == 'organization') {
+            }
+            else if (key == 'organization') {
                 value.appliedConstraints.each {
                     if (it.name == UniqueConstraint.UNIQUE_CONSTRAINT) assertFalse it.unique
                 }
@@ -111,130 +115,104 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
     void testWrongUniqueParams() {
         // Test argument with wrong type (Long)
-        GroovyClassLoader gcl = new GroovyClassLoader();
+        GroovyClassLoader gcl = new GroovyClassLoader()
         Class userClass
-        try {
+        shouldFail(ConstraintException) {
             userClass = gcl.parseClass('''
-			class User {
-			    Long id
-			    Long version
+            class User {
+                Long id
+                Long version
 
-			    String login
-			    String grp
-			    String department
-			    String code
+                String login
+                String grp
+                String department
+                String code
 
-			    static constraints = {
-			        login(unique:1L)
-			    }
-			}
-			''')
-            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
-            domain.constrainedProperties
-            fail("Exception expected")
-        } catch (Exception e) {
-            // Greate
+                static constraints = {
+                    login(unique:1L)
+                }
+            }
+            ''')
+            new DefaultGrailsDomainClass(userClass).constrainedProperties
         }
 
         // Test list argument with wrong type (Long)
-        try {
+        shouldFail(ConstraintException) {
             userClass = gcl.parseClass('''
-			class User {
-			    Long id
-			    Long version
+            class User {
+                Long id
+                Long version
 
-			    String login
-			    String grp
-			    String department
-			    String code
+                String login
+                String grp
+                String department
+                String code
 
-			    static constraints = {
-			        login(unique:['grp',new Long(1)])
-			    }
-			}
-			''')
-            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
-            domain.constrainedProperties
-
-            fail("Exception expected")
-        } catch (Exception e) {
-            // Greate
+                static constraints = {
+                    login(unique:['grp',new Long(1)])
+                }
+            }
+            ''')
+            new DefaultGrailsDomainClass(userClass).constrainedProperties
         }
 
         // Test argument with non-existent property value
-        try {
+        shouldFail(ConstraintException) {
             userClass = gcl.parseClass('''
-				class User {
-				    Long id
-				    Long version
+                class User {
+                    Long id
+                    Long version
 
-				    String login
-				    String grp
-				    String department
-				    String code
+                    String login
+                    String grp
+                    String department
+                    String code
 
-				    static constraints = {
-				        login(unique:'test')
-				    }
-				}
-				''')
-            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
-            domain.constrainedProperties
-
-            fail("Exception expected")
-        } catch (Exception e) {
-            // Greate
+                    static constraints = {
+                        login(unique:'test')
+                    }
+                }
+                ''')
+            new DefaultGrailsDomainClass(userClass).constrainedProperties
         }
 
         // Test list argument with non-existent property value
-        try {
+        shouldFail(ConstraintException) {
             userClass = gcl.parseClass('''
-				class User {
-				    Long id
-				    Long version
+                class User {
+                    Long id
+                    Long version
 
-				    String login
-				    String grp
-				    String department
-				    String code
+                    String login
+                    String grp
+                    String department
+                    String code
 
-				    static constraints = {
-				        login(unique:['grp','test'])
-				    }
-				}
-				''')
-            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
-            domain.constrainedProperties
-
-            fail("Exception expected")
-        } catch (Exception e) {
-            // Greate
+                    static constraints = {
+                        login(unique:['grp','test'])
+                    }
+                }
+                ''')
+            new DefaultGrailsDomainClass(userClass).constrainedProperties
         }
 
         // Test that right syntax doesn't throws exception
-        try {
-            userClass = gcl.parseClass('''
-				class User {
-				    Long id
-				    Long version
+        userClass = gcl.parseClass('''
+            class User {
+                Long id
+                Long version
 
-				    String login
-				    String grp
-				    String department
-				    String code
+                String login
+                String grp
+                String department
+                String code
 
-				    static constraints = {
-				        login(unique:['grp'])
-				    }
-				}
-				''')
-            DefaultGrailsDomainClass domain = new DefaultGrailsDomainClass(userClass);
-            domain.constrainedProperties
-
-
-        } catch (Exception e) {
-            fail("Exception isn't expected")
-        }
+                static constraints = {
+                    login(unique:['grp'])
+                }
+            }
+            ''')
+        new DefaultGrailsDomainClass(userClass).constrainedProperties
     }
 
     void testRelationships() {
@@ -285,7 +263,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
 
 
     void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -315,12 +293,6 @@ class LinkedUser {
         user2(unique:'user1')
     }
 }
-            '''
-                )
-
-    }
-
-    void onTearDown() {
-
+'''
     }
 }

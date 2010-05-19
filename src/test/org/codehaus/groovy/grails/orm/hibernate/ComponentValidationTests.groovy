@@ -1,14 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 29, 2008
  */
-class ComponentValidationTests extends AbstractGrailsHibernateTests{
+class ComponentValidationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -24,7 +22,8 @@ class ComponentValidationTestsPerson {
         name(nullable:false, maxSize:35)
     }
 }
-class ComponentValidationTestsAuditInfo{
+
+class ComponentValidationTestsAuditInfo {
     Long id
     Long version
 
@@ -40,14 +39,14 @@ class ComponentValidationTestsAuditInfo{
         updatedBy(nullable:false,maxSize:20)
     }
 
-    String toString(){
+    String toString() {
         "$enteredBy $dateEntered $updatedBy $dateUpdated"
     }
 }
 '''
     }
 
-     void testComponentValidation() {
+    void testComponentValidation() {
         def personClass = ga.getDomainClass("ComponentValidationTestsPerson").clazz
         def auditClass =  ga.getDomainClass("ComponentValidationTestsAuditInfo").clazz
 
@@ -59,7 +58,7 @@ class ComponentValidationTestsAuditInfo{
         person.save()
 
         assertNotNull person.id
-     }
+    }
 
     void testCustomConstraint() {
         def personClass = ga.getDomainClass("ComponentValidationTestsPerson").clazz
@@ -77,12 +76,12 @@ class CustomConstraint extends AbstractConstraint {
     void setParameter(Object constraintParameter) {
         assert constraintParameter instanceof Boolean
 
-        this.active = constraintParameter.booleanValue()
+        active = constraintParameter.booleanValue()
         super.setParameter(constraintParameter)
     }
 
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (this.active) {
+        if (active) {
             if (propertyValue != "fred") {
                 def args = [constraintPropertyName, constraintOwningClass, propertyValue] as Object[]
                 super.rejectValue(target, errors, "some.error.message", "invalid.custom", args)

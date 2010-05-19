@@ -16,37 +16,33 @@ class OneToOneSelfReferencedViaInheritanceTests extends AbstractGrailsMockTests{
 class Content implements Serializable {
     Long id
     Long version
-	String title
-	String body
+    String title
+    String body
 
     static mapping = {
         tablePerSubclass true
     }
 }
+
 class Version extends Content {
-	Integer number
-	Content current
-    
+    Integer number
+    Content current
 }
+
 class WikiPage extends Content {
     Set versions
-	static hasMany = [versions:Version]    
+    static hasMany = [versions:Version]
 }
 '''
     }
 
-
     void testOneToOneSelfReferencingViaInheritance() {
         GrailsDomainClass versionClass = ga.getDomainClass("Version")
         GrailsDomainClass wikiPageClass = ga.getDomainClass("WikiPage")
-
 
         assertTrue wikiPageClass.getPropertyByName("versions").isOneToMany()
         assertTrue wikiPageClass.getPropertyByName("versions").isBidirectional()
         assertTrue versionClass.getPropertyByName("current").isManyToOne()
         assertTrue versionClass.getPropertyByName("current").isBidirectional()
     }
-
-    
-
 }

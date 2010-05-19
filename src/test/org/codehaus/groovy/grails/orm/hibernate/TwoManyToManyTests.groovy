@@ -1,11 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 29, 2008
  */
-class TwoManyToManyTests extends AbstractGrailsHibernateTests{
+class TwoManyToManyTests extends AbstractGrailsHibernateTests {
 
     void testManyToManyMapping() {
         def Person = ga.getDomainClass("TwoMMPerson").clazz
@@ -19,7 +20,7 @@ class TwoManyToManyTests extends AbstractGrailsHibernateTests{
          .addToPublishedBooks(Book.newInstance(title:"Misery"))
          .addToPublishedBooks(Book.newInstance(title:"It"))
          .save(true)
-        
+
         assertEquals 5, Book.list().size()
 
         def b = Book.get(1)
@@ -35,10 +36,8 @@ class TwoManyToManyTests extends AbstractGrailsHibernateTests{
         assertNotNull a.publishedBooks
         assertEquals 3, a.publishedBooks.size()
 
-
-
         assertEquals b, a.books.find { it.id == 1}
-        this.session.flush()
+        session.flush()
         session.clear()
 
         a = Person.get(1)
@@ -95,13 +94,11 @@ class TwoManyToManyTests extends AbstractGrailsHibernateTests{
 
 
         assert rs.next()
-        assertEquals 2,rs.getInt("twommperson_id")        
-
+        assertEquals 2,rs.getInt("twommperson_id")
     }
 
-
     void onSetUp() {
-        this.gcl.parseClass('''
+        gcl.parseClass '''
 class TwoMMBook {
     Long id
     Long version
@@ -126,13 +123,8 @@ class TwoMMPerson {
     static mappedBy = [books:'authors',
                        publishedBooks:'publishers']
     static hasMany = [books:TwoMMBook,
-                   publishedBooks:TwoMMBook]
+                      publishedBooks:TwoMMBook]
 }
-
-
 '''
-        )
     }
-
-
 }

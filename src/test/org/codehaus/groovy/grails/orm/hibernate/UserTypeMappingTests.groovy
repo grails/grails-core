@@ -10,24 +10,22 @@ class UserTypeMappingTests extends AbstractGrailsHibernateTests{
     protected void onSetUp() {
         gcl.parseClass '''
 import org.hibernate.type.*
-class UserTypeMappingTest
-{
-  Long id
-  Long version
 
-  Boolean active
+class UserTypeMappingTest {
+    Long id
+    Long version
 
-  static mapping = {
-    table 'type_test'
-    columns {
-      active (column: 'active', type: YesNoType)
+    Boolean active
+
+    static mapping = {
+        table 'type_test'
+        columns {
+            active (column: 'active', type: YesNoType)
+        }
     }
-  }
 }
-
-
 '''
-       gcl.parseClass '''
+        gcl.parseClass '''
 import org.hibernate.usertype.UserType
 
 import org.hibernate.type.Type
@@ -41,77 +39,67 @@ import java.sql.Types
 class WeightUserType implements UserType {
 
     private static final int[] SQL_TYPES = [ Types.INTEGER ]
-    public int[] sqlTypes() {
+    int[] sqlTypes() {
         return SQL_TYPES
     }
 
-    public Class returnedClass() {
-        return Weight.class
-    }
+    Class returnedClass() { Weight }
 
-    public boolean equals(Object x, Object y) throws HibernateException {
+    boolean equals(Object x, Object y) throws HibernateException {
         if (x == y) {
-          return true;
-        } else if (x == null || y == null) {
-          return false;
-        } else {
-          return x.equals(y);
+            return true
         }
+        if (x == null || y == null) {
+            return false
+        }
+        return x.equals(y)
     }
 
-    public int hashCode(Object x) throws HibernateException {
+    int hashCode(Object x) throws HibernateException {
         return x.hashCode()
     }
 
-  public Object nullSafeGet(ResultSet resultSet,  String[] names, Object owner) throws HibernateException, SQLException {
-    Weight result = null;
-    int pounds = resultSet.getInt(names[0])
-    if (!resultSet.wasNull()) {
-      result = new Weight(pounds)
-    }
-    return result;
-  }
+    Object nullSafeGet(ResultSet resultSet,  String[] names, Object owner) throws HibernateException, SQLException {
+        Weight result = null
+        int pounds = resultSet.getInt(names[0])
+        if (!resultSet.wasNull()) {
+           result = new Weight(pounds)
+        }
+        return result
+     }
 
-    public void nullSafeSet(PreparedStatement statement,  Object value, int index)   throws HibernateException, SQLException {
+    void nullSafeSet(PreparedStatement statement,  Object value, int index)   throws HibernateException, SQLException {
         if (value == null) {
-            statement.setNull(index);
-        } else {
+            statement.setNull(index)
+        }
+        else {
             Integer pounds = value.pounds
-            statement.setInt(index, pounds);
+            statement.setInt(index, pounds)
         }
     }
 
-  public Object deepCopy(Object value) throws HibernateException {
-    return value;
-  }
+    Object deepCopy(Object value) { value }
 
-  public boolean isMutable() {
-    return false;
-  }
+    boolean isMutable() { false }
 
-    public Serializable disassemble(Object value) throws HibernateException {
-        return (Serializable) value;
+    Serializable disassemble(Object value) throws HibernateException {
+        value
     }
 
-    public Object assemble(Serializable state, Object owner) throws HibernateException {
-        return state;
-    }
+    Object assemble(Serializable state, Object owner) { state }
 
-    public Object replace(Object original, Object target, Object owner) throws HibernateException {
-        return original;
-    }
+    Object replace(Object original, Object target, Object owner) { original }
 }
 
 class Weight {
     Integer pounds
-    Weight(Integer pounds)
-    {
-        this.pounds= pounds
+    Weight(Integer pounds) {
+        this.pounds = pounds
     }
 }
 '''
 
-       gcl.parseClass '''
+        gcl.parseClass '''
 class UserTypeMappingTestsPerson {
     Long id
     Long version
@@ -128,12 +116,9 @@ class UserTypeMappingTestsPerson {
             weight( type:WeightUserType)
         }
     }
-
 }
-
 '''
     }
-
 
     void testCustomUserType() {
         def personClass = ga.getDomainClass("UserTypeMappingTestsPerson").clazz
@@ -146,8 +131,7 @@ class UserTypeMappingTestsPerson {
 
         person = personClass.get(1)
 
-        assert person
-        assert person.weight
+        assertNotNull person
         assertEquals 200, person.weight.pounds
     }
 
@@ -155,24 +139,23 @@ class UserTypeMappingTestsPerson {
 
         def clz = ga.getDomainClass("UserTypeMappingTest").clazz
 
-
-        assert clz.newInstance(active:true).save(flush:true)
+        assertNotNull clz.newInstance(active:true).save(flush:true)
 
         DataSource ds = (DataSource)applicationContext.getBean('dataSource')
 
-         def con
-         try {
-             con = ds.getConnection()
-             def statement = con.prepareStatement("select * from type_test")
-             def result = statement.executeQuery()
-             assert result.next()
-             def value = result.getString('active')
+        def con
+        try {
+            con = ds.getConnection()
+            def statement = con.prepareStatement("select * from type_test")
+            def result = statement.executeQuery()
+            assertTrue result.next()
+            def value = result.getString('active')
 
-             assertEquals "Y", value
-
-         } finally {
-             con.close()
-         }
+            assertEquals "Y", value
+        }
+        finally {
+            con.close()
+        }
     }
 
     void testUserTypePropertyMetadata() {
@@ -191,6 +174,4 @@ class UserTypeMappingTestsPerson {
         assertFalse prop.isOneToOne()
         assertEquals weightClass, prop.type
     }
-
-
 }

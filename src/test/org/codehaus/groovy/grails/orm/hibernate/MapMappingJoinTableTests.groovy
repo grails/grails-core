@@ -1,11 +1,11 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.*
 
 class MapMappingJoinTableTests extends AbstractGrailsHibernateTests {
 
     void testTypeMappings() {
-		def skydiveClass = ga.getDomainClass("Skydive")
+        def skydiveClass = ga.getDomainClass("Skydive")
 
         def map = ['freefall':'60 sec','altitude': '14,000 ft']
 
@@ -16,26 +16,22 @@ class MapMappingJoinTableTests extends AbstractGrailsHibernateTests {
 
         session.clear()
 
-        
         skydive = skydiveClass.clazz.get(1)
 
         assertEquals 2, skydive.jumplog.size()
         assertEquals '60 sec', skydive.jumplog.freefall
 
         def c = session.connection()
-
         def ps = c.prepareStatement("select * from  jump_info")
-
         def rs = ps.executeQuery()
-
-        assert rs.next()
+        assertTrue rs.next()
     }
 
     void onSetUp() {
-		this.gcl.parseClass('''
+        gcl.parseClass '''
 class Skydive {
-	Long id
-	Long version
+    Long id
+    Long version
 
     Map jumplog
 
@@ -44,10 +40,5 @@ class Skydive {
     }
 }
 '''
-		)
-	}
-	
-	void onTearDown() {
-		
-	}
+    }
 }

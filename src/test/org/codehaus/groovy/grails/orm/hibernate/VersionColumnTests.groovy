@@ -5,14 +5,13 @@ import java.sql.Connection
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 27, 2008
  */
-class VersionColumnTests extends AbstractGrailsHibernateTests{
+class VersionColumnTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
-
+        gcl.parseClass '''
 class VersionColumnBook {
     Long id
     Long version
@@ -21,18 +20,12 @@ class VersionColumnBook {
     static mapping = {
         version 'v_number'
     }
-
 }
-
-''')
+'''
     }
-
 
     void testVersionColumnMapping() {
-        Connection c = session.connection()
         // will fail if the column is not mapped correctly
-        def ps = c.prepareStatement("select v_number from version_column_book")
-        ps.execute()
+        session.connection().prepareStatement("select v_number from version_column_book").execute()
     }
-
 }

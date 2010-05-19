@@ -1,20 +1,12 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Aug 9, 2007
- * Time: 4:19:37 PM
- * 
- */
-
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class CascadingDeleteBehaviour2Tests extends AbstractGrailsHibernateTests {
-
 
     void testCascadingDeleteFromChild() {
         def uClass = ga.getDomainClass("UserRecord")
@@ -24,8 +16,6 @@ class CascadingDeleteBehaviour2Tests extends AbstractGrailsHibernateTests {
         def u = uClass.newInstance()
         u.name = "bob"
         u.save(flush:true)
-
-
 
         def i = iClass.newInstance()
         i.name = "stuff"
@@ -54,16 +44,16 @@ class CascadingDeleteBehaviour2Tests extends AbstractGrailsHibernateTests {
         GrailsDomainClass uClass = ga.getDomainClass("UserRecord")
         GrailsDomainClass iClass = ga.getDomainClass("Item")
 
-        assert ir.isOwningClass(uClass.clazz)
-        assert ir.isOwningClass(iClass.clazz)
-        assert !uClass.isOwningClass(ir.clazz)
-        assert !iClass.isOwningClass(ir.clazz)
+        assertTrue ir.isOwningClass(uClass.clazz)
+        assertTrue ir.isOwningClass(iClass.clazz)
+        assertFalse uClass.isOwningClass(ir.clazz)
+        assertFalse iClass.isOwningClass(ir.clazz)
     }
 
 //TODO find out why calling the class User instead of UserRecord clashes with UniqueConstraintTests,
 //    there must be some static hibernate reference which is not being cleaned up between tests...
     void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 
 class UserRecord {
     Long id
@@ -92,6 +82,6 @@ class ItemRating {
     Item item
     int rating
 }
-        ''')
+'''
     }
 }

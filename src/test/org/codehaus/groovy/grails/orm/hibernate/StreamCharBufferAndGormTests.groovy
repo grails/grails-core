@@ -1,38 +1,34 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import grails.util.GrailsWebUtil
+
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class StreamCharBufferAndGormTests extends AbstractGrailsHibernateTests{
+class StreamCharBufferAndGormTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class StreamCharMe {
     String name
 }
-''')
-        gcl.parseClass('''
+'''
+
+        gcl.parseClass '''
 class StreamCharTagLib {
     def callMe = { attrs, body ->
         out << "hello"
     }
 }
-''')
-
-
+'''
     }
-
-
 
     void testGormWithStreamCharBuffer() {
         GrailsWebUtil.bindMockWebRequest(appCtx)
@@ -40,12 +36,12 @@ class StreamCharTagLib {
         try {
             def StreamCharMe = ga.getDomainClass('StreamCharMe').clazz
 
-            assert StreamCharMe.newInstance(name:"hello").save(flush:true) : "should have saved instance"
+            assertNotNull "should have saved instance", StreamCharMe.newInstance(name:"hello").save(flush:true)
             session.clear()
 
             def taglib = appCtx.getBean("StreamCharTagLib")
             def result = taglib.callMe()
-            assert result instanceof StreamCharBuffer : "should be a stream char buffer!"
+            assertTrue result instanceof StreamCharBuffer
 
             assert StreamCharMe.findByName(result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.countByName(result) : "should have found a result when passing a StreamCharBuffer value"
@@ -56,7 +52,6 @@ class StreamCharTagLib {
             assert StreamCharMe.find("from StreamCharMe s where s.name = ?", [result] ) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.findAll("from StreamCharMe s where s.name = ?", [result] ) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.executeQuery("from StreamCharMe s where s.name = ?", [result] ) : "should have found a result when passing a StreamCharBuffer value"
-
         }
         finally {
             RequestContextHolder.setRequestAttributes(null)

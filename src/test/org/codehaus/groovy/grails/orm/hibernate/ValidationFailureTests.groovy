@@ -1,18 +1,15 @@
-package org.codehaus.groovy.grails.orm.hibernate;
-
-
-import org.hibernate.FlushMode;
+package org.codehaus.groovy.grails.orm.hibernate
 
 class ValidationFailureTests extends AbstractGrailsHibernateTests {
 
-	void onSetUp() {
-		gcl.parseClass(
-"""
+    void onSetUp() {
+        gcl.parseClass """
 class ValidationFailureBook {
   Long id
   Long version
   String title
 }
+
 class ValidationFailureAuthor {
     Long id
     Long version
@@ -24,41 +21,39 @@ class ValidationFailureAuthor {
     }
 }
 """
-		)
-	}
+    }
 
+    void testValidationFailure() {
+        def authorClass = ga.getDomainClass("ValidationFailureAuthor")
+        def bookClass = ga.getDomainClass("ValidationFailureBook")
 
-	void testValidationFailure() {
-	    def authorClass = ga.getDomainClass("ValidationFailureAuthor")
-	    def bookClass = ga.getDomainClass("ValidationFailureBook")
-
-	    def a = authorClass.newInstance()
-	    a.name = "123456789"
+        def a = authorClass.newInstance()
+        a.name = "123456789"
 
         def b1 = bookClass.newInstance()
         b1.title = "foo"
-	    a.addToBooks(b1)
+        a.addToBooks(b1)
         def b2 = bookClass.newInstance()
         b2.title = "bar"
-	    a.addToBooks(b2)
+        a.addToBooks(b2)
 
-	    a.save(true)
+        a.save(true)
 
-	    assert session.contains(a)
-	    session.flush()
+        assertTrue session.contains(a)
+        session.flush()
 
-	    session.evict(a)
-	    session.evict(b1)
-	    session.evict(b2)
-	    a = null
-	    b1 = null
-	    b2 = null
+        session.evict(a)
+        session.evict(b1)
+        session.evict(b2)
+        a = null
+        b1 = null
+        b2 = null
 
-	    a = authorClass.clazz.get(1)
+        a = authorClass.clazz.get(1)
 
-	    // now invalidate a
-	    a.name = "bad"
-	    a.save()
+        // now invalidate a
+        a.name = "bad"
+        a.save()
 
         session.flush()
         session.clear()
@@ -66,8 +61,4 @@ class ValidationFailureAuthor {
         a = authorClass.clazz.get(1)
         assertEquals "123456789", a.name
     }
-	
-	void onTearDown() {
-		
-	}
 }

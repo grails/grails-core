@@ -1,55 +1,50 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import javax.persistence.*
-import java.security.acl.Owner
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class JpaMappedDomainTests extends AbstractGrailsHibernateTests{
+class JpaMappedDomainTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import javax.persistence.*
 
 @Entity
 @Table(name = "animal")
 class Animal {
 
-  @Id @GeneratedValue
-  int id
-  String name
-  @ManyToOne
-  @JoinColumn
-  Owner owner
+    @Id @GeneratedValue
+    int id
+    String name
+    @ManyToOne
+    @JoinColumn
+    Owner owner
 
-
-  static constraints = {
+    static constraints = {
         name blank:false
-  }
+    }
 }
+
 @Entity
 @Table(name = "owner")
 class Owner {
-   static changeMe = "one"
-  def beforeInsert() {
-      Owner.changeMe = "two"  
-  }
-
-  @Id @GeneratedValue
-  int id
-  String name
-  @OneToMany
-  @JoinColumn
-  List<Animal> animals
-}
-
-
-''')
+    static changeMe = "one"
+    def beforeInsert() {
+        Owner.changeMe = "two"
     }
 
+    @Id @GeneratedValue
+    int id
+    String name
+    @OneToMany
+    @JoinColumn
+    List<Animal> animals
+}
+'''
+    }
 
     void testJpaMappedDomain() {
         def Animal = ga.getDomainClass("Animal").clazz
@@ -68,11 +63,9 @@ class Owner {
     }
 
     void testValidation() {
-         def Animal = ga.getDomainClass("Animal").clazz
-
-         def a = Animal.newInstance(name:"")
-
-        assert !a.save(flush:true) : "should not have validated"
+        def Animal = ga.getDomainClass("Animal").clazz
+        def a = Animal.newInstance(name:"")
+        assertNull "should not have validated", a.save(flush:true)
 
         assertEquals 0, Animal.count()
     }
@@ -83,11 +76,7 @@ class Owner {
         assertEquals "one", Owner.changeMe
 
         def owner = Owner.newInstance(name:"Bob")
-        assert owner.save(flush:true) : "should have saved owner"
-
+        assertNotNull "should have saved owner", owner.save(flush:true)
         assertEquals "two", Owner.changeMe
-
     }
-
 }
-

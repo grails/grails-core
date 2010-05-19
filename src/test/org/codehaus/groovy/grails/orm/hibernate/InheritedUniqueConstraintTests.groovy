@@ -1,15 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
+class InheritedUniqueConstraintTests extends AbstractGrailsHibernateTests {
 
-public class InheritedUniqueConstraintTests extends AbstractGrailsHibernateTests{
-
-  protected void onSetUp() {
-    gcl.parseClass('''
+    protected void onSetUp() {
+        gcl.parseClass '''
 class Parent {
 
     Long id
@@ -19,18 +17,15 @@ class Parent {
     static constraints = {
         username(nullable: false, unique:true)
     }
-
 }
 
-class Child extends Parent {
-}
-''')
-  }
+class Child extends Parent {}
+'''
+    }
 
-
-  void testInheritedUniqueConstraint() {
-      def Parent = ga.getDomainClass("Parent").clazz
-      def Child = ga.getDomainClass("Child").clazz
+    void testInheritedUniqueConstraint() {
+        def Parent = ga.getDomainClass("Parent").clazz
+        def Child = ga.getDomainClass("Child").clazz
 
         def child1 = Child.newInstance(username:'mos')
         assertNotNull "should have saved unqiue child",child1.save(flush:true)
@@ -45,5 +40,5 @@ class Child extends Parent {
 
         def child = Child.newInstance(username:'graeme')
         assertNull "should not have saved non-unqiue child",child.save(flush:true)
-  }
+    }
 }

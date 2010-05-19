@@ -9,7 +9,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 *
 * Created: Jan 17, 2008
 */
-class ManyToOneLazinessTests extends AbstractGrailsHibernateTests{   
+class ManyToOneLazinessTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -24,6 +24,7 @@ class ManyToOneLazinessTestsBook {
         author lazy:true
     }
 }
+
 class ManyToOneLazinessTestsAuthor {
     Long id
     Long version
@@ -40,22 +41,17 @@ class ManyToOneLazinessTestsAuthor {
         def authorClass= ga.getDomainClass("ManyToOneLazinessTestsAuthor").clazz
 
         def author = authorClass.newInstance(name:"Stephen King")
-        assert author.save()
+        assertNotNull author.save()
 
         author.addToBooks(title:"The Stand")
-               .addToBooks(title:"The Shining")
-               .save(flush:true)
+              .addToBooks(title:"The Shining")
+              .save(flush:true)
 
         session.clear()
 
         def book = bookClass.get(1)
-
-
         assertFalse "many-to-one association should have been lazy loaded", GrailsHibernateUtil.isInitialized(book, "author")
-
         assertEquals "Stephen King", book.author.name
-
         assertTrue "lazy many-to-one association should have been initialized",GrailsHibernateUtil.isInitialized(book, "author")
     }
-
 }

@@ -6,40 +6,38 @@ import org.hibernate.FlushMode
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class CustomValidatorAndDynamicFinderTests extends AbstractGrailsHibernateTests{
+class CustomValidatorAndDynamicFinderTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class Foo {
-	String name
+    String name
 
-	Foo partner
+    Foo partner
 
-	static constraints = {
-		name(validator: {name, foo ->
-			Foo similarFoo = Foo.findByNameIlike(name)
-			if (similarFoo && similarFoo.id != foo.id) return ['similar']
-		})
-	}
+    static constraints = {
+        name validator: { name, foo ->
+            Foo similarFoo = Foo.findByNameIlike(name)
+            if (similarFoo && similarFoo.id != foo.id) return ['similar']
+        }
+    }
 }
-''')
+'''
     }
 
     // test for GRAILS-4981
     void testCustomValidatorWithFinder() {
-        session.setFlushMode(FlushMode.AUTO) 
+        session.setFlushMode(FlushMode.AUTO)
         def Foo = ga.getDomainClass("Foo").clazz
 
         def foo = Foo.newInstance(name: 'partner1')
-        assert foo.save()
+        assertNotNull foo.save()
         def partner = Foo.newInstance(name: 'partner2')
-        assert partner.save()
+        assertNotNull partner.save()
         foo.partner = partner
-        assert foo.save()
-
+        assertNotNull foo.save()
     }
 }

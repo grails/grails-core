@@ -1,11 +1,11 @@
+package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  *
  * Created: Nov 28, 2007
  */
-package org.codehaus.groovy.grails.orm.hibernate
-
 class ExecuteUpdateTests extends AbstractGrailsHibernateTests {
 
     private static final List<String> names = ['Fred', 'Bob', 'Ginger']
@@ -21,8 +21,6 @@ class Customer {
     String name
 }
 '''
-
-
     }
 
     def init() {

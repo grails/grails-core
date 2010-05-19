@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
- * Author: Siegfried Puchbauer
- * Created: Dec 19, 2007 1:48:21 PM
+ * @author Siegfried Puchbauer
  */
 class CreateCriteriaTests extends AbstractGrailsHibernateTests {
 
@@ -19,26 +19,25 @@ class CreateCriteriaTests extends AbstractGrailsHibernateTests {
             like("title","Book%")
         }
 
-        assertEquals results?.size(), 10
-        assertEquals results?.totalCount, 25
+        assertEquals 10, results?.size()
+        assertEquals 25, results?.totalCount
     }
 
     void onSetUp() {
-        gcl.parseClass("""
+        gcl.parseClass """
 class CreateCriteriaMethodBook {
-  Long id
-  Long version
-  String title
+    Long id
+    Long version
+    String title
 
-  boolean equals(obj) { title == obj?.title }
-  int hashCode() { title ? title.hashCode() : super.hashCode() }
-  String toString() { title }
+    boolean equals(obj) { title == obj?.title }
+    int hashCode() { title ? title.hashCode() : super.hashCode() }
+    String toString() { title }
 
-  static constraints = {
-      title(nullable:false)
-  }
-}
-""")
+    static constraints = {
+        title(nullable:false)
     }
-
+}
+"""
+    }
 }

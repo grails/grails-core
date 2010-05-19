@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
 class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
@@ -58,9 +58,9 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         assert book.validate()
         assert author.validate()
         assert book.validate(deepValidate:false)
-	}
+    }
 
-	void testToManyCascadingValidation() {
+    void testToManyCascadingValidation() {
         def bookClass = ga.getDomainClass("Book")
         def authorClass = ga.getDomainClass("Author")
         def addressClass = ga.getDomainClass("Address")
@@ -92,8 +92,7 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         book.title = "TDGTG"
         assert author.validate()
         assert author.validate(deepValidate:false)
-
-	}
+    }
 
     void testFilteringValidation() {
         // Test validation on a sub-set of the available fields.
@@ -110,8 +109,7 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertTrue "Validation should not have failed for valid e-mail address", profile.validate([ "email" ])
         assertFalse 'Profile should have no errors', profile.hasErrors()
 
-        // Finally check that without the filtering, the target would
-        // have errors.
+        // Finally check that without the filtering, the target would have errors.
         assertFalse "Validation should have failed", profile.validate()
         assertTrue 'Profile should have errors', profile.hasErrors()
     }
@@ -133,7 +131,7 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void onSetUp() {
-		this.gcl.parseClass('''
+        gcl.parseClass '''
 class Team {
     Long id
     Long version
@@ -199,10 +197,5 @@ class Address {
     }
 }
 '''
-		)
-	}
-
-	void onTearDown() {
-
-	}
+    }
 }

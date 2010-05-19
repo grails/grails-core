@@ -26,7 +26,7 @@ class ConstructorAutowiringTests extends AbstractGrailsHibernateTests {
         def b = bookClass.get(1)
         assertNotNull "Service autowiring failed", b.bookService
         assertEquals "The Stand", b.title
-        assertEquals "foo", b.talkToService()        
+        assertEquals "foo", b.talkToService()
     }
 
     protected void onSetUp() {
@@ -45,12 +45,14 @@ class Book {
 class BookService {
     def testMethod() { "foo" }
 }
+
 class BookFactory {
     Book newBook() {
-        return new Book()
+        new Book()
     }
+
     Book newBook(args) {
-        return new Book(args)
+        new Book(args)
     }
 }
 '''

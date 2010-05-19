@@ -15,28 +15,28 @@ class CascadingValidationWithInheritanceTests extends AbstractGrailsHibernateTes
 class CascadingValidationWithInheritanceTestsBook {
     Long id
     Long version
-	String name
-	List authors
-	static hasMany = [authors: CascadingValidationWithInheritanceTestsAuthor]
-	static constraints = {
-		name(blank: false)
-		authors(validator: {authors ->
-			def names = new HashSet()
-			names.addAll(authors.name)
-			if (names.size() < authors.size()) {
-				return 'names.unique'
-			}
-		})
-	}
+    String name
+    List authors
+    static hasMany = [authors: CascadingValidationWithInheritanceTestsAuthor]
+    static constraints = {
+        name(blank: false)
+        authors(validator: {authors ->
+            def names = new HashSet()
+            names.addAll(authors.name)
+            if (names.size() < authors.size()) {
+                return 'names.unique'
+            }
+        })
+    }
 
-	String toString() {"Book[$name]"}
+    String toString() {"Book[$name]"}
 }
 class CascadingValidationWithInheritanceTestsTechBook extends CascadingValidationWithInheritanceTestsBook {
     Long id
     Long version
 
     Set subjects
-	static hasMany = [subjects: CascadingValidationWithInheritanceTestsTechSubject]
+    static hasMany = [subjects: CascadingValidationWithInheritanceTestsTechSubject]
 }
 class CascadingValidationWithInheritanceTestsAuthor {
     Long id
@@ -50,10 +50,8 @@ class CascadingValidationWithInheritanceTestsTechSubject {
 
     String name
 }
-
 '''
     }
-
 
     void testBooksMustHaveUniqueAuthors() {
         def bookClass = ga.getDomainClass("CascadingValidationWithInheritanceTestsBook").clazz
@@ -61,11 +59,10 @@ class CascadingValidationWithInheritanceTestsTechSubject {
         book.addToAuthors(name: 'William Gibson')
         book.addToAuthors(book.authors[0])
 
-        assert !book.validate()
-        println book.errors
-        assert book.errors.hasFieldErrors('authors')
-		assert ['names.unique'] == book.errors.getFieldErrors('authors').code
-	}
+        assertFalse book.validate()
+        assertTrue book.errors.hasFieldErrors('authors')
+        assertEquals(['names.unique'], book.errors.getFieldErrors('authors').code)
+    }
 
     void testTechBookCanHaveAuthorsAndSubjects() {
         def bookClass = ga.getDomainClass("CascadingValidationWithInheritanceTestsBook").clazz
@@ -77,8 +74,8 @@ class CascadingValidationWithInheritanceTestsTechSubject {
         book.addToSubjects(name: 'Grails')
         book.addToSubjects(name: 'Groovy')
 
-        assert book.validate(), book.errors.allErrors.code
-        assert book.save(flush: true), book.errors.allErrors.code
+        assertTrue book.validate()
+        assertNotNull book.save(flush: true)
         session.clear()
 
         book = bookClass.findByName('The Definitive Guide to Grails')
@@ -93,8 +90,8 @@ class CascadingValidationWithInheritanceTestsTechSubject {
         book.addToAuthors(book.authors[0])
         book.addToSubjects(name: 'Groovy')
 
-        assert !book.validate(), 'Validation should have failed as unique constraint on Book.authors is violated'
-        assert book.errors.hasFieldErrors('authors')
-        assert ['names.unique'] == book.errors.getFieldErrors('authors').code
+        assertFalse 'Validation should have failed as unique constraint on Book.authors is violated', book.validate()
+        assertTrue book.errors.hasFieldErrors('authors')
+        assertEquals(['names.unique'], book.errors.getFieldErrors('authors').code)
     }
 }

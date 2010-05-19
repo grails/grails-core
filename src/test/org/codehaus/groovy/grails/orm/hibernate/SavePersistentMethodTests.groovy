@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.*
 import grails.validation.ValidationException
@@ -19,25 +19,25 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         def address = addressClass.newInstance()
         author.address = address
         address.location = "Foo Bar"
-        assert author.save()
+        assertNotNull author.save()
 
-        assert book.save(flush:true)
-        assert book.id
+        assertNotNull book.save(flush:true)
+        assertNotNull book.id
     }
 
-	void testToOneCascadingValidation() {
+    void testToOneCascadingValidation() {
         def bookClass = ga.getDomainClass("grails.tests.SaveBook")
         def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
         def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
 
         def book = bookClass.newInstance()
 
-        assert !book.save()
-        assert !book.save(deepValidate:false)
+        assertNull book.save()
+        assertNull book.save(deepValidate:false)
 
         book.title = "Foo"
 
-        assert book.save()
+        assertNotNull book.save()
 
         def author = authorClass.newInstance()
         author.name = "Bar"
@@ -46,59 +46,49 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         book.author = author
 
         // will validate book is owned by author
-        assert book.save()
-        assert book.save(deepValidate:false)
-
-
-        assert book.save()
-        assert book.save(deepValidate:false)
+        assertNotNull book.save()
+        assertNotNull book.save(deepValidate:false)
 
         def address = addressClass.newInstance()
 
         author.address = address
 
-        assert !author.save()
-
+        assertNull author.save()
 
         address.location = "Foo Bar"
+        assertNotNull author.save()
+        assertNotNull author.save(deepValidate:false)
+    }
 
-        assert author.save()
-        assert author.save(deepValidate:false)
-	}
-
-	void testToManyCascadingValidation() {
+    void testToManyCascadingValidation() {
         def bookClass = ga.getDomainClass("grails.tests.SaveBook")
         def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
         def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
 
         def author = authorClass.newInstance()
 
-        assert !author.save()
+        assertNull author.save()
         author.name = "Foo"
 
-        assert author.save()
-
+        assertNotNull author.save()
 
         def address = addressClass.newInstance()
         author.address = address
 
-        assert !author.save()
-
+        assertNull author.save()
 
         address.location = "Foo Bar"
-        assert author.save()
-
+        assertNotNull author.save()
 
         def book = bookClass.newInstance()
 
         author.addToBooks(book)
-        assert !author.save()
-
+        assertNull author.save()
 
         book.title = "TDGTG"
-        assert author.save()
-        assert author.save(deepValidate:false)
-	}
+        assertNotNull author.save()
+        assertNotNull author.save(deepValidate:false)
+    }
 
     void testValidationAfterBindingErrors() {
         def teamClass = ga.getDomainClass('grails.tests.Team')
@@ -135,7 +125,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 Validation Error(s) occurred during save():
 - Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
 - Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
-'''    , msg
+''', msg
     }
 
     void testFailOnErrorFalseWithValidationErrors() {
@@ -146,23 +136,23 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigTrueWithValidationErrors() {
-            def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true")
 
-            ConfigurationHolder.config = config
-            def teamClass = ga.getDomainClass('grails.tests.Team')
-            def team = teamClass.newInstance()
-            team.properties = [homePage: 'invalidurl']
-            def msg = shouldFail(ValidationException) {
-                team.save()
-            }
-            assertEquals '''\
+        ConfigurationHolder.config = config
+        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def team = teamClass.newInstance()
+        team.properties = [homePage: 'invalidurl']
+        def msg = shouldFail(ValidationException) {
+            team.save()
+        }
+        assertEquals '''\
 Validation Error(s) occurred during save():
 - Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
 - Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
 ''', msg
     }
 
-   void testFailOnErrorConfigTrueWithValidationErrorsAndAutoFlush() {
+    void testFailOnErrorConfigTrueWithValidationErrorsAndAutoFlush() {
         def interceptor = appCtx.getBean("eventTriggeringInterceptor")
         interceptor.failOnError=true
         def teamClass = ga.getDomainClass('grails.tests.Team').clazz
@@ -205,7 +195,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigIncludesMatchingPackageWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']")
 
         ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
@@ -222,7 +212,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigDoesNotIncludeMatchingPackageWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']")
 
         ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
@@ -232,7 +222,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigFalseWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false")
 
         ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
@@ -242,7 +232,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true")
 
         ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
@@ -252,7 +242,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false");
+        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false")
 
         ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
@@ -275,7 +265,7 @@ Validation Error(s) occurred during save():
 
         // The custom validator for SaveCustomValidation throws an
         // exception if it's triggered, but that shouldn't happen
-        // if we explicitly disable validation. 
+        // if we explicitly disable validation.
         dc.save(validate: false)
         session.flush()
 
@@ -286,8 +276,7 @@ Validation Error(s) occurred during save():
         dc.save(validate: false)
         session.flush()
 
-        // Let's check that the validation kicks in if we don't disable
-        // it...
+        // Let's check that the validation kicks in if we don't disable it...
         dc.title = "Another title"
         shouldFail(IllegalStateException) {
             dc.save()
@@ -301,7 +290,7 @@ Validation Error(s) occurred during save():
     }
 
     void onSetUp() {
-		this.gcl.parseClass('''
+        gcl.parseClass '''
 package grails.tests
 
 import grails.persistence.*
@@ -358,10 +347,9 @@ class SaveCustomValidation {
     }
 }
 '''
-		)
-	}
+    }
 
-	void onTearDown() {
+    void onTearDown() {
         ConfigurationHolder.config = null
-	}
+    }
 }

@@ -1,11 +1,11 @@
-package org.codehaus.groovy.grails.orm.hibernate;
+package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.*
 
 class MapMappingTests extends AbstractGrailsHibernateTests {
 
     void testAssociationMapMapping() {
-		def bookClass = ga.getDomainClass("MapBook")
+        def bookClass = ga.getDomainClass("MapBook")
         def authorClass = ga.getDomainClass("MapPerson")
 
         def a1 = authorClass.newInstance()
@@ -15,9 +15,7 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
         def a3 = authorClass.newInstance()
         a3.name = "Joe Bloggs"
 
-        def map = [Stephen:a1,
-                   James:a2,
-                   Joe:a3]
+        def map = [Stephen:a1, James:a2, Joe:a3]
 
         def book = bookClass.newInstance()
 
@@ -25,40 +23,33 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
         book.authorNameSurname = [:]
         book.save()
 
+        assertTrue !book.hasErrors()
 
-        assert !book.hasErrors()
-        
         session.flush()
 
-        assert book.id
-        
-        session.clear()
+        assertNotNull book.id
 
-        book = null
+        session.clear()
 
         book = bookClass.clazz.get(1)
 
-        assert book
+        assertNotNull book
+
         assertEquals 3, book.authors.size()
         assertEquals "Stephen King", book.authors.Stephen.name
-
     }
 
-	void testBasicMapMapping() {
-		def bookClass = ga.getDomainClass("MapBook")
+    void testBasicMapMapping() {
+        def bookClass = ga.getDomainClass("MapBook")
 
-        def map = ["Stephen":"King",
-                   "James": "Patterson",
-                   "Joe": "Bloggs"]
+        def map = [Stephen: "King", James: "Patterson", Joe: "Bloggs"]
 
         def book = bookClass.newInstance()
 
         book.authorNameSurname = map
         book.save()
         session.flush()
-        session.clear()    
-
-        book = null
+        session.clear()
 
         book = bookClass.clazz.get(1)
 
@@ -66,15 +57,12 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
         assertEquals "King", book.authorNameSurname.Stephen
         assertEquals "Patterson", book.authorNameSurname.James
         assertEquals "Bloggs", book.authorNameSurname.Joe
-    }   
-
+    }
 
     void testTypeMappings() {
-		def bookClass = ga.getDomainClass("MapBook")
+        def bookClass = ga.getDomainClass("MapBook")
 
-        def map = [(1):30,
-                   (2): 42,
-                   (3): 23]
+        def map = [(1):30, (2): 42, (3): 23]
 
         def book = bookClass.newInstance()
 
@@ -83,19 +71,16 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
 
         session.clear()
 
-        
         book = bookClass.clazz.get(1)
 
         assertEquals 3, book.chapterPageCounts.size()
         assertEquals 30, book.chapterPageCounts.get(1)
 
         def c = session.connection()
-
         def ps = c.prepareStatement("select * from  map_book_chapter_page_counts")
-
         def rs = ps.executeQuery()
 
-        assert rs.next()
+        assertTrue rs.next()
 
         assert rs.getInt("chapter_number")
         assert rs.getInt("page_count")
@@ -103,16 +88,16 @@ class MapMappingTests extends AbstractGrailsHibernateTests {
     }
 
     void onSetUp() {
-		this.gcl.parseClass('''
+        gcl.parseClass '''
 class MapBook {
-	Long id
-	Long version
-	Map authorNameSurname
+    Long id
+    Long version
+    Map authorNameSurname
 
-	Map authors
+    Map authors
     Map chapterPageCounts
 
-	static hasMany = [authors:MapPerson, chapterPageCounts:Integer]
+    static hasMany = [authors:MapPerson, chapterPageCounts:Integer]
 
     static mapping = {
         chapterPageCounts indexColumn:[name:"chapter_number", type:Integer],
@@ -127,10 +112,5 @@ class MapPerson {
     String name
 }
 '''
-		)
-	}
-	
-	void onTearDown() {
-		
-	}
+    }
 }

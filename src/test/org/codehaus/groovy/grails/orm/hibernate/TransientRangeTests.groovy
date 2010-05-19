@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class TransientRangeTests extends AbstractGrailsHibernateTests{
+class TransientRangeTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -19,10 +19,8 @@ class AreaType implements Serializable {
     Integer rangeFrom
     Integer rangeTo
 
-
     static constraints = {
         name(blank:false, unique:true)
-
     }
 
     String toString() {
@@ -34,18 +32,16 @@ class AreaType implements Serializable {
     }
 
     void setAreaRange(Range range) {
-        this.rangeFrom = range.first()
-        this.rangeTo = range.last()
+        rangeFrom = range.first()
+        rangeTo = range.last()
     }
 }
-''')
+'''
     }
-
 
     void testTransientRange() {
         def AreaType = ga.getDomainClass("AreaType").clazz
         def area = AreaType.newInstance(name:"testArea", areaRange:1..10)
-		assert true, area.save()
+        assertNotNull area.save()
     }
-
 }

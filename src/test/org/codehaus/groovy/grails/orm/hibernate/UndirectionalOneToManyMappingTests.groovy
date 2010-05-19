@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 29, 2008
  */
 class UndirectionalOneToManyMappingTests extends AbstractGrailsHibernateTests {
@@ -18,8 +19,6 @@ class UndirectionalOneToManyMappingTests extends AbstractGrailsHibernateTests {
          .save(true)
         assertEquals 2, Book.list().size()
 
-
-
         // now let's test the database state
         def c = session.connection()
 
@@ -32,32 +31,29 @@ class UndirectionalOneToManyMappingTests extends AbstractGrailsHibernateTests {
 
         assert rs.next()
         assertEquals 1,rs.getInt("um_author_id")
-        assertEquals 2,rs.getInt("um_book_id")        
-
-
+        assertEquals 2,rs.getInt("um_book_id")
     }
+
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class MappedU2mBook {
-	Long id
-	Long version
+    Long id
+    Long version
 
     String title
 }
+
 class MappedU2mAuthor {
-	Long id
-	Long version
+    Long id
+    Long version
     String name
-	Set books
-	static hasMany = [books:MappedU2mBook]
+    Set books
+    static hasMany = [books:MappedU2mBook]
 
     static mapping = {
         books joinTable:[name:"um_author_books", key:'um_author_id', column:'um_book_id']
     }
 }
-
-''')
+'''
     }
-
-
 }

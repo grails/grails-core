@@ -5,13 +5,13 @@ import org.hibernate.FlushMode
 /**
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Sep 19, 2008
  */
-class DirtyCheckWithValidationTests extends AbstractGrailsHibernateTests{
+class DirtyCheckWithValidationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 class DirtyCheckWithValidation {
     Long id
     Long version
@@ -21,9 +21,8 @@ class DirtyCheckWithValidation {
         name blank:false
     }
 }
-''')
+'''
     }
-
 
     void testDataBindingAndValidationWithDirtyChecking() {
         session.setFlushMode FlushMode.AUTO
@@ -34,11 +33,11 @@ class DirtyCheckWithValidation {
 
         def test = testClass.get(1)
         test.properties = [name:'']
-        assert !test.validate()
+        assertFalse test.validate()
         session.flush()
         session.clear()
-        test = testClass.get(1)
 
+        test = testClass.get(1)
         assertEquals 'valid', test.name
     }
 
@@ -51,7 +50,7 @@ class DirtyCheckWithValidation {
 
         def test = testClass.get(1)
         test.properties = [name:'']
-        assert !test.validate()
+        assertFalse test.validate()
         session.flush()
         session.clear()
         test = testClass.get(1)
@@ -59,17 +58,14 @@ class DirtyCheckWithValidation {
         assertEquals 'valid', test.name
 
         test.name = ''
-        assert !test.save(flush:true)
+        assertNull test.save(flush:true)
 
         test.name = 'thisisgood'
-        assert test.save(flush:true)
-
+        assertNotNull test.save(flush:true)
 
         session.clear()
 
-
         test = testClass.get(1)
-
         assertEquals 'thisisgood', test.name
     }
 }

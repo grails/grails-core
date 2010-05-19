@@ -1,14 +1,14 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Jan 10, 2008
- */
 package org.codehaus.groovy.grails.orm.hibernate.validation
 
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 
-class InheritedConstraintsTests extends AbstractGrailsHibernateTests{
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ *
+ * Created: Jan 10, 2008
+ */
+class InheritedConstraintsTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
@@ -40,18 +40,12 @@ class InheritedConstraintsTestsParentOther {
 '''
     }
 
-
     void testSubClassConstraints() {
         def child = ga.getDomainClass("InheritedConstraintsTestsChild").newInstance()
         child.prop1 = "Property 1"
 
-        def valid = child.validate()
-        def errors = child.errors
-
-
         // should pass as child constraint defines nullable field other
-        assert valid
-        assert errors.errorCount == 0
+        assertTrue child.validate()
+        assertEquals 0, child.errors.errorCount
     }
-
 }

@@ -1,25 +1,21 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
-import grails.spring.BeanBuilder
-import org.apache.commons.dbcp.BasicDataSource
 import grails.persistence.Entity
+import grails.spring.BeanBuilder
+
+import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.hibernate.SessionFactory
-import org.hibernate.Session
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.context.support.ClassPathXmlApplicationContext
-import org.springframework.context.support.GenericApplicationContext
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.context.support.StaticMessageSource
 
 /**
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Jan 16, 2009
  */
-
-public class GORMNamespaceHandlerTests extends GroovyTestCase{
+class GORMNamespaceHandlerTests extends GroovyTestCase {
 
    /* void testGORMSessionFromXML() {
         def appCtx = new GenericApplicationContext()
@@ -72,7 +68,6 @@ public class GORMNamespaceHandlerTests extends GroovyTestCase{
         book = NamespaceTestBook.get(1)
 
         assertNotNull book
-        
     }   */
 
 
@@ -100,7 +95,7 @@ beans {
 }
 """.bytes)
 
-        bb.loadBeans(resource) 
+        bb.loadBeans(resource)
 
         def appCtx = bb.createApplicationContext()
 
@@ -122,7 +117,6 @@ beans {
         book = NamespaceTestBook.get(1)
 
         assertNotNull book
-        
     }
 
     void testGORMSessionFactory() {
@@ -166,9 +160,8 @@ beans {
 
         assertNotNull book
     }
-
-
 }
+
 @Entity
 class NamespaceTestBook {
     String title

@@ -1,6 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import org.hibernate.HibernateException;
+import java.io.Serializable;
+import java.sql.Connection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.naming.Reference;
+
 import org.hibernate.Interceptor;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
@@ -10,155 +16,118 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.stat.Statistics;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import java.io.Serializable;
-import java.sql.Connection;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Dummy SessionFactory implementation useful for unit testing
+ * Dummy SessionFactory implementation useful for unit testing.
+ *
  * @author Dmitriy Kopylenko
  * @since 0.5
  */
+@SuppressWarnings("unchecked")
 public class SessionFactoryAdapter implements SessionFactory {
-	
-	private static final long serialVersionUID = -3905807871358255210L;
 
-	public Reference getReference() throws NamingException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    private static final long serialVersionUID = -3905807871358255210L;
 
-	public void close() throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public Reference getReference() {
+        return null;
+    }
 
-	public void evict(Class arg0, Serializable arg1) throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void close() {
+        // do nothing
+    }
 
-	public void evict(Class arg0) throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evict(Class arg0, Serializable arg1) {
+        // do nothing
+    }
 
-	public void evictCollection(String arg0, Serializable arg1)
-			throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evict(Class arg0) {
+        // do nothing
+    }
 
-	public void evictCollection(String arg0) throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evictCollection(String arg0, Serializable arg1) {
+        // do nothing
+    }
 
-	public void evictEntity(String arg0, Serializable arg1)
-			throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evictCollection(String arg0) {
+        // do nothing
+    }
 
-	public void evictEntity(String arg0) throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evictEntity(String arg0, Serializable arg1) {
+        // do nothing
+    }
 
-	public void evictQueries() throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evictEntity(String arg0) {
+        // do nothing
+    }
 
-	public void evictQueries(String arg0) throws HibernateException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void evictQueries() {
+        // do nothing
+    }
 
-	public Map getAllClassMetadata() throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public void evictQueries(String arg0) {
+        // do nothing
+    }
 
-	public Map getAllCollectionMetadata() throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Map getAllClassMetadata() {
+        return null;
+    }
 
-	public ClassMetadata getClassMetadata(Class arg0) throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Map getAllCollectionMetadata() {
+        return null;
+    }
 
-	public ClassMetadata getClassMetadata(String arg0)
-			throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public ClassMetadata getClassMetadata(Class arg0) {
+        return null;
+    }
 
-	public CollectionMetadata getCollectionMetadata(String arg0)
-			throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public ClassMetadata getClassMetadata(String arg0) {
+        return null;
+    }
 
-	public Session getCurrentSession() throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public CollectionMetadata getCollectionMetadata(String arg0) {
+        return null;
+    }
 
-	public Set getDefinedFilterNames() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Session getCurrentSession() {
+        return null;
+    }
 
-	public FilterDefinition getFilterDefinition(String arg0)
-			throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Set getDefinedFilterNames() {
+        return null;
+    }
 
-	public Statistics getStatistics() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public FilterDefinition getFilterDefinition(String arg0) {
+        return null;
+    }
 
-	public boolean isClosed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public Statistics getStatistics() {
+        return null;
+    }
 
-	public Session openSession() throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public boolean isClosed() {
+        return false;
+    }
 
-	public Session openSession(Connection arg0, Interceptor arg1) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Session openSession() {
+        return null;
+    }
 
-	public Session openSession(Connection arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Session openSession(Connection arg0, Interceptor arg1) {
+        return null;
+    }
 
-	public Session openSession(Interceptor arg0) throws HibernateException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Session openSession(Connection arg0) {
+        return null;
+    }
 
-	public StatelessSession openStatelessSession() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Session openSession(Interceptor arg0) {
+        return null;
+    }
 
-	public StatelessSession openStatelessSession(Connection arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public StatelessSession openStatelessSession() {
+        return null;
+    }
 
+    public StatelessSession openStatelessSession(Connection arg0) {
+        return null;
+    }
 }

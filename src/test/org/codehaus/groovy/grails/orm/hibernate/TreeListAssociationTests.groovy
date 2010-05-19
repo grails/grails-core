@@ -1,17 +1,17 @@
 package org.codehaus.groovy.grails.orm.hibernate
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class TreeListAssociationTests extends AbstractGrailsHibernateTests{
+class TreeListAssociationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
-class Customer{
+class Customer {
 
    Customer parent
    List children
@@ -25,7 +25,7 @@ class Customer{
        children(nullable: true)
    }
 }
-''')
+'''
     }
 
     void testTreeListAssociation() {
@@ -33,7 +33,7 @@ class Customer{
 
         def root = Customer.newInstance(description:"root")
 
-        assertNotNull "should have saved root",root.save(flush:true)
+        assertNotNull "should have saved root", root.save(flush:true)
 
         root.addToChildren(description:"child1")
             .addToChildren(description:"child2")
@@ -42,13 +42,11 @@ class Customer{
         session.clear()
 
         root = Customer.get(1)
-
         assertEquals "child1",root.children[0].description
         assertEquals "child2",root.children[1].description
 
         def one = root.children[0]
         def two = root.children[1]
-
         root.children[0] = two
         root.children[1] = one
         root.save(flush:true)
@@ -57,10 +55,7 @@ class Customer{
 
         root = Customer.get(1)
 
-        assertEquals "child2",root.children[0].description
-        assertEquals "child1",root.children[1].description
-
+        assertEquals "child2", root.children[0].description
+        assertEquals "child1", root.children[1].description
     }
-
-
 }

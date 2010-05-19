@@ -1,19 +1,17 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.springframework.core.JdkVersion
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Oct 29, 2008
  */
-class BasicArrayAndCollectionMappingTests extends AbstractGrailsHibernateTests{
+class BasicArrayAndCollectionMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        if(JdkVersion.isAtLeastJava15()) {
-            gcl.parseClass('''
+        gcl.parseClass '''
 class BasicCollections {
     Long id
     Long version
@@ -33,13 +31,10 @@ class BasicCollections {
     static mapping = {
        numbers joinTable:[name:'bunch_o_numbers', key:'basic_id', column:'number']
        shortNames joinTable:[column:'short', unique:2]
-       
-    }    
-}
-''')
-        }
     }
-
+}
+'''
+    }
 
     void testCollectionOfIntegers() {
         def BasicCollections = ga.getDomainClass("BasicCollections").clazz
@@ -51,7 +46,7 @@ class BasicCollections {
 //            .save(flush:true)
 
         test.moreNumbers = [5, 12] as Set
-        assert test.save(flush:true)
+        assertNotNull test.save(flush:true)
 
         session.clear()
 
@@ -63,16 +58,13 @@ class BasicCollections {
 
         def c = session.connection()
         def ps = c.prepareStatement("select * from basic_collections_more_numbers")
-
         def rs = ps.executeQuery()
-
-        assert rs.next()
+        assertTrue rs.next()
 
         assertEquals 1, rs.getLong("basic_collections_id")
 
         long num = rs.getLong("more_numbers_integer")
         assertTrue num == 5 || num == 12
-
     }
 
     void testDomain() {
@@ -83,7 +75,7 @@ class BasicCollections {
     }
 
     void testListOfBasicTypes() {
-       def BasicCollections = ga.getDomainClass("BasicCollections").clazz
+        def BasicCollections = ga.getDomainClass("BasicCollections").clazz
 
         def test = BasicCollections.newInstance()
 
@@ -92,7 +84,7 @@ class BasicCollections {
 //            .save(flush:true)
 
         test.todos = ["one", "two"]
-        assert test.save(flush:true)
+        assertNotNull test.save(flush:true)
 
         session.clear()
 
@@ -112,7 +104,7 @@ class BasicCollections {
 //            .save(flush:true)
 
         test.shortNames = ["AB", "CD"] as Set
-        assert test.save(flush:true)
+        assertNotNull test.save(flush:true)
 
         session.clear()
 
@@ -131,7 +123,7 @@ class BasicCollections {
 //            .save(flush:true)
 
         test.numbers = [5, 12] as Set
-        assert test.save(flush:true)
+        assertNotNull test.save(flush:true)
 
         session.clear()
 
@@ -143,10 +135,8 @@ class BasicCollections {
 
         def c = session.connection()
         def ps = c.prepareStatement("select * from bunch_o_numbers")
-
         def rs = ps.executeQuery()
-
-        assert rs.next()
+        assertTrue rs.next()
 
         assertEquals 1, rs.getLong("basic_id")
 
@@ -159,10 +149,7 @@ class BasicCollections {
 
         def test = BasicCollections.newInstance()
 
-        assert test.addToNames("one")
-                    .addToNames("two")
-                    .save(flush:true)
-
+        assertNotNull test.addToNames("one").addToNames("two").save(flush:true)
 
         session.clear()
 
@@ -172,19 +159,14 @@ class BasicCollections {
         assertTrue test.names.contains("one")
         assertTrue test.names.contains("two")
 
-
         def c = session.connection()
         def ps = c.prepareStatement("select * from basic_collections_names")
-
         def rs = ps.executeQuery()
-
-        assert rs.next()
+        assertTrue rs.next()
 
         assertEquals 1, rs.getLong("basic_collections_id")
 
         def num = rs.getString("names_string")
-        assertTrue num == "one" || num == "two"        
+        assertTrue num == "one" || num == "two"
     }
-
-
 }

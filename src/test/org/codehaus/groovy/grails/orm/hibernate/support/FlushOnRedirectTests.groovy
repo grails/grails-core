@@ -1,29 +1,30 @@
 package org.codehaus.groovy.grails.orm.hibernate.support
 
+import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
+
 import org.hibernate.FlushMode
+
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class FlushOnRedirectTests extends AbstractGrailsHibernateTests {
+class FlushOnRedirectTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        super.onSetUp();
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
 class RedirectFlushTestDomain {
    String name
-}     ''')
-
-       gcl.parseClass('''
+}
+'''
+        gcl.parseClass '''
 class FlushOnRedirectController {
     def test = {
         def f = RedirectFlushTestDomain.get(1)
@@ -33,14 +34,13 @@ class FlushOnRedirectController {
 
     def two = {}
 }
-''')
+'''
     }
-
 
     void testFlushOnRedirect() {
         def FlushOnRedirect = ga.getDomainClass("RedirectFlushTestDomain").clazz
 
-        assert FlushOnRedirect.newInstance(name:"Bob").save(flush:true) : "should have saved instance"
+        assertNotNull "should have saved instance", FlushOnRedirect.newInstance(name:"Bob").save(flush:true)
 
         session.clear()
 
@@ -51,7 +51,6 @@ class FlushOnRedirectController {
         GrailsWebUtil.bindMockWebRequest(appCtx)
         c.test()
         session.clear()
-
 
         def t = FlushOnRedirect.get(1)
 
@@ -61,29 +60,22 @@ class FlushOnRedirectController {
     void testNoFlushOnFlushModeManual() {
         def FlushOnRedirect = ga.getDomainClass("RedirectFlushTestDomain").clazz
 
-        assert FlushOnRedirect.newInstance(name:"Bob").save(flush:true) : "should have saved instance"
+        assertNotNull "should have saved instance", FlushOnRedirect.newInstance(name:"Bob").save(flush:true)
 
         session.clear()
         session.setFlushMode(FlushMode.MANUAL)
         def controllerClass = ga.getControllerClass("FlushOnRedirectController").clazz
 
         def c = controllerClass.newInstance()
-
         GrailsWebUtil.bindMockWebRequest(appCtx)
         c.test()
         session.clear()
 
-
         def t = FlushOnRedirect.get(1)
-
-        assertEquals "Should have changed name of during flush", t.name, "Bob"        
+        assertEquals "Should have changed name of during flush", t.name, "Bob"
     }
 
     protected void onTearDown() {
-        super.onTearDown();
-
         RequestContextHolder.setRequestAttributes(null)
     }
-
-
 }
