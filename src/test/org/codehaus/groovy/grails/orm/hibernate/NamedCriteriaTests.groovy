@@ -685,11 +685,17 @@ class Publication {
                     datePublished: new Date()).save()
         }
 
-        def pubs = publicationClass.recentPublications.list(max: 10, offset: 5)
+        def pubs = publicationClass.recentPublications.list(max: 10, offset: new Integer(5))
         assertEquals 10, pubs?.size()
 
         (6..15).each {num ->
             assert pubs.find { it.title == "Book Number ${num}" }
+        }
+        
+        pubs = publicationClass.recentPublications.list(max: '10', offset: '5')
+        assertEquals 10, pubs?.size()
+        (6..15).each {num ->
+                assert pubs.find { it.title == "Book Number ${num}" }
         }
     }
 

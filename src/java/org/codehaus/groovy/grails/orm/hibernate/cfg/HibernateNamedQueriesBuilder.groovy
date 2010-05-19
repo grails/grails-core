@@ -103,10 +103,10 @@ class NamedCriteriaProxy {
                 paramsMap = params[-1]
             }
             if (paramsMap?.max) {
-                maxResults(paramsMap.max)
+                maxResults paramsMap.max instanceof Integer ? paramsMap.max : paramsMap.max.toInteger() 
             }
             if (paramsMap?.offset) {
-                firstResult paramsMap.offset
+                firstResult paramsMap.offset instanceof Integer ? paramsMap.offset : paramsMap.offset.toInteger()
             }
             if(isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
