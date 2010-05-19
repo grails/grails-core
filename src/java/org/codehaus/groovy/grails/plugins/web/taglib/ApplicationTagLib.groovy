@@ -297,7 +297,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
 	def join = { attrs ->
 		def collection = attrs.'in'
-		if(!collection) {
+		if(collection == null) {
 			throw new GrailsTagException('Tag ["join"] missing required attribute ["in"]')
 		}
 		def delimiter = attrs.delimiter ?: ', '

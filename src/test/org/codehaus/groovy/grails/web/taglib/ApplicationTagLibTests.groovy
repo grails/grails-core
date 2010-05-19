@@ -311,6 +311,11 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 		assertOutputEquals 'Bruce_Adrian_Dave_Nicko_Steve', template
 	}
 
+	void testJoinWithEmptyCollection() {
+	    def template = /<g:join in="[]" delimiter="_"\/>/
+	    assertOutputEquals '', template
+	}
+	
 	void testJoinWithoutSpecifyingIn() {
 		def template = '<g:join delimiter="_"/>'
 		def msg = shouldFail(GrailsTagException) {
