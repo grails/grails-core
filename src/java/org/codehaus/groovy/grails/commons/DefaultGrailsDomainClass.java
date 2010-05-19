@@ -183,6 +183,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private void populateDomainClassProperties(PropertyDescriptor[] propertyDescriptors) {
         for (PropertyDescriptor descriptor : propertyDescriptors) {
 
+            if (descriptor.getPropertyType() == null) {
+                // indexed property
+                continue;
+            }
+
             // ignore certain properties
             if (GrailsDomainConfigurationUtil.isNotConfigurational(descriptor)) {
                 GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
