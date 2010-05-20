@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import groovy.lang.Closure;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -62,10 +64,10 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
             Method readMethod = prop.getReadMethod();
 			if(readMethod != null) {
 				if(!Modifier.isStatic(readMethod.getModifiers())) {
-					Class type = prop.getPropertyType();
-					if(type == Object.class) {
-		                tags.add(prop.getName());
-		            }					
+                    Closure tag = (Closure)getPropertyOrStaticPropertyOrFieldValue(prop.getName(),Closure.class);
+                    if(tag != null) {
+                        tags.add(prop.getName());
+                    }
 				}				
 			}
         }
