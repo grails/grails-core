@@ -16,18 +16,20 @@
 package grails.util
 
 import grails.util.Metadata
-import java.util.regex.Pattern
-import org.apache.ivy.util.DefaultMessageLogger
-import org.apache.ivy.util.Message
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-import org.codehaus.groovy.runtime.StackTraceUtils;
-
 import groovyx.gpars.Asynchronizer
+
+import java.util.regex.Pattern
+
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.repository.TransferEvent
+import org.apache.ivy.util.DefaultMessageLogger
+import org.apache.ivy.util.Message
+
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.runtime.StackTraceUtils
 
 /**
- * <p>This class represents the project paths and other build settings
+ * <p>Represents the project paths and other build settings
  * that the user can change when running the Grails commands. Defaults
  * are provided for all settings, but the user can override those by
  * setting the appropriate system property or specifying a value for
@@ -82,7 +84,7 @@ class BuildSettings {
     /**
      * The name of the system property for {@link #webXmlFile}.
      */
-    public static final String PROJECT_WEB_XML_FILE = "grails.project.web.xml"    	
+    public static final String PROJECT_WEB_XML_FILE = "grails.project.web.xml"
     /**
      * The name of the system property for {@link #classesDir}.
      */
@@ -106,7 +108,7 @@ class BuildSettings {
      * The name of the system property for {@link #testReportsDir}.
      */
     public static final String PROJECT_DOCS_OUTPUT_DIR = "grails.project.docs.output.dir"
-    	
+
     /**
      * The name of the system property for {@link #testSourceDir}.
      */
@@ -145,7 +147,7 @@ class BuildSettings {
      */
     File baseDir
 
-    /** Location of the current user's home directory - equivalen to "user.home" system property. */
+    /** Location of the current user's home directory - equivalent to "user.home" system property. */
     File userHome
 
     /**
@@ -166,7 +168,7 @@ class BuildSettings {
     boolean defaultEnv
 
     /**
-     * Whether the project required build dependencies are externally configured (by Maven for example) or not 
+     * Whether the project required build dependencies are externally configured (by Maven for example) or not
      */
     boolean dependenciesExternallyConfigured = false
 
@@ -186,7 +188,7 @@ class BuildSettings {
      * The WAR file of the project
      */
     File projectWarFile
-    
+
     /**
      * Setting for whether or not to enable OSGI headers in the WAR Manifest, can be overridden via -verboseCompile(=[true|false])?
      */
@@ -200,7 +202,7 @@ class BuildSettings {
 
     /** The location to which Grails compiles a project's plugin classes. */
     File pluginClassesDir
-    
+
     /** The location where Grails keeps temporary copies of a project's resources. */
     File resourcesDir
 
@@ -215,7 +217,7 @@ class BuildSettings {
 
     /** The location of the test reports. */
     File testReportsDir
-    
+
     /** The location of the documentation output. */
     File docsOutputDir
 
@@ -229,7 +231,7 @@ class BuildSettings {
     ConfigObject config = new ConfigObject()
 
     /** Implementation of the "grailsScript()" method used in Grails scripts. */
-    Closure grailsScriptClosure;
+    Closure grailsScriptClosure
 
     /**
      * A Set of plugin names that represent the default set of plugins installed when creating Grails applications
@@ -238,7 +240,7 @@ class BuildSettings {
 
     /**
      * A Set of plugin names and versions that represent the default set of plugins installed when creating Grails applications
-     */    
+     */
     Map defaultPluginMap
 
     /**
@@ -252,15 +254,15 @@ class BuildSettings {
     List applicationJars = []
 
     List buildListeners = []
-    
+
     /**
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
      */
     boolean verboseCompile = false
-    
+
     private List<File> compileDependencies = []
     private boolean defaultCompileDepsAdded = false
-    
+
     /** List containing the compile-time dependencies of the app as File instances. */
     List<File> getCompileDependencies() {
         if (!defaultCompileDepsAdded) {
@@ -271,10 +273,10 @@ class BuildSettings {
     }
 
     /**
-     * Sets the compile time dependencies for the project 
+     * Sets the compile time dependencies for the project
      */
     void setCompileDependencies(List<File> deps) {
-        this.compileDependencies = deps
+        compileDependencies = deps
     }
 
     /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances. */
@@ -286,7 +288,6 @@ class BuildSettings {
         Message.debug("Resolved jars for [compile]: ${{->jarFiles.join('\n')}}")
         return jarFiles
     }()
-
 
     private List<File> testDependencies = []
     private boolean defaultTestDepsAdded = false
@@ -304,7 +305,7 @@ class BuildSettings {
      * Sets the test time dependencies for the project
      */
     void setTestDependencies(List<File> deps) {
-        this.testDependencies = deps
+        testDependencies = deps
     }
 
     /** List containing the default test-time dependencies of the app as File instances. */
@@ -333,7 +334,7 @@ class BuildSettings {
      * Sets the runtime dependencies for the project
      */
     void setRuntimeDependencies(List<File> deps) {
-        this.runtimeDependencies = deps
+        runtimeDependencies = deps
     }
 
     /** List containing the default runtime-time dependencies of the app as File instances. */
@@ -348,40 +349,36 @@ class BuildSettings {
 
     /** List containing the dependencies needed at development time, but provided by the container at runtime **/
     @Lazy List<File> providedDependencies = {
-        if(dependenciesExternallyConfigured) {
+        if (dependenciesExternallyConfigured) {
             return []
         }
-        else {
-            def jarFiles = dependencyManager
-                           .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-                           .allArtifactsReports
-                           .localFile
+        def jarFiles = dependencyManager
+                       .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
+                       .allArtifactsReports
+                       .localFile
 
-            Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
-            return jarFiles
-        }
+        Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /**
      * List containing the dependencies required for the build system only
      */
     @Lazy List<File> buildDependencies = {
-        if(dependenciesExternallyConfigured) {
+        if (dependenciesExternallyConfigured) {
             return []
         }
-        else {
-            def jarFiles = dependencyManager
-                               .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-                               .allArtifactsReports
-                               .localFile + applicationJars
+        def jarFiles = dependencyManager
+                           .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
+                           .allArtifactsReports
+                           .localFile + applicationJars
 
-            Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
-            return jarFiles
-        }
+        Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
+        return jarFiles
     }()
 
     /**
-     * Manages dependencies and dependency resolution in a Grails application 
+     * Manages dependencies and dependency resolution in a Grails application
      */
     IvyDependencyManager dependencyManager
 
@@ -425,10 +422,9 @@ class BuildSettings {
     }
 
     BuildSettings(File grailsHome, File baseDir) {
-        this.userHome = new File(System.getProperty("user.home"))
+        userHome = new File(System.getProperty("user.home"))
 
         if (grailsHome) this.grailsHome = grailsHome
-
 
         // Load the 'build.properties' file from the classpath and
         // retrieve the Grails version from it.
@@ -443,14 +439,11 @@ class BuildSettings {
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        this.defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
-        this.defaultPluginSet = defaultPluginMap.keySet()
-
+        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
+        defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.
         setBaseDir(baseDir)
-
-
 
         // The "grailsScript" closure definition. Returns the location
         // of the corresponding script file if GRAILS_HOME is set,
@@ -458,7 +451,7 @@ class BuildSettings {
         grailsScriptClosure = {String name ->
             def potentialScript = new File("${grailsHome}/scripts/${name}.groovy")
             potentialScript = potentialScript.exists() ? potentialScript : new File("${grailsHome}/scripts/${name}_.groovy")
-            if(potentialScript.exists()) {
+            if (potentialScript.exists()) {
                 return potentialScript
             }
             else {
@@ -469,13 +462,12 @@ class BuildSettings {
                     return classLoader.loadClass(name)
                 }
             }
-
         }
     }
 
     private def loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("build.properties")
-        if(stream) {            
+        if (stream) {
             buildProps.load(stream)
         }
     }
@@ -483,10 +475,8 @@ class BuildSettings {
     /**
      * Returns the current base directory of this project.
      */
-    public File getBaseDir() {
-        return this.baseDir
-    }
-    
+    File getBaseDir() { baseDir }
+
     /**
      * <p>Changes the base directory, making sure that everything that
      * depends on it gets refreshed too. If you have have previously
@@ -496,10 +486,10 @@ class BuildSettings {
      * they have been set manually by the caller, then that information
      * will be lost!</p>
      */
-    public void setBaseDir(File newBaseDir) {
-        this.baseDir = newBaseDir ?: establishBaseDir()
+    void setBaseDir(File newBaseDir) {
+        baseDir = newBaseDir ?: establishBaseDir()
         // Initialize Metadata
-        Metadata.getInstance(new File(this.baseDir, "application.properties"))
+        Metadata.getInstance(new File(baseDir, "application.properties"))
 
         // Set up the project paths, using an empty config for now. The
         // paths will be updated if and when a BuildConfig configuration
@@ -509,170 +499,138 @@ class BuildSettings {
 
         if (baseDir) {
             // Add the application's libraries.
-            def appLibDir = new File(this.baseDir, "lib")
+            def appLibDir = new File(baseDir, "lib")
             if (appLibDir.exists()) {
                 appLibDir.eachFileMatch(JAR_PATTERN) {
-                    this.applicationJars << it
+                    applicationJars << it
                 }
             }
         }
     }
 
-    public File getGrailsWorkDir() {
-        return this.grailsWorkDir
+    File getGrailsWorkDir() { grailsWorkDir }
+
+    void setGrailsWorkDir(File dir) {
+        grailsWorkDir = dir
+        grailsWorkDirSet = true
     }
 
-    public void setGrailsWorkDir(File dir) {
-        this.grailsWorkDir = dir
-        this.grailsWorkDirSet = true
+    File getProjectWorkDir() { projectWorkDir }
+
+    void setProjectWorkDir(File dir) {
+        projectWorkDir = dir
+        projectWorkDirSet = true
     }
 
-    public File getProjectWorkDir() {
-        return this.projectWorkDir
+    File getProjectTargetDir() { projectTargetDir }
+
+    void setProjectTargetDir(File dir) {
+        projectTargetDir = dir
+        projectTargetDirSet = true
     }
 
-    public void setProjectWorkDir(File dir) {
-        this.projectWorkDir = dir
-        this.projectWorkDirSet = true
+    File getProjectWarFile() { projectWarFile }
+
+    void setProjectWarFile(File file) {
+        projectWarFile = file
+        projectWarFileSet = true
     }
 
-    public File getProjectTargetDir() {
-        return this.projectTargetDir
+    File getProjectWarExplodedDir() { projectWarExplodedDir }
+
+    void setProjectWarExplodedDir(File dir) {
+        projectWarExplodedDir = dir
+        projectWarExplodedDirSet = true
     }
 
-    public void setProjectTargetDir(File dir) {
-        this.projectTargetDir = dir
-        this.projectTargetDirSet = true
-    }
-
-    public File getProjectWarFile() {
-        return this.projectWarFile
-    }
-
-    public void setProjectWarFile(File file) {
-        this.projectWarFile = file
-        this.projectWarFileSet = true
-    }
-
-    public File getProjectWarExplodedDir() {
-        return this.projectWarExplodedDir
-    }
-
-    public void setProjectWarExplodedDir(File dir) {
-        this.projectWarExplodedDir = dir
-        this.projectWarExplodedDirSet = true
-    }
-
-	public boolean getProjectWarOsgiHeaders() {
-		return this.projectWarOsgiHeaders;
-	}
+    boolean getProjectWarOsgiHeaders() { projectWarOsgiHeaders }
 
     void setProjectWarOsgiHeaders(boolean flag) {
         projectWarOsgiHeaders = flag
         projectWarOsgiHeadersSet = true
     }
 
-    public File getClassesDir() {
-        return this.classesDir
+    File getClassesDir() { classesDir }
+
+    void setClassesDir(File dir) {
+        classesDir = dir
+        classesDirSet = true
     }
 
-    public void setClassesDir(File dir) {
-        this.classesDir = dir
-        this.classesDirSet = true
+    File getTestClassesDir() { testClassesDir }
+
+    void setTestClassesDir(File dir) {
+        testClassesDir = dir
+        testClassesDirSet = true
     }
 
-    public File getTestClassesDir() {
-        return this.testClassesDir
+    File getPluginClassesDir() { pluginClassesDir }
+
+    void setPluginClassesDir(File dir) {
+        pluginClassesDir = dir
+        pluginClassesDirSet = true
     }
 
-    public void setTestClassesDir(File dir) {
-        this.testClassesDir = dir
-        this.testClassesDirSet = true
-    }
-    
-    public File getPluginClassesDir() {
-        return this.pluginClassesDir
+    File getResourcesDir() { resourcesDir }
+
+    void setResourcesDir(File dir) {
+        resourcesDir = dir
+        resourcesDirSet = true
     }
 
-    public void setPluginClassesDir(File dir) {
-        this.pluginClassesDir = dir
-        this.pluginClassesDirSet = true
-    }    
+    File getSourceDir() { sourceDir }
 
-    public File getResourcesDir() {
-        return this.resourcesDir
+    void setSourceDir(File dir) {
+        sourceDir = dir
+        sourceDirSet = true
     }
 
-    public void setResourcesDir(File dir) {
-        this.resourcesDir = dir
-        this.resourcesDirSet = true
+    File getProjectPluginsDir() { projectPluginsDir }
+
+    void setProjectPluginsDir(File dir) {
+        projectPluginsDir = dir
+        projectPluginsDirSet = true
     }
 
-    public File getSourceDir() {
-        return this.sourceDir
+    File getGlobalPluginsDir() { globalPluginsDir }
+
+    void setGlobalPluginsDir(File dir) {
+        globalPluginsDir = dir
+        globalPluginsDirSet = true
     }
 
-    public void setSourceDir(File dir) {
-        this.sourceDir = dir
-        this.sourceDirSet = true
+    File getTestReportsDir() { testReportsDir }
+
+    void setTestReportsDir(File dir) {
+        testReportsDir = dir
+        testReportsDirSet = true
     }
 
-    public File getProjectPluginsDir() {
-        return this.projectPluginsDir
-    }
+    File getTestSourceDir() { testSourceDir }
 
-    public void setProjectPluginsDir(File dir) {
-        this.projectPluginsDir = dir
-        this.projectPluginsDirSet = true
-    }
-    
-    public File getGlobalPluginsDir() {
-        return this.globalPluginsDir
-    }
-
-    public void setGlobalPluginsDir(File dir) {
-        this.globalPluginsDir = dir
-        this.globalPluginsDirSet = true
-    }
-
-    public File getTestReportsDir() {
-        return this.testReportsDir
-    }
-
-    public void setTestReportsDir(File dir) {
-        this.testReportsDir = dir
-        this.testReportsDirSet = true
-    }
-
-    public File getTestSourceDir() {
-        return this.testSourceDir
-    }
-
-    public void setTestSourceDir(File dir) {
-        this.testSourceDir = dir
-        this.testSourceDirSet = true
+    void setTestSourceDir(File dir) {
+        testSourceDir = dir
+        testSourceDirSet = true
     }
 
     void setBuildListeners(buildListeners) {
         this.buildListeners = buildListeners.toList()
         buildListenersSet = true
     }
-    
-    Object[] getBuildListeners() {
-        buildListeners.toArray()
-    }
+
+    Object[] getBuildListeners() { buildListeners.toArray() }
 
     void setVerboseCompile(boolean flag) {
         verboseCompile = flag
         verboseCompileSet = true
     }
-    
+
     /**
      * Loads the application's BuildSettings.groovy file if it exists
      * and returns the corresponding config object. If the file does
      * not exist, this returns an empty config.
      */
-    public ConfigObject loadConfig() {
+    ConfigObject loadConfig() {
         loadConfig(new File(baseDir, "grails-app/conf/BuildConfig.groovy"))
     }
 
@@ -681,33 +639,33 @@ class BuildSettings {
      * corresponding config object. If the file does not exist, this
      * returns an empty config.
      */
-    public ConfigObject loadConfig(File configFile) {
-    	try {
+    ConfigObject loadConfig(File configFile) {
+        try {
             loadSettingsFile()
             if (configFile.exists()) {
                 // To avoid class loader issues, we make sure that the
                 // Groovy class loader used to parse the config file has
                 // the root loader as its parent. Otherwise we get something
                 // like NoClassDefFoundError for Script.
-                GroovyClassLoader gcl = obtainGroovyClassLoader();
+                GroovyClassLoader gcl = obtainGroovyClassLoader()
                 ConfigSlurper slurper = createConfigSlurper()
-                
+
                 URL configUrl = configFile.toURI().toURL()
-                Script script = gcl.parseClass(configFile)?.newInstance();
+                Script script = gcl.parseClass(configFile)?.newInstance()
 
                 config.setConfigFile(configUrl)
                 loadConfig(slurper.parse(script))
             } else {
                 postLoadConfig()
-            }    		
-    	}
-    	catch(e) {
-    		StackTraceUtils.deepSanitize e
-    		throw e
-    	}
+            }
+        }
+        catch(e) {
+            StackTraceUtils.deepSanitize e
+            throw e
+        }
 
     }
-    
+
     ConfigObject loadConfig(ConfigObject config) {
         try {
             this.config.merge(config)
@@ -721,12 +679,12 @@ class BuildSettings {
     protected void postLoadConfig() {
         establishProjectStructure()
         parseGrailsBuildListeners()
-        if(config.grails.default.plugin.set instanceof List) {
+        if (config.grails.default.plugin.set instanceof List) {
             defaultPluginSet = config.grails.default.plugin.set
         }
         configureDependencyManager(config)
     }
-    
+
     protected boolean settingsFileLoaded = false
     protected ConfigObject loadSettingsFile() {
         if (!settingsFileLoaded) {
@@ -735,7 +693,7 @@ class BuildSettings {
                 def gcl = obtainGroovyClassLoader()
                 def slurper = createConfigSlurper()
                 Script script = gcl.parseClass(settingsFile)?.newInstance()
-                if(script) {
+                if (script) {
                     config = slurper.parse(script)
                 }
             }
@@ -743,26 +701,24 @@ class BuildSettings {
         }
         config
     }
-    
+
     private GroovyClassLoader gcl
     GroovyClassLoader obtainGroovyClassLoader() {
-        if(gcl == null) {            
-            this.gcl = this.rootLoader != null ? new GroovyClassLoader(this.rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader())
+        if (gcl == null) {
+            gcl = rootLoader != null ? new GroovyClassLoader(rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader())
         }
         return gcl
     }
 
     def configureDependencyManager(ConfigObject config) {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN);
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN)
 
         Metadata metadata = Metadata.current
         def appName = metadata.getApplicationName() ?: "grails"
         def appVersion = metadata.getApplicationVersion() ?: grailsVersion
 
-        this.dependencyManager = new IvyDependencyManager(appName,
-                appVersion,
-                this,
-                metadata)
+        dependencyManager = new IvyDependencyManager(appName,
+                appVersion, this, metadata)
 
         dependencyManager.transferListener = { TransferEvent e ->
             switch(e.eventType) {
@@ -778,7 +734,7 @@ class BuildSettings {
         if (!dependenciesExternallyConfigured) {
             config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
             def credentials = config.grails.project.ivy.authentication
-            if(credentials instanceof Closure) {
+            if (credentials instanceof Closure) {
                 dependencyManager.parseDependencies credentials
             }
         }
@@ -793,7 +749,7 @@ class BuildSettings {
         }
 
         def dependencyConfig = config.grails.project.dependency.resolution
-        if(!dependencyConfig) {
+        if (!dependencyConfig) {
             dependencyConfig = config.grails.global.dependency.resolution
             dependencyManager.inheritsAll = true
         }
@@ -822,7 +778,6 @@ class BuildSettings {
             }
 
             pluginDirs.eachParallel(handlePluginDirectory)
-
         }
     }
 
@@ -832,7 +787,7 @@ class BuildSettings {
         def handlePluginDirectory = {File dir ->
             def pluginName = dir.name
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
-            pluginName = matcher ? matcher[0][1] : pluginName 
+            pluginName = matcher ? matcher[0][1] : pluginName
             // Try BuildConfig.groovy first, which should work
             // work for in-place plugins.
             def path = dir.absolutePath
@@ -897,18 +852,18 @@ class BuildSettings {
             projectTargetDir = new File(getFirstPropertyValue([PROJECT_TARGET_DIR, 'grails.war.destFile'], props, "$baseDir/target"))
         }
 
-        if(!projectWarFileSet) {
+        if (!projectWarFileSet) {
             def version = metadata.getApplicationVersion()
             def appName = metadata.getApplicationName() ?: baseDir.name
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
-            
+
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
         }
 
         if (!projectWarExplodedDirSet) {
             projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
         }
-        
+
         if (!projectWarOsgiHeadersSet) {
             projectWarOsgiHeaders = getPropertyValue(PROJECT_WAR_OSGI_HEADERS, props, 'true').toBoolean()
         }
@@ -924,7 +879,7 @@ class BuildSettings {
         if (!pluginClassesDirSet) {
             pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
         }
-        
+
         if (!resourcesDirSet) {
             resourcesDir = new File(getPropertyValue(PROJECT_RESOURCES_DIR, props, "$projectWorkDir/resources"))
         }
@@ -933,8 +888,8 @@ class BuildSettings {
             sourceDir = new File(getPropertyValue(PROJECT_SOURCE_DIR, props, "$baseDir/src"))
         }
 
-        if(!webXmlFileSet) {
-        	this.webXmlLocation = new File(getPropertyValue(PROJECT_WEB_XML_FILE, props, "$resourcesDir/web.xml"))
+        if (!webXmlFileSet) {
+            webXmlLocation = new File(getPropertyValue(PROJECT_WEB_XML_FILE, props, "$resourcesDir/web.xml"))
         }
 
         if (!projectPluginsDirSet) {
@@ -948,16 +903,15 @@ class BuildSettings {
         if (!testReportsDirSet) {
             testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
         }
-        
+
         if (!docsOutputDirSet) {
             docsOutputDir = new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs"))
         }
-        
-        
+
         if (!testSourceDirSet) {
             testSourceDir = new File(getPropertyValue(PROJECT_TEST_SOURCE_DIR, props, "${baseDir}/test"))
         }
-        
+
         if (!verboseCompileSet) {
             verboseCompile = getPropertyValue(VERBOSE_COMPILE, props, '').toBoolean()
         }
@@ -982,12 +936,12 @@ class BuildSettings {
             buildListenersSet = true
         }
     }
-    
+
     private getFirstPropertyValue(List<String> propertyNames, Properties props, String defaultValue) {
         def value
-        for(String p in propertyNames ) {
+        for (String p in propertyNames ) {
             value = getValueFromSystemOrBuild(p, props)
-            if(value!=null) break
+            if (value != null) break
         }
         return value ?: defaultValue
     }
@@ -1018,7 +972,7 @@ class BuildSettings {
         }
         else {
             baseDir = new File("")
-            if(!new File(baseDir, "grails-app").exists()) {
+            if (!new File(baseDir, "grails-app").exists()) {
                 // be careful with this next step...
                 // baseDir.parentFile will return null since baseDir is new File("")
                 // baseDir.absoluteFile needs to happen before retrieving the parentFile
@@ -1036,17 +990,14 @@ class BuildSettings {
                     baseDir = parentDir
                 }
             }
-
         }
         return baseDir.canonicalFile
     }
 
-	File getWebXmlLocation() {
-		 this.webXmlLocation
-	}
+    File getWebXmlLocation() { webXmlLocation }
 
-	void setWebXmlLocation(File location) {
-		this.webXmlLocation = location
-		this.webXmlFileSet=true
-	}
+    void setWebXmlLocation(File location) {
+        webXmlLocation = location
+        webXmlFileSet = true
+    }
 }
