@@ -157,6 +157,7 @@ class BuildSettingsTests extends GroovyTestCase {
         assertEquals new File("${defaultProjectWorkDir}/resources"), settings.resourcesDir
         assertEquals new File("target/pluginsDir"), settings.projectPluginsDir
         assertEquals new File("$defaultWorkPath/global-plugins"), settings.globalPluginsDir
+        assertEquals new File("target").canonicalFile, settings.projectTargetDir
 
         // Load a configuration file and check that the values we set
         // explicitly haven't changed.
@@ -170,6 +171,7 @@ class BuildSettingsTests extends GroovyTestCase {
         assertEquals new File("projectDir/resources"), settings.resourcesDir
         assertEquals new File("target/pluginsDir"), settings.projectPluginsDir
         assertEquals new File("workDir/global-plugins"), settings.globalPluginsDir
+        assertEquals new File("target").canonicalFile, settings.projectTargetDir
     }
 
     void testSetBaseDir() {

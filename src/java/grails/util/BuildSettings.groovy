@@ -849,7 +849,7 @@ class BuildSettings {
         }
 
         if (!projectTargetDirSet) {
-            projectTargetDir = new File(getFirstPropertyValue([PROJECT_TARGET_DIR, 'grails.war.destFile'], props, "$baseDir/target"))
+            projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
         }
 
         if (!projectWarFileSet) {
@@ -935,15 +935,6 @@ class BuildSettings {
             }
             buildListenersSet = true
         }
-    }
-
-    private getFirstPropertyValue(List<String> propertyNames, Properties props, String defaultValue) {
-        def value
-        for (String p in propertyNames ) {
-            value = getValueFromSystemOrBuild(p, props)
-            if (value != null) break
-        }
-        return value ?: defaultValue
     }
 
     private getPropertyValue(String propertyName, Properties props, String defaultValue) {
