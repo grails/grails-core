@@ -83,7 +83,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         new StandardAnnotationMetadata(clazz);
         String ident = metaData.getIdentifierPropertyName();
         this.defaultConstraints = defaultConstraints;
-
         if (ident != null) {
             Class<?> identType = getPropertyType(ident);
             identifier = new GrailsHibernateDomainClassProperty(this, ident);
@@ -98,6 +97,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         if (versionIndex >- 1) {
             versionPropertyName = metaData.getPropertyNames()[versionIndex];
             version = new GrailsHibernateDomainClassProperty(this, versionPropertyName);
+            version.setType(getPropertyType(versionPropertyName));
         }
 
         // configure remaining properties
