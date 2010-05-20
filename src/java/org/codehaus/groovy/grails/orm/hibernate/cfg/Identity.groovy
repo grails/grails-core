@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+package org.codehaus.groovy.grails.orm.hibernate.cfg
+
 /**
+ * Defines the identity generation strategy. In the case of a 'composite' identity the properties
+ * array defines the property names that formulate the composite id.
+ *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Sep 27, 2007
- */
-package org.codehaus.groovy.grails.orm.hibernate.cfg
-/**
- * <p>Defines the identity generation strategy. In the case of a 'composite' identity the properties
- * array defines the property names that formulate the composite id
  */
 class Identity {
     String generator = 'native'
@@ -34,5 +31,4 @@ class Identity {
     Map params = [:]
 
     String toString() { "id[generator:$generator, column:$id, type:$type]" }
-
 }

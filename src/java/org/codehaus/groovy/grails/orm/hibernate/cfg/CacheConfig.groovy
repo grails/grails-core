@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
+
 /**
- * <p> A class that defines the cache configuration
- 
+ * Defines the cache configuration.
+ * 
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Sep 27, 2007
  */
-
 class CacheConfig {
     static final USAGE_OPTIONS = ['read-only', 'read-write','nonstrict-read-write','transactional']
     static final INCLUDE_OPTIONS = ['all', 'non-lazy']

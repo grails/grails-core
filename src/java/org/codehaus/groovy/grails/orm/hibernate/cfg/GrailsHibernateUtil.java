@@ -64,13 +64,10 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
- * A class containing utility methods for configuring Hibernate inside Grails
+ * Utility methods for configuring Hibernate inside Grails.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 6:21:01 PM
  */
 public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
@@ -86,38 +83,37 @@ public class GrailsHibernateUtil {
     public static final String ARGUMENT_CACHE = "cache";
     public static final String ARGUMENT_LOCK = "lock";
     public static final String CONFIG_PROPERTY_CACHE_QUERIES="grails.hibernate.cache.queries";
-    public static final Class[] EMPTY_CLASS_ARRAY=new Class[0];
+    public static final Class<?>[] EMPTY_CLASS_ARRAY=new Class<?>[0];
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
+    @SuppressWarnings("unchecked")
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
-        Map hibernateDomainClassMap = new HashMap();
+        Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
         ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
         Map defaultContraints = Collections.emptyMap();
-        if(artefactHandler instanceof DomainClassArtefactHandler) {
+        if (artefactHandler instanceof DomainClassArtefactHandler) {
             final Map map = ((DomainClassArtefactHandler) artefactHandler).getDefaultConstraints();
-            if(map != null)
+            if (map != null) {
                 defaultContraints = map;
+            }
         }
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
-            configureDomainClass(sessionFactory,
-                                 application,
-                                 classMetadata,
-                                 classMetadata.getMappedClass(EntityMode.POJO),
-                                 hibernateDomainClassMap,
-                                 defaultContraints);
+            configureDomainClass(sessionFactory, application, classMetadata,
+                    classMetadata.getMappedClass(EntityMode.POJO),
+                    hibernateDomainClassMap, defaultContraints);
         }
         configureInheritanceMappings(hibernateDomainClassMap);
     }
 
+    @SuppressWarnings("unchecked")
     public static void configureInheritanceMappings(Map hibernateDomainClassMap) {
         // now get through all domainclasses, and add all subclasses to root class
         for (Object o : hibernateDomainClassMap.values()) {
             GrailsDomainClass baseClass = (GrailsDomainClass) o;
             if (!baseClass.isRoot()) {
-                Class superClass = baseClass.getClazz().getSuperclass();
-
+                Class<?> superClass = baseClass.getClazz().getSuperclass();
 
                 while (!superClass.equals(Object.class) && !superClass.equals(GroovyObject.class)) {
                     GrailsDomainClass gdc = (GrailsDomainClass) hibernateDomainClassMap.get(superClass.getName());
@@ -133,34 +129,40 @@ public class GrailsHibernateUtil {
         }
     }
 
-    private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application, ClassMetadata cmd, Class persistentClass, Map hibernateDomainClassMap, Map defaultContraints) {
-        if (!Modifier.isAbstract(persistentClass.getModifiers())) {
-            LOG.trace("Configuring domain class [" + persistentClass + "]");
-            GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.getName());
-            if (dc == null) {
-                // a patch to add inheritance to this system
-                GrailsHibernateDomainClass ghdc = new
-                        GrailsHibernateDomainClass(persistentClass, sessionFactory, cmd, defaultContraints);
+    @SuppressWarnings("unchecked")
+    private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application,
+            ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap,
+            Map defaultContraints) {
 
-                hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
+        if (Modifier.isAbstract(persistentClass.getModifiers())) {
+            return;
+        }
 
-                dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
-            }
+        LOG.trace("Configuring domain class [" + persistentClass + "]");
+        GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.getName());
+        if (dc == null) {
+            // a patch to add inheritance to this system
+            GrailsHibernateDomainClass ghdc = new GrailsHibernateDomainClass(
+                    persistentClass, sessionFactory, cmd, defaultContraints);
+
+            hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
+            dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
         }
     }
 
-    public static void populateArgumentsForCriteria(Class targetClass, Criteria c, Map argMap) {
-       Integer maxParam = null;
+    @SuppressWarnings("unchecked")
+    public static void populateArgumentsForCriteria(Class<?> targetClass, Criteria c, Map argMap) {
+        Integer maxParam = null;
         Integer offsetParam = null;
-        if(argMap.containsKey(ARGUMENT_MAX)) {
+        if (argMap.containsKey(ARGUMENT_MAX)) {
             maxParam = converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
         }
-        if(argMap.containsKey(ARGUMENT_OFFSET)) {
+        if (argMap.containsKey(ARGUMENT_OFFSET)) {
             offsetParam = converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
         }
         String orderParam = (String)argMap.get(ARGUMENT_ORDER);
         Object fetchObj = argMap.get(ARGUMENT_FETCH);
-        if(fetchObj instanceof Map) {
+        if (fetchObj instanceof Map) {
             Map fetch = (Map)fetchObj;
             for (Object o : fetch.keySet()) {
                 String associationName = (String) o;
@@ -172,28 +174,30 @@ public class GrailsHibernateUtil {
         final String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC;
         final int max = maxParam == null ? -1 : maxParam;
         final int offset = offsetParam == null ? -1 : offsetParam;
-        if(max > -1)
+        if (max > -1) {
             c.setMaxResults(max);
-        if(offset > -1)
+        }
+        if (offset > -1) {
             c.setFirstResult(offset);
-        if(GrailsClassUtils.getBooleanFromMap(ARGUMENT_CACHE, argMap)) {
+        }
+        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_CACHE, argMap)) {
             c.setCacheable(true);
         }
-        if(GrailsClassUtils.getBooleanFromMap(ARGUMENT_LOCK, argMap)) {
+        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_LOCK, argMap)) {
             c.setLockMode(LockMode.UPGRADE);
         }
         else {
-            if(argMap.get(ARGUMENT_CACHE) == null) {
+            if (argMap.get(ARGUMENT_CACHE) == null) {
                 cacheCriteriaByMapping(targetClass, c);
             }
         }
-        if(sort != null) {
+        if (sort != null) {
             boolean ignoreCase = true;
             Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
-            if(caseArg instanceof Boolean) {
+            if (caseArg instanceof Boolean) {
                 ignoreCase = (Boolean) caseArg;
             }
-            if(ORDER_DESC.equals(order)) {
+            if (ORDER_DESC.equals(order)) {
                 c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
             }
             else {
@@ -202,8 +206,8 @@ public class GrailsHibernateUtil {
         }
         else {
             Mapping m = GrailsDomainBinder.getMapping(targetClass);
-            if(m!=null&&!StringUtils.isBlank(m.getSort())) {
-                if(ORDER_DESC.equalsIgnoreCase(m.getOrder())) {
+            if (m != null && !StringUtils.isBlank(m.getSort())) {
+                if (ORDER_DESC.equalsIgnoreCase(m.getOrder())) {
                     c.addOrder(Order.desc(m.getSort()));
                 }
                 else {
@@ -211,41 +215,38 @@ public class GrailsHibernateUtil {
                 }
             }
         }
-
     }
 
     /**
-     * Configures the criteria instance to cache based on the configured mapping
+     * Configures the criteria instance to cache based on the configured mapping.
      *
      * @param targetClass The target class
      * @param criteria The criteria
      */
-    public static void cacheCriteriaByMapping(Class targetClass, Criteria criteria) {
+    public static void cacheCriteriaByMapping(Class<?> targetClass, Criteria criteria) {
         Mapping m = GrailsDomainBinder.getMapping(targetClass);
-        if(m!=null && m.getCache()!=null) {
-            if(m.getCache().getEnabled()) {
-                criteria.setCacheable(true);
-            }
+        if (m != null && m.getCache() != null && m.getCache().getEnabled()) {
+            criteria.setCacheable(true);
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static void populateArgumentsForCriteria(Criteria c, Map argMap) {
-        populateArgumentsForCriteria(null,c, argMap);
+        populateArgumentsForCriteria(null, c, argMap);
     }
 
     /**
-	 * Will retrieve the fetch mode for the specified instance other wise return the
-     * default FetchMode
+     * Retrieves the fetch mode for the specified instance; otherwise returns the default FetchMode.
      *
      * @param object The object, converted to a string
      * @return The FetchMode
      */
     public static FetchMode getFetchMode(Object object) {
         String name = object != null ? object.toString() : "default";
-        if(name.equalsIgnoreCase(FetchMode.JOIN.toString()) || name.equalsIgnoreCase("eager")) {
+        if (name.equalsIgnoreCase(FetchMode.JOIN.toString()) || name.equalsIgnoreCase("eager")) {
             return FetchMode.JOIN;
         }
-        else if(name.equalsIgnoreCase(FetchMode.SELECT.toString()) || name.equalsIgnoreCase("lazy")) {
+        if (name.equalsIgnoreCase(FetchMode.SELECT.toString()) || name.equalsIgnoreCase("lazy")) {
             return FetchMode.SELECT;
         }
         return FetchMode.DEFAULT;
@@ -262,12 +263,12 @@ public class GrailsHibernateUtil {
      */
     public static void setObjectToReadyOnly(Object target, SessionFactory sessionFactory) {
         Session session = sessionFactory.getCurrentSession();
-        if(canModifyReadWriteState(session, target)) {
-             if(target instanceof HibernateProxy) {
-                 target = ((HibernateProxy)target).getHibernateLazyInitializer().getImplementation();
-             }
-             session.setReadOnly(target, true);
-             session.setFlushMode(FlushMode.MANUAL);
+        if (canModifyReadWriteState(session, target)) {
+            if (target instanceof HibernateProxy) {
+                target = ((HibernateProxy)target).getHibernateLazyInitializer().getImplementation();
+            }
+            session.setReadOnly(target, true);
+            session.setFlushMode(FlushMode.MANUAL);
         }
     }
 
@@ -276,8 +277,7 @@ public class GrailsHibernateUtil {
     }
 
     /**
-     * Sets the target object to read-write, allowing Hibernate to dirty check it and auto-flush
-     * changes
+     * Sets the target object to read-write, allowing Hibernate to dirty check it and auto-flush changes.
      *
      * @see #setObjectToReadyOnly(Object, org.hibernate.SessionFactory)
      *
@@ -289,13 +289,13 @@ public class GrailsHibernateUtil {
         template.setExposeNativeSession(true);
         template.execute(new HibernateCallback<Void>() {
             public Void doInHibernate(Session session) throws HibernateException, SQLException {
-                if(canModifyReadWriteState(session, target)) {
+                if (canModifyReadWriteState(session, target)) {
                     SessionImplementor sessionImpl = (SessionImplementor) session;
                     EntityEntry ee = sessionImpl.getPersistenceContext().getEntry(target);
 
-                    if(ee != null && ee.getStatus() == Status.READ_ONLY) {
+                    if (ee != null && ee.getStatus() == Status.READ_ONLY) {
                         Object actualTarget = target;
-                        if(target instanceof HibernateProxy) {
+                        if (target instanceof HibernateProxy) {
                             actualTarget = ((HibernateProxy)target).getHibernateLazyInitializer().getImplementation();
                         }
 
@@ -315,9 +315,9 @@ public class GrailsHibernateUtil {
      */
     public static void incrementVersion(Object target) {
         MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
-        if(metaClass.hasProperty(target, GrailsDomainClassProperty.VERSION)!=null) {
+        if (metaClass.hasProperty(target, GrailsDomainClassProperty.VERSION)!=null) {
             Object version = metaClass.getProperty(target, GrailsDomainClassProperty.VERSION);
-            if(version instanceof Long) {
+            if (version instanceof Long) {
                 Long newVersion = (Long) version + 1;
                 metaClass.setProperty(target, GrailsDomainClassProperty.VERSION, newVersion);
             }
@@ -325,13 +325,13 @@ public class GrailsHibernateUtil {
     }
 
     /**
-     * Unwraps and initializes a HibernateProxy
+     * Unwraps and initializes a HibernateProxy.
      * @param proxy The proxy
+     * @return the unproxied instance
      */
     public static Object unwrapProxy(HibernateProxy proxy) {
-    	return proxyHandler.unwrapProxy(proxy);
+        return proxyHandler.unwrapProxy(proxy);
     }
-
 
     /**
      * Returns the proxy for a given association or null if it is not proxied
@@ -352,7 +352,7 @@ public class GrailsHibernateUtil {
      * @return True if is initialized
      */
     public static boolean isInitialized(Object obj, String associationName) {
-    	return proxyHandler.isInitialized(obj, associationName);
+        return proxyHandler.isInitialized(obj, associationName);
     }
 
     public static boolean isCacheQueriesByDefault() {
@@ -361,33 +361,28 @@ public class GrailsHibernateUtil {
     }
 
     @SuppressWarnings("serial")
-	public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
+    public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
         GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();
 
-        Set<Class> proxyInterfaces = new HashSet<Class>() {{
+        Set<Class<?>> proxyInterfaces = new HashSet<Class<?>>() {{
             add(HibernateProxy.class);
-          }
-        };
+        }};
 
-        final Class javaClass = persistentClass.getMappedClass();
+        final Class<?> javaClass = persistentClass.getMappedClass();
         final Property identifierProperty = persistentClass.getIdentifierProperty();
         final Getter idGetter = identifierProperty!=null?  identifierProperty.getGetter(javaClass) : null;
         final Setter idSetter =identifierProperty!=null? identifierProperty.getSetter(javaClass) : null;
 
-        if(idGetter == null ||  idSetter==null) return null;
+        if (idGetter == null ||  idSetter==null) return null;
+
         try {
-            proxyFactory.postInstantiate(persistentClass.getEntityName(),
-                                    javaClass,
-                                     proxyInterfaces,
-                                     idGetter.getMethod(),
-                                     idSetter.getMethod(),
-                                     persistentClass.hasEmbeddedIdentifier() ?
-                                                 (AbstractComponentType) persistentClass.getIdentifier().getType() :
-                                                        null
-                                            );
+            proxyFactory.postInstantiate(persistentClass.getEntityName(), javaClass, proxyInterfaces,
+                    idGetter.getMethod(), idSetter.getMethod(),
+                    persistentClass.hasEmbeddedIdentifier() ?
+                            (AbstractComponentType) persistentClass.getIdentifier().getType() :
+                            null);
         }
         catch (HibernateException e) {
-
             LOG.warn("Cannot instantiate proxy factory: " + e.getMessage());
             return null;
         }
@@ -396,6 +391,6 @@ public class GrailsHibernateUtil {
     }
 
     public static Object unwrapIfProxy(Object instance) {
-    	return proxyHandler.unwrapIfProxy(instance);
+        return proxyHandler.unwrapIfProxy(instance);
     }
 }

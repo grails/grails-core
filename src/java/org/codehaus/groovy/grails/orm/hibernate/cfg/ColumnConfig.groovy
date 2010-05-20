@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
+
 /**
- * <p> A class that defines a column within the mapping
+ * Defines a column within the mapping.
  *
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Sep 27, 2007
  */
 class ColumnConfig {
     String name

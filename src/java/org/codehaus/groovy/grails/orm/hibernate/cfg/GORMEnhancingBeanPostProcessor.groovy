@@ -15,63 +15,63 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
-import org.springframework.beans.factory.config.BeanPostProcessor
+import org.hibernate.EntityMode
 import org.hibernate.SessionFactory
+import org.hibernate.metadata.ClassMetadata
+
+import org.springframework.beans.BeanInstantiationException
+import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
-import org.hibernate.metadata.ClassMetadata
-import org.hibernate.EntityMode
-import org.codehaus.groovy.grails.commons.GrailsApplication
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
-import org.springframework.beans.BeanInstantiationException
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 
 /**
+ * A BeanPostProcessor that enhances an existing SessionFactory with GORM behavior.
  *
- * A BeanPostProcessor that enhances an existing SessionFactory with GORM behavior
- * 
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Jan 16, 2009
  */
+class GORMEnhancingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 
-class GORMEnhancingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware{
+	ApplicationContext applicationContext
 
-    ApplicationContext applicationContext
+	def postProcessBeforeInitialization(Object bean, String beanName) { bean }
 
-    def postProcessBeforeInitialization(Object bean, String beanName) { bean }
+	Object postProcessAfterInitialization(Object bean, String beanName) {
+		if (bean instanceof SessionFactory) {
+			GrailsApplication application
+			if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
+				application = applicationContext.getBean(GrailsApplication.APPLICATION_ID)
+			}
+			else {
+				application = new DefaultGrailsApplication()
+				application.initialise()
+			}
 
-    public Object postProcessAfterInitialization(Object bean, String beanName) {
-        if(bean instanceof SessionFactory) {
-            SessionFactory sf = bean
-            GrailsApplication application
-            if(applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
-                application = applicationContext.getBean(GrailsApplication.APPLICATION_ID)
-            }
-            else {
-                application = new DefaultGrailsApplication(); application.initialise()
-            }
+			bean.allClassMetadata.each { className, ClassMetadata metadata ->
+				Class mappedClass = metadata.getMappedClass(EntityMode.POJO)
 
-            sf.allClassMetadata.each { className, ClassMetadata metadata ->
-                Class mappedClass = metadata.getMappedClass(EntityMode.POJO)
+				if (!application.getDomainClass(mappedClass.name)) {
+					application.addDomainClass(mappedClass)
+				}
+			}
 
-                if(!application.getDomainClass(mappedClass.name)) {
-                    application.addDomainClass(mappedClass)
-                }
-            }
-
-            try {
-                DomainClassGrailsPlugin.enhanceDomainClasses(application, applicationContext)
-                HibernatePluginSupport.enhanceSessionFactory(sf, application, applicationContext)
-            }
-            catch (Throwable e) {
-                throw new BeanInstantiationException(ConfigurableLocalSessionFactoryBean.class, "Error configuring GORM dynamic behavior: ${e.message}", e)
-            }
-        }
-        return bean;
-    }
-
+			try {
+				DomainClassGrailsPlugin.enhanceDomainClasses(application, applicationContext)
+				HibernatePluginSupport.enhanceSessionFactory(bean, application, applicationContext)
+			}
+			catch (Throwable e) {
+				throw new BeanInstantiationException(ConfigurableLocalSessionFactoryBean,
+						"Error configuring GORM dynamic behavior: $e.message", e)
+			}
+		}
+		return bean
+	}
 }

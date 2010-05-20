@@ -14,14 +14,15 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import grails.util.GrailsNameUtils;
+
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import grails.util.GrailsNameUtils;
 
 /**
  * An implementation of the GrailsDomainClassProperty interface that allows Classes mapped in
- * Hibernate to integrate with Grails' validation, dynamic methods etc. seamlessly
+ * Hibernate to integrate with Grails' validation, dynamic methods etc. seamlessly.
  *
  * @author Graeme Rocher
  * @since 0.1
@@ -33,7 +34,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 
     private String name;
     private String naturalName;
-    private Class type;
+    private Class<?> type;
     private boolean identity;
     private boolean oneToOne;
     private boolean manyToOne;
@@ -42,7 +43,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     private boolean manyToMany;
     private boolean bidirectional;
     private boolean optional;
-    private Class relatedClassType;
+    private Class<?> relatedClassType;
     private GrailsDomainClass referencedDomainClass;
     private GrailsDomainClassProperty otherSide;
     private boolean owingSide;
@@ -50,28 +51,28 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 
     public GrailsHibernateDomainClassProperty(GrailsHibernateDomainClass domainClass, String propertyName) {
         this.domainClass = domainClass;
-        this.name = propertyName;
-        this.naturalName = GrailsNameUtils.getNaturalName(propertyName);
+        name = propertyName;
+        naturalName = GrailsNameUtils.getNaturalName(propertyName);
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
-    public Class getType() {
-        return this.type;
+    public Class<?> getType() {
+        return type;
     }
 
-    public void setType(Class type) {
+    public void setType(Class<?> type) {
         this.type = type;
     }
 
     public String getTypePropertyName() {
-        return GrailsNameUtils.getPropertyNameRepresentation(this.type);
+        return GrailsNameUtils.getPropertyNameRepresentation(type);
     }
 
     public GrailsDomainClass getDomainClass() {
-        return this.domainClass;
+        return domainClass;
     }
 
     public boolean isPersistent() {
@@ -79,7 +80,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public String getNaturalName() {
-        return this.naturalName;
+        return naturalName;
     }
 
     public void setReferencedDomainClass(GrailsDomainClass referencedGrailsDomainClass) {
@@ -87,15 +88,15 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public void setOtherSide(GrailsDomainClassProperty referencedProperty) {
-        this.otherSide = referencedProperty;
+        otherSide = referencedProperty;
     }
 
     public GrailsDomainClassProperty getOtherSide() {
-        return this.otherSide;
+        return otherSide;
     }
 
-    public Class getReferencedPropertyType() {
-        return this.relatedClassType;
+    public Class<?> getReferencedPropertyType() {
+        return relatedClassType;
     }
 
     public boolean isIdentity() {
@@ -171,33 +172,32 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public GrailsDomainClass getReferencedDomainClass() {
-        return this.referencedDomainClass;
+        return referencedDomainClass;
     }
 
-
-    public void setRelatedClassType(Class relatedType) {
-        this.relatedClassType = relatedType;
+    public void setRelatedClassType(Class<?> relatedType) {
+        relatedClassType = relatedType;
     }
 
-	public boolean isInherited() {
-		return false;
-	}
+    public boolean isInherited() {
+        return false;
+    }
 
-	public int getFetchMode() {
-		return FETCH_LAZY;
-	}
+    public int getFetchMode() {
+        return FETCH_LAZY;
+    }
 
-	public boolean isOwningSide() {
-		return this.owingSide;
-	}
+    public boolean isOwningSide() {
+        return owingSide;
+    }
 
-	public boolean isCircular() {
-		return false;
-	}
-	
-	public String getReferencedPropertyName() {
-		throw new UnsupportedOperationException("Method 'getReferencedPropertyName' is not supported by implementation");
-	}
+    public boolean isCircular() {
+        return false;
+    }
+    
+    public String getReferencedPropertyName() {
+        throw new UnsupportedOperationException("Method 'getReferencedPropertyName' is not supported by implementation");
+    }
 
     public boolean isEmbedded() {
         return false;
@@ -208,7 +208,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public void setOwningSide(boolean b) {
-		this.owingSide = b;
+        owingSide = b;
     }
 
     public boolean isBasicCollectionType() {

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
+
 /**
- * Represents a composite identity, equivalent to Hibernate <composite-id> mapping
+ * Represents a composite identity, equivalent to Hibernate <composite-id> mapping.
  *
  * @author Graeme Rocher
  * @since 1.0
  *
  * Created: Sep 27, 2007
  */
-public class CompositeIdentity {
+class CompositeIdentity {
     String[] propertyNames
     Class compositeClass
 }

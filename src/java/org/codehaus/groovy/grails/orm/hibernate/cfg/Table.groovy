@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
+
 /**
- * Represents a table definition in GORM
+ * Represents a table definition in GORM.
  *
  * @author Graeme Rocher
  * @since 1.1
- * 
+ *
  * Created: Jan 21, 2009
  */
-
-public class Table {
+class Table {
 
     String name
     String catalog

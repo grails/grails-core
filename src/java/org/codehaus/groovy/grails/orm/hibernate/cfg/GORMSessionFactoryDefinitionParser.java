@@ -15,6 +15,11 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.persistence.Entity;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -29,7 +34,11 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.beans.factory.parsing.Location;
 import org.springframework.beans.factory.parsing.Problem;
-import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
@@ -38,10 +47,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A BeanDefinitionParser that will scan for GORM entities to configure and automatically setup an
@@ -80,22 +85,19 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
 
     public BeanDefinition parse(Element element, ParserContext parserContext) {
 
-        final XmlReaderContext readerContext = parserContext
-                                                    .getReaderContext();
-        final ClassLoader beanClassLoader = readerContext
-                                                .getBeanClassLoader() != null ?
-                                            readerContext.getBeanClassLoader() :
-                                            Thread.currentThread().getContextClassLoader();
+        final XmlReaderContext readerContext = parserContext.getReaderContext();
+        final ClassLoader beanClassLoader = readerContext.getBeanClassLoader() != null ?
+                readerContext.getBeanClassLoader() :
+                Thread.currentThread().getContextClassLoader();
 
-        String[] basePackages =
-                StringUtils.commaDelimitedListToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE));
-
+        String[] basePackages = StringUtils.commaDelimitedListToStringArray(
+                element.getAttribute(BASE_PACKAGE_ATTRIBUTE));
 
         String dataSourceId = element.getAttribute(DATA_SOURCE_ATTRIBUTE);
-        if(!StringUtils.hasText(dataSourceId)) {
-            throw new BeanDefinitionParsingException(new Problem("Attribute ["+DATA_SOURCE_ATTRIBUTE+"] of tag <gorm:sessionFactory> must be specified!", new Location(readerContext.getResource())));
+        if (!StringUtils.hasText(dataSourceId)) {
+            throw new BeanDefinitionParsingException(new Problem("Attribute [" + DATA_SOURCE_ATTRIBUTE +
+                    "] of tag <gorm:sessionFactory> must be specified!", new Location(readerContext.getResource())));
         }
-
 
         // Actually scan for bean definitions and register them.
         BeanDefinitionRegistry targetRegistry = parserContext.getRegistry();
@@ -111,7 +113,9 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         return parseSessionFactory(element, dataSourceId, targetRegistry, parserContext);
     }
 
-    private void parseGrailsApplication(Element element, ParserContext parserContext, XmlReaderContext readerContext, ClassLoader beanClassLoader, String[] basePackages) {
+    private void parseGrailsApplication(Element element, ParserContext parserContext,
+            XmlReaderContext readerContext, ClassLoader beanClassLoader, String[] basePackages) {
+
         BeanDefinitionRegistry simpleRegistry = new SimpleBeanDefinitionRegistry();
         ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, simpleRegistry);
 
@@ -123,20 +127,18 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         grailsApplicationBean.setInitMethodName("initialise");
         ConstructorArgumentValues constructorArgs = grailsApplicationBean.getConstructorArgumentValues();
 
-        Set<Class> classes = new HashSet<Class>();
-
-
+        Set<Class<?>> classes = new HashSet<Class<?>>();
         for(String beanName : simpleRegistry.getBeanDefinitionNames()) {
             BeanDefinition beanDef = simpleRegistry.getBeanDefinition(beanName);
             try {
-                Class entityClass = Class.forName(beanDef.getBeanClassName(), true, beanClassLoader);
-
+                Class<?> entityClass = Class.forName(beanDef.getBeanClassName(), true, beanClassLoader);
                 classes.add(entityClass);
-
                 registerDomainBean(entityClass, targetRegistry, element.getAttribute(MESSAGE_SOURCE_ATTRIBUTE));
             }
             catch (ClassNotFoundException e) {
-                throw new BeanDefinitionParsingException(new Problem("Unable to load class whilst configuring GORM: " + e.getMessage(), new Location(readerContext.getResource()),null, e));
+                throw new BeanDefinitionParsingException(new Problem(
+                        "Unable to load class whilst configuring GORM: " + e.getMessage(),
+                        new Location(readerContext.getResource()), null, e));
             }
         }
 
@@ -146,7 +148,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
     }
 
     @SuppressWarnings("serial")
-	private void registerDomainBean(final Class entityClass, BeanDefinitionRegistry targetRegistry, String messageSourceRef) {
+    private void registerDomainBean(final Class<?> entityClass, BeanDefinitionRegistry targetRegistry, String messageSourceRef) {
         GenericBeanDefinition beanDef = new GenericBeanDefinition();
         beanDef.setBeanClass(entityClass);
         beanDef.setScope("prototype");
@@ -155,14 +157,13 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         
         domainDef.getPropertyValues().addPropertyValue("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
         domainDef.getPropertyValues().addPropertyValue("targetMethod", "getArtefact");
-        domainDef.getPropertyValues().addPropertyValue("arguments", new ArrayList() {{
+        domainDef.getPropertyValues().addPropertyValue("arguments", new ArrayList<String>() {{
             add(DomainClassArtefactHandler.TYPE);
             add(entityClass.getName());
         }});
 
-
         final String domainRef = entityClass.getName() + "Domain";
-        if(StringUtils.hasText(messageSourceRef)) {
+        if (StringUtils.hasText(messageSourceRef)) {
             GenericBeanDefinition validatorDef = new GenericBeanDefinition();
             validatorDef.setBeanClass(HibernateDomainClassValidator.class);
             validatorDef.getPropertyValues().addPropertyValue("messageSource", new RuntimeBeanReference(messageSourceRef));
@@ -172,8 +173,6 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
 
         targetRegistry.registerBeanDefinition(entityClass.getName(), beanDef);
         targetRegistry.registerBeanDefinition(domainRef, domainDef);
-
-
     }
 
     private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId, BeanDefinitionRegistry targetRegistry, ParserContext parserContext)  {
@@ -181,26 +180,26 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         AbstractBeanDefinition sessionFactoryBean = new GenericBeanDefinition();
         sessionFactoryBean.setBeanClass(ConfigurableLocalSessionFactoryBean.class);
 
-
         MutablePropertyValues propertyValues = sessionFactoryBean.getPropertyValues();
         final RuntimeBeanReference dataSourceRef = new RuntimeBeanReference(dataSourceId);
         propertyValues.addPropertyValue("dataSource", dataSourceRef);
 
-        Class configClass = lookupConfigClass(element, parserContext);
+        Class<?> configClass = lookupConfigClass(element, parserContext);
         propertyValues.addPropertyValue("configClass", configClass);
 
         final String configLocation = element.getAttribute(CONFIG_LOCATION_ATTRIBUTE);
-        if(StringUtils.hasText(configLocation)) {
+        if (StringUtils.hasText(configLocation)) {
             propertyValues.addPropertyValue("configLocation", configLocation);    
         }
 
-        propertyValues.addPropertyValue(GrailsApplication.APPLICATION_ID, new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
+        propertyValues.addPropertyValue(GrailsApplication.APPLICATION_ID,
+                new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
 
         targetRegistry.registerBeanDefinition(sessionFactoryId,sessionFactoryBean);
 
         final String lobHandlerRef = element.getAttribute(LOB_HANDLER_ATTRIBUTE);
-        if(StringUtils.hasText(lobHandlerRef)) {
-           propertyValues.addPropertyValue("lobHandler", new RuntimeBeanReference(lobHandlerRef));
+        if (StringUtils.hasText(lobHandlerRef)) {
+            propertyValues.addPropertyValue("lobHandler", new RuntimeBeanReference(lobHandlerRef));
         }
         else {
             GenericBeanDefinition lobHandler = new GenericBeanDefinition();
@@ -211,8 +210,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         }
 
         String transactionManagerRef = element.getAttribute(TRANSACTION_MANAGER_ATTRIBUTE);
-
-        if(StringUtils.hasText(transactionManagerRef)) {
+        if (StringUtils.hasText(transactionManagerRef)) {
             targetRegistry.registerAlias("transactionManager", transactionManagerRef);
         }
         else {
@@ -221,43 +219,40 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
             transactionManagerBean.getPropertyValues().addPropertyValue("sessionFactory", new RuntimeBeanReference(sessionFactoryId));
 
             targetRegistry.registerBeanDefinition("transactionManager", transactionManagerBean);
-
         }
 
         parserContext.getDelegate().parsePropertyElements(element, sessionFactoryBean);       
         return sessionFactoryBean;
     }
 
-    private Class lookupConfigClass(Element element, ParserContext parserContext)  {
-        Class configClass = GrailsAnnotationConfiguration.class;
+    private Class<?> lookupConfigClass(Element element, ParserContext parserContext)  {
+        Class<?> configClass = GrailsAnnotationConfiguration.class;
         final ClassLoader classLoader = parserContext.getReaderContext().getBeanClassLoader();
         final String configClassName = element.getAttribute(CONFIG_CLASS_ATTRIBUTE);
-        if(StringUtils.hasText(configClassName)) {
+        if (StringUtils.hasText(configClassName)) {
             try {
                 configClass = classLoader.loadClass(configClassName);
             }
             catch (ClassNotFoundException e) {
-               throw new BeanDefinitionParsingException(new Problem("Unable to load specified SessionFactory configClass implementation: " + e.getMessage(), new Location(parserContext.getReaderContext().getResource()),null, e)); 
+                throw new BeanDefinitionParsingException(new Problem(
+                        "Unable to load specified SessionFactory configClass implementation: " + e.getMessage(),
+                        new Location(parserContext.getReaderContext().getResource()),null, e)); 
             }
         }
         return configClass;
     }
 
-
     private ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, BeanDefinitionRegistry registry) {
-		XmlReaderContext readerContext = parserContext.getReaderContext();
+        XmlReaderContext readerContext = parserContext.getReaderContext();
         // Delegate bean definition registration to scanner class.
         ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry, false);
         scanner.setIncludeAnnotationConfig(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
-        
+
         scanner.setResourceLoader(readerContext.getResourceLoader());
         scanner.setBeanDefinitionDefaults(parserContext.getDelegate().getBeanDefinitionDefaults());
         scanner.setAutowireCandidatePatterns(parserContext.getDelegate().getAutowireCandidatePatterns());
 
         return scanner;
-
     }
-
-
 }
