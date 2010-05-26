@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
+import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 import java.sql.SQLException;
@@ -65,6 +66,8 @@ public class FindPersistentMethod
 		extends AbstractStaticPersistentMethod {
 
 	private static final String	METHOD_PATTERN	= "^find$";
+    public static SimpleTypeConverter converter = new SimpleTypeConverter();
+
 
 	public FindPersistentMethod(SessionFactory sessionFactory,
 			ClassLoader classLoader) {
@@ -91,6 +94,7 @@ public class FindPersistentMethod
 					Query q = session.createQuery(query);
 					Object[] queryArgs = null;
 					Map queryNamedArgs = null;
+					boolean useCache = useCache(arguments);
 
 					if (arguments.length > 1) {
 						if (arguments[1] instanceof Collection) {
@@ -118,7 +122,10 @@ public class FindPersistentMethod
 										+ queryNamedArgs.toString());
 							String stringKey = (String) entry.getKey();
 							Object value = entry.getValue();
-							if (value instanceof CharSequence) {
+							
+							if(GrailsHibernateUtil.ARGUMENT_CACHE.equals(stringKey)) {
+							    continue;
+							} else if (value instanceof CharSequence) {
 								q.setParameter(stringKey, value.toString());
 							} else if (List.class.isAssignableFrom(value.getClass())) {
 								q.setParameterList(stringKey, (List) value);
@@ -133,11 +140,26 @@ public class FindPersistentMethod
 					// but it throws an exception if its not unique which is
 					// undesirable
 					q.setMaxResults(1);
+					q.setCacheable(useCache);
 					List results = q.list();
 					if (results.size() > 0)
 						return GrailsHibernateUtil.unwrapIfProxy(results.get(0));
 					return null;
 				}
+
+				private boolean useCache(Object[] arguments) {
+                    boolean useCache = false;
+                    if(arguments.length > 1 && arguments[arguments.length - 1] instanceof Map) {
+                        Object param = arguments[arguments.length - 1];
+                        String key = GrailsHibernateUtil.ARGUMENT_CACHE;
+                        boolean value = false;
+                        if((param instanceof Map) && ((Map)param).containsKey(key)) {
+                            value = converter.convertIfNecessary(((Map)param).get(key), Boolean.class);
+                        }
+                        useCache = value;
+                    }
+                    return useCache;
+                }
 			});
 		} else if (clazz.isAssignableFrom(arg.getClass())) {
 			// if the arg is an instance of the class find by example

@@ -573,6 +573,9 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         metaClass.static.find = {String query, Map namedArgs ->
             findMethod.invoke(domainClassType, "find", [query, namedArgs] as Object[])
         }
+        metaClass.static.find = {String query, Map namedArgs, Map queryParams ->
+            findMethod.invoke(domainClassType, "find", [query, namedArgs, queryParams] as Object[])
+        }
         metaClass.static.find = {Object example ->
             findMethod.invoke(domainClassType, "find", [example] as Object[])
         }
