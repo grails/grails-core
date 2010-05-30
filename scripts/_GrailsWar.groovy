@@ -474,7 +474,7 @@ target(configureWarName: "Configuring WAR name") {
 
     if(warFileDest || argsMap["params"]) {
         // Pick up the name of the WAR to create from the command-line
-        // argument or the 'grails.war.destFile' configuration option.
+        // argument or the 'grails.project.war.file' configuration option.
         // The command-line argument takes precedence.
         warName = argsMap["params"] ? argsMap["params"][0] : warFileDest
 

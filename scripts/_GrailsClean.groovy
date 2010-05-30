@@ -62,8 +62,8 @@ target ( cleanTestReports: "Cleans the test reports" ) {
 }
 
 target ( cleanWarFile: "Cleans the deployable .war file" ) {
-    if (buildConfig.grails.war.destFile) {
-        warName = buildConfig.grails.war.destFile
+    if (buildConfig.grails.project.war.file) {
+        warName = buildConfig.grails.project.war.file
     }
     else {
         def fileName = grailsAppName
