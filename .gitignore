@@ -13,3 +13,4 @@ idea-target
 build
 grails.iws
 .gradle
+.DS_Store
