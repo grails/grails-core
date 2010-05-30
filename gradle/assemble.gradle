@@ -55,6 +55,7 @@ task sharedPluginFilesJar(type: Jar, description: 'Package up the files that are
     from("src/grails") {
         include "grails-app/conf/BuildConfig.groovy", "grails-app/views/error.gsp"
     }
+    from("src/grails/plugin")
 }
 
 task docGeneratingFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
