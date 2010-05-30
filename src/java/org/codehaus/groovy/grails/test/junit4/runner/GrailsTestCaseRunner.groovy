@@ -29,6 +29,7 @@ import org.junit.internal.runners.statements.Fail
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ReflectionUtils
 
+import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
 
@@ -38,15 +39,17 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 
     final mode
     final appCtx
+    final testTargetPatterns
 
-    GrailsTestCaseRunner(Class testClass) {
-        this(testClass, null, null)
+    GrailsTestCaseRunner(Class testClass, GrailsTestTargetPattern[] testTargetPatterns) {
+        this(testClass, null, null, testTargetPatterns)
     }
 
-    GrailsTestCaseRunner(Class testClass, GrailsTestMode mode, ApplicationContext appCtx) {
+    GrailsTestCaseRunner(Class testClass, GrailsTestMode mode, ApplicationContext appCtx, GrailsTestTargetPattern[] testTargetPatterns) {
         super(testClass)
         this.mode = mode
         this.appCtx = appCtx
+        this.testTargetPatterns = testTargetPatterns
         validateMode()
     }
 
@@ -106,7 +109,22 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
                 }
             }
         }
-        annotated
+        
+        def methodMatchingTargetPatterns = testTargetPatterns?.findAll { it.methodTargeting }
+        if (methodMatchingTargetPatterns) { // slow lane, filter methods
+            def patternsForThisClass = testTargetPatterns.findAll { 
+                it.matchesClass(testClass.javaClass.name, JUnit4GrailsTestType.SUFFIXES as String[]) 
+            }
+            if (patternsForThisClass) {
+                annotated.findAll { frameworkMethod ->
+                    patternsForThisClass.any { pattern -> pattern.matchesMethod(frameworkMethod.name) }
+                }
+            } else {
+                annotated
+            }
+        } else { // fast lane
+            annotated
+        }
     }
 
     protected Statement withBefores(FrameworkMethod method, Object target, Statement statement) {

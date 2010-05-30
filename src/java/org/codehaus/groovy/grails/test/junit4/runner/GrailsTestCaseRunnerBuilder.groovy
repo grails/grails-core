@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.test.junit4.runner
 import org.junit.runner.Runner
 import org.junit.runners.model.RunnerBuilder
 
+import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.springframework.context.ApplicationContext
 
@@ -26,14 +27,16 @@ class GrailsTestCaseRunnerBuilder extends RunnerBuilder {
 
     final mode
     final appCtx
+    final testTargetPatterns
 
-    GrailsTestCaseRunnerBuilder() {
-        this(null, null)
+    GrailsTestCaseRunnerBuilder(GrailsTestTargetPattern[] testTargetPatterns) {
+        this(null, null, testTargetPatterns)
     }
 
-    GrailsTestCaseRunnerBuilder(GrailsTestMode mode, ApplicationContext appCtx) {
+    GrailsTestCaseRunnerBuilder(GrailsTestMode mode, ApplicationContext appCtx, GrailsTestTargetPattern[] testTargetPatterns) {
         this.mode = mode
         this.appCtx = appCtx
+        this.testTargetPatterns = testTargetPatterns
         validateMode()
     }
 
@@ -45,9 +48,9 @@ class GrailsTestCaseRunnerBuilder extends RunnerBuilder {
 
     Runner runnerForClass(Class testClass) {
         if (mode) {
-            new GrailsTestCaseRunner(testClass, mode, appCtx)
+            new GrailsTestCaseRunner(testClass, mode, appCtx, *testTargetPatterns)
         } else {
-            new GrailsTestCaseRunner(testClass)
+            new GrailsTestCaseRunner(testClass, *testTargetPatterns)
         }
     }
 

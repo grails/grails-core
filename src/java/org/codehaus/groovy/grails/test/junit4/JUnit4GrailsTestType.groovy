@@ -79,9 +79,9 @@ public class JUnit4GrailsTestType extends GrailsTestTypeSupport {
 
     protected createRunnerBuilder() {
         if (mode) {
-            new GrailsTestCaseRunnerBuilder(mode, getApplicationContext())
+            new GrailsTestCaseRunnerBuilder(mode, getApplicationContext(), testTargetPatterns)
         } else {
-            new GrailsTestCaseRunnerBuilder()
+            new GrailsTestCaseRunnerBuilder(testTargetPatterns)
         }
     }
 

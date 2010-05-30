@@ -16,6 +16,9 @@
 
 package org.codehaus.groovy.grails.test
 
+import org.springframework.util.AntPathMatcher
+import java.util.regex.Pattern
+
 /**
  * A pattern passed to `grails test-app` that targets one or more tests and potentially a single method
  * 
@@ -69,7 +72,28 @@ class GrailsTestTargetPattern {
     String toString() {
         "[raw: $rawPattern, filePattern: $filePattern, classPattern: $classPattern, methodName: $methodName]"
     }
+
+    boolean matches(String className, String methodName, String[] suffixes) {
+        matchesClass(className, suffixes) && matchesMethod(methodName)
+    }
+
+    boolean matchesClass(String className, String[] suffixes) {
+        if (suffixes) {
+            def suffixesAsPattern = suffixes.collect { Pattern.quote(it) }.join('|')
+            className = className.replaceAll("(${suffixesAsPattern})\$", "")
+        }
+        def classNameAsPath = className.replace('.', '/')
+        new AntPathMatcher().match(filePattern, classNameAsPath)
+    }
     
+    boolean matchesMethod(String methodName) {
+        this.methodTargeting && this.methodName == methodName
+    }
+
+    boolean isMethodTargeting() {
+        this.methodName != null
+    }
+
     protected boolean containsMethodName(pattern) {
         pattern.contains('.') && Character.isLowerCase(pattern.charAt(pattern.lastIndexOf('.') + 1))
     }
