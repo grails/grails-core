@@ -211,29 +211,47 @@ public class GrailsDomainBinderTests extends TestCase {
 
     public void testColumnNullabilityWithTablePerHierarchy() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_HIERARCHY);
+        
+        // with tablePerHierarchy all columns related to properties defined in subclasses
+        // must be nullable to allow instances of other classes in the hierarchy to be
+        // persisted
         assertColumnNullable("table_per_hierarchy_superclass", "product_status", config);
         assertColumnNullable("table_per_hierarchy_superclass", "product_name", config);
         assertColumnNullable("table_per_hierarchy_superclass", "product_count", config);
         assertColumnNullable("table_per_hierarchy_superclass", "optional_product_status", config);
         assertColumnNullable("table_per_hierarchy_superclass", "optional_product_name", config);
         assertColumnNullable("table_per_hierarchy_superclass", "optional_product_count", config);
+
+        // columns related to required properties in the root class should not be nullable
         assertColumnNotNullable("table_per_hierarchy_superclass", "string_property", config);
-        assertColumnNullable("table_per_hierarchy_superclass", "optional_string_property", config);
         assertColumnNotNullable("table_per_hierarchy_superclass", "some_product_status", config);
+        
+        // columns related to optional properties in the root class should be nullable
+        assertColumnNullable("table_per_hierarchy_superclass", "optional_string_property", config);
         assertColumnNullable("table_per_hierarchy_superclass", "some_optional_product_status", config);
     }
     
     public void testColumnNullabilityWithTablePerSubclass() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_SUBCLASS);
+        
+        // with tablePerSubclass columns related to required properties defined in subclasses
+        // should not be nullable
         assertColumnNotNullable("table_per_subclass_subclass", "product_status", config);
         assertColumnNotNullable("table_per_subclass_subclass", "product_name", config);
         assertColumnNotNullable("table_per_subclass_subclass", "product_count", config);
+        
+        // with tablePerSubclass columns related to optional properties defined in subclasses
+        // should be nullable
         assertColumnNullable("table_per_subclass_subclass", "optional_product_status", config);
         assertColumnNullable("table_per_subclass_subclass", "optional_product_name", config);
         assertColumnNullable("table_per_subclass_subclass", "optional_product_count", config);
+        
+        // columns related to required properties in the root class should not be nullable
         assertColumnNotNullable("table_per_subclass_superclass", "string_property", config);
-        assertColumnNullable("table_per_subclass_superclass", "optional_string_property", config);
         assertColumnNotNullable("table_per_subclass_superclass", "some_product_status", config);
+
+        // columns related to optional properties in the root class should be nullable
+        assertColumnNullable("table_per_subclass_superclass", "optional_string_property", config);
         assertColumnNullable("table_per_subclass_superclass", "some_optional_product_status", config);
     }
     
