@@ -129,6 +129,74 @@ public class GrailsDomainBinderTests extends TestCase {
         "   }\n" +
         "}";
 
+    private static final String TABLE_PER_HIERARCHY =
+        "class TablePerHierarchySuperclass {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String stringProperty \n" +
+        "    String optionalStringProperty \n" +
+        "    ProductStatus someProductStatus \n" +
+        "    ProductStatus someOptionalProductStatus \n" +
+        "    static constraints = {" +
+        "        optionalStringProperty nullable: true \n" +
+        "        someOptionalProductStatus nullable: true \n" +
+        "    } \n" +
+        "} \n" +
+        "enum ProductStatus {\n" +
+        "    GOOD, BAD \n" +
+        "} \n" +
+        "class TablePerHierarchySubclass extends TablePerHierarchySuperclass {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    ProductStatus productStatus \n" +
+        "    String productName \n" +
+        "    Integer productCount \n" +
+        "    ProductStatus optionalProductStatus \n" +
+        "    String optionalProductName \n" +
+        "    Integer optionalProductCount \n" +
+        "    static constraints = {" +
+        "        optionalProductName nullable: true \n" +
+        "        optionalProductCount nullable: true \n" +
+        "        optionalProductStatus nullable: true \n" +
+        "    } \n" +
+        "}";
+    
+    private static final String TABLE_PER_SUBCLASS =
+        "class TablePerSubclassSuperclass {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String stringProperty \n" +
+        "    String optionalStringProperty \n" +
+        "    ProductStatus someProductStatus \n" +
+        "    ProductStatus someOptionalProductStatus \n" +
+        "    static constraints = {" +
+        "        optionalStringProperty nullable: true \n" +
+        "        someOptionalProductStatus nullable: true \n" +
+        "    } \n" +
+        "    static mapping = {\n" +
+        "        tablePerHierarchy false\n" +
+        "    }\n" +
+        "} \n" +
+        "enum ProductStatus {\n" +
+        "    GOOD, BAD \n" +
+        "} \n" +
+        "class TablePerSubclassSubclass extends TablePerSubclassSuperclass {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    ProductStatus productStatus \n" +
+        "    String productName \n" +
+        "    Integer productCount \n" +
+        "    ProductStatus optionalProductStatus \n" +
+        "    String optionalProductName \n" +
+        "    Integer optionalProductCount \n" +
+        "    static constraints = {" +
+        "        optionalProductName nullable: true \n" +
+        "        optionalProductCount nullable: true \n" +
+        "        optionalProductStatus nullable: true \n" +
+        "    } \n" +
+        "}";
+    
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -141,6 +209,34 @@ public class GrailsDomainBinderTests extends TestCase {
         GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
     }
 
+    public void testColumnNullabilityWithTablePerHierarchy() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_HIERARCHY);
+        assertColumnNullable("table_per_hierarchy_superclass", "product_status", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "product_name", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "product_count", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "optional_product_status", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "optional_product_name", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "optional_product_count", config);
+        assertColumnNotNullable("table_per_hierarchy_superclass", "string_property", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "optional_string_property", config);
+        assertColumnNotNullable("table_per_hierarchy_superclass", "some_product_status", config);
+        assertColumnNullable("table_per_hierarchy_superclass", "some_optional_product_status", config);
+    }
+    
+    public void testColumnNullabilityWithTablePerSubclass() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_SUBCLASS);
+        assertColumnNotNullable("table_per_subclass_subclass", "product_status", config);
+        assertColumnNotNullable("table_per_subclass_subclass", "product_name", config);
+        assertColumnNotNullable("table_per_subclass_subclass", "product_count", config);
+        assertColumnNullable("table_per_subclass_subclass", "optional_product_status", config);
+        assertColumnNullable("table_per_subclass_subclass", "optional_product_name", config);
+        assertColumnNullable("table_per_subclass_subclass", "optional_product_count", config);
+        assertColumnNotNullable("table_per_subclass_superclass", "string_property", config);
+        assertColumnNullable("table_per_subclass_superclass", "optional_string_property", config);
+        assertColumnNotNullable("table_per_subclass_superclass", "some_product_status", config);
+        assertColumnNullable("table_per_subclass_superclass", "some_optional_product_status", config);
+    }
+    
     public void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
         assertEquals("Tables created", 1, getTableCount(config));
@@ -606,10 +702,16 @@ public class GrailsDomainBinderTests extends TestCase {
 
     private void assertColumnNotNullable(String tablename, String columnName, DefaultGrailsDomainConfiguration config) {
         Table table = getTableMapping(tablename, config);
-        assertTrue(table.getName() + "." + columnName +  " is not nullable",
-            !table.getColumn(new Column(columnName)).isNullable());
+        assertFalse(table.getName() + "." + columnName +  " is nullable",
+            table.getColumn(new Column(columnName)).isNullable());
     }
 
+    private void assertColumnNullable(String tablename, String columnName, DefaultGrailsDomainConfiguration config) {
+        Table table = getTableMapping(tablename, config);
+        assertTrue(table.getName() + "." + columnName +  " is not nullable",
+                table.getColumn(new Column(columnName)).isNullable());
+    }
+    
     private void assertColumnLength(ConstrainedProperty constrainedProperty, int expectedLength) {
         Column column = new Column();
         GrailsDomainBinder.bindStringColumnConstraints(column, constrainedProperty);

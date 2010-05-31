@@ -1667,9 +1667,14 @@ public final class GrailsDomainBinder {
         if (property.getDomainClass().isRoot()) {
         	column.setNullable(property.isOptional());
         } else {
-            if (LOG.isDebugEnabled())
-                LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
-            column.setNullable(true);
+            Mapping mapping = getMapping(property.getDomainClass());
+            if(mapping == null || mapping.getTablePerHierarchy()) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
+                column.setNullable(true);
+            } else {
+                column.setNullable(property.isOptional());
+            }
         }
         column.setValue(simpleValue);
         column.setName(columnName);
@@ -2400,9 +2405,14 @@ public final class GrailsDomainBinder {
         bindIndex(column, cc, table);
 
         if (!property.getDomainClass().isRoot()) {
-            if (LOG.isDebugEnabled())
-                LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] in table ["+table.getName()+"] set to nullable");
-            column.setNullable(true);
+            Mapping mapping = getMapping(property.getDomainClass());
+            if(mapping == null || mapping.getTablePerHierarchy()) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
+                column.setNullable(true);
+            } else {
+                column.setNullable(property.isOptional());
+            }
         }
 
         if (LOG.isDebugEnabled())
