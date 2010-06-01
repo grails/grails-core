@@ -28,17 +28,18 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class ClosureToMapPopulator extends GroovyObjectSupport{
+@SuppressWarnings("unchecked")
+public class ClosureToMapPopulator extends GroovyObjectSupport {
 
     private Map map;
+
     public ClosureToMapPopulator(Map theMap) {
-        this.map = theMap;
+        map = theMap;
     }
 
     public ClosureToMapPopulator() {
-        this.map = new HashMap();
+        this(new HashMap());
     }
-
 
     public Map populate(Closure callable) {
         callable.setDelegate(this);
@@ -49,22 +50,22 @@ public class ClosureToMapPopulator extends GroovyObjectSupport{
 
     @Override
     public void setProperty(String name, Object o) {
-        if(o!=null)
+        if (o != null) {
             map.put(name, o);
+        }
     }
 
     @Override
     public Object invokeMethod(String name, Object o) {
-        if(o!=null) {
-            if(o.getClass().isArray()) {
-
-               Object[] args = (Object[])o;
-               if(args.length == 1) {
-                   map.put(name, args[0]);
-               }
-               else {
-                   map.put(name, Arrays.asList(args));
-               }
+        if (o != null) {
+            if (o.getClass().isArray()) {
+                Object[] args = (Object[])o;
+                if (args.length == 1) {
+                    map.put(name, args[0]);
+                }
+                else {
+                    map.put(name, Arrays.asList(args));
+                }
             }
             else {
                 map.put(name,o);

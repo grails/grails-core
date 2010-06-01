@@ -15,8 +15,8 @@
 package grails.test;
 
 import groovy.lang.Closure;
-import groovy.mock.interceptor.StrictExpectation;
 import groovy.mock.interceptor.LooseExpectation;
+import groovy.mock.interceptor.StrictExpectation;
 
 /**
  * This closure proxy stores an expectation and checks it before each
@@ -25,10 +25,18 @@ import groovy.mock.interceptor.LooseExpectation;
  * @author Peter Ledbrook
  */
 public class MockClosureProxy extends AbstractClosureProxy {
-	private static final long serialVersionUID = -1373536726646006925L;
-	String methodName;
+
+    private static final long serialVersionUID = -1373536726646006925L;
+
+    String methodName;
     Object expectation;
 
+    /**
+     * Constructor.
+     * @param target
+     * @param methodName
+     * @param expectation
+     */
     public MockClosureProxy(Closure target, String methodName, Object expectation) {
         super(target);
         this.methodName = methodName;
@@ -45,16 +53,17 @@ public class MockClosureProxy extends AbstractClosureProxy {
     /**
      * Checks whether the target "method" is expected or not, on the
      * basis that this closure is mocking a method with the name
-     * <code>this.methodName</code>.
+     * <code>methodName</code>.
      * @param args The arguments to the "method" (actually
      * the argumetns to the target closure invocation).
      */
+    @Override
     protected void doBeforeCall(Object[] args) {
-        if (this.expectation instanceof LooseExpectation) {
-            ((LooseExpectation) this.expectation).match(methodName);
+        if (expectation instanceof LooseExpectation) {
+            ((LooseExpectation) expectation).match(methodName);
         }
         else {
-            ((StrictExpectation) this.expectation).match(methodName);
+            ((StrictExpectation) expectation).match(methodName);
         }
     }
 
@@ -62,7 +71,9 @@ public class MockClosureProxy extends AbstractClosureProxy {
      * Empty implementation.
      * @param args The arguments to the target closure.
      */
+    @Override
     protected void doAfterCall(Object[] args) {
+        // do nothing
     }
 
     /**
@@ -71,7 +82,8 @@ public class MockClosureProxy extends AbstractClosureProxy {
      * @param c The closure to wrap.
      * @return the new proxy.
      */
+    @Override
     protected Closure createWrapper(Closure c) {
-        return new MockClosureProxy(c, this.methodName, this.expectation);
+        return new MockClosureProxy(c, methodName, expectation);
     }
 }

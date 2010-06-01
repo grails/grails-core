@@ -18,6 +18,16 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Writable;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,121 +45,108 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 /**
- *
- * Grails utility methods for command line and GUI applications
+ * Grails utility methods for command line and GUI applications.
  *
  * @author Graeme Rocher
  * @since 0.2
- *
- * @version $Revision$
- * First Created: 02-Jun-2006
- * Last Updated: $Date$
- *
  */
 public class GrailsUtil {
 
-	private static final Log LOG  = LogFactory.getLog(GrailsUtil.class);
-    private static final Log STACK_LOG  = LogFactory.getLog("StackTrace");
+    private static final Log LOG = LogFactory.getLog(GrailsUtil.class);
+    private static final Log STACK_LOG = LogFactory.getLog("StackTrace");
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
     private static final String[] GRAILS_PACKAGES = new String[] {
-            "org.codehaus.groovy.grails.",
-            "org.codehaus.groovy.runtime.",
-            "org.codehaus.groovy.reflection.",
-            "org.codehaus.groovy.ast.",
-            "org.codehaus.gant.",
-            "groovy.",
-            "org.mortbay.",
-            "org.apache.catalina.",
-            "org.apache.coyote.",
-            "org.apache.tomcat.",
-            "sun.",
-            "java.lang.reflect.",
-            "org.springframework.",
-            "com.opensymphony.",
-            "org.hibernate.",
-            "javax.servlet."
+        "org.codehaus.groovy.grails.",
+        "org.codehaus.groovy.runtime.",
+        "org.codehaus.groovy.reflection.",
+        "org.codehaus.groovy.ast.",
+        "org.codehaus.gant.",
+        "groovy.",
+        "org.mortbay.",
+        "org.apache.catalina.",
+        "org.apache.coyote.",
+        "org.apache.tomcat.",
+        "sun.",
+        "java.lang.reflect.",
+        "org.springframework.",
+        "com.opensymphony.",
+        "org.hibernate.",
+        "javax.servlet."
     };
 
     static {
-    	Package p = GrailsUtil.class.getPackage();
-        String version =  p != null ? p.getImplementationVersion() : null;
-        if(version==null || isBlank(version)) {
-	        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-	        try {
-	            Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
-	            Manifest grailsManifest = null;
-	            for (int i = 0; i < manifests.length; i++) {
-	                Resource r = manifests[i];
-	                InputStream inputStream = null;
-	                Manifest mf = null;
-	                try {
-	                	inputStream = r.getInputStream();
-	                	mf = new Manifest(inputStream);
-	                } finally {
-	                	IOUtils.closeQuietly(inputStream);
-	                }
-	                String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
-	                if(!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
-	                    grailsManifest = mf;
-	                    break;
-	                }
-	            }
-	
-	            if(grailsManifest != null) {
-	                version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-	            }
-	
-	            if(isBlank(version)) {
-	                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? " );
-	                version = "Unknown";
-	            }
-	        } catch (Exception e) {
-	            version = "Unknown";
-	            LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
-	        }
+        Package p = GrailsUtil.class.getPackage();
+        String version = p != null ? p.getImplementationVersion() : null;
+        if (version==null || isBlank(version)) {
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            try {
+                Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
+                Manifest grailsManifest = null;
+                for (int i = 0; i < manifests.length; i++) {
+                    Resource r = manifests[i];
+                    InputStream inputStream = null;
+                    Manifest mf = null;
+                    try {
+                        inputStream = r.getInputStream();
+                        mf = new Manifest(inputStream);
+                    }
+                    finally {
+                        IOUtils.closeQuietly(inputStream);
+                    }
+                    String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
+                    if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
+                        grailsManifest = mf;
+                        break;
+                    }
+                }
+
+                if (grailsManifest != null) {
+                    version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                }
+
+                if (isBlank(version)) {
+                    LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? ");
+                    version = "Unknown";
+                }
+            }
+            catch (Exception e) {
+                version = "Unknown";
+                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
+            }
         }
         GRAILS_VERSION = version;
     }
 
-
     /**
-     * <p>Bootstraps a Grails application from the current classpath. The method will look for an applicationContext.xml file in the classpath
-     * that must contain a bean of type GrailsApplication and id grailsApplication
+     * <p>Bootstraps a Grails application from the current classpath. The method will look for an
+     * applicationContext.xml file in the classpath that must contain a bean of type
+     * GrailsApplication and id grailsApplication.
      *
      * <p>The method will then bootstrap Grails with the GrailsApplication and load all Grails plug-ins found in the path
      *
      * @return The Grails ApplicationContext instance
      */
     public static ApplicationContext bootstrapGrailsFromClassPath() {
-		LOG.info("Loading Grails environment");
-		ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
-		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
+        LOG.info("Loading Grails environment");
+        ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
+        DefaultGrailsApplication application = parent.getBean("grailsApplication", DefaultGrailsApplication.class);
 
         return createGrailsApplicationContext(parent, application);
-	}
+    }
 
     private static ApplicationContext createGrailsApplicationContext(ApplicationContext parent, GrailsApplication application) {
         GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
         MockServletContext servletContext = new MockServletContext(new MockResourceLoader());
         ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(servletContext);
-        servletContext.setAttribute( ApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         Assert.notNull(appCtx);
         return appCtx;
     }
 
     /**
-     * Bootstraps Grails with the given GrailsApplication instance
+     * Bootstraps Grails with the given GrailsApplication instance.
      *
      * @param application The GrailsApplication instance
      * @return A Grails ApplicationContext
@@ -157,40 +154,37 @@ public class GrailsUtil {
     public static ApplicationContext bootstrapGrailsFromApplication(GrailsApplication application) {
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, application);
-
         return createGrailsApplicationContext(parent, application);
     }
 
-	/**
-	 * Bootstraps Grails from the given parent ApplicationContext which should contain a bean definition called "grailsApplication"
-	 * of type GrailsApplication
-	 */
-	public static ApplicationContext bootstrapGrailsFromParentContext(ApplicationContext parent) {
-		DefaultGrailsApplication application = (DefaultGrailsApplication)parent.getBean("grailsApplication", DefaultGrailsApplication.class);
-
+    /**
+     * Bootstraps Grails from the given parent ApplicationContext which should contain a bean definition called "grailsApplication"
+     * of type GrailsApplication.
+     */
+    public static ApplicationContext bootstrapGrailsFromParentContext(ApplicationContext parent) {
+        DefaultGrailsApplication application = parent.getBean("grailsApplication", DefaultGrailsApplication.class);
         return createGrailsApplicationContext(parent, application);
-	}
-
+    }
 
     /**
-     * Retrieves the current execution environment
+     * Retrieves the current execution environment.
      *
      * @return The environment Grails is executing under
      * @deprecated Use Environment.getCurrent() method instead
      */
+    @Deprecated
     public static String getEnvironment() {
         return Environment.getCurrent().getName();
     }
 
     /**
-     * Retrieves whether the current execution environment is the development one
+     * Retrieves whether the current execution environment is the development one.
      *
      * @return True if it is the development environment
      */
     public static boolean isDevelopmentEnv() {
         return Environment.getCurrent().equals(Environment.DEVELOPMENT);
     }
-
 
     public static String getGrailsVersion() {
         return GRAILS_VERSION;
@@ -206,8 +200,8 @@ public class GrailsUtil {
      * @param clazz A class
      * @param methodOrPropName Name of deprecated property or method
      */
-    public static void deprecated(Class clazz, String methodOrPropName ) {
-    	deprecated(clazz, methodOrPropName, getGrailsVersion());
+    public static void deprecated(Class<?> clazz, String methodOrPropName) {
+        deprecated(clazz, methodOrPropName, getGrailsVersion());
     }
 
     /**
@@ -217,10 +211,10 @@ public class GrailsUtil {
      * @param methodOrPropName Name of deprecated property or method
      * @param version Version of Grails release in which property or method were deprecated
      */
-    public static void deprecated(Class clazz, String methodOrPropName, String version ) {
-    	deprecated("Property or method [" + methodOrPropName + "] of class [" + clazz.getName() +
-    			"] is deprecated in [" + version +
-    			"] and will be removed in future releases");
+    public static void deprecated(Class<?> clazz, String methodOrPropName, String version) {
+        deprecated("Property or method [" + methodOrPropName + "] of class [" + clazz.getName() +
+                "] is deprecated in [" + version +
+                "] and will be removed in future releases");
     }
 
     /**
@@ -229,7 +223,7 @@ public class GrailsUtil {
      * @param message Message to display
      */
     public static void deprecated(String message) {
-    	LOG.warn("[DEPRECATED] " + message);
+        LOG.warn("[DEPRECATED] " + message);
     }
 
     /**
@@ -238,9 +232,8 @@ public class GrailsUtil {
      * @param message Message to display
      */
     public static void warn(String message) {
-    	LOG.warn("[WARNING] " + message);
+        LOG.warn("[WARNING] " + message);
     }
-
 
     /**
      * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
@@ -252,11 +245,11 @@ public class GrailsUtil {
         // Note that this getProperty access may well be synced...
         if (!Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue()) {
             StackTraceElement[] trace = t.getStackTrace();
-            List newTrace = new ArrayList();
+            List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
             for (int i = 0; i < trace.length; i++) {
                 StackTraceElement stackTraceElement = trace[i];
                 if (isApplicationClass(stackTraceElement.getClassName())) {
-                    newTrace.add( stackTraceElement);
+                    newTrace.add(stackTraceElement);
                 }
             }
 
@@ -279,9 +272,9 @@ public class GrailsUtil {
         StackTraceElement[] trace = t.getStackTrace();
         for (int i = 0; i < trace.length; i++) {
             StackTraceElement stackTraceElement = trace[i];
-            p.println(  "at "+stackTraceElement.getClassName()
-                        +"("+stackTraceElement.getMethodName()
-                        +":"+stackTraceElement.getLineNumber()+")");
+            p.println("at " + stackTraceElement.getClassName() +
+                    "(" + stackTraceElement.getMethodName() +
+                    ":" + stackTraceElement.getLineNumber() + ")");
         }
     }
 
@@ -345,6 +338,7 @@ public class GrailsUtil {
      * @deprecated Will be removed in a future release
      * or unwritable file.
      */
+    @Deprecated
     public static void writeSlurperResult(GPathResult result, Writer output) throws IOException {
         Binding b = new Binding();
         b.setVariable("node", result);
@@ -352,8 +346,8 @@ public class GrailsUtil {
         // don't ask me how it works, refer to John Wilson ;-)
         Writable w = (Writable)new GroovyShell(b).evaluate(
                 "new groovy.xml.StreamingMarkupBuilder().bind {" +
-                        " mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\");" +
-                        " mkp.yield node}");
+                " mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\");" +
+                " mkp.yield node}");
         w.writeTo(output);
     }
 }

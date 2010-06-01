@@ -22,6 +22,7 @@ package grails.test
  * of the constructors.
  */
 class TagLibUnitTestCase extends MvcUnitTestCase {
+
     protected tagLib
 
     /**
@@ -44,12 +45,12 @@ class TagLibUnitTestCase extends MvcUnitTestCase {
 
     protected void setUp() {
         super.setUp()
-        mockTagLib(this.testClass)
-        this.tagLib = newInstance()
+        mockTagLib(testClass)
+        tagLib = newInstance()
     }
 
     protected newInstance() {
-        def instance = this.testClass.newInstance()
+        def instance = testClass.newInstance()
 
         mockRequest = instance.request
         mockResponse = instance.response
@@ -60,6 +61,6 @@ class TagLibUnitTestCase extends MvcUnitTestCase {
     }
 
     Class getTagLibClass() {
-        return this.testClass
+        return testClass
     }
 }

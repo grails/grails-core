@@ -52,105 +52,106 @@ import org.springframework.core.io.Resource;
  *
  */
 public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
-	private GrailsAwareClassLoader gcl;
-	private BuildSettings grailsSettings;
-	private PluginBuildSettings pluginSettings;
-	protected boolean registerContextClassLoader = true;
 
-	public GrailsAwareGroovyTestSuite() {
-		initGrails();
-	}
+    private GrailsAwareClassLoader gcl;
+    private BuildSettings grailsSettings;
+    private PluginBuildSettings pluginSettings;
+    protected boolean registerContextClassLoader = true;
 
-	private void initGrails() {
-		initBuildSettings();
-		createClassLoader();
-		if (registerContextClassLoader) {
-			Thread.currentThread().setContextClassLoader(gcl);
-		}
-	}
+    /**
+     * Constructor.
+     */
+    public GrailsAwareGroovyTestSuite() {
+        initBuildSettings();
+        createClassLoader();
+        if (registerContextClassLoader) {
+            Thread.currentThread().setContextClassLoader(gcl);
+        }
+    }
 
-	private void createClassLoader() {
-		gcl = new GrailsAwareClassLoader(getClass().getClassLoader());
-		gcl.setClassInjectors(resolveClassInjectors());
-		gcl.setResourceLoader(new GrailsResourceLoader(resolveGrailsResources()));
-		customizeClassLoader(gcl);
-	}
+    private void createClassLoader() {
+        gcl = new GrailsAwareClassLoader(getClass().getClassLoader());
+        gcl.setClassInjectors(resolveClassInjectors());
+        gcl.setResourceLoader(new GrailsResourceLoader(resolveGrailsResources()));
+        customizeClassLoader(gcl);
+    }
 
-	protected void customizeClassLoader(GrailsAwareClassLoader gcl) {
+    protected void customizeClassLoader(@SuppressWarnings("unused") GrailsAwareClassLoader classLoader) {
+        // do nothing by default
+    }
 
-	}
+    private ClassInjector[] resolveClassInjectors() {
+        List<ClassInjector> classInjectors = new ArrayList<ClassInjector>();
+        classInjectors.add(new DefaultGrailsDomainClassInjector());
+        customizeClassInjectors(classInjectors);
+        return classInjectors.toArray(new ClassInjector[classInjectors.size()]);
+    }
 
-	private ClassInjector[] resolveClassInjectors() {
-		List<ClassInjector> classInjectors = new ArrayList<ClassInjector>();
-		classInjectors.add(new DefaultGrailsDomainClassInjector());
-		customizeClassInjectors(classInjectors);
-		return classInjectors.toArray(new ClassInjector[classInjectors.size()]);
-	}
+    protected void customizeClassInjectors(@SuppressWarnings("unused") List<ClassInjector> classInjectors) {
+        // do nothing by default
+    }
 
-	protected void customizeClassInjectors(List<ClassInjector> classInjectors) {
+    private Resource[] resolveGrailsResources() {
+        Resource[] baseResources = pluginSettings.getArtefactResources();
+        List<Resource> grailsResources = new ArrayList<Resource>(Arrays.asList(baseResources));
+        customizeGrailsResources(grailsResources);
+        return grailsResources.toArray(new Resource[grailsResources.size()]);
+    }
 
-	}
+    protected void customizeGrailsResources(@SuppressWarnings("unused") List<Resource> grailsResources) {
+        // do nothing by default
+    }
 
-	private Resource[] resolveGrailsResources() {
-		Resource[] baseResources = pluginSettings.getArtefactResources();
-		List<Resource> grailsResources = new ArrayList<Resource>(Arrays.asList(baseResources));
-		customizeGrailsResources(grailsResources);
-		return grailsResources.toArray(new Resource[grailsResources.size()]);
-	}
+    private void initBuildSettings() {
+        final File basedir = findBaseDir();
+        final File grailsHome = findGrailsHome();
+        System.setProperty(BuildSettings.APP_BASE_DIR, basedir.getPath());
+        grailsSettings = new BuildSettings(grailsHome, basedir);
+        pluginSettings = new PluginBuildSettings(grailsSettings);
+        customizeBuildSettings(grailsSettings);
+        BuildSettingsHolder.setSettings(grailsSettings);
+    }
 
-	protected void customizeGrailsResources(List<Resource> grailsResources) {
+    protected File findBaseDir() {
+        String basedir = System.getProperty(BuildSettings.APP_BASE_DIR);
+        if (basedir == null) {
+            basedir = ".";
+        }
+        return new File(basedir);
+    }
 
-	}
+    protected File findGrailsHome() {
+        final String grailsHome = System.getenv("GRAILS_HOME");
+        if (grailsHome == null) {
+            throw new RuntimeException("You must set the GRAILS_HOME environment variable");
+        }
+        return new File(grailsHome);
+    }
 
-	private void initBuildSettings() {
-		final File basedir = findBaseDir();
-		final File grailsHome = findGrailsHome();
-		System.setProperty(BuildSettings.APP_BASE_DIR, basedir.getPath());
-		grailsSettings = new BuildSettings(grailsHome, basedir);
-                pluginSettings = new PluginBuildSettings(grailsSettings);
-		customizeBuildSettings(grailsSettings);
-		BuildSettingsHolder.setSettings(grailsSettings);
-	}
+    protected void customizeBuildSettings(@SuppressWarnings("unused") BuildSettings settings) {
+        // do nothing by default
+    }
 
-	protected File findBaseDir() {
-		String basedir = System.getProperty(BuildSettings.APP_BASE_DIR);
-		if (basedir == null) {
-			basedir = ".";
-		}
-		return new File(basedir);
-	}
+    public static Test suite() {
+        GrailsAwareGroovyTestSuite suite = new GrailsAwareGroovyTestSuite();
+        try {
+            suite.loadTestSuite();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Could not create the test suite: " + e.getMessage(), e);
+        }
+        return suite;
+    }
 
-	protected File findGrailsHome() {
-		final String grailsHome = System.getenv("GRAILS_HOME");
-		if (grailsHome == null) {
-			throw new RuntimeException("You must set the GRAILS_HOME environment variable");
-		}
-		return new File(grailsHome);
-	}
+    public static void main(String args[]) {
+        if (args.length > 0) {
+            file = args[0];
+        }
+        TestRunner.run(suite());
+    }
 
-	protected void customizeBuildSettings(BuildSettings grailsSettings) {
-
-	}
-
-	public static Test suite() {
-		GrailsAwareGroovyTestSuite suite = new GrailsAwareGroovyTestSuite();
-		try {
-			suite.loadTestSuite();
-		} catch (Exception e) {
-			throw new RuntimeException((new StringBuilder()).append("Could not create the test suite: ").append(e)
-					.toString(), e);
-		}
-		return suite;
-	}
-
-	public static void main(String args[]) {
-		if (args.length > 0)
-			file = args[0];
-		TestRunner.run(suite());
-	}
-
-	@Override
-	public Class compile(String fileName) throws Exception {
-		return gcl.parseClass(new File(fileName));
-	}
+    @Override
+    public Class<?> compile(String fileName) throws Exception {
+        return gcl.parseClass(new File(fileName));
+    }
 }

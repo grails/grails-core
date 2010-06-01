@@ -15,18 +15,19 @@
 package grails.util;
 
 import groovy.lang.GroovyObjectSupport;
+
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import java.util.List;
-import java.util.Map;
-
 /**
- * General purpose Grails Configuration Utility for retieving configuration options with the ability to log
- * warnings on type/constraint mismatch
+ * General purpose Grails Configuration Utility for retieving configuration options with the ability
+ * to log warnings on type/constraint mismatch.
  *
  * @author Siegfried Puchbauer
  * @since 1.1
@@ -35,19 +36,23 @@ public class GrailsConfig extends GroovyObjectSupport {
 
     private static final Log LOG = LogFactory.getLog(GrailsConfig.class);
 
+    @SuppressWarnings("unchecked")
     private transient volatile static Map flatConfig;
-
+    @SuppressWarnings("unchecked")
     private transient volatile static Map config;
 
     private GrailsConfig() {
+        // static methods only
     }
 
+    @SuppressWarnings("unchecked")
     private static Map getFlatConfig() {
         synchronized (GrailsConfig.class) {
             return flatConfig != null ? flatConfig : (flatConfig = ConfigurationHolder.getFlatConfig());
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Map getConfig() {
         synchronized (GrailsConfig.class) {
             return config != null ? config : (config = ConfigurationHolder.getConfig());
@@ -55,7 +60,7 @@ public class GrailsConfig extends GroovyObjectSupport {
     }
 
     /**
-     * Utility method for retrieving a configuration value
+     * Utility method for retrieving a configuration value.
      *
      * @param key the flattened key
      * @param <T> the type parameter
@@ -63,28 +68,28 @@ public class GrailsConfig extends GroovyObjectSupport {
      */
     @SuppressWarnings("unchecked")
     public static <T> T get(String key) {
-        if(key.indexOf(".") != -1)
+        if (key.indexOf(".") != -1) {
             return (T) getFlatConfig().get(key);
-        else
-            return (T) getConfig().get(key);
+        }
+
+        return (T)getConfig().get(key);
     }
 
     /**
      * Utility method for retrieving a configuration value and performs type checking
-     * (i.e. logs a verbose WARN message on type mismatch)
+     * (i.e. logs a verbose WARN message on type mismatch).
      *
      * @param key the flattened key
      * @param type the required type
      * @param <T> the type parameter
      * @return the value retrieved by ConfigurationHolder.flatConfig
      */
-    @SuppressWarnings("unchecked")
     public static <T> T get(String key, Class<T> type) {
         Object o = get(key);
-        if(o != null) {
-            if(!type.isAssignableFrom(o.getClass())) {
+        if (o != null) {
+            if (!type.isAssignableFrom(o.getClass())) {
                 LOG.warn(
-                        String.format("Configuration type mismatch for configuration value %s (%s)", key, type.getName())
+                    String.format("Configuration type mismatch for configuration value %s (%s)", key, type.getName())
                 );
                 return null;
             }
@@ -93,9 +98,8 @@ public class GrailsConfig extends GroovyObjectSupport {
         return null;
     }
 
-
     /**
-     * Configuration Value lookup with a default value
+     * Configuration Value lookup with a default value.
      *
      * @param key          the flattened key
      * @param defaultValue the default value
@@ -105,15 +109,17 @@ public class GrailsConfig extends GroovyObjectSupport {
     @SuppressWarnings("unchecked")
     public static <T> T get(String key, T defaultValue) {
         T v;
-        if(defaultValue != null)
+        if (defaultValue != null) {
             v = (T) get(key, defaultValue.getClass());
-        else
+        }
+        else {
             v = (T) get(key);
+        }
         return v != null ? v : defaultValue;
     }
 
     /**
-     * Configuration Value lookup with a default value and a list of allowed values
+     * Configuration Value lookup with a default value and a list of allowed values.
      *
      * @param key           the flattened key
      * @param defaultValue  the default value
@@ -121,7 +127,6 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @param <T>           the type parameter
      * @return the value retrieved by ConfigurationHolder.flatConfig, if it is contained in <code>allowedValues</code>, otherwise the <code>defaultValue</code>
      */
-    @SuppressWarnings("unchecked")
     public static <T> T get(String key, T defaultValue, List<T> allowedValues) {
         T v = get(key, defaultValue);
         if (!allowedValues.contains(v)) {
@@ -144,15 +149,18 @@ public class GrailsConfig extends GroovyObjectSupport {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getMandatory(String key) {
-            T v = (T) getFlatConfig().get(key);
-            if (v == null)
-                throw new GrailsConfigurationException(String.format("Mandatory configuration value (%s) is not defined!", key));
-            else
-                return v;
+        T v = (T) getFlatConfig().get(key);
+        if (v == null) {
+            throw new GrailsConfigurationException(String.format(
+                    "Mandatory configuration value (%s) is not defined!", key));
+        }
+
+        return v;
     }
 
     /**
-     * Configuration Value lookup with thows a GrailsConfigurationException when the value is null or not within the allowedValues
+     * Configuration Value lookup with thows a GrailsConfigurationException when the value is null
+     * or not within the allowedValues.
      *
      * @param key           the flattened key
      * @param allowedValues List of allowed values
@@ -179,10 +187,10 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @return the configured value
      */
     public static Object getAt(Object key) {
-        if(key instanceof String)
+        if (key instanceof String) {
             return get((String)key);
-        else
-            return getConfig().get(key);
-    }
+        }
 
+        return getConfig().get(key);
+    }
 }

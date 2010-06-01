@@ -1,12 +1,20 @@
+/* Copyright 2004-2005 Graeme Rocher
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package grails.ant;
 
 import grails.util.GrailsNameUtils;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.types.Reference;
-import org.codehaus.groovy.grails.cli.support.GrailsBuildHelper;
-import org.codehaus.groovy.grails.cli.support.GrailsRootLoader;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -15,6 +23,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Reference;
+import org.codehaus.groovy.grails.cli.support.GrailsBuildHelper;
+import org.codehaus.groovy.grails.cli.support.GrailsRootLoader;
 
 /**
  * <p>Ant task for executing Grails scripts. To use it, first create a
@@ -50,6 +65,7 @@ import java.util.List;
  * </p>
  */
 public class GrailsTask extends Task {
+
     private File home;
     private String script;
     private String args;
@@ -66,19 +82,19 @@ public class GrailsTask extends Task {
         // The "script" must be specified.
         if (script == null) throw new BuildException("'script' must be provided.");
 
-        // Check that one, and only one, of Grails home and classpath
-        // are set.
+        // Check that one, and only one, of Grails home and classpath are set.
         if (home == null && classpath == null) {
             throw new BuildException("One of 'home' or 'classpath' must be provided.");
         }
-        else if (home != null && classpath != null) {
+
+        if (home != null && classpath != null) {
             throw new BuildException("You cannot use both 'home' and 'classpath' with the Grails task.");
         }
 
         runGrails(script, args);
     }
 
-    protected void runGrails(String targetName, String args) {
+    protected void runGrails(String targetName, @SuppressWarnings("hiding") String args) {
         // First get the dependencies from the classpath.
         List<URL> urls = new ArrayList<URL>();
         if (classpath != null) {
@@ -94,13 +110,13 @@ public class GrailsTask extends Task {
 
             GrailsBuildHelper helper;
 
-            if(getProject().getBaseDir() != null) {
-                helper = new GrailsBuildHelper(rootLoader, home == null ? null : home.getCanonicalPath(), getProject().getBaseDir().getCanonicalPath());
+            if (getProject().getBaseDir() != null) {
+                helper = new GrailsBuildHelper(rootLoader, home == null ? null :
+                    home.getCanonicalPath(), getProject().getBaseDir().getCanonicalPath());
             }
             else {
                 helper = new GrailsBuildHelper(rootLoader, home == null ? null : home.getCanonicalPath());
             }
-            
 
             int retval;
             if (environment == null) {
@@ -123,8 +139,7 @@ public class GrailsTask extends Task {
         List<URL> urls = new ArrayList<URL>();
 
         try {
-            // Make sure Groovy and Gant are on the classpath if we are
-            // using "grailsHome".
+            // Make sure Groovy and Gant are on the classpath if we are using "grailsHome".
             File[] files = new File(home, "lib").listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     return name.startsWith("gant_") || name.startsWith("groovy-all");
@@ -153,7 +168,6 @@ public class GrailsTask extends Task {
         }
     }
 
-
     private List<URL> pathsToUrls(Path path) {
         if (path == null) return Collections.emptyList();
 
@@ -166,13 +180,12 @@ public class GrailsTask extends Task {
         return urls;
     }
 
-
     public String getCommand() {
-        return GrailsNameUtils.getScriptName(this.script);
+        return GrailsNameUtils.getScriptName(script);
     }
 
     public void setCommand(String command) {
-        this.script = GrailsNameUtils.getNameFromScript(command);
+        script = GrailsNameUtils.getNameFromScript(command);
     }
 
     public File getHome() {
@@ -219,7 +232,7 @@ public class GrailsTask extends Task {
         return classpath;
     }
 
-    public void addClasspath(Path classpath) {
+    public void addClasspath(@SuppressWarnings("hiding") Path classpath) {
         this.classpath = classpath;
     }
 
@@ -233,7 +246,7 @@ public class GrailsTask extends Task {
     }
 
     @Deprecated
-    public void addCompileClasspath(Path compileClasspath) {
+    public void addCompileClasspath(@SuppressWarnings("hiding") Path compileClasspath) {
         this.compileClasspath = compileClasspath;
     }
 
@@ -243,7 +256,7 @@ public class GrailsTask extends Task {
     }
 
     @Deprecated
-    public void addTestClasspath(Path testClasspath) {
+    public void addTestClasspath(@SuppressWarnings("hiding") Path testClasspath) {
         this.testClasspath = testClasspath;
     }
 
@@ -253,7 +266,7 @@ public class GrailsTask extends Task {
     }
 
     @Deprecated
-    public void addRuntimeClasspath(Path runtimeClasspath) {
+    public void addRuntimeClasspath(@SuppressWarnings("hiding") Path runtimeClasspath) {
         this.runtimeClasspath = runtimeClasspath;
     }
 }

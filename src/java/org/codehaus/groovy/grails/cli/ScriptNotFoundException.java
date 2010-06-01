@@ -1,15 +1,14 @@
 package org.codehaus.groovy.grails.cli;
 
 /**
- * Exception thrown when Grails is asked to execute a script that it
- * can't find.
+ * Exception thrown when Grails is asked to execute a script that it can't find.
  */
 public class ScriptNotFoundException extends RuntimeException {
-	private static final long serialVersionUID = 2794605786839371674L;
-	private String scriptName;
+
+    private static final long serialVersionUID = 2794605786839371674L;
+    private String scriptName;
 
     public ScriptNotFoundException(String scriptName) {
-        super();
         this.scriptName = scriptName;
     }
 
@@ -24,6 +23,6 @@ public class ScriptNotFoundException extends RuntimeException {
     }
 
     public String getScriptName() {
-        return this.scriptName;
+        return scriptName;
     }
 }

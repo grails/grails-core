@@ -28,6 +28,7 @@ import grails.util.GrailsNameUtils
  * @author Peter Ledbrook
  */
 class ControllerUnitTestCase extends MvcUnitTestCase {
+
     protected controller
 
     /**
@@ -50,12 +51,12 @@ class ControllerUnitTestCase extends MvcUnitTestCase {
 
     protected void setUp() {
         super.setUp()
-        mockController(this.testClass)
-        this.controller = newInstance()
+        mockController(testClass)
+        controller = newInstance()
     }
 
     Class getControllerClass() {
-        return this.testClass
+        return testClass
     }
 
     /**
@@ -108,11 +109,9 @@ class ControllerUnitTestCase extends MvcUnitTestCase {
     }
 
     protected Object newInstance() {
-        def instance = super.newInstance();
-        webRequest.controllerName = GrailsNameUtils.getLogicalPropertyName(instance.class.name, "Controller")
-
+        def instance = super.newInstance()
+        webRequest.controllerName = GrailsNameUtils.getLogicalPropertyName(
+      		  instance.getClass().name, "Controller")
         return instance
     }
-
-
 }

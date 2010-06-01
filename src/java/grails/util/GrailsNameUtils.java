@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Contains utility methods for converting between different name types,
+ * Utility methods for converting between different name types,
  * for example from class names -> property names and vice-versa. The
  * key aspect of this class is that it has no dependencies outside the
  * JDK! 
@@ -68,15 +68,14 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Converts foo-bar into FooBar. Empty and null strings are returned
-     * as-is. 
+     * Converts foo-bar into FooBar. Empty and null strings are returned as-is. 
      *
      * @param name The lower case hyphen separated name
      * @return The class name equivalent.
      */
     private static String getClassNameForLowerCaseHyphenSeparatedName(String name) {
         // Handle null and empty strings.
-        if (name == null || name.length() == 0) return name;
+        if (isBlank(name)) return name;
 
         if (name.indexOf('-') > -1) {
             StringBuilder buf = new StringBuilder();
@@ -121,8 +120,8 @@ public class GrailsNameUtils {
     }
 
     public static String getLogicalPropertyName(String className, String trailingName) {
-        if(!isBlank(className) && !isBlank(trailingName)) {
-            if(className.length() == trailingName.length() + 1 && className.endsWith(trailingName)) {
+        if (!isBlank(className) && !isBlank(trailingName)) {
+            if (className.length() == trailingName.length() + 1 && className.endsWith(trailingName)) {
                 return className.substring(0, 1).toLowerCase();
             }
         }
@@ -130,7 +129,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Shorter version of getPropertyNameRepresentation
+     * Shorter version of getPropertyNameRepresentation.
      * @param name The name to convert
      * @return The property name version
      */
@@ -139,7 +138,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Shorter version of getPropertyNameRepresentation
+     * Shorter version of getPropertyNameRepresentation.
      * @param clazz The clazz to convert
      * @return The property name version
      */
@@ -148,7 +147,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Returns the property name equivalent for the specified class
+     * Returns the property name equivalent for the specified class.
      *
      * @param targetClass The class to get the property name for
      * @return A property name reperesentation of the class name (eg. MyClass becomes myClass)
@@ -159,7 +158,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Returns the property name representation of the given name
+     * Returns the property name representation of the given name.
      *
      * @param name The name to convert
      * @return The property name representation
@@ -184,7 +183,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Converts foo-bar into fooBar
+     * Converts foo-bar into fooBar.
      *
      * @param name The lower case hyphen separated name
      * @return The property name equivalent
@@ -194,7 +193,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Returns the class name without the package prefix
+     * Returns the class name without the package prefix.
      *
      * @param targetClass The class to get a short name for
      * @return The short name of the class
@@ -205,7 +204,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Returns the class name without the package prefix
+     * Returns the class name without the package prefix.
      *
      * @param className The class name to get a short name for
      * @return The short name of the class
@@ -220,7 +219,7 @@ public class GrailsNameUtils {
 
     /**
      * Retrieves the script name representation of the supplied class. For example
-     * MyFunkyGrailsScript would be my-funky-grails-script
+     * MyFunkyGrailsScript would be my-funky-grails-script.
      *
      * @param clazz The class to convert
      * @return The script name representation
@@ -252,8 +251,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Calculates the class name from a script name in the form
-     * my-funk-grails-script
+     * Calculates the class name from a script name in the form my-funk-grails-script.
      *
      * @param scriptName The script name
      * @return A class name

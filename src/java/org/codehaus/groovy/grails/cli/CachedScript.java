@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.cli;
+
+import java.io.File;
+import java.util.List;
 
 import org.codehaus.gant.GantBinding;
 
-import java.util.List;
-
 /**
- * A class that represents a script that has been cached with a specific binding
+ * Represents a script that has been cached with a specific binding.
  *
  * @since 1.1
  * @author Peter Ledbrook
  */
 class CachedScript {
+
     GantBinding binding;
-    List potentialScripts;
+    List<File> potentialScripts;
 }

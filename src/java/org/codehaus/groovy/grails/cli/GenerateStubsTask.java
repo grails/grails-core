@@ -14,29 +14,28 @@
  */
 package org.codehaus.groovy.grails.cli;
 
-import org.codehaus.groovy.ant.CompileTaskSupport;
-import org.codehaus.groovy.tools.javac.JavaStubCompilationUnit;
-import org.codehaus.groovy.control.Phases;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.File;
 
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.codehaus.groovy.ant.CompileTaskSupport;
+import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.tools.javac.JavaStubCompilationUnit;
+
 /**
- * Need to spin our own GenerateStubsTask because Groovy's one stupidly tries to compile properties files and anything
- * that doesn't end with Java.
+ * Need to spin our own GenerateStubsTask because Groovy's one stupidly tries to compile properties
+ * files and anything that doesn't end with Java.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Nov 26, 2008
  */
 public class GenerateStubsTask extends CompileTaskSupport {
 
     @Override
     protected void compile() throws Exception {
-       GroovyClassLoader gcl = createClassLoader();
+        GroovyClassLoader gcl = createClassLoader();
         JavaStubCompilationUnit compilation = new JavaStubCompilationUnit(config, gcl, destdir);
 
         int count = 0;

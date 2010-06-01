@@ -44,6 +44,7 @@ import groovy.mock.interceptor.LooseExpectation
  * handles the meta-class management automatically.</p>
  */
 class GrailsMock {
+
     Class mockedClass
     DemandProxy demand
 
@@ -62,16 +63,15 @@ class GrailsMock {
      * created, otherwise the mock is strict.
      */
     GrailsMock(Class clazz, boolean loose) {
-        this.mockedClass = clazz
-        this.demand = new DemandProxy(clazz, loose)
+        mockedClass = clazz
+        demand = new DemandProxy(clazz, loose)
     }
 
     /**
-     * Returns a "demand" object that supports the "control.demand.myMethod() {}"
-     * syntax.
+     * Returns a "demand" object that supports the "control.demand.myMethod() {}" syntax.
      */
     DemandProxy getDemand() {
-        return this.demand
+        return demand
     }
 
     /**
@@ -87,8 +87,8 @@ class GrailsMock {
         // Unfortunately, that populated map causes problems when mocking
         // classes, so we leave it empty in that case. I have no idea
         // why it doesn't work with the populated map.
-        def mock = this.mockedClass.isInterface() ? this.demand.instanceMethods : [:]
-        mock = mock.asType(this.mockedClass)
+        def mock = mockedClass.isInterface() ? demand.instanceMethods : [:]
+        mock = mock.asType(mockedClass)
 
         // If we're mocking a class rather than an interface, we don't
         // want the real methods invoked at all. So, we override the
@@ -96,27 +96,27 @@ class GrailsMock {
         // ExpandoMetaClass we call that one, otherwise we forward it
         // to the expectation object which will throw an assertion
         // failure.
-        if (!this.mockedClass.isInterface()) {
-            this.mockedClass.metaClass.invokeMethod = { String name, Object[] args ->
-                // Find an expando method with the same signature as the
-                // one being invoked.
-			def paramTypes = []
-			args.each {
-				if(it) {
-				    paramTypes << it.getClass()
-				} else {
-					paramTypes << null
-				}
-			}
+        if (!mockedClass.isInterface()) {
+            mockedClass.metaClass.invokeMethod = { String name, Object[] args ->
+                // Find an expando method with the same signature as the one being invoked.
+                def paramTypes = []
+                args.each {
+                    if (it) {
+                        paramTypes << it.getClass()
+                    }
+                    else {
+                        paramTypes << null
+                    }
+                }
                 def method = delegate.metaClass.expandoMethods.find { MetaMethod m ->
                     // First check the name
                     m.name == name &&
-                            // Then the number of method arguments
-                            m.parameterTypes.size() == paramTypes.size() &&
-                            // And finally the argument types
-                            (0..<m.parameterTypes.size()).every { n ->
-                                paramTypes[n] == null || m.parameterTypes[n].cachedClass.isAssignableFrom(paramTypes[n])
-                            }
+                        // Then the number of method arguments
+                        m.parameterTypes.size() == paramTypes.size() &&
+                        // And finally the argument types
+                        (0..<m.parameterTypes.size()).every { n ->
+                            paramTypes[n] == null || m.parameterTypes[n].cachedClass.isAssignableFrom(paramTypes[n])
+                        }
                 }
 
                 if (method) {
@@ -124,12 +124,11 @@ class GrailsMock {
                     // so just call it.
                     return method.doMethodInvoke(delegate, args)
                 }
-                else {
-                    // No expando method found so pass the invocation on
-                    // to the expectation object. This should throw an
-                    // assertion error.
-                    demand.expectation.match(name)
-                }
+
+                // No expando method found so pass the invocation on
+                // to the expectation object. This should throw an
+                // assertion error.
+                demand.expectation.match(name)
             }
         }
 
@@ -141,17 +140,17 @@ class GrailsMock {
      * assertion failure if any expected method call has not occurred.
      */
     def verify() {
-        this.demand.expectation.verify()
+        demand.expectation.verify()
     }
 }
 
 /**
- * A class that keeps track of demands and expectations for a particular
- * Grails mock.
+ * Keeps track of demands and expectations for a particular Grails mock.
  */
 class DemandProxy {
+
     Class mockedClass
-    Demand demand
+    Demand demand = new Demand()
     Object expectation
     boolean isStatic
 
@@ -160,37 +159,34 @@ class DemandProxy {
 
     DemandProxy(Class mockedClass, boolean loose) {
         this.mockedClass = mockedClass
-        this.demand = new Demand()
-        this.isStatic = false
-
         if (loose) {
-            this.expectation = new LooseExpectation(this.demand)
+            expectation = new LooseExpectation(demand)
         }
         else {
-            this.expectation = new StrictExpectation(this.demand)
+            expectation = new StrictExpectation(demand)
         }
     }
 
     def invokeMethod(String methodName, Object args) {
-        this.demand.invokeMethod(methodName, args)
+        demand.invokeMethod(methodName, args)
 
-        def c = new MockClosureProxy(args[-1], methodName, this.expectation)
-        if (this.isStatic) {
-            this.mockedClass.metaClass.static."${methodName}" = c
+        def c = new MockClosureProxy(args[-1], methodName, expectation)
+        if (isStatic) {
+            mockedClass.metaClass.static."${methodName}" = c
         }
         else {
-            this.mockedClass.metaClass."${methodName}" = c
+            mockedClass.metaClass."${methodName}" = c
 
             // We keep track of the instance methods in a map so that
             // GrailsMock can use that map as the implementation of an
             // interface. Of course, this approach doesn't work with
             // overloaded methods.
-            this.instanceMethods[methodName] = c
+            instanceMethods[methodName] = c
         }
     }
 
     def getStatic() {
-        this.isStatic = true
+        isStatic = true
         return this
     }
 }

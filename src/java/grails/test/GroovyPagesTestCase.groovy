@@ -15,72 +15,66 @@
 package grails.test
 
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 
-/**
-* A test harness that eases testing of GSP and tag libraries for Grails
+import org.springframework.web.context.request.RequestContextHolder
 
-* @author Graeme Rocher
-*/
+/**
+ * A test harness that eases testing of GSP and tag libraries for Grails.
+ * 
+ * @author Graeme Rocher
+ */
 class GroovyPagesTestCase extends GroovyTestCase  {
+
     /**
-     * The GroovyPagesTemplateEngine which gets wired into this GSP
+     * The GroovyPagesTemplateEngine which gets wired into this GSP.
      */
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
 
     /**
-     * Sets the controller name to use. Should be called to override the defaut "test" value
+     * Sets the controller name to use. Should be called to override the defaut "test" value.
      */
     void setControllerName(String name) {
         RequestContextHolder.currentRequestAttributes().controllerName = name
     }
 
     /**
-     * Asserts the output of a given template against the specified expected value
+     * Asserts the output of a given template against the specified expected value.
      *
      * @param expected The expected output
      * @param template A snippet of GSP
      * @param params An optional parameter that allows variables to be placed in the binding of the GSP
      * @param transform An optional parameter that allows the specification of a closure to transform the passed StringWriter
      */
-    def assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
-        def webRequest = RequestContextHolder.currentRequestAttributes()
-        def engine = groovyPagesTemplateEngine
-
-        assert engine
-        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
-
-        def w = t.make(params)
-
+    void assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
         def sw = new StringWriter()
-        def out = new GrailsPrintWriter(sw)
-        webRequest.out = out
-        w.writeTo(out)
-
+        applyTemplate sw, template, params
         assertEquals expected, transform(sw)
     }
 
     /**
-     * Applies a GSP template and returns its output as a String
+     * Applies a GSP template and returns its output as a String.
      *
      * @param template The GSP template
      * @param params An optional parameter that allows the specification of the binding
      */
-	def applyTemplate(template, params = [:] ) {
+    String applyTemplate(template, params = [:]) {
+        def sw = new StringWriter()
+        applyTemplate sw, template, params
+        return sw.toString()
+    }
+
+    void applyTemplate(StringWriter sw, template, params = [:]) {
         def webRequest = RequestContextHolder.currentRequestAttributes()
         def engine = groovyPagesTemplateEngine
 
         assert engine
-        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
+        def t = engine.createTemplate(template, "test_" + System.currentTimeMillis())
 
         def w = t.make(params)
 
-        def sw = new StringWriter()
         def out = new GrailsPrintWriter(sw)
         webRequest.out = out
         w.writeTo(out)
-
-        return sw.toString()
     }
 }

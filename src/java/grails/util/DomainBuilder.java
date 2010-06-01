@@ -15,62 +15,56 @@
 package grails.util;
 
 import groovy.util.ObjectGraphBuilder;
+
+import java.lang.reflect.Field;
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
-import java.util.Collection;
-
 /**
- * <p>DomainBuilder allows the construction of object graphs of domain classes. Example:
+ * <p>Allows the construction of object graphs of domain classes. Example:
  *
  * <pre><code>
- *  	def builder = new DomainBuilder()
+ *      def builder = new DomainBuilder()
 
-		def company = builder.company( name: 'ACME' ) {
-			employee(  name: 'Duke', employeeId: 1 ) {
-				address( street: '123 Groovy Rd' )
-			}
-			employee(  name: 'George', employeeId: 2 )
-		}
+        def company = builder.company(name: 'ACME') {
+            employee( name: 'Duke', employeeId: 1) {
+                address(street: '123 Groovy Rd')
+            }
+            employee( name: 'George', employeeId: 2)
+        }
  * </code></pre>
  * @author Scott Vlaminck
  */
-public class DomainBuilder extends ObjectGraphBuilder
-{
-	public DomainBuilder()
-	{
-		super();
+public class DomainBuilder extends ObjectGraphBuilder {
+
+    public DomainBuilder() {
         setChildPropertySetter(new DefaultGrailsChildPropertySetter());
-		setClassLoader(ApplicationHolder.getApplication().getClassLoader());
+        setClassLoader(ApplicationHolder.getApplication().getClassLoader());
     }
 
-    public static class DefaultGrailsChildPropertySetter implements ChildPropertySetter
-	{
-        public void setChild( Object parent, Object child, String parentName, String propertyName )
-		{
-			if(isCollection(parent, child, parentName, propertyName))
-			{
-				String propName = propertyName.substring(0,1).toUpperCase() + propertyName.substring(1);
-				String methodName = "addTo" + propName;
-	            InvokerHelper.invokeMethod( parent, methodName, child );
-			}
-			else
-			{
-	            InvokerHelper.setProperty( parent, propertyName, child );
-			}
+    public static class DefaultGrailsChildPropertySetter implements ChildPropertySetter {
+        public void setChild(Object parent, Object child, String parentName, String propertyName) {
+            if (isCollection(parent, child, parentName, propertyName)) {
+                String propName = propertyName.substring(0,1).toUpperCase() + propertyName.substring(1);
+                String methodName = "addTo" + propName;
+                InvokerHelper.invokeMethod(parent, methodName, child);
+            }
+            else {
+                InvokerHelper.setProperty(parent, propertyName, child);
+            }
         }
 
-		private boolean isCollection(Object parent, Object child, String parentName, String propertyName)
-		{
-			try
-			{
-				java.lang.reflect.Field field = parent.getClass().getDeclaredField(propertyName);
+        @SuppressWarnings("unused")
+        private boolean isCollection(Object parent, Object child, String parentName, String propertyName) {
+            try {
+                Field field = parent.getClass().getDeclaredField(propertyName);
+                return Collection.class.isAssignableFrom(field.getType());
+            }
+            catch (NoSuchFieldException ignored) { /* ignored */}
 
-				return Collection.class.isAssignableFrom(field.getType());
-			}
-			catch(NoSuchFieldException e) { }
-
-			return false;
-		}
+            return false;
+        }
     }
 }

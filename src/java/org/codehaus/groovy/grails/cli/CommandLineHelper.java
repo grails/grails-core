@@ -14,34 +14,32 @@
  */
 package org.codehaus.groovy.grails.cli;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import java.io.PrintStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
-
 /**
- * Contains static utility methods for use on the command line,
- * including method to accept user input etc. 
+ * Utility methods for use on the command line, including method to accept user input etc. 
  *
  * @author Graeme Rocher
  * @since 1.2
  */
 public class CommandLineHelper {
 
-
-
     private PrintStream out = System.out;
 
     public CommandLineHelper() {
+        // default
     }
 
     public CommandLineHelper(PrintStream out) {
         this.out = out;
     }
 
-   /**
+    /**
      * Replacement for AntBuilder.input() to eliminate dependency of
      * GrailsScriptRunner on the Ant libraries. Prints a message and
      * returns whatever the user enters (once they press &lt;return&gt;).
@@ -109,5 +107,4 @@ public class CommandLineHelper {
         out.println("No valid response entered - giving up asking.");
         return null;
     }    
-
 }

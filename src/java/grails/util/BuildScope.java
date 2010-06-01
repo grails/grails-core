@@ -16,21 +16,23 @@
 package grails.util;
 
 /**
- * An enum that represents the different scopes that plugins apply to
- * 
+ * Represents the different scopes that plugins apply to.
+ *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Dec 12, 2008
  */
 public enum BuildScope {
-    TEST, WAR, RUN, ALL, FUNCTIONAL_TEST;
+
+    TEST,
+    WAR,
+    RUN,
+    ALL,
+    FUNCTIONAL_TEST;
 
     /**
-     * The key used to lookup the build scope in the System properties
+     * The key used to lookup the build scope in the System properties.
      */
     public static final String KEY = "grails.buildScope";
-
 
     @Override
     public String toString() {
@@ -43,11 +45,11 @@ public enum BuildScope {
      */
     public static BuildScope getCurrent() {
         String key = System.getProperty(KEY);
-        if(key== null) {
+        if (key == null) {
             key = (String) Metadata.getCurrent().get(KEY);
         }
 
-        if(key!=null) {
+        if (key != null) {
             try {
                 return BuildScope.valueOf(key.toUpperCase());
             }
@@ -59,14 +61,14 @@ public enum BuildScope {
     }
 
     /**
-     * Returns whether the specified scope name(s) are valid given the current scope
+     * Returns whether the specified scope name(s) are valid given the current scope.
      *
      * @param scopeNames The list of scope names
      * @return True if they are valid
      */
     public static boolean isValid(String... scopeNames) {
         BuildScope currentScope = getCurrent();
-        if(currentScope.equals(ALL)) return true;
+        if (currentScope.equals(ALL)) return true;
         for (String scopeName : scopeNames) {
             BuildScope specifiedScope = BuildScope.valueOf(scopeName.toUpperCase());
             if (currentScope == specifiedScope) return true;
@@ -75,7 +77,7 @@ public enum BuildScope {
     }
 
     /**
-     * Enables this build scope as the curent system wide instance
+     * Enables this build scope as the curent system wide instance.
      */
     public void enable() {
         System.setProperty(KEY, this.toString());

@@ -15,6 +15,9 @@
 package grails.util;
 
 import groovy.lang.GroovyObject;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -25,24 +28,20 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * Utility methods for clients using the web framework
+ * Utility methods for clients using the web framework.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 19, 2007
- *        Time: 6:18:22 PM
  */
 public class GrailsWebUtil {
+
     public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
 
     /**
      * Binds a Mock implementation of a GrailsWebRequest object to the current thread. The mock version uses
-     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes
+     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes.
      *
      * @param ctx The WebApplicationContext to use
      *
@@ -52,14 +51,13 @@ public class GrailsWebUtil {
      *
      * @return The GrailsWebRequest instance
      */
-
     public static GrailsWebRequest bindMockWebRequest(WebApplicationContext ctx) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
-                                                request,
-                                                new MockHttpServletResponse(),
-                                                ctx.getServletContext()
-                                            );
+                request,
+                new MockHttpServletResponse(),
+                ctx.getServletContext()
+        );
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         String[] paramListenerBeans = ctx.getBeanNamesForType(ParameterCreationListener.class);
         for (String paramListenerBean : paramListenerBeans) {
@@ -72,7 +70,7 @@ public class GrailsWebUtil {
 
     /**
      * Binds a Mock implementation of a GrailsWebRequest object to the current thread. The mock version uses
-     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes
+     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes.
      *
      * @see org.springframework.mock.web.MockHttpServletRequest
      * @see org.springframework.mock.web.MockHttpServletResponse
@@ -83,34 +81,32 @@ public class GrailsWebUtil {
     public static GrailsWebRequest bindMockWebRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         GrailsWebRequest webRequest = new GrailsWebRequest(
-                                                request,
-                                                new MockHttpServletResponse(),
-                                                new MockServletContext()
-                                            );
+                request,
+                new MockHttpServletResponse(),
+                new MockServletContext()
+        );
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
     }
 
     /**
-     * Retrieves the URI from the request from either the include attribute or the request.getRequestURI() method
+     * Retrieves the URI from the request from either the include attribute or the request.getRequestURI() method.
      *
      * @param request The HttpServletRequest instance
      * @return The String URI
      */
     public static String getUriFromRequest(HttpServletRequest request) {
         Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
-        String uri;
         if (includeUri != null) {
-        	uri = (String) includeUri;
-        } else {
-        	uri = request.getRequestURI();
+            return (String)includeUri;
         }
-        return uri;
+
+        return request.getRequestURI();
     }
 
     /**
-     * Obtains the currently executing controller from the given request if any
+     * Obtains the currently executing controller from the given request if any.
      * @param request The request object
      * @return The controller or null
      */
@@ -119,8 +115,7 @@ public class GrailsWebUtil {
     }
 
     public static String getContentType(String name, String encoding) {
-        if(StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
+        if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
         return name + CHARSET_ATTRIBUTE + encoding;
     }
-
 }

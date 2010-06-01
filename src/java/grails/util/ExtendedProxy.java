@@ -15,8 +15,8 @@
  */ 
 package grails.util;
 
-import groovy.util.Proxy;
 import groovy.lang.MetaClass;
+import groovy.util.Proxy;
 
 import java.util.Map;
 
@@ -24,40 +24,42 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
- * Extends the Groovy Proxy implementation and adds proxying of property getters/setters
- * 
-* @author Graeme Rocher
-* @author Jonathan Carlson
- * 
-* @since Oct 20, 2005
-*/
+ * Extends the Groovy Proxy implementation and adds proxying of property getters/setters.
+ *
+ * @author Graeme Rocher
+ * @author Jonathan Carlson
+ */
 public class ExtendedProxy extends Proxy {
+
+    @SuppressWarnings("unchecked")
     private Map propertyMap;
 
     public ExtendedProxy() {
-        super();
-        this.propertyMap = DefaultGroovyMethods.getProperties(this);
+        propertyMap = DefaultGroovyMethods.getProperties(this);
     }
 
+    @Override
     public Object getProperty(String property) {
-    	Object propertyValue = propertyMap.get(property);
-    	if(propertyValue == null) {
-    		propertyValue= InvokerHelper.getMetaClass(getAdaptee()).getProperty(getAdaptee(),property);
+        Object propertyValue = propertyMap.get(property);
+        if (propertyValue == null) {
+            propertyValue = InvokerHelper.getMetaClass(getAdaptee()).getProperty(getAdaptee(),property);
         }
         return propertyValue;
     }
 
+    @Override
     public void setProperty(String property, Object newValue) {
-
-    	if(propertyMap.containsKey(property)) {
+        if (propertyMap.containsKey(property)) {
             super.setProperty(property,newValue);
-        } else {
+        }
+        else {
             InvokerHelper.getMetaClass(getAdaptee()).setProperty(getAdaptee(),property,newValue);
         }
     }
 
+    @Override
     public void setMetaClass(MetaClass metaClass) {
         super.setMetaClass(metaClass);
-        this.propertyMap = DefaultGroovyMethods.getProperties(this);
+        propertyMap = DefaultGroovyMethods.getProperties(this);
     }
 }

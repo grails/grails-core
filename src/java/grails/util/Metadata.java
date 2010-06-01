@@ -15,31 +15,38 @@
  */
 package grails.util;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
- * Represents the application Metadata and loading mechanics
+ * Represents the application Metadata and loading mechanics.
  *
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Dec 12, 2008
  */
-
 public class Metadata extends Properties {
 
-	private static final long serialVersionUID = -582452926111226898L;
-	public static final String FILE = "application.properties";
+    private static final long serialVersionUID = -582452926111226898L;
+    public static final String FILE = "application.properties";
     public static final String APPLICATION_VERSION = "app.version";
     public static final String APPLICATION_NAME = "app.name";
     public static final String APPLICATION_GRAILS_VERSION = "app.grails.version";
     public static final String SERVLET_VERSION = "app.servlet.version";
     public static final String WAR_DEPLOYED = "grails.war.deployed";
     public static final String DEFAULT_SERVLET_VERSION = "2.4";
-    
+
     private static Reference<Metadata> metadata = new SoftReference<Metadata>(new Metadata());
 
     private boolean initialized;
@@ -50,38 +57,37 @@ public class Metadata extends Properties {
     }
 
     private Metadata(File f) {
-        super();
-		this.metadataFile = f;
+        this.metadataFile = f;
     }
 
-
     /**
-     * Resets the current state of the Metadata so it is re-read
+     * Resets the current state of the Metadata so it is re-read.
      */
     public static void reset() {
-		Metadata m = metadata.get();
-		if(m!=null) {
-	    	m.clear();
-	    	m.initialized=false;			
-		}
+        Metadata m = metadata.get();
+        if (m != null) {
+            m.clear();
+            m.initialized = false;
+        }
     }
+
     /**
-     * @return Returns the metadata for the current application
+     * @return the metadata for the current application
      */
     public static Metadata getCurrent() {
-		Metadata m = metadata.get();
-		if(m == null) {
-			metadata = new SoftReference<Metadata>(new Metadata());
-			m = metadata.get();			
-		}
-        if(!m.initialized) {
-        	InputStream input=null;
+        Metadata m = metadata.get();
+        if (m == null) {
+            metadata = new SoftReference<Metadata>(new Metadata());
+            m = metadata.get();
+        }
+        if (!m.initialized) {
+            InputStream input = null;
             try {
                 input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
-                if(input == null) {
+                if (input == null) {
                     input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
                 }
-                if(input != null) {
+                if (input != null) {
                     m.load(input);
                 }
             }
@@ -89,15 +95,9 @@ public class Metadata extends Properties {
                 throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
             }
             finally {
-                try {
-                    if(input!=null) input.close();
-                }
-                catch (IOException e) {
-                    // ignore
-                }
+                closeQuietly(input);
                 m.initialized = true;
             }
-
         }
 
         return m;
@@ -109,13 +109,12 @@ public class Metadata extends Properties {
      * @return a Metadata instance
      */
     public static Metadata getInstance(InputStream inputStream) {
-		Metadata m = new Metadata();
-		metadata = new FinalReference<Metadata>(m);
-		
+        Metadata m = new Metadata();
+        metadata = new FinalReference<Metadata>(m);
 
         try {
             m.load(inputStream);
-            m.initialized=true;
+            m.initialized = true;
         }
         catch (IOException e) {
             throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
@@ -124,15 +123,15 @@ public class Metadata extends Properties {
     }
 
     /**
-     * Loads and returns a new Metadata object for the given File
+     * Loads and returns a new Metadata object for the given File.
      * @param file The File
      * @return A Metadata object
      */
     public static Metadata getInstance(File file) {
-		Metadata m = new Metadata(file);
-		metadata = new FinalReference<Metadata>(m);
+        Metadata m = new Metadata(file);
+        metadata = new FinalReference<Metadata>(m);
 
-        if(file!= null && file.exists()) {
+        if (file != null && file.exists()) {
 
             FileInputStream input = null;
             try {
@@ -144,27 +143,22 @@ public class Metadata extends Properties {
                 throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
             }
             finally {
-                try {
-                    if(input!=null) input.close();
-                }
-                catch (IOException e) {
-                    // ignore
-                }
+                closeQuietly(input);
             }
         }
         return m;
     }
 
     /**
-     * Reloads the application metadata
+     * Reloads the application metadata.
      * @return The metadata object
      */
     public static Metadata reload() {
-    	File f = getCurrent().metadataFile;
-    	
-        if(f!=null) {
-        	return getInstance(f);
-        }            
+        File f = getCurrent().metadataFile;
+
+        if (f != null) {
+            return getInstance(f);
+        }
         return getCurrent();
     }
 
@@ -182,12 +176,11 @@ public class Metadata extends Properties {
         return (String) get(APPLICATION_GRAILS_VERSION);
     }
 
-
     /**
      * @return The environment the application expects to run in
      */
     public String getEnvironment() {
-        return (String) get(Environment.KEY);        
+        return (String) get(Environment.KEY);
     }
 
     /**
@@ -207,7 +200,7 @@ public class Metadata extends Properties {
         for (Map.Entry<Object, Object> entry : entrySet()) {
             String key = entry.getKey().toString();
             Object val = entry.getValue();
-            if(key.startsWith("plugins.") && val != null) {
+            if (key.startsWith("plugins.") && val != null) {
                 newMap.put(key.substring(8), val.toString());
             }
         }
@@ -219,21 +212,22 @@ public class Metadata extends Properties {
      */
     public String getServletVersion() {
         final String servletVersion = (String) get(SERVLET_VERSION);
-        if(servletVersion == null) {
+        if (servletVersion == null) {
             return DEFAULT_SERVLET_VERSION;
         }
         return servletVersion;
     }
 
     /**
-     * Saves the current state of the Metadata object
+     * Saves the current state of the Metadata object.
      */
     public void persist() {
 
-        if (propertiesHaveNotChanged())
-	        return;	
+        if (propertiesHaveNotChanged()) {
+            return;
+        }
 
-        if(metadataFile != null) {
+        if (metadataFile != null) {
             FileOutputStream out = null;
 
             try {
@@ -244,57 +238,63 @@ public class Metadata extends Properties {
                 throw new RuntimeException("Error persisting metadata to file ["+metadataFile+"]: " + e.getMessage(),e );
             }
             finally {
-                try {
-                    if(out != null) out.close();
-                }
-                catch (IOException e) {
-                    // ignore
-                }
+                closeQuietly(out);
             }
         }
     }
 
     /**
      * @return Returns true if these properties have not changed since they were loaded
-     */	
-    public boolean propertiesHaveNotChanged(){
+     */
+    public boolean propertiesHaveNotChanged() {
         Metadata transientMetadata = getCurrent();
-        
-        
+
         Metadata allStringValuesMetadata = new Metadata();
-        Map<Object,Object> transientMap = (Map<Object,Object>)transientMetadata;
-        for(Map.Entry<Object, Object> entry : transientMap.entrySet()) {
-        	if(entry.getValue() != null) {
-        		allStringValuesMetadata.put(entry.getKey().toString(), entry.getValue().toString());
-        	}
+        Map<Object,Object> transientMap = transientMetadata;
+        for (Map.Entry<Object, Object> entry : transientMap.entrySet()) {
+            if (entry.getValue() != null) {
+                allStringValuesMetadata.put(entry.getKey().toString(), entry.getValue().toString());
+            }
         }
 
-        Metadata persistedMetadata = Metadata.reload();	
+        Metadata persistedMetadata = Metadata.reload();
         boolean result = allStringValuesMetadata.equals(persistedMetadata);
         metadata = new SoftReference<Metadata>(transientMetadata);
         return result;
-    }	
+    }
 
     /**
      * Overrides, called by the store method.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public synchronized Enumeration keys() {
         Enumeration keysEnum = super.keys();
         Vector keyList = new Vector();
-        while(keysEnum.hasMoreElements()){
+        while (keysEnum.hasMoreElements()) {
             keyList.add(keysEnum.nextElement());
         }
         Collections.sort(keyList);
         return keyList.elements();
     }
-    
+
     /**
-     * @return Returns true if this application is deployed as a WAR
+     * @return true if this application is deployed as a WAR
      */
     public boolean isWarDeployed() {
         Object val = get(WAR_DEPLOYED);
         return val != null && val.equals("true");
+    }
+
+    private static void closeQuietly(Closeable c) {
+        if (c != null) {
+            try {
+                c.close();
+            }
+            catch (Exception ignored) {
+                // ignored
+            }
+        }
     }
 
     static class FinalReference<T> extends SoftReference<T> {
@@ -310,4 +310,3 @@ public class Metadata extends Properties {
         }
     }
 }
-

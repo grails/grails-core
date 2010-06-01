@@ -23,6 +23,7 @@ import groovy.lang.Closure;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractClosureProxy extends Closure {
+
     private Closure target;
 
     /**
@@ -32,7 +33,7 @@ public abstract class AbstractClosureProxy extends Closure {
      */
     public AbstractClosureProxy(Closure closure) {
         super(closure.getOwner(), closure.getThisObject());
-        this.target = closure;
+        target = closure;
     }
 
     /**
@@ -66,14 +67,14 @@ public abstract class AbstractClosureProxy extends Closure {
     protected abstract Closure createWrapper(Closure c);
 
     /**
-     * This is the important one: logs entry and exit of the closure
-     * call.
+     * This is the important one: logs entry and exit of the closure call.
      */
+    @Override
     public Object call(Object[] objects) {
         doBeforeCall(objects);
 
         try {
-            return this.target.call(objects);
+            return target.call(objects);
         }
         finally {
             doAfterCall(objects);
@@ -85,63 +86,78 @@ public abstract class AbstractClosureProxy extends Closure {
      * this one will return <code>true</code> if the given object is the
      * target closure for this wrapper as well.
      */
+    @Override
     public boolean equals(Object obj) {
-        return this == obj || this.target == obj;
+        return this == obj || target == obj;
     }
 
+    @Override
     public int hashCode() {
-        return this.target.hashCode();
+        return target.hashCode();
     }
 
+    @Override
     public Closure curry(Object[] objects) {
-        return createWrapper(this.target.curry(objects));
+        return createWrapper(target.curry(objects));
     }
 
+    @Override
     public boolean isCase(Object o) {
-        return this.target.isCase(o);
+        return target.isCase(o);
     }
 
+    @Override
     public Closure asWritable() {
-        return this.target.asWritable();
+        return target.asWritable();
     }
 
+    @Override
     public Object getProperty(String property) {
-        return this.target.getProperty(property);
+        return target.getProperty(property);
     }
 
+    @Override
     public void setProperty(String s, Object o) {
-        this.target.setProperty(s, o);
+        target.setProperty(s, o);
     }
 
+    @Override
     public int getMaximumNumberOfParameters() {
-        return this.target.getMaximumNumberOfParameters();
+        return target.getMaximumNumberOfParameters();
     }
 
-    public Class[] getParameterTypes() {
-        return this.target.getParameterTypes();
+    @Override
+    public Class<?>[] getParameterTypes() {
+        return target.getParameterTypes();
     }
 
+    @Override
     public Object getDelegate() {
-        return this.target.getDelegate();
+        return target.getDelegate();
     }
 
+    @Override
     public void setDelegate(Object o) {
-        this.target.setDelegate(o);
+        target.setDelegate(o);
     }
 
+    @Override
     public int getDirective() {
-        return this.target.getDirective();
+        return target.getDirective();
     }
 
+    @Override
     public void setDirective(int i) {
-        this.target.setDirective(i);
+        target.setDirective(i);
     }
 
+    @Override
     public int getResolveStrategy() {
-        return this.target.getResolveStrategy();
+        return target.getResolveStrategy();
     }
 
+    @Override
     public void setResolveStrategy(int i) {
-        this.target.setResolveStrategy(i);
+        target.setResolveStrategy(i);
     }
 }

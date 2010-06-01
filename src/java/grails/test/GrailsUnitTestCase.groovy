@@ -14,15 +14,16 @@
  */
 package grails.test
 
+import grails.util.GrailsNameUtils
+
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultArtefactInfo
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+
 import org.springframework.validation.Errors
-import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -30,34 +31,33 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
  * class magic does not leak outside of a single test.
  */
 class GrailsUnitTestCase extends GroovyTestCase {
-    def loadedCodecs
+
+    Set loadedCodecs
     def applicationContext
     Map savedMetaClasses
     Map errorsMap
 
     /**
-     * Keeps track of the domain classes mocked within a single test
-     * so that the relationships can be configured for cascading
-     * validation.
+     * Keeps track of the domain classes mocked within a single test so
+     * that the relationships can be configured for cascading validation.
      */
     DefaultArtefactInfo domainClassesInfo
-    
+
     private previousConfig
 
     protected void setUp() {
         super.setUp()
-        loadedCodecs = [] as Set
+        loadedCodecs = []
         applicationContext = new MockApplicationContext()
         savedMetaClasses = [:]
         domainClassesInfo = new DefaultArtefactInfo()
         errorsMap = new IdentityHashMap()
 
-        // Register some common classes so that they can be converted
-        // to XML, JSON, etc.
+        // Register some common classes so that they can be converted to XML, JSON, etc.
         def convertersInit = new ConvertersConfigurationInitializer()
         convertersInit.initialize()
         [ List, Set, Map, Errors ].each { addConverters(it) }
-        
+
         previousConfig = ConfigurationHolder.config
     }
 
@@ -69,7 +69,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
             GroovySystem.metaClassRegistry.removeMetaClass(clazz) 
             GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
         }
-        
+
         ConfigurationHolder.config = previousConfig
 
         MockUtils.resetIds()
@@ -82,8 +82,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
      * @param clazz The class to register.
      */
     protected void registerMetaClass(Class clazz) {
-        // If the class has already been registered, then there's
-        // nothing to do.
+        // If the class has already been registered, then there's nothing to do.
         if (savedMetaClasses.containsKey(clazz)) return
 
         // Save the class's current meta class.
@@ -186,8 +185,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
     }
 
     protected void mockConfig(String config) {
-        def c = new ConfigSlurper().parse(config)
-        ConfigurationHolder.config = c
+        ConfigurationHolder.config = new ConfigSlurper().parse(config)
     }
 
     /**
@@ -198,17 +196,19 @@ class GrailsUnitTestCase extends GroovyTestCase {
     protected void loadCodec(Class codecClass) {
         registerMetaClass(Object)
 
-        if (!loadedCodecs.contains(codecClass)) {
-            loadedCodecs << codecClass
-
-            // Instantiate the codec so we can use it.
-            final codec = codecClass.newInstance()
-
-            // Add the encode and decode methods.
-            def codecName = GrailsNameUtils.getLogicalName(codecClass, "Codec")
-            Object.metaClass."encodeAs$codecName" = {-> return codec.encode(delegate) }
-            Object.metaClass."decode$codecName" = {-> return codec.decode(delegate) }
+        if (loadedCodecs.contains(codecClass)) {
+            return
         }
+
+        loadedCodecs << codecClass
+
+        // Instantiate the codec so we can use it.
+        final codec = codecClass.newInstance()
+
+        // Add the encode and decode methods.
+        def codecName = GrailsNameUtils.getLogicalName(codecClass, "Codec")
+        Object.metaClass."encodeAs$codecName" = { -> codec.encode(delegate) }
+        Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
 
     protected void addConverters(Class clazz) {
@@ -217,9 +217,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
             if (ConverterUtil.isConverterClass(asClass)) {
                 return ConverterUtil.createConverter(asClass, delegate, applicationContext)
             }
-            else {
-                return ConverterUtil.invokeOriginalAsTypeMethod(delegate, asClass)
-            }
+
+            return ConverterUtil.invokeOriginalAsTypeMethod(delegate, asClass)
         }
     }
 }

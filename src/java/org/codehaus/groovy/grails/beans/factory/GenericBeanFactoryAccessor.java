@@ -1,5 +1,3 @@
-package org.codehaus.groovy.grails.beans.factory;
-
 /*
  * Copyright 2002-2008 the original author or authors.
  *
@@ -15,6 +13,7 @@ package org.codehaus.groovy.grails.beans.factory;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.grails.beans.factory;
 
 import java.lang.annotation.Annotation;
 import java.util.LinkedHashMap;
@@ -29,8 +28,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
 /**
- * This class is a fork of the Spring 2.5.6 GenericBeanFactoryAccess class that was removed
- * from Spring 3.0
+ * A fork of the Spring 2.5.6 GenericBeanFactoryAccess class that was removed from Spring 3.0.
  *
  * @author Rob Harrop
  * @author Juergen Hoeller
@@ -38,100 +36,98 @@ import org.springframework.util.Assert;
  */
 public class GenericBeanFactoryAccessor {
 
-	/**
-	 * The {@link ListableBeanFactory} being wrapped.
-	 */
-	private final ListableBeanFactory beanFactory;
+    /**
+     * The {@link ListableBeanFactory} being wrapped.
+     */
+    private final ListableBeanFactory beanFactory;
 
+    /**
+     * Constructs a <code>GenericBeanFactoryAccessor</code> that wraps the supplied {@link ListableBeanFactory}.
+     */
+    public GenericBeanFactoryAccessor(ListableBeanFactory beanFactory) {
+        Assert.notNull(beanFactory, "Bean factory must not be null");
+        this.beanFactory = beanFactory;
+    }
 
-	/**
-	 * Constructs a <code>GenericBeanFactoryAccessor</code> that wraps the supplied {@link ListableBeanFactory}.
-	 */
-	public GenericBeanFactoryAccessor(ListableBeanFactory beanFactory) {
-		Assert.notNull(beanFactory, "Bean factory must not be null");
-		this.beanFactory = beanFactory;
-	}
+    /**
+     * Return the wrapped {@link ListableBeanFactory}.
+     */
+    public final ListableBeanFactory getBeanFactory() {
+        return beanFactory;
+    }
 
-	/**
-	 * Return the wrapped {@link ListableBeanFactory}.
-	 */
-	public final ListableBeanFactory getBeanFactory() {
-		return this.beanFactory;
-	}
+    /**
+     * @see org.springframework.beans.factory.BeanFactory#getBean(String)
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getBean(String name) throws BeansException {
+        return (T) beanFactory.getBean(name);
+    }
 
+    /**
+     * @see org.springframework.beans.factory.BeanFactory#getBean(String, Class)
+     */
+    public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
+        return beanFactory.getBean(name, requiredType);
+    }
 
-	/**
-	 * @see org.springframework.beans.factory.BeanFactory#getBean(String)
-	 */
-	public <T> T getBean(String name) throws BeansException {
-		return (T) this.beanFactory.getBean(name);
-	}
+    /**
+     * @see ListableBeanFactory#getBeansOfType(Class)
+     */
+    public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
+        return beanFactory.getBeansOfType(type);
+    }
 
-	/**
-	 * @see org.springframework.beans.factory.BeanFactory#getBean(String, Class)
-	 */
-	public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
-		return (T) this.beanFactory.getBean(name, requiredType);
-	}
+    /**
+     * @see ListableBeanFactory#getBeansOfType(Class, boolean, boolean)
+     */
+    public <T> Map<String, T> getBeansOfType(Class<T> type, boolean includeNonSingletons, boolean allowEagerInit)
+            throws BeansException {
 
-	/**
-	 * @see ListableBeanFactory#getBeansOfType(Class)
-	 */
-	public <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
-		return this.beanFactory.getBeansOfType(type);
-	}
+        return beanFactory.getBeansOfType(type, includeNonSingletons, allowEagerInit);
+    }
 
-	/**
-	 * @see ListableBeanFactory#getBeansOfType(Class, boolean, boolean)
-	 */
-	public <T> Map<String, T> getBeansOfType(Class<T> type, boolean includeNonSingletons, boolean allowEagerInit)
-			throws BeansException {
+    /**
+     * Find all beans whose <code>Class</code> has the supplied {@link Annotation} type.
+     * @param annotationType the type of annotation to look for
+     * @return a Map with the matching beans, containing the bean names as
+     * keys and the corresponding bean instances as values
+     */
+    public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) {
+        Map<String, Object> results = new LinkedHashMap<String, Object>();
+        for (String beanName : beanFactory.getBeanNamesForType(Object.class)) {
+            if (findAnnotationOnBean(beanName, annotationType) != null) {
+                results.put(beanName, beanFactory.getBean(beanName));
+            }
+        }
+        return results;
+    }
 
-		return this.beanFactory.getBeansOfType(type, includeNonSingletons, allowEagerInit);
-	}
-
-	/**
-	 * Find all beans whose <code>Class</code> has the supplied {@link Annotation} type.
-	 * @param annotationType the type of annotation to look for
-	 * @return a Map with the matching beans, containing the bean names as
-	 * keys and the corresponding bean instances as values
-	 */
-	public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) {
-		Map<String, Object> results = new LinkedHashMap<String, Object>();
-		for (String beanName : this.beanFactory.getBeanNamesForType(Object.class)) {
-			if (findAnnotationOnBean(beanName, annotationType) != null) {
-				results.put(beanName, this.beanFactory.getBean(beanName));
-			}
-		}
-		return results;
-	}
-
-	/**
-	 * Find a {@link Annotation} of <code>annotationType</code> on the specified
-	 * bean, traversing its interfaces and super classes if no annotation can be
-	 * found on the given class itself, as well as checking its raw bean class
-	 * if not found on the exposed bean reference (e.g. in case of a proxy).
-	 * @param beanName the name of the bean to look for annotations on
-	 * @param annotationType the annotation class to look for
-	 * @return the annotation of the given type found, or <code>null</code>
-	 * @see org.springframework.core.annotation.AnnotationUtils#findAnnotation(Class, Class)
-	 */
-	public <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) {
-		Class<?> handlerType = this.beanFactory.getType(beanName);
-		A ann = AnnotationUtils.findAnnotation(handlerType, annotationType);
-		if (ann == null && this.beanFactory instanceof ConfigurableBeanFactory &&
-				this.beanFactory.containsBeanDefinition(beanName)) {
-			ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) this.beanFactory;
-			BeanDefinition bd = cbf.getMergedBeanDefinition(beanName);
-			if (bd instanceof AbstractBeanDefinition) {
-				AbstractBeanDefinition abd = (AbstractBeanDefinition) bd;
-				if (abd.hasBeanClass()) {
-					Class<?> beanClass = abd.getBeanClass();
-					ann = AnnotationUtils.findAnnotation(beanClass, annotationType);
-				}
-			}
-		}
-		return ann;
-	}
-
+    /**
+     * Find a {@link Annotation} of <code>annotationType</code> on the specified
+     * bean, traversing its interfaces and super classes if no annotation can be
+     * found on the given class itself, as well as checking its raw bean class
+     * if not found on the exposed bean reference (e.g. in case of a proxy).
+     * @param beanName the name of the bean to look for annotations on
+     * @param annotationType the annotation class to look for
+     * @return the annotation of the given type found, or <code>null</code>
+     * @see org.springframework.core.annotation.AnnotationUtils#findAnnotation(Class, Class)
+     */
+    public <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) {
+        Class<?> handlerType = beanFactory.getType(beanName);
+        A ann = AnnotationUtils.findAnnotation(handlerType, annotationType);
+        if (ann == null && beanFactory instanceof ConfigurableBeanFactory &&
+                beanFactory.containsBeanDefinition(beanName)) {
+            ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) beanFactory;
+            BeanDefinition bd = cbf.getMergedBeanDefinition(beanName);
+            if (bd instanceof AbstractBeanDefinition) {
+                AbstractBeanDefinition abd = (AbstractBeanDefinition) bd;
+                if (abd.hasBeanClass()) {
+                    Class<?> beanClass = abd.getBeanClass();
+                    ann = AnnotationUtils.findAnnotation(beanClass, annotationType);
+                }
+            }
+        }
+        return ann;
+    }
 }
