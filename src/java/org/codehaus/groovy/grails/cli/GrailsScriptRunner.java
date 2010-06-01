@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.cli;
 import gant.Gant;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
+import grails.util.CosineSimilarity;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Binding;
@@ -25,10 +26,13 @@ import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -52,13 +56,14 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
- * Class that handles Grails command line interface for running scripts
+ * Handles Grails command line interface for running scripts.
  *
  * @author Graeme Rocher
  *
  * @since 0.4
  */
 public class GrailsScriptRunner {
+
     private static Map<String, String> ENV_ARGS = new HashMap<String, String>();
     // this map contains default environments for several scripts in form 'script-name':'env-code'
     private static Map<String, String> DEFAULT_ENVS = new HashMap<String, String>();
@@ -83,11 +88,10 @@ public class GrailsScriptRunner {
      * to run it in, and the arguments to pass to the script. This also evaluates arguments
      * of the form "-Dprop=value" and creates system properties from each one.
      * @param args
-     * @throws MalformedURLException
      */
-    public static void main(String[] args) throws MalformedURLException {
+    public static void main(String[] args) {
         StringBuilder allArgs = new StringBuilder("");
-        for(String arg : args) {
+        for (String arg : args) {
             allArgs.append(" ").append(arg);
         }
 
@@ -128,8 +132,8 @@ public class GrailsScriptRunner {
         System.out.println("Base Directory: " + build.getBaseDir().getPath());
 
         try {
-            GrailsScriptRunner runner = new GrailsScriptRunner(build);
-            int exitCode = runner.executeCommand(script.name, script.args, script.env);
+            int exitCode = new GrailsScriptRunner(build).executeCommand(
+                    script.name, script.args, script.env);
             System.exit(exitCode);
         }
         catch (ScriptNotFoundException ex) {
@@ -140,8 +144,7 @@ public class GrailsScriptRunner {
             System.out.println(msg);
             sanitizeStacktrace(t);
             t.printStackTrace(System.out);
-            System.out.println(msg);
-            System.exit(1);
+            exitWithError(msg);
         }
     }
 
@@ -274,8 +277,7 @@ public class GrailsScriptRunner {
         }
         else {
             // If GrailsScriptRunner is executed more than once in a
-            // single JVM, we have to make sure that the CLI args are
-            // reset.
+            // single JVM, we have to make sure that the CLI args are reset.
             System.setProperty("grails.cli.args", "");
         }
 
@@ -299,7 +301,6 @@ public class GrailsScriptRunner {
         settings.setDefaultEnv(useDefaultEnv);
 
         BuildSettingsHolder.setSettings(settings);
-
 
         // Either run the script or enter interactive mode.
         if (scriptName.equalsIgnoreCase("interactive")) {
@@ -397,6 +398,7 @@ public class GrailsScriptRunner {
     private final Map<String, CachedScript> scriptCache = new HashMap<String, CachedScript>();
     private final List<File> scriptsAllowedOutsideOfProject = new ArrayList<File>();
 
+    @SuppressWarnings("unchecked")
     private int callPluginOrGrailsScript(String scriptName) {
         // The directory where scripts are cached.
         File scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
@@ -413,7 +415,7 @@ public class GrailsScriptRunner {
 
             // Add the remaining JARs (from 'grailsHome', the app, and
             // the plugins) to the root loader.
-            boolean skipPlugins = "UninstallPlugin".equals(scriptName)||"InstallPlugin".equals(scriptName);
+            boolean skipPlugins = "UninstallPlugin".equals(scriptName) || "InstallPlugin".equals(scriptName);
 
             URL[] urls = getClassLoaderUrls(settings, scriptCacheDir, existingJars, skipPlugins);
             addUrlsToRootLoader(settings.getRootLoader(), urls);
@@ -428,6 +430,7 @@ public class GrailsScriptRunner {
         }
 
         List<File> potentialScripts;
+        List<File> allScripts = getAvailableScripts(settings);
         GantBinding binding;
         if (scriptCache.get(scriptName) != null) {
             CachedScript cachedScript = scriptCache.get(scriptName);
@@ -463,10 +466,8 @@ public class GrailsScriptRunner {
             }
 
             // Now find what scripts match the one requested by the user.
-            List<File> list = getAvailableScripts(settings);
-
             potentialScripts = new ArrayList<File>();
-            for (File scriptPath : list) {
+            for (File scriptPath : allScripts) {
                 String scriptFileName = scriptPath.getName().substring(0,scriptPath.getName().length()-7); // trim .groovy extension
                 if (scriptFileName.endsWith("_")) {
                     scriptsAllowedOutsideOfProject.add(scriptPath);
@@ -487,19 +488,10 @@ public class GrailsScriptRunner {
         // Prep the binding with important variables.
         initBinding(binding);
         final Closure doNothingClosure = new Closure(this) {
-			private static final long serialVersionUID = 1L;
-			@Override
-        	public Object call(Object arguments) {
-            	return null; // do nothing
-        	}			
-			@Override
-			public Object call() {
-				return null;
-			}			
-			@Override
-			public Object call(Object[] args) {
-				return null;
-			}
+            private static final long serialVersionUID = 1L;
+            @Override public Object call(Object arguments) { return null; }
+            @Override public Object call() { return null; }
+            @Override public Object call(Object[] args) { return null; }
         };
         binding.setVariable("scriptName", scriptName);
 
@@ -535,7 +527,7 @@ public class GrailsScriptRunner {
             // code. Otherwise the code will enter an infinite loop.
             if (!isInteractive) {
                 out.println("More than one script with the given name is available - " +
-                        "cannot continue in non-interactive mode.");
+                            "cannot continue in non-interactive mode.");
                 return 1;
             }
 
@@ -559,16 +551,33 @@ public class GrailsScriptRunner {
             gant.loadScript(potentialScripts.get(number - 1));
 
             // Invoke the default target.
-			return executeWithGantInstance(gant, doNothingClosure);
+            return executeWithGantInstance(gant, doNothingClosure);
         }
 
         out.println("Running pre-compiled script");
 
         // Get Gant to load the class by name using our class loader.
         Gant gant = new Gant(binding, classLoader);
+
         try {
-            gant.loadScriptClass(scriptName+"_");
+            loadScriptClass(gant, scriptName);
+        }
+        catch (ScriptNotFoundException e) {
+            String fixedName = fixScriptName(scriptName, allScripts);
+            if (fixedName == null) {
+                throw e;
+            }
+
+            loadScriptClass(gant, fixedName);
+        }
+
+        return executeWithGantInstance(gant, doNothingClosure);
+    }
+
+    private void loadScriptClass(Gant gant, String scriptName) {
+        try {
             // try externalized script first
+            gant.loadScriptClass(scriptName + "_");
         }
         catch (Exception e) {
             try {
@@ -582,17 +591,66 @@ public class GrailsScriptRunner {
                 }
             }
         }
-        return executeWithGantInstance(gant, doNothingClosure);
     }
 
-	private int executeWithGantInstance(Gant gant,
-			final Closure doNothingClosure) {
-		gant.prepareTargets();
-		gant.setAllPerTargetPostHooks(doNothingClosure);
-		gant.setAllPerTargetPreHooks(doNothingClosure);
-		// Invoke the default target.
-		return gant.executeTargets().intValue();
-	}
+    private String fixScriptName(String scriptName, List<File> allScripts) {
+        try {
+            Set<String> names = new HashSet<String>();
+            for (File script : allScripts) {
+                names.add(script.getName().substring(0, script.getName().length() - 7));
+            }
+            List<String> mostSimilar = CosineSimilarity.mostSimilar(scriptName, names);
+            if (mostSimilar.isEmpty()) {
+                return null;
+            }
+            List<String> topMatches = mostSimilar.subList(0, Math.min(5, mostSimilar.size()));
+            return askUserForBestMatch(scriptName, topMatches);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String askUserForBestMatch(String scriptName, List<String> topMatches) throws IOException {
+        System.out.println("Script '" + scriptName + "' not found, did you mean:");
+        int i = 0;
+        for (String s : topMatches) {
+            System.out.println("   " + ++i + ") " + s);
+        }
+
+        int attempts = 0;
+        while (true) {
+            System.out.print("Please make a selection or enter Q to quit: ");
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            String selection = br.readLine().trim();
+            if ("Q".equalsIgnoreCase(selection)) {
+                System.exit(0);
+            }
+
+            try {
+                int number = Integer.parseInt(selection);
+                if (number > 0 && number <= topMatches.size()) {
+                    return topMatches.get(number - 1);
+                }
+            }
+            catch (NumberFormatException ignored) {
+                // ignored
+            }
+
+            attempts++;
+            if (attempts > 4) {
+                exitWithError("TODO");
+            }
+        }
+    }
+
+    private int executeWithGantInstance(Gant gant, final Closure doNothingClosure) {
+        gant.prepareTargets();
+        gant.setAllPerTargetPostHooks(doNothingClosure);
+        gant.setAllPerTargetPreHooks(doNothingClosure);
+        // Invoke the default target.
+        return gant.executeTargets().intValue();
+    }
 
     private boolean isGrailsProject() {
         return new File(settings.getBaseDir(), "grails-app").exists();
@@ -622,8 +680,7 @@ public class GrailsScriptRunner {
         binding.setVariable("grailsScript", c);
         binding.setVariable("grailsSettings", settings);
 
-        // Add other binding variables, such as Grails version and
-        // environment.
+        // Add other binding variables, such as Grails version and environment.
         final File basedir = settings.getBaseDir();
         final String baseDirPath = basedir.getPath();
         binding.setVariable("basedir", baseDirPath);
@@ -667,8 +724,7 @@ public class GrailsScriptRunner {
         // plugins loaded by the application. The name of each variable is of
         // the form <pluginName>PluginDir.
         try {
-            // First, if this is a plugin project, we need to add its
-            // descriptor.
+            // First, if this is a plugin project, we need to add its descriptor.
             List<File> descriptors = new ArrayList<File>();
             File desc = getPluginDescriptor(basedir);
             if (desc != null) descriptors.add(desc);
@@ -679,9 +735,8 @@ public class GrailsScriptRunner {
                 if (pluginDescriptor != null) descriptors.add(pluginDescriptor);
             }
 
-            // Go through all the descriptors and add the appropriate
-            // binding variable for each one that contains the location
-            // of its plugin directory.
+            // Go through all the descriptors and add the appropriate binding
+            // variable for each one that contains the location of its plugin directory.
             for (File file : descriptors) {
                 Matcher matcher = pluginDescriptorPattern.matcher(file.getName());
                 matcher.find();
@@ -697,8 +752,7 @@ public class GrailsScriptRunner {
     }
 
     /**
-     * Returns a list of all the executable Gant scripts available to
-     * this application.
+     * Returns a list of all the executable Gant scripts available to this application.
      */
     private static List<File> getAvailableScripts(BuildSettings settings) {
         List<File> scripts = new ArrayList<File>();
@@ -727,9 +781,8 @@ public class GrailsScriptRunner {
     }
 
     /**
-     * Adds all the command scripts (i.e. those whose name does *not*
-     * start with an underscore, '_') found in the given directory to
-     * the given list.
+     * Adds all the command scripts (i.e. those whose name does *not* start with an
+     * underscore, '_') found in the given directory to the given list.
      */
     private static void addCommandScripts(File dir, List<File> scripts) {
         if (dir.exists()) {
@@ -748,9 +801,8 @@ public class GrailsScriptRunner {
     private static URL[] getClassLoaderUrls(BuildSettings settings, File cacheDir, Set<String> excludes, boolean skipPlugins) throws MalformedURLException {
         List<URL> urls = new ArrayList<URL>();
 
-        // If 'grailsHome' is set, make sure the script cache
-        // directory takes precedence over the "grails-scripts"
-        // JAR by adding it first.
+        // If 'grailsHome' is set, make sure the script cache directory takes precedence
+        // over the "grails-scripts" JAR by adding it first.
         if (settings.getGrailsHome() != null) {
             urls.add(cacheDir.toURI().toURL());
         }
@@ -763,8 +815,9 @@ public class GrailsScriptRunner {
 
         // Add build-only dependencies to the project
         final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
-        if (!dependenciesExternallyConfigured)
+        if (!dependenciesExternallyConfigured) {
             System.out.println("Resolving dependencies...");
+        }
         long now = System.currentTimeMillis();
         // add dependencies required by the build system
         final List<File> buildDependencies = settings.getBuildDependencies();
@@ -777,8 +830,9 @@ public class GrailsScriptRunner {
         // Add the project's test dependencies (which include runtime dependencies) because most of them
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
-        if (!dependenciesExternallyConfigured)
+        if (!dependenciesExternallyConfigured) {
             System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
+        }
 
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
@@ -811,8 +865,7 @@ public class GrailsScriptRunner {
      * project's "plugins" directory, those in the global "plugins"
      * dir, and those declared explicitly in the build config.
      * @param settings The build settings for this project.
-     * @return A list of all known plugin directories, or an empty
-     * list if there are none.
+     * @return A list of all known plugin directories, or an empty list if there are none.
      */
     @SuppressWarnings("unchecked")
     private static List<File> listKnownPluginDirs(BuildSettings settings) {
@@ -824,8 +877,7 @@ public class GrailsScriptRunner {
         // Next up, the project's plugins directory.
         dirs.addAll(Arrays.asList(listPluginDirs(settings.getProjectPluginsDir())));
 
-        // Finally, pick up any explicit plugin directories declared
-        // in the build config.
+        // Finally, pick up any explicit plugin directories declared in the build config.
         Map<String, ?> buildConfig = settings.getConfig().flatten();
         for (Map.Entry<String,?> entry : buildConfig.entrySet()) {
             if (entry.getKey().startsWith("grails.plugin.location.")) {
@@ -856,11 +908,9 @@ public class GrailsScriptRunner {
     }
 
     /**
-     * Adds all the JAR files in the given directory to the list of
-     * URLs. Excludes any "standard-*.jar" and "jstl-*.jar" because
-     * these are added to the classpath in another place. They depend
-     * on the servlet version of the app and so need to be treated
-     * specially.
+     * Adds all the JAR files in the given directory to the list of URLs. Excludes any
+     * "standard-*.jar" and "jstl-*.jar" because these are added to the classpath in another
+     * place. They depend on the servlet version of the app and so need to be treated specially.
      */
     private static void addLibs(File dir, List<URL> urls, Collection<?> excludes) throws MalformedURLException {
         if (!dir.exists()) {
@@ -892,8 +942,8 @@ public class GrailsScriptRunner {
         File[] dirs = dir.listFiles(new FileFilter() {
             public boolean accept(File path) {
                 return path.isDirectory() &&
-                        (!path.getName().startsWith(".") &&
-                                path.getName().indexOf('-') > -1);
+                    !path.getName().startsWith(".") &&
+                    path.getName().indexOf('-') > -1;
             }
         });
 
