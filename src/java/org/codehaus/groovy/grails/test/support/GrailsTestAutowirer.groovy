@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.test.support
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 
 /**
  * Convenience class to autowire test classes
@@ -32,12 +33,16 @@ class GrailsTestAutowirer {
     }
 
     /**
-     * Autowires the bean by name, and set's the applicationContext if it implements ApplicationContextAware.
+     * Autowires the bean by name, processes any autowiring annotations, 
+     * and set's the applicationContext if it implements ApplicationContextAware.
      */
     void autowire(bean) {
-        applicationContext.autowireCapableBeanFactory.autowireBeanProperties(
-            bean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false
-        )
+        def beanFactory = applicationContext.autowireCapableBeanFactory
+        beanFactory.autowireBeanProperties(bean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+        beanFactory.initializeBean(bean, bean.class.name)
+
+        def annotationProcessor = beanFactory.createBean(AutowiredAnnotationBeanPostProcessor, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+        annotationProcessor.processInjection(bean)
 
         if (bean instanceof ApplicationContextAware && applicationContext != null) {
             bean.setApplicationContext(applicationContext)
