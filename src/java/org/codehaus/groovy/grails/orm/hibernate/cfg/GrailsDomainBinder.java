@@ -307,9 +307,6 @@ public final class GrailsDomainBinder {
                 }
             }
             bindSimpleValue(typeName, elt, false, getMapElementName(property),mappings);
-            if (pc != null) {
-                bindColumnConfigToColumn(getColumnForSimpleValue(elt), getSingleColumnConfig(pc));
-            }
 
             elt.setTypeName(typeName);
 

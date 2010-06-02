@@ -54,6 +54,16 @@ import org.springframework.beans.BeanWrapperImpl;
  */
 public class GrailsDomainBinderTests extends TestCase {
 
+    private static final String CACHED_MAP =
+        "class Area {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    Map names \n" +
+        "    static mapping = { \n" +
+        "        names cache: true \n" +
+        "    } \n" +
+        "}\n";
+
     private static final String ONE_TO_ONE_CLASSES_DEFINITION =
         "class Species {\n" +
         "    Long id \n" +
@@ -209,6 +219,12 @@ public class GrailsDomainBinderTests extends TestCase {
         GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
     }
 
+    public void testCachedMapProperty() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(CACHED_MAP);
+        Table table = getTableMapping("area_names", config);
+        assertEquals(255, table.getColumn(new Column("names_elt")).getLength());
+    }
+    
     public void testColumnNullabilityWithTablePerHierarchy() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_HIERARCHY);
         
