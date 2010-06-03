@@ -1089,12 +1089,15 @@ class IvyDomainSpecificLanguageEvaluator {
                             if(pluginMode) {
                                 group = group ?: 'org.grails.plugins'
                             }
+                            
                             def mrid = ModuleRevisionId.newInstance(group, name, version)
 
                             def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
 
                             if(!pluginMode) {
-                                addDependency mrid
+                            	def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "jar", "jar", null, null )
+                                dependencyDescriptor.addDependencyArtifact(scope, artifact)                            	
+                            	addDependency mrid
                             }
                             else {
                                 def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
@@ -1122,10 +1125,7 @@ class IvyDomainSpecificLanguageEvaluator {
                        boolean isExcluded = currentPluginBeingConfigured ? isExcludedFromPlugin(currentPluginBeingConfigured, name) : isExcluded(name)
                        if(!isExcluded) {
 
-                           def attrs = [:]
-                           if(dependency.classifier) {
-                               attrs["m:classifier"] = dependency.classifier
-                           }
+                           def attrs = ["m:classifier":dependency.classifier ?: 'jar']
                            def mrid
                            if(dependency.branch) {
                                mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version, attrs)
