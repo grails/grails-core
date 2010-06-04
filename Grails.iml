@@ -115,8 +115,8 @@
     <orderEntry type="module-library" exported="">
       <library name="AspectJ">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/aspectjrt-1.6.6.jar!/" />
-          <root url="jar://$MODULE_DIR$/lib/aspectjweaver-1.6.6.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/aspectjrt-1.6.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/aspectjweaver-1.6.8.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
