@@ -22,7 +22,7 @@ import java.lang.reflect.Method
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
+import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
 
 import org.codehaus.groovy.grails.commons.GrailsServiceClass
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
@@ -62,7 +62,7 @@ class ServicesGrailsPlugin {
             if (hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
                 def props = new Properties()
                 props."*" = "PROPAGATION_REQUIRED"
-                "${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
+                "${serviceClass.propertyName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
                     if (scope) bean.scope = scope
                     bean.lazyInit = true
                     target = { innerBean ->
@@ -120,7 +120,7 @@ class ServicesGrailsPlugin {
                 }
                 def props = new Properties()
                 props."*"="PROPAGATION_REQUIRED"
-                "${serviceName}"(TransactionProxyFactoryBean) { bean ->
+                "${serviceName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
                     if (scope) bean.scope = scope
                     target = { innerBean ->
                         innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"

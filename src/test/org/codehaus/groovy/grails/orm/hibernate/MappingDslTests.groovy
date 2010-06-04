@@ -289,6 +289,22 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         }
     }
 
+    void testCompositeIdAssignedGenerator_GRAILS_6289() {
+    	if(notYetImplemented()) return
+        def ds = applicationContext.dataSource
+        def con = ds.connection
+        def stmt = con.createStatement()
+        stmt.executeUpdate "INSERT INTO AUTHOR VALUES('Frank Herbert',0)"
+        stmt.executeUpdate "INSERT INTO BOOK VALUES('first','Frank Herbert',0)"
+        stmt.executeUpdate "INSERT INTO BOOK VALUES('second','Frank Herbert',0)"
+    	con.close()
+
+    	def authorClass = ga.getDomainClass('Author').clazz
+
+    	// per GRAILS-6289, this will throw an exception because the afterLoad property cannot be found...
+        authorClass.executeQuery 'select distinct a from Author as a inner join fetch a.books'
+    }
+
     protected void onSetUp() {
         gcl.parseClass '''
 class MappedPerson {
@@ -432,6 +448,24 @@ class PersonDSL2 {
             firstName name:'First_Name'
         }
     }
+}
+@grails.persistence.Entity
+class Author {
+	   String id
+	   static hasMany = [books:Book]
+
+	   static mapping = {
+	      id column: 'name', generator:'assigned'
+	   }
+}
+@grails.persistence.Entity
+class Book implements Serializable {
+   String edition
+   Author author
+
+   static mapping = {
+      id composite:['edition','author']
+   }
 }
 '''
     }
