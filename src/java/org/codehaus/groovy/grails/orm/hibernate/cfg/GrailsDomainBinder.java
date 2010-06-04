@@ -742,7 +742,8 @@ public final class GrailsDomainBinder {
 
         GrailsDomainClass refDomainClass = property.getDomainClass();
         final Mapping mapping = getMapping(refDomainClass.getClazz());
-        if (shouldCollectionBindWithJoinColumn(property) && hasCompositeIdentifier(mapping)) {
+        if ((shouldCollectionBindWithJoinColumn(property) && hasCompositeIdentifier(mapping)) ||
+        	(hasCompositeIdentifier(mapping) && property.isManyToMany())) {
             CompositeIdentity ci = (CompositeIdentity) mapping.getIdentity();
             bindCompositeIdentifierToManyToOne(property, key, ci, refDomainClass, EMPTY_PATH);
         }
