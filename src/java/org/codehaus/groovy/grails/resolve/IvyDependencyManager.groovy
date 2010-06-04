@@ -566,7 +566,7 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         if(definition && applicationName && applicationVersion) {
             if(this.moduleDescriptor == null) {                
                 this.moduleDescriptor =
-                    DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(applicationName, applicationName, applicationVersion))
+                    DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance("org.grails.internal", applicationName, applicationVersion))
 
                 // TODO: make configurations extensible
                 this.moduleDescriptor.addConfiguration BUILD_CONFIGURATION
@@ -637,14 +637,11 @@ public class IvyDependencyManager implements DependencyResolver, DependencyDefin
         }
     }
 
-
     boolean getBooleanValue(dependency, String name) {
         return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
     }
-    
-
-
 }
+
 class IvyDomainSpecificLanguageEvaluator {
 
     static final String WILDCARD = '*'

@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins.services
 
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
+import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
     import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
     import org.codehaus.groovy.grails.commons.GrailsServiceClass
@@ -58,7 +58,7 @@ class ServicesGrailsPlugin {
 			if(hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
 				def props = new Properties()
 				props."*"="PROPAGATION_REQUIRED"
-				"${serviceClass.propertyName}"(TransactionProxyFactoryBean) { bean ->
+				"${serviceClass.propertyName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
 				    if(scope) bean.scope = scope
 					target = { innerBean ->   
 						innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
@@ -111,7 +111,7 @@ class ServicesGrailsPlugin {
 					}									
 					def props = new Properties()
 					props."*"="PROPAGATION_REQUIRED"
-					"${serviceName}"(TransactionProxyFactoryBean) { bean ->
+					"${serviceName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
                         if(scope) bean.scope = scope
                         target = { innerBean ->
                             innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
