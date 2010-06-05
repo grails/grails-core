@@ -24,6 +24,11 @@ class FilterConfigTests extends GroovyTestCase {
     private static final int INT_PROP_VALUE = 1000
     private static final String STRING_PROP_VALUE = 'Test property'
 
+    void setUp() {
+        ExpandoMetaClass.enableGlobally()
+        GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
+    }
+
     void testPropertyMissing() {
         def mockDefinition = new MockFiltersDefinition()
         def testFilterConfig = new FilterConfig(name: 'Test filter', initialised: true, filtersDefinition: mockDefinition)
@@ -125,6 +130,10 @@ class FilterConfigTests extends GroovyTestCase {
         shouldFail(MissingMethodException) {
             testFilterConfig.unknownMethod(23)
         }
+    }
+    
+    void tearDown() {
+        ExpandoMetaClass.disableGlobally()
     }
 }
 
