@@ -52,7 +52,7 @@ class FilterConfig {
         // Delegate to the parent definition if it has this property.
         if (this.filtersDefinition.metaClass.hasProperty(this.filtersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            FilterConfig.metaClass."$getterName" = {-> this.filtersDefinition."$propertyName" }
+            this.metaClass."$getterName" = {-> this.filtersDefinition."$propertyName" }
             return this.filtersDefinition."$propertyName"
         }
         else {
@@ -69,12 +69,12 @@ class FilterConfig {
         if (this.filtersDefinition.metaClass.respondsTo(this.filtersDefinition, methodName)) {
             if (!args) {
                 // No argument method.
-                FilterConfig.metaClass."$methodName" = {->
+                this.metaClass."$methodName" = {->
                     return this.filtersDefinition."$methodName"()
                 }
             }
             else {
-                FilterConfig.metaClass."$methodName" = { varArgs ->
+                this.metaClass."$methodName" = { varArgs ->
                     return this.filtersDefinition."$methodName"(varArgs)
                 }
             }
