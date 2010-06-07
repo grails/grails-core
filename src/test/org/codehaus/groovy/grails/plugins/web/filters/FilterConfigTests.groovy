@@ -26,7 +26,7 @@ class FilterConfigTests extends GroovyTestCase {
 
     void setUp() {
         ExpandoMetaClass.enableGlobally()
-        GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
+        GroovySystem.metaClassRegistry.removeMetaClass(FilterConfig)
     }
 
     void testPropertyMissing() {
@@ -134,6 +134,7 @@ class FilterConfigTests extends GroovyTestCase {
     
     void tearDown() {
         ExpandoMetaClass.disableGlobally()
+        GroovySystem.metaClassRegistry.removeMetaClass(FilterConfig)
     }
 }
 
