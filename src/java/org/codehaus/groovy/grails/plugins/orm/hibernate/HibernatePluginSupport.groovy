@@ -274,24 +274,27 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         def mc = proxyClass.metaClass
         if (!mc.pickMethod('grailsEnhanced', GrailsHibernateUtil.EMPTY_CLASS_ARRAY)) {
             // hasProperty
+            def originalHasProperty = mc.getMetaMethod("hasProperty", String)
             mc.hasProperty = { String name ->
                 if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).hasProperty(name)
                 }
-                return false
+                return originalHasProperty.invoke(delegate, name)
             }
             // respondsTo
+            def originalRespondsTo = mc.getMetaMethod("respondsTo", String)
             mc.respondsTo = { String name ->
                 if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name)
                 }
-                return false
+                return originalRespondsTo.invoke(delegate, name)
             }
+            def originalRespondsToTwoArgs = mc.getMetaMethod("respondsTo", String, Object[])
             mc.respondsTo = { String name, Object[] args ->
                 if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name, args)
                 }
-                return false
+                return originalRespondsToTwoArgs.invoke(delegate, name, args)
             }
             // getter
             mc.propertyMissing = { String name ->
