@@ -53,6 +53,7 @@ import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAda
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.servlet.mvc.CommandObjectEnablingPostProcessor
 
 /**
  * A plug-in that handles the configuration of controllers for Grails
@@ -194,6 +195,8 @@ class ControllersGrailsPlugin {
 
     def doWithDynamicMethods = {ApplicationContext ctx ->
 
+        ctx.getAutowireCapableBeanFactory().addBeanPostProcessor(new CommandObjectEnablingPostProcessor(ctx))
+
         // add common objects and out variable for tag libraries
         def registry = GroovySystem.getMetaClassRegistry()
         GrailsPluginManager pluginManager = getManager()
@@ -217,7 +220,6 @@ class ControllersGrailsPlugin {
         }
 
 
-        def bind = new BindDynamicMethod()
         // add commons objects and dynamic methods like render and redirect to controllers
         for (GrailsClass controller in application.controllerClasses) {
             MetaClass mc = controller.metaClass
@@ -240,41 +242,9 @@ class ControllersGrailsPlugin {
                 superClass = superClass.superclass
             }
 
-            // a reusable action for handling command object binding
-            def commandObjectBindingAction = WebMetaUtils.createCommandObjectBindingAction(ctx)
-            
-            // add invoke method implementation for handling command objects
-            controllerClass.metaClass {
-            	invokeMethod { String name, args ->
-            		if(mc.hasProperty( delegate, name)) {
-            			def callable = delegate."$name"
-            			if(callable instanceof Closure) {            				
-            				if(WebMetaUtils.isCommandObjectAction(callable)) {
-            					def commandObjectAction = WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, name, delegate)
-            					return commandObjectAction.call(args)
-            				}
-            				else {            					
-            					return callable.call( args )
-            				}
-            			}
-            			else {
-            				def mm = mc.getMetaMethod(name, args)
-            				if(mm)
-            					return mm.invoke(delegate, args)
-            				else
-            					return mc.invokeMissingMethod(delegate, name, args)
-            			}
-            		}
-            		else {
-        				def mm = mc.getMetaMethod(name, args)
-        				if(mm)
-        					return mm.invoke(delegate, args)
-        				else            			
-        					return mc.invokeMissingMethod(delegate, name, args)
-            		}            		
-            	}            	
+            mc.constructor = {->
+               ctx.getBean(controller.fullName) 
             }
-
         }
 
     }

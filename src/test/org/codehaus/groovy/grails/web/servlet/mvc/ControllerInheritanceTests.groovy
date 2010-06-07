@@ -31,9 +31,6 @@ class ControllerInheritanceFooController extends ControllerInheritanceFooBaseCon
 
 	// test for GRAILS-6247
 	void testCallSuperMethod() {
-		
-		if(notYetImplemented()) return
-		
 		def controller = ga.getControllerClass("ControllerInheritanceFooController").newInstance()
 		
 		controller.index()

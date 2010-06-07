@@ -39,7 +39,7 @@ class SecondCommand {
         def cmd = ga.getClassLoader().loadClass("SampleCommand").newInstance()
 
 
-        def ctrl = ga.getControllerClass("SampleController").newInstance()
+        def ctrl = ga.getControllerClass("SampleController").clazz.newInstance()
         ctrl.params.first = "one"
         ctrl.params.second = "two"
 

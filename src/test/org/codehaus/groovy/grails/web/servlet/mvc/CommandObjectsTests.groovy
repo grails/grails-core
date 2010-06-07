@@ -61,7 +61,7 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
 
     void testCommandObjectAutoWiring() {
         // no command objects
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
+        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
         def result = testCtrl.action4()
 
 
@@ -70,7 +70,7 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
 
     void testBinding() {
         // no command objects
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
+        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
         testCtrl.someProperty = "text"
         def result = testCtrl.action1()
         assertEquals "text", result
@@ -113,7 +113,7 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
     }
 
     void testValidation() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
+        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
         // command objects validation should pass
         request.setParameter('name', 'Sergey')
         request.setParameter('data', 'Some data')
@@ -140,13 +140,13 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
     }
 
 	void testValidationWithInheritedConstraints() {
-		def testCtrl = ga.getControllerClass("TestController").newInstance()
-		// command objects validation should pass
-		request.setParameter('age', '10')
+        // command objects validation should pass
+		request.setParameter('age', '9')
 		request.setParameter('data', 'Some')
-		def result = testCtrl.action5()
+        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def result = testCtrl.action5()
 		assertNotNull result.command
-		assertTrue result.command.hasErrors()
+		assert result.command.hasErrors()
 		def codes = result.command.errors.getFieldError('data').codes.toList()
 		assertTrue codes.contains("constrainedCommandSubclass.data.size.error")
 	}

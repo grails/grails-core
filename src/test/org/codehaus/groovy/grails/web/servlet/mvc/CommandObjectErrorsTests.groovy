@@ -59,7 +59,7 @@ class Form {
 	
 	
 	void testCommandObjectsDontShareErrors() {
-		def controller = ga.getControllerClass("TestController").newInstance()
+		def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
 		def model = controller.five()
 
@@ -70,7 +70,7 @@ class Form {
 	}
 
 	void testValidatingNewlyCreatedCommandObject() {
-		def controller = ga.getControllerClass("TestController").newInstance()
+		def controller = ga.getControllerClass("TestController").clazz.newInstance()
 		def model = controller.six()
 		def errors = model.formErrors
 		assertNotNull 'did not find expected errors', errors
@@ -78,7 +78,7 @@ class Form {
 	}
 	
 	void testClearErrors() {
-        def controller = ga.getControllerClass("TestController").newInstance()
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         controller.params.url = "not_a_url"
         controller.params.input = "helloworld"
@@ -93,14 +93,14 @@ class Form {
     }
 
     void testHasErrors() {
-        def controller = ga.getControllerClass("TestController").newInstance()
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         assertTrue controller.index()['formErrors']
 
     }
 
     void testValidate() {
-        def controller = ga.getControllerClass("TestController").newInstance()
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         assertFalse controller.validate()['formErrors']
 
@@ -108,7 +108,7 @@ class Form {
 
     void testHasBindingErrors() {
 
-        def controller = ga.getControllerClass("TestController").newInstance()
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         controller.params.url = "not_a_url"
         controller.params.input = "helloworld"
@@ -123,7 +123,7 @@ class Form {
 
     void testValidatingTwice() {
         // GRAILS-4918
-        def controller = ga.getControllerClass("TestController").newInstance()
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         controller.params.url = "http://grails.org"
         controller.params.input = "someverylongstringthatfailsvalidation"
