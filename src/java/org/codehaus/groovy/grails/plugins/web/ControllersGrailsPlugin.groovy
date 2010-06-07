@@ -243,7 +243,7 @@ class ControllersGrailsPlugin {
             }
 
             mc.constructor = {->
-               ctx.getBean(controller.fullName) 
+               ctx.getBean(controllerClass.name) 
             }
         }
 
