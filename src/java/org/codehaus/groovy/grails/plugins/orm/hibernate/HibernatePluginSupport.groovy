@@ -278,20 +278,20 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                 if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).hasProperty(name)
                 }
-                throw new MissingPropertyException(name, delegate.class)
+                return false
             }
             // respondsTo
             mc.respondsTo = { String name ->
                 if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name)
                 }
-                throw new MissingPropertyException(name, delegate.class)
+                return false
             }
             mc.respondsTo = { String name, Object[] args ->
                 if (delegate instanceof HibernateProxy) {
                     return GrailsHibernateUtil.unwrapProxy(delegate).respondsTo(name, args)
                 }
-                throw new MissingPropertyException(name, delegate.class)
+                return false
             }
             // getter
             mc.propertyMissing = { String name ->

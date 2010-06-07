@@ -290,7 +290,6 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
     }
 
     void testCompositeIdAssignedGenerator_GRAILS_6289() {
-    	if(notYetImplemented()) return
         def ds = applicationContext.dataSource
         def con = ds.connection
         def stmt = con.createStatement()
