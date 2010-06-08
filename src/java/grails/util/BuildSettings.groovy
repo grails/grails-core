@@ -230,6 +230,16 @@ class BuildSettings {
     /** The settings stored in the project's BuildConfig.groovy file if there is one. */
     ConfigObject config = new ConfigObject()
 
+    /**
+     * The settings used to establish the HTTP proxy to use for dependency resolution etc. 
+     */
+    ConfigObject proxySettings = new ConfigObject()
+
+    /**
+     * The file containing the proxy settings 
+     */
+    File proxySettingsFile;
+
     /** Implementation of the "grailsScript()" method used in Grails scripts. */
     Closure grailsScriptClosure
 
@@ -689,14 +699,36 @@ class BuildSettings {
     protected ConfigObject loadSettingsFile() {
         if (!settingsFileLoaded) {
             def settingsFile = new File("$userHome/.grails/settings.groovy")
+            def gcl = obtainGroovyClassLoader()
+            def slurper = createConfigSlurper()
             if (settingsFile.exists()) {
-                def gcl = obtainGroovyClassLoader()
-                def slurper = createConfigSlurper()
                 Script script = gcl.parseClass(settingsFile)?.newInstance()
                 if (script) {
                     config = slurper.parse(script)
                 }
             }
+
+            this.proxySettingsFile = new File("$userHome/.grails/ProxySettings.groovy")
+            if(proxySettingsFile.exists()) {
+                slurper = createConfigSlurper()
+                try {
+                    Script script = gcl.parseClass(proxySettingsFile)?.newInstance()
+                    if (script) {
+                        proxySettings = slurper.parse(script)
+                        def current = proxySettings.currentProxy
+                        if(current) {
+                            proxySettings[current]?.each { key, value ->
+                                System.setProperty(key, value)
+                            }
+                        }
+                    }
+                }
+                catch (e) {
+                    println "WARNING: Error configuring proxy settings: ${e.message}"
+                }
+
+            }
+
             settingsFileLoaded = true
         }
         config
