@@ -122,6 +122,25 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="iText">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/itext-2.0.8.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/core-renderer-R8.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/src/jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
 
