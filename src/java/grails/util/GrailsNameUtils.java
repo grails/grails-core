@@ -27,6 +27,27 @@ import java.util.Locale;
  */
 public class GrailsNameUtils {
 
+    private static final String PROPERTY_SET_PREFIX = "set";
+    
+    /**
+     * Retrieves the name of a setter for the specified property name
+     * @param propertyName The property name
+     * @return The setter equivalent
+     */
+    public static String getSetterName(String propertyName) {
+        return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
+    }
+    
+    /**
+     * Calculate the name for a getter method to retrieve the specified property
+     * @param propertyName
+     * @return The name for the getter method for this property, if it were to exist, i.e. getConstraints
+     */
+    public static String getGetterName(String propertyName) {
+        return "get" + Character.toUpperCase(propertyName.charAt(0))
+            + propertyName.substring(1);
+    }
+    
     /**
      * Returns the class name for the given logical name and trailing name. For example "person" and "Controller" would evaluate to "PersonController"
      *

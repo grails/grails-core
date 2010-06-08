@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsNameUtils;
 import groovy.lang.*;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,7 +37,7 @@ import java.util.*;
  */
 public class GrailsClassUtils {
 
-    private static final String PROPERTY_SET_PREFIX = "set";
+    
     public static final Map<Class<?>, Class<?>> PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap<Class<?>, Class<?>>();
 
     /**
@@ -631,8 +632,7 @@ public class GrailsClassUtils {
      * @return The name for the getter method for this property, if it were to exist, i.e. getConstraints
      */
     public static String getGetterName(String propertyName) {
-        return "get" + Character.toUpperCase(propertyName.charAt(0))
-            + propertyName.substring(1);
+        return GrailsNameUtils.getGetterName(propertyName);
     }
 
     /**
@@ -812,7 +812,7 @@ public class GrailsClassUtils {
      * @return The setter equivalent
      */
     public static String getSetterName(String propertyName) {
-        return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
+        return GrailsNameUtils.getSetterName(propertyName);
     }
 
     /**

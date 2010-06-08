@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.util.GrailsNameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -44,11 +45,16 @@ public class GrailsASTUtils {
     public static boolean hasProperty(ClassNode classNode, String propertyName) {
         if (classNode == null || StringUtils.isBlank(propertyName))
             return false;
-        List properties = classNode.getProperties();
-        for (Iterator i = properties.iterator(); i.hasNext();) {
-            PropertyNode pn = (PropertyNode) i.next();
-            if (pn.getName().equals(propertyName) && !pn.isPrivate()) {
-                return true;
+
+        final MethodNode method = classNode.getMethod(GrailsNameUtils.getGetterName(propertyName), new Parameter[0]);
+        if(method != null) return true;
+        else {
+            List properties = classNode.getProperties();
+            for (Object property : properties) {
+                PropertyNode pn = (PropertyNode) property;
+                if (pn.getName().equals(propertyName) && !pn.isPrivate()) {
+                    return true;
+                }
             }
         }
         return false;
@@ -106,4 +112,12 @@ public class GrailsASTUtils {
       return classNode.getName();
     }
 
+    public static ClassNode getFurthestParent(ClassNode classNode) {
+        ClassNode parent = classNode.getSuperClass();
+        while (parent != null && !getFullName(parent).equals("java.lang.Object")) {
+            parent = parent.getSuperClass();
+            classNode = parent;
+        }
+        return classNode;
+    }
 }
