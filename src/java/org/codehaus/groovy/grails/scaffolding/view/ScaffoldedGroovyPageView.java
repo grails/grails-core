@@ -14,81 +14,86 @@
  */
 package org.codehaus.groovy.grails.scaffolding.view;
 
-import groovy.text.Template;
 import groovy.lang.Writable;
-import org.apache.commons.lang.StringUtils;
+import groovy.text.Template;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Map;
+import org.springframework.util.Assert;
 
 /**
  * A special Spring View for scaffolding that renders an in-memory scaffolded view to the response.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Feb 27, 2007
- *        Time: 11:30:10 AM
  */
 public class ScaffoldedGroovyPageView extends GroovyPageView {
-    private String contents;
-    private static final Log LOG = LogFactory.getLog(ScaffoldedGroovyPageView.class);
 
-    public ScaffoldedGroovyPageView(String uri, String contents) {
-        if(StringUtils.isBlank(contents)) throw new IllegalArgumentException("Argument [contents] cannot be blank or null");
-        if(StringUtils.isBlank(uri)) throw new IllegalArgumentException("Argument [uri] cannot be blank or null");
+	private String contents;
+	private static final Log LOG = LogFactory.getLog(ScaffoldedGroovyPageView.class);
 
-        this.contents = contents;
-        setUrl(uri);
-    }
+	public ScaffoldedGroovyPageView(String uri, String contents) {
+		Assert.hasLength(contents, "Argument [contents] cannot be blank or null");
+		Assert.hasLength(uri, "Argument [uri] cannot be blank or null");
 
+		this.contents = contents;
+		setUrl(uri);
+	}
 
-    /**
-     * Used for debug reporting
-     *
-     * @return The URL of the view
-     */
-    public String getBeanName() {
-        return getUrl();
-    }
+	/**
+	 * Used for debug reporting.
+	 *
+	 * @return The URL of the view
+	 */
+	@Override
+	public String getBeanName() {
+		return getUrl();
+	}
 
+	/**
+	 * Overrides the default implementation to render a GSP view using an in-memory representation
+	 * held in the #contents property.
+	 *
+	 * @param templateEngine The GroovyPagesTemplateEngine instance
+	 * @param model The model
+	 * @param response The HttpServletResponse instance
+	 *
+	 * @throws IOException Thrown if there was an IO error rendering the view
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
+			HttpServletResponse response, HttpServletRequest request) throws IOException {
 
-    /**
-     * Overrides the default implementation to render a GSP view using an in-memory representation held in the #contents property
-     *
-     * @param templateEngine The GroovyPagesTemplateEngine instance
-     * @param model The model
-     * @param response The HttpServletResponse instance
-     * 
-     * @throws IOException Thrown if there was an IO error rendering the view
-     */
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
-                                            HttpServletResponse response, HttpServletRequest request) throws IOException {
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
-        }
-        Template t = templateEngine.createTemplate(contents, getUrl());
-        Writable w = t.make(model);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
+		}
 
-        Writer out = null;
-        try {
-            out = createResponseWriter(response);
-            w.writeTo(out);
-        } catch(Exception e) {
-            // create fresh response writer
-            out = createResponseWriter(response);
-            handleException(e, out, templateEngine, request, response);
-        } finally {
-            if(out!=null)out.close();
-        }
-
-    }
+		Template t = templateEngine.createTemplate(contents, getUrl());
+		Writable w = t.make(model);
+		Writer out = null;
+		try {
+			out = createResponseWriter(response);
+			w.writeTo(out);
+		}
+		catch(Exception e) {
+			// create fresh response writer
+			out = createResponseWriter(response);
+			handleException(e, out, templateEngine, request, response);
+		}
+		finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+	}
 }
