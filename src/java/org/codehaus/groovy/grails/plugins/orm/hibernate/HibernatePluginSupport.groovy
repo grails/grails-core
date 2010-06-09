@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTransactionManager
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
@@ -78,6 +79,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import java.util.concurrent.ConcurrentHashMap
+
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM
@@ -214,7 +216,7 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
                                   'post-delete':eventTriggeringInterceptor]
             }
 
-            transactionManager(HibernateTransactionManager) {
+            transactionManager(GrailsHibernateTransactionManager) {
                 sessionFactory = sessionFactory
             }
             persistenceInterceptor(HibernatePersistenceContextInterceptor) {
