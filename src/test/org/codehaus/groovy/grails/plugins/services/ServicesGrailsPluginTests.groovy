@@ -1,14 +1,15 @@
 package org.codehaus.groovy.grails.plugins.services;
 
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
+import org.springframework.context.ApplicationContext
 import org.springframework.transaction.NoTransactionException
 
 class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 
-	void onSetUp() {
+    void onSetUp() {
         def config = new ConfigSlurper().parse('''
             dataSource {
                 pooled = true
@@ -20,20 +21,19 @@ class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 ''')
 
         ConfigurationHolder.config = config
-        gcl.parseClass(
-"""
+        gcl.parseClass """
 import org.springframework.transaction.annotation.*
 import org.springframework.transaction.interceptor.TransactionAspectSupport
 class SomeTransactionalService {
-	boolean transactional = true
+    boolean transactional = true
     def serviceMethod() {
          return "hello"
-    }			
+    }
 }
 class NonTransactionalService {
-	boolean transactional = false
+    boolean transactional = false
     def serviceMethod() {
-		return "goodbye"
+        return "goodbye"
     }
 }
 
@@ -55,17 +55,43 @@ class PerMethodTransactionalService {
     def methodTwo() {
         def status = TransactionAspectSupport.currentTransactionStatus()
         return "hasTransaction = \${status!=null}"
-
     }
 }
-""")
-	}
+"""
+    }
 
     protected void onTearDown() {
         ConfigurationHolder.config = null
     }
 
     void testPerMethodTransactionAnnotations() {
+        def appCtx = initializeContext()
+
+        def springService = appCtx.getBean("perMethodTransactionalService")
+        assertEquals "hasTransaction = true", springService.methodOne()
+        shouldFail(NoTransactionException) {
+            springService.methodTwo()
+        }
+    }
+
+    void testSpringConfiguredService() {
+        def appCtx = initializeContext()
+
+        def springService = appCtx.getBean("springTransactionalService")
+        assertEquals "hasTransaction = true", springService.serviceMethod()
+    }
+
+    void testServicesPlugin() {
+        def appCtx = initializeContext()
+
+        assertTrue appCtx.containsBean("dataSource")
+        assertTrue appCtx.containsBean("sessionFactory")
+        assertTrue appCtx.containsBean("someTransactionalService")
+        assertTrue appCtx.containsBean("nonTransactionalService")
+    }
+
+    private ApplicationContext initializeContext() {
+
         def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
         def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
@@ -84,64 +110,6 @@ class PerMethodTransactionalService {
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
         plugin.doWithRuntimeConfiguration(springConfig)
 
-        def appCtx = springConfig.getApplicationContext()
-
-        def springService = appCtx.getBean("perMethodTransactionalService")
-        assertEquals "hasTransaction = true", springService.methodOne()
-        shouldFail(NoTransactionException) {
-            springService.methodTwo()
-        }
+        springConfig.getApplicationContext()
     }
-    void testSpringConfiguredService() {
-		def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-		def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
-		def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-		def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
-		def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
-		def hibernatePlugin = new DefaultGrailsPlugin(hibernatePluginClass, ga)
-
-		def springConfig = new WebRuntimeSpringConfiguration(ctx)
-		springConfig.servletContext = createMockServletContext()
-
-		corePlugin.doWithRuntimeConfiguration(springConfig)
-		dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
-		hibernatePlugin.doWithRuntimeConfiguration(springConfig)
-
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
-		def plugin = new DefaultGrailsPlugin(pluginClass, ga)
-		plugin.doWithRuntimeConfiguration(springConfig)
-
-		def appCtx = springConfig.getApplicationContext()
-
-        
-        def springService = appCtx.getBean("springTransactionalService")
-        assertEquals "hasTransaction = true", springService.serviceMethod()
-    }
-
-	void testServicesPlugin() {
-		
-		def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-		def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
-		def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-		def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
-		def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
-		def hibernatePlugin = new DefaultGrailsPlugin(hibernatePluginClass, ga)
-		
-		def springConfig = new WebRuntimeSpringConfiguration(ctx)
-		springConfig.servletContext = createMockServletContext()
-		
-		corePlugin.doWithRuntimeConfiguration(springConfig)
-		dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
-		hibernatePlugin.doWithRuntimeConfiguration(springConfig)
-		
-		def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
-		def plugin = new DefaultGrailsPlugin(pluginClass, ga)	
-		plugin.doWithRuntimeConfiguration(springConfig)
-		
-		def appCtx = springConfig.getApplicationContext()
-		assert appCtx.containsBean("dataSource")
-		assert appCtx.containsBean("sessionFactory")
-		assert appCtx.containsBean("someTransactionalService")
-		assert appCtx.containsBean("nonTransactionalService")
-	}	
 }
