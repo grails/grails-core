@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.orm.hibernate.proxy;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.hibernate.Hibernate;
 import org.hibernate.collection.AbstractPersistentCollection;
@@ -79,7 +80,10 @@ public class HibernateProxyHandler implements ProxyHandler {
 		if(lazyInitializer.isUninitialized()) {
 		    lazyInitializer.initialize();
 		}
-		return lazyInitializer.getImplementation();
+		final Object obj = lazyInitializer.getImplementation();
+		if(obj != null)
+			GrailsHibernateUtil.ensureCorrectGroovyMetaClass(obj,obj.getClass());
+		return obj;
 	}
 	
 	public HibernateProxy getAssociationProxy(Object obj, String associationName) {

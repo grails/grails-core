@@ -325,6 +325,21 @@ public class GrailsHibernateUtil {
     }
 
     /**
+     * Ensures the meta class is correct for a given class
+     * 
+     * @param target The GroovyObject
+     * @param persistentClass The persistent class
+     */
+    public static void ensureCorrectGroovyMetaClass(Object target, Class persistentClass) {
+		if(target instanceof GroovyObject) {
+			GroovyObject go = ((GroovyObject)target);
+			if(!go.getMetaClass().getTheClass().equals(persistentClass)) {
+				go.setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(persistentClass));
+			}
+		}
+	}
+    
+    /**
      * Unwraps and initializes a HibernateProxy.
      * @param proxy The proxy
      * @return the unproxied instance

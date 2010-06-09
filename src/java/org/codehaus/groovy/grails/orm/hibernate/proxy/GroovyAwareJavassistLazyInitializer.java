@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.proxy;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovySystem;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,6 +29,7 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;
@@ -209,6 +213,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
             }
             if (result == INVOKE_IMPLEMENTATION) {
                 Object target = getImplementation();
+                GrailsHibernateUtil.ensureCorrectGroovyMetaClass(target,persistentClass);
                 final Object returnValue;
                 try {
                     if (ReflectHelper.isPublic(persistentClass, thisMethod)) {
@@ -240,7 +245,8 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
         return proceed.invoke(proxy, args);
     }
 
-    @Override
+
+	@Override
     protected Object serializableProxy() {
         return new SerializableProxy(
                 getEntityName(),
