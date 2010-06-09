@@ -1,25 +1,23 @@
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-
 /**
  * BeanWrapper implementaion that will not lazy initialize entity properties.
  */
 public class HibernateBeanWrapper extends BeanWrapperImpl {
-// ------------------------------ FIELDS ------------------------------
 
     private static final Log log = LogFactory.getLog(HibernateBeanWrapper.class);
 
-// --------------------------- CONSTRUCTORS ---------------------------
-
     public HibernateBeanWrapper() {
+        // default
     }
 
     public HibernateBeanWrapper(boolean b) {
@@ -30,18 +28,13 @@ public class HibernateBeanWrapper extends BeanWrapperImpl {
         super(o);
     }
 
-    public HibernateBeanWrapper(Class aClass) {
+    public HibernateBeanWrapper(Class<?> aClass) {
         super(aClass);
     }
 
     public HibernateBeanWrapper(Object o, String s, Object o1) {
         super(o, s, o1);
     }
-
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface PropertyAccessor ---------------------
 
     /**
      * Checks Hibernate.isInitialized before calling super method.
@@ -59,9 +52,10 @@ public class HibernateBeanWrapper extends BeanWrapperImpl {
             if (Hibernate.isInitialized(method.invoke(owner))) {
                 return super.getPropertyValue(name);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error("Error checking Hibernate initialization on method " +
-                    method.getName() + " for class " + owner.getClass(), e);
+                    method.getName() + " for class " + owner.getClass().getName(), e);
         }
         return null;
     }

@@ -36,9 +36,9 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
 /**
- * <p>An interceptor that invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete
+ * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
  *
- * <p>This class also deals with auto time stamping of domain classes that have properties named 'lastUpdated' and/or 'dateCreated'
+ * <p>Also deals with auto time stamping of domain classes that have properties named 'lastUpdated' and/or 'dateCreated'.
  *
  * @author Graeme Rocher
  * @since 1.0
@@ -104,7 +104,8 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
     private boolean shouldTrigger(entity) {
         Class clazz = entity?.class
         return entity && entity?.metaClass != null &&
-                (DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz))
+                (DomainClassArtefactHandler.isDomainClass(clazz) ||
+                 AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz))
     }
 
     static final String ONLOAD_EVENT = 'onLoad'
@@ -157,7 +158,6 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
             boolean shouldTimestamp = m && !m.autoTimestamp ? false : true
             MetaProperty property = entity.metaClass.hasProperty(entity, GrailsDomainClassProperty.LAST_UPDATED)
             if (property && shouldTimestamp) {
-
                 def now = property.getType().newInstance([System.currentTimeMillis()] as Object[])
                 event.getState()[ArrayUtils.indexOf(event.persister.propertyNames, GrailsDomainClassProperty.LAST_UPDATED)] = now
                 entity."$property.name" = now
@@ -216,7 +216,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
             }
             else {
                 result = false
-            }            
+            }
         }
         else if (entity.hasProperty(event)) {
             eventTriggered = true
