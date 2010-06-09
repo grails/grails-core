@@ -15,6 +15,11 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.Closure;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -25,65 +30,55 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-
 /**
  * Dynamic method that allows counting the values of the specified property names
  *
  * eg. Account.countByBranch('London') // returns how many accounts are in london
  *
- *
  * @author Graeme Rocher
- * @since 04-May-2006
  */
-public class CountByPersistentMethod extends
-		AbstractClausedStaticPersistentMethod {
+public class CountByPersistentMethod extends AbstractClausedStaticPersistentMethod {
 
-	private static final String OPERATOR_OR = "Or";
-	private static final String OPERATOR_AND = "And";
+    private static final String OPERATOR_OR = "Or";
+    private static final String OPERATOR_AND = "And";
 
-	private static final Pattern METHOD_PATTERN = Pattern.compile("(countBy)(\\w+)");
-	private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
+    private static final Pattern METHOD_PATTERN = Pattern.compile("(countBy)(\\w+)");
+    private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
 
-	public CountByPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader) {
-		super(application, sessionFactory, classLoader, METHOD_PATTERN, OPERATORS);
-	}
+    public CountByPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader) {
+        super(application, sessionFactory, classLoader, METHOD_PATTERN, OPERATORS);
+    }
 
-	protected Object doInvokeInternalWithExpressions(final Class clazz,
-                                                     String methodName, Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, Object[] arguments,
+            final List expressions, String operatorInUse, final Closure additionalCriteria) {
+
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
-        return super.getHibernateTemplate().execute( new HibernateCallback() {
+        return getHibernateTemplate().execute(new HibernateCallback<Object>() {
 
-			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+            public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 final Criteria crit = getCriteria(session, additionalCriteria, clazz);
-				crit.setProjection(Projections.rowCount());
+                crit.setProjection(Projections.rowCount());
                 populateCriteriaWithExpressions(crit, operator, expressions);
-
                 return crit.uniqueResult();
-			}
-		});
-	}
+            }
+        });
+    }
 
-
+    @SuppressWarnings("unchecked")
     protected void populateCriteriaWithExpressions(Criteria crit, String operator, List expressions) {
-        if(operator.equals(OPERATOR_OR)) {
+        if (operator.equals(OPERATOR_OR)) {
             Disjunction dis = Restrictions.disjunction();
-            for (Iterator i = expressions.iterator(); i.hasNext();) {
-                GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-                dis.add( current.getCriterion() );
+            for (GrailsMethodExpression current : (List<GrailsMethodExpression>)expressions) {
+                dis.add(current.getCriterion());
             }
             crit.add(dis);
         }
         else {
-            for (Iterator i = expressions.iterator(); i.hasNext();) {
-                GrailsMethodExpression current = (GrailsMethodExpression) i.next();
-                crit.add( current.getCriterion() );
-
+            for (GrailsMethodExpression current : (List<GrailsMethodExpression>)expressions) {
+                crit.add(current.getCriterion());
             }
         }
     }
-
 }

@@ -1,18 +1,18 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.orm.HibernateCriteriaBuilder;
@@ -29,56 +29,55 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
 
 /**
- * Abstract base class for static persistent methods
- * 
+ * Abstract base class for static persistent methods.
+ *
  * @author Steven Devijver
  * @author Graeme Rocher
- * 
- * @since Aug 8, 2005
  */
 public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation {
 
-    private ClassLoader classLoader = null;
+    private ClassLoader classLoader;
     private HibernateTemplate hibernateTemplate;
 
-    public AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
+    protected AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
+        Assert.notNull(sessionFactory, "Session factory is required!");
         setPattern(pattern);
         this.classLoader = classLoader;
-        Assert.notNull(sessionFactory, "Session factory is required!");
-        hibernateTemplate=new HibernateTemplate(sessionFactory);
+        hibernateTemplate = new HibernateTemplate(sessionFactory);
         hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault());
     }
 
     protected HibernateTemplate getHibernateTemplate() {
         return hibernateTemplate;
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Override
     public Object invoke(Class clazz, String methodName, Object[] arguments) {
         return invoke(clazz, methodName, null, arguments);
     }
 
+    @SuppressWarnings("unchecked")
     public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.classLoader);
             return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
-        }   
+        }
         finally {
-            Thread.currentThread().setContextClassLoader(originalClassLoader);                  
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
     }
 
-    protected Criteria getCriteria(Session session, Closure additionalCriteria, Class clazz) {
-        final Criteria crit;
-        if(additionalCriteria != null) {
+    protected Criteria getCriteria(Session session, Closure additionalCriteria, Class<?> clazz) {
+        if (additionalCriteria != null) {
             HibernateCriteriaBuilder builder = new HibernateCriteriaBuilder(clazz, session.getSessionFactory());
-            crit = builder.buildCriteria(additionalCriteria);
-        } else {
-            crit = session.createCriteria(clazz);
+            return builder.buildCriteria(additionalCriteria);
         }
-        return crit;
+
+        return session.createCriteria(clazz);
     }
 
+    @SuppressWarnings("unchecked")
     protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
 }

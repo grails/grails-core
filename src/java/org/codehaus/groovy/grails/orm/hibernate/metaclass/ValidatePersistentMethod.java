@@ -14,16 +14,8 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.validation.CascadingValidator;
-import org.hibernate.SessionFactory;
-import org.springframework.validation.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +23,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.validation.CascadingValidator;
+import org.hibernate.SessionFactory;
+import org.springframework.util.Assert;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.Validator;
+
 /**
- * A method that validates an instance of a domain class against its constraints
+ * Validates an instance of a domain class against its constraints.
  *
  * @author Graeme Rocher
  * @since 07-Nov-2005
@@ -46,91 +51,96 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     private static final String ARGUMENT_EVICT = "evict";
     private Validator validator;
 
-
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-       this(sessionFactory, classLoader, application, null);
+        this(sessionFactory, classLoader, application, null);
     }
 
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, Validator validator) {
         super(METHOD_PATTERN, sessionFactory, classLoader);
-        if(application == null)
-            throw new IllegalArgumentException("Constructor argument 'application' cannot be null");
+        Assert.notNull(application, "Constructor argument 'application' cannot be null");
         this.application = application;
         this.validator = validator;
     }
 
-
+    @Override
+    @SuppressWarnings("unchecked")
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
         Errors errors = setupErrorsProperty(target);
 
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
-            target.getClass().getName() );
+                target.getClass().getName() );
 
-        if(validator == null && domainClass != null)
+        if (validator == null && domainClass != null) {
             validator = domainClass.getValidator();
+        }
+
+        if (validator == null) {
+            return true;
+        }
 
         Boolean valid = Boolean.TRUE;
-        if(validator != null) {
-            // should evict?
-            boolean evict = false;
-            boolean deepValidate = true;
-            Set validatedFields = null;
+        // should evict?
+        boolean evict = false;
+        boolean deepValidate = true;
+        Set validatedFields = null;
 
-            if(arguments.length > 0) {
-                if(arguments[0] instanceof Boolean) {
-                    evict = ((Boolean)arguments[0]).booleanValue();
-                }
-                if(arguments[0] instanceof Map) {
-                    Map argsMap = (Map)arguments[0];
-
-                    if(argsMap.containsKey(ARGUMENT_DEEP_VALIDATE))
-                        deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
-
-                    evict = GrailsClassUtils.getBooleanFromMap(ARGUMENT_EVICT, argsMap);
-                }
-                if (arguments[0] instanceof List) {
-                    validatedFields = new HashSet((List) arguments[0]);
-                }
+        if (arguments.length > 0) {
+            if (arguments[0] instanceof Boolean) {
+                evict = ((Boolean)arguments[0]).booleanValue();
             }
-            if(deepValidate && (validator instanceof CascadingValidator)) {
-                ((CascadingValidator)validator).validate(target, errors, deepValidate);
-            }
-            else {
-                validator.validate(target,errors);
-            }
+            if (arguments[0] instanceof Map) {
+                Map argsMap = (Map)arguments[0];
 
-            int oldErrorCount = errors.getErrorCount();
-            errors = filterErrors(errors, validatedFields, target);
-
-            if(errors.hasErrors()) {
-                valid = Boolean.FALSE;
-                if(evict) {
-                    // if an boolean argument 'true' is passed to the method
-                    // and validation fails then the object will be evicted
-                    // from the session, ensuring it is not saved later when
-                    // flush is called
-                    if(getHibernateTemplate().contains(target)) {
-                        getHibernateTemplate().evict(target);
-                    }
+                if (argsMap.containsKey(ARGUMENT_DEEP_VALIDATE)) {
+                    deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
                 }
-                else {
-                    setObjectToReadOnly(target);
-                }
-            }
-            else {
-                setObjectToReadWrite(target);
-            }
 
-            // If the errors have been filtered, update the 'errors'
-            // object attached to the target.
-            if (errors.getErrorCount() != oldErrorCount) {
-                MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
-                metaClass.setProperty(target, ERRORS_PROPERTY, errors);
+                evict = GrailsClassUtils.getBooleanFromMap(ARGUMENT_EVICT, argsMap);
+            }
+            if (arguments[0] instanceof List) {
+                validatedFields = new HashSet((List)arguments[0]);
             }
         }
+
+        if (deepValidate && (validator instanceof CascadingValidator)) {
+            ((CascadingValidator)validator).validate(target, errors, deepValidate);
+        }
+        else {
+            validator.validate(target,errors);
+        }
+
+        int oldErrorCount = errors.getErrorCount();
+        errors = filterErrors(errors, validatedFields, target);
+
+        if (errors.hasErrors()) {
+            valid = Boolean.FALSE;
+            if (evict) {
+                // if an boolean argument 'true' is passed to the method
+                // and validation fails then the object will be evicted
+                // from the session, ensuring it is not saved later when
+                // flush is called
+                if (getHibernateTemplate().contains(target)) {
+                    getHibernateTemplate().evict(target);
+                }
+            }
+            else {
+                setObjectToReadOnly(target);
+            }
+        }
+        else {
+            setObjectToReadWrite(target);
+        }
+
+        // If the errors have been filtered, update the 'errors' object attached to the target.
+        if (errors.getErrorCount() != oldErrorCount) {
+            MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
+            metaClass.setProperty(target, ERRORS_PROPERTY, errors);
+        }
+
         return valid;
     }
 
+    @SuppressWarnings("unchecked")
     private Errors filterErrors(Errors errors, Set validatedFields, Object target) {
         if (validatedFields == null) return errors;
 
@@ -150,5 +160,4 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
         return result;
     }
-
 }
