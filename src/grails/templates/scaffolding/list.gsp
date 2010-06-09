@@ -28,7 +28,7 @@
                                 if (i < 6) {
                                     if (p.isAssociation()) { %>
                             <th><g:message code="${domainClass.propertyName}.${p.name}.label" default="${p.naturalName}" /></th>
-                   	    <%      } else { %>
+                        <%      } else { %>
                             <g:sortableColumn property="${p.name}" title="\${message(code: '${domainClass.propertyName}.${p.name}.label', default: '${p.naturalName}')}" />
                         <%  }   }   } %>
                         </tr>
@@ -37,7 +37,6 @@
                     <g:each in="\${${propertyName}List}" status="i" var="${propertyName}">
                         <tr class="\${(i % 2) == 0 ? 'odd' : 'even'}">
                         <%  props.eachWithIndex { p, i ->
-                                cp = domainClass.constrainedProperties[p.name]
                                 if (i == 0) { %>
                             <td><g:link action="show" id="\${${propertyName}.id}">\${fieldValue(bean: ${propertyName}, field: "${p.name}")}</g:link></td>
                         <%      } else if (i < 6) {
