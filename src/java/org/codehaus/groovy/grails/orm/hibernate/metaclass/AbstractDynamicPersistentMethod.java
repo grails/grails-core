@@ -17,6 +17,9 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.SessionFactory;
@@ -26,17 +29,10 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
-import java.util.List;
-import java.util.regex.Pattern;
-
 /**
- *
- *
  * @author Steven Devijver
- * @since Aug 7, 2005
  */
-public abstract class AbstractDynamicPersistentMethod extends
-        AbstractDynamicMethodInvocation {
+public abstract class AbstractDynamicPersistentMethod extends AbstractDynamicMethodInvocation {
 
     public static final String ERRORS_PROPERTY = "errors";
 
@@ -45,23 +41,25 @@ public abstract class AbstractDynamicPersistentMethod extends
 
     public AbstractDynamicPersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader) {
         super(pattern);
-        this.classLoader = classLoader;
         Assert.notNull(sessionFactory, "Session factory is required!");
-        hibernateTemplate=new HibernateTemplate(sessionFactory);
+        this.classLoader = classLoader;
+        hibernateTemplate = new HibernateTemplate(sessionFactory);
         hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault());
     }
 
     protected HibernateTemplate getHibernateTemplate() {
-    	return hibernateTemplate;
+        return hibernateTemplate;
     }
 
+    @Override
     public Object invoke(Object target, String methodName, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.classLoader);
             return doInvokeInternal(target, arguments);
-        } finally {
-        	Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
     }
 
@@ -74,17 +72,12 @@ public abstract class AbstractDynamicPersistentMethod extends
      * @param target The target object
      */
     protected void setObjectToReadOnly(final Object target) {
-        SessionFactory sessionFactory = getHibernateTemplate().getSessionFactory();
-
-        GrailsHibernateUtil.setObjectToReadyOnly(target, sessionFactory);
+        GrailsHibernateUtil.setObjectToReadyOnly(target, getHibernateTemplate().getSessionFactory());
     }
 
     protected void setObjectToReadWrite(final Object target) {
-        SessionFactory sessionFactory = getHibernateTemplate().getSessionFactory();
-
-        GrailsHibernateUtil.setObjectToReadWrite(target, sessionFactory);
+        GrailsHibernateUtil.setObjectToReadWrite(target, getHibernateTemplate().getSessionFactory());
     }
-
 
     /**
      * Initializes the Errors property on target.  The target will be assigned a new
@@ -101,10 +94,9 @@ public abstract class AbstractDynamicPersistentMethod extends
         Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
 
         Errors originalErrors = (Errors) mc.getProperty(target, ERRORS_PROPERTY);
-        List originalFieldErrors = originalErrors.getFieldErrors();
-        for(Object o : originalFieldErrors) {
-            FieldError fe = (FieldError) o;
-            if(fe.isBindingFailure()) {
+        for (Object o : originalErrors.getFieldErrors()) {
+            FieldError fe = (FieldError)o;
+            if (fe.isBindingFailure()) {
                 errors.rejectValue(fe.getField(), fe.getCode(), fe.getArguments(), fe.getDefaultMessage());
             }
         }
@@ -112,6 +104,4 @@ public abstract class AbstractDynamicPersistentMethod extends
         mc.setProperty(target, ERRORS_PROPERTY, errors);
         return errors;
     }
-
-
 }

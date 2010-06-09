@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,9 @@ package org.codehaus.groovy.grails.commons.test;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.GroovyTestCase;
+
+import java.io.IOException;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
@@ -28,16 +31,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 
-import java.io.IOException;
-
 /**
  * Abstract simple test harness for testing Grails Applications that just loads
- * the parsed classes into the GrailsApplication instance
+ * the parsed classes into the GrailsApplication instance.
  *
  * @author Graeme Rocher
- *
  */
 public abstract class AbstractGrailsMockTests extends GroovyTestCase {
+
     /**
      * A GroovyClassLoader instance
      */
@@ -48,6 +49,7 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
     public DefaultGrailsApplication ga;
     public MockApplicationContext ctx;
 
+    @Override
     protected final void setUp() throws Exception {
         ExpandoMetaClass.enableGlobally();
         super.setUp();
@@ -57,12 +59,13 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
-        
+
         ga.setApplicationContext(ctx);
         ga.initialise();
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
     }
-    
+
+    @Override
     protected final void tearDown() throws Exception {
         onTearDown();
 
@@ -74,27 +77,27 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
         super.tearDown();
     }
 
-
     protected void onSetUp() {
-	}
-
-    protected void onTearDown() {
-        
+        // implemented in subclasses
     }
 
-	protected MockServletContext createMockServletContext() {
-		return new MockServletContext();
-	}
-	
-	protected MockApplicationContext createMockApplicationContext() {
-		return new MockApplicationContext();
-	}
-	
-	protected Resource[] getResources(String pattern) throws IOException {
-		return new PathMatchingResourcePatternResolver().getResources(pattern);		
-	}
+    protected void onTearDown() {
+        // implemented in subclasses
+    }
+
+    protected MockServletContext createMockServletContext() {
+        return new MockServletContext();
+    }
+
+    protected MockApplicationContext createMockApplicationContext() {
+        return new MockApplicationContext();
+    }
+
+    protected Resource[] getResources(String pattern) throws IOException {
+        return new PathMatchingResourcePatternResolver().getResources(pattern);
+    }
 
     protected MessageSource createMessageSource() {
-        return new StaticMessageSource();        
+        return new StaticMessageSource();
     }
 }

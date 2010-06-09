@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
@@ -29,27 +31,23 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.servlet.http.HttpServletResponse;
-
 /**
- * An interceptor that extends the default spring OSIVI and doesn't flush the session if it has been set
- * to MANUAL on the session itself
+ * Extends the default spring OSIVI and doesn't flush the session if it has been set
+ * to MANUAL on the session itself.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Feb 2, 2007
- *        Time: 12:24:11 AM
  */
 public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterceptor {
 
     private static final String IS_FLOW_REQUEST_ATTRIBUTE = "org.codehaus.groovy.grails.webflow.flow_request";
 
+    @Override
     public void preHandle(WebRequest request) throws DataAccessException {
-        GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST, WebRequest.SCOPE_REQUEST);
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(
+                GrailsApplicationAttributes.WEB_REQUEST, WebRequest.SCOPE_REQUEST);
         final boolean isFlowRequest = webRequest.isFlowRequest();
-        if(isFlowRequest) {
+        if (isFlowRequest) {
             webRequest.setAttribute(IS_FLOW_REQUEST_ATTRIBUTE, "true", WebRequest.SCOPE_REQUEST);
         }
         else {
@@ -57,63 +55,65 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
         }
     }
 
+    @Override
     public void postHandle(WebRequest request, ModelMap model) throws DataAccessException {
         final boolean isFlowRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
-        if(!isFlowRequest) {
+        if (isFlowRequest) {
+            return;
+        }
 
-            try {
-                super.postHandle(request, model);
-            } finally {
-                SessionHolder sessionHolder =
-                        (SessionHolder) TransactionSynchronizationManager.getResource(getSessionFactory());
-
-                Session session = sessionHolder.getSession();
-                session.setFlushMode(FlushMode.MANUAL);
-            }
-
+        try {
+            super.postHandle(request, model);
+        }
+        finally {
+            SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.getResource(getSessionFactory());
+            Session session = sessionHolder.getSession();
+            session.setFlushMode(FlushMode.MANUAL);
         }
     }
 
+    @Override
     public void afterCompletion(WebRequest request, Exception ex) throws DataAccessException {
         final boolean isWebRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
-        if(!isWebRequest) {
-            request = (WebRequest) RequestContextHolder.currentRequestAttributes();
-            if(request instanceof GrailsWebRequest) {
-                GrailsWebRequest webRequest = (GrailsWebRequest) request;
-                HttpServletResponse response = webRequest.getCurrentResponse();
-                if(response instanceof GrailsContentBufferingResponse) {
-                    GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
-                    // if Sitemesh is still active disconnect the session, but don't close the session 
-                    if(bufferingResponse.isActive()) {
-                        try {
-                            Session session = SessionFactoryUtils.getSession(getSessionFactory(), false);
-                            if(session!=null) {
-                                session.disconnect();
-                            }
-                        }
-                        catch (IllegalStateException e) {
-                            super.afterCompletion(request, ex);
-                        }
-                    }
-                    else {
-                        super.afterCompletion(request, ex);
-                    }
-                }
-                else {
-                    super.afterCompletion(request, ex);
-                }
+        if (isWebRequest) {
+            return;
+        }
 
+        request = (WebRequest) RequestContextHolder.currentRequestAttributes();
+        if (!(request instanceof GrailsWebRequest)) {
+            super.afterCompletion(request, ex);
+            return;
+        }
+
+        GrailsWebRequest webRequest = (GrailsWebRequest) request;
+        HttpServletResponse response = webRequest.getCurrentResponse();
+        if (!(response instanceof GrailsContentBufferingResponse)) {
+            super.afterCompletion(request, ex);
+            return;
+        }
+
+        GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
+        // if Sitemesh is still active disconnect the session, but don't close the session
+        if (!bufferingResponse.isActive()) {
+            super.afterCompletion(request, ex);
+            return;
+        }
+
+        try {
+            Session session = SessionFactoryUtils.getSession(getSessionFactory(), false);
+            if (session != null) {
+                session.disconnect();
             }
-            else {
-                super.afterCompletion(request, ex);
-            }
+        }
+        catch (IllegalStateException e) {
+            super.afterCompletion(request, ex);
         }
     }
 
+    @Override
     protected void flushIfNecessary(Session session, boolean existingTransaction) throws HibernateException {
-        if(session != null && session.getFlushMode() != FlushMode.MANUAL) {
+        if (session != null && session.getFlushMode() != FlushMode.MANUAL) {
             super.flushIfNecessary(session, existingTransaction);
         }
     }
-
 }

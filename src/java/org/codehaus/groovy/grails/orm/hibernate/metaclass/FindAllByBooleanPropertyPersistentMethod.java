@@ -14,10 +14,10 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.hibernate.SessionFactory;
-
-import java.util.regex.Pattern;
 
 /**
  * The "findAll<booleanProperty>By*" static persistent method. This method allows querying for
@@ -26,21 +26,20 @@ import java.util.regex.Pattern;
  *
  * eg.
  * Account.findAllActiveByHolder("Joe Blogs"); // Where class "Account" has a properties called "active" and "holder"
- * Account.findAllActiveByHolderAndBranch("Joe Blogs", "London" ); // Where class "Account" has a properties called "active', "holder" and "branch"
+ * Account.findAllActiveByHolderAndBranch("Joe Blogs", "London"); // Where class "Account" has a properties called "active', "holder" and "branch"
  *
  * In both of those queries, the query will only select Account objects where active=true.
  *
  * @author Jeff Brown
- *
  */
 public class FindAllByBooleanPropertyPersistentMethod extends FindAllByPersistentMethod {
 
-	private static final String METHOD_PATTERN = "(findAll)((\\w+)(By)([A-Z]\\w*)|(\\w+))";
+    private static final String METHOD_PATTERN = "(findAll)((\\w+)(By)([A-Z]\\w*)|(\\w+))";
 
-	public FindAllByBooleanPropertyPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
- 		super(application,sessionFactory, classLoader);
-        setPattern(Pattern.compile( METHOD_PATTERN ));
-	}
+    public FindAllByBooleanPropertyPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
+        super(application,sessionFactory, classLoader);
+        setPattern(Pattern.compile(METHOD_PATTERN));
+    }
 
     @Override
     protected boolean firstExpressionIsRequiredBoolean() {

@@ -732,7 +732,12 @@ public class GrailsScriptRunner {
             // Next add all those of installed plugins.
             for (File dir : listKnownPluginDirs(settings)) {
                 File pluginDescriptor = getPluginDescriptor(dir);
-                if (pluginDescriptor != null) descriptors.add(pluginDescriptor);
+                if (pluginDescriptor != null) {
+                    descriptors.add(pluginDescriptor);
+                }
+                else {
+                    out.println("Cannot find plugin descriptor for path '" + dir.getPath() + "'.");
+                }
             }
 
             // Go through all the descriptors and add the appropriate binding
@@ -958,6 +963,8 @@ public class GrailsScriptRunner {
      * if none can be found.
      */
     private static File getPluginDescriptor(File dir) {
+        if (!dir.exists()) return null;
+        
         File[] files = dir.listFiles(new FilenameFilter() {
             public boolean accept(File file, String s) {
                 return s.endsWith("GrailsPlugin.groovy");

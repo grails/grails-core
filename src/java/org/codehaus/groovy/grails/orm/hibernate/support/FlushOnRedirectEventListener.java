@@ -16,32 +16,29 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.hibernate.FlushMode;
-import org.hibernate.SessionFactory;
 import org.hibernate.Session;
-import org.hibernate.HibernateException;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
-
-import java.sql.SQLException;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
- * Flushes the session on a redirect
+ * Flushes the session on a redirect.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-public class FlushOnRedirectEventListener implements RedirectEventListener{
+public class FlushOnRedirectEventListener implements RedirectEventListener {
+
     private SessionFactory sessionFactory;
 
     public FlushOnRedirectEventListener(SessionFactory sf) {
-        this.sessionFactory = sf;
+        sessionFactory = sf;
     }
 
     public void responseRedirected(String url) {
-        HibernateTemplate ht = new HibernateTemplate(sessionFactory);
-        ht.execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                if(session.getFlushMode() != FlushMode.MANUAL) {
+        new HibernateTemplate(sessionFactory).execute(new HibernateCallback<Void>() {
+            public Void doInHibernate(Session session) {
+                if (session.getFlushMode() != FlushMode.MANUAL) {
                     session.flush();
                 }
                 return null;

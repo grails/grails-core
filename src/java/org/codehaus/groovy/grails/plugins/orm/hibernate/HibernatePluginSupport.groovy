@@ -35,13 +35,14 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTransactionManager
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
-import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
+import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
@@ -220,7 +221,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                                   'post-delete':eventTriggeringInterceptor]
             }
 
-            transactionManager(HibernateTransactionManager) {
+            transactionManager(GrailsHibernateTransactionManager) {
                 sessionFactory = sessionFactory
             }
             persistenceInterceptor(HibernatePersistenceContextInterceptor) {
