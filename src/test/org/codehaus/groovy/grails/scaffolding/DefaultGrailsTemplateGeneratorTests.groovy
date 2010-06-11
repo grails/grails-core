@@ -1,5 +1,8 @@
 package org.codehaus.groovy.grails.scaffolding
 
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.validation.metaclass.ConstraintsEvaluatingDynamicProperty
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import grails.util.BuildSettings
@@ -17,10 +20,14 @@ public class DefaultGrailsTemplateGeneratorTests extends GroovyTestCase{
     protected void setUp() {
         def buildSettings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = buildSettings
+
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
     }
 
     protected void tearDown() {
         BuildSettingsHolder.settings = null
+        PluginManagerHolder.pluginManager = null
     }
 
 
