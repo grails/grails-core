@@ -16,6 +16,9 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
@@ -24,13 +27,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import java.util.Map;
-
 /**
  * @author Graeme Rocher
  * @since 1.3.2
  */
 public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter implements ApplicationContextAware {
+
     private GrailsApplication grailsApplication;
     private Closure commandObjectBindingAction;
 
@@ -38,17 +40,18 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
         setApplicationContext(applicationContext);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if(shouldPostProcessController(bean, beanName)) {
-            if(grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, bean.getClass().getName())!=null) {
+        if (shouldPostProcessController(bean, beanName)) {
+            if (grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, bean.getClass().getName()) != null) {
                 GroovyObject controller = (GroovyObject) bean;
                 Map<String, Object> props = (Map<String, Object>) controller.getProperty("properties");
                 for (String propName : props.keySet()) {
                     Object value = props.get(propName);
-                    if(value instanceof Closure) {
+                    if (value instanceof Closure) {
                         final Closure callable = (Closure) value;
-                        if(WebMetaUtils.isCommandObjectAction(callable)) {
+                        if (WebMetaUtils.isCommandObjectAction(callable)) {
                             WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, propName, controller);
                         }
                     }
@@ -62,9 +65,8 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
         return grailsApplication!=null && bean != null && (bean instanceof GroovyObject) && beanName.endsWith(ControllerArtefactHandler.TYPE);
     }
 
-
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.grailsApplication = applicationContext.getBean(GrailsApplication.class);
-        this.commandObjectBindingAction = WebMetaUtils.createCommandObjectBindingAction(applicationContext);
+        grailsApplication = applicationContext.getBean(GrailsApplication.class);
+        commandObjectBindingAction = WebMetaUtils.createCommandObjectBindingAction(applicationContext);
     }
 }

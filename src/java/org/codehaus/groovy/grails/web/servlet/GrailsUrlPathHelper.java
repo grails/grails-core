@@ -14,34 +14,30 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import org.springframework.web.util.UrlPathHelper;
-
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.web.util.UrlPathHelper;
+
 /**
- * Extends the default Spring UrlPathHelper and makes methods Grails path aware
+ * Extends the default Spring UrlPathHelper and makes methods Grails path aware.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Mar 13, 2007
- *        Time: 6:33:29 PM
  */
 public class GrailsUrlPathHelper extends UrlPathHelper {
 
     public static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
     public static final String GRAILS_SERVLET_PATH = "/grails";
 
+    @Override
     public String getPathWithinApplication(HttpServletRequest request) {
         String uri = super.getPathWithinApplication(request).trim();
-        if(uri.startsWith(GRAILS_SERVLET_PATH)) {
+        if (uri.startsWith(GRAILS_SERVLET_PATH)) {
             uri = uri.substring(GRAILS_SERVLET_PATH.length());
         }
-        if(uri.endsWith(GRAILS_DISPATCH_EXTENSION)) {
+        if (uri.endsWith(GRAILS_DISPATCH_EXTENSION)) {
             return uri.substring(0,uri.length()- GRAILS_DISPATCH_EXTENSION.length());
         }
         return uri;
-
     }
 }

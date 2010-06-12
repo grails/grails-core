@@ -20,28 +20,24 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  *
  * @author Graeme Rocher
  * @since 0.2
- *
- * Created Oct 27, 2005
  */
-
 public class ControllerExecutionException extends GrailsMVCException {
 
-	private static final long serialVersionUID = 4625710641559921836L;
+    private static final long serialVersionUID = 4625710641559921836L;
 
-	public ControllerExecutionException() {
-		super();
-	}
+    public ControllerExecutionException() {
+        super();
+    }
 
-	public ControllerExecutionException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+    public ControllerExecutionException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public ControllerExecutionException(String arg0) {
-		super(arg0);
-	}
+    public ControllerExecutionException(String message) {
+        super(message);
+    }
 
-	public ControllerExecutionException(Throwable arg0) {
-		super(arg0);
-	}
-
+    public ControllerExecutionException(Throwable cause) {
+        super(cause);
+    }
 }

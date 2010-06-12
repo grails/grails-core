@@ -17,28 +17,25 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 
 /**
- * An interface used to invoke user code that handles double or invalid submits
- *
+ * Invokes user code that handles double or invalid submits.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Jan 8, 2009
  */
 public interface TokenResponseHandler {
 
     String KEY = "org.codehaus.groovy.grails.TOKEN_RESPONSE_HANDLER";
 
     /**
-     * The method clients use in order to specify behavior in the even of an invalid token
-     *  
+     * Specify behavior in the event of an invalid token.
+     *
      * @param callable The closure to invoke in the event of an invalid token
      * @return A Grails model or null
      */
     Object invalidToken(Closure callable);
 
     /**
-     * Return whether the response handle was invoked
+     * Return whether the response handle was invoked.
      * @return True if it was
      */
     boolean wasInvoked();

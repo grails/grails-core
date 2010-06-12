@@ -17,19 +17,15 @@ package org.codehaus.groovy.grails.web.servlet;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * A holder for the original Wrapped response for use when using includes
+ * A holder for the original Wrapped response for use when using includes.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Mar 8, 2007
- *        Time: 8:16:22 AM
  */
 public class WrappedResponseHolder {
 
-    private static final ThreadLocal wrappedResponseHolder = new InheritableThreadLocal();
-
+    private static final ThreadLocal<HttpServletResponse> wrappedResponseHolder =
+        new InheritableThreadLocal<HttpServletResponse>();
 
     /**
      * Bind the given HttpServletResponse to the current thread.
@@ -41,11 +37,9 @@ public class WrappedResponseHolder {
 
     /**
      * Return the HttpServletResponse currently bound to the thread.
-     * @return the HttpServletResponse currently bound to the thread,
-     * or <code>null</code>
+     * @return the HttpServletResponse currently bound to the thread, or <code>null</code>
      */
     public static HttpServletResponse getWrappedResponse() {
-        return (HttpServletResponse) wrappedResponseHolder.get();
+        return wrappedResponseHolder.get();
     }
-
 }

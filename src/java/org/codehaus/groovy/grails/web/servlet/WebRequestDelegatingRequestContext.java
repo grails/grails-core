@@ -14,39 +14,36 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import java.io.Writer;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.Writer;
-import java.util.Map;
-
 /**
  * Delegates calls to a passed GrailsWebRequest instance.
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jul 20, 2007
- *        Time: 6:34:25 PM
  */
 public class WebRequestDelegatingRequestContext implements GrailsRequestContext {
+
     private GrailsWebRequest webRequest;
 
-
     public WebRequestDelegatingRequestContext() {
-        this.webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
     }
 
     /**
-     * Retrieves the webRequest objec
+     * Retrieves the webRequest object.
      * @return The webrequest object
      */
     public GrailsWebRequest getWebRequest() {
@@ -54,23 +51,24 @@ public class WebRequestDelegatingRequestContext implements GrailsRequestContext 
     }
 
     public HttpServletRequest getRequest() {
-        return this.webRequest.getCurrentRequest();
+        return webRequest.getCurrentRequest();
     }
 
     public HttpServletResponse getResponse() {
-        return this.webRequest.getCurrentResponse();
+        return webRequest.getCurrentResponse();
     }
 
     public HttpSession getSession() {
-        return this.webRequest.getSession();
+        return webRequest.getSession();
     }
 
     public ServletContext getServletContext() {
-        return this.webRequest.getServletContext();
+        return webRequest.getServletContext();
     }
 
+    @SuppressWarnings("unchecked")
     public Map getParams() {
-        return this.webRequest.getParams();
+        return webRequest.getParams();
     }
 
     public ApplicationContext getApplicationContext() {
@@ -79,7 +77,7 @@ public class WebRequestDelegatingRequestContext implements GrailsRequestContext 
     }
 
     public Writer getOut() {
-        return this.webRequest.getOut();
+        return webRequest.getOut();
     }
 
     public String getActionName() {
@@ -92,8 +90,10 @@ public class WebRequestDelegatingRequestContext implements GrailsRequestContext 
 
     public String getRequestURI() {
         HttpServletRequest request = getRequest();
-        String uri = (String) request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
-        if(uri == null) uri = request.getRequestURI();
+        String uri = (String)request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
+        if (uri == null) {
+            uri = request.getRequestURI();
+        }
 
         return uri;
     }

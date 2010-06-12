@@ -18,6 +18,18 @@ package org.codehaus.groovy.grails.web.servlet.filter;
 import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -33,50 +45,41 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * A servlet filter that copies resources from the source on content change and manages reloading if necessary
+ * Copies resources from the source on content change and manages reloading if necessary.
  *
  * @author Graeme Rocher
- * @since Jan 10, 2006
  */
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
+
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);
 
     private GrailsApplicationContext context;
     private WebApplicationContext parent;
     private GrailsApplicationAttributes appAttributes;
 
+    @Override
     protected void initFilterBean() throws ServletException {
         super.initFilterBean();
         appAttributes = new DefaultGrailsApplicationAttributes(getServletContext());
         context = (GrailsApplicationContext)appAttributes.getApplicationContext();
-        parent = (WebApplicationContext)
-                getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
+        parent = (WebApplicationContext)getServletContext().getAttribute(GrailsApplicationAttributes.PARENT_APPLICATION_CONTEXT);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing Grails reload filter...");
         }
 
         try {
             GrailsApplication application = (GrailsApplication)context.getBean(GrailsApplication.APPLICATION_ID);
-                if (!application.isInitialised()) {
-                    application.rebuild();
-                    GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application, parent);
-                    config.reconfigure(context, getServletContext(), true);
-                }
+            if (!application.isInitialised()) {
+                application.rebuild();
+                GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application, parent);
+                config.reconfigure(context, getServletContext(), true);
+            }
         }
         catch (Exception e) {
             GrailsUtil.deepSanitize(e);
@@ -107,5 +110,4 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
         webRequest.setOut(out);
         return out;
     }
-
 }
