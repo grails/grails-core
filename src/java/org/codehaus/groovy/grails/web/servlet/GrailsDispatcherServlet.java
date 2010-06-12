@@ -69,6 +69,7 @@ import org.springframework.web.util.NestedServletException;
  * @since Jul 2, 2005
  */
 public class GrailsDispatcherServlet extends DispatcherServlet {
+
     private static final long serialVersionUID = 8295472557856192662L;
     private GrailsApplication application;
     protected HandlerInterceptor[] interceptors;
@@ -177,6 +178,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
         String[] webRequestInterceptors = webContext.getBeanNamesForType( WebRequestInterceptor.class);
+        @SuppressWarnings("hiding")
         HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 
         // Merge the handler and web request interceptors into a single array. Note that we
@@ -439,4 +441,3 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return super.getHandler(request, cache);
     }
 }
-

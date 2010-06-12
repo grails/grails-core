@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,28 +16,33 @@ package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.http.HttpSession;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.http.HttpSession;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * Grails implementation of Flash scope (@see org.codehaus.groovy.grails.web.servlet.FlashScope)
+ * Grails implementation of Flash scope (@see org.codehaus.groovy.grails.web.servlet.FlashScope).
  *
  * @author Graeme Rocher
- * @since 07-Feb-2006
  */
+@SuppressWarnings("unchecked")
 public class GrailsFlashScope implements FlashScope {
-	private static final long serialVersionUID = 1457772347769500476L;
-	private Map current = new ConcurrentHashMap();
+
+    private static final long serialVersionUID = 1457772347769500476L;
+    private Map current = new ConcurrentHashMap();
     private Map next = new ConcurrentHashMap();
     public static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
     private static final String ERRORS_PROPERTY = "errors";
-
-    public GrailsFlashScope() {
-    }
 
     public void next() {
         current.clear();
@@ -57,23 +62,22 @@ public class GrailsFlashScope implements FlashScope {
                 reassociateObjectsWithErrors((Map) value);
             }
             reassociateObjectWithErrors(scope, value);
-
         }
     }
 
     private void reassociateObjectWithErrors(Map scope, Object value) {
-        if(value instanceof Collection) {
-             Collection values = (Collection)value;
-            for (Object current : values) {
-                reassociateObjectWithErrors(scope, current);
+        if (value instanceof Collection) {
+            Collection values = (Collection)value;
+            for (Object val : values) {
+                reassociateObjectWithErrors(scope, val);
             }
         }
         else {
             String errorsKey = ERRORS_PREFIX + System.identityHashCode(value);
             Object errors = scope.get(errorsKey);
-            if(value!=null && errors != null) {
+            if (value!=null && errors != null) {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
-                if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+                if (mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
                     mc.setProperty(value, ERRORS_PROPERTY, errors);
                 }
             }
@@ -111,7 +115,7 @@ public class GrailsFlashScope implements FlashScope {
     public void putAll(Map t) {
         for (Map.Entry<Object, Object> entry : ((Map<Object,Object>)t).entrySet()) {
             put(entry.getKey(), entry.getValue());
-        }    	
+        }
     }
 
     public Set entrySet() {
@@ -129,65 +133,70 @@ public class GrailsFlashScope implements FlashScope {
     }
 
     public Object get(Object key) {
-        if(next.containsKey(key))
+        if (next.containsKey(key)) {
             return next.get(key);
+        }
         return current.get(key);
     }
 
     public Object remove(Object key) {
-        if(current.containsKey(key))
+        if (current.containsKey(key)) {
             return current.remove(key);
-        else
-            return next.remove(key);
+        }
+
+        return next.remove(key);
     }
 
     public Object put(Object key, Object value) {
         // create the session if it doesn't exist
         registerWithSessionIfNecessary();
-        if(current.containsKey(key)) {
+        if (current.containsKey(key)) {
             current.remove(key);
         }
         storeErrorsIfPossible(next,value);
 
-        if(value == null)
+        if (value == null) {
             return next.remove(key);
-        else
-            return next.put(key,value);
+        }
+
+        return next.put(key,value);
     }
 
     private void storeErrorsIfPossible(Map scope,Object value) {
-        if(value != null) {
+        if (value == null) {
+            return;
+        }
 
-            if(value instanceof Collection) {
-                Collection values = (Collection)value;
-                for (Object current : values) {
-                    storeErrorsIfPossible(scope, current);
-                }            
+        if (value instanceof Collection) {
+            Collection values = (Collection)value;
+            for (Object val : values) {
+                storeErrorsIfPossible(scope, val);
             }
-            else if(value instanceof Map) {
-                Map map = (Map)value;
-                Collection keys = new LinkedList(map.keySet());
-                for (Object key : keys) {
-                    Object val = map.get(key);
-                    storeErrorsIfPossible(map, val);
+        }
+        else if (value instanceof Map) {
+            Map map = (Map)value;
+            Collection keys = new LinkedList(map.keySet());
+            for (Object key : keys) {
+                Object val = map.get(key);
+                storeErrorsIfPossible(map, val);
+            }
+        }
+        else {
+            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+            if (mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+                Object errors = mc.getProperty(value, ERRORS_PROPERTY);
+                if (errors != null) {
+                    scope.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
                 }
             }
-            else {
-                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
-                if(mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
-                    Object errors = mc.getProperty(value, ERRORS_PROPERTY);
-                    if(errors != null) {
-                        scope.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
-                    }
-                }
-            }
-
         }
     }
 
     private void registerWithSessionIfNecessary() {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         HttpSession session = webRequest.getCurrentRequest().getSession(true);
-        if(session.getAttribute(GrailsApplicationAttributes.FLASH_SCOPE) == null) session.setAttribute(GrailsApplicationAttributes.FLASH_SCOPE, this);
+        if (session.getAttribute(GrailsApplicationAttributes.FLASH_SCOPE) == null) {
+            session.setAttribute(GrailsApplicationAttributes.FLASH_SCOPE, this);
+        }
     }
 }

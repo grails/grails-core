@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
@@ -51,18 +52,14 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
  *
  * @author Graeme Rocher
  * @since 0.4
- *
- *        <p/>
- *        Created: Feb 27, 2007
- *        Time: 8:25:10 AM
  */
 public class GroovyPageView extends AbstractUrlBasedView  {
+
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
     public static final String EXCEPTION_MODEL_KEY = "exception";
     private GroovyPagesTemplateEngine templateEngine;
 
-
-	/**
+    /**
      * Delegates to renderMergedOutputModel(..)
      *
      * @see #renderMergedOutputModel(java.util.Map, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -72,65 +69,63 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @param response The HttpServletResponse
      * @throws Exception When an error occurs rendering the view
      */
+    @SuppressWarnings("unchecked")
+    @Override
     protected final void renderMergedOutputModel(Map model, HttpServletRequest request, HttpServletResponse response) throws Exception {
         // templateEngine is always same instance in context, can use cached; removed static cache in GrailsViewResolver
-        if(templateEngine == null) throw new IllegalStateException("No GroovyPagesTemplateEngine found in ApplicationContext!");
-        
+        Assert.state(templateEngine != null, "No GroovyPagesTemplateEngine found in ApplicationContext!");
+
         super.exposeModelAsRequestAttributes(model, request);
         renderWithTemplateEngine(templateEngine,model, response, request); // new ModelExposingHttpRequestWrapper(request, model)
     }
 
-    
     /**
-     * Replaces the requirement for "super.exposeModelAsRequestAttributes(model, request);" in renderMergedOutputModel
-     * 
-     *  
-     *  not is use, since causes bugs, could improve performance
-     * 
-     * @author Lari Hotari
+     * Replaces the requirement for "super.exposeModelAsRequestAttributes(model, request);" in renderMergedOutputModel.
      *
-     */
-    /*
+     *  not in use, since causes bugs, could improve performance
+     *
+     * @author Lari Hotari
     private static class ModelExposingHttpRequestWrapper extends HttpServletRequestWrapper {
-    	Map model;
-    	
-		public ModelExposingHttpRequestWrapper(HttpServletRequest request, Map model) {
-			super(request);
-			this.model=model;
-		}
+        Map model;
 
-		@Override
-		public Object getAttribute(String name) {
-			Object value=super.getAttribute(name);
-			if(value==null) {
-				return model.get(name);
-			}
-			return value;
-		}
+        public ModelExposingHttpRequestWrapper(HttpServletRequest request, Map model) {
+            super(request);
+            this.model = model;
+        }
 
-		@Override
-		public Enumeration getAttributeNames() {
-			return CollectionUtils.append(super.getAttributeNames(), CollectionUtils.asEnumeration(model.keySet().iterator()));
-		}
+        @Override
+        public Object getAttribute(String name) {
+            Object value = super.getAttribute(name);
+            if (value == null) {
+                return model.get(name);
+            }
+            return value;
+        }
 
-		@Override
-		public void removeAttribute(String name) {
-			super.removeAttribute(name);
-			model.remove(name);
-		}
+        @Override
+        public Enumeration<?> getAttributeNames() {
+            return CollectionUtils.append(super.getAttributeNames(),
+                    CollectionUtils.asEnumeration(model.keySet().iterator()));
+        }
 
-		@Override
-		public void setAttribute(String name, Object o) {
-			super.setAttribute(name, o);
-			if(o == null) {
-				model.remove(name);
-			}
-		}
+        @Override
+        public void removeAttribute(String name) {
+            super.removeAttribute(name);
+            model.remove(name);
+        }
+
+        @Override
+        public void setAttribute(String name, Object o) {
+            super.setAttribute(name, o);
+            if (o == null) {
+                model.remove(name);
+            }
+        }
     }
     */
-    
+
     /**
-     * Renders a page with the specified TemplateEngine, mode and response
+     * Renders a page with the specified TemplateEngine, mode and response.
      *
      * @param templateEngine The TemplateEngine to use
      * @param model The model to use
@@ -139,48 +134,53 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      *
      * @throws java.io.IOException Thrown when an error occurs writing the response
      */
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
-                                            HttpServletResponse response, HttpServletRequest request) throws IOException {
+    @SuppressWarnings("unchecked")
+    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
+            HttpServletResponse response, HttpServletRequest request) throws IOException {
+
         Writer out = null;
         try {
             out = createResponseWriter(response);
-            Template t = templateEngine.createTemplate(getUrl());
+            Template t = engine.createTemplate(getUrl());
             Writable w = t.make(model);
-
             w.writeTo(out);
         }
-        catch(Exception e) {
+        catch (Exception e) {
             // create fresh response writer
             out = createResponseWriter(response);
-            handleException(e, out, templateEngine, request, response);
+            handleException(e, out, engine, request, response);
         }
         finally {
-            if(out!=null)out.close();
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
     /**
-     * Performs exception handling by attempting to render the Errors view
+     * Performs exception handling by attempting to render the Errors view.
      *
      * @param exception The exception that occured
      * @param out The Writer
      * @param engine The GSP engine
      */
-    protected void handleException(Exception exception, Writer out, GroovyPagesTemplateEngine engine, HttpServletRequest request, HttpServletResponse response)  {
+    protected void handleException(Exception exception, @SuppressWarnings("unused") Writer out,
+            @SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
+            @SuppressWarnings("unused") HttpServletRequest request,
+            @SuppressWarnings("unused") HttpServletResponse response)  {
 
         GrailsUtil.deepSanitize(exception);
         LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);
-        if(exception instanceof GroovyPagesException) {
+        if (exception instanceof GroovyPagesException) {
             throw (GroovyPagesException) exception;
         }
-        else {
-            throw new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(), exception,-1, getUrl());
-        }
+
+        throw new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
+                exception, -1, getUrl());
     }
 
-
     /**
-     * Creates the Response Writer for the specified HttpServletResponse instance
+     * Creates the Response Writer for the specified HttpServletResponse instance.
      *
      * @param response The HttpServletResponse instance
      * @return A response Writer
@@ -194,6 +194,6 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     }
 
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
-		this.templateEngine = templateEngine;
-	}
+        this.templateEngine = templateEngine;
+    }
 }

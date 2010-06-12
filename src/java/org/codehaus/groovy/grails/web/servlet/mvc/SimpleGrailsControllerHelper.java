@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import groovy.lang.MissingPropertyException;
 import groovy.util.Proxy;
 
 import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -51,72 +52,64 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedEx
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * <p>This is a helper class that does the main job of dealing with Grails web requests
+ * Does the main job of dealing with Grails web requests.
  *
  * @author Graeme Rocher
  * @since 0.1
- * 
- * Created: 12-Jan-2006
  */
 public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
-    
-
     private GrailsApplication application;
     private ApplicationContext applicationContext;
+    @SuppressWarnings("unchecked")
     private Map chainModel = Collections.EMPTY_MAP;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
-	private GrailsWebRequest webRequest;
-    
+    private GrailsWebRequest webRequest;
+
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private String id;
     private String controllerName;
     private String actionName;
-    
+
     public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
-        super();
         this.application = application;
-        this.applicationContext = context;
+        applicationContext = context;
         this.servletContext = servletContext;
-        this.grailsAttributes = new DefaultGrailsApplicationAttributes(this.servletContext);
+        grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
     }
 
     public ServletContext getServletContext() {
-        return this.servletContext;
+        return servletContext;
     }
 
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByName(java.lang.String)
-      */
+     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByName(java.lang.String)
+     */
     public GrailsControllerClass getControllerClassByName(String name) {
-        return (GrailsControllerClass) this.application.getArtefact(
-            ControllerArtefactHandler.TYPE, name);
+        return (GrailsControllerClass) application.getArtefact(
+                ControllerArtefactHandler.TYPE, name);
     }
 
-
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByURI(java.lang.String)
-      */
+     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerClassByURI(java.lang.String)
+     */
     public GrailsControllerClass getControllerClassByURI(String uri) {
-        return (GrailsControllerClass) this.application.getArtefactForFeature(
-            ControllerArtefactHandler.TYPE, uri);
+        return (GrailsControllerClass) application.getArtefactForFeature(
+                ControllerArtefactHandler.TYPE, uri);
     }
 
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerInstance(org.codehaus.groovy.grails.commons.GrailsControllerClass)
-      */
+     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#getControllerInstance(org.codehaus.groovy.grails.commons.GrailsControllerClass)
+     */
     public GroovyObject getControllerInstance(GrailsControllerClass controllerClass) {
-        return (GroovyObject)this.applicationContext.getBean(controllerClass.getFullName());
+        return (GroovyObject)applicationContext.getBean(controllerClass.getFullName());
     }
-
-
-
-
 
     /**
      * If in Proxy's are used in the Groovy context, unproxy (is that a word?) them by setting
@@ -125,32 +118,30 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
      * @param model The model as a map
      */
     private void removeProxiesFromModelObjects(Map<Object, Object> model) {
-        for (Map.Entry entry : model.entrySet()) {
-            if(entry.getValue() instanceof Proxy) {
-            	entry.setValue(((Proxy)entry.getValue()).getAdaptee());
+        for (Map.Entry<Object, Object> entry : model.entrySet()) {
+            if (entry.getValue() instanceof Proxy) {
+                entry.setValue(((Proxy)entry.getValue()).getAdaptee());
             }
         }
     }
 
-    
-	public ModelAndView handleURI(String uri, GrailsWebRequest webRequest) {
-		return handleURI(uri, webRequest, Collections.EMPTY_MAP);
-	}
-	
+    public ModelAndView handleURI(String uri, GrailsWebRequest request) {
+        return handleURI(uri, request, Collections.EMPTY_MAP);
+    }
+
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
-      */
-    public ModelAndView handleURI(String uri, GrailsWebRequest webRequest, Map params) {
-        if(uri == null) {
-            throw new IllegalArgumentException("Controller URI [" + uri + "] cannot be null!");
-        }
-        HttpServletRequest request = webRequest.getCurrentRequest();
-        HttpServletResponse response = webRequest.getCurrentResponse();
+     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
+     */
+    @SuppressWarnings("unchecked")
+    public ModelAndView handleURI(String uri, GrailsWebRequest grailsWebRequest, Map params) {
+        Assert.notNull(uri, "Controller URI [" + uri + "] cannot be null!");
 
-        configureStateForWebRequest(webRequest, request);
+        HttpServletRequest request = grailsWebRequest.getCurrentRequest();
+        HttpServletResponse response = grailsWebRequest.getCurrentResponse();
 
+        configureStateForWebRequest(grailsWebRequest, request);
 
-        if(uri.endsWith("/")) {
+        if (uri.endsWith("/")) {
             uri = uri.substring(0,uri.length() - 1);
         }
 
@@ -164,52 +155,47 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
 
         actionName = controllerClass.getClosurePropertyName(uri);
-        webRequest.setActionName(actionName);
+        grailsWebRequest.setActionName(actionName);
 
-        
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Processing request for controller ["+controllerName+"], action ["+actionName+"], and id ["+id+"]");
         }
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
 
-
-        if(!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
-        	try {
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-				return null;
-			} catch (IOException e) {
-				throw new ControllerExecutionException("I/O error sending 403 error",e);
-			}
+        if (!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
+            try {
+                response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                return null;
+            }
+            catch (IOException e) {
+                throw new ControllerExecutionException("I/O error sending 403 error",e);
+            }
         }
-        
+
         request.setAttribute( GrailsApplicationAttributes.CONTROLLER, controller );
 
-
         // Step 4: Set grails attributes in request scope
-        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,this.grailsAttributes);
+        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,grailsAttributes);
 
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);
 
         boolean executeAction = invokeBeforeInterceptor(controller, controllerClass);
         // if the interceptor returned false don't execute the action
-        if(!executeAction)
+        if (!executeAction) {
             return null;
+        }
 
         ModelAndView mv = executeAction(controller, controllerClass, viewName, request, response, params);
-
 
         boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, mv) && !response.isCommitted();
         return returnModelAndView ? mv : null;
     }
 
-
-
-
     /**
-     * Invokes the action defined by the webRequest for the given arguments
-     * 
+     * Invokes the action defined by the webRequest for the given arguments.
+     *
      * @param controller The controller instance
      * @param controllerClass The GrailsControllerClass that defines the conventions within the controller
      * @param viewName The name of the view to delegate to if necessary
@@ -218,7 +204,10 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
      * @param params A map of parameters
      * @return A Spring ModelAndView instance
      */
-    protected ModelAndView executeAction(GroovyObject controller, GrailsControllerClass controllerClass, String viewName, HttpServletRequest request, HttpServletResponse response, Map params) {
+    @SuppressWarnings("unchecked")
+    protected ModelAndView executeAction(GroovyObject controller,
+            @SuppressWarnings("unused") GrailsControllerClass controllerClass,
+            String viewName, HttpServletRequest request, HttpServletResponse response, Map params) {
         // Step 5a: Check if there is a before interceptor if there is execute it
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
@@ -226,19 +215,21 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure action;
             try {
                 action = (Closure)controller.getProperty(actionName);
-                if(WebMetaUtils.isCommandObjectAction(action)) {
-                	action = WebMetaUtils.createAndPrepareCommandObjectAction(controller, action, actionName, this.applicationContext);                	
+                if (WebMetaUtils.isCommandObjectAction(action)) {
+                    action = WebMetaUtils.createAndPrepareCommandObjectAction(
+                            controller, action, actionName, applicationContext);
                 }
             }
             catch(MissingPropertyException mpe) {
                 try {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     return null;
-                } catch (IOException e) {
-                        throw new ControllerExecutionException("I/O error sending 404 error",e);
+                }
+                catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error sending 404 error",e);
                 }
             }
-            
+
             // Step 7: process the action
             Object returnValue = null;
             try {
@@ -247,57 +238,56 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             catch (Throwable t) {
                 GrailsUtil.deepSanitize(t);
                 String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());
-                pluginName = pluginName != null ? "in plugin ["+pluginName+"]" : "";  
-                throw new ControllerExecutionException("Executing action ["+actionName+"] of controller ["+controller.getClass().getName()+"] "+pluginName+" caused exception: " + t.getMessage(), t);
+                pluginName = pluginName != null ? "in plugin ["+pluginName+"]" : "";
+                throw new ControllerExecutionException("Executing action [" + actionName +
+                        "] of controller [" + controller.getClass().getName() + "] " +
+                        pluginName + " caused exception: " + t.getMessage(), t);
             }
-
 
             // Step 8: determine return value type and handle accordingly
             initChainModel(controller);
-            if(response.isCommitted()) {
-                if(LOG.isDebugEnabled()) {
+            if (response.isCommitted()) {
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Response has been redirected, returning null model and view");
                 }
                 return null;
             }
-            else {
 
-                TokenResponseHandler handler = (TokenResponseHandler) request.getAttribute(TokenResponseHandler.KEY);
-                if(handler != null && !handler.wasInvoked() && handler.wasInvalidToken()) {
-                    String uri = (String) request.getAttribute(SynchronizerToken.URI);
-                    if(uri == null) {
-                        uri = WebUtils.getForwardURI(request);
-                    }
-                    try {
-                        FlashScope flashScope = webRequest.getFlashScope();
-                        flashScope.put("invalidToken", request.getParameter(SynchronizerToken.KEY));
-                        response.sendRedirect(uri);
-                        return null;
-                    }
-                    catch (IOException e) {
-                        throw new ControllerExecutionException("I/O error sending redirect to URI: " + uri,e);
-                    }
+            TokenResponseHandler handler = (TokenResponseHandler) request.getAttribute(TokenResponseHandler.KEY);
+            if (handler != null && !handler.wasInvoked() && handler.wasInvalidToken()) {
+                String uri = (String) request.getAttribute(SynchronizerToken.URI);
+                if (uri == null) {
+                    uri = WebUtils.getForwardURI(request);
                 }
-                else if(request.getAttribute(ForwardMethod.CALLED) == null) {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
-                    }
-                    ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
-                    }
-                    return mv;
-                }
-                else {
+                try {
+                    FlashScope flashScope = webRequest.getFlashScope();
+                    flashScope.put("invalidToken", request.getParameter(SynchronizerToken.KEY));
+                    response.sendRedirect(uri);
                     return null;
                 }
+                catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error sending redirect to URI: " + uri,e);
+                }
             }
-
-        } finally {
+            else if (request.getAttribute(ForwardMethod.CALLED) == null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
+                }
+                ModelAndView mv = handleActionResponse(controller,returnValue,actionName,viewName);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Action ["+actionName+"] handled, created Spring model and view ["+mv+"]");
+                }
+                return mv;
+            }
+            else {
+                return null;
+            }
+        }
+        finally {
             try {
                 Thread.currentThread().setContextClassLoader(cl);
             }
-            catch (java.security.AccessControlException e) {
+            catch (AccessControlException e) {
                 // not allowed by container, probably related to WAR deployment on AppEngine. Proceed.
             }
         }
@@ -305,15 +295,15 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     private boolean invokeBeforeInterceptor(GroovyObject controller, GrailsControllerClass controllerClass) {
         boolean executeAction = true;
-        if(controllerClass.isInterceptedBefore(controller,actionName)) {
+        if (controllerClass.isInterceptedBefore(controller,actionName)) {
             Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
-            if(beforeInterceptor!= null) {
-                if(beforeInterceptor.getDelegate() != controller) {
+            if (beforeInterceptor!= null) {
+                if (beforeInterceptor.getDelegate() != controller) {
                     beforeInterceptor.setDelegate(controller);
-                    beforeInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);                    
+                    beforeInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
                 }
                 Object interceptorResult = beforeInterceptor.call();
-                if(interceptorResult instanceof Boolean) {
+                if (interceptorResult instanceof Boolean) {
                     executeAction = ((Boolean)interceptorResult).booleanValue();
                 }
             }
@@ -321,58 +311,62 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return executeAction;
     }
 
+    private void configureStateForWebRequest(GrailsWebRequest grailsWebRequest, HttpServletRequest request) {
+        this.webRequest = grailsWebRequest;
+        actionName = grailsWebRequest.getActionName();
+        controllerName = grailsWebRequest.getControllerName();
+        id = grailsWebRequest.getId();
 
-    private void configureStateForWebRequest(GrailsWebRequest webRequest, HttpServletRequest request) {
-        this.webRequest = webRequest;
-        this.actionName = webRequest.getActionName();
-        this.controllerName = webRequest.getControllerName();
-        this.id = webRequest.getId();
-
-        if(StringUtils.isBlank(id) && request.getParameter(GrailsWebRequest.ID_PARAMETER) != null) {
+        if (StringUtils.isBlank(id) && request.getParameter(GrailsWebRequest.ID_PARAMETER) != null) {
             id = request.getParameter(GrailsWebRequest.ID_PARAMETER);
         }
     }
 
-    private boolean invokeAfterInterceptor(GrailsControllerClass controllerClass, GroovyObject controller, ModelAndView mv) {
+    @SuppressWarnings("unchecked")
+    private boolean invokeAfterInterceptor(GrailsControllerClass controllerClass,
+            GroovyObject controller, ModelAndView mv) {
         // Step 9: Check if there is after interceptor
         Object interceptorResult = null;
-        if(controllerClass.isInterceptedAfter(controller,actionName)) {
+        if (controllerClass.isInterceptedAfter(controller,actionName)) {
             Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
-            if(afterInterceptor.getDelegate() != controller) {
+            if (afterInterceptor.getDelegate() != controller) {
                 afterInterceptor.setDelegate(controller);
                 afterInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
             }
             Map model = new HashMap();
-            if(mv != null) {
-				model =	mv.getModel() != null ? mv.getModel() : new HashMap();
+            if (mv != null) {
+                model =    mv.getModel() != null ? mv.getModel() : new HashMap();
             }
             switch(afterInterceptor.getMaximumNumberOfParameters()){
                 case 1:
                     interceptorResult = afterInterceptor.call(new Object[]{ model });
                     break;
-                case 2:                   
+                case 2:
                     interceptorResult = afterInterceptor.call(new Object[]{ model, mv });
                     break;
                 default:
                     throw new ControllerExecutionException("AfterInterceptor closure must accept one or two parameters");
             }
         }
-        return !(interceptorResult != null && interceptorResult instanceof Boolean) || ((Boolean) interceptorResult).booleanValue();
+        return !(interceptorResult != null && interceptorResult instanceof Boolean) ||
+            ((Boolean) interceptorResult).booleanValue();
     }
-
 
     public GrailsApplicationAttributes getGrailsAttributes() {
-        return this.grailsAttributes;
+        return grailsAttributes;
     }
 
-    public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request, HttpServletResponse response) {
+    public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request,
+            HttpServletResponse response) {
         return handleAction(controller,action,request,response,Collections.EMPTY_MAP);
     }
 
-    public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request, HttpServletResponse response, Map params) {
-        GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params"); 
+    @SuppressWarnings("unchecked")
+    public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request,
+            HttpServletResponse response, Map params) {
+        GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
         // if there are additional params add them to the params dynamic property
-        if(params != null && !params.isEmpty()) {
+        if (params != null && !params.isEmpty()) {
             paramsMap.putAll( params );
         }
         Object returnValue = action.call();
@@ -384,84 +378,89 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     }
 
     /* (non-Javadoc)
-      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleActionResponse(org.codehaus.groovy.grails.commons.GrailsControllerClass, java.lang.Object, java.lang.String, java.lang.String)
-      */
+     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleActionResponse(org.codehaus.groovy.grails.commons.GrailsControllerClass, java.lang.Object, java.lang.String, java.lang.String)
+     */
+    @SuppressWarnings("unchecked")
     public ModelAndView handleActionResponse( GroovyObject controller,Object returnValue,String closurePropertyName, String viewName) {
         boolean viewNameBlank = (viewName == null || viewName.length() == 0);
         // reset the metaclass
         ModelAndView explicityModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
 
-        if(!webRequest.isRenderView()) {
+        if (!webRequest.isRenderView()) {
             return null;
         }
-        else if(explicityModelAndView != null) {
+
+        if (explicityModelAndView != null) {
             return explicityModelAndView;
         }
-        else if (returnValue == null) {
+
+        if (returnValue == null) {
             if (viewNameBlank) {
                 return null;
-            } else {
-                Map model;
-                if(!this.chainModel.isEmpty()) {
-                    model = new CompositeMap(this.chainModel, new BeanMap(controller));
-                }
-                else {
-                    model = new BeanMap(controller);
-                }
-
-                return new ModelAndView(viewName, model);
-            }
-        } else if (returnValue instanceof Map) {
-            // remove any Proxy wrappers and set the adaptee as the value
-            Map finalModel = new LinkedHashMap();
-            if(!this.chainModel.isEmpty()) {
-                finalModel.putAll(this.chainModel);
-            }
-            Map returnModel = (Map)returnValue;
-            finalModel.putAll(returnModel);
-
-            removeProxiesFromModelObjects(finalModel);
-            return new ModelAndView(viewName, finalModel);
-
-        } else if (returnValue instanceof ModelAndView) {
-            ModelAndView modelAndView = (ModelAndView)returnValue;
-
-            // remove any Proxy wrappers and set the adaptee as the value
-            Map modelMap = modelAndView.getModel();
-            removeProxiesFromModelObjects(modelMap);
-
-            if(!this.chainModel.isEmpty()) {
-                modelAndView.addAllObjects(this.chainModel);
             }
 
-            if (modelAndView.getView() == null && modelAndView.getViewName() == null) {
-                if (viewNameBlank) {
-                    throw new NoViewNameDefinedException("ModelAndView instance returned by and no view name defined by nor for closure on property [" + closurePropertyName + "] in controller [" + controller.getClass() + "]!");
-                } else {
-                    modelAndView.setViewName(viewName);
-                }
-            }
-            return modelAndView;
-        }
-        else {
             Map model;
-            if(!this.chainModel.isEmpty()) {
-                model = new CompositeMap(this.chainModel, new BeanMap(controller));
+            if (!chainModel.isEmpty()) {
+                model = new CompositeMap(chainModel, new BeanMap(controller));
             }
             else {
                 model = new BeanMap(controller);
             }
             return new ModelAndView(viewName, model);
         }
+
+        if (returnValue instanceof Map) {
+            // remove any Proxy wrappers and set the adaptee as the value
+            Map finalModel = new LinkedHashMap();
+            if (!chainModel.isEmpty()) {
+                finalModel.putAll(chainModel);
+            }
+            Map returnModel = (Map)returnValue;
+            finalModel.putAll(returnModel);
+
+            removeProxiesFromModelObjects(finalModel);
+            return new ModelAndView(viewName, finalModel);
+        }
+
+        if (returnValue instanceof ModelAndView) {
+            ModelAndView modelAndView = (ModelAndView)returnValue;
+
+            // remove any Proxy wrappers and set the adaptee as the value
+            Map modelMap = modelAndView.getModel();
+            removeProxiesFromModelObjects(modelMap);
+
+            if (!chainModel.isEmpty()) {
+                modelAndView.addAllObjects(chainModel);
+            }
+
+            if (modelAndView.getView() == null && modelAndView.getViewName() == null) {
+                if (viewNameBlank) {
+                    throw new NoViewNameDefinedException("ModelAndView instance returned by and no view name defined by nor for closure on property [" + closurePropertyName + "] in controller [" + controller.getClass() + "]!");
+                }
+
+                modelAndView.setViewName(viewName);
+            }
+            return modelAndView;
+        }
+
+        Map model;
+        if (!chainModel.isEmpty()) {
+            model = new CompositeMap(chainModel, new BeanMap(controller));
+        }
+        else {
+            model = new BeanMap(controller);
+        }
+        return new ModelAndView(viewName, model);
     }
 
-	private void initChainModel(GroovyObject controller) {
-		FlashScope fs = this.grailsAttributes.getFlashScope((HttpServletRequest)controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
-        if(fs.containsKey(PROPERTY_CHAIN_MODEL)) {
-            this.chainModel = (Map)fs.get(PROPERTY_CHAIN_MODEL);
-            if(this.chainModel == null)
-                this.chainModel = Collections.EMPTY_MAP;
+    @SuppressWarnings("unchecked")
+    private void initChainModel(GroovyObject controller) {
+        FlashScope fs = grailsAttributes.getFlashScope((HttpServletRequest)controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
+        if (fs.containsKey(PROPERTY_CHAIN_MODEL)) {
+            chainModel = (Map)fs.get(PROPERTY_CHAIN_MODEL);
+            if (chainModel == null) {
+                chainModel = Collections.EMPTY_MAP;
+            }
         }
-	}
-
+    }
 }

@@ -17,14 +17,12 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 
 /**
- * An abstract class that implements the behavior of wasInvoked in the TokenResponseHandler interface
+ * Implements the behavior of wasInvoked in the TokenResponseHandler interface.
  *
  * @see TokenResponseHandler#wasInvoked()
- * 
+ *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Jan 8, 2009
  */
 public abstract class AbstractTokenResponseHandler implements TokenResponseHandler{
 
@@ -32,12 +30,10 @@ public abstract class AbstractTokenResponseHandler implements TokenResponseHandl
     private boolean valid;
 
     public AbstractTokenResponseHandler(boolean valid) {
-        super();
         this.valid = valid;
     }
 
-
-    final public Object invalidToken(Closure callable) {
+    public final Object invalidToken(Closure callable) {
         invoked = true;
         return invalidTokenInternal(callable);
     }

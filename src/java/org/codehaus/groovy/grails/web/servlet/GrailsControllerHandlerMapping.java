@@ -15,6 +15,11 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.Environment;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -24,16 +29,13 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
+import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-
 /**
- * A handler mapping that matches Grails' SimpleController class
+ * Matches Grails' SimpleController class.
  *
  * @author Graeme Rocher
  * @since 1.2
@@ -44,37 +46,38 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
     private GrailsApplication grailsApplication;
     private UrlPathHelper urlHelper = new GrailsUrlPathHelper();
 
+    @Override
     protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
 
         String uri = urlHelper.getPathWithinApplication(request);
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("Looking up Grails controller for URI ["+uri+"]");
         }
         GrailsControllerClass controllerClass = (GrailsControllerClass) grailsApplication.getArtefactForFeature(
-            ControllerArtefactHandler.TYPE, uri);
+                ControllerArtefactHandler.TYPE, uri);
 
         return getHandlerForControllerClass(controllerClass, request);
     }
 
     /**
-     * Obtains the handler for the given controller class
+     * Obtains the handler for the given controller class.
      *
      * @param controllerClass The controller class
      * @param request The HttpServletRequest
      * @return The handler
      */
-    protected Object getHandlerForControllerClass(GrailsControllerClass controllerClass, HttpServletRequest request) {
-        if(controllerClass!=null) {
+    protected Object getHandlerForControllerClass(GrailsControllerClass controllerClass,
+            @SuppressWarnings("unused") HttpServletRequest request) {
+        if (controllerClass != null) {
             try {
                 return getWebApplicationContext().getBean(MAIN_CONTROLLER_BEAN, Controller.class);
             }
             catch (NoSuchBeanDefinitionException e) {
-                 // ignore
+                // ignore
             }
         }
         return null;
     }
-
 
     @Override
     protected final HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
@@ -83,27 +86,22 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
             chain.addInterceptors(lookupInterceptors(getWebApplicationContext()));
             return chain;
         }
-        else {
-            return new HandlerExecutionChain(handler, lookupInterceptors(getWebApplicationContext()));
-        }
 
+        return new HandlerExecutionChain(handler, lookupInterceptors(getWebApplicationContext()));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void extendInterceptors(List interceptors) {
         setInterceptors(establishInterceptors(getWebApplicationContext()));
     }
 
     protected HandlerInterceptor[] lookupInterceptors(WebApplicationContext applicationContext) {
-        HandlerInterceptor[] interceptors;
-        if(Environment.getCurrent()==Environment.DEVELOPMENT) {
-            interceptors = establishInterceptors(applicationContext);
+        if (Environment.getCurrent() == Environment.DEVELOPMENT) {
+            return establishInterceptors(applicationContext);
         }
-        else {
-            interceptors = this.getAdaptedInterceptors();
 
-        }
-        return interceptors;
+        return getAdaptedInterceptors();
     }
 
     /**
@@ -113,10 +111,9 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
      * @return An array of HandlerInterceptor instances
      */
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
-        HandlerInterceptor[] interceptors;
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
         String[] webRequestInterceptors = webContext.getBeanNamesForType( WebRequestInterceptor.class);
-        interceptors = new HandlerInterceptor[interceptorNames.length+webRequestInterceptors.length];
+        HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 
         // Merge the handler and web request interceptors into a single
         // array. Note that we start with the web request interceptors
@@ -124,8 +121,7 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         // web request interceptor) is invoked before the user-defined
         // filters (which are attached to a handler interceptor). This
         // should ensure that the Hibernate session is in the proper
-        // state if and when users access the database within their
-        // filters.
+        // state if and when users access the database within their filters.
         int j = 0;
         for (String webRequestInterceptor : webRequestInterceptors) {
             interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor) webContext.getBean(webRequestInterceptor));

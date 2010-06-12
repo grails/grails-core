@@ -14,21 +14,21 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
-import org.springframework.web.servlet.View;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
+
+import org.springframework.web.servlet.View;
 
 /**
- * A view that does nothing
- * 
+ * A view that does nothing.
+ *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Jan 9, 2008
  */
 public class NullView implements View {
+
     private String contentType;
 
     public NullView(String contentType) {
@@ -39,7 +39,8 @@ public class NullView implements View {
         return contentType;
     }
 
-    public void render(Map model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    @SuppressWarnings("unchecked")
+    public void render(Map model, HttpServletRequest request, HttpServletResponse response) {
         // do nothing
     }
 }

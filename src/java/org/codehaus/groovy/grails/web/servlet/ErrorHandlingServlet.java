@@ -14,13 +14,21 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import com.opensymphony.module.sitemesh.*;
-import com.opensymphony.sitemesh.*;
-import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
-import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
-import com.opensymphony.sitemesh.compatability.HTMLPage2Content;
-import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Collections;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -29,8 +37,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder;
 import org.codehaus.groovy.grails.web.util.IncludeResponseWrapper;
-import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.grails.web.util.IncludedContent;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -38,31 +46,35 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.PrintWriter;
-import java.io.OutputStreamWriter;
-import java.util.Collections;
+import com.opensymphony.module.sitemesh.Factory;
+import com.opensymphony.module.sitemesh.HTMLPage;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.PageParser;
+import com.opensymphony.sitemesh.Decorator;
+import com.opensymphony.sitemesh.DecoratorSelector;
+import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
+import com.opensymphony.sitemesh.compatability.HTMLPage2Content;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
 /**
- * A servlet for handling errors
+ * A servlet for handling errors.
  *
  * @author mike
  * @since 1.0-RC1
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
-	private static final long serialVersionUID = 8792197458391395589L;
-	private static final String TEXT_HTML = "text/html";
+
+    private static final long serialVersionUID = 8792197458391395589L;
+    private static final String TEXT_HTML = "text/html";
     private static final String GSP_SUFFIX = ".gsp";
     private static final String JSP_SUFFIX = ".jsp";
 
+    @Override
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
         return request; // ignore multipart requests when an error occurs
     }
 
+    @Override
     protected void doDispatch(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         int statusCode;
 
@@ -74,22 +86,22 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         }
 
         Throwable t = null;
-        if(request.getAttribute("javax.servlet.error.exception") != null) {
+        if (request.getAttribute("javax.servlet.error.exception") != null) {
             t = (Throwable)request.getAttribute("javax.servlet.error.exception");
-            if(!(t instanceof GrailsWrappedRuntimeException) && request.getAttribute("exception") == null) {
+            if (!(t instanceof GrailsWrappedRuntimeException) && request.getAttribute("exception") == null) {
                 request.setAttribute("exception", new GrailsWrappedRuntimeException(getServletContext(), t));
             }
         }
         final UrlMappingsHolder urlMappingsHolder = lookupUrlMappings();
         UrlMappingInfo matchedInfo = null;
-        if(t!=null) {
+        if (t != null) {
             matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
-            if(matchedInfo == null) {
+            if (matchedInfo == null) {
                 matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
             }
         }
 
-        if(matchedInfo == null) {
+        if (matchedInfo == null) {
             matchedInfo = urlMappingsHolder.matchStatusCode(statusCode);
         }
         final UrlMappingInfo urlMappingInfo = matchedInfo;
@@ -99,25 +111,25 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             grailsWebRequestFilter.setServletContext(getServletContext());
             grailsWebRequestFilter.doFilter(request, response, new FilterChain() {
 
+                @SuppressWarnings("unchecked")
                 public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
                     final GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
                     urlMappingInfo.configure(webRequest);
 
                     String viewName = urlMappingInfo.getViewName();
-                    if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                    if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
 
                         IncludedContent includeResult = WebUtils.includeForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
-                        if(includeResult.getRedirectURL()!=null) {
+                        if (includeResult.getRedirectURL()!=null) {
                             response.sendRedirect(includeResult.getRedirectURL());
                         }
                         else {
                             layoutIncludedResponse(webRequest, includeResult, request, response);
                         }
-
                     }
                     else {
                         ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
-                        if(viewResolver != null) {
+                        if (viewResolver != null) {
                             View v;
                             try {
                                 v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
@@ -125,13 +137,12 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                                 v.render(Collections.EMPTY_MAP, request, includeResponse);
                                 IncludedContent content = new IncludedContent(includeResponse.getContentType(), includeResponse.getContent());
                                 layoutIncludedResponse(webRequest,content, request, response);
-
-                            } catch (Exception e) {
+                            }
+                            catch (Exception e) {
                                 throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
                             }
                         }
                     }
-                    
                 }
             });
         }
@@ -145,20 +156,21 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         PageParser parser = getPageParser(factory, response);
         Page p = parser != null ? parser.parse(includeResult.getContentAsCharArray()) : null;
         String layout = p != null ? p.getProperty("meta.layout") : null;
-        if(layout != null && p != null) {
+        if (layout != null && p != null) {
             final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
-            DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper());
-            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, response, webRequest.getServletContext());
-            com.opensymphony.sitemesh.Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
+            DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(
+                    factory.getDecoratorMapper());
+            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(
+                    request, response, webRequest.getServletContext());
+            Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
 
-            if(d!=null) {
+            if (d != null) {
                 response.setContentType(includeResult.getContentType());
                 d.render(content, webAppContext);
             }
             else {
                 writeOriginal(response, includeResult);
             }
-
         }
         else {
             writeOriginal(response, includeResult);
@@ -184,16 +196,15 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     }
 
     private PageParser getPageParser(Factory factory, HttpServletResponse response) {
-        if(factory!=null) {
+        if (factory != null) {
             PageParser pageParser = factory.getPageParser(response.getContentType() != null ? response.getContentType() : "text/html");
-            if(pageParser == null) {
+            if (pageParser == null) {
                 pageParser = factory.getPageParser("text/html;charset=UTF-8");
             }
             return pageParser;
         }
         return null;
     }
-
 
     private void renderDefaultResponse(HttpServletResponse response, int statusCode) throws IOException {
         if (statusCode == 404) {
@@ -210,23 +221,20 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
         Writer writer = response.getWriter();
 
-
         writer.write("<HTML>\n<HEAD>\n<TITLE>Error " + statusCode + " - " + title);
         writer.write("</TITLE>\n<BODY>\n<H2>Error " + statusCode + " - " + title + ".</H2>\n");
         writer.write(text + "<BR/>");
 
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 20; i++) {
             writer.write("\n<!-- Padding for IE                  -->");
+        }
 
         writer.write("\n</BODY>\n</HTML>\n");
         writer.flush();
     }
 
     private UrlMappingsHolder lookupUrlMappings() {
-         WebApplicationContext wac =
-                 WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
-         return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
-     }
-
+        WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
+    }
 }
