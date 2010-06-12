@@ -15,11 +15,25 @@
 package org.codehaus.groovy.grails.web.mapping.filter;
 
 import grails.util.GrailsUtil;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -28,38 +42,20 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
-import org.springframework.web.multipart.MultipartException;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
- * <p>A Servlet filter that uses the Grails UrlMappings to match and forward requests to a relevant controller
- * and action
+ * Uses the Grails UrlMappings to match and forward requests to a relevant controller and action.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *
- *        <p/>
- *        Created: Mar 6, 2007
- *        Time: 7:58:19 AM
  */
 public class UrlMappingsFilter extends OncePerRequestFilter {
 
@@ -71,15 +67,18 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private GrailsApplication application;
     private ViewResolver viewResolver;
 
+    @Override
     protected void initFilterBean() throws ServletException {
         super.initFilterBean();
         urlHelper.setUrlDecode(false);
         final ServletContext servletContext = getServletContext();
-        this.handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);       
+        this.handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
         this.application = WebUtils.lookupApplication(servletContext);
         this.viewResolver = WebUtils.lookupViewResolver(servletContext);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         UrlMappingsHolder holder = WebUtils.lookupUrlMappings(getServletContext());
 
@@ -91,31 +90,30 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         checkForCompilationErrors();
 
         GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
-        if((controllers == null || controllers.length == 0 || holder == null) && !"/".equals(uri)) {
+        if ((controllers == null || controllers.length == 0 || holder == null) && !"/".equals(uri)) {
             processFilterChain(request, response, filterChain);
             return;
-        }else if (excludePatterns!=null && excludePatterns.size()>0){
-            for (String excludePattern:excludePatterns){
-                if (uri.equals(excludePattern)||
-                        (excludePattern.endsWith("*")&&
-                                excludePattern.substring(0,excludePattern.length()-1).
-                                        regionMatches(0,uri,0,excludePattern.length()-1))){
+        }
+
+        if (excludePatterns != null && excludePatterns.size() > 0) {
+            for (String excludePattern:excludePatterns) {
+                if (uri.equals(excludePattern) ||
+                        (excludePattern.endsWith("*") &&
+                                excludePattern.substring(0,excludePattern.length() -1 ).regionMatches(0, uri, 0, excludePattern.length() - 1))) {
                     processFilterChain(request, response, filterChain);
                     return;
                 }
             }
         }
 
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Executing URL mapping filter...");
             LOG.debug(holder);
         }
 
-
-
-        if(WebUtils.areFileExtensionsEnabled()) {
+        if (WebUtils.areFileExtensionsEnabled()) {
             String format = WebUtils.getFormatFromURI(uri);
-            if(format!=null) {
+            if (format != null) {
                 MimeType[] configuredMimes = MimeType.getConfiguredMimeTypes();
                 // only remove the file extension if its one of the configured mimes in Config.groovy
                 for (MimeType configuredMime : configuredMimes) {
@@ -134,7 +132,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         try {
             // GRAILS-3369: Save the original request parameters.
             Map backupParameters;
-
             try {
                 backupParameters = new HashMap(webRequest.getParams());
             }
@@ -168,8 +165,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     }
                     catch (Exception e) {
                         GrailsUtil.deepSanitize(e);
-                        if(e instanceof MultipartException) {
-                        	throw ((MultipartException)e);
+                        if (e instanceof MultipartException) {
+                            throw ((MultipartException)e);
                         }
                         LOG.error("Error when matching URL mapping [" + info + "]:" + e.getMessage(), e);
                         continue;
@@ -180,48 +177,45 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     request = checkMultipart(request);
 
                     if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                    	
-                        if(info.isParsingRequest()) {
+                        if (info.isParsingRequest()) {
                             webRequest.informParameterCreationListeners();
                         }
                         String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(request, response, info);
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Matched URI [" + uri + "] to URL mapping [" + info + "], forwarding to [" + forwardUrl + "] with response [" + response.getClass() + "]");
                         }
-
                     }
                     else {
-                        if(!renderViewForUrlMappingInfo(request, response, info, viewName)) {
+                        if (!renderViewForUrlMappingInfo(request, response, info, viewName)) {
                             dispatched = false;
                         }
                     }
                     break;
                 }
-
             }
         }
         finally {
             WrappedResponseHolder.setWrappedResponse(null);
         }
 
-        if(!dispatched) {
-            if(LOG.isDebugEnabled()) {
+        if (!dispatched) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("No match found, processing remaining filter chain.");
             }
             processFilterChain(request, response, filterChain);
         }
-
     }
 
     private void checkForCompilationErrors() {
-        if(!application.isWarDeployed()) {
+        if (application.isWarDeployed()) {
+            return;
+        }
 
-            ClassLoader classLoader = application.getClassLoader();
-            if(classLoader instanceof GrailsClassLoader) {
-                GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
-                if(gcl.hasCompilationErrors()) {
-                    throw gcl.getCompilationError();
-                }
+        ClassLoader classLoader = application.getClassLoader();
+        if (classLoader instanceof GrailsClassLoader) {
+            GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
+            if (gcl.hasCompilationErrors()) {
+                throw gcl.getCompilationError();
             }
         }
     }
@@ -229,19 +223,17 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
         // Lookup from request attribute. The resolver that handles MultiPartRequest is dealt with earlier inside DefaultUrlMappingInfo with Grails
         HttpServletRequest resolvedRequest = (HttpServletRequest) request.getAttribute(MultipartHttpServletRequest.class.getName());
-        if(resolvedRequest!=null) return resolvedRequest;
+        if (resolvedRequest!=null) return resolvedRequest;
         return request;
     }
 
-
     private boolean renderViewForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, String viewName) {
-        if(viewResolver != null) {
+        if (viewResolver != null) {
             View v;
             try {
-
                 // execute pre handler interceptors
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
-                    if(!handlerInterceptor.preHandle(request, response, this)) return false;
+                    if (!handlerInterceptor.preHandle(request, response, this)) return false;
                 }
 
                 // execute post handlers directly after, since there is no controller. The filter has a chance to modify the view at this point;
@@ -257,9 +249,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
                     handlerInterceptor.afterCompletion(request, response, this, null);
                 }
-
-
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 GrailsUtil.deepSanitize(e);
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
                     try {
@@ -278,12 +269,12 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private void processFilterChain(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         try {
             WrappedResponseHolder.setWrappedResponse(response);
-            if(filterChain != null)
+            if (filterChain != null) {
                 filterChain.doFilter(request,response);
-        } finally {
+            }
+        }
+        finally {
             WrappedResponseHolder.setWrappedResponse(null);
         }
     }
-
-
 }

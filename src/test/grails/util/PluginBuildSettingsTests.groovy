@@ -8,7 +8,8 @@ import org.springframework.core.io.Resource
  * @author Graeme Rocher
  * @since 1.1
  */
-public class PluginBuildSettingsTests extends GroovyTestCase{
+class PluginBuildSettingsTests extends GroovyTestCase {
+
     private static final File TEST_PROJ_DIR = new File("test/test-projects/plugin-build-settings")
 
     PluginBuildSettings createPluginBuildSettings() {
@@ -20,7 +21,6 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
     void testGetPluginSourceFiles() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
         def sourceFiles = pluginSettings.getPluginSourceFiles()
-
     }
 
     void testGetMetadataForPlugin() {
@@ -34,12 +34,12 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
         // exercise cache
         assertNotNull "cache xml was null, shoudln't have been", pluginSettings.getMetadataForPlugin("hibernate")
     }
+
     void testGetPluginDirForName() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
 
         assertNotNull "should have found plugin dir",pluginSettings.getPluginDirForName("hibernate")
         assertNotNull "should have found plugin dir",pluginSettings.getPluginDirForName("hibernate")
-
     }
 
     void testGetPluginLibDirs() {
@@ -47,7 +47,6 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
 
         assertEquals 2, pluginSettings.getPluginLibDirectories().size()
         assertEquals 2, pluginSettings.getPluginLibDirectories().size()
-
     }
 
     void testGetPluginDescriptors() {
@@ -88,7 +87,6 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
     void testGetPluginInfos() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
 
-
         def pluginInfos = pluginSettings.getPluginInfos()
 
         assertEquals 2, pluginInfos.size()
@@ -100,8 +98,7 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
     void testGetPluginResourceBundles() {
         def bundles = createPluginBuildSettings().pluginResourceBundles
 
-        // Check the bundles that there are 3 bundles (2 from Hibernate,
-        // 1 from WebFlow).
+        // Check the bundles that there are 3 bundles (2 from Hibernate, 1 from WebFlow).
         assertEquals 4, bundles.size()
 
         // Check that the caching doesn't break anything.
@@ -142,8 +139,7 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
     void testGetPluginJarFiles() {
         def jars = createPluginBuildSettings().pluginJarFiles
 
-        // Make sure that all the JARs provided by the plugins are
-        // included in the list.
+        // Make sure that all the JARs provided by the plugins are included in the list.
         assertEquals 3, jars.size()
 
         // Check that the caching doesn't break anything.
@@ -159,10 +155,9 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
     void testGetSupportPluginInfosWithPluginManager() {
         def pluginSettings = createPluginBuildSettings()
         pluginSettings.pluginManager = [
-            getGrailsPlugin: { String pluginName ->
-                return [ supportsCurrentScopeAndEnvironment: {-> pluginName == "hibernate" } ] as GrailsPlugin
-            }
-        ] as GrailsPluginManager
+                getGrailsPlugin: { String pluginName ->
+                    [supportsCurrentScopeAndEnvironment: { -> pluginName == "hibernate" }] as GrailsPlugin
+                }] as GrailsPluginManager
 
         def pluginInfos = pluginSettings.supportedPluginInfos
 
@@ -171,13 +166,15 @@ public class PluginBuildSettingsTests extends GroovyTestCase{
 
     void testIsGlobalPluginLocation() {
         def pluginSettings = createPluginBuildSettings()
-        assertFalse pluginSettings.isGlobalPluginLocation([ getFile: {-> new File(".").absoluteFile} ] as Resource)
-        assertFalse pluginSettings.isGlobalPluginLocation([ getFile: {-> new File(TEST_PROJ_DIR, "test")} ] as Resource)
+        assertFalse pluginSettings.isGlobalPluginLocation([ getFile: { -> new File(".").absoluteFile} ] as Resource)
+        assertFalse pluginSettings.isGlobalPluginLocation([ getFile: { -> new File(TEST_PROJ_DIR, "test")} ] as Resource)
         assertTrue pluginSettings.isGlobalPluginLocation([
-            getFile: {-> new File(pluginSettings.buildSettings.globalPluginsDir, "test")}
-        ] as Resource)
+                getFile: {
+                    -> new File(pluginSettings.buildSettings.globalPluginsDir, "test")
+                }] as Resource)
         assertTrue pluginSettings.isGlobalPluginLocation([
-            getFile: {-> new File(pluginSettings.buildSettings.globalPluginsDir, "test/../gwt")}
-        ] as Resource)
+                getFile: {
+                    -> new File(pluginSettings.buildSettings.globalPluginsDir, "test/../gwt")
+                }] as Resource)
     }
 }
