@@ -14,19 +14,19 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import javax.persistence.Entity;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Entity;
+
 /**
- * Detects annotated domain classes for EJB3 style mappings
+ * Detects annotated domain classes for EJB3 style mappings.
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Dec 6, 2007
  */
 public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHandler{
+
     private static final String JPA_MAPPING_STRATEGY = "JPA";
 
     private Set<String> jpaClassNames = new HashSet<String>();
@@ -35,22 +35,25 @@ public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHan
         return jpaClassNames;
     }
 
-    public boolean isArtefactClass(Class clazz) {
+    @Override
+    public boolean isArtefactClass(@SuppressWarnings("unchecked") Class clazz) {
         final boolean isJpaDomainClass = isJPADomainClass(clazz);
-        if(isJpaDomainClass) {
-             jpaClassNames.add(clazz.getName());
+        if (isJpaDomainClass) {
+            jpaClassNames.add(clazz.getName());
         }
         return super.isArtefactClass(clazz) ;
     }
 
-    public static boolean isJPADomainClass(Class clazz){
+    public static boolean isJPADomainClass(Class <?>clazz){
         return clazz != null && clazz.getAnnotation(Entity.class) != null;
     }
 
-    public GrailsClass newArtefactClass(Class artefactClass) {
+    @Override
+    public GrailsClass newArtefactClass(@SuppressWarnings("unchecked") Class artefactClass) {
         GrailsDomainClass grailsClass = (GrailsDomainClass) super.newArtefactClass(artefactClass);
-        if(isJPADomainClass(artefactClass))
-            grailsClass.setMappingStrategy(JPA_MAPPING_STRATEGY);        
+        if (isJPADomainClass(artefactClass)) {
+            grailsClass.setMappingStrategy(JPA_MAPPING_STRATEGY);
+        }
         return grailsClass;
     }
 }

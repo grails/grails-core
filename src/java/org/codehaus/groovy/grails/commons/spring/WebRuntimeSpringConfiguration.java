@@ -14,21 +14,19 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
-import org.springframework.web.context.ConfigurableWebApplicationContext;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.context.ApplicationContext;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-
 import javax.servlet.ServletContext;
 
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.context.ServletContextAware;
+
 /**
- * Subclasses DefaultRuntimeSpringConfiguration to provide construction of WebApplicationContext instances
+ * Subclasses DefaultRuntimeSpringConfiguration to provide construction of WebApplicationContext instances.
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 23, 2007
  */
 public class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfiguration implements ServletContextAware {
 
@@ -37,40 +35,41 @@ public class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfigura
     }
 
     public WebRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader cl) {
-        super(parent, cl);    
+        super(parent, cl);
     }
 
-    protected GenericApplicationContext createApplicationContext(ApplicationContext parent) {
-        if(parent != null && beanFactory!=null) {
-            if(beanFactory instanceof DefaultListableBeanFactory) {
-                return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory,parent);
+    @Override
+    protected GenericApplicationContext createApplicationContext(ApplicationContext parentCtx) {
+        if (parentCtx != null && beanFactory != null) {
+            if (beanFactory instanceof DefaultListableBeanFactory) {
+                return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory,parentCtx);
             }
-            else {
-                throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
-            }
+
+            throw new IllegalArgumentException(
+                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
         }
-        else if(beanFactory!=null) {
-            if(beanFactory instanceof DefaultListableBeanFactory) {
+
+        if (beanFactory != null) {
+            if (beanFactory instanceof DefaultListableBeanFactory) {
                 return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory);
             }
-            else {
-                throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
-            }
+
+            throw new IllegalArgumentException(
+                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
         }
-        else if(parent != null) {
-            return new GrailsWebApplicationContext(parent);            
+
+        if (parentCtx != null) {
+            return new GrailsWebApplicationContext(parentCtx);
         }
-        else {
-            return new GrailsWebApplicationContext();
-        }
-        
+
+        return new GrailsWebApplicationContext();
     }
 
     public void setServletContext(ServletContext servletContext) {
         initialiseApplicationContext();
 
-        if(this.context instanceof ConfigurableWebApplicationContext) {
-            ((ConfigurableWebApplicationContext) this.context).setServletContext(servletContext);
+        if (context instanceof ConfigurableWebApplicationContext) {
+            ((ConfigurableWebApplicationContext)context).setServletContext(servletContext);
         }
     }
 }

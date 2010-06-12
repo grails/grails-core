@@ -18,45 +18,46 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.util.Map;
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+
 /**
  * Extends Groovy's Binding Object to allow a binding to a particular bean where the
- * properties of the Object become binding variables
+ * properties of the Object become binding variables.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Jul 22, 2008
  */
 public class BeanBinding extends Binding {
+
     private Object bean;
 
     public BeanBinding(Object bean) {
-        super();
         this.bean = bean;
     }
 
+    @Override
     public Object getVariable(String name) {
         MetaClass mc = getBeanMetaClass();
         return mc.getProperty(bean,name);
-
     }
 
     private MetaClass getBeanMetaClass() {
-        if(bean instanceof GroovyObject) {
+        if (bean instanceof GroovyObject) {
             return ((GroovyObject)bean).getMetaClass();
         }
         return GroovySystem.getMetaClassRegistry().getMetaClass(bean.getClass());
     }
 
+    @Override
     public void setVariable(String name, Object value) {
-        MetaClass mc = getBeanMetaClass();
-        mc.setProperty(bean, name,value);
+        getBeanMetaClass().setProperty(bean, name,value);
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     public Map getVariables() {
         return DefaultGroovyMethods.getProperties(bean);
     }

@@ -20,34 +20,33 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * A class that holds a reference to the grails.config.ConfigObject instance
+ * Holds a reference to the ConfigObject instance.
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jun 21, 2007
- *        Time: 3:52:04 PM
  */
 public class ConfigurationHolder {
 
     private static ConfigObject config;
+    @SuppressWarnings("unchecked")
     private static Map flatConfig;
 
     /**
-     * Sets the ConfigObject. Synchronized to avoid the flatten() method being called concurrently
+     * Sets the ConfigObject. Synchronized to avoid the flatten() method being called concurrently.
      * @param newConfig
      */
     public static synchronized void setConfig(ConfigObject newConfig) {
         config = newConfig;
         // reset flat config
-        if(newConfig!=null)
+        if (newConfig != null) {
             flatConfig = newConfig.flatten();
+        }
     }
 
     /**
-     * Retrieve the ConfigObject. Note unsynchronized access is granted for performance reasons, however typically
-     * the ConfigObject is only set on application load or by the plugin scanner during development, so this is not an issue.
+     * Retrieve the ConfigObject. Note unsynchronized access is granted for performance reasons,
+     * however typically the ConfigObject is only set on application load or by the plugin scanner
+     * during development, so this is not an issue.
      *
      * @return The ConfigObject
      */
@@ -56,10 +55,11 @@ public class ConfigurationHolder {
     }
 
     /**
-     * Returns the ConfigObject has a flattened map for easy access from Java in a properties file like way
+     * Returns the ConfigObject has a flattened map for easy access from Java in a properties file like way.
      *
      * @return The flattened ConfigObject
      */
+    @SuppressWarnings("unchecked")
     public static Map getFlatConfig() {
         return flatConfig != null ? flatConfig : Collections.EMPTY_MAP;
     }

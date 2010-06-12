@@ -17,49 +17,44 @@ package org.codehaus.groovy.grails.commons;
 import java.util.Set;
 
 /**
- * <p>Represents a Grails tab library class</p>
+ * Represents a Grails tab library class.
  *
  * @author Graeme Rocher
- * @since Jan 14, 2006
  */
 public interface GrailsTagLibClass extends InjectableGrailsClass {
 
-	public static final String DEFAULT_NAMESPACE = "g";
-	
+    String DEFAULT_NAMESPACE = "g";
+
     /**
-     * The name of the application (ie global) tag library appropriate for all controller classes
+     * The name of the application (ie global) tag library appropriate for all controller classes.
      */
     String SUPPORTS_CONTROLLER = "supportsController";
-    
+
     String NAMESPACE_FIELD_NAME = "namespace";
-    
+
     String RETURN_OBJECT_FOR_TAGS_FIELD_NAME = "returnObjectForTags";
 
     /**
-     * Whether this tag library supports the specified controller
+     * Whether this tag library supports the specified controller.
      * @param controllerClass The controllerClass to check
      * @return True if the controller is supported
      */
     boolean supportsController(GrailsControllerClass controllerClass);
 
     /**
-     *
      * @param tagName The name of the tag
      * @return Whether the tag library contains the specified tag
      */
     boolean hasTag(String tagName);
 
     /**
-     *
      * @return The tag names in this library
      */
     Set<String> getTagNames();
-    
-    
+
     Set<String> getTagNamesThatReturnObject();
-    
+
     /**
-     * 
      * @return the namespace that this taglib occupies.
      */
     String getNamespace();

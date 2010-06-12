@@ -14,19 +14,12 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.Script;
 
-import javax.persistence.Entity;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,13 +34,35 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+
+import javax.persistence.Entity;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration.
  *
  * @author Graeme Rocher
- * @since 18-Feb-2006
  */
 public class GrailsDomainConfigurationUtil {
 
@@ -57,22 +72,27 @@ public class GrailsDomainConfigurationUtil {
     private static Log LOG = LogFactory.getLog(GrailsDomainConfigurationUtil.class);
     private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
 
-    public static Serializable getAssociationIdentifier(Object target, String propertyName, GrailsDomainClass referencedDomainClass) {
+    public static Serializable getAssociationIdentifier(Object target, String propertyName,
+            GrailsDomainClass referencedDomainClass) {
+
         String getterName = GrailsClassUtils.getGetterName(propertyName);
 
         try {
             Method m = target.getClass().getDeclaredMethod(getterName, EMPTY_CLASS_ARRAY);
             Object value = m.invoke(target);
-            if(value != null && referencedDomainClass != null) {
+            if (value != null && referencedDomainClass != null) {
                 String identifierGetter = GrailsClassUtils.getGetterName(referencedDomainClass.getIdentifier().getName());
                 m = value.getClass().getDeclaredMethod(identifierGetter, EMPTY_CLASS_ARRAY);
                 return (Serializable)m.invoke(value);
             }
-        } catch (NoSuchMethodException e) {
-           // ignore
-        } catch (IllegalAccessException e) {
-           // ignore
-        } catch (InvocationTargetException e) {
+        }
+        catch (NoSuchMethodException e) {
+            // ignore
+        }
+        catch (IllegalAccessException e) {
+            // ignore
+        }
+        catch (InvocationTargetException e) {
             // ignore
         }
         return null;
@@ -155,13 +175,17 @@ public class GrailsDomainConfigurationUtil {
         }
     }
 
-    private static boolean isCandidateForOtherSide(GrailsDomainClass domainClass, GrailsDomainClassProperty prop, GrailsDomainClassProperty referencedProp) {
+    private static boolean isCandidateForOtherSide(GrailsDomainClass domainClass,
+            GrailsDomainClassProperty prop, GrailsDomainClassProperty referencedProp) {
 
         if (prop.equals(referencedProp)) return false;
         if (prop.isOneToMany() && referencedProp.isOneToMany()) return false;
+
         Class<?> referencedPropertyType = referencedProp.getReferencedPropertyType();
-        if (referencedPropertyType == null || !referencedPropertyType.isAssignableFrom(domainClass.getClazz()))
+        if (referencedPropertyType == null || !referencedPropertyType.isAssignableFrom(domainClass.getClazz())) {
             return false;
+        }
+
         Map<?, ?> mappedBy = domainClass.getMappedBy();
 
         Object propertyMapping = mappedBy.get(prop.getName());
@@ -175,7 +199,7 @@ public class GrailsDomainConfigurationUtil {
     }
 
     /**
-     * Returns the ORM frameworks mapping file name for the specified class name
+     * Returns the ORM framework's mapping file name for the specified class name.
      *
      * @param className The class name of the mapped file
      * @return The mapping file name
@@ -190,10 +214,10 @@ public class GrailsDomainConfigurationUtil {
      * @param domainClass the domain class
      * @return The association map
      */
-    public static Map<?, ?> getAssociationMap(Class domainClass) {
-    	ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(domainClass);
-    	
-    	Map<?, ?> associationMap = cpf.getPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
+    public static Map<?, ?> getAssociationMap(Class<?> domainClass) {
+        ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(domainClass);
+
+        Map<?, ?> associationMap = cpf.getPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
         if (associationMap == null) {
             associationMap = Collections.EMPTY_MAP;
         }
@@ -201,14 +225,14 @@ public class GrailsDomainConfigurationUtil {
     }
 
     /**
-     * Retrieves the mappedBy map for the specified class
+     * Retrieves the mappedBy map for the specified class.
      *
      * @param domainClass The domain class
      * @return The mappedBy map
      */
     public static Map<?, ?> getMappedByMap(Class<?> domainClass) {
-    	ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(domainClass);
-    	
+        ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(domainClass);
+
         Map<?, ?> mappedByMap = cpf.getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
         if (mappedByMap == null) {
             return Collections.EMPTY_MAP;
@@ -217,7 +241,7 @@ public class GrailsDomainConfigurationUtil {
     }
 
     /**
-     * Establish whether its a basic type
+     * Establish whether it's a basic type.
      *
      * @param prop The domain class property
      * @return True if it is basic
@@ -227,55 +251,53 @@ public class GrailsDomainConfigurationUtil {
         return isBasicType(prop.getType());
     }
 
-    private static final Set<String> BASIC_TYPES;
-
-    static {
-        Set<String> basics = new HashSet<String>();
-        basics.add(boolean.class.getName());
-        basics.add(long.class.getName());
-        basics.add(short.class.getName());
-        basics.add(int.class.getName());
-        basics.add(byte.class.getName());
-        basics.add(float.class.getName());
-        basics.add(double.class.getName());
-        basics.add(char.class.getName());
-        basics.add(Boolean.class.getName());
-        basics.add(Long.class.getName());
-        basics.add(Short.class.getName());
-        basics.add(Integer.class.getName());
-        basics.add(Byte.class.getName());
-        basics.add(Float.class.getName());
-        basics.add(Double.class.getName());
-        basics.add(Character.class.getName());
-        basics.add(String.class.getName());
-        basics.add(java.util.Date.class.getName());
-        basics.add(Time.class.getName());
-        basics.add(Timestamp.class.getName());
-        basics.add(java.sql.Date.class.getName());
-        basics.add(BigDecimal.class.getName());
-        basics.add(BigInteger.class.getName());
-        basics.add(Locale.class.getName());
-        basics.add(Calendar.class.getName());
-        basics.add(GregorianCalendar.class.getName());
-        basics.add(java.util.Currency.class.getName());
-        basics.add(TimeZone.class.getName());
-        basics.add(Object.class.getName());
-        basics.add(Class.class.getName());
-        basics.add(byte[].class.getName());
-        basics.add(Byte[].class.getName());
-        basics.add(char[].class.getName());
-        basics.add(Character[].class.getName());
-        basics.add(Blob.class.getName());
-        basics.add(Clob.class.getName());
-        basics.add(Serializable.class.getName());
-        basics.add(URI.class.getName());
-        basics.add(URL.class.getName());
-
+	private static final Set<String> BASIC_TYPES;
+	static {
+		Set<String> basics = new HashSet<String>(Arrays.asList(
+				boolean.class.getName(),
+				long.class.getName(),
+				short.class.getName(),
+				int.class.getName(),
+				byte.class.getName(),
+				float.class.getName(),
+				double.class.getName(),
+				char.class.getName(),
+				Boolean.class.getName(),
+				Long.class.getName(),
+				Short.class.getName(),
+				Integer.class.getName(),
+				Byte.class.getName(),
+				Float.class.getName(),
+				Double.class.getName(),
+				Character.class.getName(),
+				String.class.getName(),
+				java.util.Date.class.getName(),
+				Time.class.getName(),
+				Timestamp.class.getName(),
+				java.sql.Date.class.getName(),
+				BigDecimal.class.getName(),
+				BigInteger.class.getName(),
+				Locale.class.getName(),
+				Calendar.class.getName(),
+				GregorianCalendar.class.getName(),
+				java.util.Currency.class.getName(),
+				TimeZone.class.getName(),
+				Object.class.getName(),
+				Class.class.getName(),
+				byte[].class.getName(),
+				Byte[].class.getName(),
+				char[].class.getName(),
+				Character[].class.getName(),
+				Blob.class.getName(),
+				Clob.class.getName(),
+				Serializable.class.getName(),
+				URI.class.getName(),
+				URL.class.getName()));
         BASIC_TYPES = Collections.unmodifiableSet(basics);
     }
 
-    public static boolean isBasicType(Class propType) {
-        if(propType == null) return false;
+    public static boolean isBasicType(Class<?> propType) {
+        if (propType == null) return false;
         if (propType.isArray()) {
             return isBasicType(propType.getComponentType());
         }
@@ -283,7 +305,7 @@ public class GrailsDomainConfigurationUtil {
     }
 
     /**
-     * Checks whether is property is configurational
+     * Checks whether is property is configurational.
      *
      * @param descriptor The descriptor
      * @return True if it is configurational
@@ -291,15 +313,15 @@ public class GrailsDomainConfigurationUtil {
     public static boolean isNotConfigurational(PropertyDescriptor descriptor) {
         final String name = descriptor.getName();
         return !name.equals(GrailsDomainClassProperty.META_CLASS) &&
-                !name.equals(GrailsDomainClassProperty.CLASS) &&
-                !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
-                !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
-                !name.equals(GrailsDomainClassProperty.HAS_MANY) &&
-                !name.equals(GrailsDomainClassProperty.EVANESCENT) &&
-                !name.equals(GrailsDomainClassProperty.CONSTRAINTS) &&
-                !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
-                !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
-                !name.equals(GrailsDomainClassProperty.BELONGS_TO);
+               !name.equals(GrailsDomainClassProperty.CLASS) &&
+               !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
+               !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
+               !name.equals(GrailsDomainClassProperty.HAS_MANY) &&
+               !name.equals(GrailsDomainClassProperty.EVANESCENT) &&
+               !name.equals(GrailsDomainClassProperty.CONSTRAINTS) &&
+               !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
+               !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
+               !name.equals(GrailsDomainClassProperty.BELONGS_TO);
     }
 
     /**
@@ -308,10 +330,11 @@ public class GrailsDomainConfigurationUtil {
      * @param instance   The instance to evaluate constraints for
      * @param properties The properties of the instance
      * @param defaultConstraints A map that defines the default constraints
-     * 
+     *
      * @return A Map of constraints
      */
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance,
+            GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
         final Class<?> theClass = instance.getClass();
         return evaluateConstraints(theClass, properties, defaultConstraints);
     }
@@ -322,14 +345,13 @@ public class GrailsDomainConfigurationUtil {
      * @param theClass  The domain class to evaluate constraints for
      * @param properties The properties of the instance
      * @param defaultConstraints A map that defines the default constraints
-     * 
+     *
      * @return A Map of constraints
-     */    
-	public static Map<String, ConstrainedProperty> evaluateConstraints(
-														final Class<?> theClass, 
-														GrailsDomainClassProperty[] properties,
-														Map<String, Object> defaultConstraints) {
-		boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
+     */
+    public static Map<String, ConstrainedProperty> evaluateConstraints(final Class<?> theClass,
+            GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
+
+        boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
         LinkedList<?> classChain = getSuperClassChain(theClass);
         Class<?> clazz;
 
@@ -353,36 +375,37 @@ public class GrailsDomainConfigurationUtil {
         }
 
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
-        if(properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
+        if (properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
             for (GrailsDomainClassProperty p : properties) {
-            	PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
-            	if(propertyConfig != null && propertyConfig.getFormula() != null) {
-            		if(constrainedProperties.remove(p.getName()) != null) {
-            			// constraint is registered but cannot be applied to a derived property
-            			LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
-            		}
-            	} else {
-            		final String propertyName = p.getName();
-            		ConstrainedProperty cp = constrainedProperties.get(propertyName);
-            		if (cp == null) {
-            			cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
-            			cp.setOrder(constrainedProperties.size() + 1);
-            			constrainedProperties.put(propertyName, cp);
-            		}
-            		// Make sure all fields are required by default, unless
-            		// specified otherwise by the constraints
-            		// If the field is a Java entity annotated with @Entity skip this
-            		applyDefaultConstraints(propertyName, p, cp,
-							defaultConstraints, delegate.getSharedConstraint(propertyName));
-            	}
+                PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
+                if (propertyConfig != null && propertyConfig.getFormula() != null) {
+                    if (constrainedProperties.remove(p.getName()) != null) {
+                        // constraint is registered but cannot be applied to a derived property
+                        LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
+                    }
+                }
+                else {
+                    final String propertyName = p.getName();
+                    ConstrainedProperty cp = constrainedProperties.get(propertyName);
+                    if (cp == null) {
+                        cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
+                        cp.setOrder(constrainedProperties.size() + 1);
+                        constrainedProperties.put(propertyName, cp);
+                    }
+                    // Make sure all fields are required by default, unless
+                    // specified otherwise by the constraints
+                    // If the field is a Java entity annotated with @Entity skip this
+                    applyDefaultConstraints(propertyName, p, cp,
+                            defaultConstraints, delegate.getSharedConstraint(propertyName));
+                }
             }
         }
 
         return constrainedProperties;
-	}
+    }
 
     /**
-     * Evaluates the constraints closure to build the list of constraints
+     * Evaluates the constraints closure to build the list of constraints.
      *
      * @param instance   The instance to evaluate constraints for
      * @param properties The properties of the instance
@@ -394,7 +417,7 @@ public class GrailsDomainConfigurationUtil {
     }
 
     /**
-     * Evaluates the constraints closure to build the list of constraints
+     * Evaluates the constraints closure to build the list of constraints.
      *
      * @param instance   The instance to evaluate constraints for
      * @return A Map of constraints
@@ -403,7 +426,7 @@ public class GrailsDomainConfigurationUtil {
     public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance)  {
         return evaluateConstraints(instance, null, null);
     }
-    
+
     /**
      * Evaluates the constraints closure to build the list of constraints
      *
@@ -411,25 +434,26 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      */
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class theClass)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass)  {
         return evaluateConstraints(theClass, null, null);
     }
-    
+
     /**
-     * Evaluates the constraints closure to build the list of constraints
+     * Evaluates the constraints closure to build the list of constraints.
      *
      * @param theClass  The class to evaluate constraints for
      * @return A Map of constraints
      *          When the bean cannot be introspected
      */
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class theClass, GrailsDomainClassProperty[] properties)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass, GrailsDomainClassProperty[] properties)  {
         return evaluateConstraints(theClass, properties, null);
-    }    
-    
+    }
 
-    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
+    @SuppressWarnings("unchecked")
+    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
+            ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
+
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
-
             if (defaultConstraints.containsKey("*")) {
                 final Object o = defaultConstraints.get("*");
                 if (o instanceof Map) {
@@ -437,17 +461,16 @@ public class GrailsDomainConfigurationUtil {
                     applyMapOfConstraints(globalConstraints, propertyName, p, cp);
                 }
             }
-            if(sharedConstraintReference!=null) {
+            if (sharedConstraintReference!=null) {
                 final Object o = defaultConstraints.get(sharedConstraintReference);
-                if(o instanceof Map) {
+                if (o instanceof Map) {
                     applyMapOfConstraints((Map) o,propertyName, p, cp);
                 }
                 else {
                     throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
                 }
-            }            
+            }
         }
-        
 
         if (canApplyNullableConstraint(propertyName, p, cp)) {
             cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
@@ -458,24 +481,27 @@ public class GrailsDomainConfigurationUtil {
     }
 
     private static boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {
-    	if(property == null || property.getType() == null) return false;
+        if (property == null || property.getType() == null) return false;
+
         final GrailsDomainClass domainClass = property.getDomainClass();
         // only apply default nullable to Groovy entities not legacy Java ones
-        if(!GroovyObject.class.isAssignableFrom(domainClass.getClazz())) return false;
+        if (!GroovyObject.class.isAssignableFrom(domainClass.getClazz())) return false;
+
         final GrailsDomainClassProperty versionProperty = domainClass.getVersion();
         final boolean isVersion = versionProperty != null && versionProperty.equals(property);
-        return !constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)
-                && isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion;
+        return !constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT) &&
+            isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion;
     }
 
     private static void applyMapOfConstraints(Map<String, Object> constraints, String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp) {
-        for(Map.Entry<String, Object> entry : constraints.entrySet()) {
+        for (Map.Entry<String, Object> entry : constraints.entrySet()) {
             String constraintName = entry.getKey();
             Object constrainingValue = entry.getValue();
-            if(!cp.hasAppliedConstraint(constraintName) && cp.supportsContraint(constraintName)) {
-                if(ConstrainedProperty.NULLABLE_CONSTRAINT.equals(constraintName)) {
-                    if(isConstrainableProperty(p,propertyName))
-                       cp.applyConstraint(constraintName, constrainingValue);
+            if (!cp.hasAppliedConstraint(constraintName) && cp.supportsContraint(constraintName)) {
+                if (ConstrainedProperty.NULLABLE_CONSTRAINT.equals(constraintName)) {
+                    if (isConstrainableProperty(p,propertyName)) {
+                        cp.applyConstraint(constraintName, constrainingValue);
+                    }
                 }
                 else {
                     cp.applyConstraint(constraintName,constrainingValue);
@@ -485,9 +511,9 @@ public class GrailsDomainConfigurationUtil {
     }
 
     private static boolean isConstrainableProperty(GrailsDomainClassProperty p, String propertyName) {
-        return !propertyName.equals(GrailsDomainClassProperty.DATE_CREATED)
-                && !propertyName.equals(GrailsDomainClassProperty.LAST_UPDATED)
-                && !((p.isOneToOne() || p.isManyToOne()) && p.isCircular());
+        return !propertyName.equals(GrailsDomainClassProperty.DATE_CREATED) &&
+               !propertyName.equals(GrailsDomainClassProperty.LAST_UPDATED) &&
+               !((p.isOneToOne() || p.isManyToOne()) && p.isCircular());
     }
 
     public static LinkedList<?> getSuperClassChain(Class<?> theClass) {
@@ -500,20 +526,20 @@ public class GrailsDomainConfigurationUtil {
         return classChain;
     }
 
-    private static Closure getConstraintsFromScript(Class theClass) {
+    private static Closure getConstraintsFromScript(Class<?> theClass) {
         // Fallback to xxxxConstraints.groovy script for Java domain classes
         String className = theClass.getName();
         String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY;
         InputStream stream = GrailsDomainConfigurationUtil.class.getClassLoader().getResourceAsStream(constraintsScript);
 
-        if(stream!=null) {
+        if (stream!=null) {
             GroovyClassLoader gcl = new GroovyClassLoader();
             try {
-                Class scriptClass = gcl.parseClass(DefaultGroovyMethods.getText(stream));
+                Class<?> scriptClass = gcl.parseClass(DefaultGroovyMethods.getText(stream));
                 Script script = (Script)scriptClass.newInstance();
                 script.run();
                 Binding binding = script.getBinding();
-                if(binding.getVariables().containsKey(PROPERTY_NAME)) {
+                if (binding.getVariables().containsKey(PROPERTY_NAME)) {
                     return (Closure)binding.getVariable(PROPERTY_NAME);
                 }
                 LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
@@ -522,15 +548,18 @@ public class GrailsDomainConfigurationUtil {
             catch (CompilationFailedException e) {
                 LOG.error("Compilation error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
-            } catch (InstantiationException e) {
+            }
+            catch (InstantiationException e) {
                 LOG.error("Instantiation error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
-            } catch (IllegalAccessException e) {
+            }
+            catch (IllegalAccessException e) {
                 LOG.error("Illegal access error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
                 return null;
-            } catch (IOException e) {
-            	LOG.error("IO error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
-			}
+            }
+            catch (IOException e) {
+                LOG.error("IO error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
+            }
         }
         return null;
     }

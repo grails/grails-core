@@ -12,19 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.commons.metaclass
+
 /**
- *
- * This class is designed for use with Groovy property access expressions like foo.bar.stuff
+ * Designed for use with Groovy property access expressions like foo.bar.stuff.
  *
  * It takes the expression and produces a String equivalent like "foo.bar.stuff" which can then later be
- * used to evaluate the value within a different context
- * 
+ * used to evaluate the value within a different context.
+ *
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Jul 22, 2008
  */
 class PropertyExpression {
 
@@ -32,15 +29,12 @@ class PropertyExpression {
 
     def getValue() { propertyExpression.toString() }
 
-    public PropertyExpression(String initialName) {
-        super();
+    PropertyExpression(String initialName) {
         propertyExpression = new StringBuffer(initialName)
     }
 
-    public Object getProperty(String name) {
+    Object getProperty(String name) {
         propertyExpression << ".$name"
-
         return this
     }
-
 }

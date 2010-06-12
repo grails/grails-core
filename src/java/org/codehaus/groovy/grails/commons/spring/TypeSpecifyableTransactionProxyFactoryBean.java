@@ -20,28 +20,29 @@ import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 
 /**
  * Allows the type of the underlying object to be specified explicitly.
- * 
+ *
  * This is used when creating scoped proxies of transactional proxies of services.
  * The scoped proxy needs to know that type of the object before the transactional proxy
  * factory has instantiated the underlying service and is able to determine it's class. This
  * class allows the type to be explicitly specified.
- * 
+ *
  * @see org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin
  */
+@SuppressWarnings("serial")
 public class TypeSpecifyableTransactionProxyFactoryBean extends TransactionProxyFactoryBean implements FactoryBean<Object> {
 
-	private Class type;
-	
-	public TypeSpecifyableTransactionProxyFactoryBean(Class type) {
-		this.type = type;
-	}
-	
-	public Class getObjectType() {
-		if (type != null) {
-			return type;
-		} else {
-			return super.getObjectType();
-		}
-	}
+    private Class<?> type;
 
+    public TypeSpecifyableTransactionProxyFactoryBean(Class<?> type) {
+        this.type = type;
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        if (type != null) {
+            return type;
+        }
+
+        return super.getObjectType();
+    }
 }

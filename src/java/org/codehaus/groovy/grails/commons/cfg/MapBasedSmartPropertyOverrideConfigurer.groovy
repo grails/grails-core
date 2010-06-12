@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.commons.cfg
 
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
@@ -43,14 +42,17 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
     }
 
     void postProcessBeanFactory(ConfigurableListableBeanFactory factory) {
-        if (beans) {
-            beans.each { beanName, beanProperties ->
-                if (!(beanProperties instanceof Map))
-                    throw new IllegalArgumentException("Entry in bean config for bean '" + beanName + "' must be a Map")
+        if (!beans) {
+            return
+        }
 
-                beanProperties.each { beanPropertyName, beanPropertyValue ->
-                    applyPropertyValue(factory, beanName, beanPropertyName, beanPropertyValue)
-                }
+        beans.each { beanName, beanProperties ->
+            if (!(beanProperties instanceof Map)) {
+                throw new IllegalArgumentException("Entry in bean config for bean '" + beanName + "' must be a Map")
+            }
+
+            beanProperties.each { beanPropertyName, beanPropertyValue ->
+                applyPropertyValue(factory, beanName, beanPropertyName, beanPropertyValue)
             }
         }
     }
@@ -65,32 +67,45 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
     protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName) {
         if (factory.containsBeanDefinition(beanName)) {
             getTargetBeanDefinition(factory, beanName, factory.getBeanDefinition(beanName))
-        } else {
+        }
+        else {
             null
         }
     }
 
-    protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName, BeanDefinition beanDefinition) {
+    protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory,
+            String beanName, BeanDefinition beanDefinition) {
+
         if (beanDefinition.factoryBeanName) {
             beanDefinition
-        } else {
-            getTargetBeanDefinition(factory, beanName, beanDefinition, classLoader.loadClass(beanDefinition.beanClassName))
+        }
+        else {
+            getTargetBeanDefinition(factory, beanName, beanDefinition,
+                    classLoader.loadClass(beanDefinition.beanClassName))
         }
     }
 
-    protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName, BeanDefinition beanDefinition, Class beanClass) {
+    protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName,
+            BeanDefinition beanDefinition, Class beanClass) {
+
         if (FactoryBean.isAssignableFrom(beanClass)) {
             getTargetBeanDefinitionForFactoryBean(factory, beanName, beanDefinition, beanClass)
-        } else {
+        }
+        else {
             beanDefinition
         }
     }
 
-    protected BeanDefinition getTargetBeanDefinitionForFactoryBean(ConfigurableListableBeanFactory factory, String beanName, BeanDefinition beanDefinition, Class beanClass) {
+    protected BeanDefinition getTargetBeanDefinitionForFactoryBean(ConfigurableListableBeanFactory factory,
+            String beanName, BeanDefinition beanDefinition, Class beanClass) {
+
         if (TransactionProxyFactoryBean.isAssignableFrom(beanClass)) {
-            getTargetBeanDefinition(factory, beanName, beanDefinition.propertyValues.getPropertyValue("target").value)
-        } else {
-            throw new BeanCreationException(beanName, "Unable to determine target bean definition for FactoryBeans of type " + beanClass)
+            getTargetBeanDefinition(factory, beanName,
+                    beanDefinition.propertyValues.getPropertyValue("target").value)
+        }
+        else {
+            throw new BeanCreationException(beanName,
+                 "Unable to determine target bean definition for FactoryBeans of type " + beanClass.name)
         }
     }
 }

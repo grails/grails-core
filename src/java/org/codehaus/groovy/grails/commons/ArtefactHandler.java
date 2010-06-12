@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.commons;
  * <p>The ArtefactHandler interface's purpose is to allow the analysis of conventions within a Grails application.
  * An artefact is represented by the GrailsClass interface and this interface provides methods that allow artefacts to
  * be identified, created and initialized.
- *  
+ *
  * <p>Artefacts need to provide info about themselves, and some callbacks are required
  * to verify whether or not a class is that kind of artefact/p>
  *
@@ -31,33 +31,33 @@ package org.codehaus.groovy.grails.commons;
 public interface ArtefactHandler {
 
     /**
-     * Obtains the plugin name that deals with this artefact
+     * Obtains the plugin name that deals with this artefact.
      * @return The plugin name or null if there isn't one
      */
     String getPluginName();
 
     /**
-     * <p>Implementations must return a name such as "Domain" to indicate the type of artefact they represent</p>
+     * Implementations must return a name such as "Domain" to indicate the type of artefact they represent.
      * @return The aretfact type, as a String
      */
     String getType();
 
     /**
-     * <p>This method will be called by the GrailsApplication whenever it needs to know if a given class
+     * <p>Called by the GrailsApplication whenever it needs to know if a given class
      * is considered to be the kind of artefact represented by this handler.</p>
-     * <p>Typically you will check the name of the class and some other properties to see if it is of the correct
-     * artefact type</p>
+     * <p>Typically you will check the name of the class and some other properties to see
+     * if it is of the correct artefact type</p>
      * @param aClass A class to test
      * @return True if the class looks like one of your artefacts
      */
-    boolean isArtefact(Class aClass);
+    boolean isArtefact(@SuppressWarnings("unchecked") Class aClass);
 
     /**
      * <p>Called by GrailsApplication when a new class is found and a GrailsClass wrapping it is required</p>
      * @param artefactClass The new class that has been loaded
      * @return A new custom GrailsClass wrapper containing any extra information your artefact type requires
      */
-    GrailsClass newArtefactClass(Class artefactClass);
+    GrailsClass newArtefactClass(@SuppressWarnings("unchecked") Class artefactClass);
 
     /**
      * <p>Called whenever the list of artefacts has changed or been reloaded.</p>

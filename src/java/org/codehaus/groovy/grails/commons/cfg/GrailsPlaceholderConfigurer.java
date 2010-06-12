@@ -14,30 +14,27 @@
  */
 package org.codehaus.groovy.grails.commons.cfg;
 
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-
-import java.util.Properties;
-import java.io.IOException;
-
 import groovy.util.ConfigObject;
 
+import java.io.IOException;
+import java.util.Properties;
+
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+
 /**
- * A PropertyPlaceholderConfigurer implementation that uses Grails' ConfigObject for place holder values
- * 
+ * Uses Grails' ConfigObject for place holder values.
+ *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Oct 10, 2007
  */
 public class GrailsPlaceholderConfigurer extends PropertyPlaceholderConfigurer {
 
+    @Override
     protected void loadProperties(Properties props) throws IOException {
         ConfigObject config = ConfigurationHolder.getConfig();
-        if(config != null) {
+        if (config != null) {
             props.putAll(config.toProperties());
         }
     }
-
-
 }

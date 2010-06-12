@@ -26,13 +26,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.springframework.beans.*;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
-import org.springframework.beans.factory.support.*;
-import org.springframework.util.ClassUtils;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.CglibSubclassingInstantiationStrategy;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.util.ClassUtils;
 
 /**
  * A BeanFactory that can deal with class cast exceptions that may occur due to class reload events
@@ -48,6 +56,7 @@ import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
  *        Created: May 8, 2009
  */
 public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFactory {
+
     ConcurrentHashMap<Class<?>, Set<String>> autowiringByNameCacheForClass =
         new ConcurrentHashMap<Class<?>, Set<String>>();
 
@@ -55,7 +64,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
      * Default constructor.
      */
     public ReloadAwareAutowireCapableBeanFactory() {
-        if(Environment.getCurrent().isReloadEnabled()) {
+        if (Environment.getCurrent().isReloadEnabled()) {
 
             // Implementation note: The default Spring InstantiationStrategy caches constructors. This is no good at development time
             // because if the class reloads then Spring continues to use the old class. We deal with this here by disabling the caching
@@ -91,24 +100,24 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
 
     @Override
     protected Object doCreateBean(String beanName, RootBeanDefinition mbd, Object[] args) {
-        if(Environment.getCurrent().isReloadEnabled()) {
+        if (Environment.getCurrent().isReloadEnabled()) {
             try {
                 return super.doCreateBean(beanName, mbd, args);
             }
             catch (BeanCreationException t) {
-                if(t.getCause() instanceof TypeMismatchException)  {
+                if (t.getCause() instanceof TypeMismatchException)  {
                     // type mismatch probably occured because another class was reloaded
                     final Class<?> beanClass = mbd.getBeanClass();
-                    if(GroovyObject.class.isAssignableFrom(beanClass)) {
+                    if (GroovyObject.class.isAssignableFrom(beanClass)) {
                         GrailsApplication application = (GrailsApplication) getBean(GrailsApplication.APPLICATION_ID);
                         ClassLoader classLoader = application.getClassLoader();
-                        if(classLoader instanceof GrailsClassLoader) {
+                        if (classLoader instanceof GrailsClassLoader) {
                             GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
                             gcl.reloadClass(beanClass.getName());
                             try {
                                 Class<?> newBeanClass = gcl.loadClass(beanClass.getName());
                                 mbd.setBeanClass(newBeanClass);
-                                if(!newBeanClass.equals(beanClass)) {
+                                if (!newBeanClass.equals(beanClass)) {
                                     GrailsPluginManager pluginManager = (GrailsPluginManager) getBean(GrailsPluginManager.BEAN_NAME);
                                     pluginManager.informOfClassChange(newBeanClass);
                                     return super.doCreateBean(beanName, mbd, args);
@@ -140,19 +149,18 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
     };
 
     @Override
-    public void autowireBeanProperties(Object existingBean, int autowireMode,
-            boolean dependencyCheck) throws BeansException {
+    public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) throws BeansException {
 
         if (autowireMode != AUTOWIRE_BY_NAME) {
-           super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-           return;
+            super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
+            return;
         }
 
         try {
             autowiringBeanPropertiesFlag.set(Boolean.TRUE);
-            if(!Environment.getCurrent().isReloadEnabled()) {
+            if (!Environment.getCurrent().isReloadEnabled()) {
                 Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(existingBean.getClass()));
-                if(beanProps != null && beanProps.size()==0) {
+                if (beanProps != null && beanProps.isEmpty()) {
                     // nothing to autowire
                     if (logger.isDebugEnabled()) {
                         logger.debug("Nothing to autowire for bean of class " + existingBean.getClass().getName());
@@ -161,7 +169,8 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
                 }
             }
             super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-        } finally {
+        }
+        finally {
             autowiringBeanPropertiesFlag.remove();
         }
     }
@@ -179,8 +188,8 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
 
         // list of bean properties for that a bean exists
         Set<String> beanProps=autowiringByNameCacheForClass.get(ClassUtils.getUserClass(bw.getWrappedInstance().getClass()));
-        if(beanProps==null) {
-            beanProps=new LinkedHashSet<String>();
+        if (beanProps == null) {
+            beanProps = new LinkedHashSet<String>();
             String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
             for (String propertyName : propertyNames) {
                 if (containsBean(propertyName)) {
@@ -189,14 +198,13 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
             }
             autowiringByNameCacheForClass.put(ClassUtils.getUserClass(bw.getWrappedInstance().getClass()), beanProps);
         }
-        for(String propertyName : beanProps) {
+        for (String propertyName : beanProps) {
             Object bean = getBean(propertyName);
             pvs.addPropertyValue(propertyName, bean);
             registerDependentBean(propertyName, beanName);
             if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Added autowiring by name from bean name '" + beanName + "' via property '" + propertyName +
-                                "' to bean named '" + propertyName + "'");
+                logger.debug("Added autowiring by name from bean name '" + beanName + "' via property '" +
+                        propertyName + "' to bean named '" + propertyName + "'");
             }
         }
     }

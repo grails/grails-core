@@ -37,7 +37,6 @@ import org.springframework.validation.Validator;
 
 /**
  * @author Graeme Rocher
- * @since 05-Jul-2005
  */
 public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
 
@@ -499,6 +498,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
         // establish relationship to type
         Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
+        @SuppressWarnings("hiding")
         Map mappedBy = GrailsDomainConfigurationUtil.getMappedByMap(propType);
 
         Class<?> relatedClassPropertyType = null;
@@ -555,7 +555,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         establishDomainClassRelationshipToType(property, relatedClassPropertyType);
     }
 
-    private boolean isNotMappedToDifferentProperty(GrailsDomainClassProperty property, String relatedClassPropertyName, Map mappedBy) {
+    @SuppressWarnings("unchecked")
+    private boolean isNotMappedToDifferentProperty(GrailsDomainClassProperty property,
+            String relatedClassPropertyName, @SuppressWarnings("hiding") Map mappedBy) {
+
         String mappedByForRelation = (String)mappedBy.get(relatedClassPropertyName);
         if (mappedByForRelation == null) return true;
         if (!property.getName().equals(mappedByForRelation)) return false;
