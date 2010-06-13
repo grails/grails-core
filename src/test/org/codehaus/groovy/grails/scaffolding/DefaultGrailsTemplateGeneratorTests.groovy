@@ -17,12 +17,14 @@ import grails.util.BuildSettingsHolder
 
 public class DefaultGrailsTemplateGeneratorTests extends GroovyTestCase{
 
+    public static GrailsPlugin fakeHibernatePlugin = [getName: { -> 'hibernate' }] as GrailsPlugin
+
     protected void setUp() {
         def buildSettings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = buildSettings
 
         PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+        PluginManagerHolder.pluginManager.registerMockPlugin fakeHibernatePlugin
     }
 
     protected void tearDown() {

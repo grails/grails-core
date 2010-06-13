@@ -21,6 +21,8 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
@@ -37,6 +39,9 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
     protected void setUp() {
         BuildSettings buildSettings = new BuildSettings(new File("."));
         BuildSettingsHolder.setSettings(buildSettings);
+        MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
+        PluginManagerHolder.setPluginManager(pluginManager);
+        pluginManager.registerMockPlugin(DefaultGrailsTemplateGeneratorTests.fakeHibernatePlugin);
     }
 
     protected void tearDown() {
