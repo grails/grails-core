@@ -63,7 +63,8 @@ class MockUtils {
             "NotEqual",
             "Like",
             "Ilike",
-            "Between"].asImmutable()
+            "Between",
+            "InList"].asImmutable()
     static final COMPARATORS_RE = COMPARATORS.join("|")
     static final DYNAMIC_FINDER_RE = /(\w+?)(${COMPARATORS_RE})?((And|Or)(\w+?)(${COMPARATORS_RE})?)?/
 
@@ -1095,6 +1096,10 @@ class MockUtils {
             case "Between":
                 if (propValue >= args[0] && propValue <= args[1]) result << record
                 break
+                
+            case "InList":
+                 if (propValue in args[0]) result << record
+                 break;
 
             default:
                 throw new RuntimeException("Unrecognised comparator: ${comparator}")

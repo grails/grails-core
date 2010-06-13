@@ -217,6 +217,13 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findAllByAgeBetween(18, 35, [ sort: "name", order: "desc", max: 3, offset: 1 ])
         assertEquals( [ janeDoeUK, chrisPanNull, chrisJonesOz ], result )
+        
+        result = TestDomain.findByNameInList(["Alice Doe"])
+        assertEquals result, aliceDoeUS
+        
+        result = TestDomain.findAllByNameInList(["Chris Jones"])
+        assertEquals 2, result.size()
+        assertEquals 2, TestDomain.countByNameInList(["John Smith"])
     }
 
     /**
