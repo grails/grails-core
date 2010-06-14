@@ -17,105 +17,105 @@ package org.codehaus.groovy.grails.commons.spring;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.ui.context.Theme;
 import org.springframework.ui.context.ThemeSource;
 import org.springframework.ui.context.support.UiApplicationContextUtils;
 
 /**
- * An ApplicationContext that extends StaticApplicationContext and implements GroovyObject such that beans can be retrieved with the dot
- * de-reference syntax instead of using getBean('name')
+ * An ApplicationContext that extends StaticApplicationContext and implements GroovyObject such that
+ * beans can be retrieved with the dot de-reference syntax instead of using getBean('name').
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 23, 2007
  */
 public class GrailsApplicationContext extends GenericApplicationContext implements GroovyObject {
+
     protected MetaClass metaClass;
     private BeanWrapper ctxBean = new BeanWrapperImpl(this);
     private ThemeSource themeSource;
 
     public GrailsApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
         super(defaultListableBeanFactory);
-        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
+        metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public GrailsApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, ApplicationContext applicationContext) {
         super(defaultListableBeanFactory, applicationContext);
-        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
+        metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public GrailsApplicationContext(org.springframework.context.ApplicationContext parent) throws org.springframework.beans.BeansException {
         super(parent);
-        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
+        metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
-        this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
+        metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
 
     public MetaClass getMetaClass() {
-		return this.metaClass;
-	}
+        return metaClass;
+    }
 
     public Object getProperty(String property) {
-		if(containsBean(property)) {
-			return getBean(property);
-		}
-		else if(ctxBean.isReadableProperty(property)) {
-			return ctxBean.getPropertyValue(property);
-		}
-		return null;
-	}
+        if (containsBean(property)) {
+            return getBean(property);
+        }
+        if (ctxBean.isReadableProperty(property)) {
+            return ctxBean.getPropertyValue(property);
+        }
+        return null;
+    }
 
     public Object invokeMethod(String name, Object args) {
-		return metaClass.invokeMethod(this, name, args);
-	}
+        return metaClass.invokeMethod(this, name, args);
+    }
 
     public void setMetaClass(MetaClass metaClass) {
-		this.metaClass = metaClass;
-	}
+        this.metaClass = metaClass;
+    }
 
     /**
-	 * Initialize the theme capability.
+     * Initialize the theme capability.
      */
+    @Override
     protected void onRefresh() {
-        this.themeSource = UiApplicationContextUtils.initThemeSource(this);
+        themeSource = UiApplicationContextUtils.initThemeSource(this);
     }
 
     public Theme getTheme(String themeName) {
-		return this.themeSource.getTheme(themeName);
-	}
+        return themeSource.getTheme(themeName);
+    }
 
     public void setProperty(String property, Object newValue) {
-		if(newValue instanceof BeanDefinition) {
-            if(containsBean(property)) {
+        if (newValue instanceof BeanDefinition) {
+            if (containsBean(property)) {
                 removeBeanDefinition(property);
             }
 
             registerBeanDefinition(property, (BeanDefinition)newValue);
-		}
-		else {
-			metaClass.setProperty(this, property, newValue);
-		}
-	}
-
+        }
+        else {
+            metaClass.setProperty(this, property, newValue);
+        }
+    }
 
     /**
      * Register a singleton bean with the underlying bean factory.
      * <p>For more advanced needs, register with the underlying BeanFactory directly.
      * @see #getDefaultListableBeanFactory
      */
-    public void registerSingleton(String name, Class clazz) throws BeansException {
+    public void registerSingleton(String name, Class<?> clazz) throws BeansException {
         GenericBeanDefinition bd = new GenericBeanDefinition();
         bd.setBeanClass(clazz);
         getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
@@ -126,7 +126,7 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
      * <p>For more advanced needs, register with the underlying BeanFactory directly.
      * @see #getDefaultListableBeanFactory
      */
-    public void registerSingleton(String name, Class clazz, MutablePropertyValues pvs) throws BeansException {
+    public void registerSingleton(String name, Class<?> clazz, MutablePropertyValues pvs) throws BeansException {
         GenericBeanDefinition bd = new GenericBeanDefinition();
         bd.setBeanClass(clazz);
         bd.setPropertyValues(pvs);
@@ -138,7 +138,7 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
      * <p>For more advanced needs, register with the underlying BeanFactory directly.
      * @see #getDefaultListableBeanFactory
      */
-    public void registerPrototype(String name, Class clazz) throws BeansException {
+    public void registerPrototype(String name, Class<?> clazz) throws BeansException {
         GenericBeanDefinition bd = new GenericBeanDefinition();
         bd.setScope(GenericBeanDefinition.SCOPE_PROTOTYPE);
         bd.setBeanClass(clazz);
@@ -150,14 +150,11 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
      * <p>For more advanced needs, register with the underlying BeanFactory directly.
      * @see #getDefaultListableBeanFactory
      */
-    public void registerPrototype(String name, Class clazz, MutablePropertyValues pvs) throws BeansException {
+    public void registerPrototype(String name, Class<?> clazz, MutablePropertyValues pvs) throws BeansException {
         GenericBeanDefinition bd = new GenericBeanDefinition();
         bd.setScope(GenericBeanDefinition.SCOPE_PROTOTYPE);
         bd.setBeanClass(clazz);
         bd.setPropertyValues(pvs);
         getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
     }
-
-
 }
-

@@ -14,23 +14,18 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-
 /**
- * A handler for UrlMappings
+ * A handler for UrlMappings.
  *
  * @author Graeme Rocher
  * @since 0.5
- * 
- *        <p/>
- *        Created: Mar 6, 2007
- *        Time: 6:20:30 PM
  */
 public class UrlMappingsArtefactHandler extends ArtefactHandlerAdapter {
 
     public static final String TYPE = "UrlMappings";
 
     public UrlMappingsArtefactHandler() {
-        super(TYPE, GrailsUrlMappingsClass.class, DefaultGrailsUrlMappingsClass.class, DefaultGrailsUrlMappingsClass.URL_MAPPINGS);
+        super(TYPE, GrailsUrlMappingsClass.class, DefaultGrailsUrlMappingsClass.class,
+                DefaultGrailsUrlMappingsClass.URL_MAPPINGS);
     }
-    
 }

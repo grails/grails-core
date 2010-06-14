@@ -22,26 +22,25 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator
-import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.util.Assert;
 import org.codehaus.groovy.grails.cli.CommandLineHelper
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
- * from the domain model
+ * from the domain model.
  *
  * @author Graeme Rocher
- * @since 09-Feb-2006
  */
 class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, ResourceLoaderAware {
 
-    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator.class)
+    static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator)
 
     String basedir = "."
     boolean overwrite = false
@@ -50,36 +49,34 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     Template renderEditorTemplate
     String domainSuffix = 'Instance'
 
-
     /**
-     * Used by the scripts so that they can pass in their AntBuilder
-     * instance.
+     * Used by the scripts so that they can pass in their AntBuilder instance.
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
-        engine = new SimpleTemplateEngine(classLoader)        
-	    def suffix = ConfigurationHolder.config?.grails?.scaffolding?.templates?.domainSuffix
-	    if (suffix != [:]) {
-	        domainSuffix = suffix
-		}
+        engine = new SimpleTemplateEngine(classLoader)
+        def suffix = ConfigurationHolder.config?.grails?.scaffolding?.templates?.domainSuffix
+        if (suffix != [:]) {
+            domainSuffix = suffix
+        }
     }
 
     /**
-     * Creates an instance
+     * Default constructor.
      */
-    DefaultGrailsTemplateGenerator() {
-    }
-
-
+    DefaultGrailsTemplateGenerator() {}
 
     void setResourceLoader(ResourceLoader rl) {
         LOG.info "Scaffolding template generator set to use resource loader ${rl}"
         this.resourceLoader = rl
     }
 
-    // a closure that uses the type to render the appropriate editor
-    def renderEditor = {property ->
+    // uses the type to render the appropriate editor
+    def renderEditor = { property ->
         def domainClass = property.domainClass
-        def cp = domainClass.constrainedProperties[property.name]
+        def cp
+        if (PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')) {
+            cp = domainClass.constrainedProperties[property.name]
+        }
 
         if (!renderEditorTemplate) {
             // create template once for performance
@@ -87,30 +84,29 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
             renderEditorTemplate = engine.createTemplate(templateText)
         }
 
-        def binding = [property: property, domainClass: domainClass, cp: cp, domainInstance:getPropertyName(domainClass)]
+        def binding = [property: property,
+                       domainClass: domainClass,
+                       cp: cp,
+                       domainInstance:getPropertyName(domainClass)]
         return renderEditorTemplate.make(binding).toString()
     }
 
-    public void generateViews(GrailsDomainClass domainClass, String destdir) {
-        if (!destdir)
-            throw new IllegalArgumentException("Argument [destdir] not specified")
+    void generateViews(GrailsDomainClass domainClass, String destdir) {
+        Assert.hasText destdir, "Argument [destdir] not specified"
 
         def viewsDir = new File("${destdir}/grails-app/views/${domainClass.propertyName}")
-        if (!viewsDir.exists())
+        if (!viewsDir.exists()) {
             viewsDir.mkdirs()
-
-        def templateNames = getTemplateNames()
-
-        for(t in templateNames) {
-           LOG.info "Generating $t view for domain class [${domainClass.fullName}]"
-           generateView domainClass, t, viewsDir.absolutePath
         }
 
+        for (t in getTemplateNames()) {
+            LOG.info "Generating $t view for domain class [${domainClass.fullName}]"
+            generateView domainClass, t, viewsDir.absolutePath
+        }
     }
 
-    public void generateController(GrailsDomainClass domainClass, String destdir) {
-        if (!destdir)
-            throw new IllegalArgumentException("Argument [destdir] not specified")
+    void generateController(GrailsDomainClass domainClass, String destdir) {
+        Assert.hasText destdir, "Argument [destdir] not specified"
 
         if (domainClass) {
             def fullName = domainClass.fullName
@@ -125,7 +121,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
             if (canWrite(destFile)) {
                 destFile.parentFile.mkdirs()
 
-                destFile.withWriter {w ->
+                destFile.withWriter { w ->
                     generateController(domainClass, w)
                 }
 
@@ -137,7 +133,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     private generateListView(domainClass, destDir) {
         def listFile = new File("${destDir}/list.gsp")
         if (canWrite(listFile)) {
-            listFile.withWriter {w ->
+            listFile.withWriter { w ->
                 generateView(domainClass, "list", w)
             }
             LOG.info("list view generated at ${listFile.absolutePath}")
@@ -147,7 +143,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     private generateShowView(domainClass, destDir) {
         def showFile = new File("${destDir}/show.gsp")
         if (canWrite(showFile)) {
-            showFile.withWriter {w ->
+            showFile.withWriter { w ->
                 generateView(domainClass, "show", w)
             }
             LOG.info("Show view generated at ${showFile.absolutePath}")
@@ -157,7 +153,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     private generateEditView(domainClass, destDir) {
         def editFile = new File("${destDir}/edit.gsp")
         if (canWrite(editFile)) {
-            editFile.withWriter {w ->
+            editFile.withWriter { w ->
                 generateView(domainClass, "edit", w)
             }
             LOG.info("Edit view generated at ${editFile.absolutePath}")
@@ -167,19 +163,17 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     private generateCreateView(domainClass, destDir) {
         def createFile = new File("${destDir}/create.gsp")
         if (canWrite(createFile)) {
-
-            createFile.withWriter {w ->
+            createFile.withWriter { w ->
                 generateView(domainClass, "create", w)
             }
             LOG.info("Create view generated at ${createFile.absolutePath}")
         }
     }
 
-
-    public void generateView(GrailsDomainClass domainClass, String viewName, String destDir) {
+    void generateView(GrailsDomainClass domainClass, String viewName, String destDir) {
         File destFile = new File("$destDir/${viewName}.gsp")
         if (canWrite(destFile)) {
-            destFile.withWriter {Writer writer ->
+            destFile.withWriter { Writer writer ->
                 generateView domainClass, viewName, writer
             }
         }
@@ -191,14 +185,15 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         def t = engine.createTemplate(templateText)
         def multiPart = domainClass.properties.find {it.type == ([] as Byte[]).class || it.type == ([] as byte[]).class}
 
+        boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
         def packageName = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
         def binding = [packageName: packageName,
-                domainClass: domainClass,
-                multiPart: multiPart,
-                className: domainClass.shortName,
-                propertyName:  getPropertyName(domainClass),
-                renderEditor: renderEditor,
-                comparator: org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
+                       domainClass: domainClass,
+                       multiPart: multiPart,
+                       className: domainClass.shortName,
+                       propertyName:  getPropertyName(domainClass),
+                       renderEditor: renderEditor,
+                       comparator: hasHibernate ? DomainClassPropertyComparator : SimpleDomainClassPropertyComparator]
 
         t.make(binding).writeTo(out)
     }
@@ -206,19 +201,18 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     void generateController(GrailsDomainClass domainClass, Writer out) {
         def templateText = getTemplateText("Controller.groovy")
 
+        boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
         def binding = [packageName: domainClass.packageName,
-                domainClass: domainClass,
-                className: domainClass.shortName,
-                propertyName: getPropertyName(domainClass),
-                comparator: org.codehaus.groovy.grails.scaffolding.DomainClassPropertyComparator.class]
+                       domainClass: domainClass,
+                       className: domainClass.shortName,
+                       propertyName: getPropertyName(domainClass),
+                       comparator: hasHibernate ? DomainClassPropertyComparator : SimpleDomainClassPropertyComparator]
 
         def t = engine.createTemplate(templateText)
         t.make(binding).writeTo(out)
     }
 
-    private String getPropertyName(GrailsDomainClass domainClass) {
-        return "${domainClass.propertyName}${domainSuffix}"
-    }
+    private String getPropertyName(GrailsDomainClass domainClass) { "${domainClass.propertyName}${domainSuffix}" }
 
     private helper = new CommandLineHelper()
     private canWrite(testFile) {
@@ -242,71 +236,68 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         if (resourceLoader && application?.warDeployed) {
             return resourceLoader.getResource("/WEB-INF/templates/scaffolding/${template}").inputStream.text
         }
-        else {
-            def templateFile = new FileSystemResource("${basedir}/src/templates/scaffolding/${template}")
-            if (!templateFile.exists()) {
-                // template not found in application, use default template
-                def grailsHome = BuildSettingsHolder.settings?.grailsHome
 
-                if (grailsHome) {
-                    templateFile = new FileSystemResource("${grailsHome}/src/grails/templates/scaffolding/${template}")
-                }
-                else {
-                    templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")
-                }
+        def templateFile = new FileSystemResource("${basedir}/src/templates/scaffolding/${template}")
+        if (!templateFile.exists()) {
+            // template not found in application, use default template
+            def grailsHome = BuildSettingsHolder.settings?.grailsHome
+
+            if (grailsHome) {
+                templateFile = new FileSystemResource("${grailsHome}/src/grails/templates/scaffolding/${template}")
             }
-            return templateFile.inputStream.getText()
+            else {
+                templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")
+            }
         }
+        return templateFile.inputStream.getText()
     }
 
     def getTemplateNames() {
-        def resources = []
         Closure filter = { it[0..-5] }
-        if(resourceLoader && application?.isWarDeployed()) {
+        if (resourceLoader && application?.isWarDeployed()) {
             def resolver = new PathMatchingResourcePatternResolver(resourceLoader)
             try {
-                resources = resolver.getResources("/WEB-INF/templates/scaffolding/*.gsp").filename.collect(filter)
+                return resolver.getResources("/WEB-INF/templates/scaffolding/*.gsp").filename.collect(filter)
             }
             catch (e) {
                 return []
             }
         }
-        else {
-            def resolver = new PathMatchingResourcePatternResolver()
-            String templatesDirPath = "${basedir}/src/templates/scaffolding"
-            def templatesDir = new FileSystemResource(templatesDirPath)
-            if(templatesDir.exists()) {
-                try {
-                    resources = resolver.getResources("file:$templatesDirPath/*.gsp").filename.collect(filter)
-                }
-                catch (e) {
-                    LOG.info("Error while loading views from grails-app scaffolding folder", e)
-                }
-            }
 
-            def grailsHome = BuildSettingsHolder.settings?.grailsHome
-            if(grailsHome) {
-                try {
-                    def grailsHomeTemplates = resolver.getResources("file:${grailsHome}/src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
-                    resources.addAll(grailsHomeTemplates)
-                }
-                catch (e) {
-                    // ignore                    
-                    LOG.debug("Error locating templates from GRAILS_HOME: ${e.message}", e)
-                }
+        def resources = []
+        def resolver = new PathMatchingResourcePatternResolver()
+        String templatesDirPath = "${basedir}/src/templates/scaffolding"
+        def templatesDir = new FileSystemResource(templatesDirPath)
+        if (templatesDir.exists()) {
+            try {
+                resources = resolver.getResources("file:$templatesDirPath/*.gsp").filename.collect(filter)
             }
-            else {
-                try {
-                    def templates = resolver.getResources("classpath:src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
-                    resources.addAll(templates)
-                }
-                catch (e) {
-                    // ignore
-                    LOG.debug("Error locating templates from classpath: ${e.message}", e)
-                }
+            catch (e) {
+                LOG.info("Error while loading views from grails-app scaffolding folder", e)
+            }
+        }
+
+        def grailsHome = BuildSettingsHolder.settings?.grailsHome
+        if (grailsHome) {
+            try {
+                def grailsHomeTemplates = resolver.getResources("file:${grailsHome}/src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
+                resources.addAll(grailsHomeTemplates)
+            }
+            catch (e) {
+                // ignore
+                LOG.debug("Error locating templates from GRAILS_HOME: ${e.message}", e)
+            }
+        }
+        else {
+            try {
+                def templates = resolver.getResources("classpath:src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
+                resources.addAll(templates)
+            }
+            catch (e) {
+                // ignore
+                LOG.debug("Error locating templates from classpath: ${e.message}", e)
             }
         }
         return resources
     }
-
 }

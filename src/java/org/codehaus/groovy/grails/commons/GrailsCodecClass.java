@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2004-2005 the original author or authors.
  *
@@ -19,8 +18,8 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.Closure;
 
 /**
- * An interface that provides access to Codec classes. A Codec class is a class
- * that ends in the convention "Codec" and provides encode and decode methods or closure properties
+ * Provides access to Codec classes. A Codec class one that ends in the convention
+ * "Codec" and provides encode and decode methods or closure properties.
  *
  * @author Jeff Brown
  * @since 0.4
@@ -30,11 +29,10 @@ public interface GrailsCodecClass extends InjectableGrailsClass {
     /**
      * @return The encode closure
      */
-	Closure getEncodeMethod();
+    Closure getEncodeMethod();
 
     /**
      * @return The decode closure
      */
-	Closure getDecodeMethod();
-
+    Closure getDecodeMethod();
 }

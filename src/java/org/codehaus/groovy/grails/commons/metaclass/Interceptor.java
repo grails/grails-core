@@ -12,40 +12,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.commons.metaclass;
 
 /**
- * 
  * Implementers of this interface can be registered in the ProxyMetaClass for
  * notifications about method calls for objects managed by the ProxyMetaClass.
  *
  * Based off the original work in Groovy core, but uses a callback object instead
- * for thread safety
- * 
+ * for thread safety.
+ *
  * @author Dierk Koenig
  * @author Graeme Rocher
- * 
- * @since 0.2
- * 
- * @version $Revision: $
- * First Created: 02-Jun-2006
- * Last Updated: $Date: $
  *
+ * @since 0.2
  */
 public interface Interceptor {
+
     /**
      * This code is executed before the method is optionally called.
      * @param object        receiver object for the method call
      * @param methodName    name of the method to call
      * @param arguments     arguments to the method call
      * @param callback      The callback object
-     * 
+     *
      * @return any arbitrary result that replaces the result of the
      * original method call only if the callback object is marked
      * relays this result.
      */
     Object beforeInvoke(Object object, String methodName, Object[] arguments, InvocationCallback callback);
+
     /**
      * This code is executed after the method is optionally called.
      * @param object        receiver object for the called method

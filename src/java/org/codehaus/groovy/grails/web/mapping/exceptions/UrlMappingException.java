@@ -17,20 +17,16 @@ package org.codehaus.groovy.grails.web.mapping.exceptions;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 
 /**
- * An exception thrown when an error occurs evaluating an URL mapping
+ * Thrown when an error occurs evaluating an URL mapping.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *
- *        <p/>
- *        Created: Feb 28, 2007
- *        Time: 6:22:38 PM
  */
 public class UrlMappingException extends GrailsException {
-	private static final long serialVersionUID = -2062478398945064606L;
 
-	public UrlMappingException(String message) {
+    private static final long serialVersionUID = -2062478398945064606L;
+
+    public UrlMappingException(String message) {
         super(message);
     }
 

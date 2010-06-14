@@ -15,44 +15,42 @@
  */
 package org.codehaus.groovy.grails.scaffolding;
 
+import java.io.Writer;
+
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.springframework.core.io.ResourceLoader;
 
-import java.io.Writer;
-
 /**
- * An interface that defines methods for generating Grails artifacts from a domain class
+ * Defines methods for generating Grails artifacts from a domain class.
  *
  * @author Graeme Rocher
  * @since 0.1
- *
- * 09-Feb-2006
  */
 public interface GrailsTemplateGenerator {
 
     /**
-     * The resource loader to use to load templates from
+     * The resource loader to use to load templates from.
      *
      * @param resourceLoader The ResourceLoader instance
      */
     void setResourceLoader(ResourceLoader resourceLoader);
 
-     /**
-     * Generates the necessary views for the supplied domain class
+    /**
+     * Generates the necessary views for the supplied domain class.
      * @param domainClass The DomainClass to generate views for
-      * @param destDir The destination directory to generate views to
+     * @param destDir The destination directory to generate views to
      */
     void generateViews(GrailsDomainClass domainClass, String destDir);
 
     /**
-     * Generates a controller for the supplied domain class
+     * Generates a controller for the supplied domain class.
      * @param domainClass The DomainClass to generate views for
      * @param destDir The destination directory to generate views to
      */
     void generateController(GrailsDomainClass domainClass, String destDir);
 
     /**
-     * Whether the generator should overwrite existing files (defaults to false)
+     * Whether the generator should overwrite existing files (defaults to false).
      *
      * @param shouldOverwrite Whether views should be overwritten when generating
      */
@@ -60,7 +58,7 @@ public interface GrailsTemplateGenerator {
 
     /**
      * Generates a view for the specified domain class and view name writing the result to the specified
-     * java.io.Writer instance
+     * java.io.Writer instance.
      *
      * @param viewName The name of the view
      * @param out The writer to write to
@@ -69,7 +67,7 @@ public interface GrailsTemplateGenerator {
     void generateView(GrailsDomainClass domainClass, String viewName, Writer out);
 
     /**
-     * Generates a view for the specified domain class and view name to the target directory
+     * Generates a view for the specified domain class and view name to the target directory.
      * @param domainClass The domain class
      * @param viewName The view name
      * @param destDir The destination
@@ -78,7 +76,7 @@ public interface GrailsTemplateGenerator {
 
     /**
      * Generates a controller for the specified domain class, writing the result to the specified
-     * java.io.Writer instance
+     * java.io.Writer instance.
      *
      * @param domainClass The domain class to generate a controller for
      * @param out The Writer to write to

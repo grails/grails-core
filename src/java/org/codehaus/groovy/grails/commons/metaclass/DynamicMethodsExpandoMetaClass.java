@@ -17,15 +17,13 @@ package org.codehaus.groovy.grails.commons.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 
-import java.beans.IntrospectionException;
-
 /**
- * This MetaClass extends ExpandoMetaClass and adds the ability to use regex to specified method matches that
+ * Extends ExpandoMetaClass and adds the ability to use regex to specified method matches that
  * then get passed to the invocable closure. Example:
  *
- * 			metaClass./^findBy(\w+)$/ = { matcher, args ->
+ *             metaClass./^findBy(\w+)$/ = { matcher, args ->
  *
- *		    }
+ *            }
  *
  * The first argument to the closure is the Regex Matcher. The second is the arguments to the method. This MetaClass
  * allows you to implement thigns like dynamic finders in a trivial manner.
@@ -42,18 +40,13 @@ import java.beans.IntrospectionException;
  * no problem as proxying is not occuring for every method call
  *
  * WARNING: This MetaClass does not support inheritance heirarchies. In other words a child class will not be able
- * to invoke a dynamically added method that exists on a super class 
- *
+ * to invoke a dynamically added method that exists on a super class.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Feb 2, 2007
- *        Time: 6:31:31 PM
  */
 public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
-    
+
     private DynamicMethods dynamicMethods;
     private static final String REGEX_START = "^";
     private static final String REGEX_END = "$";
@@ -64,112 +57,111 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
      * on GroovyObject
      *
      * @param aClass The class to create the MetaClass for
-     *
-     * @throws IntrospectionException Thrown if an error occurs introspecting the class
      */
-    public DynamicMethodsExpandoMetaClass(Class aClass) throws IntrospectionException {
+    public DynamicMethodsExpandoMetaClass(Class<?> aClass) {
         super(aClass, false, true);
-
-        this.dynamicMethods = new DefaultDynamicMethods(aClass);
+        dynamicMethods = new DefaultDynamicMethods(aClass);
     }
 
     /**
      * Constructs a new DynamicMethodsExpandoMetaClass given the current class and places it in the MetaClassRegistry
      *
      * @param aClass The class to create the MetaClass for
-     *
-     * @throws IntrospectionException Thrown if an error occurs introspecting the class
      */
-    public DynamicMethodsExpandoMetaClass(Class aClass, boolean inReg) throws IntrospectionException {
+    public DynamicMethodsExpandoMetaClass(Class<?> aClass, boolean inReg) {
         super(aClass, false, true);
-        this.dynamicMethods = new DefaultDynamicMethods(aClass);
-        if(inReg) {
+        dynamicMethods = new DefaultDynamicMethods(aClass);
+        if (inReg) {
             registry.setMetaClass(aClass, this);
-        }        
+        }
     }
 
     /**
-     * Either invokes a intercepted dyanmic static method or the adapted original MetaClass
+     * Either invokes a intercepted dyanmic static method or the adapted original MetaClass.
      *
      * @param target The target object
      * @param methodName The method name
      * @param arguments The arguments to the method
      * @return The return value
      */
+    @Override
     public Object invokeStaticMethod(Object target, String methodName, Object[] arguments) {
-		InvocationCallback callback = new InvocationCallback();
-		Object returnValue = this.dynamicMethods.invokeStaticMethod(target, methodName, arguments, callback);
-		if (callback.isInvoked()) {
-			return returnValue;
-		} else {
-			return super.invokeStaticMethod(target, methodName, arguments);
-		}
-	}
-
-    public void setProperty(Class aClass, Object object, String property, Object newValue, boolean b, boolean b1) {
         InvocationCallback callback = new InvocationCallback();
-        this.dynamicMethods.setProperty(object,property,newValue,callback);
+        Object returnValue = dynamicMethods.invokeStaticMethod(target, methodName, arguments, callback);
+        if (callback.isInvoked()) {
+            return returnValue;
+        }
+
+        return super.invokeStaticMethod(target, methodName, arguments);
+    }
+
+    @Override
+    public void setProperty(@SuppressWarnings("unchecked") Class aClass, Object object,
+            String property, Object newValue, boolean b, boolean b1) {
+        InvocationCallback callback = new InvocationCallback();
+        dynamicMethods.setProperty(object,property,newValue,callback);
         if (!callback.isInvoked()) {
             super.setProperty(aClass,object, property, newValue, b ,b1);
         }
     }
 
-    public Object getProperty(Class aClass, Object object, String property, boolean b, boolean b1) {
+    @Override
+    public Object getProperty(@SuppressWarnings("unchecked") Class aClass, Object object,
+            String property, boolean b, boolean b1) {
         InvocationCallback callback = new InvocationCallback();
-        Object returnValue = this.dynamicMethods.getProperty(object,property,callback);
+        Object returnValue = dynamicMethods.getProperty(object,property,callback);
         if (callback.isInvoked()) {
             return returnValue;
-        } else {
-            return super.getProperty(aClass,object,property, b, b1);
         }
 
-    }/* (non-Javadoc)
-	 * @see groovy.lang.MetaClassImpl#invokeConstructor(java.lang.Object[])
-	 */
-	public Object invokeConstructor(Object[] arg0) {
-		InvocationCallback callback = new InvocationCallback();
-		Object instance = this.dynamicMethods.invokeConstructor(arg0,callback);
-		if(callback.isInvoked()) {
-			return instance;
-		}
-		else {
-			return super.invokeConstructor(arg0);
-		}
-	}
-
-    public Object invokeMethod(Class aClass, Object target, String methodName, Object[] arguments, boolean b, boolean b1) {
-        InvocationCallback callback = new InvocationCallback();
-        Object returnValue = this.dynamicMethods.invokeMethod(target, methodName, arguments, callback);
-        if (callback.isInvoked()) {
-            return returnValue;
-        } else {
-            return super.invokeMethod(aClass, target, methodName, arguments, b, b1);
-        }
-
+        return super.getProperty(aClass,object,property, b, b1);
     }
 
+    /* (non-Javadoc)
+     * @see groovy.lang.MetaClassImpl#invokeConstructor(java.lang.Object[])
+     */
+    @Override
+    public Object invokeConstructor(Object[] arg0) {
+        InvocationCallback callback = new InvocationCallback();
+        Object instance = dynamicMethods.invokeConstructor(arg0,callback);
+        if (callback.isInvoked()) {
+            return instance;
+        }
+        return super.invokeConstructor(arg0);
+    }
 
+    @Override
+    public Object invokeMethod(@SuppressWarnings("unchecked") Class aClass, Object target,
+            String methodName, Object[] arguments, boolean b, boolean b1) {
+        InvocationCallback callback = new InvocationCallback();
+        Object returnValue = dynamicMethods.invokeMethod(target, methodName, arguments, callback);
+        if (callback.isInvoked()) {
+            return returnValue;
+        }
+
+        return super.invokeMethod(aClass, target, methodName, arguments, b, b1);
+    }
 
     /**
      * Wraps an existing ExpandoMetaBeanProperty and interceptors methods registration to check if the specified
-     * method addition is a regex method
+     * method addition is a regex method.
      */
     class DynamicExpandoMetaProperty extends ExpandoMetaProperty {
         private DynamicExpandoMetaProperty(ExpandoMetaProperty wrapped) {
             super(wrapped.getPropertyName(), wrapped.isStatic());
         }
+        @Override
         public Object leftShift(Object arg) {
-            if(isRegexMethod(propertyName, arg)) {
+            if (isRegexMethod(propertyName, arg)) {
                 registerDynamicMethodInvocation(propertyName,arg);
                 return this;
             }
-            else {
-                return super.leftShift(arg);
-            }
+
+            return super.leftShift(arg);
         }
 
         private void registerDynamicMethodInvocation(String name, Object newValue) {
-            if(isStatic) {
+            if (isStatic) {
                 dynamicMethods.addStaticMethodInvocation( new ClosureInvokingDynamicMethod(name, (Closure)newValue) );
             }
             else {
@@ -177,12 +169,13 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
             }
         }
 
+        @Override
         public void setProperty(String property, Object newValue) {
-            if(isRegexMethod(property,newValue)) {
+            if (isRegexMethod(property,newValue)) {
                 registerDynamicMethodInvocation(property, newValue);
             }
-            else if(newValue instanceof Closure) {
-                if(isStatic) {
+            else if (newValue instanceof Closure) {
+                if (isStatic) {
                     registerStaticMethod(property, (Closure)newValue);
                 }
                 else {
@@ -192,23 +185,20 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
         }
     }
 
-
+    @Override
     public Object getProperty(String name) {
         Object propertyValue = super.getProperty(name);
-        if(propertyValue instanceof ExpandoMetaProperty) {
+        if (propertyValue instanceof ExpandoMetaProperty) {
             return new DynamicExpandoMetaProperty((ExpandoMetaProperty)propertyValue);
         }
-        else {
-            return propertyValue;
-        }
+
+        return propertyValue;
     }
 
-
-
-
+    @Override
     public void setProperty(String name, Object value) {
-        if(isRegexMethod(name, value)) {
-            this.dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure)value));
+        if (isRegexMethod(name, value)) {
+            dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure)value));
         }
         else {
             super.setProperty(name,value);
@@ -218,5 +208,4 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
     private boolean isRegexMethod(String name, Object value) {
         return name.startsWith(REGEX_START) && name.endsWith(REGEX_END) && value instanceof Closure;
     }
-
 }

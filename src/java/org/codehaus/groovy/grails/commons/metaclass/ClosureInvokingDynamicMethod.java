@@ -15,24 +15,22 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.Closure;
-import org.apache.commons.lang.StringUtils;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.util.Assert;
 
 /**
- * An implementation of DynamicMethodInvocation that invoces a closure
+ * An implementation of DynamicMethodInvocation that invokes a closure.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Feb 2, 2007
- *        Time: 6:55:57 PM
  */
-public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation,StaticMethodInvocation, Cloneable {
+public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation, StaticMethodInvocation, Cloneable {
+
     private Closure callable;
     private Pattern pattern;
-
 
     /**
      * For thread safety when using a ClosureInvokingDynamicMethod it should ALWAYS be cloned first
@@ -41,17 +39,14 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation,Sta
      * @return A cloned instance
      * @throws CloneNotSupportedException
      */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
     public ClosureInvokingDynamicMethod(String pattern, Closure closure) {
-        if(StringUtils.isBlank(pattern)) {
-            throw new IllegalArgumentException("Argument [pattern] must be a valid regular expression");
-        }
-        if(closure == null) {
-            throw new IllegalArgumentException("Argument [closure] cannot be null");
-        }
+        Assert.hasLength(pattern, "Argument [pattern] must be a valid regular expression");
+        Assert.notNull(closure, "Argument [closure] cannot be null");
 
         this.pattern = Pattern.compile(pattern);
         this.callable = closure;
@@ -61,14 +56,11 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation,Sta
         return pattern.matcher(methodName).find();
     }
 
-    public Object invoke(Class clazz, String methodName, Object[] arguments) {
+    public Object invoke(@SuppressWarnings("unchecked") Class clazz, String methodName, Object[] arguments) {
         Closure c = (Closure)callable.clone();
         c.setDelegate(clazz);
-
-        return invokeMethod(methodName,arguments, c);  
+        return invokeMethod(methodName,arguments, c);
     }
-
-
 
     public Object invoke(Object target, String methodName, Object[] arguments) {
         Closure c = (Closure)callable.clone();
@@ -81,15 +73,11 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation,Sta
         Matcher matcher = pattern.matcher(methodName);
         matcher.find();
 
-        switch(c.getParameterTypes().length) {
-             case 0:
-                   return c.call();
-             case 1:
-                   return c.call(matcher);
-             case 2:
-                   return c.call(new Object[]{matcher, arguments});
-             default:
-                   return c.call(new Object[]{matcher, arguments});
+        switch (c.getParameterTypes().length) {
+            case 0:  return c.call();
+            case 1:  return c.call(matcher);
+            case 2:  return c.call(new Object[]{matcher, arguments});
+            default: return c.call(new Object[]{matcher, arguments});
         }
     }
 }

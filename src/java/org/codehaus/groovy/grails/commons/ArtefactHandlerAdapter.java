@@ -1,50 +1,51 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.commons;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author Marc Palmer (marc@anyware.co.uk)
  */
 public class ArtefactHandlerAdapter implements ArtefactHandler {
+
     private String type;
-    private Class grailsClassType;
-    private Class grailsClassImpl;
+    private Class<?> grailsClassType;
+    private Class<?> grailsClassImpl;
     private boolean allowAbstract;
 
     protected Log log = LogFactory.getLog(ArtefactHandlerAdapter.class);
     private String artefactSuffix;
 
-
-    public ArtefactHandlerAdapter(String type, Class grailsClassType, Class grailsClassImpl, String artefactSuffix) {
+    public ArtefactHandlerAdapter(String type, Class<?> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
         this.artefactSuffix = artefactSuffix;
         this.type = type;
         this.grailsClassType = grailsClassType;
         this.grailsClassImpl = grailsClassImpl;
     }
 
-    public ArtefactHandlerAdapter(String type, Class grailsClassType, Class grailsClassImpl, String artefactSuffix,
-        boolean allowAbstract) {
+    public ArtefactHandlerAdapter(String type, Class<?> grailsClassType, Class<?> grailsClassImpl,
+            String artefactSuffix, boolean allowAbstract) {
         this.artefactSuffix = artefactSuffix;
         this.type = type;
         this.grailsClassType = grailsClassType;
@@ -60,29 +61,29 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
         return type;
     }
 
-    public final boolean isArtefact(Class aClass) {
+    public final boolean isArtefact(@SuppressWarnings("unchecked") Class aClass) {
         if (isArtefactClass(aClass)) {
             if (log.isDebugEnabled()) {
                 log.debug("[" + aClass.getName() + "] is a " + type + " class.");
             }
             return true;
         }
-        else {
-            if (log.isDebugEnabled()) {
-                log.debug("[" + aClass.getName() + "] is not a " + type + " class.");
-            }
-            return false;
+
+        if (log.isDebugEnabled()) {
+            log.debug("[" + aClass.getName() + "] is not a " + type + " class.");
         }
+        return false;
     }
 
     /**
      * <p>Checks that class's name ends in the suffix specified for this handler.</p>
-     * <p>Override for more complex criteria</p> 
+     * <p>Override for more complex criteria</p>
      * @param clazz The class to check
      * @return True if it is an artefact of this type
      */
-    public boolean isArtefactClass(Class clazz) {
+    public boolean isArtefactClass(@SuppressWarnings("unchecked") Class clazz) {
         if(clazz == null) return false;
+
         boolean ok = clazz.getName().endsWith(artefactSuffix) && !Closure.class.isAssignableFrom(clazz);
         if (ok && !allowAbstract) {
             ok &= !Modifier.isAbstract(clazz.getModifiers());
@@ -96,10 +97,9 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
      * @param artefactClass Creates a new artefact for the given class
      * @return An instance of the GrailsClass interface representing the artefact
      */
-    public GrailsClass newArtefactClass(Class artefactClass) {
-
+    public GrailsClass newArtefactClass(@SuppressWarnings("unchecked") Class artefactClass) {
         try {
-            Constructor c = grailsClassImpl.getDeclaredConstructor(new Class[] { Class.class } );
+            Constructor<?> c = grailsClassImpl.getDeclaredConstructor(new Class[] { Class.class } );
             // TODO GRAILS-720 plugin class instance created here first
             return (GrailsClass) c.newInstance(new Object[] { artefactClass});
         }
@@ -119,9 +119,10 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
 
     /**
      * Sets up the relationships between the domain classes, this has to be done after
-     * the intial creation to avoid looping
+     * the intial creation to avoid looping.
      */
     public void initialize(ArtefactInfo artefacts) {
+        // do nothing
     }
 
     public GrailsClass getArtefactForFeature(Object feature) {

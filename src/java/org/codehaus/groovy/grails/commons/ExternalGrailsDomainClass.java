@@ -15,11 +15,11 @@
 package org.codehaus.groovy.grails.commons;
 
 /**
- * <p>Represents a persistable Grails domain class that is externally mapped. This is essentially
- * a marker interface so that Grails knows to treat these differently</p>
+ * Represents a persistable Grails domain class that is externally mapped. This is essentially
+ * a marker interface so that Grails knows to treat these differently.
  *
  * @author Graeme Rocher
- * @since Feb 18, 2006
  */
 public interface ExternalGrailsDomainClass extends GrailsDomainClass {
+    // no extra methods
 }

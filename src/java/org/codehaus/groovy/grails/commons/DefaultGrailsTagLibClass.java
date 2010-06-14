@@ -23,77 +23,73 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Default implementation of a tag lib class.
+ *
  * @author Graeme Rocher
- * @since 14-Jan-2006
- *
- * Default implementation of a tag lib class
- *
  */
 public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass implements GrailsTagLibClass {
+
     protected static final String TAG_LIB = "TagLib";
 
-    private List supportedControllers;
-    private Set tags = new HashSet();
+    private List<Class<?>> supportedControllers;
+    private Set<String> tags = new HashSet<String>();
     private String namespace = GrailsTagLibClass.DEFAULT_NAMESPACE;
     private Set<String> returnObjectForTagsSet = new HashSet<String>();
-    
+
     /**
-     * <p>Default contructor
+     * Default contructor.
      *
      * @param clazz        the tag library class
      */
-    public DefaultGrailsTagLibClass(Class clazz) {
+    @SuppressWarnings("unchecked")
+    public DefaultGrailsTagLibClass(Class<?> clazz) {
         super(clazz, TAG_LIB);
-        Class supportedControllerClass = getStaticPropertyValue(SUPPORTS_CONTROLLER, Class.class);
-        if(supportedControllerClass != null) {
-            supportedControllers = new ArrayList();
+        Class<?> supportedControllerClass = getStaticPropertyValue(SUPPORTS_CONTROLLER, Class.class);
+        if (supportedControllerClass != null) {
+            supportedControllers = new ArrayList<Class<?>>();
             supportedControllers.add(supportedControllerClass);
         }
         else {
             List tmp = getStaticPropertyValue(SUPPORTS_CONTROLLER, List.class);
-            if(tmp != null) {
+            if (tmp != null) {
                 supportedControllers = tmp;
             }
         }
 
-        PropertyDescriptor[] props = getPropertyDescriptors();
-        for (int i = 0; i < props.length; i++) {
-            PropertyDescriptor prop = props[i];
+        for (PropertyDescriptor prop : getPropertyDescriptors()) {
             Method readMethod = prop.getReadMethod();
-			if(readMethod != null) {
-				if(!Modifier.isStatic(readMethod.getModifiers())) {
-					Class type = prop.getPropertyType();
-					if(type == Object.class) {
-		                tags.add(prop.getName());
-		            }					
-				}				
-			}
+            if (readMethod != null) {
+                if (!Modifier.isStatic(readMethod.getModifiers())) {
+                    Class<?> type = prop.getPropertyType();
+                    if (type == Object.class) {
+                        tags.add(prop.getName());
+                    }
+                }
+            }
         }
-        
+
         String ns = getStaticPropertyValue(NAMESPACE_FIELD_NAME, String.class);
         if (ns != null && !"".equals(ns.trim())) {
-        	namespace = ns.trim();
+            namespace = ns.trim();
         }
-        
+
         List returnObjectForTagsList = getStaticPropertyValue(RETURN_OBJECT_FOR_TAGS_FIELD_NAME, List.class);
-        if(returnObjectForTagsList != null) {
-        	for(Object tagName : returnObjectForTagsList) {
-        		returnObjectForTagsSet.add(String.valueOf(tagName));
-        	}
+        if (returnObjectForTagsList != null) {
+            for (Object tagName : returnObjectForTagsList) {
+                returnObjectForTagsSet.add(String.valueOf(tagName));
+            }
         }
     }
 
     public boolean supportsController(GrailsControllerClass controllerClass) {
-        if(controllerClass == null)
+        if (controllerClass == null) {
             return false;
-        else if(supportedControllers != null) {
-           if(supportedControllers.contains(controllerClass.getClazz())) {
-               return true;
-           }
-           else {
-               return false;
-           }
         }
+
+        if (supportedControllers != null) {
+            return supportedControllers.contains(controllerClass.getClazz());
+        }
+
         return true;
     }
 
@@ -101,15 +97,15 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
         return tags.contains(tagName);
     }
 
-    public Set getTagNames() {
+    public Set<String> getTagNames() {
         return tags;
     }
 
-	public String getNamespace() {
-		return namespace;
-	}
+    public String getNamespace() {
+        return namespace;
+    }
 
-	public Set<String> getTagNamesThatReturnObject() {
-		return returnObjectForTagsSet;
-	}
+    public Set<String> getTagNamesThatReturnObject() {
+        return returnObjectForTagsSet;
+    }
 }

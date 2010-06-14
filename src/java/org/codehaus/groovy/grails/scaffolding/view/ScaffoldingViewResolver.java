@@ -35,12 +35,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.View;
 
 /**
- * Overrides the default Grails view resolver and resolves scaffolded views at runtime
+ * Overrides the default Grails view resolver and resolves scaffolded views at runtime.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Nov 24, 2008
  */
 public class ScaffoldingViewResolver extends GrailsViewResolver implements ApplicationContextAware {
 
@@ -52,7 +50,7 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
     static final Log LOG = LogFactory.getLog(ScaffoldingViewResolver.class);
 
     /**
-     * Clears any cached scaffolded views
+     * Clears any cached scaffolded views.
      */
     public static void clearViewCache() {
         scaffoldedViews.clear();
@@ -145,14 +143,16 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         }
     }
 
-     public void setTemplateGenerator(GrailsTemplateGenerator templateGenerator) {
+    public void setTemplateGenerator(GrailsTemplateGenerator templateGenerator) {
         this.templateGenerator = templateGenerator;
     }
 
+    @SuppressWarnings("unchecked")
     public void setScaffoldedActionMap(Map scaffoldedActionMap) {
         this.scaffoldedActionMap = scaffoldedActionMap;
     }
 
+    @SuppressWarnings("unchecked")
     public void setScaffoldedDomains(Map scaffoldedDomains) {
         this.scaffoldedDomains = scaffoldedDomains;
     }

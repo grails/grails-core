@@ -1,30 +1,31 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
 import groovy.util.ConfigObject;
+
+import java.util.Map;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 
-import java.util.Map;
-
 /**
- *  <p>The main interface representing a running Grails application. This interface's
+ * <p>The main interface representing a running Grails application. This interface's
  * main purpose is to provide a mechanism for analysing the conventions within a Grails
  * application as well as providing metadata and information about the execution environment.
  *
@@ -42,15 +43,15 @@ import java.util.Map;
  * @author Steven Devijver
  *
  * @since 0.1
- *
- * Created: Jul 2, 2005
  */
 public interface GrailsApplication extends ApplicationContextAware {
+
     /**
      * The name of the system property whose value contains the location, during development, of the Grails working directory where temporary files are generated to
      *
      * @deprecated Use {@link grails.util.BuildSettings#WORK_DIR} instead.
      */
+    @Deprecated
     String WORK_DIR = "grails.work.dir";
 
     /**
@@ -58,6 +59,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @deprecated Use {@link grails.util.BuildSettings#PROJECT_WORK_DIR} instead.
      */
+    @Deprecated
     String PROJECT_WORK_DIR = "grails.project.work.dir";
 
     /**
@@ -65,18 +67,23 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @deprecated Use {@link grails.util.BuildSettings#PLUGINS_DIR} instead.
      */
+    @Deprecated
     String PLUGINS_DIR = "grails.project.plugins.dir";
+
     /**
      * The path to the global plug-ins directory for the application
      *
      * @deprecated Use {@link grails.util.BuildSettings#GLOBAL_PLUGINS_DIR} instead.
      */
+    @Deprecated
     String GLOBAL_PLUGINS_DIR = "grails.global.plugins.dir";
+
     /**
      * The name of the system property whose value contains the location, during development, of the current Grails projects resources directory
      *
      * @deprecated Use {@link grails.util.BuildSettings#PROJECT_RESOURCES_DIR} instead.
      */
+    @Deprecated
     String PROJECT_RESOURCES_DIR = "grails.project.resource.dir";
 
     /**
@@ -84,24 +91,28 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @deprecated Use {@link grails.util.BuildSettings#PROJECT_CLASSES_DIR} instead.
      */
+    @Deprecated
     String PROJECT_CLASSES_DIR = "grails.project.class.dir";
+
     /**
      * The name of the system property whose value contains the location, during development, of the current Grails projects resources directory
      *
      * @deprecated Use {@link grails.util.BuildSettings#PROJECT_TEST_CLASSES_DIR} instead.
      */
+    @Deprecated
     String PROJECT_TEST_CLASSES_DIR = "grails.project.test.class.dir";
-
 
     /**
      * The id of the grails application within a bean context
      */
     String APPLICATION_ID = "grailsApplication";
+
     /**
      * Constant used to resolve the environment via System.getProperty(ENVIRONMENT)
      *
      * @deprecated Use {@link grails.util.Environment#KEY} instead.
      */
+    @Deprecated
     String ENVIRONMENT = Environment.KEY;
 
     /**
@@ -109,6 +120,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @deprecated Use {@link grails.util.Environment#DEFAULT} instead.
      */
+    @Deprecated
     String ENVIRONMENT_DEFAULT = "grails.env.default";
 
     /**
@@ -116,27 +128,32 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @deprecated Use {@link grails.util.Environment#DEVELOPMENT} instead.
      */
+    @Deprecated
     String ENV_DEVELOPMENT = Environment.DEVELOPMENT.getName();
+
     /**
      * Constant for the application data source, primarly for backward compatability for those applications
      * that use ApplicationDataSource.groovy
      *
      * @deprecated Use {@link grails.util.Environment#APPLICATION} instead.
      */
+    @Deprecated
     String ENV_APPLICATION = Environment.APPLICATION.getName();
-    
+
     /**
      * Constant for the production environment.
      *
      * @deprecated Use {@link grails.util.Environment#PRODUCTION} instead.
      */
-	String ENV_PRODUCTION = Environment.PRODUCTION.getName();
+    @Deprecated
+    String ENV_PRODUCTION = Environment.PRODUCTION.getName();
 
     /**
      * Constant for the test environment.
      *
      * @deprecated Use {@link grails.util.Environment#TEST} instead.
      */
+    @Deprecated
     String ENV_TEST  = Environment.TEST.getName();
 
     /**
@@ -147,38 +164,39 @@ public interface GrailsApplication extends ApplicationContextAware {
     String PROJECT_META_FILE = "application.properties";
 
     /**
-     * Returns the ConfigObject instance
+     * Returns the ConfigObject instance.
      *
      * @return The ConfigObject instance
      */
     ConfigObject getConfig();
 
     /**
-     * Returns the flatten ConfigObject for use from Java classes
+     * Returns the flatten ConfigObject for use from Java classes.
      * @return The flattened config
      */
+    @SuppressWarnings("unchecked")
     Map getFlatConfig();
 
-
     /**
-     * <p>Returns the class loader instance for the Grails application</p>
+     * Returns the class loader instance for the Grails application.
      *
      * @return The ClassLoader instance
      */
     ClassLoader getClassLoader();
 
+    /**
+     * Retrieves all java.lang.Class instances loaded by the Grails class loader
+     * @return An array of classes
+     */
+    @SuppressWarnings("unchecked")
+    Class[] getAllClasses();
 
-	/**
-	 * Retrieves all java.lang.Class instances loaded by the Grails class loader
-	 * @return An array of classes
-	 */
-	Class[] getAllClasses();
-
-	/**
-	 * Retrieves all java.lang.Class instances considered Artefacts loaded by the Grails class loader
-	 * @return An array of classes
-	 */
-	Class[] getAllArtefacts();
+    /**
+     * Retrieves all java.lang.Class instances considered Artefacts loaded by the Grails class loader
+     * @return An array of classes
+     */
+    @SuppressWarnings("unchecked")
+    Class[] getAllArtefacts();
 
     /**
      * Returns the Spring context for this application. Note that this
@@ -193,24 +211,24 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     void setMainContext(ApplicationContext context);
 
-	/**
-	 * Returns the Spring application context that contains this
+    /**
+     * Returns the Spring application context that contains this
      * application instance. It is the parent of the context returned
      * by {@link #getMainContext()}.
-	 */
-	ApplicationContext getParentContext();
-
-	/**
-	 * Retrieves a class for the given name within the GrailsApplication or returns null
-	 * 
-	 * @param className The name of the class 
-	 * @return The class or null
-	 */
-	Class getClassForName(String className);
-
+     */
+    ApplicationContext getParentContext();
 
     /**
-     * This method will rebuild the constraint definitions
+     * Retrieves a class for the given name within the GrailsApplication or returns null
+     *
+     * @param className The name of the class
+     * @return The class or null
+     */
+    @SuppressWarnings("unchecked")
+    Class getClassForName(String className);
+
+    /**
+     * Rebuilds the constraint definitions.
      * @todo move this out? Why ORM dependencies in here?
      */
     void refreshConstraints();
@@ -221,17 +239,19 @@ public interface GrailsApplication extends ApplicationContextAware {
     void refresh();
 
     /**
-     * Rebuilds this Application throwing away the class loader and re-constructing it from the loaded resources again.
-     * This method can only be called in development mode and an error will be thrown if called in a different enivronment
+     * Rebuilds this Application throwing away the class loader and re-constructing it from the loaded
+     * resources again. Can only be called in development mode and an error will be thrown if called
+     * in a different enivronment
      */
     void rebuild();
 
     /**
-     * Retrieves a Resource instance for the given Grails class or null it doesn't exist
+     * Retrieves a Resource instance for the given Grails class or null it doesn't exist.
      *
      * @param theClazz The Grails class
      * @return A Resource or null
      */
+    @SuppressWarnings("unchecked")
     Resource getResourceForClass(Class theClazz);
 
     /**
@@ -240,6 +260,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if and only if the class was loaded from grails-app/
      * @since 0.5
      */
+    @SuppressWarnings("unchecked")
     boolean isArtefact(Class theClazz);
 
     /**
@@ -250,6 +271,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if Grails considers the class to be managed as an artefact of the type specified.
      * @since 0.5
      */
+    @SuppressWarnings("unchecked")
     boolean isArtefactOfType(String artefactType, Class theClazz);
 
     /**
@@ -276,6 +298,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param theClass The class
      * @return The ArtefactHandler
      */
+    @SuppressWarnings("unchecked")
     ArtefactHandler getArtefactType(Class theClass);
 
     /**
@@ -312,6 +335,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The new grails class for the artefact class
      * @since 0.5
      */
+    @SuppressWarnings("unchecked")
     GrailsClass addArtefact(String artefactType, Class artefactClass);
 
     /**
@@ -343,12 +367,12 @@ public interface GrailsApplication extends ApplicationContextAware {
     ArtefactHandler[] getArtefactHandlers();
 
     /**
-     * Initialise this GrailsApplication
+     * Initialise this GrailsApplication.
      */
     void initialise();
 
     /**
-     * Returns whether this GrailsApplication has been initialised or not
+     * Returns whether this GrailsApplication has been initialised or not.
      * @return True if it has been initialised
      */
     boolean isInitialised();
@@ -359,10 +383,12 @@ public interface GrailsApplication extends ApplicationContextAware {
      * but <b>NOT</b> general application settings.</p>
      * @return A read-only Map of data about the application, not environment specific
      */
+    @SuppressWarnings("unchecked")
     Map getMetadata();
 
     /**
-     * Retrieves an artefact by its logical property name. For example the logical property name of BookController would be book
+     * Retrieves an artefact by its logical property name. For example the logical property name of
+     * BookController would be book.
      * @param type The artefact type
      * @param logicalName The logical name
      * @return The GrailsClass or null if it doesn't exist
@@ -373,6 +399,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Adds the given artefact, attempting to determine type from
      * @param artefact The artefact to add
      */
+    @SuppressWarnings("unchecked")
     void addArtefact(Class artefact);
 
     /**
@@ -386,10 +413,11 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Adds an artefact that can be overriden by user defined classes
      * @param artefact An overridable artefact
      */
+    @SuppressWarnings("unchecked")
     void addOverridableArtefact(Class artefact);
 
     /**
-     * Fired to inform the application when the Config.groovy file changes
+     * Fired to inform the application when the Config.groovy file changes.
      */
     void configChanged();
 

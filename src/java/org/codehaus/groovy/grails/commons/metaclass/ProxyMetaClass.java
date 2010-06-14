@@ -14,9 +14,15 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import groovy.lang.*;
+import groovy.lang.AdaptingMetaClass;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassImpl;
+import groovy.lang.MetaClassRegistry;
 
-import java.beans.IntrospectionException;
+import org.springframework.util.Assert;
 
 /**
  * As subclass of MetaClass, ProxyMetaClass manages calls from Groovy Objects to POJOs.
@@ -30,40 +36,37 @@ import java.beans.IntrospectionException;
  *
  * @author Dierk Koenig
  * @author Graeme Rocher
- *
  */
+@SuppressWarnings("unchecked")
 public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
 
-    protected MetaClass adaptee = null;
-    protected Interceptor interceptor = null;
+    protected MetaClass adaptee;
+    protected Interceptor interceptor;
 
-    public MetaClass getAdaptee()
-    {
+    public MetaClass getAdaptee() {
         return adaptee;
     }
 
-
+    /**
+     * @param adaptee the adaptee to set
+     */
+    public void setAdaptee(MetaClass adaptee) {
+        this.adaptee = adaptee;
+    }
 
     /**
-	 * @param adaptee the adaptee to set
-	 */
-	public void setAdaptee(MetaClass adaptee) {
-		this.adaptee = adaptee;
-	}
-
-	/**
      * convenience factory method for the most usual case.
      * @return A new ProxyMetaClass instance
      * @param theClass The class to create a ProxyMetaClass for
-     * @throws java.beans.IntrospectionException When the class canot be introspected
      */
-    public static ProxyMetaClass getInstance(Class theClass) throws IntrospectionException {
+    public static ProxyMetaClass getInstance(Class<?> theClass) {
         MetaClassRegistry metaRegistry = GroovySystem.getMetaClassRegistry();
         MetaClass meta = metaRegistry.getMetaClass(theClass);
-        ProxyMetaClass pmc =  new ProxyMetaClass(metaRegistry, theClass, meta);
+        ProxyMetaClass pmc = new ProxyMetaClass(metaRegistry, theClass, meta);
         pmc.initialize();
         return pmc;
     }
+
     /**
      * @param adaptee   the MetaClass to decorate with interceptability
      * @param registry The MetaClassRegistry instance
@@ -71,13 +74,10 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * @param theClass The class to apply this ProxyMetaClass to
      * @throws java.beans.IntrospectionException Thrown when the class cannot be introspected
      */
-    public ProxyMetaClass(MetaClassRegistry registry, Class theClass, MetaClass adaptee) throws IntrospectionException {
+    public ProxyMetaClass(MetaClassRegistry registry, Class<?> theClass, MetaClass adaptee) {
         super(registry, theClass);
+        Assert.notNull(adaptee, "adaptee must not be null");
         this.adaptee = adaptee;
-        if (null == adaptee)
-        {
-            throw new IllegalArgumentException("adaptee must not be null");
-        }
     }
 
     /**
@@ -90,23 +90,25 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
 
         try {
             closure.call();
-        } finally {
+        }
+        finally {
             registry.setMetaClass(theClass, adaptee);
         }
     }
 
-     /**
+    /**
      * Use the ProxyMetaClass for the given Closure.
      * Cares for balanced setting/unsetting ProxyMetaClass.
      * @param closure piece of code to be executed with ProxyMetaClass
-      * @param object The GroovyObject to use this ProxyMetaClass with
+     * @param object The GroovyObject to use this ProxyMetaClass with
      */
     public void use(GroovyObject object, Closure closure){
         object.setMetaClass(this);
 
         try {
             closure.call();
-        } finally {
+        }
+        finally {
             object.setMetaClass(adaptee);
         }
     }
@@ -131,8 +133,10 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * The method call is suppressed if Interceptor.doInvoke() returns false.
      * See Interceptor for details.
      */
-    public Object invokeMethod(Class aClass, final Object object, final String methodName, final Object[] arguments, boolean b, boolean b1) {
-        return doCall(object, methodName, arguments, new Callable(){
+    @Override
+    public Object invokeMethod(Class aClass, final Object object, final String methodName,
+            final Object[] arguments, boolean b, boolean b1) {
+        return doCall(object, methodName, arguments, new Callable() {
             public Object call() {
                 return adaptee.invokeMethod(object, methodName, arguments);
             }
@@ -145,6 +149,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * The method call is suppressed if Interceptor.doInvoke() returns false.
      * See Interceptor for details.
      */
+    @Override
     public Object invokeStaticMethod(final Object object, final String methodName, final Object[] arguments) {
         return doCall(object, methodName, arguments, new Callable(){
             public Object call() {
@@ -159,33 +164,35 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * The method call is suppressed if Interceptor.doInvoke() returns false.
      * See Interceptor for details.
      */
+    @Override
     public Object invokeConstructor(final Object[] arguments) {
         if (null == interceptor) {
             return super.invokeConstructor(arguments);
         }
-        if(interceptor instanceof ConstructorInterceptor) {
-        	ConstructorInterceptor ci = (ConstructorInterceptor)interceptor;
-        	InvocationCallback callback = new InvocationCallback();
-	        Object result = ci.beforeConstructor(arguments,callback);
-	        if (!callback.isInvoked()) {
-	            result = super.invokeConstructor(arguments);
-	        }
-	        result = ci.afterConstructor(arguments,result);
-	        return result;
+
+        if (interceptor instanceof ConstructorInterceptor) {
+            ConstructorInterceptor ci = (ConstructorInterceptor)interceptor;
+            InvocationCallback callback = new InvocationCallback();
+            Object result = ci.beforeConstructor(arguments,callback);
+            if (!callback.isInvoked()) {
+                result = super.invokeConstructor(arguments);
+            }
+            result = ci.afterConstructor(arguments,result);
+            return result;
         }
         return super.invokeConstructor(arguments);
     }
 
-
-
     // since Java has no Closures...
-    private interface Callable{
+    private interface Callable {
         Object call();
     }
+
     private Object doCall(Object object, String methodName, Object[] arguments, Callable howToInvoke) {
         if (null == interceptor) {
             return howToInvoke.call();
         }
+
         InvocationCallback callback = new InvocationCallback();
         Object result = interceptor.beforeInvoke(object, methodName, arguments,callback);
         if (!callback.isInvoked()) {
@@ -195,52 +202,53 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
         return result;
     }
 
-
-
     /**
-     * Interceptors the call to getProperty if a PropertyAccessInterceptor is
-     * available
+     * Interceptors the call to getProperty if a PropertyAccessInterceptor is available.
      *
      * @param object the object to invoke the getter on
      * @param property the property name
      *
      * @return the value of the property
      */
+    @Override
     public Object getProperty(Class aClass, Object object, String property, boolean b, boolean b1) {
+
         if (null == interceptor) {
             return super.getProperty(aClass, object, property, b, b1);
         }
-        if(interceptor instanceof PropertyAccessInterceptor) {
-        	PropertyAccessInterceptor pae = (PropertyAccessInterceptor)interceptor;
-        	InvocationCallback callback = new InvocationCallback();
-	        Object result = pae.beforeGet(object,property,callback);
-	        if (!callback.isInvoked()) {
-	            result = super.getProperty(aClass, object, property, b, b1);
-	        }
-	        return result;
+
+        if (interceptor instanceof PropertyAccessInterceptor) {
+            PropertyAccessInterceptor pae = (PropertyAccessInterceptor)interceptor;
+            InvocationCallback callback = new InvocationCallback();
+            Object result = pae.beforeGet(object,property,callback);
+            if (!callback.isInvoked()) {
+                result = super.getProperty(aClass, object, property, b, b1);
+            }
+            return result;
         }
         return super.getProperty(aClass, object, property, b, b1);
     }
 
     /**
-	 * Interceptors the call to a property setter if a PropertyAccessInterceptor
-	 * is available
-	 *
-	 * @param object The object to invoke the setter on
-	 * @param property The property name to set
-	 * @param newValue The new value of the property
-	 */
+     * Interceptors the call to a property setter if a PropertyAccessInterceptor is available.
+     *
+     * @param object The object to invoke the setter on
+     * @param property The property name to set
+     * @param newValue The new value of the property
+     */
+    @Override
     public void setProperty(Class aClass, Object object, String property, Object newValue, boolean b, boolean b1) {
         if (null == interceptor) {
             super.setProperty(aClass,object, property,newValue,b,b1);
         }
-        if(interceptor instanceof PropertyAccessInterceptor) {
-        	PropertyAccessInterceptor pae = (PropertyAccessInterceptor)interceptor;
-        	InvocationCallback callback = new InvocationCallback();
-	        pae.beforeSet(object,property,newValue,callback);
-	        if (!callback.isInvoked()) {
-	        	super.setProperty(aClass,object, property,newValue,b,b1);
-	        }
+
+        if (interceptor instanceof PropertyAccessInterceptor) {
+            PropertyAccessInterceptor pae = (PropertyAccessInterceptor)interceptor;
+            InvocationCallback callback = new InvocationCallback();
+            pae.beforeSet(object,property,newValue,callback);
+            if (!callback.isInvoked()) {
+                super.setProperty(aClass,object, property,newValue,b,b1);
+            }
         }
         else {
             super.setProperty(aClass,object, property, newValue,b,b1);

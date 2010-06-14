@@ -15,26 +15,28 @@
 package org.codehaus.groovy.grails.scaffolding;
 
 import groovy.lang.GroovyClassLoader;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * @author Graeme Rocher
  * @author Sergey Nebolsin
- * @since 10-Feb-2006
  */
 public class DomainClassPropertyComparatorTests extends TestCase {
 
+    @SuppressWarnings("unchecked")
     public void testPropertyComparator() throws Exception {
-        GroovyClassLoader gcl = new GroovyClassLoader( Thread.currentThread().getContextClassLoader() );
+        GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
-        Class dc = gcl.parseClass(
+        Class<?> dc = gcl.parseClass(
                 "class Test { \n" +
                 "    Long id\n" +
                 "    Long version\n" +
@@ -46,19 +48,19 @@ public class DomainClassPropertyComparatorTests extends TestCase {
                 "        name(size:5..15)\n" +
                 "        age()\n" +
                 "    }\n" +
-                "}\n" );
+                "}\n");
 
-        GrailsDomainClass domainClass = new DefaultGrailsDomainClass( dc );
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
 
-        DomainClassPropertyComparator comp = new DomainClassPropertyComparator( domainClass );
+        DomainClassPropertyComparator comp = new DomainClassPropertyComparator(domainClass);
 
         GrailsDomainClassProperty[] props = domainClass.getProperties();
-        Arrays.sort( props, comp );
-        for( int i = 0; i < props.length; i++ ) {
-            System.out.println( props[i].getName() );
+        Arrays.sort(props, comp);
+        for (int i = 0; i < props.length; i++) {
+            System.out.println(props[i].getName());
         }
 
-        List nonConstrainedProps = new ArrayList();
+        List<String> nonConstrainedProps = new ArrayList<String>();
         nonConstrainedProps.add("zip");
         nonConstrainedProps.add("dob");
         nonConstrainedProps.add("version");
@@ -66,11 +68,11 @@ public class DomainClassPropertyComparatorTests extends TestCase {
         // all we need to test is that the first properties will be 'id' after that constrained properties
         // will appear in the same order as in 'constraints' closure, and all other properties will be
         // putted at the end
-        assertEquals( "id", props[0].getName() );
-        assertEquals( "name", props[1].getName() );
-        assertEquals( "age", props[2].getName() );
-        assertTrue( nonConstrainedProps.contains( props[3].getName() ) );
-        assertTrue( nonConstrainedProps.contains( props[4].getName() ) );
-        assertTrue( nonConstrainedProps.contains( props[5].getName() ) );
+        assertEquals("id", props[0].getName());
+        assertEquals("name", props[1].getName());
+        assertEquals("age", props[2].getName());
+        assertTrue(nonConstrainedProps.contains(props[3].getName()));
+        assertTrue(nonConstrainedProps.contains(props[4].getName()));
+        assertTrue(nonConstrainedProps.contains(props[5].getName()));
     }
 }

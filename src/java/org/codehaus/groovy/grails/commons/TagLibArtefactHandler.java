@@ -1,30 +1,30 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.commons;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * An ArtefactHandlerAdapter that configures tag libraries within namespaces in Grails
- * 
+ * Configures tag libraries within namespaces in Grails.
+ *
  * @author Marc Palmer (marc@anyware.co.uk)
  * @author Graeme Rocher
  * @author a.shneyderman
@@ -36,10 +36,9 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     private static Log LOG = LogFactory.getLog(TagLibArtefactHandler.class);
     public static final String PLUGIN_NAME = "groovyPages";
     public static final String TYPE = "TagLib";
-    
+
     private Map<String, GrailsTagLibClass> tag2libMap = new HashMap<String, GrailsTagLibClass>();
     private Map<String, GrailsTagLibClass> namespace2tagLibMap = new HashMap<String, GrailsTagLibClass>();
-
 
     public TagLibArtefactHandler() {
         super(TYPE, GrailsTagLibClass.class, DefaultGrailsTagLibClass.class, DefaultGrailsTagLibClass.TAG_LIB);
@@ -51,10 +50,11 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     }
 
     /**
-     * Creates a map of tags (keyed on "${namespace}:${tagName}") to tag libraries
+     * Creates a map of tags (keyed on "${namespace}:${tagName}") to tag libraries.
      */
+    @Override
     public void initialize(ArtefactInfo artefacts) {
-        this.tag2libMap = new HashMap<String, GrailsTagLibClass>();
+        tag2libMap = new HashMap<String, GrailsTagLibClass>();
         GrailsClass[] classes = artefacts.getGrailsClasses();
         for (GrailsClass aClass : classes) {
             GrailsTagLibClass taglibClass = (GrailsTagLibClass) aClass;
@@ -63,16 +63,20 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
             for (Object o : taglibClass.getTagNames()) {
                 String tagName = namespace + ":" + o;
                 if (!tag2libMap.containsKey(tagName)) {
-                    this.tag2libMap.put(tagName, taglibClass);
+                    tag2libMap.put(tagName, taglibClass);
                 }
                 else {
                     GrailsTagLibClass current = tag2libMap.get(tagName);
                     if (!taglibClass.equals(current)) {
-                        LOG.info("There are conflicting tags: " + taglibClass.getFullName() + "." + tagName + " vs. " + current.getFullName() + "." + tagName + ". The former will take precedence.");
-                        this.tag2libMap.put(tagName, taglibClass);
+                        LOG.info("There are conflicting tags: " + taglibClass.getFullName() + "." +
+                                tagName + " vs. " + current.getFullName() + "." + tagName +
+                                ". The former will take precedence.");
+                        tag2libMap.put(tagName, taglibClass);
                     }
                     else {
-                        throw new GrailsConfigurationException("Cannot configure tag library [" + taglibClass.getName() + "]. Library [" + current.getName() + "] already contains a tag called [" + tagName + "]");
+                        throw new GrailsConfigurationException("Cannot configure tag library [" +
+                                taglibClass.getName() + "]. Library [" + current.getName() +
+                                "] already contains a tag called [" + tagName + "]");
                     }
                 }
             }
@@ -80,17 +84,19 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     }
 
     /**
-     * This will look-up a tag library by using either a full qualified tag name such as g:link or via namespace such as "g"
+     * Looks up a tag library by using either a full qualified tag name such as g:link or
+     * via namespace such as "g".
      *
      * @param feature The tag name or namespace
      * @return A GrailsClass instance representing the tag library
      */
+    @Override
     public GrailsClass getArtefactForFeature(Object feature) {
         final Object tagLib = tag2libMap.get(feature);
-        if(tagLib!= null)
+        if (tagLib!= null) {
             return (GrailsClass) tagLib;
-        else {
-             return namespace2tagLibMap.get(feature);
         }
+
+        return namespace2tagLibMap.get(feature);
     }
 }

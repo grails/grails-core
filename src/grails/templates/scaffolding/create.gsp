@@ -1,4 +1,5 @@
 <% import grails.persistence.Event %>
+<% import org.codehaus.groovy.grails.plugins.PluginManagerHolder %>
 <%=packageName%>
 <html>
     <head>
@@ -29,10 +30,14 @@
                         <%  excludedProps = Event.allEvents.toList() << 'version' << 'id' << 'dateCreated' << 'lastUpdated'
                             props = domainClass.properties.findAll { !excludedProps.contains(it.name) }
                             Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
+                            display = true
+                            boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
                             props.each { p ->
                                 if (!Collection.class.isAssignableFrom(p.type)) {
-                                    cp = domainClass.constrainedProperties[p.name]
-                                    display = (cp ? cp.display : true)        
+                                    if (hasHibernate) {
+                                        cp = domainClass.constrainedProperties[p.name]
+                                        display = (cp ? cp.display : true)
+                                    }
                                     if (display) { %>
                             <tr class="prop">
                                 <td valign="top" class="name">

@@ -15,37 +15,29 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 /**
- * 
  * Extends interceptor interface to allow interception of constructors
- * 
  *
  * @author Graeme Rocher
  * @since 0.2
- * 
- * @version $Revision: $
- * First Created: 02-Jun-2006
- * Last Updated: $Date: $
- *
  */
 public interface ConstructorInterceptor extends Interceptor {
-	
-	/**
-	 * Executed before the real constructor. The callback object should
-	 * be marked if invokation of the real constructor should be performed 
-	 * 
-	 * @param args The constructor args
-	 * @param callback The callback object
-	 * @return The instantiated object or null
-	 */
-	public Object beforeConstructor(Object[] args, InvocationCallback callback);
-	
-	
-	/**
-	 * Executed after the constructor passing the args and the instantiated instance
-	 * 
-	 * @param args The arguments
-	 * @param instantiatedInstance The instantiated instance
-	 * @return The instantiated or replaced instance
-	 */
-	public Object afterConstructor(Object[] args, Object instantiatedInstance);
+
+    /**
+     * Executed before the real constructor. The callback object should
+     * be marked if invokation of the real constructor should be performed.
+     *
+     * @param args The constructor args
+     * @param callback The callback object
+     * @return The instantiated object or null
+     */
+    Object beforeConstructor(Object[] args, InvocationCallback callback);
+
+    /**
+     * Executed after the constructor passing the args and the instantiated instance.
+     *
+     * @param args The arguments
+     * @param instantiatedInstance The instantiated instance
+     * @return The instantiated or replaced instance
+     */
+    Object afterConstructor(Object[] args, Object instantiatedInstance);
 }

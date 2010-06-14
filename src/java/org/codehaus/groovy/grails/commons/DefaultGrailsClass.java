@@ -20,24 +20,21 @@ package org.codehaus.groovy.grails.commons;
  *
  * @author Graeme Rocher
  * @since 0.5
- * 
- *        <p/>
- *        Created: Mar 6, 2007
- *        Time: 6:26:56 PM
  */
 public class DefaultGrailsClass extends AbstractGrailsClass {
+
     /**
-     * <p>Contructor to be used by all child classes to create a
+     * Contructor to be used by all child classes to create a
      * new instance and get the name right.
      *
      * @param clazz        the Grails class
      * @param trailingName the trailing part of the name for this class type
      */
-    public DefaultGrailsClass(Class clazz, String trailingName) {
+    public DefaultGrailsClass(Class<?> clazz, String trailingName) {
         super(clazz, trailingName);
     }
 
-    public DefaultGrailsClass(Class clazz) {
+    public DefaultGrailsClass(Class<?> clazz) {
         super(clazz, "");
     }
 }
