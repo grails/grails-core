@@ -18,10 +18,8 @@ import grails.util.GrailsUtil;
 import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;

@@ -14,9 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.proxy;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovySystem;
-
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,7 +26,6 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;

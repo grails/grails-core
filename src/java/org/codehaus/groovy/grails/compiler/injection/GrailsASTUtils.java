@@ -22,7 +22,6 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
