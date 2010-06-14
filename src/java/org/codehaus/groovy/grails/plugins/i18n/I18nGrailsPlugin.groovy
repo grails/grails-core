@@ -85,7 +85,8 @@ class I18nGrailsPlugin {
 		LOG.debug("Creating messageSource with basenames: " + baseNames);
 
         messageSource(PluginAwareResourceBundleMessageSource) {
-			basenames = baseNames.toArray()
+            basenames = baseNames.toArray()
+            fallbackToSystemLocale = false
             pluginManager = manager
             if(Environment.current.isReloadEnabled()) {
                 cacheSeconds = 5

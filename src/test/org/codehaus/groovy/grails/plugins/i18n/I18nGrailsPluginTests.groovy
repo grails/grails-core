@@ -41,18 +41,24 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 		
 		// nasty way of asserting/inspecting the basenames set in the messageSource
 		// this is needed because messageSource has no API method for retrieving the basenames
-		def messageSource = appCtx.getBean("messageSource")?.toString()
+        def messageSource = appCtx.getBean("messageSource")
+        println "messageSource class ${messageSource.getClass()}"
+        def field = messageSource.class.superclass.getDeclaredField("fallbackToSystemLocale")
+        field.accessible=true
+        assert !field.get(messageSource)
+
+		def messageSourceString = messageSource?.toString()
 		println messageSource
-		assert StringUtils.contains(messageSource, "messages")
-		assert StringUtils.contains(messageSource, "messages-site")
-		assert StringUtils.contains(messageSource, "foo-site")
-		assert StringUtils.contains(messageSource, "foo-bar")
-		assert StringUtils.contains(messageSource, "project")
-		assert !StringUtils.contains(messageSource, "messages.properties")
-		assert !StringUtils.contains(messageSource, "project.properties")
-		assert !StringUtils.contains(messageSource, "project_nl.properties")
+		assert StringUtils.contains(messageSourceString, "messages")
+		assert StringUtils.contains(messageSourceString, "messages-site")
+		assert StringUtils.contains(messageSourceString, "foo-site")
+		assert StringUtils.contains(messageSourceString, "foo-bar")
+		assert StringUtils.contains(messageSourceString, "project")
+		assert !StringUtils.contains(messageSourceString, "messages.properties")
+		assert !StringUtils.contains(messageSourceString, "project.properties")
+		assert !StringUtils.contains(messageSourceString, "project_nl.properties")
 		//assert !StringUtils.contains(messageSource, "nobundle")
-		assert !StringUtils.contains(messageSource, "nobundle.txt")
-		assert !StringUtils.contains(messageSource, "nobundle.xml")
+		assert !StringUtils.contains(messageSourceString, "nobundle.txt")
+		assert !StringUtils.contains(messageSourceString, "nobundle.xml")
 	}	
 }
