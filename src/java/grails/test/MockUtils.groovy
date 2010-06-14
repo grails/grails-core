@@ -825,7 +825,7 @@ class MockUtils {
                     if (otherHasMany) {
                         // many-to-many
                         otherHasMany.each { String otherCollectionName, Class otherCollectionType ->
-                            if (clazz.isAssignableFrom(otherCollectionType)) {
+                            if (clazz.isAssignableFrom(otherCollectionType) && clazz != otherCollectionType) {
                                 if (arg."$otherCollectionName" == null) {
                                     arg."$otherCollectionName" = GrailsClassUtils.createConcreteCollection(otherCollectionType)
                                 }

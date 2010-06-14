@@ -503,6 +503,21 @@ class MockUtilsTests extends GroovyTestCase {
             assertSame aliceDoeUS, relation.testDomain
         }
     }
+    
+    void testAddToWithRelationshipToSameClass() {
+        def c1 = new Company(name: 'c1')
+        def c2 = new Company(name: 'c2')
+        def c3 = new Company(name: 'c3')
+        
+        MockUtils.mockDomain (Company, [c1, c2, c3])
+        c1.addToSubsidiaries(c2)
+        c2.addToSubsidiaries(c3)
+        assertEquals 'c1 had wrong number of subsidiaries', 1, c1.subsidiaries?.size()
+        assertTrue 'c1 had wrong subsidiary', c1.subsidiaries.contains(c2)
+
+        assertEquals 'c2 had wrong number of subsidiaries', 1, c2.subsidiaries?.size()
+        assertTrue 'c2 had wrong subsidiary', c2.subsidiaries.contains(c3)
+    }
 
     /**
      * Tests the dynamically added <code>removeFrom*()</code> method.
@@ -1441,6 +1456,19 @@ class TestController  {
         withForm {
             [ foo: "bar" ]
         }
+    }
+}
+
+class Company {
+    Long id
+    Long version
+    String name
+    static hasMany = [subsidiaries: Company]
+    static belongsTo = [parentCompany: Company]
+    Set subsidiaries
+                        
+    String toString() {
+        name
     }
 }
 
