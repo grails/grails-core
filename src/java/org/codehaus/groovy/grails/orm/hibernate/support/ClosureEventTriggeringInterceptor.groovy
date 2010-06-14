@@ -34,6 +34,7 @@ import org.hibernate.event.*
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 /**
  * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
@@ -121,7 +122,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 
     void onPreLoad(PreLoadEvent event) {
         def entity = event.getEntity()
-
+        GrailsHibernateUtil.ensureCorrectGroovyMetaClass(entity, entity.class );
         if (shouldTrigger(entity)) {
             if (entity.metaClass.hasProperty(entity, ONLOAD_EVENT)) {
                 triggerEvent(ONLOAD_EVENT, event.entity, event)

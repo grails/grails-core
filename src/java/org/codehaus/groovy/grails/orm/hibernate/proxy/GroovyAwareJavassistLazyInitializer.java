@@ -212,8 +212,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
                 throw new Exception(t.getCause());
             }
             if (result == INVOKE_IMPLEMENTATION) {
-                Object target = getImplementation();
-                GrailsHibernateUtil.ensureCorrectGroovyMetaClass(target,persistentClass);
+                Object target = getImplementation();                
                 final Object returnValue;
                 try {
                     if (ReflectHelper.isPublic(persistentClass, thisMethod)) {
