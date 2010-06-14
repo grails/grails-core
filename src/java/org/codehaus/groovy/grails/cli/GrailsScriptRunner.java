@@ -563,12 +563,16 @@ public class GrailsScriptRunner {
             loadScriptClass(gant, scriptName);
         }
         catch (ScriptNotFoundException e) {
-            String fixedName = fixScriptName(scriptName, allScripts);
-            if (fixedName == null) {
+            if(isInteractive) {
+                String fixedName = fixScriptName(scriptName, allScripts);
+                if (fixedName == null) {
+                    throw e;
+                }
+
+                loadScriptClass(gant, fixedName);
+            } else {
                 throw e;
             }
-
-            loadScriptClass(gant, fixedName);
         }
 
         return executeWithGantInstance(gant, doNothingClosure);
