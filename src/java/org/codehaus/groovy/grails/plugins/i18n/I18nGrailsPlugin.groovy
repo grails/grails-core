@@ -91,6 +91,7 @@ class I18nGrailsPlugin {
 
         messageSource(PluginAwareResourceBundleMessageSource) {
             basenames = baseNames.toArray()
+            fallbackToSystemLocale = false
             pluginManager = manager
             if (Environment.current.isReloadEnabled()) {
                 cacheSeconds = 5
