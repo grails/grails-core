@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,32 +15,31 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import java.util.Enumeration;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import javax.servlet.http.HttpSession;
 
 /**
- * An adapter class that takes a regular HttpSession and allows you to access it like a Groovy map
- * 
+ * An adapter class that takes a regular HttpSession and allows you to access it like a Groovy map.
+ *
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GrailsHttpSession implements
-		HttpSession {
+public class GrailsHttpSession implements HttpSession {
 
-	private HttpSession adaptee = null;
+    private HttpSession adaptee;
     private HttpServletRequest request;
 
     public GrailsHttpSession(HttpServletRequest request) {
         this.request = request;
-	}
-    
+    }
+
     /* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getAttribute(java.lang.String)
-	 */
-	public Object getAttribute(String name) {
+     * @see javax.servlet.http.HttpSession#getAttribute(java.lang.String)
+     */
+    public Object getAttribute(String name) {
         createSessionIfNecessary();
         synchronized (this) {
             return adaptee.getAttribute(name);
@@ -48,99 +47,103 @@ public class GrailsHttpSession implements
     }
 
     private void createSessionIfNecessary() {
-        if(this.adaptee == null) this.adaptee = request.getSession(true);
+        if (adaptee == null) adaptee = request.getSession(true);
     }
 
     /* (non-Javadoc)
-      * @see javax.servlet.http.HttpSession#getAttributeNames()
-      */
-	public Enumeration getAttributeNames() {
+     * @see javax.servlet.http.HttpSession#getAttributeNames()
+     */
+    @SuppressWarnings("unchecked")
+    public Enumeration getAttributeNames() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getAttributeNames();
+            return adaptee.getAttributeNames();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getCreationTime()
-	 */
-	public long getCreationTime() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#getCreationTime()
+     */
+    public long getCreationTime() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getCreationTime();
+            return adaptee.getCreationTime();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getId()
-	 */
-	public String getId() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#getId()
+     */
+    public String getId() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getId();
+            return adaptee.getId();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getLastAccessedTime()
-	 */
-	public long getLastAccessedTime() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#getLastAccessedTime()
+     */
+    public long getLastAccessedTime() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getLastAccessedTime();
+            return adaptee.getLastAccessedTime();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
-	 */
-	public int getMaxInactiveInterval() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
+     */
+    public int getMaxInactiveInterval() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getMaxInactiveInterval();
+            return adaptee.getMaxInactiveInterval();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#getServletContext()
-	 */
-	public ServletContext getServletContext() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#getServletContext()
+     */
+    public ServletContext getServletContext() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getServletContext();
+            return adaptee.getServletContext();
         }
     }
 
-	/**
-	 * @see javax.servlet.http.HttpSession#getSessionContext()
-	 * @deprecated
-	 */
-  public javax.servlet.http.HttpSessionContext getSessionContext() {
-        createSessionIfNecessary();
-        synchronized (this) {
-    		return adaptee.getSessionContext();
-        }
-    }
-
-	/**
-	 * @see javax.servlet.http.HttpSession#getValue(java.lang.String)
-	 * @deprecated
-	 */
-	public Object getValue(String name) {
-        createSessionIfNecessary();
-        synchronized (this) {
-    		return adaptee.getAttribute(name);
-        }
-    }
-
-	/**
-	 * @see javax.servlet.http.HttpSession#getValueNames()
+    /**
+     * @see javax.servlet.http.HttpSession#getSessionContext()
      * @deprecated
-	 */
-	public String[] getValueNames() {
+     */
+    @Deprecated
+    public javax.servlet.http.HttpSessionContext getSessionContext() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.getValueNames();
+            return adaptee.getSessionContext();
+        }
+    }
+
+    /**
+     * @see javax.servlet.http.HttpSession#getValue(java.lang.String)
+     * @deprecated
+     */
+    @Deprecated
+    public Object getValue(String name) {
+        createSessionIfNecessary();
+        synchronized (this) {
+            return adaptee.getAttribute(name);
+        }
+    }
+
+    /**
+     * @see javax.servlet.http.HttpSession#getValueNames()
+     * @deprecated
+     */
+    @Deprecated
+    public String[] getValueNames() {
+        createSessionIfNecessary();
+        synchronized (this) {
+            return adaptee.getValueNames();
         }
     }
 
@@ -148,6 +151,7 @@ public class GrailsHttpSession implements
      * @see javax.servlet.http.HttpSession#putValue(java.lang.String, java.lang.Object)
      * @deprecated
      */
+    @Deprecated
     public void putValue(String name, Object value) {
         createSessionIfNecessary();
         synchronized (this) {
@@ -159,6 +163,7 @@ public class GrailsHttpSession implements
      * @see javax.servlet.http.HttpSession#removeValue(java.lang.String)
      * @deprecated
      */
+    @Deprecated
     public void removeValue(String name) {
         createSessionIfNecessary();
         synchronized (this) {
@@ -166,61 +171,63 @@ public class GrailsHttpSession implements
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#invalidate()
-	 */
-	public void invalidate() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#invalidate()
+     */
+    public void invalidate() {
         createSessionIfNecessary();
         synchronized (this) {
-    		adaptee.invalidate();
+            adaptee.invalidate();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#isNew()
-	 */
-	public boolean isNew() {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#isNew()
+     */
+    public boolean isNew() {
         createSessionIfNecessary();
         synchronized (this) {
-    		return adaptee.isNew();
+            return adaptee.isNew();
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#removeAttribute(java.lang.String)
-	 */
-	public void removeAttribute(String name) {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#removeAttribute(java.lang.String)
+     */
+    public void removeAttribute(String name) {
         createSessionIfNecessary();
         synchronized (this) {
-    		adaptee.removeAttribute(name);
+            adaptee.removeAttribute(name);
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#setAttribute(java.lang.String, java.lang.Object)
-	 */
-	public void setAttribute(String name, Object value) {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#setAttribute(java.lang.String, java.lang.Object)
+     */
+    public void setAttribute(String name, Object value) {
         createSessionIfNecessary();
         synchronized (this) {
-    		adaptee.setAttribute(name, value);
+            adaptee.setAttribute(name, value);
         }
     }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpSession#setMaxInactiveInterval(int)
-	 */
-	public void setMaxInactiveInterval(int arg0) {
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpSession#setMaxInactiveInterval(int)
+     */
+    public void setMaxInactiveInterval(int arg0) {
         createSessionIfNecessary();
         synchronized (this) {
-    		adaptee.setMaxInactiveInterval(arg0);
+            adaptee.setMaxInactiveInterval(arg0);
         }
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public String toString() {
         createSessionIfNecessary();
         StringBuffer sb = new StringBuffer("Session Content:\n");
         Enumeration e = adaptee.getAttributeNames();
-        while(e.hasMoreElements()) {
+        while (e.hasMoreElements()) {
             String name = (String) e.nextElement();
             sb.append("  ");
             sb.append(name);

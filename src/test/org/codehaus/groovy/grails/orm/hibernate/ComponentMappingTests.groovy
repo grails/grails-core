@@ -61,6 +61,30 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
         assertEquals "3345243", p.homeAddress.postCode
     }
 
+	void testJira2773() {
+
+		def RegularPayment2773 = ga.getDomainClass('RegularPayment2773').clazz
+		def payment = RegularPayment2773.newInstance()
+
+		def RegularPaymentPart2773 = ga.getDomainClass('RegularPaymentPart2773').clazz
+		def paymentPart = RegularPaymentPart2773.newInstance()
+
+		def Money2773 = ga.getDomainClass('Money2773').clazz
+		def money = Money2773.newInstance()
+
+		money.value = 123
+		payment.regular = paymentPart
+		paymentPart.amount = money
+
+		assertNotNull payment.save()
+
+		session.flush()
+		session.clear()
+
+		payment = RegularPayment2773.list()[0]
+		assertEquals 123, payment.regular.amount.value
+	}
+
     protected void onSetUp() {
         gcl.parseClass '''
 class ComponentMappingPerson {
@@ -96,6 +120,29 @@ class ComponentMappingPrice {
 
     BigDecimal amount
     Integer quantity
+}
+
+class RegularPayment2773 {
+    Long id
+    Long version
+
+    RegularPaymentPart2773 regular
+    static embedded = ['regular']
+}
+
+class RegularPaymentPart2773 {
+    Long id
+    Long version
+
+    Money2773 amount
+    static embedded = ['amount']
+}
+
+class Money2773 {
+    Long id
+    Long version
+
+    BigDecimal value
 }
 '''
     }

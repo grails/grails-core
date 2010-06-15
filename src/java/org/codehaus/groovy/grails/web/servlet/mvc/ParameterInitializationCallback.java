@@ -18,16 +18,13 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 /**
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 27, 2007
  */
 public interface ParameterInitializationCallback {
 
     /**
-     * Adds a creationListener that will be called when the parameters are created
+     * Adds a listener that will be called when the parameters are created.
      *
-     * @param creationListener The creationListener
+     * @param creationListener the listener
      */
     void addParameterListener(ParameterCreationListener creationListener);
-                
 }

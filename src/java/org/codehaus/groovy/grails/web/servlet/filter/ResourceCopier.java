@@ -32,19 +32,19 @@ public interface ResourceCopier {
      * @param shouldOverwrite Whether the views should be overwritten
      */
     void copyViews(boolean shouldOverwrite);
-    
+
     /**
      * Copies only the views. Older views will be replaced by a newer version
      *
      */
-    void copyViews();    
+    void copyViews();
 
     /**
      * Copies the resource bundles. Older resource bundles will be replaced by a newer version
      *
      */
-    void copyResourceBundles(); 
-    
+    void copyResourceBundles();
+
     /**
      * The basedir to copy from (defaults to ".")
      * @param basedir
@@ -61,7 +61,7 @@ public interface ResourceCopier {
      * Re-generates the web.xml file
      */
     void generateWebXml();
-    
+
     /**
      * Cleans out controllers replacing them with new ones
      */

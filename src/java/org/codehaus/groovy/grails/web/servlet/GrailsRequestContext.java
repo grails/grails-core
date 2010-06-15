@@ -14,77 +14,72 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import org.springframework.context.ApplicationContext;
+import java.io.Writer;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.Writer;
-import java.util.Map;
+
+import org.springframework.context.ApplicationContext;
 
 /**
- * An interface that defines the methods and objects available
- * during a Grails request context
+ * Defines the methods and objects available during a Grails request context.
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jul 20, 2007
- *        Time: 6:28:17 PM
  */
 public interface GrailsRequestContext {
 
     /**
-     * The request object
+     * The request object.
      * @return The request object
      */
     HttpServletRequest getRequest();
 
     /**
-     * The response object
+     * The response object.
      * @return The response object
      */
     HttpServletResponse getResponse();
 
     /**
-     * The session object
+     * The session object.
      * @return The session object
      */
     HttpSession getSession();
 
     /**
-     * The servletContext object
+     * The servletContext object.
      * @return The servletContext Object
      */
     ServletContext getServletContext();
 
     /**
-     * The params object
+     * The params object.
      * @return The params object
      */
+    @SuppressWarnings("unchecked")
     Map getParams();
 
     /**
-     * The ApplicationContext instance
+     * The ApplicationContext instance.
      *
      * @return The ApplicationCOntext
      */
     ApplicationContext getApplicationContext();
 
     /**
-     * The response writer
+     * The response writer.
      * @return The response writer
      */
     Writer getOut();
-
 
     /**
      * @return The Action name
      */
     String getActionName();
-
 
     /**
      * @return The Controller Name
@@ -95,5 +90,4 @@ public interface GrailsRequestContext {
      * @return The Request URI
      */
     String getRequestURI();
-
 }

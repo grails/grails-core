@@ -539,23 +539,37 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             PropertyDescriptor[] descriptors = getPropertyDescriptors();
 
             List tmp = getPropertyValue(GrailsDomainClassProperty.TRANSIENT, List.class);
-            if (tmp!=null) transients = tmp;
-            properties = createDomainClassProperties(this,descriptors);
+            if (tmp != null) transients = tmp;
+            properties = createDomainClassProperties(descriptors);
             constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), properties);
             DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
         }
 
-        private GrailsDomainClassProperty[] createDomainClassProperties(
-                @SuppressWarnings("hiding") ComponentDomainClass type, PropertyDescriptor[] descriptors) {
+        private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {
 
             List<DefaultGrailsDomainClassProperty> props = new ArrayList<DefaultGrailsDomainClassProperty>();
+            Collection<String> embeddedNames = getEmbeddedList();
             for (int i = 0; i < descriptors.length; i++) {
                 PropertyDescriptor descriptor = descriptors[i];
                 if (isPersistentProperty(descriptor)) {
-                    props.add(new DefaultGrailsDomainClassProperty(type,descriptor));
+                    DefaultGrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(
+                            this, descriptor);
+                    props.add(property);
+                    if (embeddedNames.contains(property.getName())) {
+                        property.setEmbedded(true);
+                    }
                 }
             }
             return props.toArray(new GrailsDomainClassProperty[props.size()]);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Collection<String> getEmbeddedList() {
+            Object potentialList = GrailsClassUtils.getStaticPropertyValue(getClazz(), "embedded");
+            if (potentialList instanceof Collection) {
+                return (Collection<String>)potentialList;
+            }
+            return Collections.emptyList();
         }
 
         private boolean isPersistentProperty(PropertyDescriptor descriptor) {

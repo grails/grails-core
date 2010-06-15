@@ -1,7 +1,7 @@
 /*
  * Copyright 2004-2005 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.web.servlet.mvc.exceptions
+
 /**
- *
- * Thrown when the request cannot be redirected
+ * Thrown when the request cannot be redirected.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-public class CannotRedirectException extends ControllerExecutionException {
+class CannotRedirectException extends ControllerExecutionException {
 
-    CannotRedirectException() {
-    }
+    CannotRedirectException() {}
+
     CannotRedirectException(String message, Throwable t) {
-        super(message, t);
+        super(message, t)
     }
+
     CannotRedirectException(String message) {
-        super(message);
+        super(message)
     }
 }

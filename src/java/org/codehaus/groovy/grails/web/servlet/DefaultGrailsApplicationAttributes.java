@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,25 +43,23 @@ import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
 
 /**
- * Implementation of the GrailsApplicationAttributes interface that holds knowledge about how to obtain
- * certain attributes from either the ServletContext or the HttpServletRequest instance.
+ * Holds knowledge about how to obtain certain attributes from either the ServletContext
+ * or the HttpServletRequest instance.
  *
  * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  *
  * @author Graeme Rocher
  * @since 0.3
- *
- * Created: 17-Jan-2006
  */
 public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
-	
-	private static Log LOG = LogFactory.getLog(DefaultGrailsApplicationAttributes.class);
+
+    private static Log LOG = LogFactory.getLog(DefaultGrailsApplicationAttributes.class);
 
     private UrlPathHelper urlHelper = new UrlPathHelper();
-    
+
     private ServletContext context;
     private ApplicationContext appContext;
-    
+
     // Beans used very often
     private GroovyPagesTemplateEngine pagesTemplateEngine;
     private GrailsApplication grailsApplication;
@@ -71,8 +69,8 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public DefaultGrailsApplicationAttributes(ServletContext context) {
         this.context = context;
-        if(context != null) {
-        	this.appContext = (ApplicationContext)context.getAttribute(APPLICATION_CONTEXT);
+        if (context != null) {
+            appContext = (ApplicationContext)context.getAttribute(APPLICATION_CONTEXT);
         }
         initBeans();
     }
@@ -80,40 +78,42 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     public ApplicationContext getApplicationContext() {
         return appContext;
     }
-    
+
     private void initBeans() {
-    	if(appContext != null) {
-	   		this.pagesTemplateEngine=(GroovyPagesTemplateEngine)fetchBeanFromAppCtx(GroovyPagesTemplateEngine.BEAN_ID);
-            this.pluginManager=(GrailsPluginManager)fetchBeanFromAppCtx(GrailsPluginManager.BEAN_NAME);
-	   		this.grailsApplication=(GrailsApplication)fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
-	   		this.groovyPagesUriService = (GroovyPagesUriService)fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
-	   		this.messageSource = (MessageSource)fetchBeanFromAppCtx("messageSource");
-    	} else {
-    		LOG.warn("ApplicationContext not found in " + APPLICATION_CONTEXT + " attribute of servlet context."); 
-    	}
-    	if(this.groovyPagesUriService==null) {
-    		this.groovyPagesUriService = new DefaultGroovyPagesUriService();
-    	}
+        if (appContext != null) {
+            pagesTemplateEngine = fetchBeanFromAppCtx(GroovyPagesTemplateEngine.BEAN_ID);
+            pluginManager = fetchBeanFromAppCtx(GrailsPluginManager.BEAN_NAME);
+            grailsApplication = fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
+            groovyPagesUriService = fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
+            messageSource = fetchBeanFromAppCtx("messageSource");
+        }
+        else {
+            LOG.warn("ApplicationContext not found in " + APPLICATION_CONTEXT + " attribute of servlet context.");
+        }
+        if (groovyPagesUriService == null) {
+            groovyPagesUriService = new DefaultGroovyPagesUriService();
+        }
     }
-    
-    private Object fetchBeanFromAppCtx(String name) {
-    	try {
-    		return appContext.getBean(name);
-    	} catch(BeansException e) {
-    		LOG.warn("Bean named '" + name + "' is missing.");
-    		return null;
-    	}
+
+    @SuppressWarnings("unchecked")
+    private <T> T fetchBeanFromAppCtx(String name) {
+        try {
+            return (T)appContext.getBean(name);
+        }
+        catch(BeansException e) {
+            LOG.warn("Bean named '" + name + "' is missing.");
+            return null;
+        }
     }
 
     public String getPluginContextPath(HttpServletRequest request) {
         GroovyObject controller = getController(request);
-        if(controller != null) {
+        if (controller != null) {
             String path = pluginManager.getPluginPathForInstance(controller);
             return path == null ? "" : path;
         }
-        else {
-            return "";
-        }
+
+        return "";
     }
 
     public GroovyObject getController(ServletRequest request) {
@@ -121,76 +121,75 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getControllerUri(ServletRequest request) {
-        return "/"+getControllerName(request);
+        return "/" + getControllerName(request);
     }
 
     private String getControllerName(ServletRequest request) {
-    	String controllerName = (String) request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
-    	if(controllerName==null || controllerName.length() == 0) {
-	        GroovyObject controller = getController(request);
-	        if(controller != null) {
-	            controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
-	            request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
-	        }
-    	}
+        String controllerName = (String) request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
+        if (controllerName == null || controllerName.length() == 0) {
+            GroovyObject controller = getController(request);
+            if (controller != null) {
+                controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
+                request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
+            }
+        }
         return controllerName != null ? controllerName : "";
     }
 
     /**
-     *
      * @deprecated Use {@link org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest#getContextPath() instead}
      * @param request The Servlet Reqest
      * @return The Application URI
      */
     @Deprecated
     public String getApplicationUri(ServletRequest request) {
-    	String appUri = (String) request.getAttribute(GrailsApplicationAttributes.APP_URI_ATTRIBUTE);
-    	if(appUri==null) {
-    		appUri=this.urlHelper.getContextPath((HttpServletRequest)request);
-    	}
-    	return appUri; 
+        String appUri = (String) request.getAttribute(GrailsApplicationAttributes.APP_URI_ATTRIBUTE);
+        if (appUri == null) {
+            appUri = urlHelper.getContextPath((HttpServletRequest)request);
+        }
+        return appUri;
     }
 
     public ServletContext getServletContext() {
-        return this.context;
+        return context;
     }
 
     public FlashScope getFlashScope(ServletRequest request) {
-        if(request instanceof HttpServletRequest) {
-            HttpServletRequest servletRequest = (HttpServletRequest) request;
-            HttpSession session = servletRequest.getSession(false);
-            FlashScope fs;
-            if(session != null) {
-                fs = (FlashScope)session.getAttribute(FLASH_SCOPE);
+        if (!(request instanceof HttpServletRequest)) {
+            return null;
+        }
+
+        HttpServletRequest servletRequest = (HttpServletRequest) request;
+        HttpSession session = servletRequest.getSession(false);
+        FlashScope fs;
+        if (session != null) {
+            fs = (FlashScope)session.getAttribute(FLASH_SCOPE);
+        }
+        else {
+            fs = (FlashScope)request.getAttribute(FLASH_SCOPE);
+        }
+        if (fs == null) {
+            fs = new GrailsFlashScope();
+            if (session!=null) {
+                session.setAttribute(FLASH_SCOPE,fs);
             }
             else {
-                fs = (FlashScope)request.getAttribute(FLASH_SCOPE);
+                request.setAttribute(FLASH_SCOPE,fs);
             }
-            if(fs == null) {
-                fs = new GrailsFlashScope();
-                if(session!=null) {
-                    session.setAttribute(FLASH_SCOPE,fs);
-                }
-                else {
-                    request.setAttribute(FLASH_SCOPE,fs);
-                }
-            }
-            return fs;
         }
-        return null;
+        return fs;
     }
 
-	public String getTemplateUri(CharSequence templateName, ServletRequest request) {
-		return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName.toString());
-	}
+    public String getTemplateUri(CharSequence templateName, ServletRequest request) {
+        return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName.toString());
+    }
 
-	public String getViewUri(String viewName, HttpServletRequest request) {
+    public String getViewUri(String viewName, HttpServletRequest request) {
         return groovyPagesUriService.getDeployedViewURI(getControllerName(request), viewName);
-	}
+    }
 
     public String getControllerActionUri(ServletRequest request) {
         GroovyObject controller = getController(request);
-
         return (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
     }
 
@@ -199,53 +198,56 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public GroovyPagesTemplateEngine getPagesTemplateEngine() {
-    	if(pagesTemplateEngine != null) {
-    		return pagesTemplateEngine;
-    	} else {
-    		throw new GroovyPagesException("No bean named ["+GroovyPagesTemplateEngine.BEAN_ID+"] defined in Spring application context!");
-    	}
+        if (pagesTemplateEngine != null) {
+            return pagesTemplateEngine;
+        }
+
+        throw new GroovyPagesException("No bean named [" + GroovyPagesTemplateEngine.BEAN_ID +
+                "] defined in Spring application context!");
     }
 
     public GrailsApplication getGrailsApplication() {
         return grailsApplication;
     }
-    
+
     public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName) {
-    	return getTagLibraryForTag(request, response, tagName, GroovyPage.DEFAULT_NAMESPACE);
+        return getTagLibraryForTag(request, response, tagName, GroovyPage.DEFAULT_NAMESPACE);
     }
-    
-	public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace) {
-		String nonNullNamesapce = namespace == null ? GroovyPage.DEFAULT_NAMESPACE : namespace;
-		String fullTagName = nonNullNamesapce + ":" + tagName;
-		
-		GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
+
+    public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace) {
+        String nonNullNamesapce = namespace == null ? GroovyPage.DEFAULT_NAMESPACE : namespace;
+        String fullTagName = nonNullNamesapce + ":" + tagName;
+
+        GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
                 TagLibArtefactHandler.TYPE, fullTagName);
-		if(tagLibClass == null)return null;
-		return (GroovyObject)getApplicationContext()
-												.getBean(tagLibClass.getFullName());
-	}
+        if (tagLibClass == null) {
+            return null;
+        }
 
-	public Writer getOut(HttpServletRequest request) {
-		return (Writer)request.getAttribute(OUT);
-	}
+        return (GroovyObject)getApplicationContext().getBean(tagLibClass.getFullName());
+    }
 
-	public void setOut(HttpServletRequest request, Writer out2) {
-		request.setAttribute(OUT, out2);
-	}
+    public Writer getOut(HttpServletRequest request) {
+        return (Writer)request.getAttribute(OUT);
+    }
 
-	public String getNoSuffixViewURI(GroovyObject controller, String viewName) {
-		return groovyPagesUriService.getNoSuffixViewURI(controller, viewName);
-	}
+    public void setOut(HttpServletRequest request, Writer out2) {
+        request.setAttribute(OUT, out2);
+    }
 
-	public String getTemplateURI(GroovyObject controller, String templateName) {
-		return groovyPagesUriService.getTemplateURI(controller, templateName);
-	}
+    public String getNoSuffixViewURI(GroovyObject controller, String viewName) {
+        return groovyPagesUriService.getNoSuffixViewURI(controller, viewName);
+    }
 
-	public GroovyPagesUriService getGroovyPagesUriService() {
-		return groovyPagesUriService;
-	}
+    public String getTemplateURI(GroovyObject controller, String templateName) {
+        return groovyPagesUriService.getTemplateURI(controller, templateName);
+    }
 
-	public MessageSource getMessageSource() {
-		return messageSource;
-	}
+    public GroovyPagesUriService getGroovyPagesUriService() {
+        return groovyPagesUriService;
+    }
+
+    public MessageSource getMessageSource() {
+        return messageSource;
+    }
 }

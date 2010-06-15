@@ -44,15 +44,13 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 /**
- * A Grails view resolver which evaluates the existance of a view for different extensions choosing which
- * one to delegate to.
+ * Evaluates the existance of a view for different extensions choosing which one to delegate to.
  *
  * @author Graeme Rocher
  * @since 0.1
- *
- * Created: 11-Jan-2006
  */
-public class GrailsViewResolver extends InternalResourceViewResolver implements ResourceLoaderAware, ApplicationContextAware, PluginManagerAware {
+public class GrailsViewResolver extends InternalResourceViewResolver
+       implements ResourceLoaderAware, ApplicationContextAware, PluginManagerAware {
 
     private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
@@ -91,7 +89,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         HttpServletRequest request = webRequest.getCurrentRequest();
         GroovyObject controller = webRequest.getAttributes().getController(request);
 
-        GrailsApplication application = (GrailsApplication) getApplicationContext().getBean(GrailsApplication.APPLICATION_ID);
+        GrailsApplication application = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
         ResourceLoader loader = establishResourceLoader(application);
 
@@ -143,7 +141,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     }
 
     /**
-     * Attempst to resolve a view relative to a controller
+     * Attempts to resolve a view relative to a controller.
      *
      * @param controller The controller to resolve the view relative to
      * @param application The GrailsApplication instance
@@ -154,8 +152,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected String resolveViewForController(GroovyObject controller, GrailsApplication application,
             String viewName, ResourceLoader loader) {
 
-        String gspView;// try to resolve the view relative to the controller first, this allows us to support
-        // views provided by plugins
+        String gspView;// try to resolve the view relative to the controller first, this allows us to support views provided by plugins
         if (controller != null && application != null) {
             String pathToView = pluginManager != null ? pluginManager.getPluginViewsPathForInstance(controller) : null;
             if (pathToView != null) {

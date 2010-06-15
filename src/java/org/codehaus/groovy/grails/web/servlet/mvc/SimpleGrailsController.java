@@ -15,11 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -27,38 +32,22 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * <p>Base class for Grails controllers.
  *
  * @author Steven Devijver
  * @author Graeme Rocher
- * 
- * @since Jul 2, 2005
  */
-public class SimpleGrailsController implements Controller, ServletContextAware {   
-    
+public class SimpleGrailsController implements Controller, ServletContextAware {
+
     private UrlPathHelper urlPathHelper = new GrailsUrlPathHelper();
     private GrailsApplication application = null;
     private ServletContext servletContext;
 
     private static final Log LOG = LogFactory.getLog(SimpleGrailsController.class);
 
-
-    public SimpleGrailsController() {
-        super();        
-    }
-
-
-    public void setGrailsApplication(GrailsApplication application) {
-        this.application = application;
-    }
-
     /**
-     * <p>This method wraps regular request and response objects into Grails request and response objects.
+     * <p>Wraps regular request and response objects into Grails request and response objects.
      *
      * <p>It can handle maps as model types next to ModelAndView instances.
      *
@@ -66,33 +55,34 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
      * @param response HTTP response
      * @return the model
      */
-    public ModelAndView handleRequest(HttpServletRequest request,
-                                      HttpServletResponse response) throws Exception {
+    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         // Step 1: determine the correct URI of the request.
-        String uri = this.urlPathHelper.getPathWithinApplication(request);
-        if(LOG.isDebugEnabled()) {
+        String uri = urlPathHelper.getPathWithinApplication(request);
+        if (LOG.isDebugEnabled()) {
             LOG.debug("[SimpleGrailsController] Processing request for uri ["+uri+"]");
         }
 
-        
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
 
-        if(!(ra instanceof GrailsWebRequest)) {
-            throw new IllegalStateException("Bound RequestContext is not an instance of GrailsWebRequest");
-        }
+        Assert.state(ra instanceof GrailsWebRequest, "Bound RequestContext is not an instance of GrailsWebRequest");
+
         GrailsWebRequest webRequest = (GrailsWebRequest)ra;
 
-
         ApplicationContext context = webRequest.getAttributes().getApplicationContext();
-        SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(this.application,context,this.servletContext);
+        SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(application,context,servletContext);
         ModelAndView mv = helper.handleURI(uri,webRequest);
 
-        if(LOG.isDebugEnabled()) {
-            if(mv != null) {
-                LOG.debug("[SimpleGrailsController] Forwarding model and view ["+mv+"] with class ["+(mv.getView() != null ? mv.getView().getClass().getName() : mv.getViewName())+"]");    
+        if (mv != null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[SimpleGrailsController] Forwarding model and view [" + mv + "] with class [" +
+                        (mv.getView() != null ? mv.getView().getClass().getName() : mv.getViewName()) + "]");
             }
         }
         return mv;
+    }
+
+    public void setGrailsApplication(GrailsApplication application) {
+        this.application = application;
     }
 
     public void setServletContext(ServletContext servletContext) {
@@ -100,6 +90,6 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
     }
 
     public ServletContext getServletContext() {
-        return this.servletContext;
+        return servletContext;
     }
 }
