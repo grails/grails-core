@@ -168,7 +168,7 @@ class PluginInstallEngine {
         
         if(zipFile.exists()) {
             def (name, version) = readMetadataFromZip(zipFile.absolutePath)
-            installPluginZipInternal name, version, zipFile, globalInstall
+            installPluginZipInternal name, version, zipFile, globalInstall, true
         }
         else {
             errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
@@ -196,7 +196,7 @@ class PluginInstallEngine {
         installPlugin(file, globalInstall)
     }
 
-    protected void installPluginZipInternal(String name, String version, File pluginZip, boolean globalInstall) {
+    protected void installPluginZipInternal(String name, String version, File pluginZip, boolean globalInstall = false, boolean overwrite = false) {
 
         def fullPluginName = "$name-$version"
         def pluginInstallPath = "${globalInstall ? globalPluginsLocation : applicationPluginsLocation}/${fullPluginName}"
@@ -204,10 +204,12 @@ class PluginInstallEngine {
 
         assertNoExistingInlinePlugin(name)
 
-        def abort = checkExistingPluginInstall(name, version)
-        if(abort)  {
-        	registerPluginWithMetadata(name, version)	        	
-        	return
+        if(!overwrite) {
+            def abort = checkExistingPluginInstall(name, version)
+            if(abort)  {
+                registerPluginWithMetadata(name, version)
+                return
+            }
         }
         
         eventHandler "StatusUpdate", "Installing zip ${pluginZip}..."
