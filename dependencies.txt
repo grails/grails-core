@@ -148,7 +148,7 @@ The following libraries are included in Grails because they are required either 
 - required for running Grails applications
 
 * org.springframework.*.jar
-- Spring Framework 3.0.2 (http://www.springframework.org) Apache 2.0 License
+- Spring Framework 3.0.3 (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for the command line tools (Gant)
 - required for running Grails applications
