@@ -117,6 +117,12 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
         field.set(this, b)         
     }
 
+    void setChanging ( boolean b ) {
+        // nasty hack since the isChanging Ivy field is not public
+        Field field = getClass().getSuperclass().getDeclaredField("isChanging")
+        field.accessible = true
+        field.set(this, b)
+    }
 
     void addRuleForModuleId(ModuleId mid, String scope) {
         def id = new ArtifactId(mid, WILDCARD, WILDCARD, WILDCARD)
