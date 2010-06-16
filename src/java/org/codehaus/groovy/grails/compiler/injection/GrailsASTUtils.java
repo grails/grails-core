@@ -114,8 +114,8 @@ public class GrailsASTUtils {
     public static ClassNode getFurthestParent(ClassNode classNode) {
         ClassNode parent = classNode.getSuperClass();
         while (parent != null && !getFullName(parent).equals("java.lang.Object")) {
-            parent = parent.getSuperClass();
             classNode = parent;
+            parent = parent.getSuperClass();
         }
         return classNode;
     }
