@@ -7,18 +7,17 @@ package org.codehaus.groovy.grails.orm.hibernate
 class IdInheritanceTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
+abstract class GrandParent {}
+
 @Entity
-abstract class Parent {
+abstract class Parent extends GrandParent {
   String toString() {
     return "${id}"
   }
 }
-''')
-        gcl.parseClass('''
-import grails.persistence.*
 
 @Entity
 class Child extends Parent {
@@ -29,8 +28,7 @@ class Child extends Parent {
     return super.id
   }
 }
-
-''')
+'''
     }
 
 
