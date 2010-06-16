@@ -15,6 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -26,140 +36,128 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 import org.springframework.web.servlet.support.RequestContextUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
- * A class the encapsulates a Grails request. An instance of this class is bound to the current thread using
+ * Encapsulates a Grails request. An instance of this class is bound to the current thread using
  * Spring's RequestContextHolder which can later be retrieved using:
- * 
+ *
  * def webRequest = RequestContextHolder.currentRequestAttributes()
- * 
+ *
  * @author Graeme Rocher
  * @since 0.4
- *
  */
 public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
 
-	private GrailsApplicationAttributes attributes;
-	private GrailsParameterMap params;
-	private HttpServletResponse response;
-	private GrailsHttpSession session;
-	private boolean renderView = true;
+    private GrailsApplicationAttributes attributes;
+    private GrailsParameterMap params;
+    private HttpServletResponse response;
+    private GrailsHttpSession session;
+    private boolean renderView = true;
     public static final String ID_PARAMETER = "id";
     private List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
     private UrlPathHelper urlHelper = new UrlPathHelper();
 
-
-    public GrailsWebRequest(HttpServletRequest request,  HttpServletResponse response, ServletContext servletContext) {
-		super(request);
-		this.attributes = new DefaultGrailsApplicationAttributes(servletContext);
-		this.response = response;
-
-		
-	}
-
-    /**
-     * Overriden to return the GrailsParameterMap instance
-     *
-     * @return An instance of GrailsParameterMap
-     */
-    public Map getParameterMap() {
-        if(this.params == null) {
-            this.params = new GrailsParameterMap(getCurrentRequest());
-        }
-        return this.params;
+    public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
+        super(request);
+        attributes = new DefaultGrailsApplicationAttributes(servletContext);
+        this.response = response;
     }
 
     /**
-	 * @return the out
-	 */
-	public Writer getOut() {
-		Writer out = attributes.getOut(getCurrentRequest());
-		if(out ==null)
-			try {
-				return getCurrentResponse().getWriter();
-			} catch (IOException e) {
-				throw new ControllerExecutionException("Error retrieving response writer: " + e.getMessage(), e);
-			}
-		return out;
-	}
-
-
-
-	/**
-	 * @param out the out to set
-	 */
-	public void setOut(Writer out) {
-		attributes.setOut(getCurrentRequest(),out);
-	}
-
-
-
-	/**
-	 * @return The ServletContext instance
-	 */
-	public ServletContext getServletContext() {
-		return this.attributes.getServletContext();
-	}
+     * Overriden to return the GrailsParameterMap instance,
+     *
+     * @return An instance of GrailsParameterMap
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map getParameterMap() {
+        if (params == null) {
+            params = new GrailsParameterMap(getCurrentRequest());
+        }
+        return params;
+    }
 
     /**
-     * Retuns the context path of the request
-     * @return The context path of the request
+     * @return the out
+     */
+    public Writer getOut() {
+        Writer out = attributes.getOut(getCurrentRequest());
+        if (out ==null)
+            try {
+                return getCurrentResponse().getWriter();
+            } catch (IOException e) {
+                throw new ControllerExecutionException("Error retrieving response writer: " + e.getMessage(), e);
+            }
+        return out;
+    }
+
+
+
+    /**
+     * @param out the out to set
+     */
+    public void setOut(Writer out) {
+        attributes.setOut(getCurrentRequest(),out);
+    }
+
+
+
+    /**
+     * @return The ServletContext instance
+     */
+    public ServletContext getServletContext() {
+        return attributes.getServletContext();
+    }
+
+    /**
+     * Returns the context path of the request.
+     * @return the path
      */
     @Override
     public String getContextPath() {
         final HttpServletRequest request = getCurrentRequest();
         String appUri = (String) request.getAttribute(GrailsApplicationAttributes.APP_URI_ATTRIBUTE);
-        if(appUri==null) {
-            appUri=this.urlHelper.getContextPath(request);
+        if (appUri == null) {
+            appUri = urlHelper.getContextPath(request);
         }
         return appUri;
-
     }
 
     /**
-	 * @return The FlashScope instance for the current request
-	 */
-	public FlashScope getFlashScope() {
-		return attributes.getFlashScope(getRequest());
-	}
-	
-	/**
-	 * @return The currently executing request
-	 */
-	public HttpServletRequest getCurrentRequest() {
-		return getRequest();
-	}
-	
-	public HttpServletResponse getCurrentResponse() {
-		return this.response;
-	}
-	
-	/**
-	 * @return The Grails params object
-	 */
-	public GrailsParameterMap getParams() {
-        if(this.params == null) {
-            this.params = new GrailsParameterMap(getCurrentRequest());
-        }
-        return this.params;
-	}
+     * @return The FlashScope instance for the current request
+     */
+    public FlashScope getFlashScope() {
+        return attributes.getFlashScope(getRequest());
+    }
 
     /**
-     * Informs any parameter creation listeners
+     * @return The currently executing request
+     */
+    public HttpServletRequest getCurrentRequest() {
+        return getRequest();
+    }
+
+    public HttpServletResponse getCurrentResponse() {
+        return response;
+    }
+
+    /**
+     * @return The Grails params object
+     */
+    public GrailsParameterMap getParams() {
+        if (params == null) {
+            params = new GrailsParameterMap(getCurrentRequest());
+        }
+        return params;
+    }
+
+    /**
+     * Informs any parameter creation listeners.
      */
     public void informParameterCreationListeners() {
         for (ParameterCreationListener parameterCreationListener : parameterCreationListeners) {
@@ -168,55 +166,55 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     /**
-	 * 
-	 * @return The Grails session object
-	 */
-	public GrailsHttpSession getSession() {
-		if(session == null)
-			session = new GrailsHttpSession(getCurrentRequest());
-		
-		return session;
-	}
-	
-	/**
-	 * @return The GrailsApplicationAttributes instance
-	 */
-	public GrailsApplicationAttributes getAttributes() {
-		return this.attributes;
-	}
+     * @return The Grails session object
+     */
+    public GrailsHttpSession getSession() {
+        if (session == null) {
+            session = new GrailsHttpSession(getCurrentRequest());
+        }
 
-	public void setActionName(String actionName) {
-		getCurrentRequest().setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, actionName);
-	}
+        return session;
+    }
 
-	public void setControllerName(String controllerName) {
-		getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
-	}
+    /**
+     * @return The GrailsApplicationAttributes instance
+     */
+    public GrailsApplicationAttributes getAttributes() {
+        return attributes;
+    }
 
-	/**
-	 * @return the actionName
-	 */
-	public String getActionName() {
-		return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
-	}
+    public void setActionName(String actionName) {
+        getCurrentRequest().setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, actionName);
+    }
 
-	/**
-	 * @return the controllerName
-	 */
-	public String getControllerName() {
-		return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
-	}
+    public void setControllerName(String controllerName) {
+        getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
+    }
 
-	public void setRenderView(boolean renderView) {
-		this.renderView = renderView;
-	}
+    /**
+     * @return the actionName
+     */
+    public String getActionName() {
+        return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
+    }
 
-	/**
-	 * @return True if the view for this GrailsWebRequest should be rendered
-	 */
-	public boolean isRenderView() {
-		return renderView;
-	}
+    /**
+     * @return the controllerName
+     */
+    public String getControllerName() {
+        return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
+    }
+
+    public void setRenderView(boolean renderView) {
+        this.renderView = renderView;
+    }
+
+    /**
+     * @return True if the view for this GrailsWebRequest should be rendered
+     */
+    public boolean isRenderView() {
+        return renderView;
+    }
 
     public String getId() {
         Object id = getParams().get(ID_PARAMETER);
@@ -232,22 +230,22 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         GrailsApplication application = getAttributes().getGrailsApplication();
         GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE,getControllerName());
 
-        if(controllerClass == null) return false;
+        if (controllerClass == null) return false;
+
         String actionName = getActionName();
-        if(actionName == null) actionName = controllerClass.getDefaultAction();
+        if (actionName == null) actionName = controllerClass.getDefaultAction();
+        if (actionName == null) return false;
 
-        if(actionName == null) return false;
-
-        if(controllerClass != null && controllerClass.isFlowAction(actionName)) return true;
+        if (controllerClass != null && controllerClass.isFlowAction(actionName)) return true;
         return false;
     }
 
     public void addParameterListener(ParameterCreationListener creationListener) {
-        this.parameterCreationListeners.add(creationListener);
+        parameterCreationListeners.add(creationListener);
     }
 
     /**
-     * Obtains the ApplicationContext object
+     * Obtains the ApplicationContext object.
      *
      * @return The ApplicationContext
      */
@@ -256,31 +254,30 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     /**
-     * Obtains the PropertyEditorRegistry instance
+     * Obtains the PropertyEditorRegistry instance.
      * @return The PropertyEditorRegistry
      */
     public PropertyEditorRegistry getPropertyEditorRegistry() {
         final HttpServletRequest servletRequest = getCurrentRequest();
         PropertyEditorRegistry registry = (PropertyEditorRegistry) servletRequest.getAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY);
-        if(registry == null) {
+        if (registry == null) {
             registry = new PropertyEditorRegistrySupport();
             GrailsDataBinder.registerCustomEditors(registry, RequestContextUtils.getLocale(servletRequest));
             servletRequest.setAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY, registry);
-
-        }        
+        }
         return registry;
     }
 
     /**
-     * Looks up the GrailsWebRequest from the current request
+     * Looks up the GrailsWebRequest from the current request.
      * @param request The current request
      * @return The GrailsWebRequest
      */
     public static GrailsWebRequest lookup(HttpServletRequest request) {
         GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-        if(webRequest== null) {
+        if (webRequest == null) {
             RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-            if(requestAttributes instanceof GrailsWebRequest) {
+            if (requestAttributes instanceof GrailsWebRequest) {
                 webRequest = (GrailsWebRequest) requestAttributes;
             }
         }
@@ -288,7 +285,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     /**
-     * Sets the id of the request
+     * Sets the id of the request.
      * @param id The id
      */
     public void setId(Object id) {

@@ -242,7 +242,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                        "org.grails:grails-web:$grailsVersion",
                        "org.slf4j:slf4j-api:1.5.8",
                        "org.slf4j:slf4j-log4j12:1.5.8",
-                       "org.springframework:org.springframework.test:3.0.2.RELEASE"
+                       "org.springframework:org.springframework.test:3.0.3.RELEASE"
                        
                 docs   "org.xhtmlrenderer:core-renderer:R8",
                 	   "com.lowagie:itext:2.0.8",
@@ -277,22 +277,22 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                          "org.grails:grails-resources:$grailsVersion",
                          "org.grails:grails-spring:$grailsVersion",
                          "org.grails:grails-web:$grailsVersion",
-                         "org.springframework:org.springframework.core:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.aop:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.aspects:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.asm:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.beans:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.context:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.context.support:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.expression:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.instrument:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.jdbc:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.jms:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.orm:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.oxm:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.transaction:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.web:3.0.2.RELEASE",
-                         "org.springframework:org.springframework.web.servlet:3.0.2.RELEASE",
+                         "org.springframework:org.springframework.core:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.aop:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.aspects:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.asm:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.beans:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.context:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.context.support:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.expression:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.instrument:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.jdbc:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.jms:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.orm:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.oxm:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.transaction:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.web:3.0.3.RELEASE",
+                         "org.springframework:org.springframework.web.servlet:3.0.3.RELEASE",
                          "org.slf4j:slf4j-api:1.5.8") {
                         transitive = false
                 }
@@ -301,7 +301,7 @@ public class IvyDependencyManager extends AbstractIvyDependencyManager implement
                 // dependencies needed for running tests
                 test "junit:junit:4.8.1",
                      "org.grails:grails-test:$grailsVersion",
-                     "org.springframework:org.springframework.test:3.0.2.RELEASE"
+                     "org.springframework:org.springframework.test:3.0.3.RELEASE"
 
                 // dependencies needed at runtime only
                 runtime "org.aspectj:aspectjweaver:1.6.8",

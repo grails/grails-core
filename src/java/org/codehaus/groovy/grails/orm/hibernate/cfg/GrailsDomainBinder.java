@@ -743,7 +743,7 @@ public final class GrailsDomainBinder {
         GrailsDomainClass refDomainClass = property.getDomainClass();
         final Mapping mapping = getMapping(refDomainClass.getClazz());
         if ((shouldCollectionBindWithJoinColumn(property) && hasCompositeIdentifier(mapping)) ||
-        	(hasCompositeIdentifier(mapping) && property.isManyToMany())) {
+                (hasCompositeIdentifier(mapping) && property.isManyToMany())) {
             CompositeIdentity ci = (CompositeIdentity) mapping.getIdentity();
             bindCompositeIdentifierToManyToOne(property, key, ci, refDomainClass, EMPTY_PATH);
         }
@@ -1663,7 +1663,7 @@ public final class GrailsDomainBinder {
         Column column = new Column();
 
         if (property.getDomainClass().isRoot()) {
-        	column.setNullable(property.isOptional());
+            column.setNullable(property.isOptional());
         } else {
             Mapping mapping = getMapping(property.getDomainClass());
             if(mapping == null || mapping.getTablePerHierarchy()) {
@@ -1794,6 +1794,10 @@ public final class GrailsDomainBinder {
                 value = new ManyToOne(table);
                 bindManyToOne(currentGrailsProp, (ManyToOne) value, path, mappings);
             }
+        }
+        else if (currentGrailsProp.isEmbedded()) {
+            value = new Component(persistentClass);
+            bindComponent((Component) value, currentGrailsProp, true, mappings);
         }
         else {
             if (LOG.isDebugEnabled())
