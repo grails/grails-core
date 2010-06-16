@@ -164,11 +164,11 @@ class PluginInstallEngine {
      * @param zipFile The plugin zip file
      * @param globalInstall Whether it is a global install or not (optional)
      */
-    void installPlugin(File zipFile, boolean globalInstall = false) {
+    void installPlugin(File zipFile, boolean globalInstall = false, boolean overwrite = false) {
         
         if(zipFile.exists()) {
             def (name, version) = readMetadataFromZip(zipFile.absolutePath)
-            installPluginZipInternal name, version, zipFile, globalInstall, true
+            installPluginZipInternal name, version, zipFile, globalInstall, overwrite
         }
         else {
             errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
@@ -193,7 +193,7 @@ class PluginInstallEngine {
         catch (e) {
             errorHandler "Error downloading plugin ${zipURL}: ${e.message}"
         }
-        installPlugin(file, globalInstall)
+        installPlugin(file, globalInstall, true)
     }
 
     protected void installPluginZipInternal(String name, String version, File pluginZip, boolean globalInstall = false, boolean overwrite = false) {

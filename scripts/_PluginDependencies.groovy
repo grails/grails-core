@@ -454,7 +454,7 @@ doInstallPluginFromURL = { URL url ->
 doInstallPluginZip = { File file ->
     withPluginInstall {
         def installEngine = createPluginInstallEngine()
-        installEngine.installPlugin file, globalInstall
+        installEngine.installPlugin file, globalInstall, true
     }
 }
 
