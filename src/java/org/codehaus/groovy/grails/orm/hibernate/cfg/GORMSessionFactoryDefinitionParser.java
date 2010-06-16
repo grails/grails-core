@@ -52,25 +52,23 @@ import org.w3c.dom.Element;
  * A BeanDefinitionParser that will scan for GORM entities to configure and automatically setup an
  * appropriate Hibernate SessionFactory for usage with GORM. Example in XML:
  *
- * <pre><code>
- * <gorm:sessionFactory
+ * <pre>
+ * &lt;gorm:sessionFactory
  *          data-source-ref="myDataSource"
  *          base-package="my.company.domain"
- *          lob-handler-ref="lobHandler" <!--optional-->
- *          config-location="classpath:hibernate.cfg.xml" <!--optional-->
- *          config-class="org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration" <!--optional-->
- * >
- *      <property name="hibernateProperties"></property>
- * </gorm:sessionFactory>
+ *          lob-handler-ref="lobHandler" &lt;!--optional--&gt;
+ *          config-location="classpath:hibernate.cfg.xml" &lt;!--optional--&gt;
+ *          config-class="org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration"&gt; &lt;!--optional--&gt;
  *
- * </code></pre>
+ *      &lt;property name="hibernateProperties"&gt;&lt;/property&gt;
+ * &lt;/gorm:sessionFactory&gt;
+ *
+ * </code>
  *
  * @see org.springframework.beans.factory.xml.BeanDefinitionParser
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Jan 16, 2009
  */
 public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser {
 

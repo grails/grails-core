@@ -15,16 +15,6 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -33,58 +23,71 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.GStringExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+
 /**
  * Default implementation of domain class injector interface that adds the 'id'
- * and 'version' properties and other previously boilerplate code
+ * and 'version' properties and other previously boilerplate code.
  *
  * @author Graeme Rocher
  * @since 0.2
- *        <p/>
- *        Created: 20th June 2006
  */
-public class DefaultGrailsDomainClassInjector implements
-        GrailsDomainClassInjector {
+public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInjector {
 
     private static final String DOMAIN_DIR = "domain";
 
-	private static final String GRAILS_APP_DIR = "grails-app";
+    private static final String GRAILS_APP_DIR = "grails-app";
 
-    private List classesWithInjectedToString = new ArrayList();
+    private List<ClassNode> classesWithInjectedToString = new ArrayList<ClassNode>();
 
-    public void performInjection(SourceUnit source, GeneratorContext context,
-                                 ClassNode classNode) {
+    public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if (isDomainClass(classNode, source) && shouldInjectClass(classNode)) {
             performInjectionOnAnnotatedEntity(classNode);
         }
     }
 
     public void performInjectionOnAnnotatedEntity(ClassNode classNode) {
-            injectIdProperty(classNode);
-
-            injectVersionProperty(classNode);
-
-            injectToStringMethod(classNode);
-
-            injectAssociations(classNode);
+        injectIdProperty(classNode);
+        injectVersionProperty(classNode);
+        injectToStringMethod(classNode);
+        injectAssociations(classNode);
     }
-
 
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);
     }
 
-    protected boolean isDomainClass(ClassNode classNode, SourceUnit sourceNode) {
+    protected boolean isDomainClass(@SuppressWarnings("unused") ClassNode classNode, SourceUnit sourceNode) {
         String sourcePath = sourceNode.getName();
         File sourceFile = new File(sourcePath);
         File parent = sourceFile.getParentFile();
-        while(parent!=null) {
-        	File parentParent = parent.getParentFile();
-			if(parent.getName().equals(DOMAIN_DIR) && parentParent!=null && parentParent.getName().equals(GRAILS_APP_DIR)) {
-        		return true;
-        	}
-			parent = parentParent;
+        while (parent != null) {
+            File parentParent = parent.getParentFile();
+            if (parent.getName().equals(DOMAIN_DIR) && parentParent != null &&
+                    parentParent.getName().equals(GRAILS_APP_DIR)) {
+                return true;
+            }
+            parent = parentParent;
         }
-        
+
         return false;
     }
 
@@ -95,17 +98,17 @@ public class DefaultGrailsDomainClassInjector implements
         if (getClass().getResource(mappingFile) != null) {
             return false;
         }
+
         return !isEnum(classNode);
     }
 
     private void injectAssociations(ClassNode classNode) {
 
-        List properties = classNode.getProperties();
-        List propertiesToAdd = new ArrayList();
-        for (Object property : properties) {
-            PropertyNode pn = (PropertyNode) property;
+        List<PropertyNode> propertiesToAdd = new ArrayList<PropertyNode>();
+        for (PropertyNode pn : classNode.getProperties()) {
             final String name = pn.getName();
-            final boolean isHasManyProperty = name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) || name.equals(GrailsDomainClassProperty.HAS_MANY);
+            final boolean isHasManyProperty = name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) ||
+                    name.equals(GrailsDomainClassProperty.HAS_MANY);
             if (isHasManyProperty) {
                 Expression e = pn.getInitialExpression();
                 propertiesToAdd.addAll(createPropertiesForHasManyExpression(e, classNode));
@@ -119,17 +122,15 @@ public class DefaultGrailsDomainClassInjector implements
         injectAssociationProperties(classNode, propertiesToAdd);
     }
 
-    private Collection createPropertiesForBelongsToExpression(Expression e, ClassNode classNode) {
-        List properties = new ArrayList();
+    private Collection<PropertyNode> createPropertiesForBelongsToExpression(Expression e, ClassNode classNode) {
+        List<PropertyNode> properties = new ArrayList<PropertyNode>();
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
-            List mapEntries = me.getMapEntryExpressions();
-            for (Object mapEntry : mapEntries) {
-                MapEntryExpression mme = (MapEntryExpression) mapEntry;
+            for (MapEntryExpression mme : me.getMapEntryExpressions()) {
                 String key = mme.getKeyExpression().getText();
                 final Expression expression = mme.getValueExpression();
                 ClassNode type;
-                if(expression instanceof ClassExpression) {
+                if (expression instanceof ClassExpression) {
                     type = expression.getType();
                 }
                 else {
@@ -143,36 +144,33 @@ public class DefaultGrailsDomainClassInjector implements
         return properties;
     }
 
-    private void injectAssociationProperties(ClassNode classNode, List propertiesToAdd) {
-        for (Object aPropertiesToAdd : propertiesToAdd) {
-            PropertyNode pn = (PropertyNode) aPropertiesToAdd;
+    private void injectAssociationProperties(ClassNode classNode, List<PropertyNode> propertiesToAdd) {
+        for (PropertyNode pn : propertiesToAdd) {
             if (!GrailsASTUtils.hasProperty(classNode, pn.getName())) {
                 classNode.addProperty(pn);
             }
         }
     }
 
-    private List createPropertiesForHasManyExpression(Expression e, ClassNode classNode) {
-        List properties = new ArrayList();
+    private List<PropertyNode> createPropertiesForHasManyExpression(Expression e, ClassNode classNode) {
+        List<PropertyNode> properties = new ArrayList<PropertyNode>();
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
-            List mapEntries = me.getMapEntryExpressions();
-            for (Object mapEntry : mapEntries) {
-                MapEntryExpression mee = (MapEntryExpression) mapEntry;
-                Expression keyExpression = mee.getKeyExpression();
-                String key = keyExpression.getText();
+            for (MapEntryExpression mee : me.getMapEntryExpressions()) {
+                String key = mee.getKeyExpression().getText();
                 addAssociationForKey(key, properties, classNode);
             }
         }
         return properties;
     }
 
-    private void addAssociationForKey(String key, List properties, ClassNode classNode) {
+    private void addAssociationForKey(String key, List<PropertyNode> properties, ClassNode classNode) {
         properties.add(new PropertyNode(key, Modifier.PUBLIC, new ClassNode(Set.class), classNode, null, null, null));
     }
 
     private void injectToStringMethod(ClassNode classNode) {
-        final boolean hasToString = GrailsASTUtils.implementsOrInheritsZeroArgMethod(classNode, "toString", classesWithInjectedToString);
+        final boolean hasToString = GrailsASTUtils.implementsOrInheritsZeroArgMethod(
+                classNode, "toString", classesWithInjectedToString);
 
         if (!hasToString && !isEnum(classNode)) {
             GStringExpression ge = new GStringExpression(classNode.getName() + " : ${id}");
@@ -214,8 +212,7 @@ public class DefaultGrailsDomainClassInjector implements
         }
     }
 
-	public void performInjection(SourceUnit source, ClassNode classNode) {
-		performInjection(source, null, classNode);		
-	}
-
+    public void performInjection(SourceUnit source, ClassNode classNode) {
+        performInjection(source, null, classNode);
+    }
 }

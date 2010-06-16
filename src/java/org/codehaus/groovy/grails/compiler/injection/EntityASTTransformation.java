@@ -15,30 +15,26 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.persistence.Entity;
+
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.CompilePhase;
+import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
- * An AST transformation that injects the necessary fields and behaviors into a domain
- * class in order to make it a property GORM entity
- * 
+ * Injects the necessary fields and behaviors into a domain class in order to make it a property GORM entity.
+ *
  * @author Graeme Rocher
  * @since 1.1
- *
- *        <p/>
- *        Created: Dec 17, 2008
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class EntityASTTransformation implements ASTTransformation{
+public class EntityASTTransformation implements ASTTransformation {
 
-    private static final Class MY_CLASS = Entity.class;
-    private static final ClassNode MY_TYPE = new ClassNode(MY_CLASS);
+    private static final ClassNode MY_TYPE = new ClassNode(Entity.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
@@ -48,18 +44,18 @@ public class EntityASTTransformation implements ASTTransformation{
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
         AnnotationNode node = (AnnotationNode) astNodes[0];
-        if (!MY_TYPE.equals(node.getClassNode())) return;
-
-        if(parent instanceof ClassNode) {
-            ClassNode cNode = (ClassNode) parent;
-            String cName = cNode.getName();
-            if (cNode.isInterface()) {
-                throw new RuntimeException("Error processing interface '" + cName + "'. " + MY_TYPE_NAME + " not allowed for interfaces.");
-            }
-
-            GrailsDomainClassInjector domainInjector = new DefaultGrailsDomainClassInjector();
-            domainInjector.performInjectionOnAnnotatedEntity(cNode);
+        if (!MY_TYPE.equals(node.getClassNode()) || !(parent instanceof ClassNode)) {
+            return;
         }
 
+        ClassNode cNode = (ClassNode) parent;
+        String cName = cNode.getName();
+        if (cNode.isInterface()) {
+            throw new RuntimeException("Error processing interface '" + cName + "'. " +
+                    MY_TYPE_NAME + " not allowed for interfaces.");
+        }
+
+        GrailsDomainClassInjector domainInjector = new DefaultGrailsDomainClassInjector();
+        domainInjector.performInjectionOnAnnotatedEntity(cNode);
     }
 }

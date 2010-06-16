@@ -34,8 +34,7 @@ import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
- * This AST transformation automatically annotates any class
- * with @Plugin(name="foo") if it is a plugin resource.
+ * Automatically annotates any class with @Plugin(name="foo") if it is a plugin resource.
  *
  * @author Graeme Rocher
  * @since 1.2

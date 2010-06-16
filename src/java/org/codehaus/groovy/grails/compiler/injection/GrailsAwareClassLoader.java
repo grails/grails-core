@@ -23,17 +23,15 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 
 /**
- * A class loader that is aware of Groovy sources and injection operations
+ * A class loader that is aware of Groovy sources and injection operations.
  *
  * @author Graeme Rocher
  * @since 0.6
- *        <p/>
- *        Created: Jul 27, 2007
- *        Time: 8:57:15 AM
  */
 public class GrailsAwareClassLoader extends GroovyClassLoader {
 
     public GrailsAwareClassLoader() {
+        // default
     }
 
     public GrailsAwareClassLoader(ClassLoader loader) {
@@ -53,19 +51,18 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
     }
 
     private ClassInjector[] classInjectors = new ClassInjector[0];
-    
+
     public void setClassInjectors(ClassInjector[] classInjectors) {
         this.classInjectors = classInjectors;
     }
 
     /**
-    * @see groovy.lang.GroovyClassLoader#createCompilationUnit(org.codehaus.groovy.control.CompilerConfiguration, java.security.CodeSource)
-    */
+     * @see groovy.lang.GroovyClassLoader#createCompilationUnit(org.codehaus.groovy.control.CompilerConfiguration, java.security.CodeSource)
+     */
+    @Override
     protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource source) {
         CompilationUnit cu = super.createCompilationUnit(config, source);
         cu.addPhaseOperation(new GrailsAwareInjectionOperation(getResourceLoader(), classInjectors), Phases.CANONICALIZATION);
         return cu;
     }
-
-
 }

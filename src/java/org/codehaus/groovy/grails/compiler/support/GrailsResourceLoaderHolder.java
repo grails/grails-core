@@ -17,13 +17,10 @@ package org.codehaus.groovy.grails.compiler.support;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 
 /**
- * A class that acts as a holder for the GrailsResourceLoader object
+ * A holder for the GrailsResourceLoader object.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jul 27, 2007
- *        Time: 1:46:49 PM
  */
 public class GrailsResourceLoaderHolder {
 

@@ -15,6 +15,10 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyResourceLoader;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
@@ -26,19 +30,12 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.springframework.util.Assert;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
  * A Groovy compiler injection operation that uses a specified array of ClassInjector instances to
  * attempt AST injection.
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jul 27, 2007
- *        Time: 10:57:35 AM
  */
 public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation  {
 
@@ -50,33 +47,32 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] injectors) {
         Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
         this.grailsResourceLoader = resourceLoader;
-        if(injectors != null) {
+        if (injectors != null) {
             this.classInjectors = injectors;
         }
     }
 
+    @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
-            for (int i = 0; i < classInjectors.length; i++) {
-                ClassInjector classInjector = classInjectors[i];
+        for (int i = 0; i < classInjectors.length; i++) {
+            ClassInjector classInjector = classInjectors[i];
+            try {
                 URL url;
-
-                try {
-                    if(GrailsResourceUtils.isGrailsPath(source.getName())) {
-                        url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
-                    }
-                    else {
-                        url = grailsResourceLoader.loadGroovySource(source.getName());
-                    }
-
-                    if(classInjector.shouldInject(url)) {
-                        classInjector.performInjection(source, context, classNode);
-                    }
-                } catch (MalformedURLException e) {
-                    LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(),e);
-                    throw new CompilationFailedException(Phases.CONVERSION,source,e);
+                if (GrailsResourceUtils.isGrailsPath(source.getName())) {
+                    url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
+                }
+                else {
+                    url = grailsResourceLoader.loadGroovySource(source.getName());
                 }
 
+                if (classInjector.shouldInject(url)) {
+                    classInjector.performInjection(source, context, classNode);
+                }
+            }
+            catch (MalformedURLException e) {
+                LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(), e);
+                throw new CompilationFailedException(Phases.CONVERSION,source, e);
             }
         }
-
     }
+}
