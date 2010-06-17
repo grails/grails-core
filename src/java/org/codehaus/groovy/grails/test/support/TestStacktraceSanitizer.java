@@ -1,46 +1,42 @@
 /*
  * Copyright 2009 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.support;
 
 import grails.util.GrailsUtil;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class TestStacktraceSanitizer {
-    
+
     private static final String TEST_RUNNING_CLASS = "_GrailsTest";
-    
+
     public static Throwable sanitize(Throwable t) {
         GrailsUtil.deepSanitize(t);
         StackTraceElement[] trace = t.getStackTrace();
-        List newTrace = new ArrayList();
-        for (int i = 0; i < trace.length; i++) {
-            StackTraceElement stackTraceElement = trace[i];
+        List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
+        for (StackTraceElement stackTraceElement : trace) {
             if (stackTraceElement.getClassName().startsWith(TEST_RUNNING_CLASS)) {
                 break;
-            } else {
-                newTrace.add(stackTraceElement);
             }
+
+            newTrace.add(stackTraceElement);
         }
 
-        StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
-        newTrace.toArray(clean);
-        t.setStackTrace(clean);
+        t.setStackTrace(newTrace.toArray(new StackTraceElement[newTrace.size()]));
         return t;
     }
-    
 }

@@ -18,7 +18,7 @@ import org.apache.commons.validator.CreditCardValidator;
 import org.springframework.validation.Errors;
 
 /**
- * A constraint class that validates a credit card number.
+ * Validates a credit card number.
  *
  * @author Graeme Rocher
  * @since 0.4

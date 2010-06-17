@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -79,17 +80,9 @@ public abstract class AbstractConstraint implements Constraint {
     }
 
     protected void checkState() {
-        if (StringUtils.isBlank(constraintPropertyName)) {
-            throw new IllegalStateException("Property 'propertyName' must be set on the constraint");
-        }
-
-        if (constraintOwningClass == null) {
-            throw new IllegalStateException("Property 'owningClass' must be set on the constraint");
-        }
-
-        if (constraintParameter == null) {
-            throw new IllegalStateException("Property 'constraintParameter' must be set on the constraint");
-        }
+        Assert.hasLength(constraintPropertyName, "Property 'propertyName' must be set on the constraint");
+        Assert.notNull(constraintOwningClass, "Property 'owningClass' must be set on the constraint");
+        Assert.notNull(constraintParameter, "Property 'constraintParameter' must be set on the constraint");
     }
 
     public void validate(Object target, Object propertyValue, Errors errors) {
@@ -230,20 +223,16 @@ public abstract class AbstractConstraint implements Constraint {
      * current locale.
      */
     protected String getDefaultMessage(String code) {
-        String defaultMessage;
-
         try {
             if (messageSource != null) {
-                defaultMessage = messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
+                return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
             }
-            else {
-                defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
-            }
+
+            return ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
-        catch(Exception e) {
-            defaultMessage = (String)ConstrainedProperty.DEFAULT_MESSAGES.get(code);
+        catch (Exception e) {
+            return ConstrainedProperty.DEFAULT_MESSAGES.get(code);
         }
-        return defaultMessage;
     }
 
     protected abstract void processValidate(Object target, Object propertyValue, Errors errors);

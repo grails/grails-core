@@ -15,24 +15,25 @@
 package org.codehaus.groovy.grails.plugins;
 
 /**
- * Throw when a specified version number is invalid
+ * Throw when a specified version number is invalid.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-public class InvalidVersionException extends RuntimeException{
+public class InvalidVersionException extends RuntimeException {
 
-	private static final long serialVersionUID = 7913782067211066121L;
+    private static final long serialVersionUID = 7913782067211066121L;
 
-	public InvalidVersionException() {
+    public InvalidVersionException() {
+        // default
     }
 
-    public InvalidVersionException(String s) {
-        super(s);
+    public InvalidVersionException(String message) {
+        super(message);
     }
 
-    public InvalidVersionException(String s, Throwable throwable) {
-        super(s, throwable);
+    public InvalidVersionException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 
     public InvalidVersionException(Throwable throwable) {

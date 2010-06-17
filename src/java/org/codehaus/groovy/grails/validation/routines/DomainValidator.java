@@ -61,12 +61,12 @@ import java.util.List;
  */
 public class DomainValidator implements Serializable {
 
-	private static final long serialVersionUID = -7709130257134339371L;
-	// Regular expression strings for hostnames (derived from RFC2396 and RFC 1123)
+    private static final long serialVersionUID = -7709130257134339371L;
+    // Regular expression strings for hostnames (derived from RFC2396 and RFC 1123)
     private static final String DOMAIN_LABEL_REGEX = "\\p{Alnum}(?:[\\p{Alnum}-]*\\p{Alnum})*";
     private static final String TOP_LABEL_REGEX = "\\p{Alpha}{2,}";
     private static final String DOMAIN_NAME_REGEX =
-            "^(?:" + DOMAIN_LABEL_REGEX + "\\.)+" + "(" + TOP_LABEL_REGEX + ")$";
+        "^(?:" + DOMAIN_LABEL_REGEX + "\\.)+" + "(" + TOP_LABEL_REGEX + ")$";
 
     /**
      * Singleton instance of this validator.
@@ -76,8 +76,7 @@ public class DomainValidator implements Serializable {
     /**
      * RegexValidator for matching domains.
      */
-    private final RegexValidator domainRegex =
-            new RegexValidator(DOMAIN_NAME_REGEX);
+    private final RegexValidator domainRegex = new RegexValidator(DOMAIN_NAME_REGEX);
 
     /**
      * Returns the singleton instance of this validator.
@@ -88,7 +87,9 @@ public class DomainValidator implements Serializable {
     }
 
     /** Private constructor. */
-    private DomainValidator() {}
+    private DomainValidator() {
+        // singleton
+    }
 
     /**
      * Returns true if the specified <code>String</code> parses
@@ -101,9 +102,9 @@ public class DomainValidator implements Serializable {
         String[] groups = domainRegex.match(domain);
         if (groups != null && groups.length > 0) {
             return isValidTld(groups[0]);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -114,9 +115,7 @@ public class DomainValidator implements Serializable {
      * @return true if the parameter is a TLD
      */
     public boolean isValidTld(String tld) {
-        return isValidInfrastructureTld(tld)
-                || isValidGenericTld(tld)
-                || isValidCountryCodeTld(tld);
+        return isValidInfrastructureTld(tld) || isValidGenericTld(tld) || isValidCountryCodeTld(tld);
     }
 
     /**
@@ -155,9 +154,9 @@ public class DomainValidator implements Serializable {
     private String chompLeadingDot(String str) {
         if (str.startsWith(".")) {
             return str.substring(1);
-        } else {
-            return str;
         }
+
+        return str;
     }
 
     // ---------------------------------------------
@@ -165,12 +164,12 @@ public class DomainValidator implements Serializable {
     // ----- Authoritative and comprehensive list at:
     // ----- http://data.iana.org/TLD/tlds-alpha-by-domain.txt
 
-    private static final String[] INFRASTRUCTURE_TLDS = new String[] {
+    private static final String[] INFRASTRUCTURE_TLDS = {
         "arpa",               // internet infrastructure
         "root"                // diagnostic marker for non-truncated root zone
     };
 
-    private static final String[] GENERIC_TLDS = new String[] {
+    private static final String[] GENERIC_TLDS = {
         "aero",               // air transport industry
         "asia",               // Pan-Asia/Asia Pacific
         "biz",                // businesses
@@ -193,7 +192,7 @@ public class DomainValidator implements Serializable {
         "int"                 // organizations established by international treaty
     };
 
-    private static final String[] COUNTRY_CODE_TLDS = new String[] {
+    private static final String[] COUNTRY_CODE_TLDS = {
         "ac",                 // Ascension Island
         "ad",                 // Andorra
         "ae",                 // United Arab Emirates
@@ -202,7 +201,7 @@ public class DomainValidator implements Serializable {
         "ai",                 // Anguilla
         "al",                 // Albania
         "am",                 // Armenia
-        "an",                 // Netherlands Antilles  
+        "an",                 // Netherlands Antilles
         "ao",                 // Angola
         "aq",                 // Antarctica
         "ar",                 // Argentina
@@ -445,7 +444,7 @@ public class DomainValidator implements Serializable {
         "zw",                 // Zimbabwe
     };
 
-    private static final List INFRASTRUCTURE_TLD_LIST = Arrays.asList(INFRASTRUCTURE_TLDS);
-    private static final List GENERIC_TLD_LIST = Arrays.asList(GENERIC_TLDS);
-    private static final List COUNTRY_CODE_TLD_LIST = Arrays.asList(COUNTRY_CODE_TLDS);
+    private static final List<String> INFRASTRUCTURE_TLD_LIST = Arrays.asList(INFRASTRUCTURE_TLDS);
+    private static final List<String> GENERIC_TLD_LIST = Arrays.asList(GENERIC_TLDS);
+    private static final List<String> COUNTRY_CODE_TLD_LIST = Arrays.asList(COUNTRY_CODE_TLDS);
 }

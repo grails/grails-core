@@ -14,11 +14,11 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Errors;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates not equal to something
+ * Validates not equal to something.
  */
 public class NotEqualConstraint extends AbstractConstraint {
 
@@ -40,7 +40,9 @@ public class NotEqualConstraint extends AbstractConstraint {
     @Override
     public void setParameter(Object constraintParameter) {
         if (constraintParameter == null) {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NOT_EQUAL_CONSTRAINT +"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] cannot be null");
+            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.NOT_EQUAL_CONSTRAINT +
+                    "] of property [" + constraintPropertyName + "] of class [" +
+                    constraintOwningClass + "] cannot be null");
         }
 
         Class<?> propertyClass = GrailsClassUtils.getPropertyType(constraintOwningClass, constraintPropertyName);
@@ -63,8 +65,9 @@ public class NotEqualConstraint extends AbstractConstraint {
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if (constraintParameter.equals( propertyValue)) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter  };
-            rejectValue( target,errors,ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE, ConstrainedProperty.NOT_EQUAL_CONSTRAINT,args);
+            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter };
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE,
+                    ConstrainedProperty.NOT_EQUAL_CONSTRAINT, args);
         }
     }
 }

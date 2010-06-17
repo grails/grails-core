@@ -22,17 +22,17 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.validation.Errors;
 
 /**
- * A constraint to manage the scale for floating point numbers (i.e., the
+ * Manages the scale for floating point numbers (i.e., the
  * number of digits to the right of the decimal point).
  *
- * This constraint supports properties of the following types:
+ * Supports properties of the following types:
  * <ul>
  * <li>java.lang.Float</li>
  * <li>java.lang.Double</li>
  * <li>java.math.BigDecimal (and its subclasses)</li>
  * </ul>
  *
- * When applied, this constraint determines if the number includes more
+ * When applied, determines if the number includes more
  * nonzero decimal places than the scale permits. If so, it rounds the number
  * to the maximum number of decimal places allowed by the scale.
  *
@@ -48,8 +48,7 @@ public class ScaleConstraint extends AbstractConstraint {
     private int scale;
 
     /*
-     * (non-Javadoc)
-     *
+     * {@inheritDoc}
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
     @SuppressWarnings("unchecked")

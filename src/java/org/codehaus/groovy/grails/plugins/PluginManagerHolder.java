@@ -15,42 +15,42 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import org.springframework.util.Assert;
+
 /**
- * Manages a thread bound plugin manager instance
+ * Manages a thread bound plugin manager instance.
  *
  * @author Graeme Rocher
  * @since 0.4
- *
  */
 public abstract class PluginManagerHolder {
 
-	private static GrailsPluginManager gpm = null;
+    private static GrailsPluginManager gpm;
 
-	/**
-	 * Bind the given GrailsPluginManager instance to the current Thread
-	 * @param pluginManager The GrailsPluginManager to expose
-	 */
-	public static void setPluginManager(GrailsPluginManager pluginManager) {
-		gpm = pluginManager;
-	}
+    /**
+     * Bind the given GrailsPluginManager instance to the current Thread
+     * @param pluginManager The GrailsPluginManager to expose
+     */
+    public static void setPluginManager(GrailsPluginManager pluginManager) {
+        gpm = pluginManager;
+    }
 
-	/**
-	 * Retrieves the GrailsPluginManager bound to the current Thread
-	 * @return The GrailsPluginManager or null
-	 */
-	public static GrailsPluginManager getPluginManager() {
-		return gpm;
-	}
+    /**
+     * Retrieves the GrailsPluginManager bound to the current Thread
+     * @return The GrailsPluginManager or null
+     */
+    public static GrailsPluginManager getPluginManager() {
+        return gpm;
+    }
 
-	/**
-	 * Retrieves the bound GrailsPluginManager that resides in the current Thread
-	 * @return The GrailsPluginManager
-	 * @throws IllegalStateException When there is no bound GrailsPluginManager
-	 */
-	public static GrailsPluginManager currentPluginManager() {
-		GrailsPluginManager current = getPluginManager();
-		if(current == null)
-			throw new IllegalStateException("No PluginManager set");
-		return current;
-	}
+    /**
+     * Retrieves the bound GrailsPluginManager that resides in the current Thread
+     * @return The GrailsPluginManager
+     * @throws IllegalStateException When there is no bound GrailsPluginManager
+     */
+    public static GrailsPluginManager currentPluginManager() {
+        GrailsPluginManager current = getPluginManager();
+        Assert.state(current != null, "No PluginManager set");
+        return current;
+    }
 }

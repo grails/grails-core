@@ -16,11 +16,11 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 /**
- * A dynamic property that adds a "session" map to a controller for accessing the Http Session
+ * A dynamic property that adds a "session" map to a controller for accessing the Http Session.
  * 
  * @author Graeme Rocher
- * @since Oct 24, 2005
  */
 public class GetSessionDynamicProperty {
-	public static final String PROPERTY_NAME = "session";
+
+    public static final String PROPERTY_NAME = "session";
 }

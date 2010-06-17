@@ -15,20 +15,22 @@
  */
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.beans.factory.GenericBeanFactoryAccessor;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-
 import grails.util.GrailsUtil
+
+import org.codehaus.groovy.grails.beans.factory.GenericBeanFactoryAccessor
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.validation.Validateable
+
 import org.springframework.context.ApplicationContext
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
-public class ValidationGrailsPlugin {
+class ValidationGrailsPlugin {
+
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [:]
     def loadAfter = ['hibernate', 'controllers']
@@ -44,16 +46,17 @@ public class ValidationGrailsPlugin {
         application.config?.grails?.validateable?.classes?.each {
             validateables << it
         }
-		
-		def accessor = new GenericBeanFactoryAccessor(ctx)
-        for(entry in accessor.getBeansWithAnnotation(Validateable)) {
+
+        def accessor = new GenericBeanFactoryAccessor(ctx)
+        for (entry in accessor.getBeansWithAnnotation(Validateable)) {
             Class validateable = entry?.value?.class
-            if(validateable)
+            if (validateable) {
                 validateables << validateable
+            }
         }
 
         // make all of these classes 'validateable'
-        for(validateableClass in validateables) {
+        for (validateableClass in validateables) {
             log.debug "Making Class Validateable: ${validateableClass.name}"
             addValidationMethods(application, validateableClass, ctx)
         }
@@ -72,11 +75,9 @@ public class ValidationGrailsPlugin {
                 if (attributes) {
                     return attributes.request.getAttribute(it)
                 }
-                else {
-                    return PROPERTY_INSTANCE_MAP.get().get(it)
-                }
+                return PROPERTY_INSTANCE_MAP.get().get(it)
             }
-            put = {key, val ->
+            put = { key, val ->
                 def attributes = rch.getRequestAttributes()
                 if (attributes) {
                     attributes.request.setAttribute(key, val)
@@ -122,7 +123,7 @@ public class ValidationGrailsPlugin {
         }
 
         if (!metaClass.respondsTo(validateable, "validate")) {
-            metaClass.validate = {->
+            metaClass.validate = { ->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
         }

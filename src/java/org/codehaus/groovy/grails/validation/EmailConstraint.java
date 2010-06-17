@@ -19,7 +19,7 @@ import org.apache.commons.validator.EmailValidator;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates an email address.
+ * Validates an email address.
  *
  * @author Graeme Rocher
  * @since 0.4

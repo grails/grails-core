@@ -17,13 +17,15 @@
 package org.codehaus.groovy.grails.validation.routines;
 
 import java.io.Serializable;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.util.Assert;
 
 /**
  * <b>Regular Expression</b> validation (using JDK 1.4+ regex support).
  * <p>
- * Construct the validator either for a single regular expression or a set (array) of 
+ * Construct the validator either for a single regular expression or a set (array) of
  * regular expressions. By default validation is <i>case sensitive</i> but constructors
  * are provided to allow  <i>case in-sensitive</i> validation. For example to create
  * a validator which does <i>case in-sensitive</i> validation for a set of regular
@@ -55,8 +57,8 @@ import java.util.regex.Matcher;
  */
 public class RegexValidator implements Serializable {
 
-	private static final long serialVersionUID = -8965678328995950151L;
-	private final Pattern[] patterns;
+    private static final long serialVersionUID = -8965678328995950151L;
+    private final Pattern[] patterns;
 
     /**
      * Construct a <i>case sensitive</i> validator for a single
@@ -103,9 +105,8 @@ public class RegexValidator implements Serializable {
      * sensitive</i>, otherwise matching is <i>case in-sensitive</i>
      */
     public RegexValidator(String[] regexs, boolean caseSensitive) {
-        if (regexs == null || regexs.length == 0) {
-            throw new IllegalArgumentException("Regular expressions are missing");
-        }
+        Assert.isTrue(regexs != null && regexs.length > 0, "Regular expressions are missing");
+
         patterns = new Pattern[regexs.length];
         int flags =  (caseSensitive ? 0: Pattern.CASE_INSENSITIVE);
         for (int i = 0; i < regexs.length; i++) {
@@ -120,18 +121,20 @@ public class RegexValidator implements Serializable {
      * Validate a value against the set of regular expressions.
      *
      * @param value The value to validate.
-     * @return <code>true</code> if the value is valid 
+     * @return <code>true</code> if the value is valid
      * otherwise <code>false</code>.
      */
     public boolean isValid(String value) {
         if (value == null) {
             return false;
         }
+
         for (int i = 0; i < patterns.length; i++) {
             if (patterns[i].matcher(value).matches()) {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -141,12 +144,13 @@ public class RegexValidator implements Serializable {
      *
      * @param value The value to validate.
      * @return String array of the <i>groups</i> matched if
-     * valid or <code>null</code> if invalid 
+     * valid or <code>null</code> if invalid
      */
     public String[] match(String value) {
         if (value == null) {
             return null;
         }
+
         for (int i = 0; i < patterns.length; i++) {
             Matcher matcher = patterns[i].matcher(value);
             if (matcher.matches()) {
@@ -158,9 +162,9 @@ public class RegexValidator implements Serializable {
                 return groups;
             }
         }
+
         return null;
     }
-
 
     /**
      * Validate a value against the set of regular expressions
@@ -174,13 +178,14 @@ public class RegexValidator implements Serializable {
         if (value == null) {
             return null;
         }
+
         for (int i = 0; i < patterns.length; i++) {
             Matcher matcher = patterns[i].matcher(value);
             if (matcher.matches()) {
                 int count = matcher.groupCount();
                 if (count == 1) {
                     return matcher.group(1);
-                } 
+                }
                 StringBuilder buffer = new StringBuilder();
                 for (int j = 0; j < count; j++) {
                     String component = matcher.group(j+1);
@@ -198,8 +203,9 @@ public class RegexValidator implements Serializable {
      * Provide a String representation of this validator.
      * @return A String representation of this validator
      */
+    @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("RegexValidator{");
         for (int i = 0; i < patterns.length; i++) {
             if (i > 0) {
@@ -210,5 +216,4 @@ public class RegexValidator implements Serializable {
         buffer.append("}");
         return buffer.toString();
     }
-
 }

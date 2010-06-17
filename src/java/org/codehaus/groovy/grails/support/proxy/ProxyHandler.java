@@ -18,43 +18,43 @@ package org.codehaus.groovy.grails.support.proxy;
 
 /**
  * Interface that defines logic for handling proxied instances
- * 
+ *
  * @author Graeme Rocher
  * @since 1.2.2
- *
  */
 public interface ProxyHandler {
 
-	/**
-	 * Returns true if the specified object is a proxy
-	 * @param o The object in question
-	 * @return True if it is a proxy
-	 */
-	public boolean isProxy(Object o);
-	/**
-	 * Returns the unwrapped proxy instance or the original object if not proxied
-	 * 
-	 * @param instance The instance to unwrap 
-	 * @return The unwrapped instance
-	 */
-    public Object unwrapIfProxy(Object instance);
+    /**
+     * Returns true if the specified object is a proxy.
+     * @param o The object in question
+     * @return True if it is a proxy
+     */
+    boolean isProxy(Object o);
 
     /**
-     * Returns whether a lazy proxied instance has been initialized
-     *  
+     * Returns the unwrapped proxy instance or the original object if not proxied.
+     *
+     * @param instance The instance to unwrap
+     * @return The unwrapped instance
+     */
+    Object unwrapIfProxy(Object instance);
+
+    /**
+     * Returns whether a lazy proxied instance has been initialized.
+     *
      * @param o The instance to test
      * @return True if it has been initialized false otherwise
      */
-    public boolean isInitialized(Object o);
-    
+    boolean isInitialized(Object o);
+
     /**
-     * Initializes an existing uninitialized proxy instance
+     * Initializes an existing uninitialized proxy instance.
      * @param o The proxy instance
      */
-    public void initialize(Object o);
-    
+    void initialize(Object o);
+
     /**
-     * Tests whether an association of the given object has been initialized or not 
+     * Tests whether an association of the given object has been initialized.
      * @param obj The object to check
      * @param associationName The association
      * @return True if has been init

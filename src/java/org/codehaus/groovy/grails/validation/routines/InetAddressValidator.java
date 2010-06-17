@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.validation.routines;
 
 import java.io.Serializable;
@@ -28,15 +27,13 @@ import java.io.Serializable;
  * This class is a Singleton; you can retrieve the instance via the {@link #getInstance()} method.
  * </p>
  *
- * @version $Revision: 594917 $
  * @since Validator 1.4
  */
 public class InetAddressValidator implements Serializable {
 
-	private static final long serialVersionUID = -3986248595858163100L;
+    private static final long serialVersionUID = -3986248595858163100L;
 
-	private static final String IPV4_REGEX =
-            "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$";
+    private static final String IPV4_REGEX = "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$";
 
     /**
      * Singleton instance of this class.
@@ -82,17 +79,16 @@ public class InetAddressValidator implements Serializable {
             }
 
             int iIpSegment = 0;
-
             try {
                 iIpSegment = Integer.parseInt(ipSegment);
-            } catch(NumberFormatException e) {
+            }
+            catch(NumberFormatException e) {
                 return false;
             }
 
             if (iIpSegment > 255) {
                 return false;
             }
-
         }
 
         return true;

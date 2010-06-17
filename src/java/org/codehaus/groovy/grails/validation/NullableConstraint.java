@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.validation;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates not null.
+ * Validates not null.
  *
  * @author Graeme Rocher
  * @author Sergey Nebolsin
@@ -45,7 +45,9 @@ public class NullableConstraint extends AbstractVetoingConstraint {
     @Override
     public void setParameter(Object constraintParameter) {
         if (!(constraintParameter instanceof Boolean)) {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.NULLABLE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean value");
+            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.NULLABLE_CONSTRAINT +
+                    "] of property [" + constraintPropertyName + "] of class [" +
+                    constraintOwningClass + "] must be a boolean value");
         }
 
         nullable = ((Boolean)constraintParameter).booleanValue();
@@ -68,7 +70,7 @@ public class NullableConstraint extends AbstractVetoingConstraint {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
                 rejectValue(target, errors, ConstrainedProperty.DEFAULT_NULL_MESSAGE_CODE,
                         ConstrainedProperty.NULLABLE_CONSTRAINT, args);
-                // null value is catched by 'blank' constraint, no addition validation needed
+                // null value is caught by 'blank' constraint, no addition validation needed
                 return true;
             }
         }

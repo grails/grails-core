@@ -14,41 +14,47 @@
  */
 package org.codehaus.groovy.grails.documentation;
 
-import groovy.lang.*;
+import groovy.lang.Closure;
+import groovy.lang.ExpandoMetaClass;
+import groovy.lang.ExpandoMetaClassCreationHandle;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+
 import org.codehaus.groovy.reflection.ClassInfo;
 
 /**
- * Used to enable the Metadata generating EMC creation handle
+ * Used to enable the Metadata generating EMC creation handle.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
 public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassCreationHandle {
 
-    private static final MetadataGeneratingMetaClassCreationHandle instance = new MetadataGeneratingMetaClassCreationHandle();
+    private static final MetadataGeneratingMetaClassCreationHandle INSTANCE = new MetadataGeneratingMetaClassCreationHandle();
 
     /* (non-Javadoc)
-	 * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
-	 */
-	protected MetaClass createNormalMetaClass(Class theClass, MetaClassRegistry registry) {
-		if(!isExcludedClass(theClass)) {
-			return new MetadataGeneratingExpandoMetaClass(theClass);
-		}
-		else {
-			return super.createNormalMetaClass(theClass, registry);
-		}
-	}
+     * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected MetaClass createNormalMetaClass(Class theClass, MetaClassRegistry registry) {
+        if (!isExcludedClass(theClass)) {
+            return new MetadataGeneratingExpandoMetaClass(theClass);
+        }
 
-    public static boolean isExcludedClass(Class theClass) {
-        return theClass == MetadataGeneratingExpandoMetaClass.class
-                || theClass == ExpandoMetaClass.class
-                || theClass == DocumentationContext.class
-                || theClass == DocumentedMethod.class
-                || theClass == DocumentedProperty.class
-                || theClass == DocumentedElement.class
-                || theClass == DocumentationContextThreadLocal.class
-                || theClass == Boolean.class
-                || Closure.class.isAssignableFrom(theClass);
+        return super.createNormalMetaClass(theClass, registry);
+    }
+
+    public static boolean isExcludedClass(Class<?> theClass) {
+        return theClass == MetadataGeneratingExpandoMetaClass.class ||
+               theClass == ExpandoMetaClass.class ||
+               theClass == DocumentationContext.class ||
+               theClass == DocumentedMethod.class ||
+               theClass == DocumentedProperty.class ||
+               theClass == DocumentedElement.class ||
+               theClass == DocumentationContextThreadLocal.class ||
+               theClass == Boolean.class || Closure.class.isAssignableFrom(theClass);
     }
 
     /**
@@ -56,32 +62,32 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
      *
      * @param emc The EMC
      */
+    @Override
     public void registerModifiedMetaClass(ExpandoMetaClass emc) {
-        final Class klazz = emc.getJavaClass();
-        GroovySystem.getMetaClassRegistry().setMetaClass(klazz,emc);
+        GroovySystem.getMetaClassRegistry().setMetaClass(emc.getJavaClass(), emc);
     }
 
-	public boolean hasModifiedMetaClass(ExpandoMetaClass emc) {
-		return emc.getClassInfo().getModifiedExpando() != null;
-	}
+    @Override
+    public boolean hasModifiedMetaClass(ExpandoMetaClass emc) {
+        return emc.getClassInfo().getModifiedExpando() != null;
+    }
 
     /**
-     * <p>Enables the ExpandoMetaClassCreationHandle with the registry
+     * Enables the ExpandoMetaClassCreationHandle with the registry.
      *
      * <code>ExpandoMetaClassCreationHandle.enable();</code>
-     *
      */
     public static void enable() {
         final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-        if (metaClassRegistry.getMetaClassCreationHandler() != instance) {
+        if (metaClassRegistry.getMetaClassCreationHandler() != INSTANCE) {
             ClassInfo.clearModifiedExpandos();
-            metaClassRegistry.setMetaClassCreationHandle(instance);
+            metaClassRegistry.setMetaClassCreationHandle(INSTANCE);
         }
     }
 
     public static void disable() {
         final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-        if (metaClassRegistry.getMetaClassCreationHandler() == instance) {
+        if (metaClassRegistry.getMetaClassCreationHandler() == INSTANCE) {
             ClassInfo.clearModifiedExpandos();
             metaClassRegistry.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
         }

@@ -18,11 +18,12 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that implements a maximum value constraint.
+ * Implements a maximum value constraint.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
+@SuppressWarnings("unchecked")
 public class MaxConstraint extends AbstractConstraint {
 
     private Comparable maxValue;
@@ -37,7 +38,6 @@ public class MaxConstraint extends AbstractConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && (
                 Comparable.class.isAssignableFrom(type) ||

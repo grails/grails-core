@@ -16,17 +16,25 @@ package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
+import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
-
-import java.util.*;
 
 /**
  * Provides the ability to set contraints against a properties of a class. Constraints can either be
@@ -36,9 +44,9 @@ import java.util.*;
  * <code>
  *      ...
  *
- * 		ConstrainedProperty cp = new ConstrainedProperty(owningClass, propertyName, propertyType);
- *      if(cp.supportsConstraint( ConstrainedProperty.EMAIL_CONSTRAINT ) ) {
- *      	cp.applyConstraint( ConstrainedProperty.EMAIL_CONSTRAINT, new Boolean(true) );
+ *         ConstrainedProperty cp = new ConstrainedProperty(owningClass, propertyName, propertyType);
+ *      if (cp.supportsConstraint(ConstrainedProperty.EMAIL_CONSTRAINT)) {
+ *          cp.applyConstraint(ConstrainedProperty.EMAIL_CONSTRAINT, new Boolean(true));
  *      }
  * </code>
  *
@@ -69,23 +77,23 @@ public class ConstrainedProperty   {
     static final String DEFAULT_DOESNT_MATCH_MESSAGE_CODE = "default.doesnt.match.message";
     static final String DEFAULT_BLANK_MESSAGE_CODE = "default.blank.message";
 
-    protected static final ResourceBundle bundle = ResourceBundle.getBundle( "org.codehaus.groovy.grails.validation.DefaultErrorMessages" );
+    protected static final ResourceBundle bundle = ResourceBundle.getBundle("org.codehaus.groovy.grails.validation.DefaultErrorMessages");
 
-    private static final String DEFAULT_BLANK_MESSAGE = bundle.getString( DEFAULT_BLANK_MESSAGE_CODE );
-    private static final String DEFAULT_DOESNT_MATCH_MESSAGE = bundle.getString( DEFAULT_DOESNT_MATCH_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_URL_MESSAGE = bundle.getString( DEFAULT_INVALID_URL_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE = bundle.getString( DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_EMAIL_MESSAGE  = bundle.getString( DEFAULT_INVALID_EMAIL_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_RANGE_MESSAGE = bundle.getString( DEFAULT_INVALID_RANGE_MESSAGE_CODE );
-    private static final String DEFAULT_NOT_IN_LIST_MESSAGE = bundle.getString( DEFAULT_NOT_INLIST_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_SIZE_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_MAX_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_MIN_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_MESSAGE_CODE );
-    private static final String DEFAULT_NOT_EQUAL_MESSAGE = bundle.getString( DEFAULT_NOT_EQUAL_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE = bundle.getString( DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE );
-    private static final String DEFAULT_NULL_MESSAGE = bundle.getString( DEFAULT_NULL_MESSAGE_CODE );
-    private static final String DEFAULT_INVALID_VALIDATOR_MESSAGE = bundle.getString( DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE );
+    private static final String DEFAULT_BLANK_MESSAGE = bundle.getString(DEFAULT_BLANK_MESSAGE_CODE);
+    private static final String DEFAULT_DOESNT_MATCH_MESSAGE = bundle.getString(DEFAULT_DOESNT_MATCH_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_URL_MESSAGE = bundle.getString(DEFAULT_INVALID_URL_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE = bundle.getString(DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_EMAIL_MESSAGE = bundle.getString(DEFAULT_INVALID_EMAIL_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_RANGE_MESSAGE = bundle.getString(DEFAULT_INVALID_RANGE_MESSAGE_CODE);
+    private static final String DEFAULT_NOT_IN_LIST_MESSAGE = bundle.getString(DEFAULT_NOT_INLIST_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_SIZE_MESSAGE = bundle.getString(DEFAULT_INVALID_SIZE_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_MAX_MESSAGE = bundle.getString(DEFAULT_INVALID_MAX_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_MIN_MESSAGE = bundle.getString(DEFAULT_INVALID_MIN_MESSAGE_CODE);
+    private static final String DEFAULT_NOT_EQUAL_MESSAGE = bundle.getString(DEFAULT_NOT_EQUAL_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE = bundle.getString(DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE = bundle.getString(DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE);
+    private static final String DEFAULT_NULL_MESSAGE = bundle.getString(DEFAULT_NULL_MESSAGE_CODE);
+    private static final String DEFAULT_INVALID_VALIDATOR_MESSAGE = bundle.getString(DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE);
 
     public static final String CREDIT_CARD_CONSTRAINT = "creditCard";
     public static final String EMAIL_CONSTRAINT = "email";
@@ -113,8 +121,8 @@ public class ConstrainedProperty   {
     protected static final String TOOSMALL_SUFFIX = ".toosmall";
     protected static final String TOOSHORT_SUFFIX = ".tooshort";
 
-    protected static Map constraints = new HashMap();
-    protected static final Map DEFAULT_MESSAGES = new HashMap();
+    protected static Map<String, Object> constraints = new HashMap<String, Object>();
+    protected static final Map<String, String> DEFAULT_MESSAGES = new HashMap<String, String>();
 
     static {
         DEFAULT_MESSAGES.put(DEFAULT_BLANK_MESSAGE_CODE,DEFAULT_BLANK_MESSAGE);
@@ -131,36 +139,35 @@ public class ConstrainedProperty   {
         DEFAULT_MESSAGES.put(DEFAULT_NOT_EQUAL_MESSAGE_CODE,DEFAULT_NOT_EQUAL_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_NOT_INLIST_MESSAGE_CODE,DEFAULT_NOT_IN_LIST_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_NULL_MESSAGE_CODE,DEFAULT_NULL_MESSAGE);
-        DEFAULT_MESSAGES.put(DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE, DEFAULT_INVALID_VALIDATOR_MESSAGE );
+        DEFAULT_MESSAGES.put(DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE, DEFAULT_INVALID_VALIDATOR_MESSAGE);
 
-        constraints.put( CREDIT_CARD_CONSTRAINT, CreditCardConstraint.class );
-        constraints.put( EMAIL_CONSTRAINT, EmailConstraint.class );
-        constraints.put( BLANK_CONSTRAINT, BlankConstraint.class );
-        constraints.put( RANGE_CONSTRAINT, RangeConstraint.class );
-        constraints.put( IN_LIST_CONSTRAINT, InListConstraint.class );
-        constraints.put( URL_CONSTRAINT, UrlConstraint.class );
-        constraints.put( SIZE_CONSTRAINT, SizeConstraint.class );
-        constraints.put( MATCHES_CONSTRAINT, MatchesConstraint.class );
-        constraints.put( MIN_CONSTRAINT, MinConstraint.class );
-        constraints.put( MAX_CONSTRAINT, MaxConstraint.class );
-        constraints.put( MAX_SIZE_CONSTRAINT, MaxSizeConstraint.class );
-        constraints.put( MIN_SIZE_CONSTRAINT, MinSizeConstraint.class );
-        constraints.put( SCALE_CONSTRAINT, ScaleConstraint.class );
-        constraints.put( NULLABLE_CONSTRAINT, NullableConstraint.class );
-        constraints.put( NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class );
-        constraints.put( VALIDATOR_CONSTRAINT, ValidatorConstraint.class );
+        constraints.put(CREDIT_CARD_CONSTRAINT, CreditCardConstraint.class);
+        constraints.put(EMAIL_CONSTRAINT, EmailConstraint.class);
+        constraints.put(BLANK_CONSTRAINT, BlankConstraint.class);
+        constraints.put(RANGE_CONSTRAINT, RangeConstraint.class);
+        constraints.put(IN_LIST_CONSTRAINT, InListConstraint.class);
+        constraints.put(URL_CONSTRAINT, UrlConstraint.class);
+        constraints.put(SIZE_CONSTRAINT, SizeConstraint.class);
+        constraints.put(MATCHES_CONSTRAINT, MatchesConstraint.class);
+        constraints.put(MIN_CONSTRAINT, MinConstraint.class);
+        constraints.put(MAX_CONSTRAINT, MaxConstraint.class);
+        constraints.put(MAX_SIZE_CONSTRAINT, MaxSizeConstraint.class);
+        constraints.put(MIN_SIZE_CONSTRAINT, MinSizeConstraint.class);
+        constraints.put(SCALE_CONSTRAINT, ScaleConstraint.class);
+        constraints.put(NULLABLE_CONSTRAINT, NullableConstraint.class);
+        constraints.put(NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class);
+        constraints.put(VALIDATOR_CONSTRAINT, ValidatorConstraint.class);
     }
-
 
     protected static final Log LOG = LogFactory.getLog(ConstrainedProperty.class);
 
     // move these to subclass
 
     protected String propertyName;
-    protected Class propertyType;
+    protected Class<?> propertyType;
 
-    protected Map appliedConstraints = new LinkedHashMap();
-    protected Class owningClass;
+    protected Map<String, Constraint> appliedConstraints = new LinkedHashMap<String, Constraint>();
+    protected Class<?> owningClass;
     private BeanWrapper bean;
 
     // simple constraints
@@ -171,70 +178,64 @@ public class ConstrainedProperty   {
     private String format; // the format of the property (for example a date pattern)
     private String widget; // the widget to use to render the property
     private boolean password; // whether the property is a password
+    @SuppressWarnings("unchecked")
     private Map attributes = Collections.EMPTY_MAP; // a map of attributes of property
     protected MessageSource messageSource;
-    private Map metaConstraints = new HashMap();
-
+    private Map<String, Object> metaConstraints = new HashMap<String, Object>();
 
     /**
-     * Constructs a new ConstrainedProperty for the given arguments
+     * Constructs a new ConstrainedProperty for the given arguments.
      *
      * @param clazz The owning class
      * @param propertyName The name of the property
      * @param propertyType The property type
      */
-    public ConstrainedProperty(Class clazz,String propertyName, Class propertyType) {
-        super();
-        this.owningClass = clazz;
+    public ConstrainedProperty(Class<?> clazz,String propertyName, Class<?> propertyType) {
+        owningClass = clazz;
         this.propertyName = propertyName;
         this.propertyType = propertyType;
-        this.bean = new BeanWrapperImpl(this);
+        bean = new BeanWrapperImpl(this);
     }
 
-
-    public static void registerNewConstraint(String name, Class constraintClass) {
-        if(StringUtils.isBlank(name))
-            throw new IllegalArgumentException("Argument [name] cannot be null");
-        if(constraintClass == null || !Constraint.class.isAssignableFrom(constraintClass))
-            throw new IllegalArgumentException("Argument [constraintClass] with value ["+constraintClass+"] is not a valid constraint");
+    public static void registerNewConstraint(String name, Class<?> constraintClass) {
+        Assert.hasLength(name, "Argument [name] cannot be null");
+        if (constraintClass == null || !Constraint.class.isAssignableFrom(constraintClass)) {
+            throw new IllegalArgumentException("Argument [constraintClass] with value [" + constraintClass +
+                    "] is not a valid constraint");
+        }
 
         constraints.put(name, constraintClass);
     }
 
     public static void registerNewConstraint(String name, ConstraintFactory factory) {
-        if(StringUtils.isBlank(name))
-            throw new IllegalArgumentException("Argument [name] cannot be null");
-        if(factory == null)
-            throw new IllegalArgumentException("Argument [constraintClass] with value ["+factory+"] is not a valid constraint");
-
+        Assert.hasLength(name, "Argument [name] cannot be null or blank");
+        Assert.notNull(factory, "Argument [factory] cannot be null");
         constraints.put(name, factory);
     }
 
-    public static boolean hasRegisteredConstraint( String constraintName ) {
-        return constraints.containsKey( constraintName );
+    public static boolean hasRegisteredConstraint(String constraintName) {
+        return constraints.containsKey(constraintName);
     }
-
 
     /**
      * @return Returns the appliedConstraints.
      */
-    public Collection getAppliedConstraints() {
+    public Collection<Constraint> getAppliedConstraints() {
         return appliedConstraints.values();
     }
 
     /**
-     * Obtains an applied constraint by name
+     * Obtains an applied constraint by name.
      * @param name The name of the constraint
      * @return The applied constraint
      */
     public Constraint getAppliedConstraint(String name) {
-        return (Constraint)appliedConstraints.get(name);
+        return appliedConstraints.get(name);
     }
 
-
     /**
-     * @return Returns true if the specified constraint name is being applied to this property
      * @param constraintName The name of the constraint to check
+     * @return Returns true if the specified constraint name is being applied to this property
      */
     public boolean hasAppliedConstraint(String constraintName) {
         return appliedConstraints.containsKey(constraintName);
@@ -243,24 +244,24 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the propertyType.
      */
-    public Class getPropertyType() {
+    public Class<?> getPropertyType() {
         return propertyType;
     }
-
 
     /**
      * @return Returns the max.
      */
+    @SuppressWarnings("unchecked")
     public Comparable getMax() {
         Comparable maxValue = null;
-        
-        MaxConstraint maxConstraint = (MaxConstraint)this.appliedConstraints.get(MAX_CONSTRAINT);
-        RangeConstraint rangeConstraint = (RangeConstraint)this.appliedConstraints.get(RANGE_CONSTRAINT);
+
+        MaxConstraint maxConstraint = (MaxConstraint)appliedConstraints.get(MAX_CONSTRAINT);
+        RangeConstraint rangeConstraint = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
 
         if ((maxConstraint != null) || (rangeConstraint != null)) {
             Comparable maxConstraintValue = maxConstraint != null ? maxConstraint.getMaxValue() : null;
             Comparable rangeConstraintHighValue = rangeConstraint != null ? rangeConstraint.getRange().getTo() : null;
-            
+
             if ((maxConstraintValue != null) && (rangeConstraintHighValue != null)) {
                 maxValue = (maxConstraintValue.compareTo(rangeConstraintHighValue) < 0) ? maxConstraintValue : rangeConstraintHighValue;
             }
@@ -272,53 +273,56 @@ public class ConstrainedProperty   {
             }
         }
 
-        return maxValue; 
+        return maxValue;
     }
-
 
     /**
      * @param max The max to set.
      */
+    @SuppressWarnings("unchecked")
     public void setMax(Comparable max) {
-        if(max == null) {
-            this.appliedConstraints.remove( MAX_CONSTRAINT );
+        if (max == null) {
+            appliedConstraints.remove(MAX_CONSTRAINT);
             return;
         }
-        if(!propertyType.equals( max.getClass() )) {
+
+        if (!propertyType.equals(max.getClass())) {
             throw new MissingPropertyException(MAX_CONSTRAINT,propertyType);
         }
+
         Range r = getRange();
-        if(r != null) {
-            LOG.warn("Range constraint already set ignoring constraint ["+MAX_CONSTRAINT+"] for value ["+max+"]");
+        if (r != null) {
+            LOG.warn("Range constraint already set ignoring constraint [" + MAX_CONSTRAINT + "] for value [" + max + "]");
             return;
         }
-        Constraint c = (MaxConstraint)this.appliedConstraints.get( MAX_CONSTRAINT );
-        if(c != null) {
+
+        Constraint c = appliedConstraints.get(MAX_CONSTRAINT);
+        if (c != null) {
             c.setParameter(max);
         }
         else {
             c = new MaxConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
+            c.setOwningClass(owningClass);
+            c.setPropertyName(propertyName);
             c.setParameter(max);
-            this.appliedConstraints.put( MAX_CONSTRAINT, c );
+            appliedConstraints.put(MAX_CONSTRAINT, c);
         }
     }
-
 
     /**
      * @return Returns the min.
      */
+    @SuppressWarnings("unchecked")
     public Comparable getMin() {
         Comparable minValue = null;
-        
-        MinConstraint minConstraint = (MinConstraint)this.appliedConstraints.get(MIN_CONSTRAINT);
-        RangeConstraint rangeConstraint = (RangeConstraint)this.appliedConstraints.get(RANGE_CONSTRAINT);
+
+        MinConstraint minConstraint = (MinConstraint)appliedConstraints.get(MIN_CONSTRAINT);
+        RangeConstraint rangeConstraint = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
 
         if ((minConstraint != null) || (rangeConstraint != null)) {
             Comparable minConstraintValue = minConstraint != null ? minConstraint.getMinValue() : null;
             Comparable rangeConstraintLowValue = rangeConstraint != null ? rangeConstraint.getRange().getFrom() : null;
-            
+
             if ((minConstraintValue != null) && (rangeConstraintLowValue != null)) {
                 minValue = (minConstraintValue.compareTo(rangeConstraintLowValue) > 0) ? minConstraintValue : rangeConstraintLowValue;
             }
@@ -330,69 +334,70 @@ public class ConstrainedProperty   {
             }
         }
 
-        return minValue;             
+        return minValue;
     }
-
 
     /**
      * @param min The min to set.
      */
+    @SuppressWarnings("unchecked")
     public void setMin(Comparable min) {
-        if(min == null) {
-            this.appliedConstraints.remove( MIN_CONSTRAINT );
+        if (min == null) {
+            appliedConstraints.remove(MIN_CONSTRAINT);
             return;
         }
-        if(!propertyType.equals( min.getClass() )) {
+
+        if (!propertyType.equals(min.getClass())) {
             throw new MissingPropertyException(MIN_CONSTRAINT,propertyType);
         }
+
         Range r = getRange();
-        if(r != null) {
+        if (r != null) {
             LOG.warn("Range constraint already set ignoring constraint ["+MIN_CONSTRAINT+"] for value ["+min+"]");
             return;
         }
-        Constraint c = (MinConstraint)this.appliedConstraints.get( MIN_CONSTRAINT );
-        if(c != null) {
+
+        Constraint c = appliedConstraints.get(MIN_CONSTRAINT);
+        if (c != null) {
             c.setParameter(min);
         }
         else {
             c = new MinConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
+            c.setOwningClass(owningClass);
+            c.setPropertyName(propertyName);
             c.setParameter(min);
-            this.appliedConstraints.put( MIN_CONSTRAINT, c );
+            appliedConstraints.put(MIN_CONSTRAINT, c);
         }
     }
-
 
     /**
      * @return Returns the inList.
      */
+    @SuppressWarnings("unchecked")
     public List getInList() {
-        InListConstraint c = (InListConstraint)this.appliedConstraints.get( IN_LIST_CONSTRAINT );
-        if(c == null)
-            return null;
-
-        return c.getList();
+        InListConstraint c = (InListConstraint)appliedConstraints.get(IN_LIST_CONSTRAINT);
+        return c == null ? null : c.getList();
     }
 
     /**
      * @param inList The inList to set.
      */
+    @SuppressWarnings("unchecked")
     public void setInList(List inList) {
-        Constraint c = (Constraint)this.appliedConstraints.get( IN_LIST_CONSTRAINT );
-        if(inList == null) {
-            this.appliedConstraints.remove( IN_LIST_CONSTRAINT );
+        Constraint c = appliedConstraints.get(IN_LIST_CONSTRAINT);
+        if (inList == null) {
+            appliedConstraints.remove(IN_LIST_CONSTRAINT);
         }
         else {
-            if(c != null) {
+            if (c != null) {
                 c.setParameter(inList);
             }
             else {
                 c = new InListConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(inList);
-                this.appliedConstraints.put( IN_LIST_CONSTRAINT, c );
+                appliedConstraints.put(IN_LIST_CONSTRAINT, c);
             }
         }
     }
@@ -400,41 +405,40 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the range.
      */
+    @SuppressWarnings("unchecked")
     public Range getRange() {
-        RangeConstraint c = (RangeConstraint)this.appliedConstraints.get( RANGE_CONSTRAINT );
-        if(c == null)
-            return null;
-
-        return c.getRange();
+        RangeConstraint c = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
+        return c == null ? null : c.getRange();
     }
 
     /**
      * @param range The range to set.
      */
+    @SuppressWarnings("unchecked")
     public void setRange(Range range) {
-        if(this.appliedConstraints.containsKey( MAX_CONSTRAINT )) {
+        if (appliedConstraints.containsKey(MAX_CONSTRAINT)) {
             LOG.warn("Setting range constraint on property ["+propertyName+"] of class ["+owningClass+"] forced removal of max constraint");
-            this.appliedConstraints.remove( MAX_CONSTRAINT );
+            appliedConstraints.remove(MAX_CONSTRAINT);
         }
-        if(this.appliedConstraints.containsKey( MIN_CONSTRAINT )) {
+        if (appliedConstraints.containsKey(MIN_CONSTRAINT)) {
             LOG.warn("Setting range constraint on property ["+propertyName+"] of class ["+owningClass+"] forced removal of min constraint");
-            this.appliedConstraints.remove( MIN_CONSTRAINT );
+            appliedConstraints.remove(MIN_CONSTRAINT);
         }
-        if(range == null) {
-            this.appliedConstraints.remove( RANGE_CONSTRAINT );
+        if (range == null) {
+            appliedConstraints.remove(RANGE_CONSTRAINT);
         }
         else {
-            Constraint c = (Constraint)this.appliedConstraints.get(RANGE_CONSTRAINT);
-            if(c != null) {
+            Constraint c = appliedConstraints.get(RANGE_CONSTRAINT);
+            if (c != null) {
                 c.setParameter(range);
             }
             else {
                 c = new RangeConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(range);
 
-                this.appliedConstraints.put( RANGE_CONSTRAINT,c);
+                appliedConstraints.put(RANGE_CONSTRAINT,c);
             }
         }
     }
@@ -443,213 +447,202 @@ public class ConstrainedProperty   {
      * @return The scale, if defined for this property; null, otherwise
      */
     public Integer getScale() {
-        Integer scale = null;
-
-        ScaleConstraint scaleConstraint = (ScaleConstraint)this.appliedConstraints.get(SCALE_CONSTRAINT);
-
+        ScaleConstraint scaleConstraint = (ScaleConstraint)appliedConstraints.get(SCALE_CONSTRAINT);
         if (scaleConstraint != null) {
-            scale = new Integer(scaleConstraint.getScale());
+            return scaleConstraint.getScale();
         }
 
-        return scale;
+        return null;
     }
-    
-    
+
     /**
      * @return Returns the size.
      */
+    @SuppressWarnings("unchecked")
     public Range getSize() {
-        SizeConstraint c = (SizeConstraint)this.appliedConstraints.get( SIZE_CONSTRAINT );
-        if(c == null)
-            return null;
-
-        return c.getRange();
+        SizeConstraint c = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
+        return c == null ? null : c.getRange();
     }
-
 
     /**
      * @param size The size to set.
      */
+    @SuppressWarnings("unchecked")
     public void setSize(Range size) {
-        Constraint c = (Constraint)this.appliedConstraints.get( SIZE_CONSTRAINT );
-        if(size == null) {
-            this.appliedConstraints.remove( SIZE_CONSTRAINT );
+        Constraint c = appliedConstraints.get(SIZE_CONSTRAINT);
+        if (size == null) {
+            appliedConstraints.remove(SIZE_CONSTRAINT);
         }
         else {
-            if(c != null) {
+            if (c != null) {
                 c.setParameter(size);
             }
             else {
                 c = new SizeConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(size);
-                this.appliedConstraints.put( SIZE_CONSTRAINT, c );
+                appliedConstraints.put(SIZE_CONSTRAINT, c);
             }
         }
     }
-
 
     /**
      * @return Returns the blank.
      */
     public boolean isBlank() {
-        Object cons = this.appliedConstraints.get(BLANK_CONSTRAINT);
+        Object cons = appliedConstraints.get(BLANK_CONSTRAINT);
         return cons == null || ((Boolean) ((BlankConstraint) cons).getParameter()).booleanValue();
-
     }
 
     /**
      * @param blank The blank to set.
      */
     public void setBlank(boolean blank) {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("Blank constraint can only be applied to a String property",BLANK_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("Blank constraint can only be applied to a String property",
+                    BLANK_CONSTRAINT, owningClass);
         }
 
-        if(!blank) {
-            this.appliedConstraints.remove(BLANK_CONSTRAINT);
+        if (!blank) {
+            appliedConstraints.remove(BLANK_CONSTRAINT);
         }
-        else
-        {
-            Constraint c = (Constraint)this.appliedConstraints.get( BLANK_CONSTRAINT );
-            if(c != null) {
-                c.setParameter(Boolean.valueOf(blank) );
+        else {
+            Constraint c = appliedConstraints.get(BLANK_CONSTRAINT);
+            if (c != null) {
+                c.setParameter(Boolean.valueOf(blank));
             }
             else {
                 c = new BlankConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(Boolean.valueOf(blank));
-                this.appliedConstraints.put( BLANK_CONSTRAINT,c );
+                appliedConstraints.put(BLANK_CONSTRAINT,c);
             }
         }
-
     }
-
-
 
     /**
      * @return Returns the email.
      */
     public boolean isEmail() {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("Email constraint only applies to a String property",EMAIL_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("Email constraint only applies to a String property",
+                    EMAIL_CONSTRAINT, owningClass);
         }
 
-        return this.appliedConstraints.containsKey( EMAIL_CONSTRAINT );
+        return appliedConstraints.containsKey(EMAIL_CONSTRAINT);
     }
 
     /**
      * @param email The email to set.
      */
     public void setEmail(boolean email) {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("Email constraint can only be applied to a String property",EMAIL_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("Email constraint can only be applied to a String property",
+                    EMAIL_CONSTRAINT, owningClass);
         }
 
-        Constraint c = (Constraint)this.appliedConstraints.get( EMAIL_CONSTRAINT );
-        if(email) {
-            if(c != null) {
-                c.setParameter(Boolean.valueOf(email) );
+        Constraint c = appliedConstraints.get(EMAIL_CONSTRAINT);
+        if (email) {
+            if (c != null) {
+                c.setParameter(Boolean.valueOf(email));
             }
             else {
                 c = new EmailConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(Boolean.valueOf(email));
-                this.appliedConstraints.put( EMAIL_CONSTRAINT,c );
+                appliedConstraints.put(EMAIL_CONSTRAINT,c);
             }
         }
         else {
-            if(c != null) {
-                this.appliedConstraints.remove( EMAIL_CONSTRAINT );
+            if (c != null) {
+                appliedConstraints.remove(EMAIL_CONSTRAINT);
             }
         }
-
     }
 
     private boolean isNotValidStringType() {
         return !CharSequence.class.isAssignableFrom(propertyType);
     }
 
-
     /**
      * @return Returns the creditCard.
      */
     public boolean isCreditCard() {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("CreditCard constraint only applies to a String property",CREDIT_CARD_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("CreditCard constraint only applies to a String property",
+                    CREDIT_CARD_CONSTRAINT,owningClass);
         }
 
-        return this.appliedConstraints.containsKey( CREDIT_CARD_CONSTRAINT );
+        return appliedConstraints.containsKey(CREDIT_CARD_CONSTRAINT);
     }
 
     /**
      * @param creditCard The creditCard to set.
      */
     public void setCreditCard(boolean creditCard) {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("CreditCard constraint only applies to a String property",CREDIT_CARD_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("CreditCard constraint only applies to a String property",
+                    CREDIT_CARD_CONSTRAINT,owningClass);
         }
 
-        Constraint c = (Constraint)this.appliedConstraints.get( CREDIT_CARD_CONSTRAINT );
-        if(creditCard) {
-            if(c != null) {
-                c.setParameter(Boolean.valueOf(creditCard) );
+        Constraint c = appliedConstraints.get(CREDIT_CARD_CONSTRAINT);
+        if (creditCard) {
+            if (c != null) {
+                c.setParameter(Boolean.valueOf(creditCard));
             }
             else {
                 c = new CreditCardConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(Boolean.valueOf(creditCard));
-                this.appliedConstraints.put( CREDIT_CARD_CONSTRAINT,c );
+                appliedConstraints.put(CREDIT_CARD_CONSTRAINT,c);
             }
         }
         else {
-            if(c != null) {
-                this.appliedConstraints.remove( CREDIT_CARD_CONSTRAINT );
+            if (c != null) {
+                appliedConstraints.remove(CREDIT_CARD_CONSTRAINT);
             }
         }
-
     }
 
     /**
      * @return Returns the matches.
      */
     public String getMatches() {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("Matches constraint only applies to a String property",MATCHES_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("Matches constraint only applies to a String property",
+                    MATCHES_CONSTRAINT, owningClass);
         }
-        MatchesConstraint c = (MatchesConstraint)this.appliedConstraints.get( MATCHES_CONSTRAINT );
-        if(c == null)
-            return null;
-
-        return c.getRegex();
+        MatchesConstraint c = (MatchesConstraint)appliedConstraints.get(MATCHES_CONSTRAINT);
+        return c == null ? null : c.getRegex();
     }
 
     /**
      * @param regex The matches to set.
      */
     public void setMatches(String regex) {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("Matches constraint can only be applied to a String property",MATCHES_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("Matches constraint can only be applied to a String property",
+                    MATCHES_CONSTRAINT, owningClass);
         }
 
-        Constraint c = (Constraint)this.appliedConstraints.get( MATCHES_CONSTRAINT );
-        if(regex == null) {
-            this.appliedConstraints.remove( MATCHES_CONSTRAINT );
+        Constraint c = appliedConstraints.get(MATCHES_CONSTRAINT);
+        if (regex == null) {
+            appliedConstraints.remove(MATCHES_CONSTRAINT);
         }
         else {
-            if(c != null) {
-                c.setParameter( regex );
+            if (c != null) {
+                c.setParameter(regex);
             }
             else {
                 c = new MatchesConstraint();
-                c.setOwningClass(this.owningClass);
-                c.setPropertyName(this.propertyName);
+                c.setOwningClass(owningClass);
+                c.setPropertyName(propertyName);
                 c.setParameter(regex);
-                this.appliedConstraints.put( MATCHES_CONSTRAINT,c );
+                appliedConstraints.put(MATCHES_CONSTRAINT,c);
             }
         }
     }
@@ -658,11 +651,8 @@ public class ConstrainedProperty   {
      * @return Returns the notEqual.
      */
     public Object getNotEqual() {
-        NotEqualConstraint c = (NotEqualConstraint)this.appliedConstraints.get( NOT_EQUAL_CONSTRAINT );
-        if(c == null)
-            return null;
-
-        return c.getNotEqualTo();
+        NotEqualConstraint c = (NotEqualConstraint)appliedConstraints.get(NOT_EQUAL_CONSTRAINT);
+        return c == null ? null : c.getNotEqualTo();
     }
 
     /**
@@ -670,34 +660,33 @@ public class ConstrainedProperty   {
      */
     public Integer getMaxSize() {
         Integer maxSize = null;
-        
-        MaxSizeConstraint maxSizeConstraint = ( MaxSizeConstraint )this.appliedConstraints.get(MAX_SIZE_CONSTRAINT);
-        SizeConstraint sizeConstraint = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
+
+        MaxSizeConstraint maxSizeConstraint = (MaxSizeConstraint)appliedConstraints.get(MAX_SIZE_CONSTRAINT);
+        SizeConstraint sizeConstraint = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
 
         if ((maxSizeConstraint != null) || (sizeConstraint != null)) {
             int maxSizeConstraintValue = maxSizeConstraint != null ? maxSizeConstraint.getMaxSize() : Integer.MAX_VALUE;
             int sizeConstraintHighValue = sizeConstraint != null ? sizeConstraint.getRange().getToInt() : Integer.MAX_VALUE;
-            
             maxSize = new Integer(Math.min(maxSizeConstraintValue, sizeConstraintHighValue));
         }
 
-        return maxSize;          
+        return maxSize;
     }
 
     /**
      * @param maxSize The maxSize to set.
      */
     public void setMaxSize(Integer maxSize) {
-        Constraint c = ( MaxSizeConstraint )this.appliedConstraints.get( MAX_SIZE_CONSTRAINT );
-        if( c != null) {
+        Constraint c = appliedConstraints.get(MAX_SIZE_CONSTRAINT);
+        if (c != null) {
             c.setParameter(maxSize);
         }
         else {
             c = new MaxSizeConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
+            c.setOwningClass(owningClass);
+            c.setPropertyName(propertyName);
             c.setParameter(maxSize);
-            this.appliedConstraints.put( MAX_SIZE_CONSTRAINT,c );
+            appliedConstraints.put(MAX_SIZE_CONSTRAINT,c);
         }
     }
 
@@ -706,83 +695,79 @@ public class ConstrainedProperty   {
      */
     public Integer getMinSize() {
         Integer minSize = null;
-        
-        MinSizeConstraint minSizeConstraint = (MinSizeConstraint)this.appliedConstraints.get(MIN_SIZE_CONSTRAINT);
-        SizeConstraint sizeConstraint = (SizeConstraint)this.appliedConstraints.get(SIZE_CONSTRAINT);
+
+        MinSizeConstraint minSizeConstraint = (MinSizeConstraint)appliedConstraints.get(MIN_SIZE_CONSTRAINT);
+        SizeConstraint sizeConstraint = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
 
         if ((minSizeConstraint != null) || (sizeConstraint != null)) {
             int minSizeConstraintValue = minSizeConstraint != null ? minSizeConstraint.getMinSize() : Integer.MIN_VALUE;
             int sizeConstraintLowValue = sizeConstraint != null ? sizeConstraint.getRange().getFromInt() : Integer.MIN_VALUE;
-            
+
             minSize = new Integer(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
         }
 
-        return minSize;        
+        return minSize;
     }
-
 
     /**
      * @param minSize The minLength to set.
      */
     public void setMinSize(Integer minSize) {
-        Constraint c = (MinSizeConstraint)this.appliedConstraints.get( MIN_SIZE_CONSTRAINT );
-        if( c != null) {
+        Constraint c = appliedConstraints.get(MIN_SIZE_CONSTRAINT);
+        if (c != null) {
             c.setParameter(minSize);
         }
         else {
             c = new MinSizeConstraint();
-            c.setOwningClass(this.owningClass);
-            c.setPropertyName(this.propertyName);
+            c.setOwningClass(owningClass);
+            c.setPropertyName(propertyName);
             c.setParameter(minSize);
-            this.appliedConstraints.put( MIN_SIZE_CONSTRAINT,c );
+            appliedConstraints.put(MIN_SIZE_CONSTRAINT,c);
         }
     }
+
     /**
      * @param notEqual The notEqual to set.
      */
     public void setNotEqual(Object notEqual) {
-        if(notEqual == null) {
-            this.appliedConstraints.remove( NOT_EQUAL_CONSTRAINT );
+        if (notEqual == null) {
+            appliedConstraints.remove(NOT_EQUAL_CONSTRAINT);
         }
         else {
             Constraint c = new NotEqualConstraint();
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
             c.setParameter(notEqual);
-            this.appliedConstraints.put( NOT_EQUAL_CONSTRAINT, c );
+            appliedConstraints.put(NOT_EQUAL_CONSTRAINT, c);
         }
     }
-
-
 
     /**
      * @return Returns the nullable.
      */
     public boolean isNullable() {
-        if(this.appliedConstraints.containsKey(NULLABLE_CONSTRAINT)) {
-            NullableConstraint nc = (NullableConstraint)this.appliedConstraints.get(NULLABLE_CONSTRAINT);
+        if (appliedConstraints.containsKey(NULLABLE_CONSTRAINT)) {
+            NullableConstraint nc = (NullableConstraint)appliedConstraints.get(NULLABLE_CONSTRAINT);
             return nc.isNullable();
-        } else {
-            return false;
         }
-    }
 
+        return false;
+    }
 
     /**
      * @param nullable The nullable to set.
      */
     public void setNullable(boolean nullable) {
-        NullableConstraint nc = (NullableConstraint)this.appliedConstraints.get(NULLABLE_CONSTRAINT);
-        if(nc == null) {
+        NullableConstraint nc = (NullableConstraint)appliedConstraints.get(NULLABLE_CONSTRAINT);
+        if (nc == null) {
             nc = new NullableConstraint();
             nc.setOwningClass(owningClass);
             nc.setPropertyName(propertyName);
-            this.appliedConstraints.put( NULLABLE_CONSTRAINT, nc );
+            appliedConstraints.put(NULLABLE_CONSTRAINT, nc);
         }
 
-         nc.setParameter(Boolean.valueOf(nullable));
+        nc.setParameter(Boolean.valueOf(nullable));
     }
-
 
     /**
      * @return Returns the propertyName.
@@ -798,27 +783,28 @@ public class ConstrainedProperty   {
         this.propertyName = propertyName;
     }
 
-
     /**
      * @return Returns the url.
      */
     public boolean isUrl() {
-        if(isNotValidStringType()) {
-            throw new MissingPropertyException("URL constraint can only be applied to a String property",URL_CONSTRAINT,owningClass);
+        if (isNotValidStringType()) {
+            throw new MissingPropertyException("URL constraint can only be applied to a String property",
+                    URL_CONSTRAINT, owningClass);
         }
-        return this.appliedConstraints.containsKey( URL_CONSTRAINT );
+        return appliedConstraints.containsKey(URL_CONSTRAINT);
     }
 
     /**
      * @param url The url to set.
      */
     public void setUrl(boolean url) {
-        if(isNotValidStringType()) {
+        if (isNotValidStringType()) {
             throw new MissingPropertyException("URL constraint can only be applied to a String property",URL_CONSTRAINT,owningClass);
         }
-        Constraint c = (Constraint)this.appliedConstraints.get( URL_CONSTRAINT );
-        if(url) {
-            if(c != null) {
+
+        Constraint c = appliedConstraints.get(URL_CONSTRAINT);
+        if (url) {
+            if (c != null) {
                 c.setParameter(Boolean.valueOf(url));
             }
             else {
@@ -826,16 +812,15 @@ public class ConstrainedProperty   {
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
                 c.setParameter(Boolean.valueOf(url));
-                this.appliedConstraints.put( URL_CONSTRAINT, c );
+                appliedConstraints.put(URL_CONSTRAINT, c);
             }
         }
         else {
-            if(c != null) {
-                this.appliedConstraints.remove( URL_CONSTRAINT );
+            if (c != null) {
+                appliedConstraints.remove(URL_CONSTRAINT);
             }
         }
     }
-
 
     /**
      * @return Returns the display.
@@ -844,14 +829,12 @@ public class ConstrainedProperty   {
         return display;
     }
 
-
     /**
      * @param display The display to set.
      */
     public void setDisplay(boolean display) {
         this.display = display;
     }
-
 
     /**
      * @return Returns the editable.
@@ -860,7 +843,6 @@ public class ConstrainedProperty   {
         return editable;
     }
 
-
     /**
      * @param editable The editable to set.
      */
@@ -868,14 +850,12 @@ public class ConstrainedProperty   {
         this.editable = editable;
     }
 
-
     /**
      * @return Returns the order.
      */
     public int getOrder() {
         return order;
     }
-
 
     /**
      * @param order The order to set.
@@ -900,9 +880,11 @@ public class ConstrainedProperty   {
         this.password = password;
     }
 
+    @SuppressWarnings("unchecked")
     public Map getAttributes() {
         return attributes;
     }
+    @SuppressWarnings("unchecked")
     public void setAttributes(Map attributes) {
         this.attributes = attributes;
     }
@@ -920,7 +902,7 @@ public class ConstrainedProperty   {
      * @param source The MessageSource instance to use to resolve messages
      */
     public void setMessageSource(MessageSource source) {
-        this.messageSource = source;
+        messageSource = source;
     }
 
     /**
@@ -931,51 +913,55 @@ public class ConstrainedProperty   {
      * @param errors The Errors instances to report errors to
      */
     public void validate(Object target, Object propertyValue, Errors errors) {
-        List delayedConstraints = new ArrayList();
+        List<Constraint> delayedConstraints = new ArrayList<Constraint>();
 
         // validate only vetoing constraints first, putting non-vetoing into delayedConstraints
-        for(Iterator i = this.appliedConstraints.values().iterator(); i.hasNext();) {
-            Constraint c = (Constraint) i.next();
-            if(c instanceof VetoingConstraint) {
-                c.setMessageSource(this.messageSource);
+        for (Constraint c : appliedConstraints.values()) {
+            if (c instanceof VetoingConstraint) {
+                c.setMessageSource(messageSource);
                 // stop validation process when constraint vetoes
-                if(((VetoingConstraint)c).validateWithVetoing(target, propertyValue, errors)) return;
-            } else {
+                if (((VetoingConstraint)c).validateWithVetoing(target, propertyValue, errors)) {
+                    return;
+                }
+            }
+            else {
                 delayedConstraints.add(c);
             }
         }
 
         // process non-vetoing constraints
-        for(Iterator i = delayedConstraints.iterator(); i.hasNext();) {
-            Constraint c = (Constraint) i.next();
-            c.setMessageSource(this.messageSource);
+        for (Constraint c : delayedConstraints) {
+            c.setMessageSource(messageSource);
             c.validate(target, propertyValue, errors);
         }
     }
 
     /**
-     * Checks with this ConstraintedProperty instance supports applying the specified constraint
+     * Checks with this ConstraintedProperty instance supports applying the specified constraint.
      *
      * @param constraintName The name of the constraint
      * @return True if the constraint is supported
      */
     public boolean supportsContraint(String constraintName) {
 
-        if(!constraints.containsKey(constraintName)) {
-            return this.bean.isWritableProperty(constraintName);
+        if (!constraints.containsKey(constraintName)) {
+            return bean.isWritableProperty(constraintName);
         }
+
         try {
             Constraint c = instantiateConstraint(constraintName);
             return c.supports(propertyType);
-
-        } catch (Exception e) {
-            LOG.error("Exception thrown instantiating constraint ["+constraintName+"] to class ["+owningClass+"]", e);
-            throw new ConstraintException("Exception thrown instantiating  constraint ["+constraintName+"] to class ["+owningClass+"]");
+        }
+        catch (Exception e) {
+            LOG.error("Exception thrown instantiating constraint [" + constraintName +
+                    "] to class [" + owningClass + "]", e);
+            throw new ConstraintException("Exception thrown instantiating  constraint [" + constraintName +
+                    "] to class [" + owningClass + "]");
         }
     }
 
     /**
-     * Applies a constraint for the specified name and consraint value
+     * Applies a constraint for the specified name and consraint value.
      *
      * @param constraintName The name of the constraint
      * @param constrainingValue The constraining value
@@ -984,75 +970,74 @@ public class ConstrainedProperty   {
      */
     public void applyConstraint(String constraintName, Object constrainingValue) {
 
-        if(constraints.containsKey(constraintName)) {
-
-            if(constrainingValue == null) {
-                this.appliedConstraints.remove(constraintName);
+        if (constraints.containsKey(constraintName)) {
+            if (constrainingValue == null) {
+                appliedConstraints.remove(constraintName);
             }
             else {
-
                 try {
                     Constraint c = instantiateConstraint(constraintName);
 
-                    c.setOwningClass(this.owningClass);
-                    c.setPropertyName(this.propertyName);
-                    c.setParameter( constrainingValue );
-                    this.appliedConstraints.put( constraintName, c );
-                } catch (Exception e) {
-                    LOG.error("Exception thrown applying constraint ["+constraintName+"] to class ["+owningClass+"] for value ["+constrainingValue+"]: " + e.getMessage());
-                    throw new ConstraintException("Exception thrown applying constraint ["+constraintName+"] to class ["+owningClass+"] for value ["+constrainingValue+"]: " + e.getMessage());
+                    c.setOwningClass(owningClass);
+                    c.setPropertyName(propertyName);
+                    c.setParameter(constrainingValue);
+                    appliedConstraints.put(constraintName, c);
+                }
+                catch (Exception e) {
+                    LOG.error("Exception thrown applying constraint [" + constraintName +
+                            "] to class [" + owningClass + "] for value [" + constrainingValue + "]: " + e.getMessage());
+                    throw new ConstraintException("Exception thrown applying constraint [" + constraintName +
+                            "] to class [" + owningClass + "] for value [" + constrainingValue + "]: " + e.getMessage());
                 }
             }
         }
-        else if(this.bean.isWritableProperty(constraintName)) {
-            this.bean.setPropertyValue( constraintName, constrainingValue );
+        else if (bean.isWritableProperty(constraintName)) {
+            bean.setPropertyValue(constraintName, constrainingValue);
         }
         else {
-            throw new ConstraintException("Constraint ["+constraintName+"] is not supported for property ["+propertyName+"] of class ["+owningClass+"] with type ["+propertyType+"]");
+            throw new ConstraintException("Constraint [" + constraintName + "] is not supported for property [" +
+                    propertyName + "] of class [" + owningClass + "] with type [" + propertyType + "]");
         }
-
     }
 
     private Constraint instantiateConstraint(String constraintName) throws InstantiationException, IllegalAccessException {
         Object constraintFactory = constraints.get(constraintName);
-        Constraint c;
-        if(constraintFactory instanceof ConstraintFactory)
-            c = ((ConstraintFactory)constraintFactory).newInstance();
-        else
-            c = (Constraint)((Class)constraintFactory).newInstance();
-        return c;
-    }
+        if (constraintFactory instanceof ConstraintFactory) {
+            return ((ConstraintFactory)constraintFactory).newInstance();
+        }
 
+        return (Constraint)((Class<?>)constraintFactory).newInstance();
+    }
 
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         return new ToStringBuilder(this)
-                        .append( this.owningClass )
-                        .append( this.propertyName )
-                        .append( this.propertyType )
-                        .append( this.appliedConstraints )
-                        .toString();
+                   .append(owningClass)
+                   .append(propertyName)
+                   .append(propertyType)
+                   .append(appliedConstraints)
+                   .toString();
     }
 
     /**
-     * Adds a meta constraints which is a non-validating informational constraint
+     * Adds a meta constraints which is a non-validating informational constraint.
      *
      * @param name The name of the constraint
      * @param value The value
      */
     public void addMetaConstraint(String name, Object value) {
-        this.metaConstraints.put(name, value);
+        metaConstraints.put(name, value);
     }
 
     /**
-     * Obtains the value of the named meta constraint
+     * Obtains the value of the named meta constraint.
      * @param name The name of the constraint
      * @return The value
      */
     public Object getMetaConstraintValue(String name) {
-        return this.metaConstraints.get(name);
+        return metaConstraints.get(name);
     }
 }
-

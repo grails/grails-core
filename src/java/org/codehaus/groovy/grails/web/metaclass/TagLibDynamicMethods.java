@@ -16,14 +16,14 @@
 package org.codehaus.groovy.grails.web.metaclass;
 
 /**
- * <p>Simply holds static references to the names of some tag library specific methods and properties
+ * Holds static references to the names of some tag library specific methods and properties.
  *
  * @author Graeme Rocher
  * @since 0.1
- *
- * Created: Jan 14, 2006
  */
 public class TagLibDynamicMethods {
+
     public static final String OUT_PROPERTY = "out";
+
     public static final String THROW_TAG_ERROR_METHOD = "throwTagError";
 }

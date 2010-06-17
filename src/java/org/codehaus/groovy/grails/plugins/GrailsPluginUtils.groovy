@@ -16,8 +16,11 @@ package org.codehaus.groovy.grails.plugins
 
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
+
 import groovy.util.slurpersupport.GPathResult
+
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
+
 import org.springframework.core.io.Resource
 
 /**
@@ -25,8 +28,6 @@ import org.springframework.core.io.Resource
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 29, 2007
  */
 class GrailsPluginUtils {
 
@@ -127,7 +128,7 @@ class GrailsPluginUtils {
         new PluginBuildSettings(BuildSettingsHolder.settings, PluginManagerHolder.getPluginManager())
     }
 
-    private static INSTANCE = null
+    private static INSTANCE
     /**
      * Returns a cached PluginBuildSettings instance.
      */

@@ -15,26 +15,23 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import javax.servlet.http.HttpServletRequest
+
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractTokenResponseHandler
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseHandler
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractTokenResponseHandler
 
 /**
  * Implementation of the "Synchronizer Token Pattern" for Grails that handles duplicate form submissions
- * by inspecting a token stored in the user session
+ * by inspecting a token stored in the user session.
  *
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Jan 8, 2009
  */
-
 class WithFormMethod {
-
 
     /**
      * <p>Main entry point, this method will check the request for the necessary TOKEN and if it is valid
-     * will call the passed closure.
+     *     will call the passed closure.
      *
      * <p>For an invalid response an InvalidResponseHandler is returned which will invoke the closure passed
      * to the handleInvalid method. The idea here is to allow code like:
@@ -49,10 +46,9 @@ class WithFormMethod {
      */
     TokenResponseHandler withForm(HttpServletRequest request, Closure callable) {
         TokenResponseHandler handler
-        if(isTokenValid(request)) {
+        if (isTokenValid(request)) {
             resetToken(request)
             handler = new ValidResponseHandler(callable?.call())
-
         }
         else {
             handler = new InvalidResponseHandler()
@@ -63,19 +59,19 @@ class WithFormMethod {
     }
 
     /**
-     * Checks whether the token in th request is valid
+     * Checks whether the token in th request is valid.
      *
      * @param request The servlet request
      */
     protected synchronized boolean isTokenValid(HttpServletRequest request) {
         SynchronizerToken tokenInSession = request.getSession(false)?.getAttribute(SynchronizerToken.KEY)
-        if(!tokenInSession) return false
+        if (!tokenInSession) return false
 
         def tokenInRequest = request.getParameter(SynchronizerToken.KEY)
-        if(!tokenInRequest) return false
+        if (!tokenInRequest) return false
 
         try {
-            return tokenInSession.isValid(tokenInRequest)            
+            return tokenInSession.isValid(tokenInRequest)
         }
         catch (IllegalArgumentException ) {
             return false
@@ -90,27 +86,25 @@ class WithFormMethod {
     }
 }
 
-
 class InvalidResponseHandler extends AbstractTokenResponseHandler {
 
-    public InvalidResponseHandler() {
+    InvalidResponseHandler() {
         super(false)
     }
-
 
     protected Object invalidTokenInternal(Closure callable) {
         callable?.call()
     }
 }
-class ValidResponseHandler extends AbstractTokenResponseHandler{
+
+class ValidResponseHandler extends AbstractTokenResponseHandler {
 
     def model
 
-    public ValidResponseHandler(model) {
-        super(true);
+    ValidResponseHandler(model) {
+        super(true)
         this.model = model
     }
-    protected Object invalidTokenInternal(Closure callable) {
-        return model
-    }
+
+    protected Object invalidTokenInternal(Closure callable) { model }
 }

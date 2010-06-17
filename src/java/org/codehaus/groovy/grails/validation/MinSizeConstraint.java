@@ -20,7 +20,7 @@ import java.util.Collection;
 import org.springframework.validation.Errors;
 
 /**
- * A constraint that validates minimum size or length of the property, for strings and arrays
+ * Validates minimum size or length of the property, for strings and arrays
  * this is the length, collections the size and numbers the value.
  *
  * @author Graeme Rocher
@@ -43,7 +43,9 @@ public class MinSizeConstraint extends AbstractConstraint {
     @Override
     public void setParameter(Object constraintParameter) {
         if (!(constraintParameter instanceof Integer)) {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MIN_SIZE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a of type [java.lang.Integer]");
+            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.MIN_SIZE_CONSTRAINT +
+                    "] of property [" + constraintPropertyName + "] of class [" +
+                    constraintOwningClass + "] must be a of type [java.lang.Integer]");
         }
 
         minSize = ((Integer)constraintParameter).intValue();
@@ -62,28 +64,30 @@ public class MinSizeConstraint extends AbstractConstraint {
         return type != null && (
                 String.class.isAssignableFrom(type) ||
                 Collection.class.isAssignableFrom(type) ||
-                type.isArray()
-        );
+                type.isArray());
     }
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, new Integer(minSize) };
+        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minSize};
 
         if (propertyValue.getClass().isArray()) {
             int length = Array.getLength( propertyValue );
             if (length < minSize) {
-                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
+                        ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
             }
         }
         else if (propertyValue instanceof Collection<?>) {
             if (((Collection<?>)propertyValue).size() < minSize) {
-                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE, ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args );
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
+                        ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
             }
         }
         else if (propertyValue instanceof String) {
             if (((String)propertyValue ).length() < minSize) {
-                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX,args);
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
+                        ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
             }
         }
     }

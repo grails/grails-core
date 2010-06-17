@@ -22,8 +22,8 @@ import java.util.Collection;
 import org.springframework.validation.Errors;
 
 /**
- * A constraint that validates size of the property, for strings and arrays
- * this is the length, collections the size and numbers the value
+ * Validates size of the property, for strings and arrays
+ * this is the length, collections the size and numbers the value.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -46,9 +46,8 @@ public class SizeConstraint extends AbstractConstraint {
     public boolean supports(Class type) {
         return type != null && (
                 String.class.isAssignableFrom(type) ||
-                Collection.class.isAssignableFrom(type) || 
-                type.isArray()
-        );
+                Collection.class.isAssignableFrom(type) ||
+                type.isArray());
     }
 
     /* (non-Javadoc)
@@ -71,11 +70,12 @@ public class SizeConstraint extends AbstractConstraint {
         return ConstrainedProperty.SIZE_CONSTRAINT;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo() };
 
-        // size of the property (e.g. String length(), Collection size(), etc.) 
+        // size of the property (e.g. String length(), Collection size(), etc.)
         Integer size = null;
 
         // determine the value of size based on the property's type
@@ -115,6 +115,7 @@ public class SizeConstraint extends AbstractConstraint {
         else {
             suffix = ConstrainedProperty.TOOSMALL_SUFFIX;
         }
-        rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE, ConstrainedProperty.SIZE_CONSTRAINT + suffix , args );
+        rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE,
+                ConstrainedProperty.SIZE_CONSTRAINT + suffix, args);
     }
 }

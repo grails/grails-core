@@ -14,20 +14,17 @@
  */
 package org.codehaus.groovy.grails.support;
 
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.Resource;
-
 import java.io.IOException;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.Assert;
 
 /**
  * A ResourceLoader that loads resources from a statically defined base resource.
  *
  * @author Graeme Rocher
  * @since 0.5
- * 
- *        <p/>
- *        Created: Feb 26, 2007
- *        Time: 3:45:36 PM
  */
 public class StaticResourceLoader implements ResourceLoader {
 
@@ -38,10 +35,12 @@ public class StaticResourceLoader implements ResourceLoader {
     }
 
     public Resource getResource(String location) {
-        if(baseResource == null) throw new IllegalStateException("Property [baseResource] not set!");
+        Assert.state(baseResource != null, "Property [baseResource] not set!");
+
         try {
             return baseResource.createRelative(location);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             return null;
         }
     }

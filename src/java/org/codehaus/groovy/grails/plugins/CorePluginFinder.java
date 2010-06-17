@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,19 +25,12 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Loads core plugin classes. Contains functionality moved in from <code>DefaultGrailsPluginManager</code>.
  * @author Graeme Rocher
  * @author Phil Zoio
  */
 public class CorePluginFinder {
-
-    //This class contains functionality originally found in
-    //DefaultGrailsPluginManager, but moved after 0.5.6
 
     private static final Log LOG = LogFactory.getLog(CorePluginFinder.class);
 
@@ -53,14 +49,16 @@ public class CorePluginFinder {
 
         try {
             Resource[] resources = resolver.getResources(
-                    "classpath*:org/codehaus/groovy/grails/**/plugins/**/*GrailsPlugin.class");
+                "classpath*:org/codehaus/groovy/grails/**/plugins/**/*GrailsPlugin.class");
             if (resources.length > 0) {
                 loadCorePluginsFromResources(resources);
-            } else {
+            }
+            else {
                 LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container class loader configuration, see troubleshooting and FAQ for more info. ");
                 loadCorePluginsStatically();
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             LOG.warn("WARNING: I/O exception loading core plugin dynamically, attempting static load. This is usually due to deployment onto containers with unusual classloading setups. Message: " + e.getMessage());
             loadCorePluginsStatically();
         }
@@ -90,8 +88,7 @@ public class CorePluginFinder {
         loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
     }
 
-    private void loadCorePluginsFromResources(Resource[] resources)
-            throws IOException {
+    private void loadCorePluginsFromResources(Resource[] resources) throws IOException {
 
         LOG.debug("Attempting to load [" + resources.length + "] core plugins");
         for (Resource resource : resources) {
@@ -108,11 +105,13 @@ public class CorePluginFinder {
     private Class<?> attemptCorePluginClassLoad(String pluginClassName) {
         try {
             return application.getClassLoader().loadClass(pluginClassName);
-        } catch (ClassNotFoundException e) {
-            LOG.warn("[GrailsPluginManager] Core plugin [" + pluginClassName
-                    + "] not found, resuming load without..");
-            if (LOG.isDebugEnabled())
+        }
+        catch (ClassNotFoundException e) {
+            LOG.warn("[GrailsPluginManager] Core plugin [" + pluginClassName +
+                    "] not found, resuming load without..");
+            if (LOG.isDebugEnabled()) {
                 LOG.debug(e.getMessage(), e);
+            }
         }
         return null;
     }

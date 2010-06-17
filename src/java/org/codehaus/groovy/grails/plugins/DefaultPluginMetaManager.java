@@ -18,18 +18,16 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.io.Resource;
 
 /**
- * <p>Implements the PluginMetaManager interface by parsing a set of plugin.xml files from the given
- * set of resources
+ * Implements the PluginMetaManager interface by parsing a set of plugin.xml files from the given
+ * set of resources.
  *
  * @author Graeme Rocher
- * @author Chanwit Kaewkasi 
+ * @author Chanwit Kaewkasi
  * @since 0.6
  * @deprecated This class is deprecated from version 1.2 and above
- *
- *        <p/>
- *        Created: Aug 21, 2007
- *        Time: 8:00:36 AM
  */
+@Deprecated
+@SuppressWarnings("unused")
 public class DefaultPluginMetaManager implements PluginMetaManager{
 
     public DefaultPluginMetaManager() {
@@ -40,11 +38,12 @@ public class DefaultPluginMetaManager implements PluginMetaManager{
         super();
     }
 
-
     public void setResourcePattern(String resourcePattern) {
+        // do nothing
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
+        // do nothing
     }
 
     public String[] getPluginResources(String pluginName) {
@@ -64,5 +63,6 @@ public class DefaultPluginMetaManager implements PluginMetaManager{
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
+        // do nothing
     }
 }

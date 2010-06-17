@@ -20,7 +20,6 @@ import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -94,19 +92,14 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             parent.containsBean(DATA_SOURCE_BEAN);
         }
 
-        try {
-            pluginManager = PluginManagerHolder.getPluginManager();
-            if (pluginManager == null) {
-                pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
-                PluginManagerHolder.setPluginManager(pluginManager);
-            }
-            else {
-                LOG.debug("Retrieved thread-bound PluginManager instance");
-                pluginManager.setApplication(application);
-            }
+        pluginManager = PluginManagerHolder.getPluginManager();
+        if (pluginManager == null) {
+            pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+            PluginManagerHolder.setPluginManager(pluginManager);
         }
-        catch (IOException e) {
-            throw new GrailsConfigurationException("I/O error loading plugin manager!:" + e.getMessage(), e);
+        else {
+            LOG.debug("Retrieved thread-bound PluginManager instance");
+            pluginManager.setApplication(application);
         }
     }
 

@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,9 +34,9 @@ import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
  * </code>
  *
  * @author Graeme Rocher
- * @since 10-Jan-2006
  */
 public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
+
     public static final String METHOD_SIGNATURE = "bindData";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     private static final String INCLUDE_MAP_KEY = "include";
@@ -46,12 +46,18 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
         super(METHOD_PATTERN);
     }
 
-
+    @Override
+    @SuppressWarnings("unchecked")
     public Object invoke(Object target, String methodName, Object[] arguments) {
-        if(arguments.length < 2 || arguments.length > 4)
+
+        if (arguments.length < 2 || arguments.length > 4) {
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
-        if(arguments[0] == null)
-            throw new IllegalArgumentException("Argument [target] is required by method [bindData] on class ["+target.getClass()+"]");
+        }
+
+        if (arguments[0] == null) {
+            throw new IllegalArgumentException("Argument [target] is required by method [bindData] on class [" +
+                    target.getClass().getName() + "]");
+        }
 
         Object targetObject = arguments[0];
         Object bindParams = arguments[1];
@@ -59,51 +65,51 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
         List include = null;
         List exclude = null;
         String filter = null;
-        switch(arguments.length){
+        switch(arguments.length) {
             case 3:
-                if(arguments[2] instanceof String){
+                if (arguments[2] instanceof String) {
                     filter = (String) arguments[2];
-                }else if(!(arguments[2]  instanceof Map)) {
-                       throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
-                               "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
-                }else {
+                }
+                else if (!(arguments[2]  instanceof Map)) {
+                    throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
+                        "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
+                }
+                else {
                     includeExclude = (Map) arguments[2];
                 }
                 break;
             case 4:
-                if(!( arguments[2] instanceof Map)) {
+                if (!(arguments[2] instanceof Map)) {
                     throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
-                               "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
+                        "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
                 }
                 includeExclude = (Map) arguments[2];
-                if(!(arguments[3] instanceof String)) {
+                if (!(arguments[3] instanceof String)) {
                     throw new IllegalArgumentException("Argument [prefix] for method [bindData] must be a String");
-                 }
+                }
                 filter = (String) arguments[3];
                 break;
         }
 
-        if(includeExclude.containsKey(INCLUDE_MAP_KEY)){
-            Object o = includeExclude.get(INCLUDE_MAP_KEY);
-            include = convertToListIfString(o);
+        if (includeExclude.containsKey(INCLUDE_MAP_KEY)) {
+            include = convertToListIfString(includeExclude.get(INCLUDE_MAP_KEY));
         }
 
-        if(includeExclude.containsKey(EXCLUDE_MAP_KEY)){
-            Object o = includeExclude.get(EXCLUDE_MAP_KEY);
-            exclude = convertToListIfString(o);
+        if (includeExclude.containsKey(EXCLUDE_MAP_KEY)) {
+            exclude = convertToListIfString(includeExclude.get(EXCLUDE_MAP_KEY));
         }
 
         DataBindingUtils.bindObjectToInstance(targetObject, bindParams, include, exclude, filter);
         return targetObject;
     }
 
+    @SuppressWarnings("unchecked")
     private List convertToListIfString(Object o) {
-        if(o instanceof String){
+        if (o instanceof String) {
             List list = new ArrayList();
             list.add(o);
             o = list;
         }
         return (List) o;
     }
-
 }

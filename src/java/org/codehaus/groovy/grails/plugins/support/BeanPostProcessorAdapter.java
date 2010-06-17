@@ -1,18 +1,17 @@
 package org.codehaus.groovy.grails.plugins.support;
 
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 
 /**
- * <p>Adapter implementation of {@link BeanPostProcessor}.
+ * Adapter implementation of {@link BeanPostProcessor}.
  *
  * @author Steven Devijver
  * @since 0.2
- * @see BeanPostProcessor
  */
 public class BeanPostProcessorAdapter implements BeanPostProcessor {
+
     /**
-     *
      * @param bean
      * @param beanName
      * @return The specified bean
@@ -24,7 +23,6 @@ public class BeanPostProcessorAdapter implements BeanPostProcessor {
     }
 
     /**
-     *
      * @param bean
      * @param beanName
      * @return The specified bean

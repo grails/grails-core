@@ -71,9 +71,9 @@ import java.util.regex.Pattern;
  */
 public class UrlValidator implements Serializable {
 
-	private static final long serialVersionUID = 7154620567871023850L;
+    private static final long serialVersionUID = 7154620567871023850L;
 
-	/**
+    /**
      * Allows all validly formatted schemes to pass validation instead of
      * supplying a set of valid schemes.
      */
@@ -96,8 +96,8 @@ public class UrlValidator implements Serializable {
      * This expression derived/taken from the BNF for URI (RFC2396).
      */
     private static final String URL_REGEX =
-            "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?";
-    //                                                                      12            3  4          5       6   7        8 9
+        "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?";
+
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEX);
 
     /**
@@ -123,8 +123,8 @@ public class UrlValidator implements Serializable {
     private static final Pattern SCHEME_PATTERN = Pattern.compile(SCHEME_REGEX);
 
     private static final String AUTHORITY_REGEX =
-            "^([" + AUTHORITY_CHARS_REGEX + "]*)(:\\d*)?(.*)?";
-    //                                                                            1                          2  3       4
+        "^([" + AUTHORITY_CHARS_REGEX + "]*)(:\\d*)?(.*)?";
+
     private static final Pattern AUTHORITY_PATTERN = Pattern.compile(AUTHORITY_REGEX);
 
     private static final int PARSE_AUTHORITY_HOST_IP = 1;
@@ -156,7 +156,7 @@ public class UrlValidator implements Serializable {
     /**
      * The set of schemes that are allowed to be in a URL.
      */
-    private final Set allowedSchemes;
+    private final Set<String> allowedSchemes;
 
     /**
      * Regular expressions used to manually validate authorities if IANA
@@ -179,7 +179,7 @@ public class UrlValidator implements Serializable {
      * @return singleton instance with default schemes and options
      */
     public static UrlValidator getInstance() {
-        return DEFAULT_URL_VALIDATOR;    
+        return DEFAULT_URL_VALIDATOR;
     }
 
     /**
@@ -198,7 +198,7 @@ public class UrlValidator implements Serializable {
      *        ignore the contents of schemes.
      */
     public UrlValidator(String[] schemes) {
-        this(schemes, (long)0);
+        this(schemes, 0);
     }
 
     /**
@@ -247,17 +247,17 @@ public class UrlValidator implements Serializable {
         this.options = options;
 
         if (isOn(ALLOW_ALL_SCHEMES)) {
-            this.allowedSchemes = Collections.EMPTY_SET;
-        } else {
+            allowedSchemes = Collections.emptySet();
+        }
+        else {
             if (schemes == null) {
                 schemes = DEFAULT_SCHEMES;
             }
-            this.allowedSchemes = new HashSet();
-            this.allowedSchemes.addAll(Arrays.asList(schemes));
+            allowedSchemes = new HashSet<String>();
+            allowedSchemes.addAll(Arrays.asList(schemes));
         }
 
         this.authorityValidator = authorityValidator;
-
     }
 
     /**
@@ -323,8 +323,7 @@ public class UrlValidator implements Serializable {
         }
 
         if (isOff(ALLOW_ALL_SCHEMES)) {
-
-            if (!this.allowedSchemes.contains(scheme)) {
+            if (!allowedSchemes.contains(scheme)) {
                 return false;
             }
         }
@@ -361,8 +360,7 @@ public class UrlValidator implements Serializable {
         DomainValidator domainValidator = DomainValidator.getInstance();
         if (!domainValidator.isValid(hostLocation)) {
             // try an IP address
-            InetAddressValidator inetAddressValidator =
-                InetAddressValidator.getInstance();
+            InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
             if (!inetAddressValidator.isValid(hostLocation)) {
                 // isn't either one, so the URL is invalid
                 return false;
@@ -460,7 +458,7 @@ public class UrlValidator implements Serializable {
     }
 
     /**
-     * Tests whether the given flag is on.  If the flag is not a power of 2 
+     * Tests whether the given flag is on.  If the flag is not a power of 2
      * (ie. 3) this tests whether the combination of flags is on.
      *
      * @param flag Flag value to check.
@@ -468,11 +466,11 @@ public class UrlValidator implements Serializable {
      * @return whether the specified flag value is on.
      */
     private boolean isOn(long flag) {
-        return (this.options & flag) > 0;
+        return (options & flag) > 0;
     }
 
     /**
-     * Tests whether the given flag is off.  If the flag is not a power of 2 
+     * Tests whether the given flag is off.  If the flag is not a power of 2
      * (ie. 3) this tests whether the combination of flags is off.
      *
      * @param flag Flag value to check.
@@ -480,6 +478,6 @@ public class UrlValidator implements Serializable {
      * @return whether the specified flag value is off.
      */
     private boolean isOff(long flag) {
-        return (this.options & flag) == 0;
+        return (options & flag) == 0;
     }
 }

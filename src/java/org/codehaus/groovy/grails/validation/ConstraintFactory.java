@@ -15,14 +15,11 @@
 package org.codehaus.groovy.grails.validation;
 
 /**
- * A factory for creating constraint instances
+ * A factory for creating constraint instances.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 23, 2007
- *        Time: 3:02:01 PM
  */
 public interface ConstraintFactory {
-    public Constraint newInstance();
+    Constraint newInstance();
 }

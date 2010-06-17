@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins;
 
 import java.util.ArrayList;
@@ -24,60 +23,58 @@ import java.util.Set;
 
 /**
  * Implementation of <code>PluginFilter</code> which removes that all of the supplied
- * plugins (identified by name) as well as their dependencies are omitted from the 
- * filtered plugin list
+ * plugins (identified by name) as well as their dependencies are omitted from the
+ * filtered plugin list.
+ *
  * @author Phil Zoio
  */
 public class ExcludingPluginFilter extends BasePluginFilter {
 
-	public ExcludingPluginFilter(Set excluded) {
-		super(excluded);
-	}
+    @SuppressWarnings("unchecked")
+    public ExcludingPluginFilter(Set excluded) {
+        super(excluded);
+    }
 
-	public ExcludingPluginFilter(String[] excluded) {
-		super(excluded);
-	}
+    public ExcludingPluginFilter(String[] excluded) {
+        super(excluded);
+    }
 
-	protected List getPluginList(List original, List pluginList) {
+    @Override
+    @SuppressWarnings("unchecked")
+    protected List getPluginList(List original, List pluginList) {
 
-		// go through and remove ones that don't apply
-		List newList = new ArrayList(original);
-		for (Iterator iter = newList.iterator(); iter.hasNext();) {
-			GrailsPlugin element = (GrailsPlugin) iter.next();
+        // go through and remove ones that don't apply
+        List<GrailsPlugin> newList = new ArrayList<GrailsPlugin>(original);
+        for (Iterator<GrailsPlugin> iter = newList.iterator(); iter.hasNext();) {
+            GrailsPlugin element = iter.next();
+            // remove the excluded dependencies
+            if (pluginList.contains(element)) {
+                iter.remove();
+            }
+        }
 
-			// remove the excluded dependencies
-			if (pluginList.contains(element)) {
-				iter.remove();
-			}
-		}
+        return newList;
+    }
 
-		return newList;
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void addPluginDependencies(List additionalList, GrailsPlugin plugin) {
+        // find the plugins which depend on the one we've excluded
 
-	protected void addPluginDependencies(List additionalList,
-			GrailsPlugin plugin) {
-		// find the plugins which depend on the one we've excluded
+        String pluginName = plugin.getName();
 
-		String pluginName = plugin.getName();
+        Collection<GrailsPlugin> values = getAllPlugins();
+        for (GrailsPlugin p : values) {
+            // ignore the current plugin
+            if (pluginName.equals(p.getName())) {
+                continue;
+            }
 
-		Collection values = getAllPlugins();
-		Iterator others = values.iterator();
-		while (others.hasNext()) {
-			GrailsPlugin p = (GrailsPlugin) others.next();
+            boolean depends = isDependentOn(p, pluginName);
 
-			String pName = p.getName();
-
-			// ignore the current plugin
-			if (pluginName.equals(pName)) {
-				continue;
-			}
-
-			boolean depends = isDependentOn(p, pluginName);
-
-			if (depends) {
-				registerDependency(additionalList, p);
-			}
-		}
-	}
-
+            if (depends) {
+                registerDependency(additionalList, p);
+            }
+        }
+    }
 }

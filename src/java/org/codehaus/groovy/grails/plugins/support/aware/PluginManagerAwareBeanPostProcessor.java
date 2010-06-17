@@ -20,12 +20,13 @@ import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
 import org.springframework.beans.BeansException;
 
 /**
- * Auto-injects beans that implement PluginManagerAware
+ * Auto-injects beans that implement PluginManagerAware.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapter{
+public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapter {
+
     private GrailsPluginManager pluginManager;
 
     public PluginManagerAwareBeanPostProcessor(GrailsPluginManager pluginManager) {
@@ -36,7 +37,7 @@ public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapte
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if(bean instanceof PluginManagerAware) {
             ((PluginManagerAware)bean).setPluginManager(pluginManager);
-        }        
+        }
         return bean;
     }
 }

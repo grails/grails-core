@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.support
 
 import org.springframework.context.ApplicationContext
@@ -22,24 +21,23 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.context.ApplicationContextAware
 
 /**
- * A shutdown hook that closes the application context when CTRL+C is hit in dev mode
- * 
+ * A shutdown hook that closes the application context when CTRL+C is hit in dev mode.
+ *
  * @author Graeme Rocher
  * @since 1.1.1
  */
+class DevelopmentShutdownHook implements ApplicationContextAware {
 
-public class DevelopmentShutdownHook implements ApplicationContextAware {
-
-    public void setApplicationContext(ApplicationContext applicationContext)
-    {
-        if(!System.getProperty("grails.shutdown.hook.installed")) {
-          Runtime.runtime.addShutdownHook {
-            println("Application context shutting down...")
-            applicationContext.close()
-            println("Application context shutdown.")
-          }
-          System.setProperty("grails.shutdown.hook.installed", "true")
+    void setApplicationContext(ApplicationContext applicationContext) {
+        if (System.getProperty("grails.shutdown.hook.installed")) {
+            return
         }
-    }
 
+        Runtime.runtime.addShutdownHook {
+            println "Application context shutting down..."
+            applicationContext.close()
+            println "Application context shutdown."
+        }
+        System.setProperty("grails.shutdown.hook.installed", "true")
+    }
 }

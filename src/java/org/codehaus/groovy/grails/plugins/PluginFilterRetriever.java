@@ -11,52 +11,53 @@ import org.springframework.util.StringUtils;
 
 /**
  * Implements mechanism for figuring out what <code>PluginFilter</code>
- * implementation to use based on a set of provided configuration properties
+ * implementation to use based on a set of provided configuration properties.
  *
  * @author Phil Zoio
  * @author Graeme Rocher
  */
 public class PluginFilterRetriever {
 
-	public PluginFilter getPluginFilter(Map properties) {
+    @SuppressWarnings("unchecked")
+    public PluginFilter getPluginFilter(Map properties) {
 
-		Assert.notNull(properties);
-        if(properties instanceof ConfigObject) {
+        Assert.notNull(properties);
+        if (properties instanceof ConfigObject) {
             properties = ((ConfigObject)properties).flatten();
         }
-		Object includes = properties.get("grails.plugin.includes");
-        if(includes == null) properties.get("plugin.includes");
-		Object excludes = properties.get("grails.plugin.excludes");
-        if(excludes == null) properties.get("plugin.excludes");
+        Object includes = properties.get("grails.plugin.includes");
+        if (includes == null) properties.get("plugin.includes");
+        Object excludes = properties.get("grails.plugin.excludes");
+        if (excludes == null) properties.get("plugin.excludes");
 
-		return getPluginFilter(includes, excludes);
-	}
+        return getPluginFilter(includes, excludes);
+    }
 
-	PluginFilter getPluginFilter(Object includes, Object excludes) {
-		PluginFilter pluginFilter = null;
+    @SuppressWarnings("unchecked")
+    PluginFilter getPluginFilter(Object includes, Object excludes) {
+        PluginFilter pluginFilter = null;
 
-		if (includes != null) {
-            if(includes instanceof Collection) {
+        if (includes != null) {
+            if (includes instanceof Collection) {
                 pluginFilter = new IncludingPluginFilter(new HashSet((Collection)includes));
             }
             else {
-                String[] includesArray = StringUtils
-                        .commaDelimitedListToStringArray(includes.toString());
+                String[] includesArray = StringUtils.commaDelimitedListToStringArray(includes.toString());
                 pluginFilter = new IncludingPluginFilter(includesArray);
             }
-		} else if (excludes != null) {
-            if(excludes instanceof Collection) {
+        }
+        else if (excludes != null) {
+            if (excludes instanceof Collection) {
                 pluginFilter = new ExcludingPluginFilter(new HashSet((Collection)includes));
             }
             else {
-                String[] excludesArray = StringUtils
-                        .commaDelimitedListToStringArray(excludes.toString());
+                String[] excludesArray = StringUtils.commaDelimitedListToStringArray(excludes.toString());
                 pluginFilter = new ExcludingPluginFilter(excludesArray);
-           }
-
-		} else {
-			pluginFilter = new IdentityPluginFilter();
-		}
-		return pluginFilter;
-	}
+            }
+        }
+        else {
+            pluginFilter = new IdentityPluginFilter();
+        }
+        return pluginFilter;
+    }
 }

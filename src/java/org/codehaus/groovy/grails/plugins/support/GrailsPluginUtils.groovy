@@ -7,9 +7,9 @@ import grails.util.GrailsUtil
  */
 class GrailsPluginUtils {
 
-	static grailsVersion = null
-	static getGrailsVersion() { 
-		return GrailsUtil.getGrailsVersion()
-	}
+    static grailsVersion
 
+    static getGrailsVersion() {
+        return GrailsUtil.getGrailsVersion()
+    }
 }

@@ -45,7 +45,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     protected GrailsApplication application;
     protected boolean isBase = false;
     protected String version = "1.0";
-    protected Map dependencies = new HashMap();
+    protected Map<String, Object> dependencies = new HashMap<String, Object>();
     protected String[] dependencyNames = new String[0];
     protected Class<?> pluginClass;
     protected ApplicationContext applicationContext;
@@ -53,7 +53,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     protected String[] evictionList = new String[0];
 
     /**
-     * Wrapper Grails class for plugins
+     * Wrapper Grails class for plugins.
      *
      * @author Graeme Rocher
      */
@@ -63,23 +63,24 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         }
     }
 
-    public AbstractGrailsPlugin(Class pluginClass, GrailsApplication application) {
+    public AbstractGrailsPlugin(Class<?> pluginClass, GrailsApplication application) {
         Assert.notNull(pluginClass, "Argument [pluginClass] cannot be null");
         Assert.isTrue(pluginClass.getName().endsWith(TRAILING_NAME),
-      		  "Argument [pluginClass] with value ["+pluginClass+"] is not a Grails plugin (class name must end with 'GrailsPlugin')");
+                "Argument [pluginClass] with value [" + pluginClass +
+                "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
         this.application = application;
         this.pluginClass = pluginClass;
     }
 
     public String getFileSystemName() {
-        return getFileSystemShortName()+'-'+getVersion();
+        return getFileSystemShortName() + '-' + getVersion();
     }
 
     public String getFileSystemShortName() {
         return GrailsNameUtils.getScriptName(getName());
     }
 
-    public Class getPluginClass() {
+    public Class<?> getPluginClass() {
         return pluginClass;
     }
 
@@ -98,8 +99,9 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     public void doWithWebDescriptor(GPathResult webXml) {
         // do nothing
     }
+
     public String[] getDependencyNames() {
-        return this.dependencyNames;
+        return dependencyNames;
     }
 
     public String getDependentVersion(String name) {
@@ -111,7 +113,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     }
 
     public String getVersion() {
-        return this.version;
+        return version;
     }
 
     public String getPluginPath() {
@@ -119,7 +121,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     }
 
     public GrailsPluginManager getManager() {
-        return this.manager;
+        return manager;
     }
 
     public String[] getLoadAfterNames() {
@@ -133,20 +135,23 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#setManager(org.codehaus.groovy.grails.plugins.GrailsPluginManager)
      */
     public void setManager(GrailsPluginManager manager) {
         this.manager = manager;
     }
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#setApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
      */
     public void setApplication(GrailsApplication application) {
         this.application = application;
     }
+
     public String[] getEvictionNames() {
-        return this.evictionList;
+        return evictionList;
     }
 
     @Override
@@ -171,20 +176,20 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
     public int compareTo(Object o) {
         AbstractGrailsPlugin that = (AbstractGrailsPlugin) o;
-        if(this.equals(that)) return 0;
+        if (equals(that)) return 0;
 
         String thatName = that.getName();
         for (String pluginName : getLoadAfterNames()) {
-            if(pluginName.equals(thatName)) return -1;
+            if (pluginName.equals(thatName)) return -1;
         }
         for (String pluginName : getLoadBeforeNames()) {
-            if(pluginName.equals(thatName)) return 1;
+            if (pluginName.equals(thatName)) return 1;
         }
         for(String pluginName : that.getLoadAfterNames()) {
-            if(pluginName.equals(getName())) return 1;
+            if (pluginName.equals(getName())) return 1;
         }
         for(String pluginName : that.getLoadBeforeNames()) {
-            if(pluginName.equals(getName())) return -1;
+            if (pluginName.equals(getName())) return -1;
         }
 
         return 0;

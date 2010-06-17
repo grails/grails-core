@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins;
 
 import java.util.List;
 
 /**
- * No-op implementation of <code>PluginFilter</code>
+ * No-op implementation of <code>PluginFilter</code>.
+ *
  * @author Phil Zoio
  */
 public class IdentityPluginFilter implements PluginFilter {
 
-	/**
-	 * Simply returns original list reference
-	 */
-	public List filterPluginList(List original)
-	{
-		return original;
-	}
+    /**
+     * Simply returns original list reference.
+     */
+    @SuppressWarnings("unchecked")
+    public List filterPluginList(List original) {
+        return original;
+    }
 }

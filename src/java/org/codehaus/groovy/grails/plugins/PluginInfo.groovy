@@ -12,79 +12,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins
 
-import java.util.Map;
+import grails.util.PluginBuildSettings
+
+import groovy.util.slurpersupport.GPathResult
 
 import org.springframework.core.io.Resource
 
-import groovy.lang.MissingPropertyException;
-import groovy.util.slurpersupport.GPathResult
-
-
 /**
- * A class used mainly by the build system that encapsulates access to information
- * about the underlying plugin by delegating to the methods in GrailsPluginUtils
- * 
+ * Used mainly by the build system that encapsulates access to information
+ * about the underlying plugin by delegating to the methods in GrailsPluginUtils.
+ *
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
+class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
 
     Resource pluginDir
-    grails.util.PluginBuildSettings pluginBuildSettings
+    PluginBuildSettings pluginBuildSettings
     def metadata
     String name
     String version
 
-    public PluginInfo(Resource pluginXml, grails.util.PluginBuildSettings pluginBuildSettings) {
-        super();
-        if(pluginXml) {
-        	try {
-        		this.pluginDir = pluginXml.createRelative(".");
-        	}catch(e) {
-        		// ignore
-        	}        	
+    PluginInfo(Resource pluginXml, grails.util.PluginBuildSettings pluginBuildSettings) {
+        if (pluginXml) {
+            try {
+                pluginDir = pluginXml.createRelative(".")
+            }
+            catch(e) {
+                // ignore
+            }
         }
-        	
-        this.metadata = parseMetadata(pluginXml)
+
+        metadata = parseMetadata(pluginXml)
         this.pluginBuildSettings = pluginBuildSettings
     }
 
     GPathResult parseMetadata(Resource pluginXml) {
-    	InputStream input 
-    	try {
-    		input = pluginXml.getInputStream()
-    		return new XmlSlurper().parse(input)
-    	}
+        InputStream input
+        try {
+            input = pluginXml.getInputStream()
+            return new XmlSlurper().parse(input)
+        }
         finally { input?.close() }
     }
 
-
     /**
-     * Returns the plugin's version
+     * Returns the plugin's version.
      */
     String getVersion() {
-        if(!version) {
+        if (!version) {
             version = metadata.@version.text()
         }
         return version
     }
 
     /**
-     * Returns the plugin's name
+     * Returns the plugin's name.
      */
     String getName() {
-        if(!name) {
+        if (!name) {
             name = metadata.@name.text()
         }
         return name
     }
 
     /**
-     * Obtains the plugins directory
+     * Obtains the plugins directory.
      */
     Resource getPluginDirectory() {
         return pluginDir
@@ -98,19 +93,19 @@ public class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo 
     }
 
     String getFullName() {
-		"${getName()}-${getVersion()}"
-	}
-    
-    Map getProperties() {
-    	return [name:getName(), version:getVersion()];
+        "${getName()}-${getVersion()}"
     }
-    
+
+    Map getProperties() {
+        [name:getName(), version:getVersion()]
+    }
+
     def getProperty(String name) {
-    	try {
-    		return super.getProperty(name)
-    	}
-    	catch(MissingPropertyException mpe) {
-    		return metadata[name].text()
-    	}
-	}
+        try {
+            return super.getProperty(name)
+        }
+        catch (MissingPropertyException mpe) {
+            return metadata[name].text()
+        }
+    }
 }

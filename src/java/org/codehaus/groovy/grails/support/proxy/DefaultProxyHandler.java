@@ -16,32 +16,30 @@
 package org.codehaus.groovy.grails.support.proxy;
 
 /**
- * Trivial default implementation that always returns true and the object
- * 
+ * Trivial default implementation that always returns true and the object.
+ *
  * @author Graeme Rocher
  * @since 1.2.2
- *
  */
 public class DefaultProxyHandler implements ProxyHandler {
 
-	public boolean isInitialized(Object o) {		
-		return true;
-	}
+    public boolean isInitialized(Object o) {
+        return true;
+    }
 
-	public boolean isInitialized(Object obj, String associationName) {
-		return true;
-	}
+    public boolean isInitialized(Object obj, String associationName) {
+        return true;
+    }
 
-	public Object unwrapIfProxy(Object instance) {
-		return instance;
-	}
+    public Object unwrapIfProxy(Object instance) {
+        return instance;
+    }
 
-	public boolean isProxy(Object o) {
-		return false;
-	}
+    public boolean isProxy(Object o) {
+        return false;
+    }
 
-	public void initialize(Object o) {
-		// do nothing		
-	}
-
+    public void initialize(Object o) {
+        // do nothing
+    }
 }

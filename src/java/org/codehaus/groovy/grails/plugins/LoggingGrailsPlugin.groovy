@@ -21,12 +21,11 @@ import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import grails.util.GrailsNameUtils
 
 /**
- * A plug-in that provides a lazy initialized commons logging log property
- * for all classes
+ * A plug-in that provides a lazy initialized commons logging log property for all classes.
  *
  * @author Marc Palmer
  * @author Graeme Rocher
- * 
+ *
  * @since 0.4
  */
 class LoggingGrailsPlugin {

@@ -15,24 +15,22 @@
 package org.codehaus.groovy.grails.support;
 
 import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
 /**
- * Resource loader that loads locations starting with /WEB-INF from the Grails web-app directory
+ * Loads locations starting with /WEB-INF from the Grails web-app directory.
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Sep 25, 2007
- *        Time: 8:37:07 PM
  */
 public class CommandLineResourceLoader extends DefaultResourceLoader {
 
+    @Override
     public Resource getResource(String location) {
-        if(location.startsWith("/WEB-INF")) {
-            return new FileSystemResource("./web-app"+location);
+        if (location.startsWith("/WEB-INF")) {
+            return new FileSystemResource("./web-app" + location);
         }
-        return super.getResource(location);    
+        return super.getResource(location);
     }
 }

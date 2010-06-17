@@ -14,19 +14,18 @@
  */
 package org.codehaus.groovy.grails.support;
 
-import org.springframework.core.io.ByteArrayResource;
-
 import java.io.UnsupportedEncodingException;
 
+import org.springframework.core.io.ByteArrayResource;
+
 /**
- * A resource that mocks the behavior of a FileResource
- * 
+ * Mocks the behavior of a FileResource.
+ *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Feb 6, 2009
  */
-public class MockFileResource extends ByteArrayResource{
+public class MockFileResource extends ByteArrayResource {
+
     private String fileName;
 
     public MockFileResource(String fileName, String contents) throws UnsupportedEncodingException {
@@ -40,7 +39,7 @@ public class MockFileResource extends ByteArrayResource{
     }
 
     @Override
-    public String getFilename() throws IllegalStateException {
-        return this.fileName;
+    public String getFilename() {
+        return fileName;
     }
 }

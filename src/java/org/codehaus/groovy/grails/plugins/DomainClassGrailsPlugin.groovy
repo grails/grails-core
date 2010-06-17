@@ -28,7 +28,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
 /**
- * A plug-in that configures the domain classes in the spring context.
+ * A plugin that configures the domain classes in the spring context.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -40,7 +40,7 @@ class DomainClassGrailsPlugin {
     def loadAfter = ['controllers']
 
     def doWithSpring = {
-        for(dc in application.domainClasses) {
+        for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
             "${dc.fullName}"(dc.clazz) { bean ->
                 bean.singleton = false
@@ -82,7 +82,7 @@ class DomainClassGrailsPlugin {
             MetaClass metaClass = domainClass.metaClass
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
-            metaClass.constructor = {->
+            metaClass.constructor = { ->
                 if (ctx.containsBean(domainClass.fullName)) {
                     ctx.getBean(domainClass.fullName)
                 }
@@ -90,7 +90,7 @@ class DomainClassGrailsPlugin {
                     BeanUtils.instantiateClass(domainClass.clazz)
                 }
             }
-            metaClass.static.create = {->
+            metaClass.static.create = { ->
                 if (ctx.containsBean(domainClass.fullName)) {
                     ctx.getBean(domainClass.fullName)
                 }
@@ -118,14 +118,14 @@ class DomainClassGrailsPlugin {
             def rch = application.classLoader.loadClass("org.springframework.web.context.request.RequestContextHolder")
             get = {
                 def attributes = rch.getRequestAttributes()
-                if(attributes) {
+                if (attributes) {
                     return attributes.request.getAttribute(it)
                 }
                 return PROPERTY_INSTANCE_MAP.get().get(it)
             }
             put = { key, val ->
                 def attributes = rch.getRequestAttributes()
-                if(attributes) {
+                if (attributes) {
                     attributes.request.setAttribute(key,val)
                 }
                 else {
@@ -138,7 +138,7 @@ class DomainClassGrailsPlugin {
             put = { key, val -> PROPERTY_INSTANCE_MAP.get().put(key,val) }
         }
 
-        metaClass.getErrors = {->
+        metaClass.getErrors = { ->
             def errors
             def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             errors = get(key)
@@ -152,11 +152,11 @@ class DomainClassGrailsPlugin {
             def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             put key, errors
         }
-        metaClass.clearErrors = {->
+        metaClass.clearErrors = { ->
             delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
         }
         if (!domainClass.hasMetaMethod("validate")) {
-            metaClass.validate = {->
+            metaClass.validate = { ->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
         }
@@ -166,26 +166,22 @@ class DomainClassGrailsPlugin {
      * Registers the constraints property for the given MetaClass and domainClass instance
      */
     static void registerConstraintsProperty(MetaClass metaClass, GrailsDomainClass domainClass) {
-        metaClass.'static'.getConstraints = {->
-            domainClass.constrainedProperties
-        }
+        metaClass.'static'.getConstraints = { -> domainClass.constrainedProperties }
 
-        metaClass.getConstraints = {->
-            domainClass.constrainedProperties
-        }
+        metaClass.getConstraints = {-> domainClass.constrainedProperties }
     }
 
     private static addRelationshipManagementMethods(GrailsDomainClass dc) {
         def metaClass = dc.metaClass
-        for(p in dc.persistantProperties) {
+        for (p in dc.persistantProperties) {
             def prop = p
             if (prop.basicCollectionType) {
                 def collectionName = GrailsClassUtils.getClassNameRepresentation(prop.name)
                 metaClass."addTo$collectionName" = { obj ->
-                    if(obj instanceof CharSequence && !(obj instanceof String)) {
+                    if (obj instanceof CharSequence && !(obj instanceof String)) {
                         obj = obj.toString()
                     }
-                    if(prop.referencedPropertyType.isInstance(obj)) {
+                    if (prop.referencedPropertyType.isInstance(obj)) {
                         if (delegate[prop.name] == null) {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
                         }
@@ -197,8 +193,8 @@ class DomainClassGrailsPlugin {
                     }
                 }
                 metaClass."removeFrom$collectionName" = { obj ->
-                    if(delegate[prop.name]) {
-                        if(obj instanceof CharSequence && !(obj instanceof String)) {
+                    if (delegate[prop.name]) {
+                        if (obj instanceof CharSequence && !(obj instanceof String)) {
                             obj = obj.toString()
                         }
                         delegate[prop.name].remove(obj)
@@ -206,11 +202,12 @@ class DomainClassGrailsPlugin {
                     return delegate
                 }
             }
-            else if(prop.oneToOne || prop.manyToOne) {
+            else if (prop.oneToOne || prop.manyToOne) {
                 def identifierPropertyName = "${prop.name}Id"
-                if(!dc.hasMetaProperty(identifierPropertyName)) {
+                if (!dc.hasMetaProperty(identifierPropertyName)) {
                     def getterName = GrailsClassUtils.getGetterName(identifierPropertyName)
-                    metaClass."$getterName" = {-> GrailsDomainConfigurationUtil.getAssociationIdentifier(delegate, prop.name, prop.referencedDomainClass) }
+                    metaClass."$getterName" = {-> GrailsDomainConfigurationUtil.getAssociationIdentifier(
+                        delegate, prop.name, prop.referencedDomainClass) }
                 }
             }
             else if (prop.oneToMany || prop.manyToMany) {
@@ -219,7 +216,7 @@ class DomainClassGrailsPlugin {
                     def collectionName = GrailsClassUtils.getClassNameRepresentation(propertyName)
                     def otherDomainClass = prop.referencedDomainClass
 
-                    metaClass."addTo${collectionName}" = {Object arg ->
+                    metaClass."addTo${collectionName}" = { Object arg ->
                         Object obj
                         if (delegate[prop.name] == null) {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
@@ -238,7 +235,7 @@ class DomainClassGrailsPlugin {
                         }
                         if (prop.bidirectional && prop.otherSide) {
                             def otherSide = prop.otherSide
-                            if(otherSide.oneToMany || otherSide.manyToMany) {
+                            if (otherSide.oneToMany || otherSide.manyToMany) {
                                 String name = prop.otherSide.name
                                 if (!obj[name]) {
                                     obj[name] = GrailsClassUtils.createConcreteCollection(prop.otherSide.type)

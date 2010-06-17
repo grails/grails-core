@@ -14,57 +14,55 @@
  */
 package org.codehaus.groovy.grails.support;
 
-import org.springframework.core.io.Resource;
-
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.core.io.Resource;
+
 /**
- * A ResourceLoader that loads Resources from Strings that are registered as Mock resources
+ * Loads Resources from Strings that are registered as Mock resources.
  *
  * @author Graeme Rocher
  * @since 0.4
- * 
- *        <p/>
- *        Created: Feb 23, 2007
- *        Time: 2:00:15 PM
  */
 public class MockStringResourceLoader extends MockResourceLoader {
 
-    private Map mockResources = new HashMap();
+    private Map<String, GrailsByteArrayResource> mockResources = new HashMap<String, GrailsByteArrayResource>();
 
+    @Override
     public Resource getResource(String location) {
-        if(mockResources.containsKey(location))
-            return (Resource)mockResources.get(location);
-        else
-            return super.getResource(location);
-    }
+        if (mockResources.containsKey(location)) {
+            return mockResources.get(location);
+        }
 
+        return super.getResource(location);
+    }
 
     /**
      * Registers a mock resource with the first argument as the location and the second as the contents
-     * of the resource
+     * of the resource.
      *
      * @param location The location
      * @param contents The contents of the resource
      */
     public void registerMockResource(String location, String contents) {
         try {
-			this.mockResources.put(location, new GrailsByteArrayResource(contents.getBytes("UTF-8"), location));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+            mockResources.put(location, new GrailsByteArrayResource(contents.getBytes("UTF-8"), location));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Registers a mock resource with the first argument as the location and the second as the contents
-     * of the resource
+     * of the resource.
      *
      * @param location The location
      * @param contents The contents of the resource
      */
     public void registerMockResource(String location, byte[] contents) {
-        this.mockResources.put(location, new GrailsByteArrayResource(contents, location));
+        mockResources.put(location, new GrailsByteArrayResource(contents, location));
     }
 }

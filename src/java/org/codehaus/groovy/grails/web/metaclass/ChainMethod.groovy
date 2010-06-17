@@ -1,3 +1,17 @@
+/* Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.web.metaclass
 
 import org.springframework.web.context.request.RequestContextHolder
@@ -10,18 +24,16 @@ import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import grails.util.GrailsNameUtils
 
 /**
- * Implementation of the chain() method for controllers
+ * Implementation of the chain() method for controllers.
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 2, 2008
  */
 class ChainMethod {
 
-
     static invoke(target, Map args = [:]) {
-        def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(target.class.name,ControllerArtefactHandler.TYPE )
+        def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(
+            target.class.name, ControllerArtefactHandler.TYPE )
         def action = args.action
         def id = args.id
         def params = args.params ?: [:]
@@ -30,20 +42,21 @@ class ChainMethod {
         def actionParams = params.findAll { it.key?.startsWith('_action_') }
         actionParams?.each { params.remove(it.key) }
 
-
         GrailsWebRequest webRequest = RequestContextHolder.currentRequestAttributes()
         def flash = webRequest.getFlashScope()
 
         def chainModel = flash.chainModel
-        if(chainModel instanceof Map) {
+        if (chainModel instanceof Map) {
             chainModel.putAll(model)
             model = chainModel
         }
         flash.chainModel = model
 
-        if(action instanceof Closure) {
+        if (action instanceof Closure) {
             def prop = GCU.getPropertyDescriptorForValue(target, action)
-            if(prop) action = prop.name
+            if (prop) {
+                action = prop.name
+            }
             else {
                 def scaffolder = GrailsWebUtil.getScaffolderForController(controller, webRequest)
                 action = scaffolder?.getActionName(action)
@@ -62,6 +75,5 @@ class ChainMethod {
 
         def url = response.encodeRedirectURL(creator.createURL(controller,action, params, 'utf-8'))
         response.sendRedirect url
-
     }
 }

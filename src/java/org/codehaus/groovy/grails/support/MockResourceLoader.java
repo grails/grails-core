@@ -14,34 +14,33 @@
  */
 package org.codehaus.groovy.grails.support;
 
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.FileSystemResource;
-
 import java.io.File;
 
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+
 /**
- * A ResourceLoader that loads from the file system if its not found on the classpath. Useful for mock testing
+ * Loads from the file system if its not found on the classpath. Useful for mock testing.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Feb 8, 2007
- *        Time: 2:50:59 PM
  */
 public class MockResourceLoader extends DefaultResourceLoader {
 
-        public Resource getResource(String location) {
-            Resource r  = super.getResource(location);
-            if(!r.exists() && isNotPrefixed(location)) {
-                if(!location.startsWith("/"))location = "/" + location;
-                r = new FileSystemResource(new File("./web-app/WEB-INF"+location));
+    @Override
+    public Resource getResource(String location) {
+        Resource r = super.getResource(location);
+        if (!r.exists() && isNotPrefixed(location)) {
+            if (!location.startsWith("/")) {
+                location = "/" + location;
             }
-            return r;
+            r = new FileSystemResource(new File("./web-app/WEB-INF" + location));
         }
+        return r;
+    }
 
-        private static boolean isNotPrefixed(String location) {
-            return !location.startsWith("classpath:") && !location.startsWith("classpath*:") && !location.startsWith("file:");
-        }
-
+    private static boolean isNotPrefixed(String location) {
+        return !location.startsWith("classpath:") && !location.startsWith("classpath*:") && !location.startsWith("file:");
+    }
 }

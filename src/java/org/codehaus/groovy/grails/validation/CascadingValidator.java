@@ -14,25 +14,21 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.springframework.validation.Validator;
 import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 /**
- * Extends the default Spring Validator interface and provides an additional method that specifies whether validation should
- * cascade into associations
+ * Extends the default Spring Validator interface and provides an additional method that specifies whether
+ * validation should cascade into associations.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Apr 13, 2007
- *        Time: 3:29:39 PM
  */
 public interface CascadingValidator extends Validator {
 
     /**
      * An extended version of the validate(errors,obj) method that takes an additional argument specifying whether
-     * the Validator should cascade into associations or not
+     * the Validator should cascade into associations or not.
      *
      * @param obj The Object to validate
      * @param errors The Spring Errors instance
@@ -40,7 +36,7 @@ public interface CascadingValidator extends Validator {
      *
      * @see org.springframework.validation.Errors
      * @see org.springframework.validation.Validator
-     * @see org.springframework.validation.Validator#validate(Object, org.springframework.validation.Errors) 
+     * @see org.springframework.validation.Validator#validate(Object, org.springframework.validation.Errors)
      */
-    public void validate(Object obj, Errors errors, boolean cascade);
+    void validate(Object obj, Errors errors, boolean cascade);
 }

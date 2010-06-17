@@ -75,8 +75,7 @@ public class ValidatorConstraint extends AbstractConstraint {
 
         // Provide some extra information via a closure delegate.
         // The custom validator can access the properties of this
-        // delegate as if they were already defined as local
-        // variables.
+        // delegate as if they were already defined as local variables.
         final ValidatorDelegate delegate = new ValidatorDelegate();
         delegate.setPropertyName(getPropertyName());
         validator.setDelegate(delegate);
@@ -121,8 +120,9 @@ public class ValidatorConstraint extends AbstractConstraint {
             }
             else {
                 throw new IllegalArgumentException("Return value from validation closure [" +
-                        ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class [" +
-                        constraintOwningClass + "] must be a boolean, a string, an array or a collection");
+                        ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property [" + constraintPropertyName +
+                        "] of class [" + constraintOwningClass +
+                        "] must be a boolean, a string, an array or a collection");
             }
         }
         if (bad) {
@@ -148,7 +148,8 @@ public class ValidatorConstraint extends AbstractConstraint {
         if (params.length == 0) {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking at least 1 parameter (value, [object])");
         }
-        else if (params.length > 3) {
+
+        if (params.length > 3) {
             throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.VALIDATOR_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a Closure taking no more than 3 parameters (value, [object, [errors]])");
         }
 
@@ -163,18 +164,14 @@ public class ValidatorConstraint extends AbstractConstraint {
 
     @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
-        if (type == null) {
-            return false;
-        }
-
-        return true;
+        return type != null;
     }
 
     private static class ValidatorDelegate {
         private String propertyName;
 
         @SuppressWarnings("unused")
-		public String getPropertyName() {
+        public String getPropertyName() {
             return propertyName;
         }
 

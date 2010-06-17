@@ -12,29 +12,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.documentation
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import grails.util.Metadata
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+
 /**
- * A Class that gather information about the behavior a plugin adds at runtime.
+ * Gathers information about the behavior a plugin adds at runtime.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class DocumentationContext {
+class DocumentationContext {
 
     private static DocumentationContextThreadLocal threadLocalDocumentContext;
     static {
-        if(!Metadata.current.warDeployed) {
+        if (!Metadata.current.warDeployed) {
             threadLocalDocumentContext = new DocumentationContextThreadLocal()
         }
     }
-    public static DocumentationContext getInstance() {        
-        threadLocalDocumentContext?.get() 
+
+    static DocumentationContext getInstance() {
+        threadLocalDocumentContext?.get()
     }
 
     String artefactType = "Unknown"
@@ -51,6 +51,7 @@ public class DocumentationContext {
     boolean isActive() {
         this.active
     }
+
     void setActive(boolean b) { this.active = b }
 
     void reset() {
@@ -69,16 +70,14 @@ public class DocumentationContext {
     /**
      * Documents an instance method
      */
-    DocumentationContext documentMethod(String artefact, Class type, String name, Class[] arguments) {
-        if(!currentDocumentation) {
-            if(GrailsClassUtils.isGetter(name, arguments)) {
+    DocumentationContext documentMethod(String artefact, Class type, String name, Class<?>[] arguments) {
+        if (!currentDocumentation) {
+            if (GrailsClassUtils.isGetter(name, arguments)) {
                 currentDocumentation = properties.find { it.name == GrailsClassUtils.getPropertyForGetter(name) }?.text
             }
-            if(GrailsClassUtils.isSetter(name, arguments)) {
+            if (GrailsClassUtils.isSetter(name, arguments)) {
                 currentDocumentation = properties.find { it.name == GrailsClassUtils.getPropertyForSetter(name) }?.text
             }
-
-
         }
         methods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact, text:currentDocumentation)
         currentDocumentation = null
@@ -88,22 +87,20 @@ public class DocumentationContext {
     /**
      * Documents a static method
      */
-    DocumentationContext documentStaticMethod(String artefact, Class type, String name, Class[] arguments) {
+    DocumentationContext documentStaticMethod(String artefact, Class type, String name, Class<?>[] arguments) {
         staticMethods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact,text:currentDocumentation)
         currentDocumentation = null
         return this
     }
-
-
 
     /**
      * Documents a property
      */
     DocumentationContext documentProperty(String artefact, Class type, String name) {
 
-        if(!currentDocumentation) {
+        if (!currentDocumentation) {
             def getterOrSetter = methods.find {it.name == GrailsClassUtils.getGetterName(name) || it.name == GrailsClassUtils.getSetterName(name)}
-            if(getterOrSetter && getterOrSetter.text) {
+            if (getterOrSetter && getterOrSetter.text) {
                 currentDocumentation = getterOrSetter.text
             }
         }
@@ -111,32 +108,33 @@ public class DocumentationContext {
         currentDocumentation = null
         return this
     }
-
 }
-class DocumentationContextThreadLocal extends InheritableThreadLocal{
+
+class DocumentationContextThreadLocal extends InheritableThreadLocal {
 
     protected Object initialValue() {
         return new DocumentationContext()
     }
-
 }
+
 class DocumentedElement {
     String name
     Class type
     String artefact
     String text
 }
-class DocumentedMethod extends DocumentedElement{
-    Class[] arguments
-    public String toString() {
-        return "${type.name}.${name}(${arguments*.name.join(',')})"
+
+class DocumentedMethod extends DocumentedElement {
+    Class<?>[] arguments
+
+    String toString() {
+        "${type.name}.${name}(${arguments*.name.join(',')})"
     }
-
-
 }
+
 class DocumentedProperty extends DocumentedElement {
     Class type = Object
-    public String toString() {
-        return "${type.name}.${name}"
+    String toString() {
+        "${type.name}.${name}"
     }
 }

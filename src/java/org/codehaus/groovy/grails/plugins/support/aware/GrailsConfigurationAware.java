@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.support.aware;
 
 import groovy.util.ConfigObject;
 
 /**
- * An interface for obtaining the Grails ConfigObject via Spring
- * 
+ * Obtains the Grails ConfigObject via Spring.
+ *
  * @author Graeme Rocher
  * @since 1.2
  */

@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.validation.routines.UrlValidator;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates a url.
+ * Validates a url.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -47,25 +47,25 @@ public class UrlConstraint extends AbstractConstraint {
         RegexValidator domainValidator = null;
 
         if (constraintParameter instanceof Boolean) {
-            this.url = ((Boolean) constraintParameter).booleanValue();
+            url = ((Boolean) constraintParameter).booleanValue();
         }
         else if (constraintParameter instanceof String) {
-            this.url = true;
+            url = true;
             domainValidator = new RegexValidator((String) constraintParameter);
         }
         else if (constraintParameter instanceof List<?>) {
-            this.url = true;
+            url = true;
             List<?> regexpList = (List<?>) constraintParameter;
-            domainValidator = new RegexValidator((String[]) regexpList.toArray(new String[regexpList.size()]));
+            domainValidator = new RegexValidator(regexpList.toArray(new String[regexpList.size()]));
         }
         else {
-            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.URL_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a boolean, string, or list value");
+            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.URL_CONSTRAINT +
+                    "] of property [" + constraintPropertyName + "] of class [" +
+                    constraintOwningClass + "] must be a boolean, string, or list value");
         }
 
-        validator = new UrlValidator(
-                domainValidator,
-                UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES
-        );
+        validator = new UrlValidator(domainValidator,
+                UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_2_SLASHES);
 
         super.setParameter(constraintParameter);
     }
@@ -82,7 +82,8 @@ public class UrlConstraint extends AbstractConstraint {
 
         if (!validator.isValid(propertyValue.toString())) {
             Object[] args = new Object[]{constraintPropertyName, constraintOwningClass, propertyValue};
-            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE, ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_URL_MESSAGE_CODE,
+                    ConstrainedProperty.URL_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
         }
     }
 }

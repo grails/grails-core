@@ -20,11 +20,11 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**
- * A Constraint that validates a range.
+ * Validates a range.
  *
  * @author Graeme Rocher
- * @since 0.4
  */
+@SuppressWarnings("unchecked")
 public class RangeConstraint extends AbstractConstraint {
 
     Range range;
@@ -39,7 +39,6 @@ public class RangeConstraint extends AbstractConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
     public boolean supports(Class type) {
         return type != null && (Comparable.class.isAssignableFrom(type) ||
                 GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, type));
@@ -51,7 +50,10 @@ public class RangeConstraint extends AbstractConstraint {
     @Override
     public void setParameter(Object constraintParameter) {
         if (!(constraintParameter instanceof Range)) {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.RANGE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a of type [groovy.lang.Range]");
+                throw new IllegalArgumentException("Parameter for constraint [" +
+                        ConstrainedProperty.RANGE_CONSTRAINT + "] of property [" +
+                        constraintPropertyName + "] of class [" +
+                        constraintOwningClass + "] must be a of type [groovy.lang.Range]");
         }
 
         range = (Range)constraintParameter;

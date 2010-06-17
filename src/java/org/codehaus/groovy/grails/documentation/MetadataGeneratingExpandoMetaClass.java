@@ -20,57 +20,51 @@ import groovy.lang.MetaBeanProperty;
 import groovy.lang.MetaMethod;
 
 /**
- * A specialized version of ExpandoMetaClass that is capable of generating metadata about the dynamic methods and properties
- * that are added to artefact types at runtime by plugins
+ * A specialized version of ExpandoMetaClass that is capable of generating metadata about the
+ * dynamic methods and properties that are added to artefact types at runtime by plugins.
  *
- * A project with sufficient code coverage will have metadata about the methods and properties it provides generated at runtime.
+ * A project with sufficient code coverage will have metadata about the methods and properties it
+ * provides generated at runtime.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-
 public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
 
-
-    public MetadataGeneratingExpandoMetaClass(Class theClass) {
+    public MetadataGeneratingExpandoMetaClass(Class<?> theClass) {
         super(theClass,true, true);
     }
 
-
+    @Override
     public void addMetaBeanProperty(MetaBeanProperty mp) {
-
         super.addMetaBeanProperty(mp);
 
-        if(!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
-
+        if (!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
             DocumentationContext context = DocumentationContext.getInstance();
-
-            if(context!=null&&context.isActive() && getExpandoProperties().contains(mp)) {
+            if (context != null && context.isActive() && getExpandoProperties().contains(mp)) {
                 context.documentProperty(context.getArtefactType(),getJavaClass(), mp.getName());
             }
         }
-
     }
 
+    @Override
     protected void registerStaticMethod(String name, Closure callable) {
         super.registerStaticMethod(name, callable);
-        if(!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
+        if (!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
             DocumentationContext context = DocumentationContext.getInstance();
-            if(context!=null&&context.isActive() && isInitialized()) {
+            if (context != null && context.isActive() && isInitialized()) {
                 context.documentStaticMethod(context.getArtefactType(),getJavaClass(), name, callable.getParameterTypes());
             }
         }
-
     }
 
-
-
+    @Override
     public void registerInstanceMethod(MetaMethod method) {
         super.registerInstanceMethod(method);
-        if(!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
+        if (!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
             DocumentationContext context = DocumentationContext.getInstance();
-            if(context!=null&&context.isActive() && isInitialized()) {
-                if(method.isStatic()) {
+            if (context != null && context.isActive() && isInitialized()) {
+                if (method.isStatic()) {
                     context.documentStaticMethod(context.getArtefactType(),getJavaClass(), method.getName(), method.getNativeParameterTypes());
                 }
                 else {
@@ -78,13 +72,5 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
                 }
             }
         }
-
     }
-
-
-
-
-
-
-
 }

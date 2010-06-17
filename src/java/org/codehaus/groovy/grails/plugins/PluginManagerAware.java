@@ -15,15 +15,12 @@
 package org.codehaus.groovy.grails.plugins;
 
 /**
- * <p>An interface for implementors interested in obtaining a reference to the Grails PluginManager instance
+ * For implementors interested in obtaining a reference to the Grails PluginManager instance.
  *
  * @see GrailsPluginManager
  *
  * @author Graeme Rocher
  * @since 0.6
- *        <p/>
- *        Created: Aug 21, 2007
- *        Time: 8:05:29 AM
  */
 public interface PluginManagerAware {
 

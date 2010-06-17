@@ -31,8 +31,6 @@ import org.springframework.util.Assert
  *
  * @author Graeme Rocher
  * @since 1.1
- *
- * Created: Jan 9, 2009
  */
 class ForwardMethod {
 

@@ -20,7 +20,7 @@ import java.util.Collection;
 import org.springframework.validation.Errors;
 
 /**
- * A constraint that validates maximum size of the property, for strings and arrays this is the length, collections
+ * Validates maximum size of the property, for strings and arrays this is the length, collections
  * the size and numbers the value.
  *
  * @author Graeme Rocher
@@ -64,9 +64,8 @@ public class MaxSizeConstraint extends AbstractConstraint {
     public boolean supports(Class type) {
         return type != null && (
                 String.class.isAssignableFrom(type) ||
-                Collection.class.isAssignableFrom(type) || 
-                type.isArray()
-        );
+                Collection.class.isAssignableFrom(type) ||
+                type.isArray());
     }
 
     @Override
