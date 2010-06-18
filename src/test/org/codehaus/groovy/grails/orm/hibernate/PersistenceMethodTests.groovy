@@ -811,6 +811,13 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
             domainClass.executeQuery("select distinct p from PersistentMethodTests as p where p.firstName = :name", namedArgs)
             // 1 is not valid name for named param, so exception should be thrown
         }
+
+        // test with multiple positional parameters
+        listResult = domainClass.executeQuery(
+            "select distinct p from PersistentMethodTests as p " +
+            "where p.firstName=? and p.lastName=?", ["fred", "flintstone"])
+        assertEquals 1, listResult.size()
+        assertEquals "fred", listResult[0].getProperty("firstName")
     }
 
     void testDMLOperation() {

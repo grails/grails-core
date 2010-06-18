@@ -84,7 +84,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                 // process positional HQL params
                 int index = 0;
                 for (Object parameter : positionalParams) {
-                    q.setParameter(index, parameter instanceof CharSequence ? parameter.toString() : parameter);
+                    q.setParameter(index++, parameter instanceof CharSequence ? parameter.toString() : parameter);
                 }
                 // process named HQL params
                 for (Object o : namedParams.entrySet()) {
