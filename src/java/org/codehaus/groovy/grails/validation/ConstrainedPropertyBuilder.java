@@ -68,6 +68,13 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 cp.setOrder(order++);
                 constrainedProperties.put( property, cp );
             }
+
+            if (cp.getPropertyType() == null) {
+                GrailsUtil.warn("Property [" + cp.getPropertyName() + "] not found in domain class " +
+                    targetClass.getName() + "; cannot apply constraints: " + attributes);
+                return cp;
+            }
+
             for (Object o : attributes.keySet()) {
                 String constraintName = (String) o;
                 final Object value = attributes.get(constraintName);

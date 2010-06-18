@@ -33,6 +33,7 @@ class Book {
     String name
     static constraints = {
         name(maxSize:250)
+        nonExistentProperty nullable: true // test that this is ignored
     }
 }
 '''
