@@ -470,14 +470,21 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null;
         
         LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
-        if(type != null && val == null && isDomainClass(type)) {
-            if(!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
-
-                Object created = autoInstantiateDomainInstance(type);
-
-                if(created!=null)  {
-                    val = created;
-                    bean.setPropertyValue(propertyName,created);
+        if (type != null && val == null && (isDomainClass(type) || isEmbedded(bean, propertyName))) {
+            if (!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
+                if (isDomainClass(type)) {
+                    Object created = autoInstantiateDomainInstance(type);
+                    if (created != null) {
+                        val = created;
+                        bean.setPropertyValue(propertyName, created);
+                    }
+                }
+                else if (isEmbedded(bean, propertyName)) {
+                    Object created = autoInstantiateEmbeddedInstance(type);
+                    if (created != null) {
+                        val = created;
+                        bean.setPropertyValue(propertyName, created);
+                    }
                 }
             }
         }
@@ -558,9 +565,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return val;
     }
 
-	private boolean isDomainClass(final Class clazz) {
+    private boolean isDomainClass(final Class clazz) {
 		return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz);
 	}
+
+    private boolean isEmbedded(BeanWrapper bean, String propertyName) {
+        Object embedded = GrailsClassUtils.getStaticPropertyValue(bean.getWrappedClass(), GrailsDomainClassProperty.EMBEDDED);
+        return embedded instanceof List && ((List)embedded).contains(propertyName);
+    }
 
     private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
         return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
@@ -597,9 +609,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private Object autoInstantiateDomainInstance(Class type) {
         Object created = null;
         try {
-            MetaClass mc = GroovySystem.getMetaClassRegistry()
-                    .getMetaClass(type);
-            if(mc!=null) {
+            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(type);
+            if (mc != null) {
                 created = mc.invokeStaticMethod(type, CreateDynamicMethod.METHOD_NAME, new Object[0]);
             }
         }
@@ -608,6 +619,20 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
         catch(GroovyRuntimeException gre) {
             LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
+        }
+        return created;
+    }
+
+    private Object autoInstantiateEmbeddedInstance(Class type) {
+        Object created = null;
+        try {
+            created = type.newInstance();
+        }
+        catch (InstantiationException e) {
+            LOG.error(String.format("Unable to auto-create type %s, %s thrown in constructor", type, e.getClass()));
+        }
+        catch (IllegalAccessException e) {
+            LOG.error(String.format("Unable to auto-create type %s, cannot access constructor", type));
         }
         return created;
     }
