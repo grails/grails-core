@@ -70,6 +70,19 @@ class PropertyConfig {
      */
     boolean ignoreNotFound = false
 
+
+
+    /**
+    * Whether or not this is column is insertable by hibernate
+     */
+    boolean insertable = true
+
+
+    /**
+    * Whether or not this column is updateable by hibernate
+     */
+    boolean updateable = true
+
     /**
      *
      */
@@ -161,7 +174,7 @@ class PropertyConfig {
     }
 
     String toString() {
-        "property[type:$type, lazy:$lazy, columns:$columns]"
+        "property[type:$type, lazy:$lazy, columns:$columns, insertable:${insertable}, updateable:${updateable}]"
     }
 
     private void checkHasSingleColumn() {

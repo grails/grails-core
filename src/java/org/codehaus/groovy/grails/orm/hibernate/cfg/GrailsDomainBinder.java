@@ -2117,8 +2117,8 @@ public final class GrailsDomainBinder {
             prop.setInsertable(false);
             prop.setUpdateable(false);
         } else {
-            prop.setInsertable(true);
-            prop.setUpdateable(true);
+            prop.setInsertable(getInsertableness(grailsProperty));
+            prop.setUpdateable(getUpdateableness(grailsProperty));
         }
 
         prop.setPropertyAccessorName(mappings.getDefaultAccess());
@@ -2146,6 +2146,18 @@ public final class GrailsDomainBinder {
         PropertyConfig config = getPropertyConfig(grailsProperty);
         final boolean isLazy = config!=null ? config.getLazy() : true;
         return isLazy;
+    }
+
+    private static boolean getInsertableness(GrailsDomainClassProperty grailsProperty) {
+        PropertyConfig config = getPropertyConfig(grailsProperty);
+        final boolean isInsertable = config!=null ? config.getInsertable() : true;
+        return isInsertable;
+    }
+
+    private static boolean getUpdateableness(GrailsDomainClassProperty grailsProperty) {
+        PropertyConfig config = getPropertyConfig(grailsProperty);
+        final boolean isUpdateable = config!=null ? config.getUpdateable() : true;
+        return isUpdateable;
     }
 
     private static boolean isBidirectionalManyToOneWithListMapping(GrailsDomainClassProperty grailsProperty, Property prop) {

@@ -369,6 +369,8 @@ class HibernateMappingBuilder {
 			property.formula = namedArgs.formula
             property.type = namedArgs.type ?: property.type
             property.lazy = namedArgs.lazy != null ? namedArgs.lazy : property.lazy
+            property.insertable = namedArgs.insertable != null ? namedArgs.insertable : property.insertable
+            property.updateable = namedArgs.updateable != null ? namedArgs.updateable : property.updateable
             property.cascade = namedArgs.cascade ?: property.cascade
             property.sort = namedArgs.sort ?: property.sort
             property.order = namedArgs.order ?: property.order
