@@ -385,7 +385,7 @@ public class GrailsDomainConfigurationUtil {
         return evaluateConstraints(instance, null,null);
     }
 
-    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
+    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference, PropertyConfig propertyConfig) {
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
 
             if (defaultConstraints.containsKey("*")) {
@@ -415,6 +415,16 @@ public class GrailsDomainConfigurationUtil {
                     Collection.class.isAssignableFrom(p.getType()) ||
                     Map.class.isAssignableFrom(p.getType())
             );
+
+            if (propertyConfig!=null && !propertyConfig.getInsertable()) {
+                cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,true);
+            } else {
+                cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
+                        Collection.class.isAssignableFrom(p.getType()) ||
+                        Map.class.isAssignableFrom(p.getType())
+                );
+            }
+
         }
     }
 
