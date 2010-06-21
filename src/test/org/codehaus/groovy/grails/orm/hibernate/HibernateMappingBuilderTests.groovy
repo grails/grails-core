@@ -749,12 +749,32 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             amount type: MyUserType, params : [ param1 : "amountParam1", param2 : 65 ]
             value type: MyUserType, params : [ param1 : "valueParam1", param2 : 21 ]
         }
-		
-        assertEquals MyUserType.class,mapping.getPropertyConfig('amount').type
-        assertEquals "amountParam1",mapping.getPropertyConfig('amount').typeParams.param1
-        assertEquals 65,mapping.getPropertyConfig('amount').typeParams.param2
-        assertEquals MyUserType.class,mapping.getPropertyConfig('value').type
-        assertEquals "valueParam1",mapping.getPropertyConfig('value').typeParams.param1
-        assertEquals 21,mapping.getPropertyConfig('value').typeParams.param2
-	}
+
+        assertEquals MyUserType, mapping.getPropertyConfig('amount').type
+        assertEquals "amountParam1", mapping.getPropertyConfig('amount').typeParams.param1
+        assertEquals 65, mapping.getPropertyConfig('amount').typeParams.param2
+        assertEquals MyUserType, mapping.getPropertyConfig('value').type
+        assertEquals "valueParam1", mapping.getPropertyConfig('value').typeParams.param1
+        assertEquals 21, mapping.getPropertyConfig('value').typeParams.param2
+    }
+
+    void testInsertablePropertyConfig() {
+         def builder = new HibernateMappingBuilder("Foo")
+         def mapping = builder.evaluate {
+            firstName insertable:true
+            lastName insertable:false
+          }
+         assertTrue mapping.getPropertyConfig('firstName').insertable
+         assertFalse mapping.getPropertyConfig('lastName').insertable
+    }
+
+    void testUpdatablePropertyConfig() {
+          def builder = new HibernateMappingBuilder("Foo")
+          def mapping = builder.evaluate {
+              firstName updateable:true
+              lastName updateable:false
+          }
+         assertTrue mapping.getPropertyConfig('firstName').updateable
+         assertFalse mapping.getPropertyConfig('lastName').updateable
+    }
 }

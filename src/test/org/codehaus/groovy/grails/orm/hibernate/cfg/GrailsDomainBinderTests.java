@@ -18,6 +18,14 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.lang.reflect.Field;
+
 import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
@@ -29,11 +37,6 @@ import org.hibernate.mapping.*;
 import org.hibernate.mapping.Table;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Jason Rudolph
@@ -142,6 +145,101 @@ public class GrailsDomainBinderTests extends TestCase {
         assertEquals(true, mapping.getColumn(new Column("employeeID")).isUnique());
         assertEquals(true, found1);
         assertEquals(true, found2);
+    }
+
+    public void testInsertableHibernateMapping() throws Exception {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestInsertableDomain {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    String testString1 \n" +
+                "    String testString2 \n" +
+                "\n" +
+                "    static mapping = {\n" +
+                "       testString1 insertable:false \n" +
+                "       testString2 insertable:true \n" +
+                "    }\n" +
+                "}")
+        );
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
+                new Class[] { domainClass.getClazz() });
+        Field privateDomainClasses = DefaultGrailsDomainConfiguration.class.
+            getDeclaredField("domainClasses");
+        privateDomainClasses.setAccessible(true);
+        Set domainClasses = (Set) privateDomainClasses.get(config);
+
+        GrailsDomainClass domainClassObj = (GrailsDomainClass)domainClasses.iterator().next();
+
+        PersistentClass persistentClass = config.getClassMapping("TestInsertableDomain");
+
+        Property property1 = persistentClass.getProperty("testString1");
+        assertEquals(false,property1.isInsertable());
+
+        Property property2 = persistentClass.getProperty("testString2");
+        assertEquals(true,property2.isInsertable());
+    }
+
+    public void testUpdateableHibernateMapping() throws Exception {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestInsertableDomain {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    String testString1 \n" +
+                "    String testString2 \n" +
+                "\n" +
+                "    static mapping = {\n" +
+                "       testString1 updateable:false \n" +
+                "       testString2 updateable:true \n" +
+                "    }\n" +
+                "}")
+        );
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
+                new Class[] { domainClass.getClazz() });
+
+        PersistentClass persistentClass = config.getClassMapping("TestInsertableDomain");
+
+        Property property1 = persistentClass.getProperty("testString1");
+        assertEquals(false,property1.isUpdateable());
+
+        Property property2 = persistentClass.getProperty("testString2");
+        assertEquals(true,property2.isUpdateable());
+    }
+
+    public void testInsertableUpdateableHibernateMapping() throws Exception {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass(
+                "class TestInsertableUpdateableDomain {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    String testString1 \n" +
+                "    String testString2 \n" +
+                "\n" +
+                "    static mapping = {\n" +
+                "       testString1 insertable:false, updateable:false \n" +
+                "       testString2 updateable:false, insertable:false \n" +
+                "    }\n" +
+                "}")
+        );
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
+                new Class[] { domainClass.getClazz() });
+
+        PersistentClass persistentClass = config.getClassMapping("TestInsertableUpdateableDomain");
+
+        Property property1 = persistentClass.getProperty("testString1");
+        assertEquals(false,property1.isInsertable());
+        assertEquals(false,property1.isUpdateable());
+
+        Property property2 = persistentClass.getProperty("testString2");
+        assertEquals(false,property2.isUpdateable());
+        assertEquals(false,property2.isInsertable());
     }
 
     public void testOneToOneBindingTables() {
