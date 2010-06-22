@@ -1,18 +1,18 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import org.apache.log4j.LogManager
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -35,59 +35,60 @@ import groovyx.gpars.Asynchronizer
 if (getBinding().variables.containsKey("_grails_package_called")) return
 _grails_package_called = true
 
-
 includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
-target( createConfig: "Creates the configuration object") {
-   if(configFile.exists()) {
-       def configClass
-       try {
-           configClass = classLoader.loadClass("Config")
-       } catch (ClassNotFoundException cnfe) {
-           println "WARNING: No config found for the application."
-       }
-       if(configClass) {
-           try {
-               config = configSlurper.parse(configClass)
-               config.setConfigFile(configFile.toURI().toURL())
-           }
-           catch(Exception e) {
-               logError("Failed to compile configuration file",e)
-               exit(1)
-           }
-       }
-   }
-   def dataSourceFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
-   if(dataSourceFile.exists()) {
-		try {
-		   def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
-		   config.merge(dataSourceConfig)
-		}
-		catch(ClassNotFoundException e) {
-			println "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
-		}
+target(createConfig: "Creates the configuration object") {
+    if (configFile.exists()) {
+        def configClass
+        try {
+            configClass = classLoader.loadClass("Config")
+        }
+        catch (ClassNotFoundException cnfe) {
+            println "WARNING: No config found for the application."
+        }
+        if (configClass) {
+            try {
+                config = configSlurper.parse(configClass)
+                config.setConfigFile(configFile.toURI().toURL())
+            }
+            catch (Exception e) {
+                logError("Failed to compile configuration file",e)
+                exit(1)
+            }
+        }
+    }
+
+    def dataSourceFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
+    if (dataSourceFile.exists()) {
+        try {
+            def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
+            config.merge(dataSourceConfig)
+        }
+        catch(ClassNotFoundException e) {
+            println "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
+        }
         catch(Exception e) {
             logError("Error loading DataSource.groovy",e)
             exit(1)
         }
-   }
-   ConfigurationHelper.initConfig(config, null, classLoader)
-   ConfigurationHolder.config = config
+    }
+    ConfigurationHelper.initConfig(config, null, classLoader)
+    ConfigurationHolder.config = config
 }
 
-target( packageApp : "Implementation of package target") {
-	depends(createStructure, packagePlugins, packageTlds)
+target(packageApp : "Implementation of package target") {
+    depends(createStructure, packagePlugins, packageTlds)
 
-	try {
+    try {
         profile("compile") {
             compile()
         }
-	}
-	catch(Exception e) {
+    }
+    catch(Exception e) {
         logError("Compilation error",e)
-		exit(1)
-	}
+        exit(1)
+    }
     profile("creating config") {
         createConfig()
     }
@@ -101,33 +102,33 @@ target( packageApp : "Implementation of package target") {
         fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
     }
 
-    if(files.iterator().hasNext()) {
+    if (files.iterator().hasNext()) {
         ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
         ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
             fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
         }
     }
 
-	def nativeascii = config.grails.enable.native2ascii
+    def nativeascii = config.grails.enable.native2ascii
     nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
-    if(nativeascii) {
-		profile("converting native message bundles to ascii") {
-			ant.native2ascii(src:"${basedir}/grails-app/i18n",
-							 dest:i18nDir,
-							 includes:"**/*.properties",
-							 encoding:"UTF-8")
+    if (nativeascii) {
+        profile("converting native message bundles to ascii") {
+            ant.native2ascii(src:"${basedir}/grails-app/i18n",
+                             dest:i18nDir,
+                             includes:"**/*.properties",
+                             encoding:"UTF-8")
 
             PluginBuildSettings settings = pluginSettings
             def i18nPluginDirs = settings.pluginI18nDirectories
-            if(i18nPluginDirs) {
+            if (i18nPluginDirs) {
                 Asynchronizer.doParallel(5) {
                     i18nPluginDirs.eachParallel { Resource srcDir ->
-                        if(srcDir.exists()) {
+                        if (srcDir.exists()) {
                             def file = srcDir.file
                             def pluginDir = file.parentFile.parentFile
                             def info = settings.getPluginInfo(pluginDir.absolutePath)
 
-                            if(info) {
+                            if (info) {
                                 def pluginDirName = pluginDir.name
                                 def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
                                 try {
@@ -135,29 +136,28 @@ target( packageApp : "Implementation of package target") {
                                     ant.project.defaultInputStream = System.in
                                     ant.mkdir(dir:destDir)
                                     ant.native2ascii(src:file,
-                                                 dest:destDir,
-                                                 includes:"**/*.properties",
-                                                 encoding:"UTF-8")
+                                                     dest:destDir,
+                                                     includes:"**/*.properties",
+                                                     encoding:"UTF-8")
                                 }
                                 catch (e) {
                                     println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
                                 }
                             }
-
                         }
                     }
                 }
             }
-		}
-	}
-	else {
-	    ant.copy(todir:i18nDir) {
-			fileset(dir:"${basedir}/grails-app/i18n", includes:"**/*.properties")
-		}
-	}
+        }
+    }
+    else {
+        ant.copy(todir:i18nDir) {
+            fileset(dir:"${basedir}/grails-app/i18n", includes:"**/*.properties")
+        }
+    }
     ant.copy(todir:classesDirPath) {
-		fileset(dir:"${basedir}", includes:metadataFile.name)
-	}
+        fileset(dir:"${basedir}", includes:metadataFile.name)
+    }
 
     // Copy resources from various directories to the target "resources" dir.
     packageFiles(basedir)
@@ -171,25 +171,24 @@ target( packageApp : "Implementation of package target") {
 
 target(configureServerContextPath: "Configuring server context path") {
     // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
-    //	System properties
-    //	application.properties
-    //	config
-    //	default to grailsAppName if not specified
+    //    System properties
+    //    application.properties
+    //    config
+    //    default to grailsAppName if not specified
 
     serverContextPath = System.getProperty("app.context")
     serverContextPath = serverContextPath ?: metadata.'app.context'
     serverContextPath = serverContextPath ?: config.grails.app.context
     serverContextPath = serverContextPath ?: grailsAppName
 
-    if(!serverContextPath.startsWith('/')) {
+    if (!serverContextPath.startsWith('/')) {
         serverContextPath = "/${serverContextPath}"
     }
 }
 
-
 target(startLogging:"Bootstraps logging") {
     LogManager.resetConfiguration()
-    if(config.log4j instanceof Closure) {
+    if (config.log4j instanceof Closure) {
         profile("configuring log4j") {
             new Log4jConfig().configure(config.log4j)
         }
@@ -200,59 +199,59 @@ target(startLogging:"Bootstraps logging") {
     }
 }
 
-target( generateWebXml : "Generates the web.xml file") {
-	depends(classpath)
+target(generateWebXml : "Generates the web.xml file") {
+    depends(classpath)
 
-	if(buildConfig.grails.config.base.webXml) {
-		def customWebXml = resolveResources(buildConfig.grails.config.base.webXml)
-		if(customWebXml)
-			webXml = customWebXml[0]
-		else {
-			event("StatusError", [ "Custom web.xml defined in config [${buildConfig.grails.config.base.webXml}] could not be found." ])
-			exit(1)
-		}
-	}
-	else {
-	    webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
+    if (buildConfig.grails.config.base.webXml) {
+        def customWebXml = resolveResources(buildConfig.grails.config.base.webXml)
+        if (customWebXml) {
+            webXml = customWebXml[0]
+        }
+        else {
+            event("StatusError", [ "Custom web.xml defined in config [${buildConfig.grails.config.base.webXml}] could not be found." ])
+            exit(1)
+        }
+    }
+    else {
+        webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
         def tmpWebXml = "${projectWorkDir}/web.xml.tmp"
-        if(!webXml.exists()) {
+        if (!webXml.exists()) {
             copyGrailsResource(tmpWebXml, grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"))
         }
         else {
             ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
         }
         webXml = new FileSystemResource(tmpWebXml)
-        ant.replace(file:tmpWebXml, token:"@grails.project.key@", value:"${grailsAppName}-${grailsEnv}-${grailsAppVersion}")
+        ant.replace(file:tmpWebXml, token:"@grails.project.key@",
+                    value:"${grailsAppName}-${grailsEnv}-${grailsAppVersion}")
     }
-	def sw = new StringWriter()
+
+    def sw = new StringWriter()
 
     try {
         profile("generating web.xml from $webXml") {
-			event("WebXmlStart", [webXml.filename])
+            event("WebXmlStart", [webXml.filename])
             pluginManager.doWebDescriptor(webXml, sw)
-            webXmlFile.withWriter {
-                it << sw.toString()
-            }
-			event("WebXmlEnd", [webXml.filename])
+            webXmlFile.withWriter { it << sw.toString() }
+            event("WebXmlEnd", [webXml.filename])
         }
     }
-    catch(Exception e) {
+    catch (Exception e) {
         logError("Error generating web.xml file",e)
         exit(1)
     }
-
 }
 
 target(packageTemplates: "Packages templates into the app") {
-	ant.mkdir(dir:scaffoldDir)
-	if(new File("${basedir}/src/templates/scaffolding").exists()) {
-		ant.copy(todir:scaffoldDir, overwrite:true) {
-			fileset(dir:"${basedir}/src/templates/scaffolding", includes:"**")
-		}
-	}
-	else {
+    ant.mkdir(dir:scaffoldDir)
+    if (new File("${basedir}/src/templates/scaffolding").exists()) {
+        ant.copy(todir:scaffoldDir, overwrite:true) {
+            fileset(dir:"${basedir}/src/templates/scaffolding", includes:"**")
+        }
+    }
+    else {
         copyGrailsResources(scaffoldDir, "src/grails/templates/scaffolding/*")
-	}
+    }
 }
 
 target(packageTlds:"packages tld definitions for the correct servlet version") {
@@ -279,13 +278,12 @@ recompileCheck = { lastModified, callback ->
                     verbose: grailsSettings.verboseCompile,
                     listfiles: grailsSettings.verboseCompile,
                     excludes: '**/package-info.java') {
-                    src(path:"${grailsSettings.sourceDir}/groovy")
-                    src(path:"${basedir}/grails-app/domain")
-                    src(path:"${basedir}/grails-app/utils")
-                    src(path:"${grailsSettings.sourceDir}/java")
-                    javac(classpathref:classpathId, debug:"yes")
-
-                }
+            src(path:"${grailsSettings.sourceDir}/groovy")
+            src(path:"${basedir}/grails-app/domain")
+            src(path:"${basedir}/grails-app/utils")
+            src(path:"${grailsSettings.sourceDir}/java")
+            javac(classpathref:classpathId, debug:"yes")
+        }
         ant = null
     }
     catch(Exception e) {
@@ -294,7 +292,7 @@ recompileCheck = { lastModified, callback ->
     }
 
     def tmp = classesDir.lastModified()
-    if(lastModified < tmp) {
+    if (lastModified < tmp) {
 
         // run another compile JIT
         try {
@@ -303,9 +301,8 @@ recompileCheck = { lastModified, callback ->
         catch(Exception e) {
             logError("Error automatically restarting container",e)
         }
-
         finally {
-           lastModified = classesDir.lastModified()
+            lastModified = classesDir.lastModified()
         }
     }
 

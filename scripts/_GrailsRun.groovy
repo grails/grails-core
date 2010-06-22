@@ -30,8 +30,8 @@ import grails.web.container.EmbeddableServer
 
 includeTargets << grailsScript("_GrailsPlugins")
 
-SCHEME_HTTP="http"
-SCHEME_HTTPS="https"
+SCHEME_HTTP = "http"
+SCHEME_HTTPS = "https"
 
 // Keep track of whether we're running in HTTPS mode in case we need
 // to restart the server.
@@ -91,14 +91,14 @@ private EmbeddableServerFactory loadServerFactory() {
     try {
         serverFactory = load(containerClass)
     }
-    catch(ClassNotFoundException cnfe) {
-        if(containerClass==defaultServer) {
+    catch (ClassNotFoundException cnfe) {
+        if (containerClass == defaultServer) {
             println "WARNING: No default container found, installing Tomcat.."
             doInstallPlugin "tomcat", GrailsUtil.grailsVersion
             pluginSettings.clearCache()
             compilePlugins()
             loadPlugins()
-            serverFactory = load(containerClass)            
+            serverFactory = load(containerClass)
         }
     }
     catch (Throwable e) {
@@ -126,7 +126,6 @@ private runWar(scheme, host, httpPort, httpsPort) {
 
 }
 
-
 /**
  * Runs the Server. You can pass these named arguments:
  *
@@ -140,15 +139,15 @@ runServer = { Map args ->
         def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
 
         EmbeddableServer server = args["server"]
-        if(server.hasProperty('eventListener')) {
+        if (server.hasProperty('eventListener')) {
             server.eventListener = this
         }
-        if(server.hasProperty('grailsConfig')) {
+        if (server.hasProperty('grailsConfig')) {
             server.grailsConfig = config
         }
 
         profile("start server") {
-            if(args.scheme == 'https') {
+            if (args.scheme == 'https') {
                 usingSecureServer = true
                 server.startSecure args.host, args.httpPort, args.httpsPort
 
@@ -160,10 +159,12 @@ runServer = { Map args ->
             }
         }
         event("StatusFinal", [message])
-    } catch (Throwable t) {
+    }
+    catch (Throwable t) {
         GrailsUtil.deepSanitize(t)
-        if (!(t.class instanceof java.net.SocketException) && !(t.cause?.class instanceof java.net.SocketException))
+        if (!(t instanceof SocketException) && !(t.cause instanceof SocketException)) {
             t.printStackTrace()
+        }
         event("StatusFinal", ["Server failed to start: $t"])
         exit(1)
     }
@@ -222,7 +223,8 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
                     println "Application loaded in interactive mode, type 'exit' to shutdown server or your command name in to continue (hit ENTER to run the last command):"
 
                     cmd = reader.readLine()
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     cmd = ""
                 }
             }
@@ -247,7 +249,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
                     Thread currentThread = Thread.currentThread()
                     def classesDirs = [classesDir,
                                        pluginClassesDir].collect { it.toURI().toURL() }
-                    
+
                     classLoader = new URLClassLoader(classesDirs as URL[], rootLoader)
                     currentThread.setContextClassLoader classLoader
                     PluginManagerHolder.pluginManager = null
@@ -260,7 +262,8 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
                     else {
                         runApp()
                     }
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     logError("Error restarting container",e)
                     exit(1)
                 }
@@ -308,7 +311,7 @@ target(stopServer: "Stops the Grails servlet container") {
             e.printStackTrace()
             println "Error stopping server: ${e.message}"
         }
-        
+
         try {
             stopPluginScanner()
         }
@@ -320,6 +323,3 @@ target(stopServer: "Stops the Grails servlet container") {
     }
     event("StatusFinal", ["Server stopped"])
 }
-
-
-

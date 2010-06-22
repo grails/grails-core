@@ -1,24 +1,25 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+import grails.util.GrailsUtil
+ 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
@@ -104,7 +105,7 @@ target(allTests: "Runs the project's tests.") {
     def dependencies = [compile, packagePlugins]
     if (testOptions.clean) dependencies = [clean] + dependencies
     depends(*dependencies)
-    
+
     packageFiles(basedir)
 
     ant.mkdir(dir: testReportsDir)
@@ -114,11 +115,11 @@ target(allTests: "Runs the project's tests.") {
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
-    
+
     testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
-    
+
     event("TestPhasesStart", [phasesToRun])
-    
+
     // Handle pre 1.2 style testing configuration
     def convertedPhases = [:]
     phasesToRun.each { phaseName ->
@@ -131,13 +132,14 @@ target(allTests: "Runs the project's tests.") {
                         def mode = new GrailsTestMode(
                             autowire: true,
                             wrapInTransaction: phaseName == "integration",
-                            wrapInRequestEnvironment: phaseName == "integration"
-                        )
+                            wrapInRequestEnvironment: phaseName == "integration")
                         new JUnit4GrailsTestType(rawTypeString, rawTypeString, mode)
-                    } else {
+                    }
+                    else {
                         new JUnit4GrailsTestType(rawTypeString, rawTypeString)
                     }
-                } else {
+                }
+                else {
                     rawType
                 }
             }
@@ -148,7 +150,8 @@ target(allTests: "Runs the project's tests.") {
     filteredPhases = null
     if (targetPhasesAndTypes.size() == 0) {
         filteredPhases = convertedPhases // no type or phase targeting was applied
-    } else {
+    }
+    else {
         filteredPhases = [:]
         convertedPhases.each { phaseName, types ->
             if (targetPhasesAndTypes.containsKey(phaseName) || targetPhasesAndTypes.containsKey(TEST_PHASE_WILDCARD)) {
@@ -162,12 +165,12 @@ target(allTests: "Runs the project's tests.") {
             }
         }
     }
-    
+
     try {
         // Process the tests in each phase that is configured to run.
         filteredPhases.each { phase, types ->
             currentTestPhaseName = phase
-            
+
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
             println()
@@ -186,7 +189,8 @@ target(allTests: "Runs the project's tests.") {
             event("TestPhaseEnd", [phase])
             currentTestPhaseName = null
         }
-    } finally {
+    }
+    finally {
         String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
         if (createTestReports) {
             event("TestProduceReports", [])
@@ -207,7 +211,7 @@ target(allTests: "Runs the project's tests.") {
  */
 processTests = { GrailsTestType type ->
     currentTestTypeName = type.name
-    
+
     def relativePathToSource = type.relativeSourcePath
     def dest = null
     if (relativePathToSource) {
@@ -217,7 +221,7 @@ processTests = { GrailsTestType type ->
         dest = new File(grailsSettings.testClassesDir, relativePathToSource)
         compileTests(type, source, dest)
     }
-    
+
     runTests(type, dest)
     currentTestTypeName = null
 }
@@ -236,11 +240,13 @@ compileTests = { GrailsTestType type, File source, File dest ->
     ant.mkdir(dir: dest.path)
     try {
         def classpathId = "grails.test.classpath"
-        ant.groovyc(destdir: dest, encoding:"UTF-8", classpathref: classpathId, verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
+        ant.groovyc(destdir: dest, encoding:"UTF-8", classpathref: classpathId,
+                    verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
             javac(classpathref: classpathId, debug: "yes")
             src(path: source)
         }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
         event("StatusFinal", ["Compilation error compiling [$type.name] tests: ${e.message}"])
         exit 1
     }
@@ -250,7 +256,7 @@ compileTests = { GrailsTestType type, File source, File dest ->
 
 runTests = { GrailsTestType type, File compiledClassesDir ->
     def testCount = type.prepare(testTargetPatterns, compiledClassesDir, binding)
-    
+
     if (testCount) {
         try {
             event("TestSuiteStart", [type.name])
@@ -261,33 +267,35 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def start = new Date()
             def result = type.run(testEventPublisher)
             def end = new Date()
-            
+
             event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
 
             if (result.failCount > 0) testsFailed = true
-            
+
             println "-------------------------------------------------------"
             println "Tests passed: ${result.passCount}"
             println "Tests failed: ${result.failCount}"
             println "-------------------------------------------------------"
             event("TestSuiteEnd", [type.name])
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
             GrailsUtil.deepSanitize(e)
             e.printStackTrace()
             testsFailed = true
-        } finally {
+        }
+        finally {
             type.cleanup()
         }
     }
 }
 
 initPersistenceContext = {
-	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
+    appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
 }
 
-destroyPersistenceContext = { 
-	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
+destroyPersistenceContext = {
+    appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
 }
 
 unitTestPhasePreparation = {}
@@ -300,8 +308,7 @@ integrationTestPhasePreparation = {
     packageTests()
     bootstrap()
 
-    // Get the Grails application instance created by the bootstrap
-    // process.
+    // Get the Grails application instance created by the bootstrap process.
     def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
     if (app.parentContext == null) {
         app.applicationContext = appCtx
@@ -310,7 +317,7 @@ integrationTestPhasePreparation = {
     initPersistenceContext()
 
     def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
-    GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx) 
+    GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx)
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext)
 }
 
@@ -328,10 +335,10 @@ integrationTestPhaseCleanUp = {
 functionalTestPhasePreparation = {
     packageApp()
     testOptions.https ? runAppHttps() : runApp()
-    
+
     prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
     appCtx = ApplicationHolder.application.mainContext
-    
+
     initPersistenceContext()
 }
 
@@ -343,13 +350,12 @@ functionalTestPhaseCleanUp = {
 
     appCtx?.close()
     appCtx = prevAppCtx
-    
+
     stopServer()
 }
 
 otherTestPhasePreparation = {}
 otherTestPhaseCleanUp = {}
-
 
 target(packageTests: "Puts some useful things on the classpath for integration tests.") {
     ant.copy(todir: new File(grailsSettings.testClassesDir, "integration").path) {
@@ -377,20 +383,20 @@ target(packageTests: "Puts some useful things on the classpath for integration t
 
 def getFailedTests() {
     File file = new File("${testReportsDir}/TESTS-TestSuites.xml")
-    if (file.exists()) {
-        def xmlParser = new XmlParser().parse(file)
-        def failedTests = xmlParser.testsuite.findAll { it.'@failures' =~ /.*[1-9].*/ || it.'@errors' =~ /.*[1-9].*/}
-
-        return failedTests.collect {
-            String testName = it.'@name'
-            testName = testName.replace('Tests', '')
-            def pkg = it.'@package'
-            if (pkg) {
-                testName = pkg + '.' + testName
-            }
-            return testName
-        }
-    } else {
+    if (!file.exists()) {
         return []
+    }
+
+    def xmlParser = new XmlParser().parse(file)
+    def failedTests = xmlParser.testsuite.findAll { it.'@failures' =~ /.*[1-9].*/ || it.'@errors' =~ /.*[1-9].*/}
+
+    return failedTests.collect {
+        String testName = it.'@name'
+        testName = testName.replace('Tests', '')
+        def pkg = it.'@package'
+        if (pkg) {
+            testName = pkg + '.' + testName
+        }
+        return testName
     }
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import org.hibernate.dialect.DialectFactory
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.support.JdbcUtils
@@ -6,6 +22,10 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsPackage")
+
+/**
+ * @author Burt Beckwith
+ */
 
 def props = new Properties()
 def filename = "${grailsSettings.projectTargetDir}/ddl.sql"
@@ -80,10 +100,10 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         println('WARNING: Autodetecting the Hibernate Dialect; consider specifying the class name in DataSource.groovy')
         try {
             def ds = new DriverManagerDataSource(
-                    props.'hibernate.connection.driver_class',
-                    props.'hibernate.connection.url',
-                    props.'hibernate.connection.username',
-                    props.'hibernate.connection.password')
+                props.'hibernate.connection.driver_class',
+                props.'hibernate.connection.url',
+                props.'hibernate.connection.username',
+                props.'hibernate.connection.password')
             def dbName = JdbcUtils.extractDatabaseMetaData(ds, 'getDatabaseProductName')
             def majorVersion = JdbcUtils.extractDatabaseMetaData(ds, 'getDatabaseMajorVersion')
             props.'hibernate.dialect' =

@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
 
 /**
  * Gant script that loads the Grails console
- * 
+ *
  * @author Graeme Rocher
  *
  * @since 0.4
@@ -28,16 +28,16 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 includeTargets << grailsScript("_GrailsBootstrap")
 
 target ('default': "Load the Grails interactive Swing console") {
-	depends( checkVersion, configureProxy, packageApp, classpath)
-	console()
-}            
+    depends(checkVersion, configureProxy, packageApp, classpath)
+    console()
+}
 
 target(console:"The console implementation target") {
 
 //    classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader)
 //    Thread.currentThread().setContextClassLoader(classLoader)
-	loadApp()
-	configureApp()
+    loadApp()
+    configureApp()
 
     try {
         def console = createConsole()
@@ -93,10 +93,10 @@ createConsole = {
 }
 
 class ConsoleFocusListener implements java.awt.event.FocusListener{
-	String text
-	void focusGained(java.awt.event.FocusEvent e){
-		e.source.text = text
-		e.source.removeFocusListener(this)
-	}
-	void focusLost(java.awt.event.FocusEvent e){}	
+    String text
+    void focusGained(java.awt.event.FocusEvent e) {
+        e.source.text = text
+        e.source.removeFocusListener(this)
+    }
+    void focusLost(java.awt.event.FocusEvent e){}
 }

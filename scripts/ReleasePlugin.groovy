@@ -1,18 +1,18 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory
@@ -57,16 +57,15 @@ DEFAULT_PUBLISH_URL = "https://svn.codehaus.org/grails-plugins"
 
 // setup default plugin respositories for discovery
 pluginDiscoveryRepositories = [core:CORE_PLUGIN_DIST, default:DEFAULT_PLUGIN_DIST]
-if(grailsSettings?.config?.grails?.plugin?.repos?.discovery) {
+if (grailsSettings?.config?.grails?.plugin?.repos?.discovery) {
     pluginDiscoveryRepositories.putAll(grailsSettings?.config?.grails?.plugin?.repos?.discovery)
 }
 
 // setup default plugin respositories for publishing
 pluginDistributionRepositories = [core:CORE_PUBLISH_URL, default:DEFAULT_PUBLISH_URL]
-if(grailsSettings?.config?.grails?.plugin?.repos?.distribution) {
+if (grailsSettings?.config?.grails?.plugin?.repos?.distribution) {
     pluginDistributionRepositories.putAll(grailsSettings?.config?.grails?.plugin?.repos?.distribution)
 }
-
 
 KEY_URL = "url"
 KEY_USER_NAME = "user"
@@ -77,8 +76,8 @@ KEY_USER_PASS = "pswd"
  * EG : INIT CORE OR DEFAULT DISTRIBUTION REPOSITORY
  * aMap = [url:CORE_PUBLISH_URL,user:"auser",pswd:"apswd"]
  * ALLOWS ANT PROPERTIES DEFINITION
- * aAuthManager = getAuthenticationManager("core", "distribution", aMap )
- * authManagerMap.put("distribution.core", aAuthManager )
+ * aAuthManager = getAuthenticationManager("core", "distribution", aMap)
+ * authManagerMap.put("distribution.core", aAuthManager)
  */
 authManagerMap = [:]
 
@@ -88,26 +87,26 @@ authManagerMap = [:]
  * @return broken down url in these parts (if exist) url, user and pswd
  */
 public Map tokenizeUrl(String url) throws SVNException {
-	SVNURL aURL= SVNURL.parseURIDecoded(url)
-	def aHashMap  = [:]
+    SVNURL aURL= SVNURL.parseURIDecoded(url)
+    def aHashMap  = [:]
 
-	def userInfo = aURL.userInfo
-	if(userInfo) {
-		def userInfoArray = userInfo.split(":")
-		aHashMap[KEY_USER_NAME] = userInfoArray[0]
-		if (userInfoArray.length>1) {
-			aHashMap[KEY_USER_PASS] = userInfoArray[1]
-		}
-	}
-    if(aURL.port == 443) {
+    def userInfo = aURL.userInfo
+    if (userInfo) {
+        def userInfoArray = userInfo.split(":")
+        aHashMap[KEY_USER_NAME] = userInfoArray[0]
+        if (userInfoArray.length>1) {
+            aHashMap[KEY_USER_PASS] = userInfoArray[1]
+        }
+    }
+    if (aURL.port == 443) {
         aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}${aURL.path}".toString()
-    } else {
+    }
+    else {
         aHashMap[KEY_URL] = "${aURL.protocol}://${aURL.host}:${aURL.port}${aURL.path}".toString()
     }
 
-	return aHashMap
+    return aHashMap
 }
-
 
 //init SVN Kit one time
 // support file based SVN
@@ -127,32 +126,35 @@ SVNRepositoryFactoryImpl.setup()
  * For all other repo, a defultAuthenticationManager is created.
  */
 public Map configureAuth(Map repoMap,String repoType) {
-	repoMapTmp = [:]
-	repoMap.each{
-        ISVNAuthenticationManager aAuthManager=SVNWCUtil.createDefaultAuthenticationManager()
-        if ("core"==it.key||"default"==it.key){
+    repoMapTmp = [:]
+    repoMap.each {
+        ISVNAuthenticationManager aAuthManager = SVNWCUtil.createDefaultAuthenticationManager()
+        if ("core" == it.key || "default" == it.key) {
             repoMapTmp[it.key] = it.value
- 	    if(!isSecureUrl(it.value)) {
-		authManagerMap[repoType+"."+it.key] = aAuthManager
-	    }
-	    // else no authentication manager provides to authManagerMap : case of CORE_PUBLISH_URL and DEFAULT_PUBLISH_URL
-        } else {
-            if(isSecureUrl(it.value)) {
-                event "StatusUpdate", ["Authentication for svn repo at ${it.key} ${repoType} is required."]
-                aMap =  tokenizeUrl(it.value)
-                repoMapTmp[it.key] = aMap[KEY_URL]
-                aAuthManager = getAuthenticationManager(it.key, repoType, aMap)
-                authManagerMap[repoType+"."+it.key] = aAuthManager
-            } else {
-                repoMapTmp[it.key] = it.value
-                event "StatusUpdate", ["No authentication for svn repo at ${it.key}"]
+            if (!isSecureUrl(it.value)) {
                 authManagerMap[repoType+"."+it.key] = aAuthManager
             }
+        // else no authentication manager provides to authManagerMap : case of CORE_PUBLISH_URL and DEFAULT_PUBLISH_URL
         }
-
+        else {
+            if (isSecureUrl(it.value)) {
+                event "StatusUpdate", ["Authentication for svn repo at ${it.key} ${repoType} is required."]
+                aMap = tokenizeUrl(it.value)
+                repoMapTmp[it.key] = aMap[KEY_URL]
+                aAuthManager = getAuthenticationManager(it.key, repoType, aMap)
+                authManagerMap[repoType + "." + it.key] = aAuthManager
+            }
+            else {
+                repoMapTmp[it.key] = it.value
+                event "StatusUpdate", ["No authentication for svn repo at ${it.key}"]
+                authManagerMap[repoType + "." + it.key] = aAuthManager
+            }
+        }
     }
-	return repoMapTmp
+
+    return repoMapTmp
 }
+
 //configure authentication for discovery repository
 pluginDiscoveryRepositories = configureAuth(pluginDiscoveryRepositories, "discovery")
 
@@ -170,20 +172,20 @@ pluginDistributionRepositories = configureAuth(pluginDistributionRepositories, "
  * @return an ISVNAuthenticationManager impl instance building
  */
 private ISVNAuthenticationManager getAuthenticationManager(String repoKey, String repoType, Map tokenizeUrl) {
-	ISVNAuthenticationManager aAuthManager
+    ISVNAuthenticationManager aAuthManager
     usr = "user.svn.username.${repoType}.${repoKey}".toString()
     psw = "user.svn.password.${repoType}.${repoKey}".toString()
-    if(tokenizeUrl[KEY_USER_NAME]) {
-    	ant.antProject.setNewProperty usr, ""+tokenizeUrl[KEY_USER_NAME]
-    	String pswd = tokenizeUrl[KEY_USER_PASS] ?: ""
-	    ant.antProject.setNewProperty(psw,pswd)
+    if (tokenizeUrl[KEY_USER_NAME]) {
+        ant.antProject.setNewProperty usr, ""+tokenizeUrl[KEY_USER_NAME]
+        String pswd = tokenizeUrl[KEY_USER_PASS] ?: ""
+        ant.antProject.setNewProperty(psw, pswd)
     }
     //If no provided info, the user have to be prompt
     ant.input(message:"Please enter your SVN username:", addproperty:usr)
     ant.input(message:"Please enter your SVN password:", addproperty:psw)
     def username = ant.antProject.getProperty(usr)
     def password = ant.antProject.getProperty(psw)
-    authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+    authManager = SVNWCUtil.createDefaultAuthenticationManager(username , password)
     //Test connection
     aUrl = tokenizeUrl[KEY_URL]
     def svnUrl = SVNURL.parseURIEncoded(aUrl)
@@ -192,15 +194,16 @@ private ISVNAuthenticationManager getAuthenticationManager(String repoKey, Strin
     try {
         repo.testConnection()
         //only if it works...
-    	repo.closeSession()
-    } catch (SVNAuthenticationException ex) {
-    	//GRAVE BAD CONFIGURATION :  EXITING
-    	event("StatusError",["Bad authentication configuration for $aUrl"])
-    	exit(1)
+        repo.closeSession()
+    }
+    catch (SVNAuthenticationException ex) {
+        //GRAVE BAD CONFIGURATION :  EXITING
+        event("StatusError",["Bad authentication configuration for $aUrl"])
+        exit(1)
     }
     return authManager
-
 }
+
 /**
  * Get an authenticationManager object starting from url
  * @param url of SVN repo
@@ -208,26 +211,25 @@ private ISVNAuthenticationManager getAuthenticationManager(String repoKey, Strin
  * @return ISVNAuthenticationManager for SVN connection on on repo with auth
  **/
 private ISVNAuthenticationManager getAuthFromUrl(url, repoType) {
-    keyValue = repoType+"."+pluginDiscoveryRepositories.find { url.startsWith(it.value) }?.key
+    keyValue = repoType + "." + pluginDiscoveryRepositories.find { url.startsWith(it.value) }?.key
     return authManagerMap[keyValue]
 }
 
-
 configureRepository =  { targetRepoURL, String alias = "default" ->
-  repositoryName = alias
-  pluginsList = null
-  pluginsListFile = new File(grailsSettings.grailsWorkDir, "plugins-list-${alias}.xml")
+    repositoryName = alias
+    pluginsList = null
+    pluginsListFile = new File(grailsSettings.grailsWorkDir, "plugins-list-${alias}.xml")
 
-  def namedPluginSVN = pluginDistributionRepositories.find { it.key == alias }?.value
-  if(namedPluginSVN) {
-    pluginSVN = namedPluginSVN
-  }
-  else {
-    pluginSVN = DEFAULT_PUBLISH_URL
-  }
-  pluginDistURL = targetRepoURL
-  pluginBinaryDistURL = "$targetRepoURL/dist"
-  remotePluginList = "$targetRepoURL/.plugin-meta/plugins-list.xml"
+    def namedPluginSVN = pluginDistributionRepositories.find { it.key == alias }?.value
+    if (namedPluginSVN) {
+        pluginSVN = namedPluginSVN
+    }
+    else {
+        pluginSVN = DEFAULT_PUBLISH_URL
+    }
+    pluginDistURL = targetRepoURL
+    pluginBinaryDistURL = "$targetRepoURL/dist"
+    remotePluginList = "$targetRepoURL/.plugin-meta/plugins-list.xml"
 }
 
 configureRepository(DEFAULT_PLUGIN_DIST)
@@ -236,12 +238,12 @@ configureRepositoryForName = { String targetRepository, type="discovery" ->
     // Works around a bug in Groovy 1.5.6's DOMCategory that means get on Object returns null. Change to "pluginDiscoveryRepositories.targetRepository" when upgrading
     def targetRepoURL = pluginDiscoveryRepositories.find { it.key == targetRepository }?.value
 
-    if(targetRepoURL) {
-      configureRepository(targetRepoURL, targetRepository)
+    if (targetRepoURL) {
+        configureRepository(targetRepoURL, targetRepository)
     }
     else {
-      println "No repository configured for name ${targetRepository}. Set the 'grails.plugin.repos.${type}.${targetRepository}' variable to the location of the repository."
-      exit(1)
+        println "No repository configured for name ${targetRepository}. Set the 'grails.plugin.repos.${type}.${targetRepository}' variable to the location of the repository."
+        exit(1)
     }
 }
 
@@ -250,44 +252,43 @@ target ('default': "A target for plug-in developers that uploads and commits the
 }
 
 target(processAuth:"Prompts user for login details to create authentication manager") {
-    if(!authManager) {
+    if (!authManager) {
         def authKey = argsMap.repository ? "distribution.${argsMap.repository}".toString() : "distribution.default"
-        if(authManagerMap[authKey]) {
-            authManager = authManagerMap[authKey] 
+        if (authManagerMap[authKey]) {
+            authManager = authManagerMap[authKey]
         }
         else {
             usr = "user.svn.username.distribution"
             psw = "user.svn.password.distribution"
-            if(argsMap.repository) {
-                usr = usr+"."+argsMap.repository
-                psw = psw+"."+argsMap.repository
+            if (argsMap.repository) {
+                usr = usr + "." + argsMap.repository
+                psw = psw + "." + argsMap.repository
             }
             else {
-                usr = usr+".default"
-                psw = psw+".default"
+                usr = usr + ".default"
+                psw = psw + ".default"
             }
 
-			def (username, password) = [argsMap.username, argsMap.password]
-			
-			if (!username) {
-				ant.input(message:"Please enter your SVN username:", addproperty:usr)
-				username = ant.antProject.getProperty(usr)
-			}
-			
-			if (!password) {
-				ant.input(message:"Please enter your SVN password:", addproperty:psw)
-	            password = ant.antProject.getProperty(psw)
-			}
-						
-            authManager = SVNWCUtil.createDefaultAuthenticationManager( username , password )
-	        authManagerMap.put(authKey,authManager)
-        }
+            def (username, password) = [argsMap.username, argsMap.password]
 
+            if (!username) {
+                ant.input(message:"Please enter your SVN username:", addproperty:usr)
+                username = ant.antProject.getProperty(usr)
+            }
+
+            if (!password) {
+                ant.input(message:"Please enter your SVN password:", addproperty:psw)
+                password = ant.antProject.getProperty(psw)
+            }
+
+            authManager = SVNWCUtil.createDefaultAuthenticationManager(username , password)
+            authManagerMap.put(authKey,authManager)
+        }
     }
 }
 
 target(checkLicense:"Checks the license file for the plugin exists") {
-    if(!(new File("${basedir}/LICENSE").exists()) && !(new File("${basedir}/LICENSE.txt").exists())) {
+    if (!(new File("${basedir}/LICENSE").exists()) && !(new File("${basedir}/LICENSE.txt").exists())) {
         println "No LICENSE.txt file for plugin found. Please provide a license file containing the appropriate software licensing information (eg. Apache 2.0, GPL etc.)"
         exit(1)
     }
@@ -295,8 +296,8 @@ target(checkLicense:"Checks the license file for the plugin exists") {
 
 target(releasePlugin: "The implementation target") {
     depends(parseArguments,checkLicense)
-   
-    if(argsMap.skipMetadata != true) {
+
+    if (argsMap.skipMetadata != true) {
         println "Generating plugin project behavior metadata..."
         try {
             MetadataGeneratingMetaClassCreationHandle.enable()
@@ -307,27 +308,25 @@ target(releasePlugin: "The implementation target") {
         catch (e) {
             println "There was an error generating project behavior metadata: [${e.message}]"
         }
-
     }
     packagePlugin()
-    if(argsMap.skipDocs != true) {
+    if (argsMap.skipDocs != true) {
         docs()
     }
 
-    
-    if(argsMap.packageOnly) {
+    if (argsMap.packageOnly) {
         return
     }
     processAuth()
 
-	if (argsMap.message) {
-		commitMessage = argsMap.message
-	}
-	
-    if(argsMap.repository) {
-      configureRepositoryForName(argsMap.repository, "distribution")
+    if (argsMap.message) {
+        commitMessage = argsMap.message
     }
-    if(argsMap.snapshot || argsMap.'skip-latest') {
+
+    if (argsMap.repository) {
+        configureRepositoryForName(argsMap.repository, "distribution")
+    }
+    if (argsMap.snapshot || argsMap.'skip-latest') {
         skipLatest = true
     }
     remoteLocation = "${pluginSVN}/grails-${pluginName}"
@@ -335,16 +334,15 @@ target(releasePlugin: "The implementation target") {
     latestRelease = "${remoteLocation}/tags/LATEST_RELEASE"
     versionedRelease = "${remoteLocation}/tags/RELEASE_${plugin.version.toString().replaceAll('\\.','_')}"
 
-
     FSRepositoryFactory.setup()
     DAVRepositoryFactory.setup()
     SVNRepositoryFactoryImpl.setup()
 
     try {
-        if(argsMap.pluginlist) {
+        if (argsMap.pluginlist) {
             commitNewGlobalPluginList()
         }
-        else if(argsMap.zipOnly) {
+        else if (argsMap.zipOnly) {
             publishZipOnlyRelease()
         }
         else {
@@ -355,7 +353,7 @@ target(releasePlugin: "The implementation target") {
                 statusClient.doStatus(baseFile, true)
                 updateAndCommitLatest()
             }
-            catch(SVNException ex) {
+            catch (SVNException ex) {
                 // error with status, not in repo, attempt import.
                 if (ex.message.contains("is not a working copy")) {
                     boolean notInRepository = isPluginNotInRepository()
@@ -363,15 +361,14 @@ target(releasePlugin: "The implementation target") {
                         importToSVN()
                     }
                     else {
-                       def result = confirmInput("""
+                        def result = confirmInput("""
 The current directory is not a working copy and your latest changes won't be committed.
 You need to checkout a working copy and make your changes there.
 Alternatively, would you like to publish a zip-only (no sources) release?""")
-                        if(!result) exit(0)
-                        else {
-                            publishZipOnlyRelease()
-                            return
-                        }
+                        if (!result) exit(0)
+
+                        publishZipOnlyRelease()
+                        return
                     }
                 }
                 else {
@@ -419,9 +416,8 @@ def cleanLocalWorkingCopy(File localWorkingCopy) {
 }
 
 boolean isPluginNotInRepository() {
-// Now check whether the plugin is in the repository.
-    // If not, we ask the user whether they want to import
-    // it.
+    // Now check whether the plugin is in the repository.
+    // If not, we ask the user whether they want to import it.
     SVNRepository repos = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(pluginSVN))
     boolean notInRepository = true
     try {
@@ -437,13 +433,13 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
     withPluginListUpdate {
         ant.delete(file:pluginsListFile)
         // get newest version of plugin list
-		try{
-			fetchRemoteFile("${pluginSVN}/.plugin-meta/plugins-list.xml", pluginsListFile)
-		}
-		catch (Exception e){
-		    println "Error reading remote plugin list [${e.message}], building locally..."
-		    updatePluginsListManually()
-		}
+        try {
+            fetchRemoteFile("${pluginSVN}/.plugin-meta/plugins-list.xml", pluginsListFile)
+        }
+        catch (Exception e) {
+            println "Error reading remote plugin list [${e.message}], building locally..."
+            updatePluginsListManually()
+        }
 
         def remoteRevision = "0"
         if (shouldUseSVNProtocol(pluginDistURL)) {
@@ -455,7 +451,7 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
             new URL(pluginDistURL).withReader { Reader reader ->
                 def line = reader.readLine()
                 line.eachMatch(/Revision (.*):/) {
-                     remoteRevision = it[1]
+                    remoteRevision = it[1]
                 }
             }
         }
@@ -463,7 +459,7 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
         def publisher = new DefaultPluginPublisher(remoteRevision, pluginSVN)
         def updatedList = publisher.publishRelease(pluginName, new FileSystemResource(pluginsListFile), !skipLatest)
         pluginsListFile.withWriter("UTF-8") { w ->
-            publisher.writePluginList(updatedList, w)    
+            publisher.writePluginList(updatedList, w)
         }
     }
 }
@@ -477,7 +473,7 @@ target(commitNewGlobalPluginList:"updates the plugins.xml descriptor stored in t
 }
 
 private withPluginListUpdate(Closure updateLogic) {
-    if(!commitMessage) {
+    if (!commitMessage) {
         askForMessage()
     }
     updateLogic()
@@ -488,7 +484,7 @@ private withPluginListUpdate(Closure updateLogic) {
     def addClient = new SVNWCClient((ISVNAuthenticationManager)authManager, null)
 
     String remotePluginMetadata = "${pluginSVN}/.plugin-meta"
-    if(!pluginMetaDir.exists()) {
+    if (!pluginMetaDir.exists()) {
         println "Checking out locally to '${pluginMetaDir}'."
         checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
     }
@@ -496,13 +492,14 @@ private withPluginListUpdate(Closure updateLogic) {
         try {
             updateClient.doUpdate(pluginMetaDir, SVNRevision.HEAD, true)
             commitNewestPluginList(pluginMetaDir, importClient)
-        } catch (SVNException e) {
+        }
+        catch (SVNException e) {
             println "Plugin meta directory corrupt, checking out again"
             checkoutOrImportPluginMetadata(pluginMetaDir, remotePluginMetadata, updateClient, importClient)
         }
     }
-
 }
+
 private checkoutOrImportPluginMetadata (File pluginMetaDir, String remotePluginMetadata, SVNUpdateClient updateClient, SVNCommitClient importClient) {
     def svnURL = SVNURL.parseURIDecoded (remotePluginMetadata)
     try {
@@ -512,11 +509,11 @@ private checkoutOrImportPluginMetadata (File pluginMetaDir, String remotePluginM
             addClient.doAdd(new File("$pluginMetaDir/plugins-list.xml"), false, false, false, false)
         }
         catch (e) {
-            // ignore
+        // ignore
         }
         commitNewestPluginList(pluginMetaDir, importClient)
-        
-    } catch (SVNException e) {
+    }
+    catch (SVNException e) {
         println "Importing plugin meta data to ${remotePluginMetadata}. Please wait..."
 
         ant.mkdir(dir: pluginMetaDir)
@@ -526,7 +523,6 @@ private checkoutOrImportPluginMetadata (File pluginMetaDir, String remotePluginM
         println "Committed revision ${commit.newRevision} of plugins-list.xml."
         ant.delete(dir: pluginMetaDir)
         updateClient.doCheckout(svnURL, pluginMetaDir, SVNRevision.HEAD, SVNRevision.HEAD, true)
-
     }
 }
 
@@ -537,7 +533,6 @@ private def commitNewestPluginList(File pluginMetaDir, SVNCommitClient importCli
 
     println "Committed revision ${commit.newRevision} of plugins-list.xml."
 }
-
 
 target(checkInPluginZip:"Checks in the plug-in zip if it has not been checked in already") {
 
@@ -571,7 +566,6 @@ def addPluginZipAndMetadataIfNeccessary(File pluginXml, File pluginFile) {
     if (addPluginFile) wcClient.doAdd(pluginXml, true, false, false, false)
 }
 
-
 target(updateAndCommitLatest:"Commits the latest revision of the Plug-in") {
    def result = !isInteractive || confirmInput("""
 This command will perform the following steps to release your plug-in to Grails' SVN repository:
@@ -584,11 +578,10 @@ NOTE: Make sure you have updated the version number in your *GrailsPlugin.groovy
 
 Are you sure you wish to proceed?
 """)
-    if(!result) exit(0)
+    if (!result) exit(0)
 
     println "Checking in plugin zip..."
     checkInPluginZip()
-
 
     long r = updateDirectoryFromSVN(baseFile)
     println "Updated to revision ${r}. Committing local, please wait..."
@@ -605,8 +598,7 @@ def commitDirectoryToSVN(baseFile) {
 
     println "Committing code. Please wait..."
 
-    def commit = commitClient.doCommit([baseFile] as File[], false, commitMessage, true, true)
-    return commit
+    return commitClient.doCommit([baseFile] as File[], false, commitMessage, true, true)
 }
 
 long updateDirectoryFromSVN(baseFile) {
@@ -617,15 +609,12 @@ long updateDirectoryFromSVN(baseFile) {
     return r
 }
 
-
-
 target(importToSVN:"Imports a plugin project to Grails' remote SVN repository") {
     File checkOutDir = new File("${baseFile.parentFile.absolutePath}/checkout/${baseFile.name}")
 
     ant.unzip(src:pluginZip, dest:"${basedir}/unzipped")
     ant.copy(file:pluginZip, todir:"${basedir}/unzipped")
     ant.mkdir(dir:"${basedir}/unzipped/grails-app")
-
 
     File importBaseDirectory = new File("${basedir}/unzipped")
 
@@ -643,7 +632,7 @@ target(importToSVN:"Imports a plugin project to Grails' remote SVN repository") 
     * Tag the plug-in project as the LATEST_RELEASE
     Are you sure you wish to proceed?
         """)
-        if(!result) {
+        if (!result) {
             ant.delete(dir:importBaseDirectory, failonerror:false)
             exit(0)
         }
@@ -695,13 +684,13 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
 
     try { commitClient.doMkDir([tags] as SVNURL[], commitMessage) }
     catch (SVNException e) {
-        // ok - already exists
+    // ok - already exists
     }
-    if(!skipLatest ) {
+    if (!skipLatest) {
         try { commitClient.doDelete([latest] as SVNURL[], commitMessage) }
         catch (SVNException e) {
             // ok - the tag doesn't exist yet
-        }    
+        }
     }
     try { commitClient.doDelete([release] as SVNURL[], commitMessage) }
     catch (SVNException e) {
@@ -720,19 +709,16 @@ target(tagPluginRelease:"Tags a plugin-in with the LATEST_RELEASE tag and versio
         println "Copied trunk to ${versionedRelease} with revision ${commit.newRevision} on ${commit.date}"
 
         // And now make it the latest release.
-        if(!skipLatest) {
+        if (!skipLatest) {
             println "Tagging latest release, please wait..."
             copySource = new SVNCopySource(SVNRevision.HEAD, SVNRevision.HEAD, release)
             commit = copyClient.doCopy([copySource] as SVNCopySource[], latest, false, false, true, commitMessage, new SVNProperties())
             println "Copied trunk to ${latestRelease} with revision ${commit.newRevision} on ${commit.date}"
         }
-
     }
     catch (SVNException e) {
         logErrorAndExit("Error tagging release", e)
     }
-
-
 }
 
 target(askForMessage:"Asks for the users commit message") {
@@ -752,7 +738,8 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
         else {
             try {
                 document = DOMBuilder.parse(new FileReader(pluginsListFile))
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 recreateCache = true
                 println "Plugins list cache is corrupt [${e.message}]. Re-creating.."
             }
@@ -776,9 +763,9 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
                 withSVNRepo(pluginDistURL) { repo ->
                     remoteRevision = repo.getLatestRevision()
                     if (remoteRevision > localRevision) {
-						// Plugins list cache is expired, need to update
-						event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
-						pluginsList.setAttribute('revision', remoteRevision as String)
+                        // Plugins list cache is expired, need to update
+                        event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
+                        pluginsList.setAttribute('revision', remoteRevision as String)
                         repo.getDir('', -1,null,(Collection)null).each() { entry ->
                             final String PREFIX = "grails-"
                             if (entry.name.startsWith(PREFIX)) {
@@ -793,14 +780,14 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
                 new URL(pluginDistURL).withReader { Reader reader ->
                     def line = reader.readLine()
                     line.eachMatch(/Revision (.*):/) {
-                         remoteRevision = it[1].toInteger()
+                        remoteRevision = it[1].toInteger()
                     }
                     if (remoteRevision > localRevision) {
                         // Plugins list cache is expired, need to update
                         event("StatusUpdate", ["Plugins list cache has expired. Updating, please wait"])
                         pluginsList.setAttribute('revision', remoteRevision as String)
                         // for each plugin directory under Grails Plugins SVN in form of 'grails-*'
-                        while(line=reader.readLine()) {
+                        while (line = reader.readLine()) {
                             line.eachMatch(/<li><a href="grails-(.+?)">/) {
                                 // extract plugin name
                                 def pluginName = it[1][0..-2]
@@ -810,16 +797,16 @@ target(updatePluginsListManually: "Updates the plugin list by manually reading e
                         }
                     }
                 }
-           }
-
+            }
         }
-        catch(Exception e) {
+        catch (Exception e) {
             event("StatusError", ["Unable to list plugins, please check you have a valid internet connection: ${e.message}" ])
         }
 
         // update plugins list cache file
         writePluginsFile()
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
         event("StatusError", ["Unable to list plugins, please check you have a valid internet connection: ${e.message}" ])
     }
 }
@@ -884,6 +871,7 @@ def buildReleaseInfo(root, pluginName, releasePath, releaseTag) {
     if (releaseTag == '..' || releaseTag == 'LATEST_RELEASE') {
         return
     }
+
     // remove previous version..
     def releaseNode = root.'release'.find() {
         it.'@tag' == releaseTag && it.'&type' == 'svn'
@@ -914,12 +902,13 @@ def buildReleaseInfo(root, pluginName, releasePath, releaseTag) {
 }
 
 def parsePluginList() {
-    if(pluginsList == null) {
+    if (pluginsList == null) {
         profile("Reading local plugin list from $pluginsListFile") {
             def document
             try {
                 document = DOMBuilder.parse(new FileReader(pluginsListFile))
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 println "Plugin list file corrupt, retrieving again.."
                 readRemotePluginList()
                 document = DOMBuilder.parse(new FileReader(pluginsListFile))
@@ -951,7 +940,6 @@ def parseRemoteXML(url) {
     fetchPluginListFile(url).withReader() { DOMBuilder.parse(it) }
 }
 
-
 /**
  * Downloads a remote plugin zip into the plugins dir
  */
@@ -961,7 +949,6 @@ downloadRemotePlugin = { url, pluginsBase ->
     String zipLocation = "${pluginsBase}/grails-${fullPluginName}.zip"
     fetchRemoteFile("${url}", zipLocation)
     readMetadataFromZip(zipLocation, url)
-
     return fullPluginName
 }
 
@@ -976,7 +963,8 @@ fetchRemoteFile = { url, destfn ->
                 repo.getFile(file , (long)-1L, props , os)
             }
         }
-    } else {
+    }
+    else {
         ant.get(src:url, dest:destfn, verbose:"yes", usetimestamp:true)
     }
 }
@@ -996,10 +984,7 @@ fetchPluginListFile = { url ->
             if (!SVNProperty.isTextMimeType(mimeType)) {
                 throw new Exception("Must be a text file..")
             }
-            def bytes = baos.toByteArray()
-            def str = new String(bytes, 'utf-8')
-            def r = new StringReader(str)
-            return r
+            return new StringReader(new String(baos.toByteArray(), 'utf-8'))
         }
         return rdr
     }
@@ -1017,7 +1002,8 @@ def fetchRemote(url, closure) {
         SVNNodeKind nodeKind = repo.checkPath(file , -1)
         if (nodeKind == SVNNodeKind.NONE) {
             throw new Exception("The file does not exist.: " + url)
-        } else if (nodeKind != SVNNodeKind.FILE) {
+        }
+        if (nodeKind != SVNNodeKind.FILE) {
             throw new Exception("Error not a file..: " + url)
         }
         // present w/ file etc for repo extraction
@@ -1040,14 +1026,15 @@ withSVNRepo = { url, closure ->
     // trigger authentication failure?.?.
     try {
         repo.getLatestRevision()
-    } catch (SVNAuthenticationException ex) {
+    }
+    catch (SVNAuthenticationException ex) {
         event "StatusUpdate", ["Default authentication failed please enter credentials."]
         // prompt for login information..
         ant.input(message:"Please enter your SVN username:", addproperty:"user.svn.username")
         ant.input(message:"Please enter your SVN password:", addproperty:"user.svn.password")
         def username = ant.antProject.properties."user.svn.username"
         def password = ant.antProject.properties."user.svn.password"
-        authMgr = SVNWCUtil.createDefaultAuthenticationManager( username , password )
+        authMgr = SVNWCUtil.createDefaultAuthenticationManager(username , password)
         repo.setAuthenticationManager(authMgr)
         // don't bother to catch this one let it bubble up..
         repo.getLatestRevision()

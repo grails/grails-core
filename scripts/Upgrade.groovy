@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,16 +36,16 @@ target(upgrade: "main upgrade target") {
     if (appGrailsVersion != grailsVersion) {
         def gv = appGrailsVersion == null ? "pre-0.5" : appGrailsVersion
         event("StatusUpdate", ["NOTE: Your application currently expects grails version [$gv], " +
-                "this target will upgrade it to Grails ${grailsVersion}"])
+              "this target will upgrade it to Grails ${grailsVersion}"])
     }
 
     if (!force) {
         ant.input(message: """
-		WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
-		Are you sure you want to continue? 
-				   """,
-                validargs: "y,n",
-                addproperty: "grails.upgrade.warning")
+        WARNING: This target will upgrade an older Grails application to ${grailsVersion}.
+        Are you sure you want to continue?
+                   """,
+                    validargs: "y,n",
+                    addproperty: "grails.upgrade.warning")
 
         def answer = ant.antProject.properties."grails.upgrade.warning"
 
@@ -54,16 +54,16 @@ target(upgrade: "main upgrade target") {
         if ((grailsVersion.startsWith("1.0")) &&
                 !(['utf-8', 'us-ascii'].contains(System.getProperty('file.encoding')?.toLowerCase()))) {
             ant.input(message: """
-	        WARNING: This version of Grails requires all source code to be encoded in UTF-8.
-	        Your system file encoding indicates that your source code may not be saved in UTF-8.
-	        You can re-encode your source code manually after upgrading, but if you have used any
-	        non-ASCII chars in your source or GSPs your application may not operate correctly until
-	        you re-encode the files as UTF-8.
+            WARNING: This version of Grails requires all source code to be encoded in UTF-8.
+            Your system file encoding indicates that your source code may not be saved in UTF-8.
+            You can re-encode your source code manually after upgrading, but if you have used any
+            non-ASCII chars in your source or GSPs your application may not operate correctly until
+            you re-encode the files as UTF-8.
 
-	        Are you sure you want to upgrade your project now?
-	                   """,
-                    validargs: "y,n",
-                    addproperty: "grails.src.encoding.warning")
+            Are you sure you want to upgrade your project now?
+                       """,
+                             validargs: "y,n",
+                             addproperty: "grails.src.encoding.warning")
             answer = ant.antProject.properties."grails.src.encoding.warning"
             if (answer == "n") exit(0)
         }
@@ -74,7 +74,6 @@ target(upgrade: "main upgrade target") {
     def coreTaglibs = new File("${basedir}/plugins/core")
 
     ant.delete(dir: "${coreTaglibs}", failonerror: false)
-
 
     ant.sequential {
         def testDir = "${basedir}/grails-tests"
@@ -95,7 +94,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
                 }
                 delete(dir: testDir)
             }
-
         }
         delete(dir: "${basedir}/tmp", failonerror: false)
 
@@ -107,9 +105,9 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
             }
         }
         copy(file: "${grailsHome}/src/war/WEB-INF/sitemesh.xml",
-                tofile: "${basedir}/web-app/WEB-INF/sitemesh.xml", overwrite: true)
+             tofile: "${basedir}/web-app/WEB-INF/sitemesh.xml", overwrite: true)
         copy(file: "${grailsHome}/src/war/WEB-INF/applicationContext.xml",
-                tofile: "${basedir}/web-app/WEB-INF/applicationContext.xml", overwrite: true)
+             tofile: "${basedir}/web-app/WEB-INF/applicationContext.xml", overwrite: true)
 
         if (!isPluginProject) {
             // Install application-only files if needed, exact "one file only" matches
@@ -177,7 +175,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         replace(dir: "${basedir}/web-app/WEB-INF", includes: "**/*.*",
                 token: "@grails.project.key@", value: "${appKey}")
 
-
         copy(todir: "${basedir}/web-app/WEB-INF/tld", overwrite: true) {
             fileset(dir: "${grailsHome}/src/war/WEB-INF/tld/${servletVersion}")
             fileset(dir: "${grailsHome}/src/war/WEB-INF/tld", includes: "spring.tld")
@@ -209,7 +206,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
                 }
             }
         }
-
     }
 
     installDefaultPluginSet()
@@ -221,4 +217,4 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 
 target("default": "Upgrades a Grails application from a previous version of Grails") {
     depends(upgrade)
-}  
+}

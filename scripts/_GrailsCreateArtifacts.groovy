@@ -1,18 +1,18 @@
 /*
-* Copyright 2008 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2008 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import org.springframework.core.io.FileSystemResource
 import grails.util.GrailsNameUtils
@@ -39,12 +39,12 @@ createArtifact = { Map args = [:] ->
     if (pos != -1) {
         pkg = name[0..<pos]
         name = name[(pos + 1)..-1]
-        if(pkg.startsWith("~")) {
-        	pkg = pkg.replace("~", createRootPackage())
+        if (pkg.startsWith("~")) {
+            pkg = pkg.replace("~", createRootPackage())
         }
     }
     else {
-    		pkg = args.skipPackagePrompt ? '' : createRootPackage()
+        pkg = args.skipPackagePrompt ? '' : createRootPackage()
     }
 
     // Convert the package into a file path.
@@ -57,15 +57,13 @@ createArtifact = { Map args = [:] ->
     // Future use of 'pkgPath' requires a trailing slash.
     pkgPath += '/'
 
-    // Convert the given name into class name and property name
-    // representations.
+    // Convert the given name into class name and property name representations.
     className = GrailsNameUtils.getClassNameRepresentation(name)
     propertyName = GrailsNameUtils.getPropertyNameRepresentation(name)
     artifactFile = "${basedir}/${artifactPath}/${pkgPath}${className}${suffix}.groovy"
 
-
     if (new File(artifactFile).exists()) {
-        if(!confirmInput("${type} ${className}${suffix}.groovy already exists. Overwrite? [y/n]","${name}.${suffix}.overwrite")) {
+        if (!confirmInput("${type} ${className}${suffix}.groovy already exists. Overwrite? [y/n]","${name}.${suffix}.overwrite")) {
             return
         }
     }
@@ -77,7 +75,8 @@ createArtifact = { Map args = [:] ->
         def pluginTemplateFiles = resolveResources("file:${pluginsHome}/*/src/templates/artifacts/${type}.groovy")
         if (pluginTemplateFiles) {
             templateFile = pluginTemplateFiles[0]
-        } else {
+        }
+        else {
             // template not found in application, use default template
             templateFile = grailsResource("src/grails/templates/artifacts/${type}.groovy")
         }
@@ -86,7 +85,7 @@ createArtifact = { Map args = [:] ->
     copyGrailsResource(artifactFile, templateFile)
 //    ant.copy(file: templateFile, tofile: artifactFile, overwrite: true)
     ant.replace(file: artifactFile,
-            token: "@artifact.name@", value: "${className}${suffix}")
+        token: "@artifact.name@", value: "${className}${suffix}")
     if (pkg) {
         ant.replace(file: artifactFile, token: "@artifact.package@", value: "package ${pkg}\n\n")
     }
@@ -103,18 +102,21 @@ createArtifact = { Map args = [:] ->
 }
 
 private createRootPackage() {
-	compile()
-	createConfig()
-	return (config.grails.project.groupId ?: grailsAppName).replace('-','.').toLowerCase()	
+    compile()
+    createConfig()
+    return (config.grails.project.groupId ?: grailsAppName).replace('-','.').toLowerCase()
 }
+
 createIntegrationTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GrailsUnitTestCase"
-	createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests", path: "test/integration", superClass: superClass)
+    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests",
+                   path: "test/integration", superClass: superClass)
 }
 
 createUnitTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GrailsUnitTestCase"
-	createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests", path: "test/unit", superClass: superClass)
+    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests",
+                   path: "test/unit", superClass: superClass)
 }
 
 promptForName = { Map args = [:] ->

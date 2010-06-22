@@ -17,7 +17,6 @@
 import org.codehaus.groovy.grails.scaffolding.*
 import grails.util.GrailsNameUtils
 
-
 /**
  * Gant script that generates a CRUD controller and matching views for a given domain class
  *
@@ -32,7 +31,6 @@ generateForName = null
 generateViews = true
 generateController = true
 
-
 target(generateForOne: "Generates controllers and views for only one domain class.") {
     depends(loadApp)
 
@@ -40,13 +38,13 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     name = name.indexOf('.') > -1 ? name : GrailsNameUtils.getClassNameRepresentation(name)
     def domainClass = grailsApp.getDomainClass(name)
 
-    if(!domainClass) {
+    if (!domainClass) {
         println "Domain class not found in grails-app/domain, trying hibernate mapped classes..."
         bootstrap()
         domainClass = grailsApp.getDomainClass(name)
     }
 
-    if(domainClass) {
+    if (domainClass) {
         generateForDomainClass(domainClass)
         event("StatusFinal", ["Finished generation for domain class ${domainClass.fullName}"])
     }
@@ -66,10 +64,8 @@ target(uberGenerate: "Generates controllers and views for all domain classes.") 
         domainClasses = grailsApp.domainClasses
     }
 
-   if (domainClasses) {
-        domainClasses.each { domainClass ->
-            generateForDomainClass(domainClass)
-        }
+    if (domainClasses) {
+        domainClasses.each { domainClass -> generateForDomainClass(domainClass) }
         event("StatusFinal", ["Finished generation for domain classes"])
     }
     else {
@@ -77,18 +73,20 @@ target(uberGenerate: "Generates controllers and views for all domain classes.") 
     }
 }
 
-
 def generateForDomainClass(domainClass) {
     def templateGenerator = new DefaultGrailsTemplateGenerator(classLoader)
-    if(generateViews) {
+
+    if (generateViews) {
         event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])
         templateGenerator.generateViews(domainClass, basedir)
         event("GenerateViewsEnd", [domainClass.fullName])
     }
-    if(generateController) {
+
+    if (generateController) {
         event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])
         templateGenerator.generateController(domainClass, basedir)
-        createUnitTest(name: domainClass.fullName, suffix: "Controller", superClass: "ControllerUnitTestCase")
+        createUnitTest(name: domainClass.fullName, suffix: "Controller",
+                       superClass: "ControllerUnitTestCase")
         event("GenerateControllerEnd", [domainClass.fullName])
     }
 }

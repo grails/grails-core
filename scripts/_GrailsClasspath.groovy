@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.springframework.core.io.FileSystemResource
 
@@ -56,7 +57,7 @@ getPluginJarFiles = {
 
 getJarFiles = {->
     def jarFiles = resolveResources("file:${basedir}/lib/*.jar").toList()
-    if(includePluginJarsOnClasspath) {
+    if (includePluginJarsOnClasspath) {
 
         def pluginJars = pluginSettings.pluginJarFiles
 
@@ -71,26 +72,26 @@ getJarFiles = {->
         jarFiles.add(userJar)
     }
 
-	jarFiles.addAll(getExtraDependencies())
+    jarFiles.addAll(getExtraDependencies())
 
     jarFiles
 }
 
 getExtraDependencies = {
-	def jarFiles =[]
-	if(buildConfig?.grails?.compiler?.dependencies) {
+    def jarFiles =[]
+    if (buildConfig?.grails?.compiler?.dependencies) {
         def extraDeps = ant.fileScanner(buildConfig.grails.compiler.dependencies)
-		for(jar in extraDeps) {
+        for (jar in extraDeps) {
             jarFiles << new FileSystemResource(jar)
-		}
-	}
-	jarFiles
+        }
+    }
+    jarFiles
 }
 
 populateRootLoader = {rootLoader, jarFiles ->
-	for(jar in getExtraDependencies()) {
-    	rootLoader?.addURL(jar.URL)
-	}
+    for (jar in getExtraDependencies()) {
+        rootLoader?.addURL(jar.URL)
+    }
     rootLoader?.addURL(new File("${basedir}/web-app/WEB-INF").toURI().toURL())
 }
 
@@ -127,10 +128,11 @@ compileClasspath = {
     commonClasspath.call()
 
     def dependencies = grailsSettings.compileDependencies
-    if(dependencies) {
-        for(File f in dependencies) {
-            if(f)
+    if (dependencies) {
+        for (File f in dependencies) {
+            if (f) {
                 pathelement(location: f.absolutePath)
+            }
         }
     }
     pathelement(location: "${pluginClassesDir.absolutePath}")
@@ -141,10 +143,10 @@ testClasspath = {
     commonClasspath.call()
 
     def dependencies = grailsSettings.testDependencies
-    if(dependencies) {
+    if (dependencies) {
 
-        for(File f in dependencies) {
-            if(f) {
+        for (File f in dependencies) {
+            if (f) {
                 pathelement(location: f.absolutePath)
             }
         }
@@ -159,14 +161,15 @@ runtimeClasspath = {
     commonClasspath.call()
 
     def dependencies = grailsSettings.runtimeDependencies
-    if(dependencies) {        
-        for(File f in dependencies) {
-            if(f)
+    if (dependencies) {
+        for (File f in dependencies) {
+            if (f) {
                 pathelement(location: f.absolutePath)
+            }
         }
     }
 
-    pathelement(location: "${pluginClassesDir.absolutePath}")    
+    pathelement(location: "${pluginClassesDir.absolutePath}")
     pathelement(location: "${classesDir.absolutePath}")
 }
 
@@ -179,7 +182,6 @@ classpathToUrls = { String classpathId ->
 
     return ant.project.properties.get(propName).split(":").collect { new File(it).toURI().toURL() }
 }
-
 
 void setClasspath() {
     // Make sure the following code is only executed once.
@@ -194,7 +196,6 @@ void setClasspath() {
 
     def jarFiles = getJarFiles()
 
-
     for (dir in grailsDir) {
         cpath << dir.file.absolutePath << File.pathSeparator
         // Adding the grails-app folders to the root loader causes re-load issues as
@@ -203,17 +204,16 @@ void setClasspath() {
     }
     cpath << classesDirPath << File.pathSeparator
     cpath << pluginClassesDirPath << File.pathSeparator
-    
+
     cpath << "${basedir}/web-app/WEB-INF" << File.pathSeparator
     for (jar in jarFiles) {
         cpath << jar.file.absolutePath << File.pathSeparator
     }
 
     // We need to set up this configuration so that we can compile the
-    // plugin descriptors, which lurk in the root of the plugin's project
-    // directory.
+    // plugin descriptors, which lurk in the root of the plugin's project directory.
     compConfig = new CompilerConfiguration()
-    compConfig.setClasspath(cpath.toString());
+    compConfig.setClasspath(cpath.toString())
     compConfig.sourceEncoding = "UTF-8"
 
     // The resources directory must be created before it is added to

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 
 /**
@@ -37,12 +38,11 @@ eventsClassLoader = new GroovyClassLoader(classLoader)
 
 eventListener = new GrailsBuildEventListener(eventsClassLoader, binding, grailsSettings)
 eventListener.globalEventHooks = [
-        StatusFinal: [ {message -> println message } ],
-        StatusUpdate: [ {message -> println message + ' ...' } ],
-        StatusError: [ {message -> System.err.println message } ],
-        CreatedArtefact: [ {artefactType, artefactName -> println "Created $artefactType for $artefactName" } ]
+    StatusFinal: [ {message -> println message } ],
+    StatusUpdate: [ {message -> println message + ' ...' } ],
+    StatusError: [ {message -> System.err.println message } ],
+    CreatedArtefact: [ {artefactType, artefactName -> println "Created $artefactType for $artefactName" } ]
 ]
-
 
 hooksLoaded = false
 binding.addBuildListener(eventListener)
@@ -54,11 +54,9 @@ eventListener.classLoader = new GroovyClassLoader(classLoader)
 eventListener.initialize()
 
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
-event = {String name, def args ->
+event = {String name, args ->
     eventListener.triggerEvent(name, * args)
 }
 
 // Give scripts a chance to modify classpath
 event('SetClasspath', [classLoader])
-
-

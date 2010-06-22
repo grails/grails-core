@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2004-2005 the original author or authors.
  *
@@ -16,12 +15,12 @@
  */
 
 /**
-* Gant script that handles general initialization of a Grails applications
-*
-* @author Graeme Rocher
-*
-* @since 0.4
-*/
+ * Gant script that handles general initialization of a Grails applications
+ *
+ * @author Graeme Rocher
+ *
+ * @since 0.4
+ */
 
 import org.springframework.core.io.FileSystemResource
 import grails.util.GrailsNameUtils
@@ -38,7 +37,6 @@ Grape.enableAutoDownload = true
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << grailsScript("_PluginDependencies")
 
-
 // Generates Eclipse .classpath entries for all the Grails dependencies,
 // i.e. a string containing a "<classpath entry ..>" element for each
 // of Grails' library JARs. This only works if $GRAILS_HOME is set.
@@ -53,7 +51,6 @@ eclipseClasspathLibs = {
     }
     result
 }
-
 
 target(createStructure: "Creates the application directory structure") {
     ant.sequential {
@@ -89,11 +86,12 @@ target(checkVersion: "Stops build if app expects different Grails version") {
     if (metadataFile.exists()) {
         if (appGrailsVersion != grailsVersion) {
             event("StatusFinal", ["Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
-                    "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails " +
-                    "version is newer than the version your application expects."])
+                                  "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails " +
+                                  "version is newer than the version your application expects."])
             exit(1)
         }
-    } else {
+    }
+    else {
         // We know this is pre-0.5 application
         event("StatusFinal", ["Application is pre-Grails 0.5, please run: grails upgrade"])
         exit(1)
@@ -111,9 +109,8 @@ target(updateAppProperties: "Updates default application.properties") {
     appGrailsVersion = grailsVersion
 }
 
-target( launderIDESupportFiles: "Updates the IDE support files (Eclipse, TextMate etc.), changing file names and replacing tokens in files where appropriate.") {
+target(launderIDESupportFiles: "Updates the IDE support files (Eclipse, TextMate etc.), changing file names and replacing tokens in files where appropriate.") {
     // do nothing. deprecated target
-
 }
 
 target(init: "main init target") {
@@ -127,8 +124,8 @@ target(init: "main init target") {
     // Create a message bundle to get the user started.
     touch(file: "${basedir}/grails-app/i18n/messages.properties")
 
-	// Set the default version number for the application
+    // Set the default version number for the application
     updateMetadata(
-            "app.version": grailsAppVersion ?: "0.1",
-            "app.servlet.version": servletVersion)
+        "app.version": grailsAppVersion ?: "0.1",
+        "app.servlet.version": servletVersion)
 }

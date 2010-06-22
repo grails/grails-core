@@ -41,9 +41,8 @@ target(createApp: "Creates a Grails application for the given name")  {
 
     // Set the default version number for the application
     updateMetadata(
-            "app.version": grailsAppVersion ?: "0.1",
-            "app.servlet.version": servletVersion)
-
+        "app.version": grailsAppVersion ?: "0.1",
+        "app.servlet.version": servletVersion)
 
     installDefaultPluginSet()
 
@@ -72,14 +71,15 @@ target(createPlugin: "The implementation target")  {
 
     // Rename the plugin descriptor.
     pluginName = GrailsNameUtils.getNameFromScript(grailsAppName)
-    if(!(pluginName ==~ /[a-zA-Z-]+/)) {
+    if (!(pluginName ==~ /[a-zA-Z-]+/)) {
         println "Error: Specified plugin name [$grailsAppName] is invalid. Plugin names can only contain word characters separated by hyphens."
         exit 1
     }
+
     ant.move(
-            file: "${basedir}/GrailsPlugin.groovy",
-            tofile: "${basedir}/${pluginName}GrailsPlugin.groovy",
-            overwrite: true)
+        file: "${basedir}/GrailsPlugin.groovy",
+        tofile: "${basedir}/${pluginName}GrailsPlugin.groovy",
+        overwrite: true)
 
     // Insert the name of the plugin into whatever files need it.
     ant.replace(dir:"${basedir}") {
@@ -112,8 +112,8 @@ target(initProject: "Initialise an application or plugin project") {
     }
 }
 
-target ( appName : "Evaluates the application name") {
-    if(!argsMap["params"]) {
+target (appName : "Evaluates the application name") {
+    if (!argsMap["params"]) {
         String type = scriptName.toLowerCase().indexOf('plugin') > -1 ? 'Plugin' : 'Application'
         ant.input(message:"$type name not specified. Please enter:",
                   addProperty:"grails.app.name")

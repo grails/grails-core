@@ -1,20 +1,20 @@
-import grails.util.GrailsNameUtils
-
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import grails.util.GrailsNameUtils
 
 /**
  * Command to enable integration of Grails with external IDEs and build systems
@@ -30,12 +30,11 @@ integrationFiles = new File("${projectWorkDir}/integration-files")
 target(integrateWith:"Integrates ") {
     depends(parseArguments)
 
-
     def keys = argsMap.keySet()
     try {
         event("IntegrateWithInit", keys.toList())
-        for(key in keys) {
-            if(key == 'params') continue
+        for (key in keys) {
+            if (key == 'params') continue
             try {
                 def name = GrailsNameUtils.getClassNameRepresentation(key)
                 "integrate${name}"()
@@ -49,30 +48,29 @@ target(integrateWith:"Integrates ") {
     finally {
         ant.delete(dir:integrationFiles, failonerror:false)
     }
-
-
 }
 
 target(integrateAnt:"Integrates Ant with Grails") {
-   depends unpackSupportFiles
-   ant.copy(todir:basedir) {
-       fileset(dir:integrationFiles, includes:"*.xml")
+    depends unpackSupportFiles
+    ant.copy(todir:basedir) {
+        fileset(dir:integrationFiles, includes:"*.xml")
    }
-   replaceTokens()
-   println "Created Ant and Ivy builds files."
-
+    replaceTokens()
+    println "Created Ant and Ivy builds files."
 }
+
 target(integrateTextmate:"Integrates Textmate with Grails") {
-   depends unpackSupportFiles
-   ant.copy(todir:basedir) {
-       fileset(dir:"${integrationFiles}/textmate")
-   }
+    depends unpackSupportFiles
+    ant.copy(todir:basedir) {
+        fileset(dir:"${integrationFiles}/textmate")
+    }
 
-   ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
+    ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
 
-   replaceTokens()
-   println "Created Textmate project files."
+    replaceTokens()
+    println "Created Textmate project files."
 }
+
 target(integrateEclipse:"Integrates Eclipse STS with Grails") {
     depends unpackSupportFiles
 
@@ -83,12 +81,13 @@ target(integrateEclipse:"Integrates Eclipse STS with Grails") {
     replaceTokens()
     println "Created Eclipse project files."
 }
-target(integrateIntellij:"Integrates Intellij with Grails") {
-   depends unpackSupportFiles
 
-   ant.copy(todir:basedir) {
-       fileset(dir:"${integrationFiles}/intellij")
-   }
+target(integrateIntellij:"Integrates Intellij with Grails") {
+    depends unpackSupportFiles
+
+    ant.copy(todir:basedir) {
+        fileset(dir:"${integrationFiles}/intellij")
+    }
     ant.move(file: "${basedir}/ideaGrailsProject.iml", tofile: "${basedir}/${grailsAppName}.iml", overwrite: true)
     ant.move(file: "${basedir}/ideaGrailsProject.ipr", tofile: "${basedir}/${grailsAppName}.ipr", overwrite: true)
     ant.move(file: "${basedir}/ideaGrailsProject.iws", tofile: "${basedir}/${grailsAppName}.iws", overwrite: true)
@@ -98,7 +97,7 @@ target(integrateIntellij:"Integrates Intellij with Grails") {
 }
 
 target(replaceTokens:"Replaces any tokens in the files") {
-    def appKey = grailsAppName.replaceAll( /\s/, '.' ).toLowerCase()
+    def appKey = grailsAppName.replaceAll(/\s/, '.').toLowerCase()
     ant.replace(dir:"${basedir}", includes:"*.*") {
         replacefilter(token:"@grails.intellij.libs@", value: intellijClasspathLibs())
         replacefilter(token: "@grails.libs@", value: eclipseClasspathLibs())
@@ -110,8 +109,7 @@ target(replaceTokens:"Replaces any tokens in the files") {
 }
 
 target(unpackSupportFiles:"Unpacks the support files") {
-
-    if(!integrationFiles.exists()) {
+    if (!integrationFiles.exists()) {
         grailsUnpack(dest: integrationFiles.path, src: "grails-integration-files.jar")
     }
 }
@@ -129,7 +127,6 @@ intellijClasspathLibs = {
         (new File("${grailsHome}/dist")).eachFileMatch(~/^grails-.*\.jar/) {file ->
             builder << "<root url=\"jar://${grailsHome}/dist/${file.name}!/\" />\n\n"
         }
-
     }
 
     return builder.toString()

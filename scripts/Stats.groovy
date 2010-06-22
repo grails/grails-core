@@ -34,21 +34,19 @@ target (default: "Generates basic stats for a Grails project") {
         loc = 0
         comment = 0
         file.eachLine { line ->
-            if(line ==~ EMPTY) return
-            else if(line ==~ SLASH_SLASH) return
-            else {
-                def m = line =~ SLASH_STAR_STAR_SLASH
-                if(m.count && m[0][1] ==~ EMPTY && m[0][3] ==~ EMPTY) return
-                int open = line.indexOf("/*")
-                int close = line.indexOf("*/")
-                if(open != -1 && (close-open) <= 1) comment++
-                else if(close != -1 && comment) comment--
-            }
-            if(!comment) loc++
-        } 
+            if (line ==~ EMPTY) return
+            if (line ==~ SLASH_SLASH) return
+            def m = line =~ SLASH_STAR_STAR_SLASH
+            if (m.count && m[0][1] ==~ EMPTY && m[0][3] ==~ EMPTY) return
+            int open = line.indexOf("/*")
+            int close = line.indexOf("*/")
+            if (open != -1 && (close-open) <= 1) comment++
+            else if (close != -1 && comment) comment--
+        }
+        if (!comment) loc++
         loc
     }
-   
+
     // maps file path to
     def pathToInfo = [
         [name: "Controllers",        path: "controllers",      filetype: [".groovy"]],
@@ -70,7 +68,7 @@ target (default: "Generates basic stats for a Grails project") {
             file.path =~ info.path &&
             info.filetype.any{ s -> file.path.endsWith(s) }
         }
-        if (match && file.isFile() ) {
+        if (match && file.isFile()) {
             match.filecount = match.filecount ? match.filecount+1 : 1
             // strip whitespace
             loc = match.locmatcher ? match.locmatcher(file) : DEFAULT_LOC_MATCHER(file)
@@ -87,7 +85,6 @@ target (default: "Generates basic stats for a Grails project") {
     +----------------------+-------+-------+'''
 
     pathToInfo.each { info ->
-
         if (info.filecount) {
             println "    | " +
                 info.name.padRight(20," ") + " | " +
@@ -96,7 +93,6 @@ target (default: "Generates basic stats for a Grails project") {
             totalFiles += info.filecount
             totalLOC += info.loc
         }
-
     }
 
     println "    +----------------------+-------+-------+"

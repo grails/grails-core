@@ -28,16 +28,16 @@ _grails_clean_called = true
 
 includeTargets << grailsScript("_GrailsEvents")
 
-target ( cleanAll: "Cleans a Grails project" ) {
-	clean()
-	cleanTestReports()
+target (cleanAll: "Cleans a Grails project") {
+    clean()
+    cleanTestReports()
 }
 
-target ( clean: "Implementation of clean" ) {
+target (clean: "Implementation of clean") {
     depends(cleanCompiledSources, cleanWarFile)
 }
 
-target ( cleanCompiledSources: "Cleans compiled Java and Groovy sources" ) {
+target (cleanCompiledSources: "Cleans compiled Java and Groovy sources") {
     def webInf = "${basedir}/web-app/WEB-INF"
     ant.delete(dir:"${webInf}/classes")
     ant.delete(file:webXmlFile.absolutePath, failonerror:false)
@@ -50,7 +50,7 @@ target ( cleanCompiledSources: "Cleans compiled Java and Groovy sources" ) {
     ant.delete(dir:testDirPath)
 }
 
-target ( cleanTestReports: "Cleans the test reports" ) {
+target (cleanTestReports: "Cleans the test reports") {
     // Delete all reports *except* TEST-TestSuites.xml which we need
     // for the "--rerun" option to work.
     ant.delete(failonerror:false, includeemptydirs: true) {
@@ -61,7 +61,7 @@ target ( cleanTestReports: "Cleans the test reports" ) {
     }
 }
 
-target ( cleanWarFile: "Cleans the deployable .war file" ) {
+target (cleanWarFile: "Cleans the deployable .war file") {
     if (buildConfig.grails.project.war.file) {
         warName = buildConfig.grails.project.war.file
     }

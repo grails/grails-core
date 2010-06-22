@@ -1,26 +1,26 @@
+/*
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 import grails.util.GrailsNameUtils
 import grails.doc.DocPublisher
 import grails.doc.PdfBuilder
-
-/*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
 
 /**
  * @author Graeme Rocher
@@ -35,63 +35,61 @@ javadocDir = "${grailsSettings.docsOutputDir}/api"
 groovydocDir = "${grailsSettings.docsOutputDir}/gapi"
 docEncoding = "UTF-8"
 docSourceLevel = "1.5"
-links = [
-            'http://java.sun.com/j2se/1.5.0/docs/api/'
-        ]
+links = ['http://java.sun.com/j2se/1.5.0/docs/api/']
 
 docsDisabled = { argsMap.nodoc == true }
 pdfEnabled = { argsMap.pdf == true }
 
 target(docs: "Produces documentation for a Grails project") {
-	parseArguments()
-	if(argsMap.init) {
-		ant.mkdir(dir:"${basedir}/src/docs/guide")
-		ant.mkdir(dir:"${basedir}/src/docs/ref/Items")
-		new File("${basedir}/src/docs/guide/1. Introduction.gdoc").write '''
+    parseArguments()
+    if (argsMap.init) {
+        ant.mkdir(dir:"${basedir}/src/docs/guide")
+        ant.mkdir(dir:"${basedir}/src/docs/ref/Items")
+        new File("${basedir}/src/docs/guide/1. Introduction.gdoc").write '''
 This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
-		
+
 You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
-		
-* Bullet 1 
+
+* Bullet 1
 * Bullet 2
-		
+
 As well as numbered lists:
-		
+
 # Number 1
 # Number 2
-		
-The documentation also handles links to [guide items|guide:1. Introduction] as well as [reference|items]		
-		'''
-		
-		new File("${basedir}/src/docs/ref/Items/reference.gdoc").write '''
+
+The documentation also handles links to [guide items|guide:1. Introduction] as well as [reference|items]
+        '''
+
+        new File("${basedir}/src/docs/ref/Items/reference.gdoc").write '''
 h1. example
 
 h2. Purpose
 
-This is an example reference item. 
+This is an example reference item.
 
 h2. Examples
 
 You can use code snippets:
-	
+
 {code}
 def example = new Example()
 {code}
-		
+
 h2. Description
 
-And provide a detailed description		
-		'''
-		
-		println "Example documentation created in ${basedir}/src/docs. Use 'grails doc' to publish."
-	}
-	else {
-		docsInternal()
-	}	
+And provide a detailed description
+        '''
+
+        println "Example documentation created in ${basedir}/src/docs. Use 'grails doc' to publish."
+    }
+    else {
+        docsInternal()
+    }
 }
 
 target(docsInternal:"Actual documentation task") {
-	depends(compile, javadoc, groovydoc, refdocs, pdf)
+    depends(compile, javadoc, groovydoc, refdocs, pdf)
 }
 
 target(setupDoc:"Sets up the doc directories") {
@@ -117,7 +115,7 @@ target(groovydoc:"Produces groovydoc documentation") {
                       windowtitle:grailsAppName,'private':"true")
     }
     catch(Exception e) {
-       event("StatusError", ["Error generating groovydoc: ${e.message}"])
+        event("StatusError", ["Error generating groovydoc: ${e.message}"])
     }
     event("DocEnd", ['groovydoc'])
 }
@@ -133,8 +131,8 @@ target(javadoc:"Produces javadoc documentation") {
     event("DocStart", ['javadoc'])
     File javaDir = new File("${grailsSettings.sourceDir}/java")
     if (javaDir.listFiles().find{ !it.name.startsWith(".")}) {
-       try {
-           ant.javadoc( access:"protected",
+        try {
+            ant.javadoc(access:"protected",
                         destdir:javadocDir,
                         encoding:docEncoding,
                         classpathref:"grails.compile.classpath",
@@ -149,16 +147,16 @@ target(javadoc:"Produces javadoc documentation") {
                         maxmemory:"128m",
                         failonerror:false,
                         sourcepath:javaDir.absolutePath) {
-               for(i in links) {
-                   link(href:i)
-               }
-           }
-       }
-       catch(Exception e) {
-          event("StatusError", ["Error generating javadoc: ${e.message}"])
-          // ignore, empty src/java directory
-       }
-   }
+                for (i in links) {
+                    link(href:i)
+                }
+            }
+        }
+        catch (Exception e) {
+            event("StatusError", ["Error generating javadoc: ${e.message}"])
+            // ignore, empty src/java directory
+        }
+    }
     event("DocEnd", ['javadoc'])
 }
 
@@ -171,7 +169,7 @@ target(refdocs:"Generates Grails style reference documentation") {
 
     def context = DocumentationContext.getInstance()
     if (context?.hasMetadata()) {
-        for(DocumentedMethod m in context.methods) {
+        for (DocumentedMethod m in context.methods) {
             if (m.artefact && m.artefact != 'Unknown') {
                 String refDir = "${srcDocs}/ref/${GrailsNameUtils.getNaturalName(m.artefact)}"
                 ant.mkdir(dir:refDir)
@@ -227,37 +225,42 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 }
 
 target(pdf: "Produces PDF documentation") {
-   depends(parseArguments)
+    depends(parseArguments)
 
-   File refDocsDir = new File("${grailsSettings.docsOutputDir}/manual")
-   File singleHtml = new File(refDocsDir, 'guide/single.html')
+    File refDocsDir = new File("${grailsSettings.docsOutputDir}/manual")
+    File singleHtml = new File(refDocsDir, 'guide/single.html')
 
-   if (docsDisabled() || !pdfEnabled() || !singleHtml.exists()) {
-       event("DocSkip", ['pdf'])
-       return
-   }
+    if (docsDisabled() || !pdfEnabled() || !singleHtml.exists()) {
+        event("DocSkip", ['pdf'])
+        return
+    }
 
-   event("DocStart", ['pdf'])
+    event("DocStart", ['pdf'])
 
-   PdfBuilder.build(grailsSettings.docsOutputDir.canonicalPath, grailsHome)
-   println "Built user manual PDF at ${refDocsDir}/guide/single.pdf"
+    PdfBuilder.build(grailsSettings.docsOutputDir.canonicalPath, grailsHome)
+    println "Built user manual PDF at ${refDocsDir}/guide/single.pdf"
 
-   event("DocEnd", ['pdf'])
+    event("DocEnd", ['pdf'])
 }
 
 def readPluginMetadataForDocs(DocPublisher publisher) {
     def basePlugin = loadBasePlugin()
     if (basePlugin) {
-        if (basePlugin.hasProperty("title"))
+        if (basePlugin.hasProperty("title")) {
             publisher.title = basePlugin.title
-        if (basePlugin.hasProperty("description"))
+        }
+        if (basePlugin.hasProperty("description")) {
             publisher.subtitle = basePlugin.description
-        if (basePlugin.hasProperty("version"))
+        }
+        if (basePlugin.hasProperty("version")) {
             publisher.version = basePlugin.version
-        if (basePlugin.hasProperty("license"))
+        }
+        if (basePlugin.hasProperty("license")) {
             publisher.license = basePlugin.license
-        if (basePlugin.hasProperty("author"))
+        }
+        if (basePlugin.hasProperty("author")) {
             publisher.authors = basePlugin.author
+        }
     }
 }
 

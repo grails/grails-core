@@ -32,8 +32,9 @@ target ('default': "Installs the artifact and scaffolding templates") {
 
     // only if template dir already exists in, ask to overwrite templates
     if (new File(targetDir).exists()) {
-        if (!isInteractive || confirmInput("Overwrite existing templates? [y/n]","overwrite.templates"))
+        if (!isInteractive || confirmInput("Overwrite existing templates? [y/n]","overwrite.templates")) {
             overwrite = true
+        }
     }
     else {
         ant.mkdir(dir: targetDir)

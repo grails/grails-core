@@ -1,21 +1,21 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import grails.util.GrailsNameUtils
 
 /**
@@ -34,26 +34,27 @@ ant.path(id: "grails.compile.classpath", compileClasspath)
 
 compilerPaths = { String classpathId ->
 
-	def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
+    def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
 
-	for(dir in new File("${basedir}/grails-app").listFiles()) {
-        if(!excludedPaths.contains(dir.name) && dir.isDirectory())
+    for (dir in new File("${basedir}/grails-app").listFiles()) {
+        if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
             src(path:"${dir}")
+        }
     }
     // Handle conf/ separately to exclude subdirs/package misunderstandings
     src(path: "${basedir}/grails-app/conf")
-    
-	if (new File("${basedir}/grails-app/conf/spring").exists()) {
+
+    if (new File("${basedir}/grails-app/conf/spring").exists()) {
         src(path: "${basedir}/grails-app/conf/spring")     // This stops resources.groovy becoming "spring.resources"
     }
 
     if (new File("${grailsSettings.sourceDir}/groovy").exists()) {
         src(path:"${grailsSettings.sourceDir}/groovy")
     }
-    if (new File("${grailsSettings.sourceDir}/java").exists()) {    
+    if (new File("${grailsSettings.sourceDir}/java").exists()) {
         src(path:"${grailsSettings.sourceDir}/java")
     }
-    
+
     javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
 }
 
@@ -74,25 +75,23 @@ target(compile : "Implementation of compilation phase") {
         try {
             String classpathId = "grails.compile.classpath"
             ant.groovyc(destdir:classesDirPath,
-	                    classpathref:classpathId,
-	                    encoding:"UTF-8",
-	                    verbose: grailsSettings.verboseCompile,
+                        classpathref:classpathId,
+                        encoding:"UTF-8",
+                        verbose: grailsSettings.verboseCompile,
                         listfiles: grailsSettings.verboseCompile,
-	                    compilerPaths.curry(classpathId))
+                        compilerPaths.curry(classpathId))
         }
-        catch(Exception e) {
+        catch (Exception e) {
             event("StatusFinal", ["Compilation error: ${e.message}"])
             exit(1)
         }
-        
+
         classLoader.addURL(grailsSettings.classesDir.toURI().toURL())
         classLoader.addURL(grailsSettings.pluginClassesDir.toURI().toURL())
 
         // If this is a plugin project, the descriptor is not included
-        // in the compiler's source path. So, we manually compile it
-        // now.
+        // in the compiler's source path. So, we manually compile it now.
         if (isPluginProject) compilePluginDescriptor(findPluginDescriptor(grailsSettings.baseDir))
-
     }
 }
 
@@ -116,11 +115,11 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
             // Only perform the compilation if there are some plugins
             // installed or otherwise referenced.
             ant.groovyc(destdir:classesDirPath,
-                    classpathref:classpathId,
-                    encoding:"UTF-8",
-                    verbose: grailsSettings.verboseCompile,
-                    listfiles: grailsSettings.verboseCompile) {
-                for(dir in pluginResources.file) {
+                        classpathref:classpathId,
+                        encoding:"UTF-8",
+                        verbose: grailsSettings.verboseCompile,
+                        listfiles: grailsSettings.verboseCompile) {
+                for (dir in pluginResources.file) {
                     src(path:"${dir}")
                 }
                 exclude(name: "**/BootStrap.groovy")
@@ -131,8 +130,6 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
                 exclude(name: "**/resources.groovy")
                 javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
             }
-            
-            
         }
     }
 }
@@ -164,49 +161,45 @@ findPluginDescriptor = { File dir ->
     return files ? files[0] : null
 }
 
-
 target(compilepackage : "Compile & Compile GSP files") {
-	depends(compile, compilegsp)
+    depends(compile, compilegsp)
 }
 
 ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
 
 target(compilegsp : "Compile GSP files") {
-	// compile gsps in grails-app/views directory
+    // compile gsps in grails-app/views directory
     File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
-    ant.gspc( destdir:classesDir,
-              srcdir:"${basedir}/grails-app/views",
-              packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName),
-              serverpath:"/WEB-INF/grails-app/views/",
-              classpathref:"grails.compile.classpath",
-              tmpdir:gspTmpDir)
+    ant.gspc(destdir:classesDir,
+             srcdir:"${basedir}/grails-app/views",
+             packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName),
+             serverpath:"/WEB-INF/grails-app/views/",
+             classpathref:"grails.compile.classpath",
+             tmpdir:gspTmpDir)
 
+    // compile gsps in web-app directory
+    ant.gspc(destdir:classesDir,
+             srcdir:"${basedir}/web-app",
+             packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
+             serverpath:"/",
+             classpathref:"grails.compile.classpath",
+             tmpdir:gspTmpDir)
 
-	// compile gsps in web-app directory
-    ant.gspc( destdir:classesDir,
-              srcdir:"${basedir}/web-app",
-              packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
-              serverpath:"/",
-              classpathref:"grails.compile.classpath",
-              tmpdir:gspTmpDir)
-
-	// compile views in plugins
-	loadPlugins()
-	def pluginInfos = pluginSettings.supportedPluginInfos
-	if(pluginInfos) {
-		for(GrailsPluginInfo info in pluginInfos) {
+    // compile views in plugins
+    loadPlugins()
+    def pluginInfos = pluginSettings.supportedPluginInfos
+    if (pluginInfos) {
+        for (GrailsPluginInfo info in pluginInfos) {
             File pluginViews = new File(info.pluginDir.file, "grails-app/views")
-            if(pluginViews.exists()) {                
+            if (pluginViews.exists()) {
                 def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"
-                ant.gspc( destdir:classesDir,
-                          srcdir:pluginViews,
-                          packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(info.name),
-                          serverpath:viewPrefix,
-                          classpathref:"grails.compile.classpath",
-                          tmpdir:gspTmpDir)
+                ant.gspc(destdir:classesDir,
+                         srcdir:pluginViews,
+                         packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(info.name),
+                         serverpath:viewPrefix,
+                         classpathref:"grails.compile.classpath",
+                         tmpdir:gspTmpDir)
             }
-		}
-	}
-	
+        }
+    }
 }
-

@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,35 +39,35 @@ ant.path(id: "grails.classpath", runtimeClasspath)
 
 compilerClasspath = { testSources ->
 
-	def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
-	def pluginResources = resolveResources("file:${basedir}/plugins/*/grails-app/*").toList() +
-						  resolveResources("file:${basedir}/plugins/*/src/java").toList() +
-						  resolveResources("file:${basedir}/plugins/*/src/groovy").toList()
+    def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
+    def pluginResources = resolveResources("file:${basedir}/plugins/*/grails-app/*").toList() +
+                          resolveResources("file:${basedir}/plugins/*/src/java").toList() +
+                          resolveResources("file:${basedir}/plugins/*/src/groovy").toList()
 
-	for(dir in new File("${basedir}/grails-app").listFiles()) {
-        if(!excludedPaths.contains(dir.name) && dir.isDirectory())
+    for (dir in new File("${basedir}/grails-app").listFiles()) {
+        if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
             src(path:"${dir}")
+        }
     }
     // Handle conf/ separately to exclude subdirs/package misunderstandings
     src(path: "${basedir}/grails-app/conf")
     // This stops resources.groovy becoming "spring.resources"
     src(path: "${basedir}/grails-app/conf/spring")
 
-	excludedPaths.remove("conf")
-    for(dir in pluginResources.file) {
-        if(!excludedPaths.contains(dir.name) && dir.isDirectory()) {
+    excludedPaths.remove("conf")
+    for (dir in pluginResources.file) {
+        if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
             src(path:"${dir}")
         }
-     }
-
+    }
 
     src(path:"${basedir}/src/groovy")
     src(path:"${basedir}/src/java")
     javac(classpathref:"grails.classpath", debug:"yes")
-	if(testSources) {
-         src(path:"${basedir}/test/unit")
-         src(path:"${basedir}/test/integration")
-	}
+    if (testSources) {
+        src(path:"${basedir}/test/unit")
+        src(path:"${basedir}/test/integration")
+    }
 }
 
 // Complete hack. Automatically starts the server, so the return value
@@ -120,17 +120,16 @@ target(createArtifact: "Creates a specific Grails artifact") {
         pkgPath += '/'
     }
 
-    // Convert the given name into class name and property name
-    // representations.
+    // Convert the given name into class name and property name representations.
     className = GCU.getClassNameRepresentation(name)
     propertyName = GCU.getPropertyNameRepresentation(name)
     artifactFile = "${basedir}/${artifactPath}/${pkgPath}${className}${typeName}.groovy"
 
-
     if (new File(artifactFile).exists()) {
         Ant.input(addProperty: "${name}.${typeName}.overwrite", message: "${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
-        if (Ant.antProject.properties."${name}.${typeName}.overwrite" == "n")
+        if (Ant.antProject.properties."${name}.${typeName}.overwrite" == "n") {
             return
+        }
     }
 
     // first check for presence of template in application
@@ -148,14 +147,15 @@ target(createArtifact: "Creates a specific Grails artifact") {
 
         if (pluginTemplateFiles) {
             templateFile = pluginTemplateFiles[0].path
-        } else {
+        }
+        else {
             // template not found in application, use default template
             templateFile = "${grailsHome}/src/grails/templates/artifacts/${artifactName}.groovy"
         }
     }
     Ant.copy(file: templateFile, tofile: artifactFile, overwrite: true)
     Ant.replace(file: artifactFile,
-            token: "@artifact.name@", value: "${className}${typeName}")
+                token: "@artifact.name@", value: "${className}${typeName}")
     if (pkg) {
         Ant.replace(file: artifactFile, token: "@artifact.package@", value: "package ${pkg}\n\n")
     }
@@ -164,8 +164,7 @@ target(createArtifact: "Creates a specific Grails artifact") {
     }
 
     // When creating a domain class, "typename" is empty. So, in order
-    // to make the status message sensible, we have to pass something
-    // else in.
+    // to make the status message sensible, we have to pass something else in.
     event("CreatedFile", [artifactFile])
     event("CreatedArtefact", [ typeName ?: "Domain Class", className])
 }

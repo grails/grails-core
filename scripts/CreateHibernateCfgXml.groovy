@@ -16,7 +16,7 @@
 
 /**
  * Gant script that creates a Hibernate cfg.xml file.
- * 
+ *
  * @author Burt Beckwith
  */
 
@@ -25,33 +25,33 @@ import org.springframework.core.io.FileSystemResource
 includeTargets << grailsScript('_GrailsInit')
 
 target (createHibernateCfgXml: 'Creates a hibernate.cfg.xml file') {
-	depends(checkVersion)
+    depends(checkVersion)
 
-	cfgFile = new File("$basedir/grails-app/conf/hibernate/hibernate.cfg.xml")
-	ant.mkdir dir: cfgFile.parent
+    cfgFile = new File("$basedir/grails-app/conf/hibernate/hibernate.cfg.xml")
+    ant.mkdir dir: cfgFile.parent
 
-	if (cfgFile.exists() && !confirmInput('hibernate.cfg.xml already exists. Overwrite? [y/n]', 'overwrite.hibernate_cfg_xml')) {
-		return
-	}
+    if (cfgFile.exists() && !confirmInput('hibernate.cfg.xml already exists. Overwrite? [y/n]', 'overwrite.hibernate_cfg_xml')) {
+        return
+    }
 
-	// first check for presence of template in application
-	templateFile = new FileSystemResource("$basedir/src/templates/artifacts/hibernate.cfg.xml")
-	if (!templateFile.exists()) {
-		// now check for template provided by plugins
-		def pluginTemplateFiles = resolveResources("file:$pluginsHome/*/src/templates/artifacts/hibernate.cfg.xml")
-		if (pluginTemplateFiles) {
-			templateFile = pluginTemplateFiles[0]
-		}
-		else {
-			// template not found in application, use default template
-			templateFile = grailsResource('src/grails/templates/artifacts/hibernate.cfg.xml')
-		}
-	}
+    // first check for presence of template in application
+    templateFile = new FileSystemResource("$basedir/src/templates/artifacts/hibernate.cfg.xml")
+    if (!templateFile.exists()) {
+        // now check for template provided by plugins
+        def pluginTemplateFiles = resolveResources("file:$pluginsHome/*/src/templates/artifacts/hibernate.cfg.xml")
+        if (pluginTemplateFiles) {
+            templateFile = pluginTemplateFiles[0]
+        }
+        else {
+            // template not found in application, use default template
+            templateFile = grailsResource('src/grails/templates/artifacts/hibernate.cfg.xml')
+        }
+    }
 
-	copyGrailsResource cfgFile.path, templateFile
+    copyGrailsResource cfgFile.path, templateFile
 
-	event 'CreatedFile', [cfgFile.path]
-   println "Created $cfgFile.path"
+    event 'CreatedFile', [cfgFile.path]
+    println "Created $cfgFile.path"
 }
 
 setDefaultTarget 'createHibernateCfgXml'

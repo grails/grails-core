@@ -24,19 +24,25 @@
 
 target(configureProxy: "The implementation target") {
     def scriptFile = new File("${userHome}/.grails/scripts/ProxyConfig.groovy")
-    if (scriptFile.exists()) {
-        includeTargets << scriptFile.text
-        if (proxyConfig.proxyHost) {
-            // Let's configure proxy...
-            def proxyHost = proxyConfig.proxyHost
-            def proxyPort = proxyConfig.proxyPort ? proxyConfig.proxyPort : '80'
-            def proxyUser = proxyConfig.proxyUser ? proxyConfig.proxyUser : ''
-            def proxyPassword = proxyConfig.proxyPassword ? proxyConfig.proxyPassword : ''
-            println "Configured HTTP proxy: ${proxyHost}:${proxyPort}${proxyConfig.proxyUser ? '(' + proxyUser + ')' : ''}"
-            // ... for ant. We can remove this line with ant 1.7.0 as it uses system properties.
-            ant.setproxy(proxyhost: proxyHost, proxyport: proxyPort, proxyuser: proxyUser, proxypassword: proxyPassword)
-            // ... for all other code
-            System.properties.putAll(["http.proxyHost": proxyHost, "http.proxyPort": proxyPort, "http.proxyUserName": proxyUser, "http.proxyPassword": proxyPassword])
-        }
+    if (!scriptFile.exists()) {
+        return
     }
+
+    includeTargets << scriptFile.text
+
+    if (!proxyConfig.proxyHost) {
+        return
+    }
+
+    // Let's configure proxy...
+    def proxyHost = proxyConfig.proxyHost
+    def proxyPort = proxyConfig.proxyPort ? proxyConfig.proxyPort : '80'
+    def proxyUser = proxyConfig.proxyUser ? proxyConfig.proxyUser : ''
+    def proxyPassword = proxyConfig.proxyPassword ? proxyConfig.proxyPassword : ''
+    println "Configured HTTP proxy: ${proxyHost}:${proxyPort}${proxyConfig.proxyUser ? '(' + proxyUser + ')' : ''}"
+    // ... for ant. We can remove this line with ant 1.7.0 as it uses system properties.
+    ant.setproxy(proxyhost: proxyHost, proxyport: proxyPort, proxyuser: proxyUser, proxypassword: proxyPassword)
+    // ... for all other code
+    System.properties.putAll(["http.proxyHost": proxyHost, "http.proxyPort": proxyPort,
+                              "http.proxyUserName": proxyUser, "http.proxyPassword": proxyPassword])
 }

@@ -33,24 +33,24 @@ artifactNames = [
     'i18n',
     'services',
     'taglib',
-    'views' 
+    'views'
 ]
 
 target ('default': "Creates a ZIP containing source artifacts for reporting bugs") {
-    depends( checkVersion )
-    
-	def fileName = new File(basedir).name
-	def date = new java.text.SimpleDateFormat("ddMMyyyy").format(new Date())
-	def zipName = "${basedir}/${fileName}-bug-report-${date}.zip"
+    depends(checkVersion)
 
-	ant.zip(destfile:zipName) {
-	    fileset(dir: "${basedir}", includes: "grails-app/**/*")
-	    fileset(dir: "${basedir}", includes: "test/**/*")
-	    fileset(dir: "${basedir}", includes: "scripts/**/*")
-	    fileset(dir: "${basedir}", includes: "spring/**/*")
-	    fileset(dir: "${basedir}", includes: "src/**/*")
-	    fileset(file: "${basedir}/application.properties")
-	}
+    def fileName = new File(basedir).name
+    def date = new java.text.SimpleDateFormat("ddMMyyyy").format(new Date())
+    def zipName = "${basedir}/${fileName}-bug-report-${date}.zip"
+
+    ant.zip(destfile: zipName) {
+        fileset(dir: "${basedir}", includes: "grails-app/**/*")
+        fileset(dir: "${basedir}", includes: "test/**/*")
+        fileset(dir: "${basedir}", includes: "scripts/**/*")
+        fileset(dir: "${basedir}", includes: "spring/**/*")
+        fileset(dir: "${basedir}", includes: "src/**/*")
+        fileset(file: "${basedir}/application.properties")
+    }
 
     event("StatusFinal", ["Created bug-report ZIP at ${zipName}"])
 }

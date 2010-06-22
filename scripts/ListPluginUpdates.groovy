@@ -32,7 +32,9 @@ def getAvailablePluginVersions = {
                     // determine latest release by comparing version names in lexicografic order
                     version = plugin.'release'[0].'@version'
                     plugin.'release'.each {
-                        if (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version) version = "${it.'@version'}"
+                        if (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version) {
+                            version = "${it.'@version'}"
+                        }
                     }
                 }
                 plugins."$name" = version
@@ -77,7 +79,8 @@ Plugins with available updates are listed below:
         if (!headerDisplayed) {
             println "\nAll plugins are up to date."
         }
-    } else {
+    }
+    else {
         println "\nYou do not have any plugins installed."
     }
 }

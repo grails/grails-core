@@ -61,8 +61,7 @@ getPropertyValue = { String propName, defaultValue ->
     // Now try the BuildSettings settings.
     value = buildProps[propName]
 
-    // Return the BuildSettings value if there is one, otherwise use the
-    // default.
+    // Return the BuildSettings value if there is one, otherwise use the default.
     return value != null ? value : defaultValue
 }
 
@@ -105,7 +104,7 @@ metadata = metadataFile.exists() ? Metadata.getInstance(metadataFile) : Metadata
 grailsAppName = metadata.getApplicationName()
 grailsAppVersion = metadata.getApplicationVersion()
 appGrailsVersion = metadata.getGrailsVersion()
-servletVersion = metadata.getServletVersion() ?:  servletVersion
+servletVersion = metadata.getServletVersion() ?: servletVersion
 
 // If no app name property (upgraded/new/edited project) default to basedir.
 if (!grailsAppName) {
@@ -114,7 +113,7 @@ if (!grailsAppName) {
 
 // FIXME: Fails if 'grails list-plugins is called from a directory
 // that starts w/ a '.'
-if(grailsAppName.indexOf('/') >-1) {
+if (grailsAppName.indexOf('/') >-1) {
     appClassName = grailsAppName[grailsAppName.lastIndexOf('/')..-1]
 }
 else {
@@ -130,10 +129,8 @@ isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.gro
 shouldPackageTemplates = false
 config = new ConfigObject()
 
-
 // Pattern that matches artefacts in the 'grails-app' directory.
-// Note that the capturing group matches any package directory
-// structure.
+// Note that the capturing group matches any package directory structure.
 artefactPattern = /\S+?\/grails-app\/\S+?\/(\S+?)\.groovy/
 
 // Set up the Grails environment for this script.
@@ -147,8 +144,9 @@ if (!System.getProperty("grails.env.set")) {
     println "Environment set to ${grailsEnv}"
     System.setProperty("grails.env.set", "true")
 }
-if(getBinding().variables.containsKey("scriptScope")) {
-    buildScope = (scriptScope instanceof BuildScope) ? scriptScope : BuildScope.valueOf(scriptScope.toString().toUpperCase());
+
+if (getBinding().variables.containsKey("scriptScope")) {
+    buildScope = (scriptScope instanceof BuildScope) ? scriptScope : BuildScope.valueOf(scriptScope.toString().toUpperCase())
     buildScope.enable()
 }
 else {
@@ -248,9 +246,9 @@ grailsUnpack = {Map args ->
 updateMetadata = { Map entries ->
     if (!metadataFile.exists()) {
         ant.propertyfile(
-                file: metadataFile,
-                comment: "Do not edit app.grails.* properties, they may change automatically. " +
-                        "DO NOT put application configuration in here, it is not the right place!")
+            file: metadataFile,
+            comment: "Do not edit app.grails.* properties, they may change automatically. " +
+                     "DO NOT put application configuration in here, it is not the right place!")
         metadata = Metadata.getInstance(metadataFile)
     }
 
@@ -302,7 +300,7 @@ exit = {
  * <code>false</code> otherwise.
  */
 confirmInput = {String message, code="confirm.message" ->
-    if(!isInteractive) {
+    if (!isInteractive) {
         println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }

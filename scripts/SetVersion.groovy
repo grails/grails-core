@@ -27,11 +27,12 @@
 includeTargets << grailsScript("_GrailsEvents")
 
 target ('default': "Sets the current application version") {
-    if(args != null) {
+    if (args != null) {
         ant.property(name:"app.version.new", value: args)
-    } else {
+    }
+    else {
         def oldVersion = metadata.'app.version'
-        ant.input(addProperty:"app.version.new", message:"Enter the new version",defaultvalue:oldVersion)
+        ant.input(addProperty:"app.version.new", message:"Enter the new version", defaultvalue:oldVersion)
     }
 
     def newVersion = ant.antProject.properties.'app.version.new'
