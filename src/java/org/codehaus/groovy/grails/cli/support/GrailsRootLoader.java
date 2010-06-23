@@ -14,9 +14,9 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import org.codehaus.groovy.tools.RootLoader;
-
 import java.net.URL;
+
+import org.codehaus.groovy.tools.RootLoader;
 
 /**
  * A custom Groovy RootLoader that works around issue
@@ -26,10 +26,9 @@ import java.net.URL;
  * plain old Groovy RootLoader.
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 29, 2007
  */
 public class GrailsRootLoader extends RootLoader {
+
     public GrailsRootLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
@@ -38,10 +37,12 @@ public class GrailsRootLoader extends RootLoader {
         super(new URL[0],ClassLoader.getSystemClassLoader());
     }
 
-    protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         try {
             return super.loadClass(name, resolve);
-        } catch (LinkageError e) {
+        }
+        catch (LinkageError e) {
             return getParent().loadClass(name);
         }
     }

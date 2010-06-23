@@ -22,47 +22,44 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 /**
  * Java's default StringWriter uses a StringBuffer which is synchronized. This
  * implementation doesn't use synchronization
- * 
+ *
  * @author Graeme Rocher
  * @author Lari Hotari
  * @since 1.1
- *        <p/>
- *        Created: Jan 20, 2009
  */
 public class FastStringWriter extends GrailsPrintWriter {
-	private final StreamCharBuffer streamBuffer;
 
-	public FastStringWriter() {
-		super(new StreamCharBuffer().getWriter());
-		this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) this.out)
-				.getBuffer();
-	}
-	
-	public FastStringWriter(int initialChunkSize) {
-		super(new StreamCharBuffer(initialChunkSize).getWriter());
-		this.streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) this.out)
-				.getBuffer();
-	}
+    private final StreamCharBuffer streamBuffer;
 
-	protected FastStringWriter(Object o) {
-		this();
-		this.print(o);
-	}
+    public FastStringWriter() {
+        super(new StreamCharBuffer().getWriter());
+        streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) out).getBuffer();
+    }
 
-	public StreamCharBuffer getBuffer() {
-		return streamBuffer;
-	}
+    public FastStringWriter(int initialChunkSize) {
+        super(new StreamCharBuffer(initialChunkSize).getWriter());
+        streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter)out).getBuffer();
+    }
 
-	@Override
-	public String toString() {
-		return this.getValue();
-	}
-	
-	public String getValue() {
-		return streamBuffer.toString();
-	}
+    protected FastStringWriter(Object o) {
+        this();
+        print(o);
+    }
 
-	public Reader getReader() {
-		return streamBuffer.getReader();
-	}
+    public StreamCharBuffer getBuffer() {
+        return streamBuffer;
+    }
+
+    @Override
+    public String toString() {
+        return getValue();
+    }
+
+    public String getValue() {
+        return streamBuffer.toString();
+    }
+
+    public Reader getReader() {
+        return streamBuffer.getReader();
+    }
 }

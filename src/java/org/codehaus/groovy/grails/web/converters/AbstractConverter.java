@@ -21,7 +21,7 @@ import org.springframework.beans.BeanWrapperImpl;
 
 /**
  * Abstract base implementation of the Converter interface that provides a default toString()
- * implementation
+ * implementation.
  *
  * @author Siegfried Puchbauer
  */
@@ -29,21 +29,17 @@ public abstract class AbstractConverter<W> implements Converter<W> {
 
     public abstract void setTarget(Object target);
 
-    /**
-     * Renders the result to a String and returns it
-     *
-     * @return The converted object as a string
-     */
+    @Override
     public String toString() {
         FastStringWriter writer = new FastStringWriter();
         try {
             render(writer);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new UnhandledException(e);
         }
         return writer.toString();
     }
-
 
     protected BeanWrapper createBeanWrapper(Object o) {
         return new BeanWrapperImpl(o);

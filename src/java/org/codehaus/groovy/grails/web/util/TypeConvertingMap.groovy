@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.web.util
+
 /**
  * An category for use with maps that want type conversion capabilities
- * 
+ *
  * @author Graeme Rocher
  * @since 1.2
  */
-
-
-class TypeConvertingMap implements Map, Cloneable{
+class TypeConvertingMap implements Map, Cloneable {
 
     protected Map wrappedMap
 
     TypeConvertingMap() {
         this([:])
     }
-    
+
     TypeConvertingMap(Map map) {
-		if(map == null) map = [:]
+        if (map == null) map = [:]
         wrappedMap = map
     }
 
@@ -42,19 +41,21 @@ class TypeConvertingMap implements Map, Cloneable{
      */
     Byte getByte(String name) {
         def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).byteValue()
+        if (o instanceof Number) {
+            return ((Number)o).byteValue()
         }
-        else if(o != null) {
+
+        if (o != null) {
             try {
                 String string = o.toString()
-                if(string)
+                if (string) {
                     return Byte.parseByte(string)
+                }
             }
-            catch (NumberFormatException e) {
-            }
+            catch (NumberFormatException e) {}
         }
     }
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
@@ -62,17 +63,18 @@ class TypeConvertingMap implements Map, Cloneable{
      */
     Integer getInt(String name) {
         def o = get(name)
-        if(o instanceof Number) {
-           return o.intValue()
+        if (o instanceof Number) {
+            return o.intValue()
         }
-        else if(o != null) {
+
+        if (o != null) {
             try {
                 String string = o.toString()
-                if(string)
+                if (string) {
                     return Integer.parseInt(string)
+                }
             }
-            catch (NumberFormatException e) {
-            }
+            catch (NumberFormatException e) {}
         }
     }
 
@@ -83,58 +85,59 @@ class TypeConvertingMap implements Map, Cloneable{
      */
     Long getLong(String name) {
         def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).longValue()
+        if (o instanceof Number) {
+            return ((Number)o).longValue()
         }
-        else if(o != null) {
+
+        if (o != null) {
             try {
                 return Long.parseLong(o.toString())
             }
-            catch (NumberFormatException e) {
-            }
+            catch (NumberFormatException e) {}
         }
     }
 
     /**
-     * Helper method for obtaining short value from parameter
-     * @param name The name of the parameter
-     * @return The short value or null if there isn't one
-     */
+    * Helper method for obtaining short value from parameter
+    * @param name The name of the parameter
+    * @return The short value or null if there isn't one
+    */
     Short getShort(String name) {
         def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).shortValue()
-        }
-        else if(o != null) {
-            try {
-                String string = o.toString()
-                if(string)
-                    return Short.parseShort(string)
-            }
-            catch (NumberFormatException e) {
-            }
+        if (o instanceof Number) {
+            return ((Number)o).shortValue()
         }
 
+        if (o != null) {
+            try {
+                String string = o.toString()
+                if (string) {
+                    return Short.parseShort(string)
+                }
+            }
+            catch (NumberFormatException e) {}
+        }
     }
 
     /**
-     * Helper method for obtaining double value from parameter
-     * @param name The name of the parameter
-     * @return The double value or null if there isn't one
-     */
+    * Helper method for obtaining double value from parameter
+    * @param name The name of the parameter
+    * @return The double value or null if there isn't one
+    */
     Double getDouble(String name) {
         def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).doubleValue()
+        if (o instanceof Number) {
+            return ((Number)o).doubleValue()
         }
-        else if(o != null) {
+
+        if (o != null) {
             try {
                 String string = o.toString()
-                if(string)
+                if (string) {
                     return Double.parseDouble(string)
+                }
             }
-            catch (NumberFormatException e) {
-            }
+            catch (NumberFormatException e) {}
         }
     }
 
@@ -145,17 +148,18 @@ class TypeConvertingMap implements Map, Cloneable{
      */
     Float getFloat(String name) {
         def o = get(name)
-        if(o instanceof Number) {
-           return ((Number)o).floatValue()
+        if (o instanceof Number) {
+            return ((Number)o).floatValue()
         }
-        else if(o != null) {
+
+        if (o != null) {
             try {
                 String string = o.toString()
-                if(string)
+                if (string) {
                     return Float.parseFloat(string)
+                }
             }
-            catch (NumberFormatException e) {
-            }
+            catch (NumberFormatException e) {}
         }
     }
 
@@ -166,39 +170,41 @@ class TypeConvertingMap implements Map, Cloneable{
      */
     Boolean getBoolean(String name) {
         def o = get(name)
-        if(o instanceof Boolean) {
-           return o
+        if (o instanceof Boolean) {
+            return o
         }
-        else if(o != null) {
+
+        if (o != null) {
             try {
                 String string = o.toString()
-                if(string)
+                if (string) {
                     return Boolean.parseBoolean(string)
+                }
             }
-            catch (e) {
-            }
+            catch (e) {}
         }
     }
 
-  /**
+    /**
      * Helper method for obtaining a list of values from parameter
      * @param name The name of the parameter
      * @return A list of values
      */
     List getList(String name) {
         def paramValues = get(name)
-        if(paramValues == null) {
+        if (paramValues == null) {
             return []
         }
-        else if(paramValues?.getClass().isArray()) {
+
+        if (paramValues?.getClass().isArray()) {
             return Arrays.asList(paramValues)
         }
-        else if(paramValues instanceof Collection) {
+
+        if (paramValues instanceof Collection) {
             return new ArrayList(paramValues)
         }
-        else {
-            return [paramValues]
-        }
+
+        return [paramValues]
     }
 
     Object put(Object k, Object v) {

@@ -14,22 +14,24 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.CharacterCodingException;
 import java.util.Locale;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
 /**
- * Response wrapper used to capture the content of a response (such as within in an include)
- * 
+ * Response wrapper used to capture the content of a response (such as within in an include).
+ *
  * @author Graeme Rocher
  * @since 1.2.1
  */
 public class IncludeResponseWrapper extends HttpServletResponseWrapper {
+
     private StreamCharBuffer charBuffer;
     private PrintWriter pw;
     private StreamByteBuffer byteBuffer;
@@ -46,29 +48,29 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
         super(httpServletResponse);
     }
 
-
     public String getRedirectURL() {
         return redirectURL;
     }
 
+    @Override
     public String getContentType() {
         return contentType;
     }
 
     @Override
     public void setStatus(int i) {
-        this.status = i;
+        status = i;
     }
 
     @Override
     public boolean isCommitted() {
-        return this.committed;
+        return committed;
     }
 
     @Override
     public void sendRedirect(String s) throws IOException {
-        this.committed = true;
-        this.redirectURL = s;
+        committed = true;
+        redirectURL = s;
         super.sendRedirect(s);
     }
 
@@ -78,8 +80,9 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
 
     @Override
     public void setContentType(String s) {
-        this.contentType = s;
+        contentType = s;
     }
+
     @Override
     public void setLocale(Locale locale) {
         // do nothing
@@ -97,15 +100,15 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
-        if(usingWriter) throw new IllegalStateException("Method getWriter() already called");
-        if(!usingStream) {
+        if (usingWriter) throw new IllegalStateException("Method getWriter() already called");
+
+        if (!usingStream) {
             usingStream = true;
             byteBuffer = new StreamByteBuffer();
             os = byteBuffer.getOutputStream();
             sos = new ServletOutputStream() {
                 @Override
-                public void write(byte[] b, int off, int len)
-                        throws IOException {
+                public void write(byte[] b, int off, int len) throws IOException {
                     os.write(b, off, len);
                 }
 
@@ -126,8 +129,9 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        if(usingStream) throw new IllegalStateException("Method getOutputStream() already called");
-        if(!usingWriter) {
+        if (usingStream) throw new IllegalStateException("Method getOutputStream() already called");
+
+        if (!usingWriter) {
             usingWriter = true;
             charBuffer = new StreamCharBuffer();
             pw = new GrailsPrintWriter(charBuffer.getWriter());
@@ -140,10 +144,14 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
     }
 
     public Object getContent(String encoding) throws CharacterCodingException {
-        if(usingWriter) return charBuffer;
-        else if(usingStream) {
+        if (usingWriter) {
+            return charBuffer;
+        }
+
+        if (usingStream) {
             return byteBuffer.readAsString(encoding);
         }
+
         return "";
     }
 }

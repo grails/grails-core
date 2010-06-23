@@ -31,8 +31,8 @@ public interface JspTag {
      * @param targetWriter The writer the tag should write to
      * @param attributes The tag attributes
      */
+    @SuppressWarnings("unchecked")
     void doTag(Writer targetWriter, Map attributes);
-
 
     /**
      * Invokes a tag with a closure representing the body of the tag
@@ -40,6 +40,7 @@ public interface JspTag {
      * @param attributes The tag attributes
      * @param body The body of the tag
      */
+    @SuppressWarnings("unchecked")
     void doTag(Writer targetWriter, Map attributes, Closure body);
 
     /**
@@ -56,6 +57,4 @@ public interface JspTag {
      * @return Return true if the tag class implements the BodyTag interface
      */
     boolean isBodyTag();
-
-
 }

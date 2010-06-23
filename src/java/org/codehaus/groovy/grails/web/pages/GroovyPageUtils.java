@@ -29,55 +29,51 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @deprecated
  * @see DefaultGroovyPagesUriService
  * @see GroovyPagesUriSupport
- * 
- *        <p/>
- *        Created: May 1, 2009
  */
+@Deprecated
 public class GroovyPageUtils {
+
     public static final String PATH_TO_VIEWS = GroovyPagesUriSupport.PATH_TO_VIEWS;
 
     private static GroovyPagesUriSupport getInstance() {
-    	try {
-    		GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        	return (GroovyPagesUriSupport)webRequest.getAttributes().getGroovyPagesUriService();
-    	} catch (IllegalStateException e) {
-    		// returning non cached version, just for backwards compatibility
-    		return new GroovyPagesUriSupport();
-    	}
+        try {
+            GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+            return (GroovyPagesUriSupport)webRequest.getAttributes().getGroovyPagesUriService();
+        }
+        catch (IllegalStateException e) {
+            // returning non cached version, just for backwards compatibility
+            return new GroovyPagesUriSupport();
+        }
     }
-    
+
     /**
      * Obtains a template URI for the given controller instance and template name
      * @param controller The controller instance
      * @param templateName The template name
      * @return The template URI
-     * @deprecated
      */
     public static String getTemplateURI(GroovyObject controller, String templateName) {
-    	return getInstance().getTemplateURI(controller, templateName);
+        return getInstance().getTemplateURI(controller, templateName);
     }
 
     /**
-    * Obtains a view URI of the given controller and view name
-    * @param controller The name of the controller
-    * @param viewName The name of the view
-    * @return The view URI
-    * @deprecated
-    */
+     * Obtains a view URI of the given controller and view name
+     * @param controller The name of the controller
+     * @param viewName The name of the view
+     * @return The view URI
+     */
     public static String getViewURI(GroovyObject controller, String viewName) {
-    	return getInstance().getViewURI(controller, viewName);
+        return getInstance().getViewURI(controller, viewName);
     }
 
-
     /**
-    * Obtains a view URI of the given controller and view name without the suffix
-    * @param controller The name of the controller
-    * @param viewName The name of the view
-    * @return The view URI
-    * @deprecated
-    */
+     * Obtains a view URI of the given controller and view name without the suffix
+     * @param controller The name of the controller
+     * @param viewName The name of the view
+     * @return The view URI
+     */
     public static String getNoSuffixViewURI(GroovyObject controller, String viewName) {
-    	return getInstance().getNoSuffixViewURI(controller, viewName);
+        return getInstance().getNoSuffixViewURI(controller, viewName);
     }
 
     /**
@@ -85,21 +81,19 @@ public class GroovyPageUtils {
      * @param controllerName The controller name
      * @param templateName The template name
      * @return The template URI
-     * @deprecated
      */
     public static String getTemplateURI(String controllerName, String templateName) {
-    	return getInstance().getTemplateURI(controllerName, templateName);
+        return getInstance().getTemplateURI(controllerName, templateName);
     }
-    
+
     /**
      * Obtains a view URI of the given controller name and view name
      * @param controllerName The name of the controller
      * @param viewName The name of the view
      * @return The view URI
-     * @deprecated
      */
     public static String getViewURI(String controllerName, String viewName) {
-    	return getInstance().getViewURI(controllerName, viewName);
+        return getInstance().getViewURI(controllerName, viewName);
     }
 
     /**
@@ -107,7 +101,6 @@ public class GroovyPageUtils {
      * @param controllerName The name of the controller
      * @param viewName The name of the view
      * @return The view URI
-     * @deprecated
      */
     public static String getNoSuffixViewURI(String controllerName, String viewName) {
         return getInstance().getNoSuffixViewURI(controllerName, viewName);
@@ -118,9 +111,8 @@ public class GroovyPageUtils {
      * @param controllerName The name of the controller
      * @param viewName The name of the view
      * @return The view URI
-     * @deprecated
      */
     public static String getDeployedViewURI(String controllerName, String viewName) {
-    	return getInstance().getDeployedViewURI(controllerName, viewName);
+        return getInstance().getDeployedViewURI(controllerName, viewName);
     }
 }

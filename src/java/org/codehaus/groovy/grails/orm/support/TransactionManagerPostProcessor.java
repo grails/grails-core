@@ -24,13 +24,13 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * This is a bean post processor that injects the platform transaction
- * manager into beans that implement the {@link TransactionManagerAware}
- * interface.
+ * Injects the platform transaction manager into beans that implement {@link TransactionManagerAware}.
+ *
  * @author Graeme Rocher
  * @since 0.4
  */
 public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware {
+
     private ConfigurableListableBeanFactory beanFactory;
     private PlatformTransactionManager transactionManager;
     private boolean initialized = false;
@@ -44,10 +44,10 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
             throw new IllegalArgumentException(
-                    "TransactionManagerPostProcessor requires a ConfigurableListableBeanFactory");
-	    }
+                "TransactionManagerPostProcessor requires a ConfigurableListableBeanFactory");
+        }
 
-	    this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
     }
 
     /**
@@ -58,36 +58,32 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
      * @return The bean after the transaction manager has been injected.
      * @throws BeansException
      */
+    @Override
     public synchronized boolean postProcessAfterInstantiation(Object bean, String name) throws BeansException {
         // Lazily retrieve the transaction manager from the bean factory.
         // Attempting to retrieve it within 'setBeanFactory()' blocks
-        // other bean post processors from processing the beans in the
-        // factory!
-        if (!this.initialized) {
+        // other bean post processors from processing the beans in the factory!
+        if (!initialized) {
             // Fetch the names of all the beans that are of type
             // PlatformTransactionManager. Note that we have to pass
             // "false" for the last argument to avoid eager initialisation,
-            // otherwise we end up in an endless loop (it triggers the
-            // current method).
+            // otherwise we end up in an endless loop (it triggers the current method).
             String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-                    this.beanFactory,
-                    PlatformTransactionManager.class,
-                    false,
-                    false);
+                    beanFactory, PlatformTransactionManager.class, false, false);
 
             // If at least one is found, use the first of them as the
             // transaction manager for the application.
             if (beanNames.length > 0) {
-                this.transactionManager = (PlatformTransactionManager)beanFactory.getBean(beanNames[0]);
+                transactionManager = (PlatformTransactionManager)beanFactory.getBean(beanNames[0]);
             }
 
             // Don't attempt to retrieve the transaction manager again.
-            this.initialized = true;
+            initialized = true;
         }
         
         if (bean instanceof TransactionManagerAware) {
             TransactionManagerAware tma = (TransactionManagerAware) bean;
-            tma.setTransactionManager(this.transactionManager);
+            tma.setTransactionManager(transactionManager);
         }
         return true;
     }

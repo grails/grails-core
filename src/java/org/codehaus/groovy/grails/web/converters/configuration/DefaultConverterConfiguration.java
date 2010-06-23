@@ -17,14 +17,17 @@ package org.codehaus.groovy.grails.web.converters.configuration;
 
 import groovy.lang.Closure;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mutable Converter Configuration with an priority sorted set of ObjectMarshallers
@@ -32,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class DefaultConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
 
     public static final int DEFAULT_PRIORITY = 0;
@@ -39,16 +43,11 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     private static final AtomicInteger MARSHALLER_SEQUENCE = new AtomicInteger(0);
 
     private ConverterConfiguration<C> delegate;
-
     private String encoding;
-
     private boolean prettyPrint = false;
-
     private final SortedSet<Entry> objectMarshallers = new TreeSet<Entry>();
-
     private Converter.CircularReferenceBehaviour circularReferenceBehaviour;
-
-	private ProxyHandler proxyHandler;
+    private ProxyHandler proxyHandler;
 
     public String getEncoding() {
         return encoding != null ? encoding : (delegate != null ? delegate.getEncoding() : null);
@@ -72,11 +71,11 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
 
     public List<ObjectMarshaller<C>> getOrderedObjectMarshallers() {
         List<ObjectMarshaller<C>> list = new ArrayList<ObjectMarshaller<C>>();
-        for(Entry entry : objectMarshallers) {
-            list.add(entry.marshaller);   
+        for (Entry entry : objectMarshallers) {
+            list.add(entry.marshaller);
         }
-        if(delegate != null) {
-            for(ObjectMarshaller<C> om : delegate.getOrderedObjectMarshallers()) {
+        if (delegate != null) {
+            for (ObjectMarshaller<C> om : delegate.getOrderedObjectMarshallers()) {
                 list.add(om);
             }
         }
@@ -88,42 +87,41 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public DefaultConverterConfiguration() {
-    	proxyHandler = new DefaultProxyHandler();
+        proxyHandler = new DefaultProxyHandler();
     }
 
     public DefaultConverterConfiguration(ConverterConfiguration<C> delegate) {
-    	this();
+        this();
         this.delegate = delegate;
         this.prettyPrint = delegate.isPrettyPrint();
         this.circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
         this.encoding = delegate.getEncoding();
     }
-    
+
     public DefaultConverterConfiguration(ProxyHandler proxyHandler) {
-    	this.proxyHandler = proxyHandler;
+        this.proxyHandler = proxyHandler;
     }
 
     public DefaultConverterConfiguration(ConverterConfiguration<C> delegate, ProxyHandler proxyHandler) {
-    	this(proxyHandler);
+        this(proxyHandler);
         this.delegate = delegate;
         this.prettyPrint = delegate.isPrettyPrint();
         this.circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
         this.encoding = delegate.getEncoding();
-    }    
+    }
 
     public DefaultConverterConfiguration(List<ObjectMarshaller<C>> oms) {
-    	this();
+        this();
         int initPriority = -1;
-        for(ObjectMarshaller<C> om : oms) {
+        for (ObjectMarshaller<C> om : oms) {
             registerObjectMarshaller(om, initPriority--);
         }
     }
-    
+
     public DefaultConverterConfiguration(List<ObjectMarshaller<C>> oms, ProxyHandler proxyHandler) {
-    	this(oms);
-    	this.proxyHandler = proxyHandler;
+        this(oms);
+        this.proxyHandler = proxyHandler;
     }
-    
 
     public void registerObjectMarshaller(ObjectMarshaller<C> marshaller) {
         registerObjectMarshaller(marshaller, DEFAULT_PRIORITY);
@@ -133,17 +131,17 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
         objectMarshallers.add(new Entry(marshaller, priority));
     }
 
-    public void registerObjectMarshaller(Class c, int priority, Closure callable) {
+    public void registerObjectMarshaller(Class<?> c, int priority, Closure callable) {
         registerObjectMarshaller(new ClosureOjectMarshaller<C>(c, callable), priority);
     }
 
-    public void registerObjectMarshaller(Class c, Closure callable) {
+    public void registerObjectMarshaller(Class<?> c, Closure callable) {
         registerObjectMarshaller(new ClosureOjectMarshaller<C>(c, callable));
     }
 
     public ObjectMarshaller<C> getMarshaller(Object o) {
-        for(Entry entry : objectMarshallers) {
-            if(entry.marshaller.supports(o)) {
+        for (Entry entry : objectMarshallers) {
+            if (entry.marshaller.supports(o)) {
                 return entry.marshaller;
             }
         }
@@ -151,11 +149,8 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public class Entry implements Comparable<Entry> {
-
         protected final ObjectMarshaller<C> marshaller;
-
         private final int priority;
-
         private final int seq;
 
         private Entry(ObjectMarshaller<C> marshaller, int priority) {
@@ -168,9 +163,8 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
             return priority == entry.priority ? entry.seq - seq : entry.priority - priority;
         }
     }
-    
-	public ProxyHandler getProxyHandler() {
-		return this.proxyHandler;
-	}
 
+    public ProxyHandler getProxyHandler() {
+        return this.proxyHandler;
+    }
 }

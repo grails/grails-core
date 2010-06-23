@@ -15,23 +15,25 @@
 package org.codehaus.groovy.grails.web.converters;
 
 import groovy.lang.Closure;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+
 /**
- * An interface that defines an Object that can convert an instance and render it to the
- * response or a supplied writer
+ * Defines an Object that can convert an instance and render it to the
+ * response or a supplied writer.
  *
  * @author Siegfried Puchbauer
  */
 public interface Converter<W> {
 
-    public static String DEFAULT_REQUEST_ENCODING = "UTF-8";
+    String DEFAULT_REQUEST_ENCODING = "UTF-8";
 
     /**
      * Marshalls the target and writes it to a java.io.Writer
@@ -48,17 +50,18 @@ public interface Converter<W> {
      * @param response The response to write to
      * @throws ConverterException
      */
-    public void render(HttpServletResponse response) throws ConverterException;
+    void render(HttpServletResponse response) throws ConverterException;
 
-    public W getWriter() throws ConverterException;
+    W getWriter() throws ConverterException;
 
-    public void convertAnother(Object o) throws ConverterException;
+    void convertAnother(Object o) throws ConverterException;
 
-    public void build(Closure c) throws ConverterException;
+    void build(Closure c) throws ConverterException;
 
-    public ObjectMarshaller<? extends Converter> lookupObjectMarshaller(Object target);
+    @SuppressWarnings("unchecked")
+    ObjectMarshaller<? extends Converter> lookupObjectMarshaller(Object target);
 
-    public enum CircularReferenceBehaviour {
+    enum CircularReferenceBehaviour {
         DEFAULT,
         EXCEPTION,
         INSERT_NULL,
@@ -66,12 +69,11 @@ public interface Converter<W> {
         PATH;
 
         public static List<String> allowedValues() {
-            ArrayList<String> v = new ArrayList<String>();
-            for(CircularReferenceBehaviour crb : values()) {
+            List<String> v = new ArrayList<String>();
+            for (CircularReferenceBehaviour crb : values()) {
                 v.add(crb.name());
             }
             return v;
         }
     }
-
 }

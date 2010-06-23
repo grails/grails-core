@@ -63,10 +63,9 @@ import org.springframework.web.util.UrlPathHelper;
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Oct 10, 2007
  */
 public class WebUtils extends org.springframework.web.util.WebUtils {
+
     public static final char SLASH = '/';
     public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
     public static final String DISPATCH_ACTION_PARAMETER = "_action_";
@@ -114,8 +113,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static WebRequestInterceptor[] lookupWebRequestInterceptors(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
 
-        final Collection webRequestInterceptors = wac.getBeansOfType(WebRequestInterceptor.class).values();
-        return (WebRequestInterceptor[]) webRequestInterceptors.toArray(new WebRequestInterceptor[webRequestInterceptors.size()]);
+        final Collection<WebRequestInterceptor> webRequestInterceptors = wac.getBeansOfType(WebRequestInterceptor.class).values();
+        return webRequestInterceptors.toArray(new WebRequestInterceptor[webRequestInterceptors.size()]);
     }
 
     /**
@@ -143,7 +142,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 path = path.substring(GRAILS_DISPATCH_SERVLET_NAME.length(),path.length());
             }
             return path.substring(0, path.length()-DISPATCH_URI_SUFFIX.length());
-
         }
         return pathHelper.getPathWithinApplication(request);
     }
@@ -197,7 +195,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             }
             buf.append(viewName);
             v = viewResolver.resolveViewName(buf.toString(), webRequest.getLocale());
-
         }
         return v;
     }
@@ -212,6 +209,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return buildDispatchUrlForMapping(info, false);
     }
 
+    @SuppressWarnings("unchecked")
     private static String buildDispatchUrlForMapping(UrlMappingInfo info, boolean includeParams) {
         if (info.getURI() != null) {
             return info.getURI();
@@ -234,7 +232,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         }
 
         final Map parameters = info.getParameters();
-        if (parameters !=null && !parameters.isEmpty()  && includeParams) {
+        if (parameters != null && !parameters.isEmpty() && includeParams) {
             try {
                 forwardUrl.append(toQueryString(parameters));
             }
@@ -243,19 +241,22 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             }
         }
         return forwardUrl.toString();
-      }
+    }
 
     /**
      * @see org.codehaus.groovy.grails.web.util.WebUtils#forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.codehaus.groovy.grails.web.mapping.UrlMappingInfo, java.util.Map)
      */
-    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
+    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
+            HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
         return forwardRequestForUrlMappingInfo(request, response, info, Collections.EMPTY_MAP);
     }
 
     /**
      * @see #forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.codehaus.groovy.grails.web.mapping.UrlMappingInfo, java.util.Map, boolean)
      */
-    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) throws ServletException, IOException {
+    @SuppressWarnings("unchecked")
+    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
+            HttpServletResponse response, UrlMappingInfo info, Map model) throws ServletException, IOException {
         return forwardRequestForUrlMappingInfo(request, response, info, model, false);
     }
 
@@ -272,7 +273,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws ServletException Thrown when an error occurs executing the forward
      * @throws IOException Thrown when an error occurs executing the forward
      */
-    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
+    @SuppressWarnings("unchecked")
+    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
+            HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
 
         //populateParamsForMapping(info);
@@ -294,7 +297,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return The included content
      */
-    public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request, HttpServletResponse response, UrlMappingInfo info, Map model) {
+    @SuppressWarnings("unchecked")
+    public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request,
+            HttpServletResponse response, UrlMappingInfo info, Map model) {
         String includeUrl = buildDispatchUrlForMapping(info, true);
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
@@ -307,7 +312,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         if (webRequest != null) {
             currentController = webRequest.getControllerName();
             currentAction = webRequest.getActionName();
-            currentId = webRequest.getId();            
+            currentId = webRequest.getId();
             currentParams = new HashMap();
             currentParams.putAll(webRequest.getParameterMap());
             currentMv = (ModelAndView)webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
@@ -344,7 +349,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @param model The model
      * @return The content
      */
-    public static IncludedContent includeForUrl(String includeUrl, HttpServletRequest request, HttpServletResponse response, Map model) {
+    @SuppressWarnings("unchecked")
+    public static IncludedContent includeForUrl(String includeUrl, HttpServletRequest request,
+            HttpServletResponse response, Map model) {
         RequestDispatcher dispatcher = request.getRequestDispatcher(includeUrl);
         HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
         response = wrapped != null ? wrapped : response;
@@ -379,6 +386,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The query string
      * @throws UnsupportedEncodingException If the given encoding is not supported
      */
+    @SuppressWarnings("unchecked")
     public static String toQueryString(Map params, String encoding) throws UnsupportedEncodingException {
         if (encoding == null) encoding = "UTF-8";
         StringBuilder queryString = new StringBuilder("?");
@@ -398,13 +406,16 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The query string
      * @throws UnsupportedEncodingException If UTF-8 encoding is not supported
      */
+    @SuppressWarnings("unchecked")
     public static String toQueryString(Map parameters) throws UnsupportedEncodingException {
         return toQueryString(parameters, "UTF-8");
     }
 
+    @SuppressWarnings("unchecked")
     private static boolean appendEntry(Map.Entry entry, StringBuilder queryString, String encoding, String path) throws UnsupportedEncodingException {
         String name = entry.getKey().toString();
         if (name.indexOf(".") > -1) return false; // multi-d params handled by recursion
+
         Object value = entry.getValue();
         if (value == null) value = "";
         else if (value instanceof GrailsParameterMap) {
@@ -416,7 +427,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             }
         }
         else {
-            queryString.append(URLEncoder.encode(path+name, encoding))
+            queryString.append(URLEncoder.encode(path + name, encoding))
                        .append('=')
                        .append(URLEncoder.encode(value.toString(), encoding));
         }
@@ -434,6 +445,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         if (uri.endsWith("/")) {
             return null;
         }
+
         int idx = uri.lastIndexOf('/');
         if (idx > -1) {
             String lastToken = uri.substring(idx+1, uri.length());
@@ -454,6 +466,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return True if file extensions are enabled
      */
+    @SuppressWarnings("unchecked")
     public static boolean areFileExtensionsEnabled() {
         Map config = ConfigurationHolder.getFlatConfig();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);
@@ -489,8 +502,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static void clearGrailsWebRequest() {
         RequestAttributes reqAttrs = RequestContextHolder.getRequestAttributes();
         if (reqAttrs != null) {
-            // First remove the web request from the HTTP request
-            // attributes.
+            // First remove the web request from the HTTP request attributes.
             GrailsWebRequest webRequest = (GrailsWebRequest) reqAttrs;
             webRequest.getRequest().removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
 

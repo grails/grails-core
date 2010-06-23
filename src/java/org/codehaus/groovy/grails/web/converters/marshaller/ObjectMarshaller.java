@@ -19,14 +19,15 @@ import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 
 /**
- * An ObjectMarshaller is responsible for converting a Java/Groovy Object graph to a serialized form (JSON,XML)
+ * An ObjectMarshaller is responsible for converting a Java/Groovy Object graph to a serialized form (JSON,XML).
  *
  * The ObjectMarshaller implementation must use a a type parameter - either grails.convereters.JSON or
- * grails.converters.XML and it should to be <strong>thread-safe</strong>
+ * grails.converters.XML and it should to be <strong>thread-safe</strong>.
  *
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public interface ObjectMarshaller<T extends Converter> {
 
     /**
@@ -35,7 +36,7 @@ public interface ObjectMarshaller<T extends Converter> {
      * @param object the object which is about getting converted
      * @return <code>true</code> if the marshaller can/should perform the marshalling, <code>false</code> otherwise
      */
-    public boolean supports(Object object);
+    boolean supports(Object object);
 
     /**
      * Performs the conversion
@@ -43,6 +44,5 @@ public interface ObjectMarshaller<T extends Converter> {
      * @param converter the Converter to use
      * @throws ConverterException on failure
      */
-    public void marshalObject(Object object, T converter) throws ConverterException;
-
+    void marshalObject(Object object, T converter) throws ConverterException;
 }

@@ -20,26 +20,26 @@ import java.util.Map;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
 
 /**
- * This interface is used for plugins to register additional handler for JNDI binding
+ * Used for plugins to register additional handler for JNDI binding
  * For example the Mail plugin can add a binder for javax.mail.Session etc.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.2.3
- *
  */
 public interface JndiBindingHandler {
 
-	/**
-	 * @return The interface type this binder handles (eg. javax.sql.DataSource)
-	 */
-	String getType();
-	
-	/**
-	 * Handles the action binding
-	 * 
-	 * @param builder The builder
-	 * @param entryName The entry name
-	 * @param entryProperties The entry properties
-	 */
-	void handleBinding(SimpleNamingContextBuilder builder, String entryName, Map entryProperties); 
+    /**
+     * @return The interface type this binder handles (eg. javax.sql.DataSource)
+     */
+    String getType();
+
+    /**
+     * Handles the action binding
+     *
+     * @param builder The builder
+     * @param entryName The entry name
+     * @param entryProperties The entry properties
+     */
+    @SuppressWarnings("unchecked")
+    void handleBinding(SimpleNamingContextBuilder builder, String entryName, Map entryProperties);
 }

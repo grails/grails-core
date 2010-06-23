@@ -20,8 +20,6 @@ import java.io.InputStream;
 /**
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Apr 30, 2008
  */
 class UncloseableInputStream extends FilterInputStream {
 
@@ -29,6 +27,7 @@ class UncloseableInputStream extends FilterInputStream {
         super(inputStream);
     }
 
+    @Override
     public void close() {
         // do nothing
     }

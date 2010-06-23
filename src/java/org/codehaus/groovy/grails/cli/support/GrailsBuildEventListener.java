@@ -14,33 +14,37 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
+import grails.build.GrailsBuildListener;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.util.PluginBuildSettings;
-import groovy.lang.*;
-import org.apache.tools.ant.BuildEvent;
-import org.apache.tools.ant.BuildListener;
-import org.springframework.core.io.Resource;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.MissingPropertyException;
+import groovy.lang.Script;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import grails.build.GrailsBuildListener;
-
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildListener;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 public class GrailsBuildEventListener implements BuildListener{
+
     private static final Pattern EVENT_NAME_PATTERN = Pattern.compile("event([A-Z]\\w*)");
     private GroovyClassLoader classLoader;
     private Binding binding;
@@ -51,9 +55,8 @@ public class GrailsBuildEventListener implements BuildListener{
      * The objects that are listening for build events
      */
     private List<GrailsBuildListener> buildListeners = new LinkedList<GrailsBuildListener>();
-    
+
     public GrailsBuildEventListener(GroovyClassLoader scriptClassLoader, Binding binding, BuildSettings buildSettings) {
-        super();
         this.classLoader = scriptClassLoader;
         this.binding = binding;
         this.buildSettings = buildSettings;
@@ -72,19 +75,21 @@ public class GrailsBuildEventListener implements BuildListener{
         this.globalEventHooks = globalEventHooks;
     }
 
-    protected void loadEventHooks(BuildSettings buildSettings) {
-        if(buildSettings!=null) {
-            loadEventsScript( findEventsScript(new File(buildSettings.getUserHome(),".grails/scripts")) );
-            loadEventsScript( findEventsScript(new File(buildSettings.getBaseDir(), "scripts")) );
+    protected void loadEventHooks(@SuppressWarnings("hiding") BuildSettings buildSettings) {
+        if (buildSettings == null) {
+            return;
+        }
 
-            PluginBuildSettings pluginSettings = (PluginBuildSettings) binding.getVariable("pluginSettings");
-            for (Resource pluginBase : pluginSettings.getPluginDirectories()) {
-                try {
-                    loadEventsScript( findEventsScript(new File(pluginBase.getFile(), "scripts")) );
-                }
-                catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+        loadEventsScript(findEventsScript(new File(buildSettings.getUserHome(),".grails/scripts")));
+        loadEventsScript(findEventsScript(new File(buildSettings.getBaseDir(), "scripts")));
+
+        PluginBuildSettings pluginSettings = (PluginBuildSettings) binding.getVariable("pluginSettings");
+        for (Resource pluginBase : pluginSettings.getPluginDirectories()) {
+            try {
+                loadEventsScript(findEventsScript(new File(pluginBase.getFile(), "scripts")));
+            }
+            catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -93,48 +98,51 @@ public class GrailsBuildEventListener implements BuildListener{
         for (Object listener : buildSettings.getBuildListeners()) {
             if (listener instanceof String) {
                 addGrailsBuildListener((String)listener);
-            } else if (listener instanceof Class) {
-                addGrailsBuildListener((Class)listener);
-            } else {
+            }
+            else if (listener instanceof Class<?>) {
+                addGrailsBuildListener((Class<?>)listener);
+            }
+            else {
                 throw new IllegalStateException("buildSettings.getBuildListeners() returned a " + listener.getClass().getName());
             }
         }
     }
-    
+
     public void loadEventsScript(File eventScript) {
-        if(eventScript!=null) {
-            try {
-                Class scriptClass = classLoader.parseClass(eventScript);
-                if(scriptClass != null) {
-                    Script script = (Script) scriptClass.newInstance();
-                    script.setBinding(new Binding(this.binding.getVariables()) {
-                        @Override
-                        public void setVariable(String var, Object o) {
-                            final Matcher matcher = EVENT_NAME_PATTERN.matcher(var);
-                            if(matcher.matches() && (o instanceof Closure)) {
-                                String eventName = matcher.group(1);
-                                List<Closure> hooks = globalEventHooks.get(eventName);
-                                if(hooks == null) {
-                                    hooks = new ArrayList<Closure>();
-                                    globalEventHooks.put(eventName, hooks);
-                                }
-                                hooks.add((Closure) o);
-                            }
-                            super.setVariable(var, o);
+        if (eventScript == null) {
+            return;
+        }
+
+        try {
+            Class<?> scriptClass = classLoader.parseClass(eventScript);
+            if (scriptClass == null) {
+               System.err.println("Could not load event script (script may be empty): " + eventScript);
+               return;
+            }
+
+            Script script = (Script) scriptClass.newInstance();
+            script.setBinding(new Binding(binding.getVariables()) {
+                @Override
+                public void setVariable(String var, Object o) {
+                    final Matcher matcher = EVENT_NAME_PATTERN.matcher(var);
+                    if (matcher.matches() && (o instanceof Closure)) {
+                        String eventName = matcher.group(1);
+                        List<Closure> hooks = globalEventHooks.get(eventName);
+                        if (hooks == null) {
+                            hooks = new ArrayList<Closure>();
+                            globalEventHooks.put(eventName, hooks);
                         }
-                    });
-                    script.run();
-                } else {
-                    System.err.println("Could not load event script (script may be empty): " + eventScript);
+                        hooks.add((Closure) o);
+                    }
+                    super.setVariable(var, o);
                 }
-            }
-
-            catch (Throwable e) {
-                GrailsUtil.deepSanitize(e);
-                e.printStackTrace();
-                System.out.println("Error loading event script from file ["+eventScript+"] " + e.getMessage());
-            }
-
+            });
+            script.run();
+        }
+        catch (Throwable e) {
+            GrailsUtil.deepSanitize(e);
+            e.printStackTrace();
+            System.out.println("Error loading event script from file [" + eventScript + "] " + e.getMessage());
         }
     }
 
@@ -150,7 +158,6 @@ public class GrailsBuildEventListener implements BuildListener{
         return f.exists() ? f : null;
     }
 
-
     public void buildStarted(BuildEvent buildEvent) {
         // do nothing
     }
@@ -162,7 +169,6 @@ public class GrailsBuildEventListener implements BuildListener{
     public void targetStarted(BuildEvent buildEvent) {
         String targetName = buildEvent.getTarget().getName();
         String eventName = GrailsNameUtils.getClassNameRepresentation(targetName) + "Start";
-
         triggerEvent(eventName, binding);
     }
 
@@ -181,7 +187,7 @@ public class GrailsBuildEventListener implements BuildListener{
      */
     public void triggerEvent(String eventName, Object... arguments) {
         List<Closure> handlers = globalEventHooks.get(eventName);
-        if(handlers!=null) {
+        if (handlers != null) {
             for (Closure handler : handlers) {
                 handler.setDelegate(binding);
                 try {
@@ -201,7 +207,6 @@ public class GrailsBuildEventListener implements BuildListener{
     public void targetFinished(BuildEvent buildEvent) {
         String targetName = buildEvent.getTarget().getName();
         String eventName = GrailsNameUtils.getClassNameRepresentation(targetName) + "End";
-
         triggerEvent(eventName, binding);
     }
 
@@ -216,28 +221,31 @@ public class GrailsBuildEventListener implements BuildListener{
     public void messageLogged(BuildEvent buildEvent) {
         // do nothing
     }
-    
+
     protected void addGrailsBuildListener(String listenerClassName) {
-        Class listenerClass;
+        Class<?> listenerClass;
         try {
             listenerClass = classLoader.loadClass(listenerClassName);
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load grails build listener class", e);
         }
         addGrailsBuildListener(listenerClass);
     }
-    
+
+    @SuppressWarnings("unchecked")
     protected void addGrailsBuildListener(Class listenerClass) {
         if (!GrailsBuildListener.class.isAssignableFrom(listenerClass)) {
             throw new RuntimeException("Intended grails build listener class of " + listenerClass.getName() + " does not implement " + GrailsBuildListener.class.getName());
         }
-        GrailsBuildListener listener;
+
         try {
-            listener = (GrailsBuildListener)listenerClass.newInstance();
-        } catch (Exception e) {
+            GrailsBuildListener listener = (GrailsBuildListener)listenerClass.newInstance();
+            addGrailsBuildListener(listener);
+        }
+        catch (Exception e) {
             throw new RuntimeException("Could not instantiate " + listenerClass.getName(), e);
         }
-        addGrailsBuildListener(listener);
     }
 
     public void addGrailsBuildListener(GrailsBuildListener listener) {

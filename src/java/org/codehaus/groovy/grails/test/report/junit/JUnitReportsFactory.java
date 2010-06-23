@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.report.junit;
+
+import groovy.lang.Binding;
 
 import java.io.File;
 import java.util.List;
-import groovy.lang.Binding;
 
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitResultFormatter;
 
 public class JUnitReportsFactory {
-    
+
     public static final String XML = "xml";
     public static final String PLAIN = "plain";
 
@@ -32,16 +32,17 @@ public class JUnitReportsFactory {
     protected final File reportsDir;
     protected final List<String> formats;
 
+    @SuppressWarnings("unchecked")
     public static JUnitReportsFactory createFromBuildBinding(Binding buildBinding) {
         // This is not great, the phase and type names probably shouldn't be sourced from the binding.
         return new JUnitReportsFactory(
-            (String)buildBinding.getProperty("currentTestPhaseName"),
-            (String)buildBinding.getProperty("currentTestTypeName"),
-            (File)buildBinding.getProperty("testReportsDir"), 
-            (List<String>)buildBinding.getProperty("reportFormats")
+                (String)buildBinding.getProperty("currentTestPhaseName"),
+                (String)buildBinding.getProperty("currentTestTypeName"),
+                (File)buildBinding.getProperty("testReportsDir"),
+                (List<String>)buildBinding.getProperty("reportFormats")
         );
     }
-    
+
     public JUnitReportsFactory(String phaseName, String typeName, File reportsDir, List<String> formats) {
         this.phaseName = phaseName;
         this.typeName = typeName;
@@ -61,10 +62,12 @@ public class JUnitReportsFactory {
         String prefix = "TEST-" + phaseName + "-" + typeName + "-" + name;
         if (format.equals(PLAIN)) {
             return new PlainFormatter(prefix, new File(reportsDir, "plain/" + prefix + ".txt"));
-        } else if (format.equals(XML)) {
-            return new XMLFormatter(new File(reportsDir, prefix + ".xml"));
-        } else {
-            throw new IllegalArgumentException("Unknown format type: " + format);
         }
+
+        if (format.equals(XML)) {
+            return new XMLFormatter(new File(reportsDir, prefix + ".xml"));
+        }
+
+        throw new IllegalArgumentException("Unknown format type: " + format);
     }
 }

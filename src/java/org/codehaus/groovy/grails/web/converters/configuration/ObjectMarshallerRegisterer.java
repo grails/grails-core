@@ -19,17 +19,16 @@ import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
- * A Spring Bean that can be used to register an ObjectMarshaller
+ * A Spring Bean that can be used to register an ObjectMarshaller.
  *
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class ObjectMarshallerRegisterer {
 
     private ObjectMarshaller marshaller;
-
     private Class<? extends Converter> converterClass;
-
     private int priority = DefaultConverterConfiguration.DEFAULT_PRIORITY;
 
     public ObjectMarshaller getMarshaller() {
@@ -55,5 +54,4 @@ public class ObjectMarshallerRegisterer {
     public void setPriority(int priority) {
         this.priority = priority;
     }
-    
 }

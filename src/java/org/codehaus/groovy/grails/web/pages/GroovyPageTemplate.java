@@ -14,22 +14,19 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.text.Template;
 import groovy.lang.Writable;
+import groovy.text.Template;
 
 import java.util.Map;
 
 /**
- * An instance of the groovy.text.Template interface that knows how to
- * make in instance of GroovyPageWritable
+ * Knows how to make in instance of GroovyPageWritable.
  *
  * @author Graeme Rocher
  * @since 0.5
- *        <p/>
- *        Created: Feb 23, 2007
- *        Time: 11:36:26 AM
  */
 public class GroovyPageTemplate implements Template {
+
     private GroovyPageMetaInfo metaInfo;
 
     public GroovyPageTemplate(GroovyPageMetaInfo metaInfo) {
@@ -40,13 +37,14 @@ public class GroovyPageTemplate implements Template {
         return new GroovyPageWritable(metaInfo);
     }
 
+    @SuppressWarnings("unchecked")
     public Writable make(Map binding) {
         GroovyPageWritable gptw = new GroovyPageWritable(metaInfo);
         gptw.setBinding(binding);
         return gptw;
     }
 
-	public GroovyPageMetaInfo getMetaInfo() {
-		return metaInfo;
-	}
+    public GroovyPageMetaInfo getMetaInfo() {
+        return metaInfo;
+    }
 }

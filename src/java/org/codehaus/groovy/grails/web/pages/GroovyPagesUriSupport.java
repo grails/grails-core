@@ -23,24 +23,22 @@ import javax.servlet.ServletRequest;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.springframework.util.Assert;
 
 /**
  * Methods to establish template names, paths and so on.
  *
  * @author Graeme Rocher
  * @since 1.2
- *
- *        <p/>
- *        Created: May 1, 2009
  */
 public class GroovyPagesUriSupport {
+
     public static final String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     private static final char SLASH = '/';
     private static final String SLASH_STR = "/";
     private static final String SLASH_UNDR = "/_";
     private static final String BLANK = "";
     private static final String UNDERSCORE = "_";
-
 
     /**
      * Obtains a template URI for the given controller instance and template name
@@ -49,33 +47,30 @@ public class GroovyPagesUriSupport {
      * @return The template URI
      */
     String getTemplateURI(GroovyObject controller, String templateName) {
-        if(controller == null) throw new IllegalArgumentException("Argument [controller] cannot be null");
+        Assert.notNull(controller, "Argument [controller] cannot be null");
         return getTemplateURI(getLogicalControllerName(controller),templateName);
     }
 
     /**
-    * Obtains a view URI of the given controller and view name
-    * @param controller The name of the controller
-    * @param viewName The name of the view
-    * @return The view URI
-    */
+     * Obtains a view URI of the given controller and view name
+     * @param controller The name of the controller
+     * @param viewName The name of the view
+     * @return The view URI
+     */
     String getViewURI(GroovyObject controller, String viewName) {
-        if(controller == null) throw new IllegalArgumentException("Argument [controller] cannot be null");
+        Assert.notNull(controller, "Argument [controller] cannot be null");
         return getViewURI(getLogicalControllerName(controller),viewName);
-
     }
 
-
     /**
-    * Obtains a view URI of the given controller and view name without the suffix
-    * @param controller The name of the controller
-    * @param viewName The name of the view
-    * @return The view URI
-    */
+     * Obtains a view URI of the given controller and view name without the suffix
+     * @param controller The name of the controller
+     * @param viewName The name of the view
+     * @return The view URI
+     */
     String getNoSuffixViewURI(GroovyObject controller, String viewName) {
-        if(controller == null) throw new IllegalArgumentException("Argument [controller] cannot be null");
+        Assert.notNull(controller, "Argument [controller] cannot be null");
         return getNoSuffixViewURI(getLogicalControllerName(controller),viewName);
-
     }
 
     String getLogicalControllerName(GroovyObject controller) {
@@ -87,7 +82,7 @@ public class GroovyPagesUriSupport {
             // ignore
         }
         String logicalName = request != null ? (String) request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) : null;
-        if(logicalName == null){
+        if (logicalName == null) {
             logicalName = GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
         }
         return logicalName;
@@ -102,9 +97,9 @@ public class GroovyPagesUriSupport {
     String getTemplateURI(String controllerName, String templateName) {
         FastStringWriter buf = new FastStringWriter();
 
-        if(templateName.startsWith(SLASH_STR)) {
+        if (templateName.startsWith(SLASH_STR)) {
             String tmp = templateName.substring(1,templateName.length());
-            if(tmp.indexOf(SLASH) > -1) {
+            if (tmp.indexOf(SLASH) > -1) {
                 buf.append(SLASH);
                 int i = tmp.lastIndexOf(SLASH);
                 buf.append(tmp.substring(0, i));
@@ -124,19 +119,16 @@ public class GroovyPagesUriSupport {
                 pathToTemplate = templateName.substring(0, lastSlash + 1);
                 templateName = templateName.substring(lastSlash + 1);
             }
-            buf
-                .append(SLASH)
-                .append(controllerName)
-                .append(SLASH)
-                .append(pathToTemplate)
-                .append(UNDERSCORE)
-                .append(templateName);
+            buf.append(SLASH)
+               .append(controllerName)
+               .append(SLASH)
+               .append(pathToTemplate)
+               .append(UNDERSCORE)
+               .append(templateName);
         }
-        return buf
-                    .append(GroovyPage.EXTENSION)
-                    .toString();
-
+        return buf.append(GroovyPage.EXTENSION).toString();
     }
+
     /**
      * Obtains a view URI of the given controller name and view name
      * @param controllerName The name of the controller
@@ -161,8 +153,6 @@ public class GroovyPagesUriSupport {
         return getViewURIInternal(controllerName, viewName, buf, false);
     }
 
-
-
     /**
      * Obtains a view URI when deployed within the /WEB-INF/grails-app/views context
      * @param controllerName The name of the controller
@@ -172,13 +162,12 @@ public class GroovyPagesUriSupport {
     String getDeployedViewURI(String controllerName, String viewName) {
         FastStringWriter buf = new FastStringWriter(PATH_TO_VIEWS);
         return getViewURIInternal(controllerName, viewName, buf, true);
-
     }
 
     String getViewURIInternal(String controllerName, String viewName, FastStringWriter buf, boolean includeSuffix) {
-        if(viewName.startsWith(SLASH_STR)) {
+        if (viewName.startsWith(SLASH_STR)) {
             String tmp = viewName.substring(1,viewName.length());
-            if(tmp.indexOf(SLASH) > -1) {
+            if (tmp.indexOf(SLASH) > -1) {
                 buf.append(SLASH);
                 buf.append(tmp.substring(0,tmp.lastIndexOf(SLASH)));
                 buf.append(SLASH);
@@ -190,22 +179,16 @@ public class GroovyPagesUriSupport {
             }
         }
         else {
-            buf
-              .append(SLASH)
-              .append(controllerName)
-              .append(SLASH)
-              .append(viewName);
+            buf.append(SLASH)
+               .append(controllerName)
+               .append(SLASH)
+               .append(viewName);
+        }
 
+        if (includeSuffix) {
+            return buf.append(GroovyPage.SUFFIX).toString();
         }
-        if(includeSuffix) {
-            return buf
-                    .append(GroovyPage.SUFFIX)
-                    .toString();
-        }
-        else {
-            return buf.toString();
-        }
+
+        return buf.toString();
     }
-    
-    
 }

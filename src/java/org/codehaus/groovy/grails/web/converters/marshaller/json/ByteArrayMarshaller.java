@@ -16,14 +16,16 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
 public class ByteArrayMarshaller implements ObjectMarshaller<JSON> {
+
     public boolean supports(Object object) {
         return object instanceof byte[];
     }

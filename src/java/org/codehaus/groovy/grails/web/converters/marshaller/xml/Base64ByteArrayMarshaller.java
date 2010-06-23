@@ -17,11 +17,12 @@ package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
 import groovy.lang.Writable;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 
 /**
  * @author Siegfried Puchbauer
@@ -38,17 +39,18 @@ public class Base64ByteArrayMarshaller implements ObjectMarshaller<XML> {
         xml.chars("");
 
         Writable w;
-
-        if(object instanceof byte[])
-            w = DefaultGroovyMethods.encodeBase64((byte[])object);
-        else
-            w = DefaultGroovyMethods.encodeBase64((Byte[])object);
+        if (object instanceof byte[]) {
+            w = EncodingGroovyMethods.encodeBase64((byte[])object);
+        }
+        else {
+            w = EncodingGroovyMethods.encodeBase64((Byte[])object);
+        }
 
         try {
             w.writeTo(xml.getStream());
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new ConverterException(e);
         }
     }
-
 }

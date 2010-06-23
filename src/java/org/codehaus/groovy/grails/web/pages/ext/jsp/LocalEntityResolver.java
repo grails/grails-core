@@ -15,25 +15,25 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Resolves commons JSP DTDs and Schema definitions locally
- * 
+ * Resolves commons JSP DTDs and Schema definitions locally.
+ *
  * @author Graeme Rocher
  */
 @SuppressWarnings("serial")
-public class LocalEntityResolver implements EntityResolver{
+public class LocalEntityResolver implements EntityResolver {
 
-    private static final Map ENTITIES = new HashMap() {{
+    private static final Map<String, String> ENTITIES = new HashMap<String, String>() {{
         // JSP taglib 2.1
         put("http://java.sun.com/xml/ns/jee/web-jsptaglibrary_2_1.xsd", "web-jsptaglibrary_2_1.xsd");
         // JSP taglib 2.0
@@ -57,12 +57,12 @@ public class LocalEntityResolver implements EntityResolver{
     }};
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        String name = (String)ENTITIES.get(publicId);
+        String name = ENTITIES.get(publicId);
 
-        if(name == null) name = (String)ENTITIES.get(systemId);
+        if (name == null) name = ENTITIES.get(systemId);
 
-        InputStream stream = name != null ? getClass().getResourceAsStream(name)
-                                          : new ByteArrayInputStream(new byte[0]);
+        InputStream stream = name != null ? getClass().getResourceAsStream(name) :
+            new ByteArrayInputStream(new byte[0]);
 
         InputSource is = new InputSource();
         is.setByteStream(stream);

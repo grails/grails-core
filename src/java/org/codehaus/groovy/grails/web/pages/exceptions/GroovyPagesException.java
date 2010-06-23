@@ -18,17 +18,15 @@ import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
 
 /**
- * An exception thrown when processing GSP pages
+ * Thrown when processing GSP pages.
  *
  * @author Graeme Rocher
  * @since 0.5
- *        <p/>
- *        Created: Feb 23, 2007
- *        Time: 10:45:39 AM
  */
 public class GroovyPagesException extends GrailsException implements SourceCodeAware {
-	private static final long serialVersionUID = 6142857809397583528L;
-	private int lineNumber;
+
+    private static final long serialVersionUID = 6142857809397583528L;
+    private int lineNumber;
     private String fileName;
 
     public GroovyPagesException(String message, Exception e) {
@@ -46,10 +44,10 @@ public class GroovyPagesException extends GrailsException implements SourceCodeA
     }
 
     public String getFileName() {
-        return this.fileName;
+        return fileName;
     }
 
     public int getLineNumber() {
-        return this.lineNumber;
+        return lineNumber;
     }
 }

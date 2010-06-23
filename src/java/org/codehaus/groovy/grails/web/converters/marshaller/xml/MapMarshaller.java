@@ -16,11 +16,12 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
 
 import java.util.Map;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
@@ -28,6 +29,7 @@ import java.util.Map;
  */
 public class MapMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller {
 
+    @SuppressWarnings("unchecked")
     public boolean supports(Object object) {
         return object instanceof Map;
     }
@@ -42,7 +44,7 @@ public class MapMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller
             xml.end();
         }
     }
-    
+
     public String getElementName(Object o) {
         return "map";
     }

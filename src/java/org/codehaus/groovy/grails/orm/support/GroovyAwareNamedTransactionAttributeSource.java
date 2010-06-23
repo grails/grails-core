@@ -14,40 +14,38 @@
  */
 package org.codehaus.groovy.grails.orm.support;
 
-import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
-import org.springframework.transaction.interceptor.TransactionAttribute;
-
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.lang.reflect.Method;
+
+import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionAttribute;
 
 /**
  * @author Graeme Rocher
  * @since 1.1.1 Don't match Groovy synthetic methods
- *        <p/>
- *        Created: Apr 22, 2009
  */
-@SuppressWarnings("serial")
 public class GroovyAwareNamedTransactionAttributeSource extends NameMatchTransactionAttributeSource {
-	private static final long serialVersionUID = 3519687998898725875L;
-	private static final Set NONTRANSACTIONAL_GROOVY_METHODS = new HashSet() {{
-        add("invokeMethod");
-        add("getMetaClass");
-        add("getProperty");
-        add("setProperty");
 
-    }};
+    private static final long serialVersionUID = 3519687998898725875L;
+    private static final Set<String> NONTRANSACTIONAL_GROOVY_METHODS = new HashSet<String>(Arrays.asList(
+            "invokeMethod",
+            "getMetaClass",
+            "getProperty",
+            "setProperty"));
 
+    @SuppressWarnings("unchecked")
     @Override
     public TransactionAttribute getTransactionAttribute(Method method, Class targetClass) {
-        if(method.isSynthetic()) return null;
+        if (method.isSynthetic()) return null;
         return super.getTransactionAttribute(method, targetClass);    
     }
 
     @Override
     protected boolean isMatch(String methodName, String mappedName) {
-        if(NONTRANSACTIONAL_GROOVY_METHODS.contains(methodName)) return false;
+        if (NONTRANSACTIONAL_GROOVY_METHODS.contains(methodName)) return false;
         return super.isMatch(methodName, mappedName);
     }
 

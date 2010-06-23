@@ -16,7 +16,8 @@
 package org.codehaus.groovy.grails.web.converters.marshaller;
 
 /**
- * Specialized ObjectMarshaller which defines the Tag Name for XML Conversion
+ * Specialized ObjectMarshaller which defines the Tag Name for XML Conversion.
+ *
  * @author Siegfried Puchbauer
  * @since 1.1
  */
@@ -27,6 +28,5 @@ public interface NameAwareMarshaller {
      * @param o the object
      * @return the tag name
      */
-    public String getElementName(Object o);
-
+    String getElementName(Object o);
 }

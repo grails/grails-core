@@ -15,26 +15,22 @@
  */
 package org.codehaus.groovy.grails.web.pages
 
-import org.codehaus.groovy.control.CompilationUnit
 import org.apache.commons.logging.LogFactory
+
+import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 
 /**
- * A class that can be used to compile GSP files into a specified target directory
+ * Used to compile GSP files into a specified target directory.
  *
  * @author Graeme Rocher
  * @since 1.2
- * 
- * Created: Jun 10, 2009
  */
-
-public class GroovyPageCompiler {
+class GroovyPageCompiler {
 
     private static final LOG = LogFactory.getLog(GroovyPageCompiler)
 
-
     private Map compileGSPRegistry = [:]
-
 
     File generatedGroovyPagesDirectory
     File targetDir
@@ -47,20 +43,18 @@ public class GroovyPageCompiler {
     String packagePrefix = 'default'
     String encoding = "UTF-8"
 
-
     void setCompilerConfig(CompilerConfiguration c) {
         compilerConfig = c
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader, compilerConfig)
     }
 
-
     /**
-     * Compiles the given GSP pages and returns a Map of URI to classname mappings
-     */
-    public Map compile() {
-        if(srcFiles && targetDir && viewsDir) {
+    * Compiles the given GSP pages and returns a Map of URI to classname mappings
+    */
+    Map compile() {
+        if (srcFiles && targetDir && viewsDir) {
             LOG.debug "Compiling ${srcFiles.size()} GSP files using GroovyPageCompiler"
-            for(gsp in srcFiles) {
+            for (gsp in srcFiles) {
                 compileGSP(viewsDir, gsp, viewPrefix, packagePrefix)
             }
         }
@@ -77,23 +71,23 @@ public class GroovyPageCompiler {
      *
      */
     protected void compileGSP(File viewsDir, File gspfile, String viewPrefix, String packagePrefix) {
-        if(!generatedGroovyPagesDirectory) {
+        if (!generatedGroovyPagesDirectory) {
             generatedGroovyPagesDirectory = new File(System.getProperty("java.io.tmpdir"),"gspcompile")
             generatedGroovyPagesDirectory.mkdirs()
         }
 
-
         compilerConfig.setTargetDirectory(targetDir)
-        compilerConfig.setSourceEncoding(encoding) 
+        compilerConfig.setSourceEncoding(encoding)
         def relPath = relativePath(viewsDir, gspfile)
         def viewuri = viewPrefix + relPath
 
         def relPackagePath = relativePath(viewsDir, gspfile.getParentFile())
 
         def packageDir = "gsp/${packagePrefix}"
-        if(relPackagePath.length() > 0) {
-        	if(packageDir.length() > 0 && !packageDir.endsWith('/')) 
-        		packageDir += "/"
+        if (relPackagePath.length() > 0) {
+            if (packageDir.length() > 0 && !packageDir.endsWith('/')) {
+                packageDir += "/"
+            }
             packageDir += generateJavaName(relPackagePath)
         }
 
@@ -111,11 +105,12 @@ public class GroovyPageCompiler {
 
             def packageName = packageDir.replace('/','.')
             def fullClassName
-            if(packageName) {
-            	fullClassName = packageName + '.' + className
-        	} else {
-        		fullClassName = className
-        	}
+            if (packageName) {
+                fullClassName = packageName + '.' + className
+            }
+            else {
+                fullClassName = className
+            }
 
             def gspgroovyfile = new File(new File(generatedGroovyPagesDirectory, packageDir), className + ".groovy")
             gspgroovyfile.getParentFile().mkdirs()
@@ -143,16 +138,14 @@ public class GroovyPageCompiler {
                 def unit = new CompilationUnit(compilerConfig, null, classLoader)
                 unit.addSource(gspgroovyfile)
                 unit.compile()
-
             }
-
         }
 
         // write the view registry to a properties file (this is read by GroovyPagesTemplateEngine at runtime)
-        File viewregistryFile=new File(targetDir, "gsp/views.properties")
+        File viewregistryFile = new File(targetDir, "gsp/views.properties")
         viewregistryFile.parentFile.mkdirs()
-        Properties views=new Properties()
-        if(viewregistryFile.exists()) {
+        Properties views = new Properties()
+        if (viewregistryFile.exists()) {
             // only changed files are added to the mapping, read the existing mapping file
             viewregistryFile.withInputStream { stream ->
                 views.load(stream)
@@ -162,14 +155,13 @@ public class GroovyPageCompiler {
         viewregistryFile.withOutputStream { viewsOut ->
             views.store(viewsOut, "Precompiled views for ${packagePrefix}")
         }
-
     }
 
     // find out the relative path from relbase to file
     protected String relativePath(File relbase, File file) {
         def pathParts = []
         def currentFile = file
-        while(currentFile != null && currentFile != relbase) {
+        while (currentFile != null && currentFile != relbase) {
             pathParts += currentFile.name
             currentFile = currentFile.parentFile
         }
@@ -179,24 +171,23 @@ public class GroovyPageCompiler {
     protected generateJavaName(String str) {
         StringBuilder sb = new StringBuilder()
         int i = 0
-        boolean nextMustBeStartChar=true
+        boolean nextMustBeStartChar = true
         char ch
         while (i < str.length()) {
             ch = str.charAt(i++)
-            if(ch=='/') {
-            	nextMustBeStartChar=true
-            	sb.append(ch)
-            } else {
-            	// package or class name cannot start with a number
-                if(nextMustBeStartChar && !Character.isJavaIdentifierStart(ch)) {
-                	sb.append('_')
+            if (ch=='/') {
+                nextMustBeStartChar = true
+                sb.append(ch)
+            }
+            else {
+                // package or class name cannot start with a number
+                if (nextMustBeStartChar && !Character.isJavaIdentifierStart(ch)) {
+                    sb.append('_')
                 }
-            	nextMustBeStartChar=false
+                nextMustBeStartChar = false
                 sb.append(Character.isJavaIdentifierPart(ch) ? ch : '_')
             }
         }
         sb.toString()
     }
-
-
 }

@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2004-2005 the original author or authors.
  *
@@ -14,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.web.pages
 
 import org.apache.tools.ant.BuildException
@@ -37,11 +35,8 @@ import org.apache.tools.ant.types.Reference
  *
  * @author Graeme Rocher
  * @since 1.2
- * 
- * Created: Jun 10, 2009
  */
-
-public class GroovyPageCompilerTask extends MatchingTask{
+class GroovyPageCompilerTask extends MatchingTask {
 
     File destdir
     Path classpath
@@ -53,12 +48,12 @@ public class GroovyPageCompilerTask extends MatchingTask{
 
     boolean verbose
 
-   /**
+    /**
      * Adds a path to the classpath.
      *
      * @return a class path to be configured
      */
-    public Path createClasspath() {
+    Path createClasspath() {
         if (classpath == null) {
             classpath = new Path(getProject())
         }
@@ -70,28 +65,26 @@ public class GroovyPageCompilerTask extends MatchingTask{
      *
      * @param r a reference to a classpath
      */
-    public void setClasspathRef(Reference r) {
+    void setClasspathRef(Reference r) {
         createClasspath().setRefid(r)
     }
 
-
-
-    public void execute() {
+    void execute() {
         def compiler = new GroovyPageCompiler()
-        if(classpath) {
+        if (classpath) {
             CompilerConfiguration config = new CompilerConfiguration()
             config.classpath = classpath.toString()
             compiler.compilerConfig = config
         }
-        if(!destdir || !destdir.exists()) {
-            throw new BuildException("destination [${destdir}] directory doesn't exist or is not set!",getLocation())
-        }
-        else {
-            compiler.targetDir = destdir
+
+        if (!destdir || !destdir.exists()) {
+            throw new BuildException("destination [${destdir}] directory doesn't exist or is not set!", getLocation())
         }
 
-        if(!srcdir || !srcdir.exists()) {
-            throw new BuildException("source [${srcdir}] directory doesn't exist or is not set!",getLocation())
+        compiler.targetDir = destdir
+
+        if (!srcdir || !srcdir.exists()) {
+            throw new BuildException("source [${srcdir}] directory doesn't exist or is not set!", getLocation())
         }
 
         compiler.viewsDir = srcdir
@@ -103,26 +96,25 @@ public class GroovyPageCompilerTask extends MatchingTask{
         compiler.srcFiles = gspFiles
 
         int gspCount = gspFiles?.size()
-        if(gspCount) {
-
+        if (gspCount) {
             log("Compiling ${gspCount} GSP file${gspCount>1?'s':''} for package [${packagename}] to ${destdir}")
         }
-        if(tmpdir) {
+
+        if (tmpdir) {
             compiler.generatedGroovyPagesDirectory = tmpdir
         }
-        if(packagename) {
+
+        if (packagename) {
             compiler.packagePrefix = packagename
         }
-        if(serverpath) {
+        if (serverpath) {
             compiler.viewPrefix=serverpath
         }
-        if(encoding) {
+        if (encoding) {
             compiler.encoding = encoding
         }
+
         compiler.compile()
         compiler = null
-
     }
-
-
 }

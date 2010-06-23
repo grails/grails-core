@@ -9,21 +9,20 @@ package org.codehaus.groovy.grails.web.pages;
  * @author Graeme Rocher
  *
  * Date: Jan 10, 2004
- *
  */
 interface Tokens {
-	static final int EOF = -1;
-	static final int HTML = 0;
-	static final int JEXPR = 1;   // <%= ... %>
-	static final int JSCRIPT = 2; // <% .... %>
-	static final int JDIRECT = 3; // <%@ ... %>
-	static final int JDECLAR = 4; // <%! ... %>
-	static final int GEXPR = 11;   // ${ ... }
-	static final int GSCRIPT = 12; // %{ ... }%
-	static final int GDIRECT = 13; // @{ ... }
-	static final int GDECLAR = 14; // !{ ... }!
-    static final int GSTART_TAG = 15; // <g:..>
-    static final int GEND_TAG = 16; // </g:..>
-    static final int GTAG_EXPR = 17; // ${..}
-    static final int GEND_EMPTY_TAG = 18;    
+    int EOF = -1;
+    int HTML = 0;
+    int JEXPR = 1;   // <%= ... %>
+    int JSCRIPT = 2; // <% .... %>
+    int JDIRECT = 3; // <%@ ... %>
+    int JDECLAR = 4; // <%! ... %>
+    int GEXPR = 11;   // ${ ... }
+    int GSCRIPT = 12; // %{ ... }%
+    int GDIRECT = 13; // @{ ... }
+    int GDECLAR = 14; // !{ ... }!
+    int GSTART_TAG = 15; // <g:..>
+    int GEND_TAG = 16; // </g:..>
+    int GTAG_EXPR = 17; // ${..}
+    int GEND_EMPTY_TAG = 18;
 }

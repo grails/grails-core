@@ -1,3 +1,17 @@
+/* Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.cli.support;
 
 import java.io.File;
@@ -14,6 +28,7 @@ import java.util.List;
  * @author Peter Ledbrook
  */
 public class GrailsBuildHelper {
+
     private ClassLoader classLoader;
     private Object settings;
 
@@ -22,8 +37,7 @@ public class GrailsBuildHelper {
      * class loader. Ideally, the class loader should be an instance of
      * {@link org.codehaus.groovy.grails.cli.support.GrailsRootLoader}.
      * You can try other class loaders, but you may run into problems.
-     * @param classLoader The class loader that will be used to load
-     * Grails.
+     * @param classLoader The class loader that will be used to load Grails.
      */
     public GrailsBuildHelper(ClassLoader classLoader) {
         this(classLoader, null);
@@ -34,8 +48,7 @@ public class GrailsBuildHelper {
      * class loader. Ideally, the class loader should be an instance of
      * {@link org.codehaus.groovy.grails.cli.support.GrailsRootLoader}.
      * You can try other class loaders, but you may run into problems.
-     * @param classLoader The class loader that will be used to load
-     * Grails.
+     * @param classLoader The class loader that will be used to load Grails.
      * @param grailsHome Location of a local Grails installation.
      */
     public GrailsBuildHelper(ClassLoader classLoader, String grailsHome) {
@@ -45,17 +58,15 @@ public class GrailsBuildHelper {
     public GrailsBuildHelper(ClassLoader classLoader, String grailsHome, String baseDir) {
         try {
             this.classLoader = classLoader;
-            Class clazz = classLoader.loadClass("grails.util.BuildSettings");
+            Class<?> clazz = classLoader.loadClass("grails.util.BuildSettings");
 
             // Use the BuildSettings(File grailsHome, File baseDir) constructor.
             File grailsHomeFile = grailsHome == null ? null : new File(grailsHome);
             File baseDirFile = baseDir == null ? null : new File(baseDir);
-            this.settings = clazz.getConstructor(File.class, File.class).newInstance(grailsHomeFile, baseDirFile);
+            settings = clazz.getConstructor(File.class, File.class).newInstance(grailsHomeFile, baseDirFile);
 
             // Initialise the root loader for the BuildSettings.
-            invokeMethod(
-                    this.settings,
-                    "setRootLoader",
+            invokeMethod(settings, "setRootLoader",
                     new Class[] { URLClassLoader.class },
                     new Object[] { classLoader });
         }
@@ -111,8 +122,8 @@ public class GrailsBuildHelper {
         try {
             Object scriptRunner = createScriptRunner();
             Object retval = scriptRunner.getClass().
-                    getMethod("executeCommand", new Class[] { String.class, String.class, String.class }).
-                    invoke(scriptRunner, new Object[] { script, args, env });
+                getMethod("executeCommand", new Class[] { String.class, String.class, String.class }).
+                invoke(scriptRunner, new Object[] { script, args, env });
             return ((Integer) retval).intValue();
         }
         catch (Exception ex) {
@@ -121,101 +132,107 @@ public class GrailsBuildHelper {
     }
 
     public File getGrailsWorkDir() {
-        return (File) invokeMethod(this.settings, "getGrailsWorkDir", new Object[0]);
+        return (File) invokeMethod(settings, "getGrailsWorkDir", new Object[0]);
     }
 
     public void setGrailsWorkDir(File dir) {
-        invokeMethod(this.settings, "setGrailsWorkDir", new Object[] { dir });
+        invokeMethod(settings, "setGrailsWorkDir", new Object[] { dir });
     }
 
     public File getProjectWorkDir() {
-        return (File) invokeMethod(this.settings, "getProjectWorkDir", new Object[0]);
+        return (File) invokeMethod(settings, "getProjectWorkDir", new Object[0]);
     }
 
     public void setProjectWorkDir(File dir) {
-        invokeMethod(this.settings, "setProjectWorkDir", new Object[] { dir });
+        invokeMethod(settings, "setProjectWorkDir", new Object[] { dir });
     }
 
     public File getClassesDir() {
-        return (File) invokeMethod(this.settings, "getClassesDir", new Object[0]);
+        return (File) invokeMethod(settings, "getClassesDir", new Object[0]);
     }
 
     public void setClassesDir(File dir) {
-        invokeMethod(this.settings, "setClassesDir", new Object[] { dir });
+        invokeMethod(settings, "setClassesDir", new Object[] { dir });
     }
 
     public File getTestClassesDir() {
-        return (File) invokeMethod(this.settings, "getTestClassesDir", new Object[0]);
+        return (File) invokeMethod(settings, "getTestClassesDir", new Object[0]);
     }
 
     public void setTestClassesDir(File dir) {
-        invokeMethod(this.settings, "setTestClassesDir", new Object[] { dir });
+        invokeMethod(settings, "setTestClassesDir", new Object[] { dir });
     }
 
     public File getResourcesDir() {
-        return (File) invokeMethod(this.settings, "getResourcesDir", new Object[0]);
+        return (File) invokeMethod(settings, "getResourcesDir", new Object[0]);
     }
 
     public void setResourcesDir(File dir) {
-        invokeMethod(this.settings, "setResourcesDir", new Object[] { dir });
+        invokeMethod(settings, "setResourcesDir", new Object[] { dir });
     }
 
     public File getProjectPluginsDir() {
-        return (File) invokeMethod(this.settings, "getProjectPluginsDir", new Object[0]);
+        return (File) invokeMethod(settings, "getProjectPluginsDir", new Object[0]);
     }
 
     public void setProjectPluginsDir(File dir) {
-        invokeMethod(this.settings, "setProjectPluginsDir", new Object[] { dir });
+        invokeMethod(settings, "setProjectPluginsDir", new Object[] { dir });
     }
 
     public File getGlobalPluginsDir() {
-        return (File) invokeMethod(this.settings, "getGlobalPluginsDir", new Object[0]);
+        return (File) invokeMethod(settings, "getGlobalPluginsDir", new Object[0]);
     }
 
     public void setGlobalPluginsDir(File dir) {
-        invokeMethod(this.settings, "setGlobalPluginsDir", new Object[] { dir });
+        invokeMethod(settings, "setGlobalPluginsDir", new Object[] { dir });
     }
 
     public File getTestReportsDir() {
-        return (File) invokeMethod(this.settings, "getTestReportsDir", new Object[0]);
+        return (File) invokeMethod(settings, "getTestReportsDir", new Object[0]);
     }
 
     public void setTestReportsDir(File dir) {
-        invokeMethod(this.settings, "setTestReportsDir", new Object[] { dir });
+        invokeMethod(settings, "setTestReportsDir", new Object[] { dir });
     }
 
+    @SuppressWarnings("unchecked")
     public List getCompileDependencies() {
-        return (List) invokeMethod(this.settings, "getCompileDependencies", new Object[0]);
+        return (List) invokeMethod(settings, "getCompileDependencies", new Object[0]);
     }
 
+    @SuppressWarnings("unchecked")
     public void setCompileDependencies(List dependencies) {
-        invokeMethod(this.settings, "setCompileDependencies", new Class[] { List.class }, new Object[] { dependencies });
+        invokeMethod(settings, "setCompileDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }
 
     public void setDependenciesExternallyConfigured(boolean b) {
-        invokeMethod(this.settings, "setDependenciesExternallyConfigured", new Class[] { boolean.class }, new Object[] { b });
+        invokeMethod(settings, "setDependenciesExternallyConfigured", new Class[] { boolean.class }, new Object[] { b });
     }
 
+    @SuppressWarnings("unchecked")
     public List getTestDependencies() {
-        return (List) invokeMethod(this.settings, "getTestDependencies", new Object[0]);
+        return (List) invokeMethod(settings, "getTestDependencies", new Object[0]);
     }
 
+    @SuppressWarnings("unchecked")
     public void setTestDependencies(List dependencies) {
-        invokeMethod(this.settings, "setTestDependencies", new Class[] { List.class }, new Object[] { dependencies });
+        invokeMethod(settings, "setTestDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }
 
+    @SuppressWarnings("unchecked")
     public List getRuntimeDependencies() {
-        return (List) invokeMethod(this.settings, "getRuntimeDependencies", new Object[0]);
+        return (List) invokeMethod(settings, "getRuntimeDependencies", new Object[0]);
     }
 
+    @SuppressWarnings("unchecked")
     public void setRuntimeDependencies(List dependencies) {
-        invokeMethod(this.settings, "setRuntimeDependencies", new Class[] { List.class }, new Object[] { dependencies });
+        invokeMethod(settings, "setRuntimeDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }
 
     private Object createScriptRunner() throws Exception {
-        return this.classLoader.loadClass("org.codehaus.groovy.grails.cli.GrailsScriptRunner").
-                getDeclaredConstructor(new Class[] { this.settings.getClass() }).
-                newInstance(new Object[] { this.settings });
+        return classLoader.loadClass("org.codehaus.groovy.grails.cli.GrailsScriptRunner").
+            getDeclaredConstructor(new Class[] { settings.getClass() }).
+            newInstance(new Object[] { settings });
     }
 
     /**
@@ -223,12 +240,11 @@ public class GrailsBuildHelper {
      * The method signature is determined by the classes of each argument.
      * @param target The object to call the method on.
      * @param name The name of the method to call.
-     * @param args The arguments to pass to the method (may be an empty
-     * array).
+     * @param args The arguments to pass to the method (may be an empty array).
      * @return The value returned by the method.
      */
     private Object invokeMethod(Object target, String name, Object[] args) {
-        Class[] argTypes = new Class[args.length];
+        Class<?>[] argTypes = new Class[args.length];
         for (int i = 0; i < args.length; i++) {
             argTypes[i] = args[i].getClass();
         }
@@ -248,7 +264,7 @@ public class GrailsBuildHelper {
      * array).
      * @return The value returned by the method.
      */
-    private Object invokeMethod(Object target, String name, Class[] argTypes, Object[] args) {
+    private Object invokeMethod(Object target, String name, Class<?>[] argTypes, Object[] args) {
         try {
             return target.getClass().getMethod(name, argTypes).invoke(target, args);
         }

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.converters.marshaller;
 
 import groovy.lang.Closure;
+
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 
@@ -25,13 +26,14 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class ClosureOjectMarshaller<T extends Converter> implements ObjectMarshaller<T> {
 
-    private Class clazz;
+    private Class<?> clazz;
 
     private Closure closure;
 
-    public ClosureOjectMarshaller(Class clazz, Closure closure) {
+    public ClosureOjectMarshaller(Class<?> clazz, Closure closure) {
         this.clazz = clazz;
         this.closure = closure;
     }
@@ -46,16 +48,20 @@ public class ClosureOjectMarshaller<T extends Converter> implements ObjectMarsha
             Object result = null;
             if (argCount <= 1) {
                 result = closure.call(object);
-            } else if (argCount == 2) {
+            }
+            else if (argCount == 2) {
                 result = closure.call(new Object[]{object, converter});
-            } else {
-                throw new ConverterException("Invalid Parameter count for registered Object Marshaller for class " + clazz.getName());
+            }
+            else {
+                throw new ConverterException(
+                        "Invalid Parameter count for registered Object Marshaller for class " + clazz.getName());
             }
 
             if (result != null && result != object && result != converter) {
                 converter.convertAnother(result);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw e instanceof ConverterException ? (ConverterException) e : new ConverterException(e);
         }
     }

@@ -52,12 +52,11 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
     public DomainClassMarshaller(boolean includeVersion) {
         this(includeVersion, new DefaultProxyHandler());
     }
-    
+
     public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
         this.includeVersion = includeVersion;
         this.proxyHandler = proxyHandler;
     }
-
 
     public boolean isIncludeVersion() {
         return includeVersion;
@@ -71,10 +70,11 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
         return ConverterUtil.isDomainClass(object.getClass());
     }
 
+    @SuppressWarnings("unchecked")
     public void marshalObject(Object value, JSON json) throws ConverterException {
         JSONWriter writer = json.getWriter();
         value = proxyHandler.unwrapIfProxy(value);
-        Class clazz = value.getClass();
+        Class<?> clazz = value.getClass();
         GrailsDomainClass domainClass = ConverterUtil.getDomainClass(clazz.getName());
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
@@ -86,7 +86,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
 
         json.property("id", idValue);
 
-        if(isIncludeVersion()) {
+        if (isIncludeVersion()) {
             GrailsDomainClassProperty versionProperty = domainClass.getVersion();
             Object version = extractValue(value, versionProperty);
             json.property("version", version);
@@ -100,41 +100,51 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                 // Write non-relation property
                 Object val = beanWrapper.getPropertyValue(property.getName());
                 json.convertAnother(val);
-            } else {
+            }
+            else {
                 Object referenceObject = beanWrapper.getPropertyValue(property.getName());
                 if (isRenderDomainClassRelations()) {
                     if (referenceObject == null) {
                         writer.value(null);
-                    } else {
-                    	referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
+                    }
+                    else {
+                        referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
                         if (referenceObject instanceof SortedMap) {
                             referenceObject = new TreeMap((SortedMap) referenceObject);
-                        } else if (referenceObject instanceof SortedSet) {
+                        }
+                        else if (referenceObject instanceof SortedSet) {
                             referenceObject = new TreeSet((SortedSet) referenceObject);
-                        } else if (referenceObject instanceof Set) {
+                        }
+                        else if (referenceObject instanceof Set) {
                             referenceObject = new HashSet((Set) referenceObject);
-                        } else if (referenceObject instanceof Map) {
+                        }
+                        else if (referenceObject instanceof Map) {
                             referenceObject = new HashMap((Map) referenceObject);
-                        } else if (referenceObject instanceof Collection){
+                        }
+                        else if (referenceObject instanceof Collection){
                             referenceObject = new ArrayList((Collection) referenceObject);
                         }
                         json.convertAnother(referenceObject);
                     }
-                } else {
+                }
+                else {
                     if (referenceObject == null) {
                         json.value(null);
-                    } else {
+                    }
+                    else {
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
                         // Embedded are now always fully rendered
                         if(referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
                             json.convertAnother(referenceObject);
-                        } else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
+                        }
+                        else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
                             asShortObject(referenceObject, json, referencedDomainClass.getIdentifier(), referencedDomainClass);
-                        } else {
+                        }
+                        else {
                             GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
                             @SuppressWarnings("unused")
-							String refPropertyName = referencedDomainClass.getPropertyName();
+                            String refPropertyName = referencedDomainClass.getPropertyName();
                             if (referenceObject instanceof Collection) {
                                 Collection o = (Collection) referenceObject;
                                 writer.array();
@@ -142,8 +152,8 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                                     asShortObject(el, json, referencedIdProperty, referencedDomainClass);
                                 }
                                 writer.endArray();
-
-                            } else if (referenceObject instanceof Map) {
+                            }
+                            else if (referenceObject instanceof Map) {
                                 Map<Object, Object> map = (Map<Object, Object>) referenceObject;
                                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                                     String key = String.valueOf(entry.getKey());
@@ -161,7 +171,6 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
         }
         writer.endObject();
     }
-
 
     protected void asShortObject(Object refObj, JSON json, GrailsDomainClassProperty idProperty, GrailsDomainClass referencedDomainClass) throws ConverterException {
         JSONWriter writer = json.getWriter();

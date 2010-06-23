@@ -14,9 +14,6 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import org.codehaus.groovy.tools.LoaderConfiguration;
-import org.codehaus.groovy.tools.RootLoader;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,13 +23,15 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Properties;
 
+import org.codehaus.groovy.tools.LoaderConfiguration;
+import org.codehaus.groovy.tools.RootLoader;
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 29, 2007
  */
 public class GrailsStarter {
+
     private static final String GRAILS_ROOT_CLASSLOADER = "grails.root.classloader";
     private static final String LOADER_FILE = ".loader";
 
@@ -40,7 +39,6 @@ public class GrailsStarter {
         System.out.println("possible programs are 'groovyc','groovy','console', and 'groovysh'");
         System.exit(1);
     }
-
 
     public static void rootLoader(String args[]) {
         final String separator = System.getProperty("file.separator");
@@ -72,7 +70,7 @@ public class GrailsStarter {
                 System.setProperty("grails.version", grailsProps.getProperty("grails.version"));
             }
             catch (IOException ex) { System.out.println("Failed to load Grails file: " + ex.getMessage()); System.exit(1); }
-            finally { if (is != null) try { is.close(); } catch (IOException ex2) {} }
+            finally { if (is != null) try { is.close(); } catch (IOException ex2) {/*ignored*/} }
         }
 
         String conf = System.getProperty("groovy.starter.conf", null);
@@ -81,35 +79,38 @@ public class GrailsStarter {
         // evaluate parameters
         boolean hadMain=false, hadConf=false, hadCP=false;
         int argsOffset = 0;
-        while (args.length-argsOffset>0 && !(hadMain && hadConf && hadCP)) {
+        while (args.length - argsOffset > 0 && !(hadMain && hadConf && hadCP)) {
             if (args[argsOffset].equals("--classpath")) {
                 if (hadCP) break;
-                if (args.length==argsOffset+1) {
+                if (args.length == argsOffset + 1) {
                     exit("classpath parameter needs argument");
                 }
-                lc.addClassPath(args[argsOffset+1]);
-                argsOffset+=2;
-            } else if (args[argsOffset].equals("--main")) {
+                lc.addClassPath(args[argsOffset + 1]);
+                argsOffset += 2;
+            }
+            else if (args[argsOffset].equals("--main")) {
                 if (hadMain) break;
-                if (args.length==argsOffset+1) {
+                if (args.length == argsOffset + 1) {
                     exit("main parameter needs argument");
                 }
-                lc.setMainClass(args[argsOffset+1]);
-                argsOffset+=2;
-            } else if (args[argsOffset].equals("--conf")) {
+                lc.setMainClass(args[argsOffset + 1]);
+                argsOffset += 2;
+            }
+            else if (args[argsOffset].equals("--conf")) {
                 if (hadConf) break;
-                if (args.length==argsOffset+1) {
+                if (args.length == argsOffset + 1) {
                     exit("conf parameter needs argument");
                 }
-                conf=args[argsOffset+1];
-                argsOffset+=2;
-            } else {
+                conf = args[argsOffset + 1];
+                argsOffset += 2;
+            }
+            else {
                 break;
             }
         }
 
         // We need to know the class we want to start
-        if (lc.getMainClass()==null) {
+        if (lc.getMainClass() == null) {
             lc.setMainClass("org.codehaus.groovy.grails.cli.GrailsScriptRunner");
         }
 
@@ -118,19 +119,20 @@ public class GrailsStarter {
         System.arraycopy(args, argsOffset, newArgs, 0, newArgs.length);
 
         String basedir = System.getProperty("base.dir");
-        if(basedir!=null) {
-
+        if (basedir != null) {
             try {
                 System.setProperty("base.name", new File(basedir).getCanonicalFile().getName());
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 // ignore
             }
         }
         // load configuration file
-        if (conf!=null) {
+        if (conf != null) {
             try {
                 lc.configure(new FileInputStream(conf));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 System.err.println("exception while configuring main class loader:");
                 exit(e);
             }
@@ -140,7 +142,7 @@ public class GrailsStarter {
         RootLoader loader = null;
         File loaderFile = new File(LOADER_FILE);
         String loaderClassName = null;
-        if(loaderFile.exists()) {
+        if (loaderFile.exists()) {
             Properties loaderProps = new Properties();
             FileInputStream input = null;
             try {
@@ -149,44 +151,46 @@ public class GrailsStarter {
                 loaderClassName = loaderProps.getProperty(GRAILS_ROOT_CLASSLOADER);
             }
             catch (Exception e) {
-            	e.printStackTrace();
+                e.printStackTrace();
                 System.out.println("ERROR: There was an error loading a Grails custom classloader using the properties file ["+loaderFile.getAbsolutePath()+"]: " + e.getClass().getName() + ":" + e.getMessage());
             }
             finally {
                 try {
-                    if(input != null) input.close();
+                    if (input != null) input.close();
                 }
                 catch (IOException e) {
                     // ignore
                 }
             }
         }
-        if(loaderClassName == null) {
-        	loaderClassName = System.getProperty(GRAILS_ROOT_CLASSLOADER);
+        if (loaderClassName == null) {
+            loaderClassName = System.getProperty(GRAILS_ROOT_CLASSLOADER);
         }
-        if(loaderClassName!=null) {
+        if (loaderClassName != null) {
             try {
-				Class loaderClass = GrailsStarter.class.getClassLoader().loadClass(loaderClassName);
-				loader = (RootLoader) loaderClass.newInstance();
-			} catch (Exception e) {
-            	e.printStackTrace();
+                Class<?> loaderClass = GrailsStarter.class.getClassLoader().loadClass(loaderClassName);
+                loader = (RootLoader) loaderClass.newInstance();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("ERROR: There was an error loading a Grails custom classloader using the properties file ["+loaderFile.getAbsolutePath()+"]: " + e.getClass().getName() + ":" + e.getMessage());
-			} 
+            }
         }
-        
-        if(loader == null)
+
+        if (loader == null) {
             loader = new GrailsRootLoader();
+        }
+
         Thread.currentThread().setContextClassLoader(loader);
         // configure class loader
-        URL[] urls = lc.getClassPathUrls();
-        for (URL url : urls) {
+        for (URL url : lc.getClassPathUrls()) {
             loader.addURL(url);
         }
 
-        if(javaVersion != null && grailsHome != null) {
+        if (javaVersion != null && grailsHome != null) {
             javaVersion = javaVersion.substring(0,3);
             File vmConfig = new File(grailsHome +"/conf/groovy-starter-java-"+javaVersion+".conf");
-            if(vmConfig.exists()) {
+            if (vmConfig.exists()) {
                 InputStream in = null;
                 try {
                     in = new FileInputStream(vmConfig);
@@ -197,38 +201,45 @@ public class GrailsStarter {
                     for (URL aVmSpecificClassPath : vmSpecificClassPath) {
                         loader.addURL(aVmSpecificClassPath);
                     }
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     System.out.println("WARNING: I/O error reading VM specific classpath ["+vmConfig+"]: " + e.getMessage() );
                 }
                 finally {
                     try {
-                        if(in != null) in.close();
-                    } catch (IOException e) {
+                        if (in != null) in.close();
+                    }
+                    catch (IOException e) {
                         // ignore
                     }
                 }
             }
-
         }
 
-        Method m=null;
+        Method m = null;
         try {
-            Class c = loader.loadClass(lc.getMainClass());
+            Class<?> c = loader.loadClass(lc.getMainClass());
             m = c.getMethod("main", new Class[]{String[].class});
-        } catch (ClassNotFoundException e1) {
+        }
+        catch (ClassNotFoundException e1) {
             exit(e1);
-        } catch (SecurityException e2) {
+        }
+        catch (SecurityException e2) {
             exit(e2);
-        } catch (NoSuchMethodException e2) {
+        }
+        catch (NoSuchMethodException e2) {
             exit(e2);
         }
         try {
             m.invoke(null, new Object[]{newArgs});
-        } catch (IllegalArgumentException e3) {
+        }
+        catch (IllegalArgumentException e3) {
             exit(e3);
-        } catch (IllegalAccessException e3) {
+        }
+        catch (IllegalAccessException e3) {
             exit(e3);
-        } catch (InvocationTargetException e3) {
+        }
+        catch (InvocationTargetException e3) {
             exit(e3);
         }
     }
@@ -249,11 +260,11 @@ public class GrailsStarter {
     public static void main(String args[]) {
         try {
             rootLoader(args);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             System.out.println("Error starting Grails: " + t.getMessage());
             t.printStackTrace(System.err);
             System.exit(1);
         }
     }
 }
-

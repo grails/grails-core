@@ -17,16 +17,15 @@ package org.codehaus.groovy.grails.context.annotation;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Provides custom implementation of component-scan that ignores Groovy closures
- * 
+ * Provides custom implementation of component-scan that ignores Groovy closures.
+ *
  * @author Graeme Rocher
  * @since 1.2
  */
 public class GrailsContextNamespaceHandler extends NamespaceHandlerSupport {
 
-	public void init() {
-		registerBeanDefinitionParser("component-scan", new ClosureClassIgnoringComponentScanBeanDefinitionParser());
-	}
-
+    public void init() {
+        registerBeanDefinitionParser("component-scan",
+                new ClosureClassIgnoringComponentScanBeanDefinitionParser());
+    }
 }
-

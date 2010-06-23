@@ -14,20 +14,17 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import java.io.IOException;
-import java.io.Writer;
-
 import grails.util.GrailsWebUtil;
 import groovy.lang.Writable;
 
+import java.io.IOException;
+import java.io.Writer;
+
 /**
- * A class that represents some content that has been used in an include request
- * 
+ * Represents some content that has been used in an include request.
+ *
  * @author Graeme Rocher
  * @since 1.1.1
- * 
- *        <p/>
- *        Created: Mar 26, 2009
  */
 public class IncludedContent implements Writable {
 
@@ -36,8 +33,9 @@ public class IncludedContent implements Writable {
     private String redirectURL;
 
     public IncludedContent(String contentType, Object content) {
-        if(contentType!=null)
+        if (contentType != null) {
             this.contentType = contentType;
+        }
         this.content = content;
     }
 
@@ -46,7 +44,9 @@ public class IncludedContent implements Writable {
     }
 
     /**
-     * Returns the URL of a redirect if a redirect was issue in the Include otherwise it returns null if there was no redirect
+     * Returns the URL of a redirect if a redirect was issue in the Include
+     * otherwise it returns null if there was no redirect.
+     *
      * @return The redirect URL
      */
     public String getRedirectURL() {
@@ -68,31 +68,37 @@ public class IncludedContent implements Writable {
     public Object getContent() {
         return content;
     }
-    
+
     public Writer writeTo(Writer target) throws IOException {
-    	if(content==null) {
-    		return target;
-    	}
-    	if(content instanceof StreamCharBuffer) {
-    		((StreamCharBuffer)content).writeTo(target);
-    	} else if (content instanceof String){
-    		target.write((String)content);
-    	} else {
-    		target.write(String.valueOf(content));
-    	}
+        if (content == null) {
+            return target;
+        }
+
+        if(content instanceof StreamCharBuffer) {
+            ((StreamCharBuffer)content).writeTo(target);
+        }
+        else if (content instanceof String){
+            target.write((String)content);
+        }
+        else {
+            target.write(String.valueOf(content));
+        }
         return target;
     }
-        
+
     public char[] getContentAsCharArray() {
-    	if(content==null) {
-    		return new char[0];
-    	}
-    	if(content instanceof StreamCharBuffer) {
-    		return ((StreamCharBuffer)content).toCharArray();
-    	} else if (content instanceof String){
-    		return ((String)content).toCharArray();
-    	} else {
-    		return String.valueOf(content).toCharArray();
-    	}
+        if (content == null) {
+            return new char[0];
+        }
+
+        if (content instanceof StreamCharBuffer) {
+            return ((StreamCharBuffer)content).toCharArray();
+        }
+
+        if (content instanceof String){
+            return ((String)content).toCharArray();
+        }
+
+        return String.valueOf(content).toCharArray();
     }
 }

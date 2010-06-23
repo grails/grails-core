@@ -16,6 +16,9 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
+
+import java.util.Locale;
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
@@ -26,13 +29,11 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
-import java.util.Locale;
-
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class ValidationErrorsMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller,ApplicationContextAware {
+public class ValidationErrorsMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
@@ -55,20 +56,21 @@ public class ValidationErrorsMarshaller implements ObjectMarshaller<XML>, NameAw
                     Locale locale = LocaleContextHolder.getLocale();
                     if (applicationContext != null) {
                         xml.startNode("message").chars(applicationContext.getMessage(fe, locale)).end();
-                    } else {
+                    }
+                    else {
                         xml.startNode("message").chars(fe.getDefaultMessage()).end();
                     }
                     xml.end();
                 }
-
             }
-        } catch (ConverterException ce) {
+        }
+        catch (ConverterException ce) {
             throw ce;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ConverterException("Error converting Bean with class " + object.getClass().getName(), e);
         }
     }
-
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;

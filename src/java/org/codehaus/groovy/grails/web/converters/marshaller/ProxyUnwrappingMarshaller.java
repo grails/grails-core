@@ -19,6 +19,7 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
+
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 
@@ -27,35 +28,36 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
  *
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
- * 
+ *
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class ProxyUnwrappingMarshaller<C extends Converter> implements ObjectMarshaller<C>, NameAwareMarshaller {
+
     private static final String HIBERNATE_LAZY_INITIALIZER_PROP = "hibernateLazyInitializer";
     private static final String IMPLEMENTATION_PROP = "implementation";
 
     public boolean supports(Object object) {
-        if(object == null) return false;
+        if (object == null) return false;
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
         return mc.hasProperty(object, HIBERNATE_LAZY_INITIALIZER_PROP) != null;
     }
 
-    @SuppressWarnings("unchecked")
     public void marshalObject(Object object, C converter) throws ConverterException {
         Object unwrapped = unwrap(object);
         converter.lookupObjectMarshaller(unwrapped).marshalObject(unwrapped, converter);
     }
 
     private Object unwrap(Object o) {
-        if(o == null) return o;
+        if (o == null) return o;
 
         final MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         MetaClass mc = registry.getMetaClass(o.getClass());
 
         final Object hibernateLazyInitializer = mc.getProperty(o, HIBERNATE_LAZY_INITIALIZER_PROP);
-        return registry.getMetaClass(hibernateLazyInitializer.getClass()).getProperty(hibernateLazyInitializer, IMPLEMENTATION_PROP);
+        return registry.getMetaClass(hibernateLazyInitializer.getClass()).getProperty(
+                hibernateLazyInitializer, IMPLEMENTATION_PROP);
     }
-
 
     public String getElementName(Object o) {
         return GrailsNameUtils.getPropertyName(unwrap(o).getClass().getName());

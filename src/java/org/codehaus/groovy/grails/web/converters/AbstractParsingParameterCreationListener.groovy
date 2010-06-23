@@ -17,28 +17,25 @@ package org.codehaus.groovy.grails.web.converters
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener
 
 /**
-* Abstract base class for parameter creation listeners that parse incoming data such as JSON and XML
+* Abstract base class for parameter creation listeners that parse incoming data such as JSON and XML.
 
 * @author Graeme Rocher
 * @since 1.0
-*
-* Created: Nov 27, 2007
 */
 abstract class AbstractParsingParameterCreationListener implements ParameterCreationListener {
 
     /**
-     * Populates the target map with current map using the root map to form a nested prefix so that a hierarchy of maps is flattened 
+     * Populates the target map with current map using the root map to form a nested prefix
+     * so that a hierarchy of maps is flattened.
      */
     protected createFlattenedKeys(Map root, Map current, Map target, prefix ='') {
-
-        for(entry in current) {
-            if(entry.value instanceof Map) {
+        for (entry in current) {
+            if (entry.value instanceof Map) {
                 createFlattenedKeys(root,entry.value, target, "${entry.key}.")
             }
-            else if(prefix) {
+            else if (prefix) {
                 target["${prefix}${entry.key}"] = entry.value
             }
         }
     }
-
 }

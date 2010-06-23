@@ -16,31 +16,32 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
+
+import java.util.Map;
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
-
-import java.util.Map;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class MapMarshaller implements ObjectMarshaller<JSON> {
 
     public boolean supports(Object object) {
         return object instanceof Map;
     }
 
-    @SuppressWarnings("unchecked")
     public void marshalObject(Object o, JSON converter) throws ConverterException {
         JSONWriter writer = converter.getWriter();
         writer.object();
         Map<Object,Object> map = (Map<Object,Object>) o;
         for (Map.Entry<Object,Object> entry : map.entrySet()) {
             Object key = entry.getKey();
-            if(key != null) {
-            	writer.key(key.toString());
+            if (key != null) {
+                writer.key(key.toString());
                 converter.convertAnother(entry.getValue());
             }
         }

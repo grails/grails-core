@@ -46,110 +46,114 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWrit
  * @author Lari Hotari, Sagire Software Oy
  *
  * Date: Jan 10, 2004
- *
  */
 public class GSPResponseWriter extends GrailsPrintWriter {
-	private static final Log LOG = LogFactory.getLog(GSPResponseWriter.class);
-	private ServletResponse response;
-	private BoundedCharsAsEncodedBytesCounter bytesCounter;
-	private static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
-	private static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
-	private static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
+
+    private static final Log LOG = LogFactory.getLog(GSPResponseWriter.class);
+    private ServletResponse response;
+    private BoundedCharsAsEncodedBytesCounter bytesCounter;
+    private static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
+    private static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
+    private static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
     private static final int BUFFER_SIZE = Integer.getInteger("GSPResponseWriter.bufferSize", 8042);
 
     public static GSPResponseWriter getInstance(final ServletResponse response) {
-    	return getInstance(response, BUFFER_SIZE);
+        return getInstance(response, BUFFER_SIZE);
     }
-    
-	/**
-	 * Static factory methdirectWritingod to create the writer.
-	 * @param response
-	 * @param max
-	 * @return  A GSPResponseWriter instance
-	 */
-	private static GSPResponseWriter getInstance(final ServletResponse response, int max) {
-		Writer target=null;
-		StreamCharBuffer streamBuffer=null;
-		BoundedCharsAsEncodedBytesCounter bytesCounter=null;
-
-		if(!(response instanceof GrailsContentBufferingResponse) && (BUFFERING_ENABLED || CONTENT_LENGTH_COUNTING_ENABLED)) {
-			streamBuffer=new StreamCharBuffer(max, 0, max);
-			streamBuffer.setChunkMinSize(max/2);
-			target=streamBuffer.getWriter();
-			if(CONTENT_LENGTH_COUNTING_ENABLED) {
-				bytesCounter = new BoundedCharsAsEncodedBytesCounter(max * 2, response.getCharacterEncoding());
-				streamBuffer.connectTo(bytesCounter.getCountingWriter(), AUTOFLUSH_ENABLED);
-			}
-			streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, AUTOFLUSH_ENABLED);
-		} else {
-			try {
-				target=response.getWriter();
-			} catch (IOException e) {
-				LOG.error("Problem getting writer from response",e);
-				throw new RuntimeException("Problem getting writer from response",e);
-			}
-		}
-		return new GSPResponseWriter(target, response, bytesCounter);
-	} // getInstance()
-
-	/**
-	 * Static factory method to create the writer.
-	 * 
-	 * TODO: this can be removed?
-	 * 
-	 * @param target The target writer to write too
-	 * @param max
-	 * @return  A GSPResponseWriter instance
-	 */
-	@SuppressWarnings("unused")
-	private static GSPResponseWriter getInstance(Writer target, int max) {
-		if(BUFFERING_ENABLED && !(target instanceof GrailsRoutablePrintWriter) && !(target instanceof StreamCharBufferWriter)) {
-			StreamCharBuffer streamBuffer=new StreamCharBuffer(max, 0, max);
-			streamBuffer.connectTo(target, false);
-			Writer writer=streamBuffer.getWriter();
-			return new GSPResponseWriter(writer);
-		} else {
-			return new GSPResponseWriter(target);
-		}
-	} // getInstance()
 
     /**
-	 * Private constructor.  Use getInstance() instead.
-	 * @param activeWriter buffered writer
-	 * @param response
-	 * @param streamBuffer StreamCharBuffer instance
-	 * @param bytesCounter	Keeps count of encoded bytes count
-	 */
-	private GSPResponseWriter(Writer activeWriter, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
-		super(activeWriter);
-		this.response = response;
-		this.bytesCounter = bytesCounter;
-	} // GSPResponseWriter
+     * Static factory methdirectWritingod to create the writer.
+     * @param response
+     * @param max
+     * @return  A GSPResponseWriter instance
+     */
+    private static GSPResponseWriter getInstance(final ServletResponse response, int max) {
+        Writer target = null;
+        StreamCharBuffer streamBuffer = null;
+        BoundedCharsAsEncodedBytesCounter bytesCounter=null;
 
-	/**
-	 * Private constructor.  Use getInstance() instead.
-	 * @param activeWriter buffered writer
-	 */
-	private GSPResponseWriter(Writer activeWriter) {
-		super(activeWriter);
-	}
-	
-	/**
-	 * Close the stream.
-	 * @see #checkError()
-	 */
-	public void close() {
-		flush();
-		if(CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted()) {
-			int size = bytesCounter.size();
-			if(size > 0) {
-				response.setContentLength(size);
-			}
-			try {
-				response.getWriter().flush();
-			} catch (IOException e) {
-				handleIOException(e);
-			}
-		}
-	} // close()
-} // GSPResponseWriter
+        if (!(response instanceof GrailsContentBufferingResponse) && (BUFFERING_ENABLED || CONTENT_LENGTH_COUNTING_ENABLED)) {
+            streamBuffer = new StreamCharBuffer(max, 0, max);
+            streamBuffer.setChunkMinSize(max/2);
+            target = streamBuffer.getWriter();
+            if (CONTENT_LENGTH_COUNTING_ENABLED) {
+                bytesCounter = new BoundedCharsAsEncodedBytesCounter(max * 2, response.getCharacterEncoding());
+                streamBuffer.connectTo(bytesCounter.getCountingWriter(), AUTOFLUSH_ENABLED);
+            }
+            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, AUTOFLUSH_ENABLED);
+        }
+        else {
+            try {
+                target = response.getWriter();
+            }
+            catch (IOException e) {
+                LOG.error("Problem getting writer from response",e);
+                throw new RuntimeException("Problem getting writer from response",e);
+            }
+        }
+        return new GSPResponseWriter(target, response, bytesCounter);
+    }
+
+    /**
+     * Static factory method to create the writer.
+     *
+     * TODO: this can be removed?
+     *
+     * @param target The target writer to write too
+     * @param max
+     * @return  A GSPResponseWriter instance
+     */
+    @SuppressWarnings("unused")
+    private static GSPResponseWriter getInstance(Writer target, int max) {
+        if (BUFFERING_ENABLED && !(target instanceof GrailsRoutablePrintWriter) && !(target instanceof StreamCharBufferWriter)) {
+            StreamCharBuffer streamBuffer=new StreamCharBuffer(max, 0, max);
+            streamBuffer.connectTo(target, false);
+            Writer writer=streamBuffer.getWriter();
+            return new GSPResponseWriter(writer);
+        }
+
+        return new GSPResponseWriter(target);
+    }
+
+    /**
+     * Private constructor.  Use getInstance() instead.
+     * @param activeWriter buffered writer
+     * @param response
+     * @param streamBuffer StreamCharBuffer instance
+     * @param bytesCounter    Keeps count of encoded bytes count
+     */
+    private GSPResponseWriter(Writer activeWriter, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
+        super(activeWriter);
+        this.response = response;
+        this.bytesCounter = bytesCounter;
+    }
+
+    /**
+     * Private constructor.  Use getInstance() instead.
+     * @param activeWriter buffered writer
+     */
+    private GSPResponseWriter(Writer activeWriter) {
+        super(activeWriter);
+    }
+
+    /**
+     * Close the stream.
+     * @see #checkError()
+     */
+    @Override
+    public void close() {
+        flush();
+        if (CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted()) {
+            int size = bytesCounter.size();
+            if (size > 0) {
+                response.setContentLength(size);
+            }
+            try {
+                response.getWriter().flush();
+            }
+            catch (IOException e) {
+                handleIOException(e);
+            }
+        }
+    }
+}

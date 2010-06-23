@@ -30,7 +30,7 @@ import org.springframework.beans.BeanUtils;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class GenericJavaBeanMarshaller implements ObjectMarshaller<XML>{
+public class GenericJavaBeanMarshaller implements ObjectMarshaller<XML> {
 
     public boolean supports(Object object) {
         return true;
@@ -38,8 +38,7 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<XML>{
 
     public void marshalObject(Object o, XML xml) throws ConverterException {
         try {
-        	PropertyDescriptor[] properties = BeanUtils.getPropertyDescriptors(o.getClass());
-            for (PropertyDescriptor property : properties) {
+            for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
                 String name = property.getName();
                 Method readMethod = property.getReadMethod();
                 if (readMethod != null) {
@@ -49,21 +48,21 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<XML>{
                     xml.end();
                 }
             }
-            Field[] fields = o.getClass().getDeclaredFields();
-            for (Field field : fields) {
+            for (Field field : o.getClass().getDeclaredFields()) {
                 int modifiers = field.getModifiers();
-                if (field.isAccessible() && Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
+                if (field.isAccessible() && Modifier.isPublic(modifiers) &&
+                        !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
                     xml.startNode(field.getName());
                     xml.convertAnother(field.get(o));
                     xml.end();
                 }
             }
-        } catch (ConverterException ce) {
+        }
+        catch (ConverterException ce) {
             throw ce;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ConverterException("Error converting Bean with class " + o.getClass().getName(), e);
         }
-
     }
-    
 }

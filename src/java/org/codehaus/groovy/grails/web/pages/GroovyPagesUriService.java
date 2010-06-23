@@ -16,28 +16,25 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.GroovyObject;
 
-
 /**
- * Provides methods to lookup URIs of views and templates
+ * Provides methods to lookup URIs of views and templates.
  *
  * @author Graeme Rocher
  * @since 1.2
- *
  */
 public interface GroovyPagesUriService {
 
-	public static final String BEAN_ID = "groovyPagesUriService";
+    String BEAN_ID = "groovyPagesUriService";
 
-	public String getTemplateURI(String controllerName, String templateName);
+    String getTemplateURI(String controllerName, String templateName);
 
-	public String getDeployedViewURI(String controllerName, String viewName);
+    String getDeployedViewURI(String controllerName, String viewName);
 
-	public String getNoSuffixViewURI(GroovyObject controller, String viewName);
+    String getNoSuffixViewURI(GroovyObject controller, String viewName);
 
-	public String getNoSuffixViewURI(String controllerName, String viewName);
+    String getNoSuffixViewURI(String controllerName, String viewName);
 
-	public String getTemplateURI(GroovyObject controller, String templateName);
+    String getTemplateURI(GroovyObject controller, String templateName);
 
-	public void clear();
-
+    void clear();
 }

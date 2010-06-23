@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
+import java.security.AccessControlException;
+
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
@@ -22,6 +24,9 @@ import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
@@ -37,31 +42,29 @@ import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletContext;
-
 /**
  * @author graemerocher
- *
  */
 public class GrailsContextLoader extends ContextLoader {
 
-	public static final Log LOG = LogFactory.getLog(GrailsContextLoader.class);
+    public static final Log LOG = LogFactory.getLog(GrailsContextLoader.class);
     GrailsApplication application;
 
+    @Override
     protected WebApplicationContext createWebApplicationContext(ServletContext servletContext, ApplicationContext parent) throws BeansException {
         // disable annoying ehcache up-to-date check
         System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
         ExpandoMetaClass.enableGlobally();
         Metadata metadata = Metadata.getCurrent();
-        if(metadata!=null&&metadata.isWarDeployed()) {
+        if (metadata != null && metadata.isWarDeployed()) {
             Grape.setEnableAutoDownload(false);
             Grape.setEnableGrapes(false);
         }
 
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[GrailsContextLoader] Loading context. Creating parent application context");
+        }
 
-        if(LOG.isDebugEnabled()) {
-			LOG.debug("[GrailsContextLoader] Loading context. Creating parent application context");
-		}
         WebApplicationContext  ctx;
         try {
             ctx = super.createWebApplicationContext(servletContext, parent);
@@ -69,70 +72,73 @@ public class GrailsContextLoader extends ContextLoader {
             application = ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             GrailsUtil.deepSanitize(e);
-            if(Environment.isDevelopmentMode()) {
-				LOG.error("Error executing bootstraps: " + e.getMessage(), e);
-				// bail out early in order to show appropriate error
-            	System.exit(1);
-            	return null;
+            if (Environment.isDevelopmentMode()) {
+                LOG.error("Error executing bootstraps: " + e.getMessage(), e);
+                // bail out early in order to show appropriate error
+                System.exit(1);
+                return null;
             }
-            else {
-                if(e instanceof BeansException) throw (BeansException)e;
-                else {
-                    throw new BootstrapException("Error executing bootstraps", e);
-                }            	
-            }
+
+            if (e instanceof BeansException) throw (BeansException)e;
+
+            throw new BootstrapException("Error executing bootstraps", e);
         }
         return ctx;
     }
 
+    @Override
     public void closeWebApplicationContext(ServletContext servletContext) {
         // clean up in war mode, in run-app these references may be needed again
-        if(application!= null && application.isWarDeployed()) {
-            if(application!= null) {
-                ClassLoader classLoader = application.getClassLoader();
-                if(classLoader instanceof GroovyClassLoader) {
-	                MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-	                Class[] loadedClasses = ((GroovyClassLoader)classLoader).getLoadedClasses();
-	                for (Class loadedClass : loadedClasses) {
-	                    metaClassRegistry.removeMetaClass(loadedClass);
-	                }
-                }
-            }
-            GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
-            if(pluginManager!=null) {
-                try {
-                    pluginManager.shutdown();
-                } catch (Exception e) {
-                    GrailsUtil.sanitize(e);
-                    LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
-                }
-            }
-            WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-            ConfigurableApplicationContext parent = ctx!=null? (ConfigurableApplicationContext) ctx.getParent() : null;
-
-            super.closeWebApplicationContext(servletContext);
-
-            if(parent!= null) {
-                LOG.info("Destroying Spring parent WebApplicationContext " + parent.getDisplayName());
-                parent.close();
-            }
-
-            try {
-                Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            }
-            catch (java.security.AccessControlException e) {
-                // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
-            }
-
-            ApplicationHolder.setApplication(null);
-            ServletContextHolder.setServletContext(null);
-            PluginManagerHolder.setPluginManager(null);
-            ConfigurationHolder.setConfig(null);
-            ExpandoMetaClass.disableGlobally();
-            application = null;
+        if (application == null || !application.isWarDeployed()) {
+            return;
         }
 
+        if (application != null) {
+            ClassLoader classLoader = application.getClassLoader();
+            if (classLoader instanceof GroovyClassLoader) {
+                MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+                Class<?>[] loadedClasses = ((GroovyClassLoader)classLoader).getLoadedClasses();
+                for (Class<?> loadedClass : loadedClasses) {
+                    metaClassRegistry.removeMetaClass(loadedClass);
+                }
+            }
+        }
+
+        GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+        if (pluginManager != null) {
+            try {
+                pluginManager.shutdown();
+            }
+            catch (Exception e) {
+                GrailsUtil.sanitize(e);
+                LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
+            }
+        }
+        WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        ConfigurableApplicationContext parent = ctx != null ? (ConfigurableApplicationContext) ctx.getParent() : null;
+
+        super.closeWebApplicationContext(servletContext);
+
+        if (parent != null) {
+            LOG.info("Destroying Spring parent WebApplicationContext " + parent.getDisplayName());
+            parent.close();
+        }
+
+        try {
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+        }
+        catch (AccessControlException e) {
+            // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
+        }
+
+        ApplicationHolder.setApplication(null);
+        ServletContextHolder.setServletContext(null);
+        PluginManagerHolder.setPluginManager(null);
+        ConfigurationHolder.setConfig(null);
+        ExpandoMetaClass.disableGlobally();
+        application = null;
     }
 }

@@ -19,6 +19,7 @@ import grails.converters.JSON;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
@@ -37,21 +38,21 @@ public class InstanceMethodBasedMarshaller implements ObjectMarshaller<JSON> {
         MetaMethod method = getToJSONMethod(object);
         try {
             Object result = method.invoke(object, new Object[]{ converter });
-            if(result != null && !(result instanceof JSON) && !(result instanceof JSONWriter)) {
+            if (result != null && !(result instanceof JSON) && !(result instanceof JSONWriter)) {
                 converter.convertAnother(result);
             }
-        } catch(Throwable e) {
+        }
+        catch(Throwable e) {
             throw e instanceof ConverterException ? (ConverterException)e :
                 new ConverterException("Error invoking toJSON method of object with class " + object.getClass().getName(),e);
         }
     }
-    
+
     protected MetaMethod getToJSONMethod(Object object) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
-        if(mc != null) {
+        if (mc != null) {
             return mc.getMetaMethod("toJSON", new Object[] { JSON.class });
         }
         return null;
-
     }
 }

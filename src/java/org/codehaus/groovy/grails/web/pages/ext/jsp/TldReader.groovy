@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
 import org.xml.sax.helpers.DefaultHandler
@@ -24,18 +23,18 @@ import org.springframework.util.ClassUtils
  * A SAX parser implementation that reads the contents of a tag library definition (TLD) into two properties
  * called tags and listeners (for the tag listeners)
  */
-class TldReader extends DefaultHandler{
+class TldReader extends DefaultHandler {
 
     final Map tags = [:]
     final List listeners = []
 
-    StringBuffer buf = null
+    StringBuffer buf
 
     private tagName
     private className
 
     void startElement(String nsuri, String localName, String qName, Attributes attributes) {
-        if("name" == qName || "tagclass" == qName || "tag-class" == qName || "listener-class" == qName) {
+        if ("name" == qName || "tagclass" == qName || "tag-class" == qName || "listener-class" == qName) {
             buf = new StringBuffer()
         }
     }
@@ -45,27 +44,27 @@ class TldReader extends DefaultHandler{
     }
 
     void endElement(String nsuri, String localName, String qName) {
-        switch(qName) {
-
+        switch (qName) {
             case "name":
-                if(!tagName)
-                    tagName = buf.toString().trim(); buf = null
-            break
+                if (!tagName) {
+                    tagName = buf.toString().trim();
+                    buf = null
+                }
+                break
             case "tag":
                 Class tagClass = ClassUtils.forName(className)
                 tags[tagName] = tagClass
                 tagName = null
                 className = null
-            break
+                break
             case "listener-class":
                 Class listenerClass = ClassUtils.forName(buf.toString().trim())
                 listeners << listenerClass.newInstance()
-            break
+                break
             case ~/tag-{0,1}class/:
-                className = buf.toString().trim(); buf = null
+                className = buf.toString().trim();
+                buf = null
             break
         }
     }
-
-            
 }

@@ -15,43 +15,41 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
- * An immutable ConverterConfiguration which chains the lookup calls for ObjectMarshallers for performance reasons
+ * An immutable ConverterConfiguration which chains the lookup calls for ObjectMarshallers
+ * for performance reasons.
  *
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
- * 
+ *
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class ChainedConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
 
     private List<ObjectMarshaller<C>> marshallerList;
-
     private ChainedObjectMarshaller<C> root;
-
     private final String encoding;
-
     private final Converter.CircularReferenceBehaviour circularReferenceBehaviour;
-
     private final boolean prettyPrint;
-
-	private ProxyHandler proxyHandler;
+    private ProxyHandler proxyHandler;
 
     public ChainedConverterConfiguration(ConverterConfiguration<C> cfg) {
-    	this(cfg, new DefaultProxyHandler());
+        this(cfg, new DefaultProxyHandler());
     }
+
     public ChainedConverterConfiguration(ConverterConfiguration<C> cfg, ProxyHandler proxyHandler) {
-        this.marshallerList = cfg.getOrderedObjectMarshallers();
+        marshallerList = cfg.getOrderedObjectMarshallers();
         this.proxyHandler = proxyHandler;
 
         encoding = cfg.getEncoding();
@@ -61,7 +59,7 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         List<ObjectMarshaller<C>> oms = new ArrayList<ObjectMarshaller<C>>(marshallerList);
         Collections.reverse(oms);
         ChainedObjectMarshaller<C> prev = null;
-        for(ObjectMarshaller<C> om : oms) {
+        for (ObjectMarshaller<C> om : oms) {
             prev = new ChainedObjectMarshaller<C>(om, prev);
         }
         root = prev;
@@ -87,10 +85,10 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         return marshallerList;
     }
 
+    @SuppressWarnings("hiding")
     public class ChainedObjectMarshaller<C extends Converter> implements ObjectMarshaller<C> {
 
         private ObjectMarshaller<C> om;
-
         private ChainedObjectMarshaller<C> next;
 
         public ChainedObjectMarshaller(ObjectMarshaller<C> om, ChainedObjectMarshaller<C> next) {
@@ -99,11 +97,11 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         }
 
         public ObjectMarshaller<C> findMarhallerFor(Object o) {
-            if(supports(o)){
+            if (supports(o)){
                 return this.om;
-            } else {
-                return next != null ? next.findMarhallerFor(o) : null;
             }
+
+            return next != null ? next.findMarhallerFor(o) : null;
         }
 
         public boolean supports(Object object) {
@@ -113,10 +111,9 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         public void marshalObject(Object object, C converter) throws ConverterException {
             om.marshalObject(object, converter);
         }
-
     }
 
-	public ProxyHandler getProxyHandler() {
-		return this.proxyHandler;
-	}
+    public ProxyHandler getProxyHandler() {
+        return this.proxyHandler;
+    }
 }

@@ -14,25 +14,22 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
+import javax.servlet.ServletContext
 import javax.servlet.jsp.PageContext as PC
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.web.context.request.RequestContextHolder
+
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GAA
-import javax.servlet.jsp.PageContext
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import javax.servlet.ServletContext
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
- * Obtains a reference to the GroovyPagesPageContext class
+ * Obtains a reference to the GroovyPagesPageContext class.
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 10, 2008
  */
-@SuppressWarnings("unused")
 class PageContextFactory {
 
     static Class pageContextClass
@@ -40,7 +37,7 @@ class PageContextFactory {
     static {
         def classLoader = Thread.currentThread().getContextClassLoader()
 
-        if(PageContext.metaClass.getMetaMethod('getElContext',[] as Class[])) {
+        if (PC.metaClass.getMetaMethod('getElContext', [] as Class[])) {
             pageContextClass = classLoader.loadClass('org.codehaus.groovy.grails.web.pages.ext.jsp.GrooovyPagesPageContext21')
         }
         else {
@@ -48,32 +45,29 @@ class PageContextFactory {
         }
     }
 
-
-    public static GroovyPagesPageContext getCurrent() {
+    static GroovyPagesPageContext getCurrent() {
         GrailsWebRequest webRequest = RequestContextHolder.currentRequestAttributes()
 
         def request = webRequest.getCurrentRequest()
 
-        def pageContext = request.getAttribute(PageContext.PAGECONTEXT)
-        if(pageContext instanceof GroovyPagesPageContext) return pageContext
-        else {
-            ServletContext servletContext = webRequest.getServletContext()
-            def gspServlet = servletContext.getAttribute(GroovyPagesServlet.SERVLET_INSTANCE)
-            if(!gspServlet) {
-                gspServlet = new GroovyPagesServlet()
-                servletContext.setAttribute GroovyPagesServlet.SERVLET_INSTANCE, gspServlet
-            }
-            def pageScope = request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE)
-            if(!pageScope) {
-                pageScope = new GroovyPageBinding()
-                request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
-            }
+        def pageContext = request.getAttribute(PC.PAGECONTEXT)
+        if (pageContext instanceof GroovyPagesPageContext) return pageContext
 
-            pageContext = pageContextClass.newInstance(gspServlet, pageScope)
-            request.setAttribute(PageContext.PAGECONTEXT, pageContext)
-
+        ServletContext servletContext = webRequest.getServletContext()
+        def gspServlet = servletContext.getAttribute(GroovyPagesServlet.SERVLET_INSTANCE)
+        if (!gspServlet) {
+            gspServlet = new GroovyPagesServlet()
+            servletContext.setAttribute GroovyPagesServlet.SERVLET_INSTANCE, gspServlet
         }
-                
+        def pageScope = request.getAttribute(GAA.PAGE_SCOPE)
+        if (!pageScope) {
+            pageScope = new GroovyPageBinding()
+            request.setAttribute(GAA.PAGE_SCOPE, pageScope)
+        }
+
+        pageContext = pageContextClass.newInstance(gspServlet, pageScope)
+        request.setAttribute(PC.PAGECONTEXT, pageContext)
+
         return pageContext
     }
 }

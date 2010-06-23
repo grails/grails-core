@@ -16,19 +16,20 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 import java.util.Collection;
 import java.util.Set;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class CollectionMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller {
-
 
     public boolean supports(Object object) {
         return object instanceof Collection;
@@ -36,7 +37,7 @@ public class CollectionMarshaller implements ObjectMarshaller<XML>, NameAwareMar
 
     public void marshalObject(Object object, XML xml) throws ConverterException {
         Collection col = (Collection) object;
-        for(Object o : col) {
+        for (Object o : col) {
             xml.startNode(xml.getElementName(o));
             xml.convertAnother(o);
             xml.end();

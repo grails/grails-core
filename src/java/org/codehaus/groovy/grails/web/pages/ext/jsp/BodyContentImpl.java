@@ -14,23 +14,23 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.BodyContent;
 
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
-import java.io.*;
-
 /**
- * An implementation of BodyContent that uses an internal CharArrayWriter
+ * Uses an internal CharArrayWriter.
  *
  * @author Graeme Rocher
  * @since 1.1
- *
- *        <p/>
- *        Created: May 1, 2008
  */
- class BodyContentImpl extends BodyContent {
+class BodyContentImpl extends BodyContent {
+
     static final char[] LINE_BREAK = System.getProperty("line.separator").toCharArray();
 
     private StreamCharBuffer streamBuffer;
@@ -42,173 +42,183 @@ import java.io.*;
     }
 
     void initBuffer() {
-    	streamBuffer = new StreamCharBuffer();
-    	streamBufferWriter = streamBuffer.getWriter();
+        streamBuffer = new StreamCharBuffer();
+        streamBufferWriter = streamBuffer.getWriter();
     }
 
+    @Override
     public void flush() throws IOException {
-        if(streamBuffer == null) {
+        if (streamBuffer == null) {
             getEnclosingWriter().flush();
         }
     }
 
+    @Override
     public void clear() throws IOException {
-    	clearBuffer();
+        clearBuffer();
     }
 
+    @Override
     public void clearBuffer() throws IOException {
-        if(streamBuffer != null) {
-        	initBuffer();
+        if (streamBuffer != null) {
+            initBuffer();
         }
         else {
             throw new IOException("Can't clear");
         }
     }
 
+    @Override
     public int getRemaining() {
         return Integer.MAX_VALUE;
     }
 
+    @Override
     public void newLine() throws IOException {
         write(LINE_BREAK);
     }
 
+    @Override
     public void close() throws IOException {
+        // do nothing
     }
 
-    public void print(boolean arg0) throws IOException {
-        write(arg0 ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+    @Override
+    public void print(boolean b) throws IOException {
+        write(b ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
     }
 
-    public void print(char arg0) throws IOException
-    {
-        write(arg0);
+    @Override
+    public void print(char c) throws IOException {
+        write(c);
     }
 
-    public void print(char[] arg0) throws IOException
-    {
-        write(arg0);
+    @Override
+    public void print(char[] chars) throws IOException {
+        write(chars);
     }
 
-    public void print(double arg0) throws IOException
-    {
-        write(Double.toString(arg0));
+    @Override
+    public void print(double d) throws IOException {
+        write(Double.toString(d));
     }
 
-    public void print(float arg0) throws IOException
-    {
-        write(Float.toString(arg0));
+    @Override
+    public void print(float f) throws IOException {
+        write(Float.toString(f));
     }
 
-    public void print(int arg0) throws IOException
-    {
-        write(Integer.toString(arg0));
+    @Override
+    public void print(int i) throws IOException {
+        write(Integer.toString(i));
     }
 
-    public void print(long arg0) throws IOException
-    {
-        write(Long.toString(arg0));
+    @Override
+    public void print(long l) throws IOException {
+        write(Long.toString(l));
     }
 
-    public void print(Object arg0) throws IOException
-    {
-        write(arg0 == null ? "null" : arg0.toString());
+    @Override
+    public void print(Object o) throws IOException {
+        write(o == null ? "null" : o.toString());
     }
 
-    public void print(String arg0) throws IOException
-    {
-        write(arg0);
+    @Override
+    public void print(String s) throws IOException {
+        write(s);
     }
 
-    public void println() throws IOException
-    {
+    @Override
+    public void println() throws IOException {
         newLine();
     }
 
-    public void println(boolean arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(boolean b) throws IOException {
+        print(b);
         newLine();
     }
 
-    public void println(char arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(char c) throws IOException {
+        print(c);
         newLine();
     }
 
-    public void println(char[] arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(char[] chars) throws IOException {
+        print(chars);
         newLine();
     }
 
-    public void println(double arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(double d) throws IOException {
+        print(d);
         newLine();
     }
 
-    public void println(float arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(float f) throws IOException {
+        print(f);
         newLine();
     }
 
-    public void println(int arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(int i) throws IOException {
+        print(i);
         newLine();
     }
 
-    public void println(long arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(long l) throws IOException {
+        print(l);
         newLine();
     }
 
-    public void println(Object arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(Object o) throws IOException {
+        print(o);
         newLine();
     }
 
-    public void println(String arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(String s) throws IOException {
+        print(s);
         newLine();
     }
 
-    public void write(int c) throws IOException
-    {
-        if(streamBufferWriter != null) {
-        	streamBufferWriter.write(c);
+    @Override
+    public void write(int c) throws IOException {
+        if (streamBufferWriter != null) {
+            streamBufferWriter.write(c);
         }
         else {
             getEnclosingWriter().write(c);
         }
     }
 
-    public void write(char[] cbuf, int off, int len) throws IOException
-    {
-        if(streamBufferWriter != null) {
-        	streamBufferWriter.write(cbuf, off, len);
+    @Override
+    public void write(char[] cbuf, int off, int len) throws IOException {
+        if (streamBufferWriter != null) {
+            streamBufferWriter.write(cbuf, off, len);
         }
         else {
             getEnclosingWriter().write(cbuf, off, len);
         }
     }
 
+    @Override
     public String getString() {
         return streamBuffer.toString();
     }
 
+    @Override
     public Reader getReader() {
         return streamBuffer.getReader();
     }
 
+    @Override
     public void writeOut(Writer out) throws IOException {
         streamBuffer.writeTo(out);
     }
-
 }

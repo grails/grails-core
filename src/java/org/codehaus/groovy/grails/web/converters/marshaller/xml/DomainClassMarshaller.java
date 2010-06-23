@@ -45,7 +45,7 @@ import org.springframework.beans.BeanWrapperImpl;
 public class DomainClassMarshaller implements ObjectMarshaller<XML> {
 
     private final boolean includeVersion;
-	private ProxyHandler proxyHandler;
+    private ProxyHandler proxyHandler;
 
     public DomainClassMarshaller() {
         this.includeVersion = false;
@@ -54,17 +54,17 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
     public DomainClassMarshaller(boolean includeVersion) {
         this.includeVersion = includeVersion;
     }
-    
+
     public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
         this(includeVersion);
         this.proxyHandler = proxyHandler;
     }
-    
 
     public boolean supports(Object object) {
         return ConverterUtil.isDomainClass(object.getClass());
     }
 
+    @SuppressWarnings("unchecked")
     public void marshalObject(Object value, XML xml) throws ConverterException {
         Class clazz = value.getClass();
         GrailsDomainClass domainClass = ConverterUtil.getDomainClass(clazz.getName());
@@ -75,7 +75,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
 
         if (idValue != null) xml.attribute("id", String.valueOf(idValue));
 
-        if(includeVersion) {
+        if (includeVersion) {
             Object versionValue = beanWrapper.getPropertyValue(domainClass.getVersion().getName());
             xml.attribute("version", String.valueOf(versionValue));
         }
@@ -88,38 +88,45 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
                 // Write non-relation property
                 Object val = beanWrapper.getPropertyValue(property.getName());
                 xml.convertAnother(val);
-            } else {
+            }
+            else {
                 Object referenceObject = beanWrapper.getPropertyValue(property.getName());
                 if (isRenderDomainClassRelations()) {
-                    if (referenceObject == null) {
-                    } else {
-                    	referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
+                    if (referenceObject != null) {
+                        referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
                         if (referenceObject instanceof SortedMap) {
                             referenceObject = new TreeMap((SortedMap) referenceObject);
-                        } else if (referenceObject instanceof SortedSet) {
+                        }
+                        else if (referenceObject instanceof SortedSet) {
                             referenceObject = new TreeSet((SortedSet) referenceObject);
-                        } else if (referenceObject instanceof Set) {
+                        }
+                        else if (referenceObject instanceof Set) {
                             referenceObject = new HashSet((Set) referenceObject);
-                        } else if (referenceObject instanceof Map) {
+                        }
+                        else if (referenceObject instanceof Map) {
                             referenceObject = new HashMap((Map) referenceObject);
-                        } else if(referenceObject instanceof Collection) {
+                        }
+                        else if (referenceObject instanceof Collection) {
                             referenceObject = new ArrayList((Collection) referenceObject);
                         }
                         xml.convertAnother(referenceObject);
                     }
-                } else {
+                }
+                else {
                     if (referenceObject != null) {
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
                         // Embedded are now always fully rendered
-                        if(referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
+                        if (referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
                             xml.convertAnother(referenceObject);
-                        } else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
+                        }
+                        else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
                             asShortObject(referenceObject, xml, referencedDomainClass.getIdentifier(), referencedDomainClass);
-                        } else {
+                        }
+                        else {
                             GrailsDomainClassProperty referencedIdProperty = referencedDomainClass.getIdentifier();
                             @SuppressWarnings("unused")
-							String refPropertyName = referencedDomainClass.getPropertyName();
+                            String refPropertyName = referencedDomainClass.getPropertyName();
                             if (referenceObject instanceof Collection) {
                                 Collection o = (Collection) referenceObject;
                                 for (Object el : o) {
@@ -127,8 +134,8 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
                                     asShortObject(el, xml, referencedIdProperty, referencedDomainClass);
                                     xml.end();
                                 }
-
-                            } else if (referenceObject instanceof Map) {
+                            }
+                            else if (referenceObject instanceof Map) {
                                 Map<Object, Object> map = (Map<Object, Object>) referenceObject;
                                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                                     String key = String.valueOf(entry.getKey());
@@ -146,7 +153,8 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
         }
     }
 
-    protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty, GrailsDomainClass referencedDomainClass) throws ConverterException {
+    protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty,
+            @SuppressWarnings("unused") GrailsDomainClass referencedDomainClass) throws ConverterException {
         Object idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
         xml.attribute("id",String.valueOf(idValue));
     }

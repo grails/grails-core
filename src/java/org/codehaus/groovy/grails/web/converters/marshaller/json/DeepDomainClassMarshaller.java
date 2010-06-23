@@ -26,14 +26,13 @@ public class DeepDomainClassMarshaller extends DomainClassMarshaller {
     public DeepDomainClassMarshaller(boolean includeVersion) {
         super(includeVersion);
     }
-    
+
     public DeepDomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
         super(includeVersion, proxyHandler);
     }
-    
 
+    @Override
     protected boolean isRenderDomainClassRelations() {
         return true;
     }
-    
 }

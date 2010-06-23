@@ -41,8 +41,7 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
         JSONWriter writer = json.getWriter();
         try {
             writer.object();
-            PropertyDescriptor[] properties = BeanUtils.getPropertyDescriptors(o.getClass());
-            for (PropertyDescriptor property : properties) {
+            for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
                 String name = property.getName();
                 Method readMethod = property.getReadMethod();
                 if (readMethod != null) {
@@ -51,8 +50,7 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
                     json.convertAnother(value);
                 }
             }
-            Field[] fields = o.getClass().getDeclaredFields();
-            for (Field field : fields) {
+            for (Field field : o.getClass().getDeclaredFields()) {
                 int modifiers = field.getModifiers();
                 if (field.isAccessible() && Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
                     writer.key(field.getName());
@@ -60,11 +58,12 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
                 }
             }
             writer.endObject();
-        } catch (ConverterException ce) {
+        }
+        catch (ConverterException ce) {
             throw ce;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ConverterException("Error converting Bean with class " + o.getClass().getName(), e);
         }
-
     }
 }

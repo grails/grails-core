@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 /**
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
- * 
+ *
  * @since 1.1
  */
 public class DeepDomainClassMarshaller extends DomainClassMarshaller {
@@ -33,13 +33,12 @@ public class DeepDomainClassMarshaller extends DomainClassMarshaller {
         super();
     }
 
-    public DeepDomainClassMarshaller(boolean includeDomainVersion,
-			ProxyHandler proxyHandler) {
-		super(includeDomainVersion,proxyHandler);
-	}
-
-	protected boolean isRenderDomainClassRelations() {
-        return true;
+    public DeepDomainClassMarshaller(boolean includeDomainVersion, ProxyHandler proxyHandler) {
+        super(includeDomainVersion,proxyHandler);
     }
 
+    @Override
+    protected boolean isRenderDomainClassRelations() {
+        return true;
+    }
 }

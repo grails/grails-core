@@ -15,15 +15,15 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp;
 
+import javax.servlet.ServletContext;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 
-import javax.servlet.ServletContext;
-
 public class TagLibFactory implements ServletContextAware, InitializingBean {
-    private ServletContext servletContext;
 
+    private ServletContext servletContext;
 
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
@@ -31,7 +31,5 @@ public class TagLibFactory implements ServletContextAware, InitializingBean {
 
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(servletContext, "Property [servletContext] must be set!");
-
-
     }
 }

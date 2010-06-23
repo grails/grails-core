@@ -16,11 +16,12 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
+
+import java.lang.reflect.Array;
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
-
-import java.lang.reflect.Array;
 
 /**
  * @author Siegfried Puchbauer
@@ -38,7 +39,6 @@ public class ArrayMarshaller implements ObjectMarshaller<JSON> {
         writer.array();
         for (int i = 0; i < len; i++) {
             converter.convertAnother(Array.get(o, i));
-
         }
         writer.endArray();
     }

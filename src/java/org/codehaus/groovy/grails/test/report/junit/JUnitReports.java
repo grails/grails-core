@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.report.junit;
 
-import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
+import java.io.OutputStream;
+
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitResultFormatter;
-
-import java.io.*;
-
-import junit.framework.*;
+import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 
 /**
  * Simply propagates to the underlying reports.
  */
 public class JUnitReports implements JUnitResultFormatter {
-    
+
     protected JUnitResultFormatter[] reports;
-    
+
     public JUnitReports(JUnitResultFormatter[] reports) {
         this.reports = reports;
     }
-    
+
     public void setOutput(OutputStream out) {
         throw new IllegalStateException("This should not be reached");
     }

@@ -14,56 +14,53 @@
  */
 package org.codehaus.groovy.grails.web.converters
 
+import grails.converters.JSON
+
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.json.JSONObject
-import grails.converters.JSON
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
- * Automatically parses JSON into the params object
+ * Automatically parses JSON into the params object.
  *
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Nov 27, 2007
  */
 class JSONParsingParameterCreationListener extends AbstractParsingParameterCreationListener {
 
     static final LOG = LogFactory.getLog(JSONParsingParameterCreationListener)
 
-    public void paramsCreated(GrailsParameterMap params) {
+    void paramsCreated(GrailsParameterMap params) {
         def request = params.getRequest()
+        if (request.format != 'json') {
+            return
+        }
 
-        if(request.format == 'json') {
-            try {
-                JSONObject map = JSON.parse(request)
-                def flattenedMap = map
-                if(map['class']) {
-                    params[GrailsClassUtils.getPropertyName(map['class'])] = map
+        try {
+            JSONObject map = JSON.parse(request)
+            def flattenedMap = map
+            if (map['class']) {
+                params[GrailsClassUtils.getPropertyName(map['class'])] = map
+            }
+            else if (map) {
+                for (entry in map) {
+                    params[entry.key] = entry.value
+                }
+                flattenedMap = params
+            }
 
+            def target = [:]
+            createFlattenedKeys(map, map, target)
+            for (entry in target) {
+                if (!map[entry.key]) {
+                    flattenedMap[entry.key] = entry.value
                 }
-                else if(map) {
-                    for(entry in map) {
-                        params[entry.key] = entry.value
-                    }
-                    flattenedMap = params
-                }
-
-                def target = [:]
-                createFlattenedKeys(map, map, target)
-                for(entry in target) {
-                    if(!map[entry.key]) {
-                        flattenedMap[entry.key] = entry.value
-                    }
-                }
-                
-            } catch (Exception e) {
-                LOG.error "Error parsing incoming JSON request: ${e.message}", e
             }
         }
+        catch (Exception e) {
+            LOG.error "Error parsing incoming JSON request: ${e.message}", e
+        }
     }
-
-
 }

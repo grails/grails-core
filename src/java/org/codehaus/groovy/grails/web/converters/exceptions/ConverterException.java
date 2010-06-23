@@ -15,14 +15,11 @@
 package org.codehaus.groovy.grails.web.converters.exceptions;
 
 /**
- * Thrown when an error occurs originating from a Converter instance
+ * Thrown when an error occurs originating from a Converter instance.
  *
  * @author Siegfried Puchbauer
  *
  * @since 0.6
- *        <p/>
- *        Created: Aug 3, 2007
- *        Time: 6:08:56 PM
  */
 public class ConverterException extends RuntimeException {
 
@@ -41,6 +38,6 @@ public class ConverterException extends RuntimeException {
     }
 
     public ConverterException() {
+        // default
     }
-
 }

@@ -17,6 +17,10 @@ package org.codehaus.groovy.grails.web.util;
 import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.util.ConfigObject;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.LogManager;
@@ -28,16 +32,11 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 /**
- * A listener that will configure Log4j in WAR deployment using Grails Log4j DSL
+ * Configures Log4j in WAR deployment using Grails Log4j DSL.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Sep 26, 2008
  */
 public class Log4jConfigListener implements ServletContextListener {
 
@@ -46,7 +45,7 @@ public class Log4jConfigListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent event) {
         try {
             ConfigObject co = ConfigurationHolder.getConfig();
-            if(co == null) {
+            if (co == null) {
                 // in this case we're running inside a WAR deployed environment
                 // create empty app to provide metadata
                 GrailsApplication application = new DefaultGrailsApplication();
@@ -59,7 +58,7 @@ public class Log4jConfigListener implements ServletContextListener {
                 }
 
                 Object o = co.get("log4j");
-                if(o instanceof Closure) {
+                if (o instanceof Closure) {
                     new Log4jConfig().configure((Closure)o);
                 }
                 else {
@@ -73,7 +72,8 @@ public class Log4jConfigListener implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        if(Environment.getCurrent() != Environment.DEVELOPMENT)
+        if (Environment.getCurrent() != Environment.DEVELOPMENT) {
             LogManager.shutdown();
+        }
     }
 }

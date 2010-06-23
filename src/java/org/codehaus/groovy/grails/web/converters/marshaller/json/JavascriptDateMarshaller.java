@@ -16,11 +16,12 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.json.JSONException;
 
 import java.util.Date;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.codehaus.groovy.grails.web.json.JSONException;
 
 /**
  * @author Siegfried Puchbauer
@@ -36,7 +37,8 @@ public class JavascriptDateMarshaller implements ObjectMarshaller<JSON> {
     public void marshalObject(Object object, JSON converter) throws ConverterException {
         try {
             converter.getWriter().value(object);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             throw new ConverterException(e);
         }
     }

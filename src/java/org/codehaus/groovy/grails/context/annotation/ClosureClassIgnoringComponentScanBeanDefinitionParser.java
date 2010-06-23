@@ -17,6 +17,17 @@ package org.codehaus.groovy.grails.context.annotation;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,27 +46,23 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ReflectionUtils;
 import org.w3c.dom.Element;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.*;
-
 /**
  * Extends Spring's default &lt;context:component-scan/&gt; element to ignore Groovy's
- * generated closure classes
+ * generated closure classes.
  *
  * @author Graeme Rocher
  * @author Lari Hotari
  * @since 1.2
  */
 public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends ComponentScanBeanDefinitionParser{
-	private static final Log LOG = LogFactory.getLog(ClosureClassIgnoringComponentScanBeanDefinitionParser.class);
-	
+
+    private static final Log LOG = LogFactory.getLog(ClosureClassIgnoringComponentScanBeanDefinitionParser.class);
+
     @Override
     protected ClassPathBeanDefinitionScanner createScanner(XmlReaderContext readerContext, boolean useDefaultFilters) {
         final ClassPathBeanDefinitionScanner scanner = super.createScanner(readerContext, useDefaultFilters);
         GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
-        if(pluginManager!=null) {
+        if (pluginManager != null) {
             List<TypeFilter> typeFilters = pluginManager.getTypeFilters();
             for (TypeFilter typeFilter : typeFilters) {
                 scanner.addIncludeFilter(typeFilter);
@@ -65,85 +72,86 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
     }
 
     /**
-     * This ClassLoader is used to restrict getResources & getResource methods only to the 
+     * This ClassLoader is used to restrict getResources & getResource methods only to the
      * parent ClassLoader. getResources/getResource usually search all parent level classloaders.
      * (look at details in source code of java.lang.ClassLoader.getResources)
-     * 
-     * @author Lari Hotari
      *
+     * @author Lari Hotari
      */
     private static final class ParentOnlyGetResourcesClassLoader extends ClassLoader {
-    	private final Method findResourcesMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResources", String.class);
-    	private final Method findResourceMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResource", String.class);
-    	
-    	private ClassLoader rootLoader;
-    	
-    	public ParentOnlyGetResourcesClassLoader(ClassLoader parent) {
-    		super(parent);
-    		this.rootLoader = DefaultGroovyMethods.getRootLoader(parent);
+        private final Method findResourcesMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResources", String.class);
+        private final Method findResourceMethod=ReflectionUtils.findMethod(ClassLoader.class, "findResource", String.class);
+
+        private ClassLoader rootLoader;
+
+        public ParentOnlyGetResourcesClassLoader(ClassLoader parent) {
+            super(parent);
+            this.rootLoader = DefaultGroovyMethods.getRootLoader(parent);
             ReflectionUtils.makeAccessible(findResourceMethod);
             ReflectionUtils.makeAccessible(findResourcesMethod);
-    	}
+        }
 
-    	@Override
-    	public Enumeration<URL> getResources(String name) throws IOException {
-    		if(rootLoader != null) {
-    			// search all parents up to rootLoader
-    			Collection<URL> urls=new LinkedHashSet<URL>();
-    			findResourcesRecursive(getParent(), name, urls);
-   			    return Collections.enumeration(urls);
-    		} else {
-    			return invokeFindResources(getParent(), name);
-    		}
-    	}
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            if (rootLoader != null) {
+                // search all parents up to rootLoader
+                Collection<URL> urls=new LinkedHashSet<URL>();
+                findResourcesRecursive(getParent(), name, urls);
+                return Collections.enumeration(urls);
+            }
 
-		private void findResourcesRecursive(ClassLoader parent, String name, Collection<URL> urls) {
-			Enumeration<URL> result=invokeFindResources(parent, name);
-			while(result.hasMoreElements()) {
-				urls.add(result.nextElement());
-			}
-			if(parent != rootLoader) {
-				findResourcesRecursive(parent.getParent(), name, urls);
-			}
-		}
+            return invokeFindResources(getParent(), name);
+        }
 
-		@SuppressWarnings("unchecked")
-		private Enumeration<URL> invokeFindResources(ClassLoader parent, String name) {
-			return (Enumeration<URL>)ReflectionUtils.invokeMethod(findResourcesMethod, parent, name);
-		}
+        private void findResourcesRecursive(ClassLoader parent, String name, Collection<URL> urls) {
+            Enumeration<URL> result = invokeFindResources(parent, name);
+            while (result.hasMoreElements()) {
+                urls.add(result.nextElement());
+            }
+            if (parent != rootLoader) {
+                findResourcesRecursive(parent.getParent(), name, urls);
+            }
+        }
 
-		@Override
-		public URL getResource(String name) {
-    		if(rootLoader != null) {
-    			return findResourceRecursive(getParent(), name);
-    		} else {
-    			return  invokeFindResource(getParent(), name);
-    		}
-		}
+        @SuppressWarnings("unchecked")
+        private Enumeration<URL> invokeFindResources(ClassLoader parent, String name) {
+            return (Enumeration<URL>)ReflectionUtils.invokeMethod(findResourcesMethod, parent, name);
+        }
 
-		private URL findResourceRecursive(ClassLoader parent, String name) {
-			URL url = invokeFindResource(parent, name);
-			if(url != null) {
-				return url;
-			} else if(parent != rootLoader) {
-				return findResourceRecursive(parent.getParent(), name);
-			} else {
-				return null;
-			}
-		}
-		
-		private URL invokeFindResource(ClassLoader parent, String name) {
-			return (URL)ReflectionUtils.invokeMethod(findResourceMethod, parent, name);
-		}
+        @Override
+        public URL getResource(String name) {
+            if (rootLoader != null) {
+                return findResourceRecursive(getParent(), name);
+            }
+
+            return  invokeFindResource(getParent(), name);
+        }
+
+        private URL findResourceRecursive(ClassLoader parent, String name) {
+            URL url = invokeFindResource(parent, name);
+            if (url != null) {
+                return url;
+            }
+
+            if (parent != rootLoader) {
+                return findResourceRecursive(parent.getParent(), name);
+            }
+
+            return null;
+        }
+
+        private URL invokeFindResource(ClassLoader parent, String name) {
+            return (URL)ReflectionUtils.invokeMethod(findResourceMethod, parent, name);
+        }
     }
-    
+
     @Override
     protected ClassPathBeanDefinitionScanner configureScanner(ParserContext parserContext, Element element) {
         final ClassPathBeanDefinitionScanner scanner = super.configureScanner(parserContext, element);
 
         final ResourceLoader originalResourceLoader = parserContext.getReaderContext().getResourceLoader();
-        if(LOG.isDebugEnabled()) {
-        	LOG.debug("Scanning only this classloader:" + originalResourceLoader.getClassLoader());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Scanning only this classloader:" + originalResourceLoader.getClassLoader());
         }
 
         ResourceLoader parentOnlyResourceLoader;
@@ -170,14 +178,13 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
             protected Resource[] findAllClassPathResources(String location) throws IOException {
                 Set<Resource> result = new LinkedHashSet<Resource>(16);
 
-
                 @SuppressWarnings("unused")
-				URL classesDir = null;
+                URL classesDir = null;
 
                 final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
-                if(!warDeployed) {
+                if (!warDeployed) {
                     BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-                    if(buildSettings != null && buildSettings.getClassesDir()!=null) {
+                    if (buildSettings != null && buildSettings.getClassesDir()!=null) {
                         classesDir = buildSettings.getClassesDir().toURI().toURL();
                     }
                 }
@@ -190,31 +197,30 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                 Enumeration<URL> resourceUrls = getClassLoader().getResources(path);
                 while (resourceUrls.hasMoreElements()) {
                     URL url = resourceUrls.nextElement();
-                    if(LOG.isDebugEnabled()) {
-                    	LOG.debug("Scanning URL " + url.toExternalForm() + " while searching for '" + location + "'");
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Scanning URL " + url.toExternalForm() + " while searching for '" + location + "'");
                     }
                     /*
-                    if(!warDeployed && classesDir!= null && url.equals(classesDir)) {
+                    if (!warDeployed && classesDir!= null && url.equals(classesDir)) {
                         result.add(convertClassLoaderURL(url));
                     }
-                    else if(warDeployed){
+                    else if (warDeployed){
                         result.add(convertClassLoaderURL(url));
                     }
                     */
                     result.add(convertClassLoaderURL(url));
-
-                }                
+                }
                 return result.toArray(new Resource[result.size()]);
             }
         };
         resourceResolver.setPathMatcher(new AntPathMatcher(){
             @Override
             public boolean match(String pattern, String path) {
-                if(path.endsWith(".class")) {
+                if (path.endsWith(".class")) {
                     String filename = FilenameUtils.getBaseName(path);
-                    if(filename.indexOf("$")>-1) return false;
+                    if (filename.indexOf("$")>-1) return false;
                 }
-                return super.match(pattern, path);    
+                return super.match(pattern, path);
             }
         });
         scanner.setResourceLoader(resourceResolver);

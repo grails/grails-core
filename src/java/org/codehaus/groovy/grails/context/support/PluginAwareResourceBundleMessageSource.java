@@ -18,6 +18,15 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.Metadata;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -32,19 +41,14 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * A ReloadableResourceBundleMessageSource that is capable of loading message sources from plugins
+ * A ReloadableResourceBundleMessageSource that is capable of loading message sources from plugins.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Feb 6, 2009
  */
 public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBundleMessageSource implements GrailsApplicationAware, PluginManagerAware, InitializingBean{
+
     private static final String WEB_INF_PLUGINS_PATH = "/WEB-INF/plugins/";
     protected GrailsApplication application;
     protected GrailsPluginManager pluginManager;
@@ -53,11 +57,6 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private PathMatchingResourcePatternResolver resourceResolver;
     private Map<Locale, PropertiesHolder> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, PropertiesHolder>();
     private int pluginCacheMillis = -1;
-
-    public PluginAwareResourceBundleMessageSource() {
-        super();
-
-    }
 
     public List<String> getPluginBaseNames() {
         return pluginBaseNames;
@@ -68,7 +67,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.application = grailsApplication;
+        application = grailsApplication;
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
@@ -76,7 +75,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     }
 
     public void afterPropertiesSet() throws Exception {
-        if(pluginManager != null && localResourceLoader != null) {
+        if (pluginManager != null && localResourceLoader != null) {
             GrailsPlugin[] plugins = pluginManager.getAllPlugins();
             for (GrailsPlugin plugin : plugins) {
                 Resource[] pluginBundles;
@@ -88,80 +87,74 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                     baseName = StringUtils.substringBefore(baseName,"_");
                     pluginBaseNames.add(WEB_INF_PLUGINS_PATH.substring(1) + pluginName + "/grails-app/i18n/" + baseName);
                 }
-
             }
         }
     }
 
     protected Resource[] getPluginBundles(String pluginName) {
-        Resource[] pluginBundles;
         try {
-            pluginBundles = resourceResolver.getResources(WEB_INF_PLUGINS_PATH + pluginName + "/grails-app/i18n/*.properties");
+            return resourceResolver.getResources(WEB_INF_PLUGINS_PATH + pluginName + "/grails-app/i18n/*.properties");
         }
         catch (Exception e) {
-            pluginBundles = new Resource[0];
+            return new Resource[0];
         }
-        return pluginBundles;
     }
 
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {
-        String msg =  super.resolveCodeWithoutArguments(code, locale);
+        String msg = super.resolveCodeWithoutArguments(code, locale);
 
-        if(msg == null) {
+        if (msg == null) {
             return resolveCodeWithoutArgumentsFromPlugins(code, locale);
         }
         return msg;
     }
 
-
     @Override
     protected MessageFormat resolveCode(String code, Locale locale) {
-        MessageFormat mf =  super.resolveCode(code, locale);
+        MessageFormat mf = super.resolveCode(code, locale);
 
-        if(mf == null) {
+        if (mf == null) {
             return resolveCodeFromPlugins(code, locale);
         }
         return mf;
     }
 
-
-	/**
-	 * Get a PropertiesHolder that contains the actually visible properties
-	 * for a Locale, after merging all specified resource bundles.
-	 * Either fetches the holder from the cache or freshly loads it.
-	 * <p>Only used when caching resource bundle contents forever, i.e.
-	 * with cacheSeconds < 0. Therefore, merged properties are always
-	 * cached forever.
-	 */
-	protected PropertiesHolder getMergedPluginProperties(Locale locale) {
-        PropertiesHolder mergedHolder = this.cachedMergedPluginProperties.get(locale);
+    /**
+     * Get a PropertiesHolder that contains the actually visible properties
+     * for a Locale, after merging all specified resource bundles.
+     * Either fetches the holder from the cache or freshly loads it.
+     * <p>Only used when caching resource bundle contents forever, i.e.
+     * with cacheSeconds < 0. Therefore, merged properties are always
+     * cached forever.
+     */
+    protected PropertiesHolder getMergedPluginProperties(Locale locale) {
+        PropertiesHolder mergedHolder = cachedMergedPluginProperties.get(locale);
         if (mergedHolder != null) {
             return mergedHolder;
         }
+
         Properties mergedProps = new Properties();
         mergedHolder = new PropertiesHolder(mergedProps, -1);
         for (String basename : pluginBaseNames) {
-            List filenames = calculateAllFilenames(basename, locale);
+            List<String> filenames = calculateAllFilenames(basename, locale);
             for (int j = filenames.size() - 1; j >= 0; j--) {
-                String filename = (String) filenames.get(j);
+                String filename = filenames.get(j);
                 PropertiesHolder propHolder = getProperties(filename);
                 if (propHolder.getProperties() != null) {
                     mergedProps.putAll(propHolder.getProperties());
                 }
             }
         }
-        this.cachedMergedPluginProperties.put(locale, mergedHolder);
+        cachedMergedPluginProperties.put(locale, mergedHolder);
         return mergedHolder;
-
-	}
+    }
 
     @Override
     public void setCacheSeconds(int cacheSeconds) {
-        this.pluginCacheMillis = (cacheSeconds * 1000);
+        pluginCacheMillis = (cacheSeconds * 1000);
         super.setCacheSeconds(cacheSeconds);
     }
-
 
     /**
      * Attempts to resolve a String for the code from the list of plugin base names
@@ -171,22 +164,20 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * @return a MessageFormat
      */
     protected String resolveCodeWithoutArgumentsFromPlugins(String code, Locale locale) {
-	    if (this.pluginCacheMillis< 0) {
-			PropertiesHolder propHolder = getMergedPluginProperties(locale);
-			String result = propHolder.getProperty(code);
-			if (result != null) {
-				return result;
-			}
-		}
+        if (pluginCacheMillis < 0) {
+            PropertiesHolder propHolder = getMergedPluginProperties(locale);
+            String result = propHolder.getProperty(code);
+            if (result != null) {
+                return result;
+            }
+        }
         else {
-
             for (String pluginBaseName : pluginBaseNames) {
-                List filenames = calculateAllFilenames(pluginBaseName, locale);
-                for (Object o : filenames) {
-                    String filename = (String) o;
+                List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
+                for (String filename : filenames) {
                     PropertiesHolder holder = getProperties(filename);
                     String result = holder.getProperty(code);
-                    if(result != null) return result;
+                    if (result != null) return result;
                 }
             }
         }
@@ -201,7 +192,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * @return a MessageFormat
      */
     protected MessageFormat resolveCodeFromPlugins(String code, Locale locale) {
-        if (this.pluginCacheMillis< 0) {
+        if (pluginCacheMillis < 0) {
             PropertiesHolder propHolder = getMergedPluginProperties(locale);
             MessageFormat result = propHolder.getMessageFormat(code, locale);
             if (result != null) {
@@ -209,14 +200,12 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         else {
-
             for (String pluginBaseName : pluginBaseNames) {
-                List filenames = calculateAllFilenames(pluginBaseName, locale);
-                for (Object o : filenames) {
-                    String filename = (String) o;
+                List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
+                for (String filename : filenames) {
                     PropertiesHolder holder = getProperties(filename);
                     MessageFormat result = holder.getMessageFormat(code, locale);
-                    if(result != null) return result;
+                    if (result != null) return result;
                 }
             }
         }
@@ -225,32 +214,29 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     @Override
     public void setResourceLoader(ResourceLoader resourceLoader) {
-        if(Metadata.getCurrent().isWarDeployed()) {
-            this.localResourceLoader = resourceLoader;
+        if (Metadata.getCurrent().isWarDeployed()) {
+            localResourceLoader = resourceLoader;
         }
         else {
             // The "settings" may be null in some of the Grails unit tests.
             BuildSettings settings = BuildSettingsHolder.getSettings();
 
             String location = null;
-            if(settings != null) {
+            if (settings != null) {
                 location = settings.getResourcesDir().getPath();
             }
-            else if(Environment.getCurrent().isReloadEnabled()) {
+            else if (Environment.getCurrent().isReloadEnabled()) {
                 location = Environment.getCurrent().getReloadLocation();
             }
 
-            if(location != null) {
-                this.localResourceLoader = new DevelopmentResourceLoader(
-                        this.application,
-                        location);
+            if (location != null) {
+                localResourceLoader = new DevelopmentResourceLoader(application, location);
             }
             else {
-                this.localResourceLoader = resourceLoader;
+                localResourceLoader = resourceLoader;
             }
-
         }
         super.setResourceLoader(localResourceLoader);
-        this.resourceResolver = new PathMatchingResourcePatternResolver(this.localResourceLoader);
+        resourceResolver = new PathMatchingResourcePatternResolver(localResourceLoader);
     }
 }

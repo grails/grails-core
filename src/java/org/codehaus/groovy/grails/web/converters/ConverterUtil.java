@@ -36,7 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * A utility class for creating and dealing with Converter objects
+ * A utility class for creating and dealing with Converter objects.
  *
  * @author Siegfried Puchbauer
  * @since 0.6
@@ -55,7 +55,8 @@ public class ConverterUtil {
             Class<?> c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS, true, Thread.currentThread().getContextClassLoader());
             Constructor<?> init = c.getConstructor(new Class[]{Object.class});
             beanWrapper = (BeanWrapper)init.newInstance(new Object[]{o});
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             beanWrapper = new BeanWrapperImpl(o);
         }
         return beanWrapper;
@@ -85,9 +86,10 @@ public class ConverterUtil {
             }
             converter.setTarget(target);
             return converter;
-        } catch (Exception e) {
-            throw new ConverterException("Initialization of Converter Object " + converterClass.getName()
-                    + " failed for target " + target.getClass().getName(), e);
+        }
+        catch (Exception e) {
+            throw new ConverterException("Initialization of Converter Object " + converterClass.getName() +
+                    " failed for target " + target.getClass().getName(), e);
         }
     }
 
@@ -102,7 +104,7 @@ public class ConverterUtil {
         if (i > -1) {
             name = name.substring(0, i);
             while (name.endsWith("_")) {
-            	name = name.substring(0, name.length() - 1);
+                name = name.substring(0, name.length() - 1);
             }
         }
         return name;
@@ -128,6 +130,7 @@ public class ConverterUtil {
         return getGrailsApplication() != null && getGrailsApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, name);
     }
 
+    @SuppressWarnings("unchecked")
     public static Set<String> getDomainClassNames() {
         return getGrailsApplication().getArtefactInfo(DomainClassArtefactHandler.TYPE).getClassesByName().keySet();
     }
@@ -139,10 +142,11 @@ public class ConverterUtil {
     private GrailsApplication grailsApplication;
 
     protected ConverterUtil() {
-
+        // static only
     }
 
-    public static Object invokeOriginalAsTypeMethod(Object delegate, Class clazz) {
+    @SuppressWarnings("unchecked")
+    public static Object invokeOriginalAsTypeMethod(Object delegate, Class<?> clazz) {
         if (clazz.isInstance(delegate)) {
             return delegate;
         }
@@ -164,21 +168,27 @@ public class ConverterUtil {
         if (delegate instanceof Collection<?>) {
             return DefaultGroovyMethods.asType((Collection<?>) delegate, clazz);
         }
+
         if (delegate instanceof Closure) {
             return DefaultGroovyMethods.asType((Closure) delegate, clazz);
         }
+
         if (delegate instanceof Map) {
             return DefaultGroovyMethods.asType((Map) delegate, clazz);
         }
+
         if (delegate instanceof Number) {
             return DefaultGroovyMethods.asType((Number) delegate, clazz);
         }
+
         if (delegate instanceof File) {
             return DefaultGroovyMethods.asType((File) delegate, clazz);
         }
+
         if (delegate instanceof String) {
             return DefaultGroovyMethods.asType((String) delegate, clazz);
         }
+
         return DefaultGroovyMethods.asType(delegate, clazz);
     }
 

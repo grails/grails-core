@@ -16,11 +16,18 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TimeZone;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
@@ -28,14 +35,15 @@ import java.util.*;
  */
 public class ToStringBeanMarshaller implements ObjectMarshaller<XML> {
 
-    private final Set<Class> classes;
+    private final Set<Class<?>> classes;
 
-    public ToStringBeanMarshaller(Set<Class> classes) {
+    public ToStringBeanMarshaller(Set<Class<?>> classes) {
         this.classes = classes;
     }
 
+    @SuppressWarnings("unchecked")
     public ToStringBeanMarshaller() {
-        classes = Collections.unmodifiableSet(new HashSet<Class>(Arrays.asList(
+        classes = Collections.unmodifiableSet(new HashSet<Class<?>>(Arrays.asList(
                 Currency.class, TimeZone.class, Locale.class, URL.class
         )));
     }

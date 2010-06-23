@@ -17,13 +17,10 @@ package org.codehaus.groovy.grails.web.context;
 import javax.servlet.ServletContext;
 
 /**
- *
- * Holds a reference to the ServletContext
+ * Holds a reference to the ServletContext.
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Jan 16, 2008
  */
 public class ServletContextHolder {
 
@@ -31,7 +28,7 @@ public class ServletContextHolder {
         return servletContext;
     }
 
-    public static void setServletContext(ServletContext servletContext) {        
+    public static void setServletContext(ServletContext servletContext) {
         ServletContextHolder.servletContext = servletContext;
     }
 

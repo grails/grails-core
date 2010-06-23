@@ -16,20 +16,22 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.json.JSONWriter;
 
 import java.util.Collection;
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.codehaus.groovy.grails.web.json.JSONWriter;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("unchecked")
 public class CollectionMarshaller implements ObjectMarshaller<JSON> {
 
     public boolean supports(Object object) {
-       return object instanceof Collection;
+        return object instanceof Collection;
     }
 
     public void marshalObject(Object o, JSON converter) throws ConverterException {

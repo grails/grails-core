@@ -15,20 +15,21 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
- * Immutable Converter Configuration
+ * Immutable Converter Configuration.
  *
  * @author Siegfried Puchbauer
  * @see org.codehaus.groovy.grails.web.converters.configuration.ChainedConverterConfiguration
  */
+@SuppressWarnings("unchecked")
 public class ImmutableConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
 
     protected final List<ObjectMarshaller<C>> marshallers;
@@ -39,12 +40,12 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
 
     private final boolean prettyPrint;
 
-	private ProxyHandler proxyHandler;
+    private ProxyHandler proxyHandler;
 
     public ImmutableConverterConfiguration(ConverterConfiguration<C> cfg) {
-    	this(cfg, new DefaultProxyHandler());
+        this(cfg, new DefaultProxyHandler());
     }
-    
+
     public ImmutableConverterConfiguration(ConverterConfiguration<C> cfg, ProxyHandler proxyHandler) {
         marshallers = Collections.unmodifiableList(cfg.getOrderedObjectMarshallers());
         encoding = cfg.getEncoding();
@@ -52,14 +53,13 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
         circularReferenceBehaviour = cfg.getCircularReferenceBehaviour();
         this.proxyHandler = proxyHandler;
     }
-    
 
     /**
-     * @see ConverterConfiguration#getMarshaller(Object) 
+     * @see ConverterConfiguration#getMarshaller(Object)
      */
     public ObjectMarshaller<C> getMarshaller(Object o) {
-        for(ObjectMarshaller<C> om : marshallers) {
-            if(om.supports(o)) {
+        for (ObjectMarshaller<C> om : marshallers) {
+            if (om.supports(o)) {
                 return om;
             }
         }
@@ -91,7 +91,7 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
         return marshallers;
     }
 
-	public ProxyHandler getProxyHandler() {
-		return this.proxyHandler;
-	}
+    public ProxyHandler getProxyHandler() {
+        return this.proxyHandler;
+    }
 }

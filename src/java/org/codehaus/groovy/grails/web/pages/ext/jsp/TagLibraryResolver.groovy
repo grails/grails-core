@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
-import org.springframework.web.context.ServletContextAware
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import javax.servlet.ServletContext
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipEntry
+
+import javax.servlet.ServletContext
+import javax.xml.parsers.SAXParserFactory
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.Resource
+import org.springframework.util.Assert
+import org.springframework.web.context.ServletContextAware
+import org.springframework.web.context.support.ServletContextResource
+
+import org.xml.sax.InputSource
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.mxp1.MXParser
-import org.xml.sax.InputSource
-import javax.xml.parsers.SAXParserFactory
-import org.springframework.util.Assert
-import org.springframework.core.io.Resource
-import org.springframework.web.context.support.ServletContextResource
-import org.springframework.core.io.FileSystemResource
 import grails.util.BuildSettingsHolder
 
-
 /**
- * A class that resolves all of the available tag libraries from web.xml and all available JAR files.
+ * Resolves all of the available tag libraries from web.xml and all available JAR files.
  *
  * Kudos to the Freemarker (http://freemarker.sourceforge.net/) library for providing the inspiration for this code.
  *
@@ -49,25 +51,25 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
 
     /**
      * Resolves a JspTagLib instance for the given URI
-     **/
+     */
     JspTagLib resolveTagLibrary(String uri) {
-        if(tagLibs[uri]) return tagLibs[uri]
+        if (tagLibs[uri]) return tagLibs[uri]
 
         JspTagLib jspTagLib = null
 
         String loc = tagLibLocations[uri]
 
-        if(loc) {
-            if(loc.startsWith("jar:")) {
+        if (loc) {
+            if (loc.startsWith("jar:")) {
                 def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader().getURLs()
                 def fileLoc = loc[4..loc.indexOf('!')-1]
                 String pathWithinZip = loc[loc.indexOf('!')+1..-1]
                 URL jarFile = jarURLs.find { it.toExternalForm() == fileLoc}
-                if(jarFile) {
+                if (jarFile) {
                     ZipInputStream zipInput = new ZipInputStream(jarFile.openStream())
                     ZipEntry entry = zipInput.getNextEntry()
-                    while(entry) {
-                        if(entry.name == pathWithinZip) {
+                    while (entry) {
+                        if (entry.name == pathWithinZip) {
                             jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(zipInput))
                             break
                         }
@@ -76,28 +78,28 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
                 }
             }
             else {
-                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc)))                
+                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc)))
             }
         }
         else {
             Assert.notNull servletContext, "TagLibraryResolver requires an instance of the ServletContext!"
             Resource webXml = getWebXmlFromServletContext()
 
-            if(webXml?.exists()) {
+            if (webXml?.exists()) {
                 loadTagLibLocations(webXml)
             }
 
-            if(tagLibLocations[uri]) {
+            if (tagLibLocations[uri]) {
                 // in this case the tag lib was discovered in the web.xml so we use the servlet context
                 loc = tagLibLocations[uri]
                 jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc)))
             }
             else {
-                def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : (resolveRootLoader().getURLs())
-                for(url in jarURLs) {
-                    if(url.file.endsWith(".jar")) {
+                def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader().getURLs()
+                for (url in jarURLs) {
+                    if (url.file.endsWith(".jar")) {
                         jspTagLib = attempLoadTagLibFromJAR(uri, url, new ZipInputStream(url.openStream()))
-                        if(jspTagLib) break
+                        if (jspTagLib) break
                     }
                 }
             }
@@ -106,37 +108,41 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
     }
 
     private loadTagLibLocations(Resource webXml) {
-        if(webXml) {
+        if (!webXml) {
+            return
+        }
 
-            def source = new InputSource(webXml.getInputStream())
+        def source = new InputSource(webXml.getInputStream())
 
-            SAXParserFactory factory = SAXParserFactory.newInstance()
-            factory.namespaceAware = false
-            factory.validating = false
-            def reader = factory.newSAXParser().getXMLReader()
-            WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader()
-            reader.setContentHandler webXmlReader
-            reader.setEntityResolver new LocalEntityResolver()
-            reader.parse source
+        SAXParserFactory factory = SAXParserFactory.newInstance()
+        factory.namespaceAware = false
+        factory.validating = false
+        def reader = factory.newSAXParser().getXMLReader()
+        WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader()
+        reader.setContentHandler webXmlReader
+        reader.setEntityResolver new LocalEntityResolver()
+        reader.parse source
 
-            for(entry in webXmlReader.getTagLocations()) {
-                tagLibLocations[entry.key] = entry.value
-            }
+        for (entry in webXmlReader.getTagLocations()) {
+            tagLibLocations[entry.key] = entry.value
         }
     }
+
     protected InputStream getTldFromServletContext(String loc) {
         servletContext.getResourceAsStream(loc)
     }
+
     protected Resource getWebXmlFromServletContext() {
-        if(grailsApplication.isWarDeployed()) {
+        if (grailsApplication.isWarDeployed()) {
             return new ServletContextResource(servletContext, "/WEB-INF/web.xml")
         }
-        else {
-            def projectResourcesDir = BuildSettingsHolder.settings?.resourcesDir
-            if(projectResourcesDir)
-                return new FileSystemResource("${projectResourcesDir.path}/web.xml")
+
+        def projectResourcesDir = BuildSettingsHolder.settings?.resourcesDir
+        if (projectResourcesDir) {
+            return new FileSystemResource("${projectResourcesDir.path}/web.xml")
         }
     }
+
     protected List getJarsFromServletContext() {
         def files = servletContext.getResourcePaths("/WEB-INF/lib")
         files = files.findAll {  it.endsWith(".jar") || it.endsWith(".zip")}
@@ -170,11 +176,10 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
                                 pullParser.next()
                                 tagLibURI = pullParser.getText()?.trim()
                                 break
-
                             }
                         }
-                        if (tagLibURI) {
 
+                        if (tagLibURI) {
                             tagLibLocations[tagLibURI] = tagLibLocation
                             if (tagLibURI == uri) {
                                 inputStreamReader.reset()
@@ -185,18 +190,19 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
                 }
                 entry = zipInput.getNextEntry()
             }
-
-        } finally {
+        }
+        finally {
             zipInput?.close()
         }
-        return  jspTagLib
+
+        return jspTagLib
     }
 
     /**
      * Obtains a reference to the RootLoader instance
      */
     protected resolveRootLoader() {
-         getClass().classLoader.rootLoader
+        getClass().classLoader.rootLoader
     }
 
     private JspTagLib loadJspTagLib(String uri, String loc, Reader r) {
@@ -213,10 +219,8 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
         reader.setEntityResolver new LocalEntityResolver()
         reader.parse source
 
-
-        def taglib = new JspTagLibImpl(uri, tldReader.tags)        
+        def taglib = new JspTagLibImpl(uri, tldReader.tags)
         tagLibs[uri] = taglib
         return taglib
     }
-
 }

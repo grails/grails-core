@@ -14,17 +14,16 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp;
 
-import javax.servlet.jsp.JspWriter;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.servlet.jsp.JspWriter;
+
 /**
- * A JspWriter implementation that delegates to another java.io.Writer
+ * Delegates to another java.io.Writer.
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: May 1, 2008
  */
 public class JspWriterDelegate extends JspWriter {
 
@@ -42,141 +41,147 @@ public class JspWriterDelegate extends JspWriter {
         return out.toString();
     }
 
+    @Override
     public void clear() throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void clearBuffer() throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void close() throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void flush() throws IOException {
         out.flush();
     }
 
+    @Override
     public int getRemaining() {
         return 0;
     }
 
+    @Override
     public void newLine() throws IOException {
         out.write(LINE_BREAK);
     }
 
+    @Override
     public void print(boolean b) throws IOException {
         out.write(b ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
     }
 
-    public void print(char c) throws IOException
-    {
+    @Override
+    public void print(char c) throws IOException {
         out.write(c);
     }
 
-    public void print(char[] cArray) throws IOException
-    {
+    @Override
+    public void print(char[] cArray) throws IOException {
         out.write(cArray);
     }
 
-    public void print(double d) throws IOException
-    {
+    @Override
+    public void print(double d) throws IOException {
         out.write(Double.toString(d));
     }
 
-    public void print(float f) throws IOException
-    {
+    @Override
+    public void print(float f) throws IOException {
         out.write(Float.toString(f));
     }
 
-    public void print(int arg0) throws IOException
-    {
-        out.write(Integer.toString(arg0));
+    @Override
+    public void print(int i) throws IOException {
+        out.write(Integer.toString(i));
     }
 
-    public void print(long arg0) throws IOException
-    {
-        out.write(Long.toString(arg0));
+    @Override
+    public void print(long l) throws IOException {
+        out.write(Long.toString(l));
     }
 
-    public void print(Object arg0) throws IOException
-    {
-        out.write(arg0 == null ? "null" : arg0.toString());
+    @Override
+    public void print(Object o) throws IOException {
+        out.write(o == null ? "null" : o.toString());
     }
 
-    public void print(String arg0) throws IOException
-    {
-        out.write(arg0);
+    @Override
+    public void print(String s) throws IOException {
+        out.write(s);
     }
 
-    public void println() throws IOException
-    {
+    @Override
+    public void println() throws IOException {
         newLine();
     }
 
-    public void println(boolean arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(boolean b) throws IOException {
+        print(b);
         newLine();
     }
 
-    public void println(char arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(char c) throws IOException {
+        print(c);
         newLine();
     }
 
-    public void println(char[] arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(char[] chars) throws IOException {
+        print(chars);
         newLine();
     }
 
-    public void println(double arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(double d) throws IOException {
+        print(d);
         newLine();
     }
 
-    public void println(float arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(float f) throws IOException {
+        print(f);
         newLine();
     }
 
-    public void println(int arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(int i) throws IOException {
+        print(i);
         newLine();
     }
 
-    public void println(long arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(long l) throws IOException {
+        print(l);
         newLine();
     }
 
-    public void println(Object arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(Object o) throws IOException {
+        print(o);
         newLine();
     }
 
-    public void println(String arg0) throws IOException
-    {
-        print(arg0);
+    @Override
+    public void println(String s) throws IOException {
+        print(s);
         newLine();
     }
 
-    public void write(int c) throws IOException
-    {
+    @Override
+    public void write(int c) throws IOException {
         out.write(c);
     }
 
-    public void write(char[] arg0, int arg1, int arg2)
-        throws IOException
-    {
-        out.write(arg0, arg1, arg2);
+    @Override
+    public void write(char[] cbuf, int off, int len) throws IOException {
+        out.write(cbuf, off, len);
     }
 }

@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.report.junit
 
 import grails.build.GrailsBuildListener
 
 class JUnitReportProcessor implements GrailsBuildListener {
-    
+
     void receiveGrailsBuildEvent(String name, Object[] args) {
-        if (name == "TestProduceReports") {
-            def buildBinding = args[0]
-            buildBinding.with { 
-                ant.junitreport(todir: "${testReportsDir}") {
-                    fileset(dir: testReportsDir) {
-                        include(name: "TEST-*.xml")
-                    }
-                    report(format: "frames", todir: "${testReportsDir}/html")
+        if (name != "TestProduceReports") {
+            return
+        }
+
+        def buildBinding = args[0]
+        buildBinding.with {
+            ant.junitreport(todir: "${testReportsDir}") {
+                fileset(dir: testReportsDir) {
+                    include(name: "TEST-*.xml")
                 }
+                report(format: "frames", todir: "${testReportsDir}/html")
             }
         }
     }
-    
 }

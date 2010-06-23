@@ -16,6 +16,9 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
+
+import java.util.Locale;
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
@@ -24,9 +27,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.beans.BeansException;
-
-import java.util.Locale;
 
 /**
  * @author Siegfried Puchbauer
@@ -59,24 +59,25 @@ public class ValidationErrorsMarshaller implements ObjectMarshaller<JSON>, Appli
                     Locale locale = LocaleContextHolder.getLocale();
                     if (applicationContext != null) {
                         json.property("message", applicationContext.getMessage(fe, locale));
-                    } else {
+                    }
+                    else {
                         json.property("message", fe.getDefaultMessage());
                     }
                     writer.endObject();
                 }
-
             }
             writer.endArray();
             writer.endObject();
-        } catch (ConverterException ce) {
+        }
+        catch (ConverterException ce) {
             throw ce;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new ConverterException("Error converting Bean with class " + object.getClass().getName(), e);
         }
     }
 
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 }
