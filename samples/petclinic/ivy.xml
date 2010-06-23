@@ -5,6 +5,6 @@
         <conf name="build"/>
     </configurations>
     <dependencies>
-        <dependency org="org.grails" name="grails-bootstrap" rev="1.2-M3" conf="build"/>
+        <dependency org="org.grails" name="grails-bootstrap" rev="1.2.3" conf="build"/>
     </dependencies>
 </ivy-module>
