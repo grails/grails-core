@@ -25,7 +25,6 @@ import java.io.OutputStream;
 
 import junit.framework.Test;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
 import org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter;
 import org.codehaus.groovy.grails.test.support.TestStacktraceSanitizer;
@@ -100,7 +99,9 @@ public class PlainFormatter extends PlainJUnitResultFormatter {
             throw new RuntimeException(ex);
         }
         finally {
-            IOUtils.closeQuietly(writer);
+            if (writer != null) {
+                try { writer.close(); } catch (IOException ex) { /*ignored*/ }
+            }
         }
     }
 }
