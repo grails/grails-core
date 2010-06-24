@@ -13,7 +13,8 @@ import java.math.BigDecimal;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class ScaleConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return ScaleConstraint.class;
     }
 

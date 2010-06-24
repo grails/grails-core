@@ -25,11 +25,7 @@ import junit.framework.TestCase;
  */
 public class DomainValidatorTests extends TestCase {
 
-    private DomainValidator validator;
-
-    public void setUp() {
-        validator = DomainValidator.getInstance();
-    }
+    private DomainValidator validator = DomainValidator.getInstance();
 
     public void testValidDomains() {
         assertTrue("apache.org should validate", validator.isValid("apache.org"));

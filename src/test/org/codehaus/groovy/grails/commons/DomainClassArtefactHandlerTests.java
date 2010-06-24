@@ -19,18 +19,15 @@ import junit.framework.TestCase;
 
 /**
  * @author Marc Palmer
- * @since 22-Feb-2007
  */
 public class DomainClassArtefactHandlerTests extends TestCase {
 
-    public void testIsDomainClass() throws Exception
-    {
-        GroovyClassLoader gcl = new GroovyClassLoader();
+    public void testIsDomainClass() {
 
-        Class c = gcl.parseClass("class Test { Long id;Long version;}\n");
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        Class<?> c = gcl.parseClass("class Test { Long id;Long version;}\n");
 
         ArtefactHandler handler = new DomainClassArtefactHandler();
         assertTrue(handler.isArtefact(c));
     }
-
 }

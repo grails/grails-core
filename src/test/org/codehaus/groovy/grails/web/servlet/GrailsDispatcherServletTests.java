@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -34,14 +35,11 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Feb 20, 2007
- *        Time: 7:26:07 AM
  */
 public class GrailsDispatcherServletTests extends TestCase {
 
     @SuppressWarnings("serial")
-	public void testHandlerMapping() throws Exception {
+    public void testHandlerMapping() throws Exception {
         final MockApplicationContext appCtx = new MockApplicationContext();
 
         try {
@@ -56,8 +54,9 @@ public class GrailsDispatcherServletTests extends TestCase {
             appCtx.registerMockBean("controllerHandlerMappings", handlerMapping);
 
             GrailsDispatcherServlet dispatcherServlet = new GrailsDispatcherServlet()  {
+                @Override
                 protected WebApplicationContext initWebApplicationContext() throws BeansException {
-                	initStrategies(appCtx);
+                    initStrategies(appCtx);
                     return appCtx;
                 }
                 

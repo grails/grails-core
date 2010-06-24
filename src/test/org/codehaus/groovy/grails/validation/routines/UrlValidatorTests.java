@@ -38,13 +38,11 @@ public class UrlValidatorTests extends TestCase {
       return new TestSuite(UrlValidatorTests.class);
    }
 
-   protected void setUp() {
+   @Override
+	protected void setUp() {
       for (int index = 0; index < testPartsIndex.length - 1; index++) {
          testPartsIndex[index] = 0;
       }
-   }
-
-   protected void tearDown() {
    }
 
    public void testIsValid() {

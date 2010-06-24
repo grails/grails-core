@@ -15,23 +15,25 @@
  */
 package grails.orm;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.ListIterator;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
-* A result list for Criteria list calls, which is aware of the totalCount for the paged result
-*
-* @author Siegfried Puchbauer
-* @since 1.0
-*/
+ * A result list for Criteria list calls, which is aware of the totalCount for
+ * the paged result.
+ *
+ * @author Siegfried Puchbauer
+ * @since 1.0
+ */
+@SuppressWarnings("unchecked")
 public class PagedResultList implements List, Serializable {
 
-	private static final long serialVersionUID = -5820655628956173929L;
+    private static final long serialVersionUID = -5820655628956173929L;
 
-	protected List list;
+    protected List list;
 
     protected int totalCount;
 
@@ -100,10 +102,12 @@ public class PagedResultList implements List, Serializable {
         list.clear();
     }
 
+    @Override
     public boolean equals(Object o) {
         return list.equals(o);
     }
 
+    @Override
     public int hashCode() {
         return list.hashCode();
     }
@@ -151,5 +155,4 @@ public class PagedResultList implements List, Serializable {
     public void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
     }
-    
 }

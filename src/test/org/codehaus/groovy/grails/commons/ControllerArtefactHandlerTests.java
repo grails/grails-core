@@ -19,18 +19,14 @@ import junit.framework.TestCase;
 
 /**
  * @author Marc Palmer
- * @since 22-Feb-2007
  */
 public class ControllerArtefactHandlerTests extends TestCase {
 
-    public void testIsControllerClass() throws Exception
-    {
+    public void testIsControllerClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
-
-        Class c = gcl.parseClass("class TestController { }\n");
+        Class<?> c = gcl.parseClass("class TestController { }\n");
 
         ArtefactHandler handler = new ControllerArtefactHandler();
         assertTrue(handler.isArtefact(c));
     }
-
 }

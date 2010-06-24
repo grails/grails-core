@@ -12,11 +12,13 @@ import java.util.ArrayList;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class SizeConstraintTests extends AbstractConstraintTests{
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return SizeConstraint.class;
     }
 
-    public void testValidation() {
+    @SuppressWarnings("unchecked")
+	public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint( "testString", new IntRange( 2, 5 )),
                 "123456",

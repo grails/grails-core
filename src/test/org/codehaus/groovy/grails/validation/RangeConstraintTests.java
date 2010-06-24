@@ -9,7 +9,8 @@ import groovy.lang.ObjectRange;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class RangeConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return RangeConstraint.class;
     }
 

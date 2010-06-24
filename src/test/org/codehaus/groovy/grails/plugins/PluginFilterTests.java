@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.GroovyClassLoader;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,9 +12,10 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 
+@SuppressWarnings("unchecked")
 public class PluginFilterTests extends AbstractGrailsMockTests {
 
-	public void testIncluding() throws IOException {
+	public void testIncluding() {
 		List pluginList = getPluginList();
 
 		HashSet set = new HashSet();
@@ -44,7 +44,7 @@ public class PluginFilterTests extends AbstractGrailsMockTests {
 		assertEquals("three", nameFor(filtered, 2));
 	}
 	
-	public void testExcluding() throws IOException {
+	public void testExcluding() {
 		List pluginList = getPluginList();
 
 		HashSet set = new HashSet();
@@ -73,7 +73,7 @@ public class PluginFilterTests extends AbstractGrailsMockTests {
 		assertEquals("five", nameFor(filtered, 1));
 	}
 	
-	public void testIdentity() throws IOException
+	public void testIdentity()
 	{
 		List pluginList = getPluginList();
 		assertEquals(new IdentityPluginFilter().filterPluginList(pluginList), pluginList);
@@ -84,12 +84,13 @@ public class PluginFilterTests extends AbstractGrailsMockTests {
         return object.getName();
 	}
 
-	private List getPluginList() throws IOException {
+	private List getPluginList() {
         // Java 5 only!!!
 //        Resource[] resources = new PathMatchingResourcePatternResolver()
 //				.getResources("classpath*:org/codehaus/groovy/grails/plugins/impl/*.groovy");
         //System.out.println(Arrays.toString(resources));
 
+		@SuppressWarnings("hiding")
 		GroovyClassLoader gcl = new GroovyClassLoader();
 
 		GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
@@ -115,7 +116,7 @@ public class PluginFilterTests extends AbstractGrailsMockTests {
 		return pluginList;
 	}
 
-	private void addPlugin(GroovyClassLoader gcl, GrailsApplication app,
+	private void addPlugin(@SuppressWarnings("hiding") GroovyClassLoader gcl, GrailsApplication app,
 			List pluginList, String className, String dependencies) {
 		Class c = gcl.parseClass("class "
 				+ className

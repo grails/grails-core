@@ -13,18 +13,22 @@ package grails.util;
  * Created: 08-Feb-2008
  */
 class MockHttpServletResponse extends org.springframework.mock.web.MockHttpServletResponse {
-  /** @deprecated */
-	public String encodeRedirectUrl(String url) {
-		return super.encodeRedirectURL(url);
-	}
 
-  /** @deprecated */
-	public String encodeUrl(String url) {
-		return super.encodeURL(url);
-	}
+    @Override
+    @Deprecated
+    public String encodeRedirectUrl(String url) {
+        return super.encodeRedirectURL(url);
+    }
 
-  /** @deprecated */
-	public void setStatus(int status, String errorMessage) {
-		super.setStatus(status, errorMessage);
-	}
+    @Override
+    @Deprecated
+    public String encodeUrl(String url) {
+        return super.encodeURL(url);
+    }
+
+    @Override
+    @Deprecated
+    public void setStatus(int status, String errorMessage) {
+        super.setStatus(status, errorMessage);
+    }
 }

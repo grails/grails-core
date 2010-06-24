@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,24 +17,25 @@ package org.codehaus.groovy.grails.web.servlet;
 import grails.util.GrailsWebUtil;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import junit.framework.TestCase;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 /**
  * @author Graeme Rocher
- * @since 07-Feb-2006
  */
+@SuppressWarnings("unchecked")
 public class GrailsFlashScopeTests extends TestCase {
 
     private static final String ERRORS_PROPERTY = "errors";
 
     public void testPutNull() {
         GrailsWebUtil.bindMockWebRequest();
-        
+
         FlashScope fs = new GrailsFlashScope();
-        fs.put("test",null);        
+        fs.put("test",null);
     }
 
     public void testNextState() {
@@ -55,8 +56,7 @@ public class GrailsFlashScopeTests extends TestCase {
         assertTrue(fs.containsValue("value"));
         assertFalse(fs.containsKey("wilma"));
 
-        // the state immediately following this one the map should still contain the previous
-        // entries
+        // the state immediately following this one the map should still contain the previous entries
         fs.next();
 
         assertFalse(fs.isEmpty());
@@ -71,9 +71,7 @@ public class GrailsFlashScopeTests extends TestCase {
 
         assertTrue(fs.isEmpty());
         assertEquals(0,fs.size());
-
     }
-
 
     /**
      * Bug: GRAILS-3083
@@ -100,8 +98,7 @@ public class GrailsFlashScopeTests extends TestCase {
         assertEquals(map,fs.get("flinstones"));
         assertEquals("value", fs.get("test"));
 
-        // the state immediately following this one the map should still contain the previous
-        // entries
+        // the state immediately following this one the map should still contain the previous entries
         fs.next();
 
         assertFalse(fs.isEmpty());
@@ -114,7 +111,6 @@ public class GrailsFlashScopeTests extends TestCase {
 
         assertTrue(fs.isEmpty());
         assertEquals(0,fs.size());
-
     }
 
     private class StringWithError {
@@ -126,31 +122,32 @@ public class GrailsFlashScopeTests extends TestCase {
         }
 
         @SuppressWarnings("unused")
-		public Object getErrors() {
+        public Object getErrors() {
             return errors;
         }
 
         @SuppressWarnings("unused")
-		public void setErrors(Object errors) {
+        public void setErrors(Object errors) {
             this.errors = errors;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (value == null) {
                 return (obj == null);
             }
-            else {
-                return value.equals(obj);
-            }
+
+            return value.equals(obj);
         }
 
+        @Override
         public int hashCode() {
             return value.hashCode();
         }
 
+        @Override
         public String toString() {
             return value;
         }
     }
-    
 }

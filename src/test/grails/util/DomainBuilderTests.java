@@ -19,121 +19,99 @@ import groovy.util.ObjectGraphBuilder;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class DomainBuilderTests extends GroovyTestCase
-{
-	private DomainBuilder builder;
-	private ObjectGraphBuilder.ChildPropertySetter childPropertySetter;
+public class DomainBuilderTests extends GroovyTestCase {
 
-	private Employer employer = null;
+    private DomainBuilder builder;
+    private ObjectGraphBuilder.ChildPropertySetter childPropertySetter;
+    private Employer employer;
 
-	public DomainBuilderTests()
-	{
-		super();
-	}
+    @Override
+    public void setUp() throws Exception {
+        ApplicationHolder.setApplication(new DefaultGrailsApplication());
 
-	public void setUp() throws Exception
-	{
-		ApplicationHolder.setApplication(new DefaultGrailsApplication());
+        builder = new DomainBuilder();
+        childPropertySetter = builder.getChildPropertySetter();
 
-		builder = new DomainBuilder();
-		childPropertySetter = builder.getChildPropertySetter();
+        employer = new Employer();
+        employer.setName("Spacely Space Sprockets");
+    }
 
-		employer = new Employer();
-		employer.setName("Spacely Space Sprockets");
-	}
+    @SuppressWarnings("unchecked")
+    public void testChildIsCollection() throws Exception {
+        Employee one = new Employee();
+        one.setName("Cosmo");
 
-	public void tearDown() throws Exception
-	{
-		builder = null;
-	}
+        Employee two = new Employee();
+        two.setName("George");
 
-	public void testChildIsCollection() throws Exception
-	{
-		Employee one = new Employee();
-		one.setName("Cosmo");
+        childPropertySetter.setChild(employer, one, null, "employees");
+        childPropertySetter.setChild(employer, two, null, "employees");
 
-		Employee two = new Employee();
-		two.setName("George");
+        List employees = employer.getEmployees();
 
-		childPropertySetter.setChild(employer, one, null, "employees");
-		childPropertySetter.setChild(employer, two, null, "employees");
+        assertNull(employer.getAddress());
+        assertEquals(2, employees.size());
 
-		List employees = employer.getEmployees();
+        assertEquals(one.getName(), ((Employee)employees.get(0)).getName());
+        assertEquals(two.getName(), ((Employee)employees.get(1)).getName());
+    }
 
-		assertNull(employer.getAddress());
-		assertEquals(2, employees.size());
+    public void testChildIsNotCollection() throws Exception {
+        Address address = new Address();
+        address.setStreet("Park Pl.");
 
-		assertEquals(one.getName(), ((Employee)employees.get(0)).getName());
-		assertEquals(two.getName(), ((Employee)employees.get(1)).getName());
-	}
+        childPropertySetter.setChild(employer, address, null, "address");
 
-	public void testChildIsNotCollection() throws Exception
-	{
-		Address address = new Address();
-		address.setStreet("Park Pl.");
+        Address a = employer.getAddress();
 
-		childPropertySetter.setChild(employer, address, null, "address");
+        assertEquals(address.getStreet(), a.getStreet());
 
-		Address a = employer.getAddress();
+        assertEquals(0, employer.getEmployees().size());
+    }
 
-		assertEquals(address.getStreet(), a.getStreet());
+    @SuppressWarnings("unchecked")
+    public static class Employer {
+        private String name = null;
+        private Address address = null;
+        private List employees = new ArrayList();
 
-		assertEquals(0, employer.getEmployees().size());
-	}
+        public void addToEmployees(Employee employee) {
+            employees.add(employee);
+        }
 
+        public List getEmployees() {
+            return employees;
+        }
 
-	public static class Employer
-	{
-		private String name = null;
-		private Address address = null;
-		private List employees = new java.util.ArrayList();
+        public void setAddress(Address a) {
+            address = a;
+        }
 
-		public void addToEmployees(Employee employee) {
-			employees.add(employee);
-		}
-		public List getEmployees() {
-			return employees;
-		}
-		public void setAddress(Address a) {
-			address = a;
-		}
-		public Address getAddress() {
-			return address;
-		}
-		public void setName(String n) {
-			name = n;
-		}
-		public String getName() {
-			return name;
-		}
-	}
+        public Address getAddress() {
+            return address;
+        }
 
-	public static class Employee
-	{
-		private String name = null;
+        public void setName(String n) {
+            name = n;
+        }
 
-		public void setName(String n) {
-			name = n;
-		}
-		public String getName() {
-			return name;
-		}
-	}
+        public String getName() {
+            return name;
+        }
+    }
 
-	public static class Address
-	{
-		private String street = null;
+    public static class Employee {
+        private String name;
+        public void setName(String n) { name = n; }
+        public String getName() { return name; }
+    }
 
-		public void setStreet(String s) {
-			street = s;
-		}
-		public String getStreet() {
-			return street;
-		}
-	}
-
+    public static class Address {
+        private String street;
+        public void setStreet(String s) { street = s; }
+        public String getStreet() { return street; }
+    }
 }
-
-

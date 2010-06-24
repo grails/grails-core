@@ -11,10 +11,12 @@ import java.util.ArrayList;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class MaxSizeConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return MaxSizeConstraint.class;
     }
 
+    @SuppressWarnings("unchecked")
     public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint( "testString", new Integer( 10 )),

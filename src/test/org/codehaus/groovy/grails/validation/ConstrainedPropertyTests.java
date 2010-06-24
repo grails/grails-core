@@ -312,6 +312,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertEquals(12, cp.getMaxSize().intValue());
     }
     
+    @SuppressWarnings("unchecked")
     public void testConstraintBuilder() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
 

@@ -19,18 +19,15 @@ import junit.framework.TestCase;
 
 /**
  * @author Marc Palmer
- * @since 22-Feb-2007
  */
 public class BootStrapArtefactHandlerTests extends TestCase {
 
-    public void testIsBootStrapClass() throws Exception
-    {
+    public void testIsBootStrapClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        Class c = gcl.parseClass("class TestBootStrap { }\n");
+        Class<?> c = gcl.parseClass("class TestBootStrap { }\n");
 
         ArtefactHandler handler = new BootstrapArtefactHandler();
         assertTrue(handler.isArtefact(c));
     }
-
 }

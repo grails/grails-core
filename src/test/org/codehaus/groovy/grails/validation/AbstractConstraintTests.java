@@ -112,5 +112,5 @@ public abstract class AbstractConstraintTests extends TestCase {
         }
     }
 
-    protected abstract Class getConstraintClass();
+    protected abstract Class<?> getConstraintClass();
 }

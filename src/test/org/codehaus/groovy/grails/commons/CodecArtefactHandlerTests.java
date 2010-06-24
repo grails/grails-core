@@ -19,37 +19,33 @@ import junit.framework.TestCase;
 
 /**
  * @author Marc Palmer
- * @since 22-Feb-2007
  */
 public class CodecArtefactHandlerTests extends TestCase {
 
-    public void testIsCodecClass() throws Exception
-    {
+    public void testIsCodecClass() {
 
         ArtefactHandler handler = new CodecArtefactHandler();
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        Class fullCodecClass = gcl.parseClass("class FullCodec {\n" +
+        Class<?> fullCodecClass = gcl.parseClass("class FullCodec {\n" +
                 "static def encode = { str -> }\n" +
                 "static def decode = { str -> }\n" +
                 "}\n");
         assertTrue("class was an encoder/decoder", handler.isArtefact( fullCodecClass));
 
-        Class decodeOnlyCodecClass = gcl.parseClass("class DecodeOnlyCodec {\n" +
+        Class<?> decodeOnlyCodecClass = gcl.parseClass("class DecodeOnlyCodec {\n" +
                 "static def decode = { str -> }\n" +
                 "}\n");
         assertTrue("class was a decoder", handler.isArtefact(decodeOnlyCodecClass));
 
-        Class encodeOnlyCodecClass = gcl.parseClass("class EncodeOnlyCodec {\n" +
+        Class<?> encodeOnlyCodecClass = gcl.parseClass("class EncodeOnlyCodec {\n" +
                 "static def encode = { str -> }\n" +
                 "}\n");
         assertTrue("class was an encoder", handler.isArtefact(encodeOnlyCodecClass));
 
-
-        Class nonCodecClass = gcl.parseClass("class SomeFoo {\n" +
+        Class<?> nonCodecClass = gcl.parseClass("class SomeFoo {\n" +
                 "static def encode = { str -> }\n" +
                 "}\n");
         assertFalse("class was not a codec", handler.isArtefact(nonCodecClass));
     }
-
 }

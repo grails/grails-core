@@ -9,7 +9,8 @@ import java.math.BigDecimal;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class NotEqualConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return NotEqualConstraint.class;
     }
 

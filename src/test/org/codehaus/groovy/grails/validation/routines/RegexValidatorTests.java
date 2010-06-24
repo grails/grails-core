@@ -49,20 +49,6 @@ public class RegexValidatorTests extends TestCase {
     }
 
     /**
-     * Set Up.
-     */
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    /**
-     * Tear Down.
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    /**
      * Test instance methods with single regular expression.
      */
     public void testSingle() {
@@ -274,9 +260,8 @@ public class RegexValidatorTests extends TestCase {
         if (expect == null || result == null) {
             if (expect == null && result == null) {
                 return; // valid, both null
-            } else {
-                fail(label + " Null expect=" + expect + " result=" + result);
             }
+            fail(label + " Null expect=" + expect + " result=" + result);
         }
 
         // Check Length
@@ -289,5 +274,4 @@ public class RegexValidatorTests extends TestCase {
             assertEquals(label +" value[" + i + "]", expect[i], result[i]);
         }
     }
-
 }

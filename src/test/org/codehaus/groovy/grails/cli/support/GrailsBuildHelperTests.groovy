@@ -127,7 +127,7 @@ class CustomClassLoader extends URLClassLoader {
         this.testCase = test
     }
 
-    Class loadClass(String name) {
+    Class<?> loadClass(String name) {
         if (name == "org.codehaus.groovy.grails.cli.GrailsScriptRunner") {
             MockGrailsScriptRunner.testCase = this.testCase
             return MockGrailsScriptRunner

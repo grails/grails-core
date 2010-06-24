@@ -6,7 +6,8 @@ package org.codehaus.groovy.grails.validation;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class BlankConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return BlankConstraint.class;
     }
 

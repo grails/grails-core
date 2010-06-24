@@ -69,7 +69,6 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/");
         ServletContext context = webRequest.getServletContext();
-        GroovyClassLoader gcl = new GroovyClassLoader();
 
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
         Config c = new Config(new MockServletConfig(context));
@@ -240,7 +239,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 		assertEquals("mylayout", d.getName());
     }
 
-
+    @Override
     protected void tearDown() throws Exception {
         RequestContextHolder.setRequestAttributes(null);
     }

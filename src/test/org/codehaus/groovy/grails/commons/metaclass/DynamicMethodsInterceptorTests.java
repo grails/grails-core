@@ -14,7 +14,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
 	 */
 	public void testAfterConstructor() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-		final Class testClass = gcl.parseClass("class Test {}");
+		final Class<?> testClass = gcl.parseClass("class Test {}");
 		GroovyObject go = (GroovyObject)testClass.newInstance();
 		
 		ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
@@ -49,7 +49,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
 	 */
 	public void testBeforeConstructor() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-		final Class testClass = gcl.parseClass("class Test {}");
+		final Class<?> testClass = gcl.parseClass("class Test {}");
 		GroovyObject go = (GroovyObject)testClass.newInstance();
 		
 		ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
@@ -83,7 +83,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
 	 */
 	public void testBeforeInvoke() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-		final Class testClass = gcl.parseClass("class Test { def invokeMe() {'hello'} }");
+		final Class<?> testClass = gcl.parseClass("class Test { def invokeMe() {'hello'} }");
 		GroovyObject go = (GroovyObject)testClass.newInstance();
 		
 		ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
@@ -111,7 +111,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
 	 */
 	public void testAfterInvoke() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-		final Class testClass = gcl.parseClass("class Test { def invokeMe() {'hello'} }");
+		final Class<?> testClass = gcl.parseClass("class Test { def invokeMe() {'hello'} }");
 		GroovyObject go = (GroovyObject)testClass.newInstance();
 		
 		ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
@@ -141,7 +141,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
 	 */
 	public void testBeforeGet() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-		final Class testClass = gcl.parseClass("class Test { def prop = 'hello' }");
+		final Class<?> testClass = gcl.parseClass("class Test { def prop = 'hello' }");
 		GroovyObject go = (GroovyObject)testClass.newInstance();
 		
 		ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
@@ -182,7 +182,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
 	 */
 	public void testBeforeSet() throws Exception {
 		GroovyClassLoader gcl = new GroovyClassLoader();
-		final Class testClass = gcl.parseClass("class Test { def prop = 'hello' }");
+		final Class<?> testClass = gcl.parseClass("class Test { def prop = 'hello' }");
 		GroovyObject go = (GroovyObject)testClass.newInstance();
 		
 		ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);

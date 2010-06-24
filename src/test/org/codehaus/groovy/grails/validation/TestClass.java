@@ -9,6 +9,7 @@ import java.util.Date;
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
+@SuppressWarnings("unchecked")
 public class TestClass {
     private Object[] testArray;
     private BigDecimal testBigDecimal;

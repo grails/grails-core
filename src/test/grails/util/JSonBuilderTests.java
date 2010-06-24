@@ -18,6 +18,7 @@ public class JSonBuilderTests extends TestCase {
 	private HttpServletResponse getResponse(Writer writer) {
 		final PrintWriter printer = new PrintWriter(writer);
 		return new MockHttpServletResponse() {
+			@Override
 			public PrintWriter getWriter() throws UnsupportedEncodingException {
 				return printer;
 			}
@@ -26,7 +27,7 @@ public class JSonBuilderTests extends TestCase {
 	
 	private String parse(String groovy) throws Exception {
 		GroovyClassLoader cl = new GroovyClassLoader();
-		Class clazz = cl.parseClass("import grails.util.*; class TestClass { List names = [\"Steven\", \"Hans\", \"Erwin\"]; Closure test = { response -> new JSonBuilder(response)." + groovy + "; } }");
+		Class<?> clazz = cl.parseClass("import grails.util.*; class TestClass { List names = [\"Steven\", \"Hans\", \"Erwin\"]; Closure test = { response -> new JSonBuilder(response)." + groovy + "; } }");
 		GroovyObject go = (GroovyObject)clazz.newInstance();
 		Closure closure = (Closure)go.getProperty("test");
 		StringWriter sw = new StringWriter();

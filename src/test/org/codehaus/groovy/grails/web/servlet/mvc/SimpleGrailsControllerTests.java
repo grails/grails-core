@@ -51,29 +51,22 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- *
- *
  * @author Steven Devijver
- * @since Jul 2, 2005
  */
 public class SimpleGrailsControllerTests extends TestCase {
 
-	public SimpleGrailsControllerTests() {
-		super();
-	}
+    protected GrailsApplication grailsApplication;
+    protected SimpleGrailsController controller;
+    private GenericApplicationContext localContext;
+    private ConfigurableApplicationContext appCtx;
 
-	protected GrailsApplication grailsApplication = null;
-	protected SimpleGrailsController controller = null;
-	private GenericApplicationContext localContext;
-	private ConfigurableApplicationContext appCtx;
-
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception {
+    /* (non-Javadoc)
+     * @see junit.framework.TestCase#setUp()
+     */
+    @Override
+    protected void setUp() throws Exception {
         ExpandoMetaClass.enableGlobally();
-		GroovyClassLoader cl = new GroovyClassLoader();
+        GroovyClassLoader cl = new GroovyClassLoader();
         cl.parseClass("class MyCommandObject {\n" +
                 "String firstName\n" +
                 "String lastName\n" +
@@ -94,10 +87,10 @@ public class SimpleGrailsControllerTests extends TestCase {
         cl.parseClass("class UnconstrainedCommandObject {\n" +
                 "String firstName\n" +
                 "}");
-		Class testControllerClass = cl.parseClass("class TestController {\n"+
-							" Closure test = {\n"+
-								"return [ \"test\" : \"123\" ]\n"+
-						     "}\n" +
+        Class<?> testControllerClass = cl.parseClass("class TestController {\n"+
+                            " Closure test = {\n"+
+                                "return [ \"test\" : \"123\" ]\n"+
+                             "}\n" +
                              "def codatestruct = { DateStructCommandObject dsco ->\n" +
                              "[theDate:dsco.birthday, validationErrors:dsco.errors]" +
                              "}\n" +
@@ -110,112 +103,101 @@ public class SimpleGrailsControllerTests extends TestCase {
                              "def unconstrainedcommandobject = { UnconstrainedCommandObject uco ->" +
                              "[theFirstName:uco.firstName, validationErrors:uco.errors]\n" +
                              "}\n" +
-						"}");
+                        "}");
 
-		Class simpleControllerClass = cl.parseClass("class SimpleController {\n"+
-				" Closure test = {\n"+
-			     "}\n" +
-			"}");
+        Class<?> simpleControllerClass = cl.parseClass("class SimpleController {\n"+
+                " Closure test = {\n"+
+                 "}\n" +
+            "}");
 
-		Class noViewControllerClass = cl.parseClass("class NoViewController {\n"+
-				" Closure test = {\n"+
-			      "request, response ->\n" +
-			      "new grails.util.OpenRicoBuilder(response).ajax { element(id:\"test\") { } };\n" +
-			      "return null;\n" +
-			     "}\n" +
-			"}");
+        Class<?> noViewControllerClass = cl.parseClass("class NoViewController {\n"+
+                " Closure test = {\n"+
+                  "request, response ->\n" +
+                  "new grails.util.OpenRicoBuilder(response).ajax { element(id:\"test\") { } };\n" +
+                  "return null;\n" +
+                 "}\n" +
+            "}");
 
-		Class restrictedControllerClass = cl.parseClass("class RestrictedController {\n"+
-				"static def allowedMethods=[action1:'POST', action3:['PUT', 'DELETE']]\n" +
-				"def action1 = {}\n" +
-				"def action2 = {}\n" +
-				"def action3 = {}\n" +
-		"}");
+        Class<?> restrictedControllerClass = cl.parseClass("class RestrictedController {\n"+
+                "static def allowedMethods=[action1:'POST', action3:['PUT', 'DELETE']]\n" +
+                "def action1 = {}\n" +
+                "def action2 = {}\n" +
+                "def action3 = {}\n" +
+        "}");
 
-//		this.grailsApplication = new DefaultGrailsApplication(new Class[]{c1,c2,c3},cl);
-//		this.controller = new SimpleGrailsController();
-//		this.controller.setGrailsApplication(grailsApplication);
+        Thread.currentThread().setContextClassLoader(cl);
 
-		Thread.currentThread().setContextClassLoader(cl);
+        localContext = new GenericApplicationContext();
 
-		//grailsApplication = new DefaultGrailsApplication(,cl);
-		this.localContext = new GenericApplicationContext();
+        ConstructorArgumentValues args = new ConstructorArgumentValues();
+        args.addGenericArgumentValue(new Class[]{testControllerClass,simpleControllerClass,noViewControllerClass,restrictedControllerClass});
+        args.addGenericArgumentValue(cl);
+        MutablePropertyValues propValues = new MutablePropertyValues();
 
-		ConstructorArgumentValues args = new ConstructorArgumentValues();
-		args.addGenericArgumentValue(new Class[]{testControllerClass,simpleControllerClass,noViewControllerClass,restrictedControllerClass});
-		args.addGenericArgumentValue(cl);
-		MutablePropertyValues propValues = new MutablePropertyValues();
+        BeanDefinition grailsApplicationBean = new RootBeanDefinition(DefaultGrailsApplication.class,args,propValues);
+        localContext.registerBeanDefinition( "grailsApplication", grailsApplicationBean );
 
-		BeanDefinition grailsApplicationBean = new RootBeanDefinition(DefaultGrailsApplication.class,args,propValues);
-		localContext.registerBeanDefinition( "grailsApplication", grailsApplicationBean );
+        localContext.refresh();
 
-        this.localContext.refresh();
-
-		this.grailsApplication = (GrailsApplication)localContext.getBean("grailsApplication");
+        grailsApplication = (GrailsApplication)localContext.getBean("grailsApplication");
         ApplicationHolder.setApplication(grailsApplication);
-		/*BeanDefinition applicationEventMulticaster = new RootBeanDefinition(SimpleApplicationEventMulticaster.class);
-		context.registerBeanDefinition( "applicationEventMulticaster ", applicationEventMulticaster);*/
-		GrailsRuntimeConfigurator rConfig = new GrailsRuntimeConfigurator(grailsApplication, localContext);
+        GrailsRuntimeConfigurator rConfig = new GrailsRuntimeConfigurator(grailsApplication, localContext);
 
-		MockServletContext servletContext = new MockServletContext();
-		this.appCtx = (ConfigurableApplicationContext)rConfig.configure(servletContext);
+        MockServletContext servletContext = new MockServletContext();
+        appCtx = (ConfigurableApplicationContext)rConfig.configure(servletContext);
 
-		this.controller = (SimpleGrailsController)appCtx.getBean("mainSimpleController");
+        controller = (SimpleGrailsController)appCtx.getBean("mainSimpleController");
 
-		servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
-		controller.setServletContext(servletContext);
-		assertNotNull(appCtx);
-		super.setUp();
-	}
-
-
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception {
-        ExpandoMetaClass.disableGlobally();
-
-        grailsApplication = null;
-	    controller = null;
-	    localContext = null;
-	    appCtx = null;
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
+        controller.setServletContext(servletContext);
+        assertNotNull(appCtx);
+        super.setUp();
     }
 
+    /* (non-Javadoc)
+     * @see junit.framework.TestCase#tearDown()
+     */
+    @Override
+    protected void tearDown() throws Exception {
+        ExpandoMetaClass.disableGlobally();
+    }
 
+    private ModelAndView execute(String uri,String controllerName, String actionName, Properties parameters) throws Exception {
+        return execute(uri,controllerName, actionName, parameters, "GET");
+    }
 
-	private ModelAndView execute(String uri,String controllerName, String actionName, Properties parameters) throws Exception {
-		return execute(uri,controllerName, actionName, parameters, "GET");
-	}
-
-	private ModelAndView execute(String uri,String controllerName, String actionName, Properties parameters, String requestMethod) throws Exception {
+    @SuppressWarnings("unchecked")
+    private ModelAndView execute(String uri,String controllerName, String actionName, Properties parameters, String requestMethod) throws Exception {
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest((GrailsWebApplicationContext)this.appCtx);
         webRequest.setControllerName(controllerName);
         webRequest.setActionName(actionName);
         MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
-        if(uri.indexOf('?') > -1)
+        if (uri.indexOf('?') > -1) {
             request.setRequestURI(uri.substring(0,uri.indexOf('?')));
-        else
+        }
+        else {
             request.setRequestURI(uri);
+        }
         request.setMethod(requestMethod);
 
-		request.setContextPath("/simple");
+        request.setContextPath("/simple");
 
-		if (parameters != null) {
-			for (Iterator iter = parameters.keySet().iterator(); iter.hasNext();) {
-				String paramName = (String)iter.next();
-				String paramValue = parameters.getProperty(paramName);
-				request.addParameter(paramName, paramValue);
-			}
-		}
-		return controller.handleRequest(request, null);
-	}
+        if (parameters != null) {
+            for (Iterator iter = parameters.keySet().iterator(); iter.hasNext();) {
+                String paramName = (String)iter.next();
+                String paramValue = parameters.getProperty(paramName);
+                request.addParameter(paramName, paramValue);
+            }
+        }
+        return controller.handleRequest(request, null);
+    }
 
-	public void testSimpleControllerSuccess() throws Exception {
-		ModelAndView modelAndView = execute("/test/test","test","test", null);
-		assertNotNull(modelAndView);
-	}
+    public void testSimpleControllerSuccess() throws Exception {
+        ModelAndView modelAndView = execute("/test/test","test","test", null);
+        assertNotNull(modelAndView);
+    }
 
+   @SuppressWarnings("unchecked")
     public void testCommandObjectDateStruct() throws Exception {
         Properties props = new Properties();
         props.put("birthday", "struct");
@@ -240,8 +222,9 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong date", expectedDate, birthDate);
     }
 
+    @SuppressWarnings("unchecked")
     public void testUnconstrainedCommandObject() throws Exception {
-       Properties props = new Properties();
+        Properties props = new Properties();
         props.put("firstName", "James");
         ModelAndView modelAndView = execute("/test/unconstrainedcommandobject?id=1&firstName=James","test","unconstrainedcommandobject", props);
         assertNotNull("null modelAndView", modelAndView);
@@ -251,10 +234,11 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
     }
 
+    @SuppressWarnings("unchecked")
     public void testSingleCommandObjectValidationSuccess() throws Exception {
         Properties props = new Properties();
-         props.put("firstName", "James");
-         props.put("lastName", "Gosling");
+        props.put("firstName", "James");
+        props.put("lastName", "Gosling");
 
         ModelAndView modelAndView = execute("/test/singlecommandobject","test","singlecommandobject", props);
         assertNotNull("null modelAndView", modelAndView);
@@ -265,11 +249,12 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
     }
 
+    @SuppressWarnings("unchecked")
     public void testMultipleCommandObjectValidationSuccess() throws Exception {
 
         Properties props = new Properties();
-         props.put("firstName", "James");
-         props.put("lastName", "Gosling");
+        props.put("firstName", "James");
+        props.put("lastName", "Gosling");
         props.put("age", "30");
 
         ModelAndView modelAndView = execute("/test/multiplecommandobjects","test","multiplecommandobjects", props);
@@ -284,10 +269,11 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of aco errors", 0, acoErrors.getErrorCount());
     }
 
+    @SuppressWarnings("unchecked")
     public void testSingleCommandObjectValidationFailure() throws Exception {
         Properties props = new Properties();
-         props.put("firstName", "ThisFirstNameIsTooLong");
-         props.put("lastName", "ThisLastNameIsTooLong");
+        props.put("firstName", "ThisFirstNameIsTooLong");
+        props.put("lastName", "ThisLastNameIsTooLong");
 
         ModelAndView modelAndView = execute("/test/singlecommandobject","test", "singlecommandobject", props);
         assertNotNull("null modelAndView", modelAndView);
@@ -298,10 +284,11 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of mcoErrors", 2, validationErrors.getErrorCount());
     }
 
+    @SuppressWarnings("unchecked")
     public void testMultipleCommandObjectValidationFailure() throws Exception {
         Properties props = new Properties();
-         props.put("firstName", "ThisFirstNameIsTooLong");
-         props.put("lastName", "Gosling");
+        props.put("firstName", "ThisFirstNameIsTooLong");
+        props.put("lastName", "Gosling");
         props.put("age", "300");
 
         ModelAndView modelAndView = execute("/test/multiplecommandobjects", "test","multiplecommandobjects", props);
@@ -317,30 +304,30 @@ public class SimpleGrailsControllerTests extends TestCase {
 
     }
 
-	public void testAllowedMethods() throws Exception {
+    public void testAllowedMethods() throws Exception {
         GrailsClass controllerClass = grailsApplication.getArtefact(ControllerArtefactHandler.TYPE,"RestrictedController");
         assertNotNull(controllerClass);
         assertResponseStatusCode("restricted","action1","/restricted/action1", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-		assertResponseStatusCode("restricted","action1","/restricted/action1", "PUT", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-		assertResponseStatusCode("restricted","action1","/restricted/action1", "POST", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action1","/restricted/action1", "DELETE", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        assertResponseStatusCode("restricted","action1","/restricted/action1", "PUT", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        assertResponseStatusCode("restricted","action1","/restricted/action1", "POST", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action1","/restricted/action1", "DELETE", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 
-		assertResponseStatusCode("restricted","action2","/restricted/action2", "GET", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action2","/restricted/action2", "PUT", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action2","/restricted/action2", "POST", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action2","/restricted/action2", "DELETE", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action2","/restricted/action2", "GET", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action2","/restricted/action2", "PUT", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action2","/restricted/action2", "POST", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action2","/restricted/action2", "DELETE", HttpServletResponse.SC_OK);
 
-		assertResponseStatusCode("restricted","action3","/restricted/action3", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-		assertResponseStatusCode("restricted","action3","/restricted/action3", "PUT", HttpServletResponse.SC_OK);
-		assertResponseStatusCode("restricted","action3","/restricted/action3", "POST", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-		assertResponseStatusCode("restricted","action3","/restricted/action3", "DELETE", HttpServletResponse.SC_OK);
-	}
+        assertResponseStatusCode("restricted","action3","/restricted/action3", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        assertResponseStatusCode("restricted","action3","/restricted/action3", "PUT", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action3","/restricted/action3", "POST", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        assertResponseStatusCode("restricted","action3","/restricted/action3", "DELETE", HttpServletResponse.SC_OK);
+    }
 
-	private void assertResponseStatusCode(String controllerName, String actionName,String uri, String httpMethod, int expectedStatusCode) throws Exception {
-		execute(uri,controllerName, actionName, null, httpMethod);
-		GrailsWebRequest gwr = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-		MockHttpServletResponse res = (MockHttpServletResponse) gwr.getCurrentResponse();
+    private void assertResponseStatusCode(String controllerName, String actionName,String uri, String httpMethod, int expectedStatusCode) throws Exception {
+        execute(uri,controllerName, actionName, null, httpMethod);
+        GrailsWebRequest gwr = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+        MockHttpServletResponse res = (MockHttpServletResponse) gwr.getCurrentResponse();
 
-		assertEquals(expectedStatusCode, res.getStatus());
-	}
+        assertEquals(expectedStatusCode, res.getStatus());
+    }
 }

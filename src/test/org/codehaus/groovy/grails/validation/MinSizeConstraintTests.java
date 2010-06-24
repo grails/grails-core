@@ -11,10 +11,12 @@ import java.util.Collection;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class MinSizeConstraintTests extends AbstractConstraintTests{
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return MinSizeConstraint.class;
     }
 
+    @SuppressWarnings("unchecked")
     public void testValidation() {
         // 9 characters but 10 is minimum
         testConstraintMessageCodes(

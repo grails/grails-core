@@ -21,35 +21,33 @@ import junit.framework.TestCase;
 import java.io.File;
 
 /**
- * 
- * 
  * @author Steven Devijver
- * @since Jul 3, 2005
  */
 public class MultipleClassesPerFileTests extends TestCase {
 
-	public MultipleClassesPerFileTests() {
-		super();
-	}
+    public MultipleClassesPerFileTests() {
+        super();
+    }
 
-	public MultipleClassesPerFileTests(String arg0) {
-		super(arg0);
-	}
+    public MultipleClassesPerFileTests(String name) {
+        super(name);
+    }
 
-	public void testMultipleClassesPerFile() throws Exception {
-		GroovyClassLoader cl = new GroovyClassLoader();
-		cl.parseClass(new File("src/test/org/codehaus/groovy/grails/commons/classes.groovy"));
-		Class testClass1 = cl.loadClass("TestClass1");
-		Class testClass2 = cl.loadClass("TestClass2");
-		
-		try {
-			cl.loadClass("TestClass3");
-			fail();
-		} catch (ClassNotFoundException e) {
-			// expected
-		}
-		
-		assertNotNull(testClass1);
-		assertNotNull(testClass2);
-	}
+    public void testMultipleClassesPerFile() throws Exception {
+        GroovyClassLoader cl = new GroovyClassLoader();
+        cl.parseClass(new File("src/test/org/codehaus/groovy/grails/commons/classes.groovy"));
+        Class<?> testClass1 = cl.loadClass("TestClass1");
+        Class<?> testClass2 = cl.loadClass("TestClass2");
+
+        try {
+            cl.loadClass("TestClass3");
+            fail();
+        }
+        catch (ClassNotFoundException e) {
+            // expected
+        }
+
+        assertNotNull(testClass1);
+        assertNotNull(testClass2);
+    }
 }

@@ -7,7 +7,8 @@ package org.codehaus.groovy.grails.validation;
  */
 public class EmailConstraintTests extends AbstractConstraintTests {
 
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return EmailConstraint.class;
     }
 

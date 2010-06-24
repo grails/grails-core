@@ -13,9 +13,10 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     /*
       * Test method for 'org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty.get(Object)'
       */
+    @SuppressWarnings("unchecked")
     public void testGet() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class groovyClass = gcl.parseClass("package org.codehaus.groovy.grails.validation\n" +
+        Class<?> groovyClass = gcl.parseClass("package org.codehaus.groovy.grails.validation\n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -23,7 +24,6 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "}");
 
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
-
 
         Map constraints = domainClass.getConstrainedProperties();
 
@@ -51,6 +51,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     /**
      * Test that static constraints work
      */
+    @SuppressWarnings("unchecked")
     public void testNullableConstraint() throws Exception {
         String bookClassSource =
                 "package org.codehaus.groovy.grails.validation\n" +
@@ -123,9 +124,9 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 3); // Must have nullable and validator
     }
 
+    @SuppressWarnings("unchecked")
     private void ensureConstraintsPresent(String[] classSource, int classIndexToTest, int constraintCount)
-            throws Exception
-    {
+            throws Exception {
         // We need to do a real test here to make sure
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class[] classes = new Class[classSource.length];

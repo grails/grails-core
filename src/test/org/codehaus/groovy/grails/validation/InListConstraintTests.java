@@ -9,10 +9,12 @@ import java.util.ArrayList;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class InListConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return InListConstraint.class;
     }
 
+    @SuppressWarnings("unchecked")
     private List getTestList() {
         List result = new ArrayList();
         result.add("one");
@@ -21,6 +23,7 @@ public class InListConstraintTests extends AbstractConstraintTests {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public void testValidation() {
         List avail = getTestList();
 

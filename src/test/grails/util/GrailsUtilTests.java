@@ -16,38 +16,38 @@ package grails.util;
 
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import junit.framework.TestCase;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import junit.framework.TestCase;
+
+import org.xml.sax.SAXException;
+
 /**
- * Tests for the GrailsUtils class
+ * Tests for the GrailsUtils class.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 22, 2007
- *        Time: 6:21:53 PM
  */
 public class GrailsUtilTests extends TestCase {
-
 
     public void testGrailsVersion() {
         assertEquals("1.3.3.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
     }
 
+    @Override
     protected void tearDown() throws Exception {
         System.setProperty(Environment.KEY, "");
     }
 
     @SuppressWarnings("deprecation")
-	public void testWriteSlurperResult() throws SAXException, ParserConfigurationException, IOException {
+    public void testWriteSlurperResult() throws SAXException, ParserConfigurationException, IOException {
         String testXml = "<root><books><book isbn=\"45734957\">" +
-                "<title>Misery</title><author>Stephen King</author>" +
-                "</book></books></root>";
+                         "<title>Misery</title><author>Stephen King</author>" +
+                         "</book></books></root>";
         GPathResult result = new XmlSlurper().parseText(testXml);
 
         StringWriter output = new StringWriter(testXml.length() + 20);

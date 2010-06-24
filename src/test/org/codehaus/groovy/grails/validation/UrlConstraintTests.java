@@ -9,11 +9,13 @@ import java.util.List;
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
 public class UrlConstraintTests extends AbstractConstraintTests {
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return UrlConstraint.class;
     }
 
-    public void testValidation() {
+    @SuppressWarnings("unchecked")
+	public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint("testURL", Boolean.TRUE),
                 "wrong_url",
@@ -108,7 +110,8 @@ public class UrlConstraintTests extends AbstractConstraintTests {
 
     }
 
-    public void testCreation() {
+    @SuppressWarnings("unchecked")
+	public void testCreation() {
         UrlConstraint constraint = (UrlConstraint) getConstraint("testString", Boolean.FALSE);
         assertEquals(ConstrainedProperty.URL_CONSTRAINT, constraint.getName());
         assertTrue(constraint.supports(String.class));

@@ -19,18 +19,15 @@ import junit.framework.TestCase;
 
 /**
  * @author Marc Palmer
- * @since 22-Feb-2007
  */
 public class TagLibArtefactHandlerTests extends TestCase {
 
-    public void testIsTagLibClass() throws Exception
-    {
+    public void testIsTagLibClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        Class c = gcl.parseClass("class TestTagLib { }\n");
+        Class<?> c = gcl.parseClass("class TestTagLib { }\n");
 
         ArtefactHandler handler = new TagLibArtefactHandler();
         assertTrue(handler.isArtefact(c));
     }
-
 }

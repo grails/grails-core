@@ -19,18 +19,15 @@ import junit.framework.TestCase;
 
 /**
  * @author Marc Palmer
- * @since 22-Feb-2007
  */
 public class ServiceArtefactHandlerTests extends TestCase {
 
-    public void testIsServiceClass() throws Exception
-    {
+    public void testIsServiceClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        Class c = gcl.parseClass("class TestService { }\n");
+        Class<?> c = gcl.parseClass("class TestService { }\n");
 
         ArtefactHandler handler = new ServiceArtefactHandler();
         assertTrue(handler.isArtefact(c));
     }
-
 }

@@ -12,7 +12,8 @@ public class CreditCardConstraintTests extends AbstractConstraintTests {
     private static final String VALID_MASTERCARD = "5105105105105100";
     private static final String VALID_DISCOVER = "6011000990139424";
 
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return CreditCardConstraint.class;
     }
 

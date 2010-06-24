@@ -19,20 +19,22 @@ import org.hibernate.HibernateException;
 import org.hibernate.criterion.CriteriaQuery;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.dialect.*;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.engine.TypedValue;
 
 /**
- * 
- * Adds support for rlike to Hibernate in supported dialects
+ * Adds support for rlike to Hibernate in supported dialects.
  *
  * @author Graeme Rocher
  * @since 1.1.1
  */
-public class RlikeExpression implements Criterion
-{
- 	private static final long serialVersionUID = -214329918050957956L;
-	private final String propertyName;
+public class RlikeExpression implements Criterion {
+
+    private static final long serialVersionUID = -214329918050957956L;
+
+    private final String propertyName;
     private final Object value;
 
     public RlikeExpression(String propertyName, Object value) {
@@ -41,39 +43,37 @@ public class RlikeExpression implements Criterion
     }
 
     public RlikeExpression(String propertyName, String value, MatchMode matchMode) {
-        this( propertyName, matchMode.toMatchString(value) );
+        this(propertyName, matchMode.toMatchString(value));
     }
 
-    public String toSqlString(Criteria criteria, CriteriaQuery criteriaQuery)
-    throws HibernateException {
+    public String toSqlString(Criteria criteria, CriteriaQuery criteriaQuery) throws HibernateException {
         Dialect dialect = criteriaQuery.getFactory().getDialect();
         String[] columns = criteriaQuery.getColumnsUsingProjection(criteria, propertyName);
-        if (columns.length!=1) throw new HibernateException("ilike may only be used with single-column properties");
-        if ( dialect instanceof MySQLDialect) {
-            return columns[0] + " rlike ?";
+        if (columns.length != 1) {
+            throw new HibernateException("ilike may only be used with single-column properties");
+        }
 
+        if (dialect instanceof MySQLDialect) {
+            return columns[0] + " rlike ?";
         }
-        else if (isOracleDialect(dialect))
-        {
-            return " REGEXP_LIKE ( " + columns[0] + ", ? )";
+
+        if (isOracleDialect(dialect)) {
+            return " REGEXP_LIKE (" + columns[0] + ", ?)";
         }
-        else
-        {
-            return columns[0] + " like ?";
-        }
+
+        return columns[0] + " like ?";
     }
 
     private boolean isOracleDialect(Dialect dialect) {
         return (dialect instanceof Oracle8iDialect);
     }
 
-    public TypedValue[] getTypedValues(Criteria criteria, CriteriaQuery criteriaQuery)
-    throws HibernateException {
-        return new TypedValue[] { criteriaQuery.getTypedValue( criteria, propertyName, value.toString().toLowerCase() ) };
+    public TypedValue[] getTypedValues(Criteria criteria, CriteriaQuery criteriaQuery) throws HibernateException {
+        return new TypedValue[] { criteriaQuery.getTypedValue(criteria, propertyName, value.toString().toLowerCase()) };
     }
 
+    @Override
     public String toString() {
         return propertyName + " rlike " + value;
     }
-
 }

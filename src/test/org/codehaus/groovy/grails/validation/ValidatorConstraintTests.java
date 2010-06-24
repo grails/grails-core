@@ -12,7 +12,8 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
     private static final String PROP_NAME = "firstName";
     private GroovyShell shell = new GroovyShell();
 
-    protected Class getConstraintClass() {
+    @Override
+    protected Class<?> getConstraintClass() {
         return ValidatorConstraint.class;
     }
 

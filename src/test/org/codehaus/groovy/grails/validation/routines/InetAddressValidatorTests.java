@@ -21,12 +21,10 @@ import junit.framework.TestCase;
 
 /**
  * Test cases for InetAddressValidator.
- *
- * @version $Revision: 586676 $
  */
 public class InetAddressValidatorTests extends TestCase {
 
-    private InetAddressValidator validator;
+    private InetAddressValidator validator = new InetAddressValidator();
 
     /**
      * Command-line test method.
@@ -42,10 +40,6 @@ public class InetAddressValidatorTests extends TestCase {
      */
     public InetAddressValidatorTests(String name) {
         super(name);
-    }
-
-    protected void setUp() {
-        validator = new InetAddressValidator();
     }
 
     /**
