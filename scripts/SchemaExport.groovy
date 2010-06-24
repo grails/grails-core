@@ -37,9 +37,9 @@ def configClasspath = {
 
     ant.copy(todir: classesDirPath, file: metadataFile)
     ant.copy(todir: classesDirPath, failonerror: false) {
-        fileset(dir: "${basedir}/grails-app/conf", excludes: '*.groovy, log4j*, hibernate, spring')
-        fileset(dir: "${basedir}/grails-app/conf/hibernate")
-        fileset(dir: "${basedir}/src/java", excludes: '**/*.java')
+        fileset dir: "${basedir}/grails-app/conf", excludes: '**/*.groovy, log4j*, hibernate/**, spring/**'
+        fileset dir: "${basedir}/grails-app/conf/hibernate"
+        fileset dir: "${basedir}/src/java", excludes: '**/*.java'
     }
 }
 
@@ -132,7 +132,7 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
     def configuration = classLoader.loadClass(configClassName).newInstance()
     configuration.setGrailsApplication(grailsApp)
     configuration.setProperties(props)
-    def hibernateCfgXml = eventsClassLoader.getResource('hibernate/hibernate.cfg.xml')
+    def hibernateCfgXml = eventsClassLoader.getResource('hibernate.cfg.xml')
     if (hibernateCfgXml) {
         configuration.configure(hibernateCfgXml)
     }
