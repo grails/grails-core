@@ -8,7 +8,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT c;pWARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -17,16 +17,12 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
 /**
- *
- * A tag library that provides tags to inspect available plugins
+ * Tags to inspect available plugins.
  *
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Feb 6, 2009
  */
-
-public class PluginTagLib {
+class PluginTagLib {
 
     static namespace = "plugin"
 
@@ -36,9 +32,9 @@ public class PluginTagLib {
      * Gets the path to a particular plugin
      *
      * eg. <plugin:path name="myPlugin" />
-     */    
+     */
     def path = { attrs, body  ->
-    	out << pluginManager.getPluginPath(attrs.name)
+        out << pluginManager.getPluginPath(attrs.name)
     }
 
     /**
@@ -50,7 +46,7 @@ public class PluginTagLib {
         def name = attrs.name
         def version = attrs.version
 
-        if(checkPluginExists(version, name)) {
+        if (checkPluginExists(version, name)) {
             out << body()
         }
     }
@@ -60,12 +56,11 @@ public class PluginTagLib {
      *
      * eg. <plugin:isNotAvailable name="hibernate">print me</plugin:isNotAvailable>
      */
-
     def isNotAvailable = { attrs, body ->
         def name = attrs.name
         def version = attrs.version
 
-        if(!checkPluginExists(version, name)) {
+        if (!checkPluginExists(version, name)) {
             out << body()
         }
     }
@@ -75,7 +70,7 @@ public class PluginTagLib {
             if (version && pluginManager.getGrailsPlugin(name, version)) {
                 return true
             }
-            else if (pluginManager.hasGrailsPlugin(name)) {
+            if (pluginManager.hasGrailsPlugin(name)) {
                 return true
             }
         }

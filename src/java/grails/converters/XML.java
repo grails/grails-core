@@ -14,11 +14,21 @@
  */
 package grails.converters;
 
-
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
 import groovy.util.XmlSlurper;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.util.Map;
+import java.util.Stack;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
@@ -35,18 +45,10 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter;
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter;
 import org.codehaus.groovy.grails.web.xml.XMLStreamWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.util.Map;
-import java.util.Stack;
+import org.springframework.util.Assert;
 
 /**
- * A converter that converts domain classes to XML
+ * A converter that converts domain classes to XML.
  *
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
@@ -58,25 +60,18 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     private static final String CACHED_XML = "org.codehaus.groovy.grails.CACHED_XML_REQUEST_CONTENT";
 
     private Object target;
-
     private StreamingMarkupWriter stream;
-
     private final ConverterConfiguration<XML> config;
-
     private final String encoding;
-
     private final CircularReferenceBehaviour circularReferenceBehaviour;
-
     private XMLStreamWriter writer;
-
     private Stack<Object> referenceStack = new Stack<Object>();
-
     private boolean isRendering = false;
 
     public XML() {
-        this.config = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
-        this.encoding = config.getEncoding();
-        this.circularReferenceBehaviour = config.getCircularReferenceBehaviour();
+        config = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
+        encoding = config.getEncoding();
+        circularReferenceBehaviour = config.getCircularReferenceBehaviour();
     }
 
     public XML(Object target) {
@@ -88,13 +83,14 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         return ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
     }
 
+    @Override
     public void setTarget(Object target) {
         this.target = target;
     }
 
     private void finalizeRender(Writer out) {
         try {
-            if(out != null) {
+            if (out != null) {
                 out.flush();
                 out.close();
             }
@@ -106,14 +102,14 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
 
     public void render(Writer out) throws ConverterException {
         stream = new StreamingMarkupWriter(out, encoding);
-        this.writer = config.isPrettyPrint() ? new PrettyPrintXMLStreamWriter(stream): new XMLStreamWriter(stream);
+        writer = config.isPrettyPrint() ? new PrettyPrintXMLStreamWriter(stream): new XMLStreamWriter(stream);
 
         try {
             isRendering = true;
-            this.writer.startDocument(encoding, "1.0");
-            this.writer.startNode(getElementName(target));
+            writer.startDocument(encoding, "1.0");
+            writer.startNode(getElementName(target));
             convertAnother(target);
-            this.writer.end();
+            writer.end();
         }
         catch (Exception e) {
             throw new ConverterException(e);
@@ -125,7 +121,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     }
 
     private void checkState() {
-        if (!isRendering) throw new IllegalStateException("Illegal XML Converter call!");
+        Assert.state(isRendering, "Illegal XML Converter call!");
     }
 
     public String getElementName(Object o) {
@@ -144,11 +140,11 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             else if (o instanceof CharSequence) {
                 writer.characters(o.toString());
             }
-            else if (o instanceof Class) {
-                writer.characters(((Class) o).getName());
+            else if (o instanceof Class<?>) {
+                writer.characters(((Class<?>)o).getName());
             }
-            else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class))
-                    || o instanceof Number || o instanceof Boolean) {
+            else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class)) ||
+                    o instanceof Number || o instanceof Boolean) {
                 writer.characters(String.valueOf(o));
             }
             else {
@@ -171,7 +167,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         }
     }
 
-    public ObjectMarshaller<XML> lookupObjectMarshaller(Object target) {
+    public ObjectMarshaller<XML> lookupObjectMarshaller(@SuppressWarnings("hiding") Object target) {
         return config.getMarshaller(target);
     }
 
@@ -182,7 +178,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     public XML startNode(String tagName) {
         checkState();
         try {
-            this.writer.startNode(tagName);
+            writer.startNode(tagName);
         }
         catch (Exception e) {
             throw ConverterUtil.resolveConverterException(e);
@@ -193,7 +189,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     public XML chars(String chars) {
         checkState();
         try {
-            this.writer.characters(chars);
+            writer.characters(chars);
         }
         catch (Exception e) {
             throw ConverterUtil.resolveConverterException(e);
@@ -201,11 +197,10 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         return this;
     }
 
-
     public XML attribute(String name, String value) {
         checkState();
         try {
-            this.writer.attribute(name, value);
+            writer.attribute(name, value);
         }
         catch (Exception e) {
             throw ConverterUtil.resolveConverterException(e);
@@ -216,7 +211,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     public XML end() {
         checkState();
         try {
-            this.writer.end();
+            writer.end();
         }
         catch (Exception e) {
             throw ConverterUtil.resolveConverterException(e);
@@ -224,6 +219,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         return this;
     }
 
+    @SuppressWarnings("incomplete-switch")
     protected void handleCircularRelationship(Object o) throws ConverterException {
         switch (circularReferenceBehaviour) {
             case DEFAULT:
@@ -276,6 +272,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         new Builder(this).execute(c);
     }
 
+    @Override
     public String toString() {
         FastStringWriter strw = new FastStringWriter();
         render(strw);
@@ -327,9 +324,11 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     public static Object parse(HttpServletRequest request) throws ConverterException {
         Object xml = request.getAttribute(CACHED_XML);
         if (xml != null) return xml;
+
         String encoding = request.getCharacterEncoding();
-        if (encoding == null)
+        if (encoding == null) {
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
+        }
         try {
             if (!request.getMethod().equalsIgnoreCase("GET")) {
                 xml = parse(request.getInputStream(), encoding);
@@ -343,9 +342,11 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     }
 
     public static ConverterConfiguration<XML> getNamedConfig(String configName) throws ConverterException {
-        ConverterConfiguration<XML> cfg = ConvertersConfigurationHolder.getNamedConverterConfiguration(configName, XML.class);
-        if (cfg == null)
+        ConverterConfiguration<XML> cfg = ConvertersConfigurationHolder.getNamedConverterConfiguration(
+                configName, XML.class);
+        if (cfg == null) {
             throw new ConverterException(String.format("Converter Configuration with name '%s' not found!", configName));
+        }
         return cfg;
     }
 
@@ -362,25 +363,28 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     }
 
     public static void use(String cfgName) throws ConverterException {
-        if (cfgName == null || "default".equals(cfgName))
+        if (cfgName == null || "default".equals(cfgName)) {
             ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, null);
-        else
+        }
+        else {
             ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, getNamedConfig(cfgName));
+        }
     }
 
-    public static void registerObjectMarshaller(Class clazz, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, Closure callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<XML>(clazz, callable));
     }
 
-    public static void registerObjectMarshaller(Class clazz, int priority, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<XML>(clazz, callable), priority);
     }
 
     public static void registerObjectMarshaller(ObjectMarshaller<XML> om) throws ConverterException {
         ConverterConfiguration<XML> cfg = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
-        if (cfg == null)
+        if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + XML.class.getName());
-        if (!(cfg instanceof DefaultConverterConfiguration)) {
+        }
+        if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<XML>(cfg);
             ConvertersConfigurationHolder.setDefaultConfiguration(XML.class, cfg);
         }
@@ -389,15 +393,14 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
 
     public static void registerObjectMarshaller(ObjectMarshaller<XML> om, int priority) throws ConverterException {
         ConverterConfiguration<XML> cfg = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
-        if (cfg == null)
+        if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + XML.class.getName());
-        if (!(cfg instanceof DefaultConverterConfiguration)) {
+        }
+        if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<XML>(cfg);
             ConvertersConfigurationHolder.setDefaultConfiguration(XML.class, cfg);
         }
-        ((DefaultConverterConfiguration<XML>) cfg).registerObjectMarshaller(
-                om, priority
-        );
+        ((DefaultConverterConfiguration<XML>) cfg).registerObjectMarshaller(om, priority);
     }
 
     public static void createNamedConfig(String name, Closure callable) throws ConverterException {
@@ -413,9 +416,8 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
 
     public static void withDefaultConfiguration(Closure callable) throws ConverterException {
         ConverterConfiguration<XML> cfg = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
-        if (!(cfg instanceof DefaultConverterConfiguration)) {
+        if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<XML>(cfg);
-
         }
         try {
             callable.call(cfg);
@@ -439,27 +441,33 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             callable.call();
         }
 
+        @Override
         protected Object createNode(Object name) {
             return createNode(name, null, null);
         }
 
+        @Override
         protected Object createNode(Object name, Object value) {
             return createNode(name, null, value);
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
         protected Object createNode(Object name, Map attributes) {
             return createNode(name, attributes, null);
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
         protected Object createNode(Object name, Map attributes, Object value) {
             xml.startNode(name.toString());
-            if(attributes != null) {
+            if (attributes != null) {
                 for (Object o : attributes.entrySet()) {
                     Map.Entry attribute = (Map.Entry) o;
                     xml.attribute(attribute.getKey().toString(), attribute.getValue().toString());
                 }
             }
-            if(value != null) {
+            if (value != null) {
                 xml.convertAnother(value);
             }
             return name;
@@ -470,8 +478,9 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             xml.end();
         }
 
+        @Override
         protected void setParent(Object o, Object o1) {
+            // do nothing
         }
     }
-
 }

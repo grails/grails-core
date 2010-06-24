@@ -14,37 +14,39 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import java.beans.PropertyEditorSupport;
+import java.util.TimeZone;
+
 import org.apache.commons.lang.StringUtils;
 
-import java.util.TimeZone;
-import java.beans.PropertyEditorSupport;
-
 /**
- * A Property editor for converting instances of java.util.TimeZone
+ * A Property editor for converting instances of java.util.TimeZone.
  *
  * @author Graeme Rocher
- * @since 20-Feb-2006
  */
-public class TimeZoneEditor  extends PropertyEditorSupport  {
+public class TimeZoneEditor extends PropertyEditorSupport {
+
+    @Override
     public void setAsText(String text) throws IllegalArgumentException {
-        if(StringUtils.isBlank(text)) {
+        if (StringUtils.isBlank(text)) {
             setValue(null);
         }
         try {
             setValue(TimeZone.getTimeZone(text));
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             // ignore and just set to null
             setValue(null);
         }
     }
 
+    @Override
     public String getAsText() {
         TimeZone tz = (TimeZone)getValue();
-        if(tz == null) {
+        if (tz == null) {
             return "";
         }
-        else {
-            return tz.getID();
-        }
+
+        return tz.getID();
     }
 }

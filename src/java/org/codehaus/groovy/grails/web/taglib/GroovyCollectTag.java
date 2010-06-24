@@ -29,25 +29,30 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  * @since 19-Jan-2006
  */
 public class GroovyCollectTag extends GroovySyntaxTag {
-   public static final String TAG_NAME = "collect";
+
+    public static final String TAG_NAME = "collect";
     private static final String ATTRIBUTE_EXPR = "expr";
 
+    @Override
     public boolean isKeepPrecedingWhiteSpace() {
         return true;
     }
 
+    @Override
     public boolean isAllowPrecedingContent() {
         return true;
     }
 
     public void doStartTag() {
-        String in = (String) attributes.get(ATTRIBUTE_IN);
-        String expr = (String) attributes.get(ATTRIBUTE_EXPR);
-        if(StringUtils.isBlank(in))
-            throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_IN+"]");
-        if(StringUtils.isBlank(expr))
-            throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_EXPR+"]");
+        String in = attributes.get(ATTRIBUTE_IN);
+        if (StringUtils.isBlank(in)) {
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]");
+        }
 
+        String expr = attributes.get(ATTRIBUTE_EXPR);
+        if (StringUtils.isBlank(expr)) {
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_EXPR + "]");
+        }
 
         StringBuilder builder = new StringBuilder();
         builder.append(in);

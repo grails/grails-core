@@ -80,6 +80,7 @@ import java.util.*;
  * @author JSON.org
  * @version 2
  */
+@SuppressWarnings("unchecked")
 public class JSONArray implements JSONElement, List {
 
 
@@ -784,6 +785,7 @@ public class JSONArray implements JSONElement, List {
      * @return a printable, displayable, transmittable
      *         representation of the array.
      */
+    @Override
     public String toString() {
         try {
             return '[' + join(",") + ']';
@@ -919,6 +921,7 @@ public class JSONArray implements JSONElement, List {
         return myArrayList.lastIndexOf(o);
     }
 
+    @Override
     public Object clone() {
         return myArrayList.clone();
     }

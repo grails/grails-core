@@ -15,17 +15,18 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
-import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap;
-
 import java.util.List;
 
+import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap;
+
 /**
- * Extends the default implementation and does data binding
+ * Extends the default implementation and does data binding.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
-public class DataBindingLazyMetaPropertyMap extends LazyMetaPropertyMap{
+public class DataBindingLazyMetaPropertyMap extends LazyMetaPropertyMap {
+
     /**
      * Constructs the map
      *
@@ -35,14 +36,14 @@ public class DataBindingLazyMetaPropertyMap extends LazyMetaPropertyMap{
         super(o);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public Object put(Object propertyName, Object propertyValue) {
-        if(propertyName instanceof List) {
+        if (propertyName instanceof List) {
             DataBindingUtils.bindObjectToInstance(getInstance(),propertyValue, (List)propertyName,null,null);
             return null;
         }
-        else {
-            return super.put(propertyName, propertyValue);    
-        }
 
+        return super.put(propertyName, propertyValue);
     }
 }

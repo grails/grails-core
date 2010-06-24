@@ -760,7 +760,8 @@ public final class GrailsDomainBinder {
      * @param persistentClasses
      * @return The DependantValue (key)
      */
-    private static DependantValue createPrimaryKeyValue(GrailsDomainClassProperty property, Collection collection, Map<?, ?> persistentClasses) {
+    private static DependantValue createPrimaryKeyValue(@SuppressWarnings("unused") GrailsDomainClassProperty property,
+   		 Collection collection, @SuppressWarnings("unused") Map<?, ?> persistentClasses) {
         KeyValue keyValue;
         DependantValue key;
         String propertyRef = collection.getReferencedPropertyName();
@@ -1257,7 +1258,7 @@ public final class GrailsDomainBinder {
      * @param gormMapping    The GORM mapping object
      */
     private static void bindJoinedSubClass(GrailsDomainClass sub, JoinedSubclass joinedSubclass,
-            Mappings mappings, Mapping gormMapping) {
+            Mappings mappings, @SuppressWarnings("unused") Mapping gormMapping) {
         bindClass(sub, joinedSubclass, mappings);
 
         if (joinedSubclass.getEntityPersisterClass() == null) {
@@ -1728,7 +1729,8 @@ public final class GrailsDomainBinder {
      * @param isNullable Whether it is nullable or not
      * @param mappings   The Hibernate Mappings object
      */
-    private static void bindComponent(Component component, GrailsDomainClassProperty property, boolean isNullable, Mappings mappings) {
+    private static void bindComponent(Component component, GrailsDomainClassProperty property,
+   		 @SuppressWarnings("unused") boolean isNullable, Mappings mappings) {
         component.setEmbedded(true);
         Class<?> type = property.getType();
         String role = StringHelper.qualify(type.getName(), property.getName());
@@ -1883,7 +1885,8 @@ public final class GrailsDomainBinder {
      * @param one
      * @param mappings
      */
-    private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one, Mappings mappings) {
+    private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one,
+   		 @SuppressWarnings("unused") Mappings mappings) {
         one.setReferencedEntityName(currentGrailsProp.getReferencedPropertyType().getName());
         one.setIgnoreNotFound(true);
     }
@@ -2236,7 +2239,8 @@ public final class GrailsDomainBinder {
      * @param path
      * @param mappings    The Hibernate mappings instance
      */
-    private static void bindSimpleValue(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty, SimpleValue simpleValue, String path, Mappings mappings) {
+    private static void bindSimpleValue(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty,
+   		 SimpleValue simpleValue, String path, @SuppressWarnings("unused") Mappings mappings) {
         // set type
         PropertyConfig propertyConfig = getPropertyConfig(property);
         bindSimpleValue(property,parentProperty, simpleValue, path, propertyConfig);
@@ -2312,7 +2316,8 @@ public final class GrailsDomainBinder {
      * @param columnName  The property name
      * @param mappings    The mappings
      */
-    private static void bindSimpleValue(String type, SimpleValue simpleValue, boolean nullable, String columnName, Mappings mappings) {
+    private static void bindSimpleValue(String type, SimpleValue simpleValue, boolean nullable,
+   		 String columnName, @SuppressWarnings("unused") Mappings mappings) {
 
         simpleValue.setTypeName(type);
         Table t = simpleValue.getTable();

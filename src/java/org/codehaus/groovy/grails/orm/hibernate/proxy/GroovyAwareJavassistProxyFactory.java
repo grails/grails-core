@@ -25,18 +25,16 @@ import org.hibernate.proxy.ProxyFactory;
 import org.hibernate.type.AbstractComponentType;
 
 /**
- * Hibernate's default proxying mechanism proxies Groovy's getMetaClass() method. To avoid this we customize the proxying 
- * creation proxy here and in #GroovyAwareJavassistLazyInitializer
+ * Hibernate's default proxying mechanism proxies Groovy's getMetaClass() method. To avoid this
+ * we customize the proxying creation proxy here and in #GroovyAwareJavassistLazyInitializer.
  *
  * @author Graeme Rocher
  * @since 1.1.1
- *        <p/>
- *        Created: Apr 21, 2009
  */
 public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializable {
 
-	private static final long serialVersionUID = 8959336753472691947L;
-	protected static final Class<?>[] NO_CLASSES = new Class[0];
+    private static final long serialVersionUID = 8959336753472691947L;
+    protected static final Class<?>[] NO_CLASSES = new Class[0];
     private Class<?> persistentClass;
     private String entityName;
     private Class<?>[] interfaces;
@@ -45,13 +43,14 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
     private AbstractComponentType componentIdType;
     private Class<?> factory;
 
+    @SuppressWarnings({"unchecked", "hiding"})
     public void postInstantiate(
             final String entityName,
             final Class persistentClass,
             final Set interfaces,
             final Method getIdentifierMethod,
             final Method setIdentifierMethod,
-            AbstractComponentType componentIdType) throws HibernateException {
+            final AbstractComponentType componentIdType) throws HibernateException {
         this.entityName = entityName;
         this.persistentClass = persistentClass;
         this.interfaces = (Class<?>[])interfaces.toArray(NO_CLASSES);
@@ -61,9 +60,7 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
         factory = GroovyAwareJavassistLazyInitializer.getProxyFactory(persistentClass, this.interfaces);
     }
 
-    public HibernateProxy getProxy(
-            Serializable id,
-            SessionImplementor session) throws HibernateException {
+    public HibernateProxy getProxy(Serializable id, SessionImplementor session) throws HibernateException {
         return GroovyAwareJavassistLazyInitializer.getProxy(
                 factory,
                 entityName,

@@ -27,70 +27,69 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.util.Assert;
 
 /**
- * A closure that represents the body of a tag and captures its output returning the result when invoked
+ * Represents the body of a tag and captures its output returning the result when invoked.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Apr 19, 2007
- *        Time: 2:21:38 PM
  */
 public class GroovyPageTagBody extends Closure {
-	private static final long serialVersionUID = 4396762064131558457L;
-	private Closure bodyClosure;
+
+    private static final long serialVersionUID = 4396762064131558457L;
+    private Closure bodyClosure;
     private Binding binding;
     private boolean preferSubChunkWhenWritingToOtherBuffer;
 
-	public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
-    	this(owner, webRequest, bodyClosure, false);
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
+        this(owner, webRequest, bodyClosure, false);
     }
-    
+
     public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure, boolean preferSubChunkWhenWritingToOtherBuffer) {
         super(owner);
 
-        if(bodyClosure == null) throw new IllegalStateException("Argument [bodyClosure] cannot be null!");
-        if(webRequest == null) throw new IllegalStateException("Argument [webRequest] cannot be null!");
+        Assert.notNull(bodyClosure, "Argument [bodyClosure] cannot be null!");
+        Assert.notNull(webRequest, "Argument [webRequest] cannot be null!");
 
         this.bodyClosure = bodyClosure;
-        this.binding = findPageScopeBinding(owner, webRequest);
+        binding = findPageScopeBinding(owner, webRequest);
         this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
     }
-    
-	private Binding findPageScopeBinding(Object owner, GrailsWebRequest webRequest) {
-		if(owner instanceof GroovyPage)
+
+    private Binding findPageScopeBinding(Object owner, GrailsWebRequest webRequest) {
+        if (owner instanceof GroovyPage) {
             return ((GroovyPage) owner).getBinding();
-        else if(owner != null && owner.getClass().getName().endsWith(TagLibArtefactHandler.TYPE)) {
-        	return (Binding) ((GroovyObject)owner).getProperty(GroovyPage.PAGE_SCOPE);
-        } else {
-        	return (Binding)webRequest.getCurrentRequest().getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
         }
-	}
-    
+
+        if (owner != null && owner.getClass().getName().endsWith(TagLibArtefactHandler.TYPE)) {
+            return (Binding) ((GroovyObject)owner).getProperty(GroovyPage.PAGE_SCOPE);
+        }
+
+        return (Binding)webRequest.getCurrentRequest().getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+    }
+
     public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
-		return preferSubChunkWhenWritingToOtherBuffer;
-	}
+        return preferSubChunkWhenWritingToOtherBuffer;
+    }
 
-	public void setPreferSubChunkWhenWritingToOtherBuffer(
-			boolean preferSubChunkWhenWritingToOtherBuffer) {
-		this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
-	}
+    public void setPreferSubChunkWhenWritingToOtherBuffer(boolean prefer) {
+        this.preferSubChunkWhenWritingToOtherBuffer = prefer;
+    }
 
-	private Object captureClosureOutput(Object args) {
+    @SuppressWarnings("unchecked")
+    private Object captureClosureOutput(Object args) {
         final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
             GroovyPageOutputStack.currentStack().push(capturedOut);
-            
+
             Object bodyResult;
 
-            if(args!=null) {
-                if(args instanceof Map) {
+            if (args != null) {
+                if (args instanceof Map) {
                     // The body can be passed a set of variables as a map that
                     // are then made available in the binding. This allows the
-                    // contents of the body to reference any of these variables
-                    // directly.
+                    // contents of the body to reference any of these variables directly.
                     //
                     // For example, body(foo: 1, bar: 'test') would allow this
                     // GSP fragment to work:
@@ -107,56 +106,54 @@ public class GroovyPageTagBody extends Closure {
                     Map originalBinding = null;
                     final Map argsMap = (Map) args;
 
-                    if(binding!=null) {
+                    if (binding != null) {
                         currentBinding = binding.getVariables();
                         originalBinding = new HashMap(currentBinding);
-                        // Add the extra variables passed into the body to the
-                        // current binding.
-                        
-						currentBinding.putAll(argsMap);
+                        // Add the extra variables passed into the body to the current binding.
+
+                        currentBinding.putAll(argsMap);
                     }
 
                     try {
-                        bodyResult = executeClosure(bodyClosure, args);
+                        bodyResult = executeClosure(args);
                     }
                     finally {
-                        if(binding!=null) {
+                        if (binding != null) {
                             // GRAILS-2675: Restore the original binding.
                             for (Object key : argsMap.keySet()) {
-								Object originalVal = originalBinding.get(key);
-								if(originalVal != null) {
-									currentBinding.put(key, originalVal);
-								}
-							}
+                                Object originalVal = originalBinding.get(key);
+                                if(originalVal != null) {
+                                    currentBinding.put(key, originalVal);
+                                }
+                            }
                         }
                     }
                 }
                 else {
-                    bodyResult = executeClosure(bodyClosure, args);
+                    bodyResult = executeClosure(args);
                 }
             }
             else {
-                bodyResult = executeClosure(bodyClosure, null);
+                bodyResult = executeClosure(null);
             }
 
-            if(!capturedOut.isUsed() && bodyResult != null && !(bodyResult instanceof Writer)) {
-       			return bodyResult;
-            } 
+            if (!capturedOut.isUsed() && bodyResult != null && !(bodyResult instanceof Writer)) {
+                return bodyResult;
+            }
             return capturedOut.getBuffer();
-        } finally {
-        	GroovyPageOutputStack.currentStack().pop();
+        }
+        finally {
+            GroovyPageOutputStack.currentStack().pop();
         }
     }
 
-	private Object executeClosure(Closure bodyClosure, Object args) {
-		Object bodyResult=null;
-		if(args != null) {
-			bodyResult=bodyClosure.call(args);
-		} else {
-			bodyResult=bodyClosure.call();
-		}
-		return bodyResult;
-	}
+    private Object executeClosure(Object args) {
+        if (args != null) {
+            return bodyClosure.call(args);
+        }
+
+        return bodyClosure.call();
+    }
 
     public Object doCall() {
         return captureClosureOutput(null);
@@ -166,14 +163,17 @@ public class GroovyPageTagBody extends Closure {
         return captureClosureOutput(arguments);
     }
 
+    @Override
     public Object call() {
         return captureClosureOutput(null);
     }
 
+    @Override
     public Object call(Object[] args) {
         return captureClosureOutput(args);
     }
 
+    @Override
     public Object call(Object arguments) {
         return captureClosureOutput(arguments);
     }

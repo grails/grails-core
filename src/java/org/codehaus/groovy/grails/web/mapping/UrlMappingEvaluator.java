@@ -1,48 +1,46 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Closure;
-import org.springframework.core.io.Resource;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+
+import org.springframework.core.io.Resource;
 
 /**
- * An interface that evaluates URL mapping from the given Spring Resource or class
+ * Evaluates URL mapping from the given Spring Resource or class.
  *
  * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
  * @see org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
  *
  * @author Graeme Rocher
  * @since 0.5
- * 
- *        <p/>
- *        Created: Feb 28, 2007
- *        Time: 5:47:23 PM
  */
-@SuppressWarnings("serial")
 public interface UrlMappingEvaluator {
+
     // default HTTP method to action name mappings
-    Map<String,String> DEFAULT_REST_MAPPING = new HashMap<String,String>() {{
-       put("GET", "show");
-       put("POST", "save");
-       put("PUT", "update");
-       put("DELETE", "delete");
+    @SuppressWarnings("serial")
+    Map<String, String> DEFAULT_REST_MAPPING = new HashMap<String, String>() {{
+        put("GET", "show");
+        put("POST", "save");
+        put("PUT", "update");
+        put("DELETE", "delete");
     }};
 
     /**
@@ -52,6 +50,7 @@ public interface UrlMappingEvaluator {
      *
      * @return A list of UrlMapping instances
      */
+    @SuppressWarnings("unchecked")
     List evaluateMappings(Resource resource);
 
     /**
@@ -60,13 +59,15 @@ public interface UrlMappingEvaluator {
      * @param theClass The class to evaluate mapping from
      * @return A list of UrlMapping instances
      */
+    @SuppressWarnings("unchecked")
     List evaluateMappings(Class theClass);
-    
+
     /**
      * Evaluates mapping from the given closure if possible
      *
      * @param closure The closure to evaluate mapping from
      * @return A list of UrlMapping instances
      */
+    @SuppressWarnings("unchecked")
     List evaluateMappings(Closure closure);
 }

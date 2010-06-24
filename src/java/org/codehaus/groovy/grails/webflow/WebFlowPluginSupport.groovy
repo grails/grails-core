@@ -49,123 +49,127 @@ import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
  * @author Graeme Rocher
  * @since 1.2
  */
-public class WebFlowPluginSupport {
-
+class WebFlowPluginSupport {
 
     static doWithSpring = {
 
-         viewFactoryCreator(MvcViewFactoryCreator) {
-             viewResolvers = ref('jspViewResolver')
-         }
-         flowHandlerMapping(GrailsFlowHandlerMapping) {
-             // run at slightly higher precedence 
-             order = Integer.MAX_VALUE - 1
-         }         
-         flowBuilderServices(FlowBuilderServices){
-             conversionService = { DefaultConversionService dcs ->}
-             expressionParser = { bean ->
-                 bean.beanClass = DefaultExpressionParserFactory
-                 bean.factoryMethod = "getDefaultExpressionParser"
-             }
-             viewFactoryCreator = viewFactoryCreator
-         }
-         flowRegistry(org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry) {
-             grailsApplication = ref("grailsApplication", true)
-             flowBuilderServices = flowBuilderServices
-         }
-         flowScopeRegistrar(ScopeRegistrar)
-         boolean configureHibernateListener = manager.hasGrailsPlugin('hibernate') && springConfig.containsBean("sessionFactory")
-         if(configureHibernateListener ) {
-             try {
-                 hibernateConversationListener(org.codehaus.groovy.grails.webflow.persistence.SessionAwareHibernateFlowExecutionListener, sessionFactory, transactionManager)
-                 executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)
-                 sessionFactory.currentSessionContextClass = org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext
-             } catch (MissingPropertyException mpe) {
-                 // no session factory, this is ok
-                 log.info "Webflow loading without Hibernate integration. SessionFactory not found."
-             }
+        viewFactoryCreator(MvcViewFactoryCreator) {
+            viewResolvers = ref('jspViewResolver')
+        }
 
-         }
-         flowExecutionFactory(FlowExecutionImplFactory) {
-             executionAttributes = new LocalAttributeMap(alwaysRedirectOnPause:true)
-             if(configureHibernateListener) {
-                 executionListenerLoader = ref("executionListenerLoader")
-             }
-         }
-         conversationManager(SessionBindingConversationManager)
-         flowExecutionSnapshotFactory(SerializedFlowExecutionSnapshotFactory, flowExecutionFactory, flowRegistry)
-         flowExecutionRepository(DefaultFlowExecutionRepository, conversationManager, flowExecutionSnapshotFactory )
-         flowExecutor(GrailsFlowExecutorImpl, flowRegistry, flowExecutionFactory, flowExecutionRepository)
+        flowHandlerMapping(GrailsFlowHandlerMapping) {
+            // run at slightly higher precedence
+            order = Integer.MAX_VALUE - 1
+        }
 
-         mainFlowController(GrailsFlowHandlerAdapter) {
-             flowExecutor = flowExecutor
-             flowUrlHandler = { GrailsFlowUrlHandler uh -> }
-         }
-     }
+        flowBuilderServices(FlowBuilderServices) {
+            conversionService = { DefaultConversionService dcs -> }
+            expressionParser = { bean ->
+                bean.beanClass = DefaultExpressionParserFactory
+                bean.factoryMethod = "getDefaultExpressionParser"
+            }
+            viewFactoryCreator = viewFactoryCreator
+        }
 
-     static doWithApplicationContext = { ApplicationContext appCtx ->
+        flowRegistry(ControllerFlowRegistry) {
+            grailsApplication = ref("grailsApplication", true)
+            flowBuilderServices = flowBuilderServices
+        }
+
+        flowScopeRegistrar(ScopeRegistrar)
+        boolean configureHibernateListener = manager.hasGrailsPlugin('hibernate') && springConfig.containsBean("sessionFactory")
+        if (configureHibernateListener ) {
+            try {
+                hibernateConversationListener(org.codehaus.groovy.grails.webflow.persistence.SessionAwareHibernateFlowExecutionListener, sessionFactory, transactionManager)
+                executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)
+                sessionFactory.currentSessionContextClass = org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext
+            }
+            catch (MissingPropertyException mpe) {
+                // no session factory, this is ok
+                log.info "Webflow loading without Hibernate integration. SessionFactory not found."
+            }
+        }
+
+        flowExecutionFactory(FlowExecutionImplFactory) {
+            executionAttributes = new LocalAttributeMap(alwaysRedirectOnPause:true)
+            if (configureHibernateListener) {
+                executionListenerLoader = ref("executionListenerLoader")
+            }
+        }
+
+        conversationManager(SessionBindingConversationManager)
+        flowExecutionSnapshotFactory(SerializedFlowExecutionSnapshotFactory, flowExecutionFactory, flowRegistry)
+        flowExecutionRepository(DefaultFlowExecutionRepository, conversationManager, flowExecutionSnapshotFactory )
+        flowExecutor(GrailsFlowExecutorImpl, flowRegistry, flowExecutionFactory, flowExecutionRepository)
+
+        mainFlowController(GrailsFlowHandlerAdapter) {
+            flowExecutor = flowExecutor
+            flowUrlHandler = { GrailsFlowUrlHandler uh -> }
+        }
+    }
+
+    static doWithApplicationContext = { ApplicationContext appCtx ->
         FlowExecutionFactory flowExecutionFactory = appCtx.getBean("flowExecutionFactory")
         flowExecutionFactory.executionKeyFactory = appCtx.getBean("flowExecutionRepository")
-     }
+    }
 
-     static doWithDynamicMethods = {
-         RequestControlContext.metaClass.getFlow = {->
-             delegate.flowScope
-         }
-         RequestControlContext.metaClass.getConversation = {->
-             delegate.conversationScope
-         }
-         RequestControlContext.metaClass.getFlash = {->
-             delegate.flashScope
-         }
+    static doWithDynamicMethods = {
+        RequestControlContext.metaClass.getFlow = { -> delegate.flowScope }
 
-         MutableAttributeMap.metaClass.getProperty = { String name ->
-             def mp = delegate.class.metaClass.getMetaProperty(name)
-             def result = null
-             if(mp) result = mp.getProperty(delegate)
-             else {
-                 result = delegate.get(name)
-             }
-             result
-         }
-         MutableAttributeMap.metaClass.setProperty = { String name, value ->
-             def mp = delegate.class.metaClass.getMetaProperty(name)
-             if(mp) mp.setProperty(delegate, value)
-             else {
-                 delegate.put(name, value)
-             }
-         }
-         MutableAttributeMap.metaClass.clear = {-> delegate.asMap().clear() }
-         MutableAttributeMap.metaClass.getAt = { String key -> delegate.get(key) }
-         MutableAttributeMap.metaClass.putAt = { String key, value -> delegate.put(key,value) }
-     }
+        RequestControlContext.metaClass.getConversation = { -> delegate.conversationScope }
 
-     static onChange = { event ->
-         ApplicationContext appCtx = event.ctx
-         FlowDefinitionRegistry flowRegistry = appCtx.flowRegistry
-         GrailsControllerClass controller = application.getControllerClass(event.source.name)
-         if(controller) {
-             def controllerClass = controller.clazz
-             def registry = GroovySystem.metaClassRegistry
-             def currentMetaClass = registry.getMetaClass(controllerClass)
+        RequestControlContext.metaClass.getFlash = { -> delegate.flashScope }
 
-             try {
-                 // we remove the current meta class because webflow needs an unmodified (via meta programming) controller
-                 // in order to configure itself correctly
-                 registry.removeMetaClass controllerClass
-                 controller.getReference().getWrappedInstance().metaClass = registry.getMetaClass(controllerClass)
-                 for(flow in controller.flows) {
-                     def FlowBuilder builder = new FlowBuilder( ("${controller.logicalPropertyName}/" + flow.key).toString(), flow.value, appCtx.flowBuilderServices, flowRegistry)
-                     builder.viewPath = "/"
-                     builder.applicationContext = event.ctx
+        MutableAttributeMap.metaClass.getProperty = { String name ->
+            def mp = delegate.class.metaClass.getMetaProperty(name)
+            def result = null
+            if (mp) result = mp.getProperty(delegate)
+            else {
+                result = delegate.get(name)
+            }
+            result
+        }
+        MutableAttributeMap.metaClass.setProperty = { String name, value ->
+            def mp = delegate.class.metaClass.getMetaProperty(name)
+            if (mp) mp.setProperty(delegate, value)
+            else {
+                delegate.put(name, value)
+            }
+        }
+        MutableAttributeMap.metaClass.clear = {-> delegate.asMap().clear() }
+        MutableAttributeMap.metaClass.getAt = { String key -> delegate.get(key) }
+        MutableAttributeMap.metaClass.putAt = { String key, value -> delegate.put(key,value) }
+    }
 
-                     FlowAssembler flowAssembler = new FlowAssembler(builder,builder.getFlowBuilderContext())
-                     flowRegistry.registerFlowDefinition(new DefaultFlowHolder(flowAssembler))
-                 }
-             } finally {
-                 registry.setMetaClass controllerClass, currentMetaClass
-                 controller.getReference().getWrappedInstance().metaClass = currentMetaClass
-             }
-         }
-     }
+    static onChange = { event ->
+        ApplicationContext appCtx = event.ctx
+        FlowDefinitionRegistry flowRegistry = appCtx.flowRegistry
+        GrailsControllerClass controller = application.getControllerClass(event.source.name)
+        if (!controller) {
+            return
+        }
+
+        def controllerClass = controller.clazz
+        def registry = GroovySystem.metaClassRegistry
+        def currentMetaClass = registry.getMetaClass(controllerClass)
+
+        try {
+            // we remove the current meta class because webflow needs an unmodified (via meta programming) controller
+            // in order to configure itself correctly
+            registry.removeMetaClass controllerClass
+            controller.getReference().getWrappedInstance().metaClass = registry.getMetaClass(controllerClass)
+            for (flow in controller.flows) {
+                def FlowBuilder builder = new FlowBuilder( ("${controller.logicalPropertyName}/" + flow.key).toString(), flow.value, appCtx.flowBuilderServices, flowRegistry)
+                builder.viewPath = "/"
+                builder.applicationContext = event.ctx
+
+                FlowAssembler flowAssembler = new FlowAssembler(builder,builder.getFlowBuilderContext())
+                flowRegistry.registerFlowDefinition(new DefaultFlowHolder(flowAssembler))
+            }
+        }
+        finally {
+            registry.setMetaClass controllerClass, currentMetaClass
+            controller.getReference().getWrappedInstance().metaClass = currentMetaClass
+        }
+    }
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.orm.hibernate.proxy;
 
 import java.lang.reflect.InvocationTargetException;
@@ -28,24 +27,26 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
 
 /**
- * Implementation of the ProxyHandler interface for Hibernate
- * 
+ * Implementation of the ProxyHandler interface for Hibernate.
+ *
  * @author Graeme Rocher
  * @since 1.2.2
  */
 public class HibernateProxyHandler implements ProxyHandler {
 
-	public boolean isInitialized(Object o) {
-		if(o instanceof HibernateProxy) {
-			return !((HibernateProxy)o).getHibernateLazyInitializer().isUninitialized();
-		}
-		else if(o instanceof PersistentCollection) {
-			return ((PersistentCollection)o).wasInitialized();
-		}
-		return true;
-	}
+    public boolean isInitialized(Object o) {
+        if (o instanceof HibernateProxy) {
+            return !((HibernateProxy)o).getHibernateLazyInitializer().isUninitialized();
+        }
 
-	public boolean isInitialized(Object obj, String associationName) {
+        if (o instanceof PersistentCollection) {
+            return ((PersistentCollection)o).wasInitialized();
+        }
+
+        return true;
+    }
+
+    public boolean isInitialized(Object obj, String associationName) {
         try {
             Object proxy = PropertyUtils.getProperty(obj, associationName);
             return Hibernate.isInitialized(proxy);
@@ -59,38 +60,41 @@ public class HibernateProxyHandler implements ProxyHandler {
         catch (NoSuchMethodException e) {
             return false;
         }
-	}
+    }
 
-	public Object unwrapIfProxy(Object instance) {
-        if(instance instanceof HibernateProxy) {
+    public Object unwrapIfProxy(Object instance) {
+        if (instance instanceof HibernateProxy) {
             final HibernateProxy proxy = (HibernateProxy)instance;
-			return unwrapProxy(proxy);
+            return unwrapProxy(proxy);
         }
-        else if(instance instanceof AbstractPersistentCollection) {
-        	initialize(instance);
-        	return instance;
-        }
-        else {
+
+        if (instance instanceof AbstractPersistentCollection) {
+            initialize(instance);
             return instance;
         }
-	}
 
-	public Object unwrapProxy(final HibernateProxy proxy) {
-		final LazyInitializer lazyInitializer = proxy.getHibernateLazyInitializer();
-		if(lazyInitializer.isUninitialized()) {
-		    lazyInitializer.initialize();
-		}
-		final Object obj = lazyInitializer.getImplementation();
-		if(obj != null)
-			GrailsHibernateUtil.ensureCorrectGroovyMetaClass(obj,obj.getClass());
-		return obj;
-	}
-	
-	public HibernateProxy getAssociationProxy(Object obj, String associationName) {
+        return instance;
+    }
+
+    public Object unwrapProxy(final HibernateProxy proxy) {
+        final LazyInitializer lazyInitializer = proxy.getHibernateLazyInitializer();
+        if (lazyInitializer.isUninitialized()) {
+            lazyInitializer.initialize();
+        }
+        final Object obj = lazyInitializer.getImplementation();
+        if (obj != null) {
+            GrailsHibernateUtil.ensureCorrectGroovyMetaClass(obj,obj.getClass());
+        }
+        return obj;
+    }
+
+    public HibernateProxy getAssociationProxy(Object obj, String associationName) {
         try {
             Object proxy = PropertyUtils.getProperty(obj, associationName);
-            if(proxy instanceof HibernateProxy) return (HibernateProxy) proxy;
-            else return null;
+            if (proxy instanceof HibernateProxy) {
+                return (HibernateProxy) proxy;
+            }
+            return null;
         }
         catch (IllegalAccessException e) {
             return null;
@@ -101,23 +105,24 @@ public class HibernateProxyHandler implements ProxyHandler {
         catch (NoSuchMethodException e) {
             return null;
         }
-	}
+    }
 
-	public boolean isProxy(Object o) {
-		return (o instanceof HibernateProxy) || (o instanceof AbstractPersistentCollection);
-	}
+    public boolean isProxy(Object o) {
+        return (o instanceof HibernateProxy) || (o instanceof AbstractPersistentCollection);
+    }
 
-	public void initialize(Object o) {
-		if(o instanceof HibernateProxy) {
-			final LazyInitializer hibernateLazyInitializer = ((HibernateProxy)o).getHibernateLazyInitializer();
-			if(hibernateLazyInitializer.isUninitialized())
-				hibernateLazyInitializer.initialize();
-		}
-		else if(o instanceof AbstractPersistentCollection) {
-			final AbstractPersistentCollection col = (AbstractPersistentCollection)o;
-			if(!col.wasInitialized())
-				col.forceInitialization();
-		}		
-	}
-
+    public void initialize(Object o) {
+        if (o instanceof HibernateProxy) {
+            final LazyInitializer hibernateLazyInitializer = ((HibernateProxy)o).getHibernateLazyInitializer();
+            if (hibernateLazyInitializer.isUninitialized()) {
+                hibernateLazyInitializer.initialize();
+            }
+        }
+        else if (o instanceof AbstractPersistentCollection) {
+            final AbstractPersistentCollection col = (AbstractPersistentCollection)o;
+            if (!col.wasInitialized()) {
+                col.forceInitialization();
+            }
+        }
+    }
 }

@@ -1,11 +1,27 @@
+/*
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.web.json.parser;
 
 /**
  * @author Siegfried Puchbauer
  *
- * Adapted from the Google GSON Parser http://google-gson.googlecode.com/ 
+ * Adapted from the Google GSON Parser http://google-gson.googlecode.com/
  */
 final class StringUnmarshaller {
+
     static String unmarshall(String str) {
         str = str.substring(1, str.length() - 1);
 
@@ -22,11 +38,13 @@ final class StringUnmarshaller {
                     int codePoint = getCodePoint(str, i);
                     sb.appendCodePoint(codePoint);
                     i += 4;
-                } else {
+                }
+                else {
                     char escapedChar = getEscapedChar(str, c1);
                     sb.append(escapedChar);
                 }
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -39,38 +57,17 @@ final class StringUnmarshaller {
     }
 
     private static char getEscapedChar(String str, char c) {
-        char ch;
         switch (c) {
-            case 'n':
-                ch = '\n';
-                break;
-            case 'b':
-                ch = '\b';
-                break;
-            case 'f':
-                ch = '\f';
-                break;
-            case 't':
-                ch = '\t';
-                break;
-            case 'r':
-                ch = '\r';
-                break;
-            case '\"':
-                ch = '\"';
-                break;
-            case '\'':
-                ch = '\'';
-                break;
-            case '\\':
-                ch = '\\';
-                break;
-            case '/':
-                ch = '/';
-                break;
-            default:
-                throw new IllegalStateException("Unexpected character: " + c + " in " + str);
+            case 'n':  return '\n';
+            case 'b':  return '\b';
+            case 'f':  return '\f';
+            case 't':  return '\t';
+            case 'r':  return '\r';
+            case '\"': return '\"';
+            case '\'': return '\'';
+            case '\\': return '\\';
+            case '/':  return '/';
+            default:  throw new IllegalStateException("Unexpected character: " + c + " in " + str);
         }
-        return ch;
     }
 }

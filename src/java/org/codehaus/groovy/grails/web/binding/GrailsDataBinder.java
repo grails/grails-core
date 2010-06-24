@@ -15,12 +15,54 @@
 package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.*;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.MetaProperty;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+
+import java.beans.PropertyEditor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.security.AccessControlException;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TimeZone;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections.set.ListOrderedSet;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.context.ServletContextHolder;
@@ -30,8 +72,18 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
-import org.springframework.beans.*;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.ConfigurablePropertyAccessor;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.PropertyAccessorUtils;
+import org.springframework.beans.PropertyEditorRegistrar;
+import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
@@ -46,36 +98,24 @@ import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import java.beans.PropertyEditor;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
  * For example for a set of fields defined as:
  * <p/>
  * <code>
-     * <input type="hidden" name="myDate_year" value="2005" />
-     * <input type="hidden" name="myDate_month" value="6" />
-     * <input type="hidden" name="myDate_day" value="12" />
-     * <input type="hidden" name="myDate_hour" value="13" />
-     * <input type="hidden" name="myDate_minute" value="45" />
+ * <input type="hidden" name="myDate_year" value="2005" />
+ * <input type="hidden" name="myDate_month" value="6" />
+ * <input type="hidden" name="myDate_day" value="12" />
+ * <input type="hidden" name="myDate_hour" value="13" />
+ * <input type="hidden" name="myDate_minute" value="45" />
  * </code>
  * <p/>
  * This would set the property "myDate" of type java.util.Date with the specified values.
  *
  * @author Graeme Rocher
- * @since 05-Jan-2006
  */
 public class GrailsDataBinder extends ServletRequestDataBinder {
+
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
 
     protected BeanWrapper bean;
@@ -83,7 +123,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static final String[] GROOVY_DISALLOWED = new String[] { "metaClass", "properties" };
     public static final String[] DOMAINCLASS_DISALLOWED = new String[] { "id", "version" };
     public static final String[] GROOVY_DOMAINCLASS_DISALLOWED = new String[] { "metaClass", "properties", "id", "version" };
-    public static final String   NULL_ASSOCIATION = "null";
+    public static final String NULL_ASSOCIATION = "null";
     private static final String PREFIX_SEPERATOR = ".";
     private static final String[] ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT = new String[0];
     private static final String CONSTRAINTS_PROPERTY = "constraints";
@@ -91,10 +131,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final String STRUCTURED_PROPERTY_SEPERATOR = "_";
     private static final char PATH_SEPARATOR = '.';
     private static final String IDENTIFIER_SUFFIX = ".id";
-    private List transients = Collections.EMPTY_LIST;
+    private List<String> transients = Collections.emptyList();
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
-    
-    private GrailsDomainClass domainClass;    
+
+    private GrailsDomainClass domainClass;
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -102,19 +142,22 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * @param target     target object to bind onto
      * @param objectName objectName of the target object
      */
+    @SuppressWarnings("unchecked")
     public GrailsDataBinder(Object target, String objectName) {
         super(target, objectName);
 
-        setAutoGrowNestedPaths(false);        
+        setAutoGrowNestedPaths(false);
         bean = (BeanWrapper)((BeanPropertyBindingResult)super.getBindingResult()).getPropertyAccessor();
 
         Object tmpTransients = GrailsClassUtils.getStaticPropertyValue(bean.getWrappedClass(), GrailsDomainClassProperty.TRANSIENT);
-        if(tmpTransients instanceof List) {
-            this.transients = (List) tmpTransients;
+        if (tmpTransients instanceof List) {
+            transients = (List)tmpTransients;
         }
+
         String[] disallowed = new String[0];
         GrailsApplication grailsApplication = ApplicationHolder.getApplication();
-        if (grailsApplication!=null && grailsApplication.isArtefactOfType(DomainClassArtefactHandler.TYPE, target.getClass())) {
+        if (grailsApplication != null && grailsApplication.isArtefactOfType(
+                DomainClassArtefactHandler.TYPE, target.getClass())) {
             if (target instanceof GroovyObject) {
                 disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
             }
@@ -139,15 +182,18 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     private static void registerCustomEditors(PropertyEditorRegistry registry) {
         final ServletContext servletContext = ServletContextHolder.getServletContext();
-        if(servletContext != null) {
-            WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-            if(context != null) {
-                Map editors = context.getBeansOfType(PropertyEditorRegistrar.class);
-                for (Object o : editors.entrySet()) {
-                    PropertyEditorRegistrar editorRegistrar = (PropertyEditorRegistrar) ((Map.Entry) o).getValue();
-                    editorRegistrar.registerCustomEditors(registry);
-                }
-            }
+        if (servletContext == null) {
+            return;
+        }
+
+        WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        if (context == null) {
+            return;
+        }
+
+        Map<String, PropertyEditorRegistrar> editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+        for (PropertyEditorRegistrar editorRegistrar : editors.values()) {
+            editorRegistrar.registerCustomEditors(registry);
         }
     }
 
@@ -163,11 +209,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         GrailsDataBinder binder = createBinder(target,objectName);
         Locale locale = RequestContextUtils.getLocale(request);
         registerCustomEditors(binder, locale);
-
-
         return binder;
     }
-
 
     /**
      * Registers all known
@@ -182,21 +225,21 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         DateFormat dateFormat = new SimpleDateFormat(DEFAULT_DATE_FORMAT, locale);
 
-        registry.registerCustomEditor( Date.class, new CustomDateEditor(dateFormat,true) );
-        registry.registerCustomEditor( BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
-        registry.registerCustomEditor( BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
-        registry.registerCustomEditor( Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
-        registry.registerCustomEditor( double.class, new CustomNumberEditor(Double.class, floatFormat, true));
-        registry.registerCustomEditor( Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
-        registry.registerCustomEditor( float.class, new CustomNumberEditor(Float.class, floatFormat, true));
-        registry.registerCustomEditor( Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
-        registry.registerCustomEditor( long.class, new CustomNumberEditor(Long.class, integerFormat, true));
-        registry.registerCustomEditor( Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
-        registry.registerCustomEditor( int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
-        registry.registerCustomEditor( Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        registry.registerCustomEditor( short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        registry.registerCustomEditor( Date.class, new StructuredDateEditor(dateFormat,true));
-        registry.registerCustomEditor( Calendar.class, new StructuredDateEditor(dateFormat,true));
+        registry.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat,true));
+        registry.registerCustomEditor(BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
+        registry.registerCustomEditor(BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
+        registry.registerCustomEditor(Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
+        registry.registerCustomEditor(double.class, new CustomNumberEditor(Double.class, floatFormat, true));
+        registry.registerCustomEditor(Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
+        registry.registerCustomEditor(float.class, new CustomNumberEditor(Float.class, floatFormat, true));
+        registry.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
+        registry.registerCustomEditor(long.class, new CustomNumberEditor(Long.class, integerFormat, true));
+        registry.registerCustomEditor(Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
+        registry.registerCustomEditor(int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
+        registry.registerCustomEditor(Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
+        registry.registerCustomEditor(short.class, new CustomNumberEditor(Short.class, integerFormat, true));
+        registry.registerCustomEditor(Date.class, new StructuredDateEditor(dateFormat,true));
+        registry.registerCustomEditor(Calendar.class, new StructuredDateEditor(dateFormat,true));
 
         registerCustomEditors(registry);
     }
@@ -210,18 +253,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     public static GrailsDataBinder createBinder(Object target, String objectName) {
         GrailsDataBinder binder = new GrailsDataBinder(target,objectName);
-        binder.registerCustomEditor( byte[].class, new ByteArrayMultipartFileEditor());
-        binder.registerCustomEditor( String.class, new StringMultipartFileEditor());
-        binder.registerCustomEditor( Currency.class, new CurrencyEditor());
-        binder.registerCustomEditor( Locale.class, new LocaleEditor());
-        binder.registerCustomEditor( TimeZone.class, new TimeZoneEditor());
-        binder.registerCustomEditor( URI.class, new UriEditor());
+        binder.registerCustomEditor(byte[].class, new ByteArrayMultipartFileEditor());
+        binder.registerCustomEditor(String.class, new StringMultipartFileEditor());
+        binder.registerCustomEditor(Currency.class, new CurrencyEditor());
+        binder.registerCustomEditor(Locale.class, new LocaleEditor());
+        binder.registerCustomEditor(TimeZone.class, new TimeZoneEditor());
+        binder.registerCustomEditor(URI.class, new UriEditor());
 
         registerCustomEditors(binder);
 
-		return binder;
+        return binder;
     }
 
+    @Override
     public void bind(PropertyValues propertyValues) {
         bind(propertyValues, null);
     }
@@ -235,46 +279,47 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         bind(params,null);
     }
 
+    @SuppressWarnings("unchecked")
     public void bind(GrailsParameterMap params, String prefix) {
         Map paramsMap = params;
-        if(prefix != null) {
+        if (prefix != null) {
             Object o = params.get(prefix);
-            if(o instanceof Map) paramsMap = (Map) o;
+            if (o instanceof Map) paramsMap = (Map) o;
         }
         bindWithRequestAndPropertyValues(params.getRequest(), new MutablePropertyValues(paramsMap));
     }
 
-
     public void bind(PropertyValues propertyValues, String prefix) {
         PropertyValues values = filterPropertyValues(propertyValues, prefix);
-        if(propertyValues instanceof MutablePropertyValues) {
+        if (propertyValues instanceof MutablePropertyValues) {
             MutablePropertyValues mutablePropertyValues = (MutablePropertyValues) propertyValues;
             preProcessMutablePropertyValues(mutablePropertyValues);
         }
         super.bind(values);
     }
 
+    @Override
     public void bind(ServletRequest request) {
         bind(request, null);
     }
 
     public void bind(ServletRequest request, String prefix) {
-    	MutablePropertyValues mpvs;
-    	if (prefix != null) {
-    		mpvs = new ServletRequestParameterPropertyValues(request, prefix, PREFIX_SEPERATOR);
+        MutablePropertyValues mpvs;
+        if (prefix != null) {
+            mpvs = new ServletRequestParameterPropertyValues(request, prefix, PREFIX_SEPERATOR);
         }
         else {
             mpvs = new ServletRequestParameterPropertyValues(request);
-    	}
+        }
 
         bindWithRequestAndPropertyValues(request, mpvs);
     }
 
     private void bindWithRequestAndPropertyValues(ServletRequest request, MutablePropertyValues mpvs) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup((HttpServletRequest) request);
-        if(webRequest!=null) {
+        if (webRequest != null) {
             final ApplicationContext applicationContext = webRequest.getApplicationContext();
-            if(applicationContext!=null) {
+            if (applicationContext != null) {
                 final Map<String, BindEventListener> bindEventListenerMap = applicationContext.getBeansOfType(BindEventListener.class);
                 for (BindEventListener bindEventListener : bindEventListenerMap.values()) {
                     bindEventListener.doBind(getTarget(), mpvs, getTypeConverter());
@@ -284,9 +329,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         preProcessMutablePropertyValues(mpvs);
 
         if (request instanceof MultipartHttpServletRequest) {
-			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-			bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
-		}
+            MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+            bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
+        }
         doBind(mpvs);
     }
 
@@ -296,38 +341,43 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         bindAssociations(mpvs);
     }
 
+    @Override
     protected void doBind(MutablePropertyValues mpvs) {
         filterNestedParameterMaps(mpvs);
         filterBlankValuesWhenTargetIsNullable(mpvs);
         super.doBind(mpvs);
     }
 
+    @SuppressWarnings("unchecked")
     private void filterBlankValuesWhenTargetIsNullable(MutablePropertyValues mpvs) {
         Object target = getTarget();
         Map constrainedProperties = resolveConstrainedProperties(target, domainClass);
-        if(constrainedProperties != null) {
-            PropertyValue[] valueArray = mpvs.getPropertyValues();
-            for (PropertyValue propertyValue : valueArray) {
-            	if(BLANK.equals(propertyValue.getValue())) {
-	                ConstrainedProperty cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
-	                if (shouldNullifyBlankString(propertyValue, cp)) {
-	                    propertyValue.setConvertedValue(null);
-	                }
-            	}
+        if (constrainedProperties == null) {
+            return;
+        }
+
+        PropertyValue[] valueArray = mpvs.getPropertyValues();
+        for (PropertyValue propertyValue : valueArray) {
+            if (BLANK.equals(propertyValue.getValue())) {
+                ConstrainedProperty cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
+                if (shouldNullifyBlankString(propertyValue, cp)) {
+                    propertyValue.setConvertedValue(null);
+                }
             }
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
     private ConstrainedProperty getConstrainedPropertyForPropertyValue(Map constrainedProperties, PropertyValue propertyValue) {
         final String propertyName = propertyValue.getName();
-        if(propertyName.indexOf(PATH_SEPARATOR) > -1) {
+        if (propertyName.indexOf(PATH_SEPARATOR) > -1) {
             String[] propertyNames = propertyName.split("\\.");
             Object target = getTarget();
             Object value = getPropertyValueForPath(target, propertyNames);
-            if(value != null) {
-            	Map nestedConstrainedProperties=resolveConstrainedProperties(value);
-            	if(nestedConstrainedProperties != null) {
-            		return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
+            if (value != null) {
+                Map nestedConstrainedProperties = resolveConstrainedProperties(value);
+                if (nestedConstrainedProperties != null) {
+                    return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
                 }
             }
         }
@@ -337,54 +387,56 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private Map resolveConstrainedProperties(Object object) {
-    	GrailsApplication grailsApplication = ApplicationHolder.getApplication();
-    	return resolveConstrainedProperties(object, (grailsApplication != null)?((GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, object.getClass().getName())):null);
+        GrailsApplication grailsApplication = ApplicationHolder.getApplication();
+        return resolveConstrainedProperties(object, (grailsApplication != null)?((GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, object.getClass().getName())):null);
     }
 
-	private Map resolveConstrainedProperties(Object object, GrailsDomainClass domainClass) {
-		Map constrainedProperties = null;
-        if(domainClass != null) {
-        	constrainedProperties = domainClass.getConstrainedProperties();
-        } else {
-        	// is this dead code? , didn't remove in case it's used somewhere
-        	MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
-        	MetaProperty metaProp = mc.getMetaProperty(CONSTRAINTS_PROPERTY);
-        	if(metaProp != null) {
-        		Object constrainedPropsObj = getMetaPropertyValue(metaProp, object);
-        		if(constrainedPropsObj instanceof Map) {
-        			constrainedProperties = (Map)constrainedPropsObj;
-        		}
-        	}
+    @SuppressWarnings("unchecked")
+    private Map resolveConstrainedProperties(Object object, GrailsDomainClass dc) {
+        Map constrainedProperties = null;
+        if (dc != null) {
+            constrainedProperties = dc.getConstrainedProperties();
         }
-		return constrainedProperties;
-	}
-	
-	/**
-	 * Hack because of bug in ThreadManagedMetaBeanProperty, http://jira.codehaus.org/browse/GROOVY-3723 , fixed since 1.6.5
-	 * 
-	 * @param metaProperty
-	 * @param delegate
-	 * @return
-	 */
-	private Object getMetaPropertyValue(MetaProperty metaProperty, Object delegate) {
-	   if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
-	       return ((ThreadManagedMetaBeanProperty)metaProperty).getGetter().invoke(delegate, MetaClassHelper.EMPTY_ARRAY);
-	   } else {
-	       return metaProperty.getProperty(delegate);
-	   }
-	}
+        else {
+            // is this dead code? , didn't remove in case it's used somewhere
+            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
+            MetaProperty metaProp = mc.getMetaProperty(CONSTRAINTS_PROPERTY);
+            if (metaProp != null) {
+                Object constrainedPropsObj = getMetaPropertyValue(metaProp, object);
+                if (constrainedPropsObj instanceof Map) {
+                    constrainedProperties = (Map)constrainedPropsObj;
+                }
+            }
+        }
+        return constrainedProperties;
+    }
 
-	private Object getPropertyValueForPath(Object target, String[] propertyNames) {
-        BeanWrapper bean = new BeanWrapperImpl(target);
+    /**
+     * Hack because of bug in ThreadManagedMetaBeanProperty, http://jira.codehaus.org/browse/GROOVY-3723 , fixed since 1.6.5
+     *
+     * @param metaProperty
+     * @param delegate
+     * @return
+     */
+    private Object getMetaPropertyValue(MetaProperty metaProperty, Object delegate) {
+        if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
+            return ((ThreadManagedMetaBeanProperty)metaProperty).getGetter().invoke(delegate, MetaClassHelper.EMPTY_ARRAY);
+        }
+
+        return metaProperty.getProperty(delegate);
+    }
+
+    private Object getPropertyValueForPath(Object target, String[] propertyNames) {
+        BeanWrapper wrapper = new BeanWrapperImpl(target);
         Object obj = target;
         for (int i = 0; i < propertyNames.length-1; i++) {
-
             String propertyName = propertyNames[i];
-            if(bean.isReadableProperty(propertyName)) {
-                obj = bean.getPropertyValue(propertyName);
-                if(obj == null) break;
-                bean = new BeanWrapperImpl(obj);
+            if (wrapper.isReadableProperty(propertyName)) {
+                obj = wrapper.getPropertyValue(propertyName);
+                if (obj == null) break;
+                wrapper = new BeanWrapperImpl(obj);
             }
         }
 
@@ -392,12 +444,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean shouldNullifyBlankString(PropertyValue propertyValue, ConstrainedProperty cp) {
-        return cp!= null && cp.isNullable() && BLANK.equals(propertyValue.getValue());
+        return cp != null && cp.isNullable() && BLANK.equals(propertyValue.getValue());
     }
 
     private void filterNestedParameterMaps(MutablePropertyValues mpvs) {
-        PropertyValue[] values = mpvs.getPropertyValues();
-        for (PropertyValue pv : values) {
+        for (PropertyValue pv : mpvs.getPropertyValues()) {
             final Object value = pv.getValue();
             if (isNotCandidateForBinding(value)) {
                 mpvs.removePropertyValue(pv);
@@ -410,7 +461,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
-        if(prefix == null || prefix.length() == 0) return propertyValues;
+        if (prefix == null || prefix.length() == 0) return propertyValues;
+
         PropertyValue[] valueArray = propertyValues.getPropertyValues();
         MutablePropertyValues newValues = new MutablePropertyValues();
         for (PropertyValue propertyValue : valueArray) {
@@ -425,7 +477,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     /**
-     * Method that auto-creates the a type if it is null and is possible to auto-create
+     * Auto-creates the a type if it is null and is possible to auto-create.
      *
      * @param mpvs A MutablePropertyValues instance
      */
@@ -433,127 +485,123 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (PropertyValue pv : pvs) {
             String propertyName = pv.getName();
-            //super.
-
             if (propertyName.indexOf(PATH_SEPARATOR) > -1) {
                 String[] propertyNames = propertyName.split("\\.");
                 BeanWrapper currentBean = bean;
 
                 for (String name : propertyNames) {
                     Object created = autoCreatePropertyIfPossible(currentBean, name, pv.getValue());
-                    if (created != null)
+                    if (created != null) {
                         currentBean = new BeanWrapperImpl(created);
-                    else
+                    }
+                    else {
                         break;
+                    }
                 }
-
             }
             else {
-
                 autoCreatePropertyIfPossible(bean, propertyName, pv.getValue());
             }
         }
     }
 
-    private Object autoCreatePropertyIfPossible(BeanWrapper bean, String propertyName, Object propertyValue) {
+    @SuppressWarnings("unchecked")
+    private Object autoCreatePropertyIfPossible(BeanWrapper wrapper, String propertyName, Object propertyValue) {
 
         propertyName = PropertyAccessorUtils.canonicalPropertyName(propertyName);
         int currentKeyStart = propertyName.indexOf(PropertyAccessor.PROPERTY_KEY_PREFIX_CHAR);
         int currentKeyEnd = propertyName.indexOf(PropertyAccessor.PROPERTY_KEY_SUFFIX_CHAR);
         String propertyNameWithIndex = propertyName;
-        if(currentKeyStart>-1) {
+        if (currentKeyStart > -1) {
             propertyName = propertyName.substring(0, currentKeyStart);
         }
 
+        Class<?> type = wrapper.getPropertyType(propertyName);
+        Object val = wrapper.isReadableProperty(propertyName) ? wrapper.getPropertyValue(propertyName) : null;
 
-        Class type = bean.getPropertyType(propertyName);
-        Object val = bean.isReadableProperty(propertyName) ? bean.getPropertyValue(propertyName) : null;
-        
         LOG.debug("Checking if auto-create is possible for property ["+propertyName+"] and type ["+type+"]");
-        if (type != null && val == null && (isDomainClass(type) || isEmbedded(bean, propertyName))) {
-            if (!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(bean, propertyName)) {
+        if (type != null && val == null && (isDomainClass(type) || isEmbedded(wrapper, propertyName))) {
+            if (!shouldPropertyValueSkipAutoCreate(propertyValue) && isNullAndWritableProperty(wrapper, propertyName)) {
                 if (isDomainClass(type)) {
                     Object created = autoInstantiateDomainInstance(type);
                     if (created != null) {
                         val = created;
-                        bean.setPropertyValue(propertyName, created);
+                        wrapper.setPropertyValue(propertyName, created);
                     }
                 }
-                else if (isEmbedded(bean, propertyName)) {
+                else if (isEmbedded(wrapper, propertyName)) {
                     Object created = autoInstantiateEmbeddedInstance(type);
                     if (created != null) {
                         val = created;
-                        bean.setPropertyValue(propertyName, created);
+                        wrapper.setPropertyValue(propertyName, created);
                     }
                 }
             }
         }
         else {
-            final Object beanInstance = bean.getWrappedInstance();
-            if(type!= null && Collection.class.isAssignableFrom(type)) {
-               Collection c = null;
-               final Class referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
+            final Object beanInstance = wrapper.getWrappedInstance();
+            if (type != null && Collection.class.isAssignableFrom(type)) {
+                Collection<?> c = null;
+                final Class<?> referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
 
-               if(isNullAndWritableProperty(bean, propertyName)) {
-                   c = decorateCollectionForDomainAssociation(GrailsClassUtils.createConcreteCollection(type), referencedType);
-               }
-                else {
-                   if(bean.isReadableProperty(propertyName))
-                        c = decorateCollectionForDomainAssociation((Collection) bean.getPropertyValue(propertyName), referencedType);
-               }
-               if(bean.isWritableProperty(propertyName) && c != null)
-                    bean.setPropertyValue(propertyName, c);
-               val = c;
-
-
-               if(c!= null && currentKeyStart > -1 && currentKeyEnd > -1) {
-                   String indexString = propertyNameWithIndex.substring(currentKeyStart+1, currentKeyEnd);
-                   int index = Integer.parseInt(indexString);
-
-
-                   if(isDomainClass(referencedType)) {
-                       Object instance = findIndexedValue(c, index);
-                       if(instance != null) {
-                           val = instance;
-                       }
-                       else {
-                           instance = autoInstantiateDomainInstance(referencedType);
-                           if(instance !=null) {
-                               val = instance;
-                               if(index  == c.size()) {
-                                   addAssociationToTarget(propertyName, beanInstance, instance);
-                               }
-                               else if(index > c.size()) {
-                                   while(index > c.size()) {
-                                       addAssociationToTarget(propertyName, beanInstance, autoInstantiateDomainInstance(referencedType));
-                                   }
-
-                                   addAssociationToTarget(propertyName, beanInstance, instance);
-                               }
-                           }
-                       }
-                   }
-
-               }
-
-            }
-            else if(type!=null && Map.class.isAssignableFrom(type)) {
-                Map map;
-
-                if(isNullAndWritableProperty(bean, propertyName)) {
-                    map = new HashMap();
-                    bean.setPropertyValue(propertyName,map);
+                if (isNullAndWritableProperty(wrapper, propertyName)) {
+                    c = decorateCollectionForDomainAssociation(GrailsClassUtils.createConcreteCollection(type), referencedType);
                 }
                 else {
-                    map = (Map) bean.getPropertyValue(propertyName);
+                    if (wrapper.isReadableProperty(propertyName)) {
+                        c = decorateCollectionForDomainAssociation((Collection<?>) wrapper.getPropertyValue(propertyName), referencedType);
+                    }
+                }
+
+                if (wrapper.isWritableProperty(propertyName) && c != null) {
+                    wrapper.setPropertyValue(propertyName, c);
+                }
+                val = c;
+
+                if (c != null && currentKeyStart > -1 && currentKeyEnd > -1) {
+                    String indexString = propertyNameWithIndex.substring(currentKeyStart + 1, currentKeyEnd);
+                    int index = Integer.parseInt(indexString);
+
+                    if (isDomainClass(referencedType)) {
+                        Object instance = findIndexedValue(c, index);
+                        if (instance != null) {
+                            val = instance;
+                        }
+                        else {
+                            instance = autoInstantiateDomainInstance(referencedType);
+                            if (instance !=null) {
+                                val = instance;
+                                if (index == c.size()) {
+                                    addAssociationToTarget(propertyName, beanInstance, instance);
+                                }
+                                else if (index > c.size()) {
+                                    while (index > c.size()) {
+                                        addAssociationToTarget(propertyName, beanInstance, autoInstantiateDomainInstance(referencedType));
+                                    }
+
+                                    addAssociationToTarget(propertyName, beanInstance, instance);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (type != null && Map.class.isAssignableFrom(type)) {
+                Map<String, Object> map;
+                if (isNullAndWritableProperty(wrapper, propertyName)) {
+                    map = new HashMap<String, Object>();
+                    wrapper.setPropertyValue(propertyName,map);
+                }
+                else {
+                    map = (Map)wrapper.getPropertyValue(propertyName);
                 }
                 val = map;
-                bean.setPropertyValue(propertyName, val);
+                wrapper.setPropertyValue(propertyName, val);
 
-                if(currentKeyStart > -1 && currentKeyEnd > -1) {
-                    String indexString = propertyNameWithIndex.substring(currentKeyStart+1, currentKeyEnd);
-                    Class referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
-                    if(isDomainClass(referencedType)) {
+                if (currentKeyStart > -1 && currentKeyEnd > -1) {
+                    String indexString = propertyNameWithIndex.substring(currentKeyStart + 1, currentKeyEnd);
+                    Class<?> referencedType = getReferencedTypeForCollection(propertyName, beanInstance);
+                    if (isDomainClass(referencedType)) {
                         final Object domainInstance = autoInstantiateDomainInstance(referencedType);
                         val = domainInstance;
                         map.put(indexString, domainInstance);
@@ -565,48 +613,51 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return val;
     }
 
-    private boolean isDomainClass(final Class clazz) {
-		return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz);
-	}
+    private boolean isDomainClass(final Class<?> clazz) {
+        return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz);
+    }
 
-    private boolean isEmbedded(BeanWrapper bean, String propertyName) {
-        Object embedded = GrailsClassUtils.getStaticPropertyValue(bean.getWrappedClass(), GrailsDomainClassProperty.EMBEDDED);
+    @SuppressWarnings("unchecked")
+    private boolean isEmbedded(BeanWrapper wrapper, String propertyName) {
+        Object embedded = GrailsClassUtils.getStaticPropertyValue(wrapper.getWrappedClass(), GrailsDomainClassProperty.EMBEDDED);
         return embedded instanceof List && ((List)embedded).contains(propertyName);
     }
 
+    @SuppressWarnings("unchecked")
     private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
         return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
     }
 
+    @SuppressWarnings("unchecked")
     private Collection decorateCollectionForDomainAssociation(Collection c, final Class referencedType) {
-        if(canDecorateWithListOrderedSet(c, referencedType)) {
+        if (canDecorateWithListOrderedSet(c, referencedType)) {
             c = ListOrderedSet.decorate((Set) c);
         }
         return c;
     }
 
+    @SuppressWarnings("unchecked")
     private boolean canDecorateWithListOrderedSet(Collection c, Class referencedType) {
         return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && isDomainClass(referencedType);
     }
 
+    @SuppressWarnings("unchecked")
     private Object findIndexedValue(Collection c, int index) {
-        if(index < c.size()) {
-            if(c instanceof List) {
+        if (index < c.size()) {
+            if (c instanceof List) {
                 return ((List)c).get(index);
             }
-            else {
-                int j =0;
-                for (Iterator i = c.iterator(); i.hasNext();j++) {
-                    Object o = i.next();
-                    if(j == index) return o;
-                    
-                }
+
+            int j = 0;
+            for (Iterator i = c.iterator(); i.hasNext();j++) {
+                Object o = i.next();
+                if (j == index) return o;
             }
         }
         return null;
     }
 
-    private Object autoInstantiateDomainInstance(Class type) {
+    private Object autoInstantiateDomainInstance(Class<?> type) {
         Object created = null;
         try {
             MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(type);
@@ -614,16 +665,16 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 created = mc.invokeStaticMethod(type, CreateDynamicMethod.METHOD_NAME, new Object[0]);
             }
         }
-        catch(MissingMethodException mme) {
+        catch (MissingMethodException mme) {
             LOG.warn("Unable to auto-create type, 'create' method not found");
         }
-        catch(GroovyRuntimeException gre) {
+        catch (GroovyRuntimeException gre) {
             LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
         }
         return created;
     }
 
-    private Object autoInstantiateEmbeddedInstance(Class type) {
+    private Object autoInstantiateEmbeddedInstance(Class<?> type) {
         Object created = null;
         try {
             created = type.newInstance();
@@ -637,50 +688,48 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return created;
     }
 
-    private boolean isNullAndWritableProperty(ConfigurablePropertyAccessor bean, String propertyName) {
-        return bean.isWritableProperty(propertyName) && (bean.isReadableProperty(propertyName) && bean.getPropertyValue(propertyName) == null) ;
+    private boolean isNullAndWritableProperty(ConfigurablePropertyAccessor accessor, String propertyName) {
+        return accessor.isWritableProperty(propertyName) && (accessor.isReadableProperty(propertyName) && accessor.getPropertyValue(propertyName) == null) ;
     }
 
     /**
-     * Interrogates the specified properties looking for properites that represent associations to other 
-     * classes (e.g., 'author.id').  If such a property is found, this method attempts to load the specified 
-     * instance of the association (by ID) and set it on the target object.  
-     * 
+     * Interrogates the specified properties looking for properites that represent associations to other
+     * classes (e.g., 'author.id').  If such a property is found, this method attempts to load the specified
+     * instance of the association (by ID) and set it on the target object.
+     *
      * @param mpvs the <code>MutablePropertyValues</code> object holding the parameters from the request
      */
     protected void bindAssociations(MutablePropertyValues mpvs) {
-        PropertyValue[] pvs = mpvs.getPropertyValues();
-        for (PropertyValue pv : pvs) {
+        for (PropertyValue pv : mpvs.getPropertyValues()) {
             String propertyName = pv.getName();
             String propertyNameToCheck = propertyName;
             final int i = propertyName.indexOf('.');
-            if(i >-1) {
+            if (i >-1) {
                 propertyNameToCheck = propertyName.substring(0,i);
             }
 
-            if(!isAllowed(propertyNameToCheck)) continue;
+            if (!isAllowed(propertyNameToCheck)) continue;
 
             if (propertyName.endsWith(IDENTIFIER_SUFFIX)) {
                 propertyName = propertyName.substring(0, propertyName.length() - 3);
-                if(!isAllowed(propertyName)) continue;
+                if (!isAllowed(propertyName)) continue;
                 if (isReadableAndPersistent(propertyName) && bean.isWritableProperty(propertyName)) {
                     if (NULL_ASSOCIATION.equals(pv.getValue())) {
                         bean.setPropertyValue(propertyName, null);
                         mpvs.removePropertyValue(pv);
                     }
                     else {
-                        Class type = getPropertyTypeForPath(propertyName);
+                        Class<?> type = getPropertyTypeForPath(propertyName);
                         Object persisted = getPersistentInstance(type, pv.getValue());
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
                         }
-
                     }
                 }
             }
             else {
                 if (isReadableAndPersistent(propertyName)) {
-                    Class type = getPropertyTypeForPath(propertyName);
+                    Class<?> type = getPropertyTypeForPath(propertyName);
                     if (Collection.class.isAssignableFrom(type)) {
                         bindCollectionAssociation(mpvs, pv);
                     }
@@ -689,8 +738,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
     }
 
-    private Class getPropertyTypeForPath(String propertyName) {
-        Class type = bean.getPropertyType(propertyName);
+    private Class<?> getPropertyTypeForPath(String propertyName) {
+        Class<?> type = bean.getPropertyType(propertyName);
         if (type == null) {
             // type not available via BeanWrapper - this happens with e.g. empty list indexes - so
             // find type by examining GrailsDomainClass
@@ -706,11 +755,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return type;
     }
 
-    private boolean isReadableAndPersistent(String propertyName) {        
+    private boolean isReadableAndPersistent(String propertyName) {
         return bean.isReadableProperty(propertyName) && !transients.contains(propertyName);
     }
 
-    private Object getPersistentInstance(Class type, Object id) {
+    private Object getPersistentInstance(Class<?> type, Object id) {
         Object persisted;// In order to load the association instance using InvokerHelper below, we need to
         // temporarily change this thread's ClassLoader to use the Grails ClassLoader.
         // (Otherwise, we'll get a ClassNotFoundException.)
@@ -720,10 +769,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             try {
                 Thread.currentThread().setContextClassLoader(grailsClassLoader);
             }
-            catch (java.security.AccessControlException e) {
+            catch (AccessControlException e) {
                 // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
             }
-
 
             try {
                 persisted = InvokerHelper.invokeStaticMethod(type, "get", id);
@@ -731,19 +779,19 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             catch (MissingMethodException e) {
                 return null; // GORM not installed, continue to operate as normal
             }
-
         }
         finally {
             try {
                 Thread.currentThread().setContextClassLoader(currentClassLoader);
             }
-            catch (java.security.AccessControlException e) {
+            catch (AccessControlException e) {
                 // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
-            }            
+            }
         }
         return persisted;
     }
 
+    @SuppressWarnings("unchecked")
     private void bindCollectionAssociation(MutablePropertyValues mpvs, PropertyValue pv) {
         Object v = pv.getValue();
 
@@ -754,32 +802,31 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         final PropertyEditor propertyEditor = findCustomEditor(collection.getClass(), pv.getName());
         if (propertyEditor == null) {
             if (isDomainAssociation(associatedType)) {
-                if(isArray) {
-
+                if (isArray) {
                     Object[] identifiers = (Object[])v;
                     for (Object id : identifiers) {
                         if (id != null) {
                             associateObjectForId(pv, id,associatedType);
                         }
                     }
-
                     mpvs.removePropertyValue(pv);
                 }
-                else if(v!=null && (v instanceof String)) {
+                else if (v!=null && (v instanceof String)) {
                     associateObjectForId(pv,v, associatedType);
                     mpvs.removePropertyValue(pv);
                 }
-            } else if (GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
-                if(isArray) {
+            }
+            else if (GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
+                if (isArray) {
                     Object[] values = (Object[])v;
                     List list = collection instanceof List ? (List)collection : null;
                     for (int i = 0; i < values.length; i++) {
                         Object value = values[i];
                         try {
                             Object newValue = getTypeConverter().convertIfNecessary(value, associatedType);
-                            if(list!=null) {
-                                if(i>list.size()-1) {
-                                    list.add(i,newValue);
+                            if (list != null) {
+                                if (i > list.size() - 1) {
+                                    list.add(i, newValue);
                                 }
                                 else {
                                     list.set(i, newValue);
@@ -798,39 +845,41 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
     }
 
-    private void associateObjectForId(PropertyValue pv, Object id, Class associatedType) {
+    private void associateObjectForId(PropertyValue pv, Object id, Class<?> associatedType) {
         final Object target = getTarget();
         final Object obj = getPersistentInstance(associatedType, id);
-        addAssociationToTarget(pv.getName(), target, obj);        
+        addAssociationToTarget(pv.getName(), target, obj);
     }
 
-    private boolean isDomainAssociation(Class associatedType) {
+    private boolean isDomainAssociation(Class<?> associatedType) {
         return associatedType != null && isDomainClass(associatedType);
     }
 
     private void addAssociationToTarget(String name, Object target, Object obj) {
-        if(obj!=null) {
-            MetaClassRegistry reg = GroovySystem.getMetaClassRegistry();
-            MetaClass mc = reg.getMetaClass(target.getClass());
-            final String addMethodName = "addTo" + GrailsNameUtils.getClassNameRepresentation(name);
-            mc.invokeMethod(target, addMethodName,obj);
+        if (obj == null) {
+            return;
         }
+
+        MetaClassRegistry reg = GroovySystem.getMetaClassRegistry();
+        MetaClass mc = reg.getMetaClass(target.getClass());
+        final String addMethodName = "addTo" + GrailsNameUtils.getClassNameRepresentation(name);
+        mc.invokeMethod(target, addMethodName,obj);
     }
 
-    private Class getReferencedTypeForCollection(String name, Object target) {
-		final GrailsApplication grailsApplication = ApplicationHolder.getApplication();
-		if (grailsApplication != null) {
-			GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(
-					DomainClassArtefactHandler.TYPE, target.getClass().getName());
-			if (domainClass != null) {
-				GrailsDomainClassProperty domainProperty = domainClass.getPropertyByName(name);
-				if (domainProperty != null) {
-					return domainProperty.getReferencedPropertyType();
-				}
-			}
-		}
-		return null;
-	}
+    private Class<?> getReferencedTypeForCollection(String name, Object target) {
+        final GrailsApplication grailsApplication = ApplicationHolder.getApplication();
+        if (grailsApplication != null) {
+            GrailsDomainClass dc = (GrailsDomainClass) grailsApplication.getArtefact(
+                    DomainClassArtefactHandler.TYPE, target.getClass().getName());
+            if (dc != null) {
+                GrailsDomainClassProperty domainProperty = dc.getPropertyByName(name);
+                if (domainProperty != null) {
+                    return domainProperty.getReferencedPropertyType();
+                }
+            }
+        }
+        return null;
+    }
 
     private String getNameOf(PropertyValue propertyValue) {
         String name = propertyValue.getName();
@@ -851,6 +900,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      *
      * @param propertyValues
      */
+    @SuppressWarnings("unchecked")
     private void checkStructuredProperties(MutablePropertyValues propertyValues) {
         PropertyValue[] pvs = propertyValues.getPropertyValues();
         for (PropertyValue propertyValue : pvs) {
@@ -858,7 +908,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 continue;
             }
             String propertyName = getNameOf(propertyValue);
-            Class type = bean.getPropertyType(propertyName);
+            Class<?> type = bean.getPropertyType(propertyName);
             if (type != null) {
                 PropertyEditor editor = findCustomEditor(type, propertyName);
                 if (null != editor && StructuredPropertyEditor.class.isAssignableFrom(editor.getClass())) {
@@ -874,8 +924,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                             if (partialStructValue == null && structuredEditor.getRequiredFields().contains(field)) {
                                 throw new MissingPropertyException("Required structured property is missing [" + field + "]");
                             }
-                            else if (partialStructValue == null)
+                            else if (partialStructValue == null) {
                                 continue;
+                            }
                             fieldValues.put(field, getStringValue(partialStructValue));
                         }
                         try {
@@ -885,10 +936,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                                 PropertyValue partialStructValue = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
                                 if (null != partialStructValue) {
                                     partialStructValue.setConvertedValue(getStringValue(partialStructValue));
-                                    }
                                 }
-                                propertyValues.addPropertyValue(new PropertyValue(propertyName, value));
                             }
+                            propertyValues.addPropertyValue(new PropertyValue(propertyName, value));
+                        }
                         catch (IllegalArgumentException iae) {
                             LOG.warn("Unable to parse structured date from request for date [" + propertyName + "]", iae);
                         }
@@ -903,11 +954,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private String getStringValue(PropertyValue yearProperty) {
         Object value = yearProperty.getValue();
-        if(value == null) return null;
-        else if(value.getClass().isArray()) {
+        if (value == null) return null;
+
+        if (value.getClass().isArray()) {
             return ((String[])value)[0];
         }
-        return (String)value ;
+
+        return (String)value;
     }
 
     /**
@@ -915,20 +968,22 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * a._b will result in the boolean b on object a getting set to false.
      */
     @Override protected void checkFieldMarkers(MutablePropertyValues mpvs) {
-        if (getFieldMarkerPrefix() != null) {
-            String fieldMarkerPrefix = getFieldMarkerPrefix();
-            PropertyValue[] pvArray = mpvs.getPropertyValues();
-            for (PropertyValue pv : pvArray) {
-                // start of variation from superclass method
-                if (propertyStartsWithFieldMarkerPrefix(pv, fieldMarkerPrefix)) {
-                    String field = stripFieldMarkerPrefix(pv.getName(), fieldMarkerPrefix);
-                    // end of variation from superclass method
-                    if (getPropertyAccessor().isWritableProperty(field) && !mpvs.contains(field)) {
-                        Class fieldType = getPropertyAccessor().getPropertyType(field);
-                        mpvs.add(field, getEmptyValue(field, fieldType));
-                    }
-                    mpvs.removePropertyValue(pv);
+        if (getFieldMarkerPrefix() == null) {
+            return;
+        }
+
+        String fieldMarkerPrefix = getFieldMarkerPrefix();
+        PropertyValue[] pvArray = mpvs.getPropertyValues();
+        for (PropertyValue pv : pvArray) {
+            // start of variation from superclass method
+            if (propertyStartsWithFieldMarkerPrefix(pv, fieldMarkerPrefix)) {
+                String field = stripFieldMarkerPrefix(pv.getName(), fieldMarkerPrefix);
+                // end of variation from superclass method
+                if (getPropertyAccessor().isWritableProperty(field) && !mpvs.contains(field)) {
+                    Class<?> fieldType = getPropertyAccessor().getPropertyType(field);
+                    mpvs.add(field, getEmptyValue(field, fieldType));
                 }
+                mpvs.removePropertyValue(pv);
             }
         }
     }

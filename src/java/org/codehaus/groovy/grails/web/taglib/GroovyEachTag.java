@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,20 +19,21 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * @author Graeme Rocher
- * @since 18-Jan-2006
  */
 public class GroovyEachTag extends GroovySyntaxTag {
+
     public static final String TAG_NAME = "each";
-    
+
     public void doStartTag() {
-        String in = (String) attributes.get(ATTRIBUTE_IN);
-        if(StringUtils.isBlank(in))
-            throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_IN+"]");
-        
+        String in = attributes.get(ATTRIBUTE_IN);
+        if (StringUtils.isBlank(in)) {
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]");
+        }
+
         doEachMethod(in);
     }
 
-	public void doEndTag() {
+    public void doEndTag() {
         out.println("}");
     }
 
@@ -40,10 +41,12 @@ public class GroovyEachTag extends GroovySyntaxTag {
         return TAG_NAME;
     }
 
+    @Override
     public boolean isKeepPrecedingWhiteSpace() {
         return true;
     }
 
+    @Override
     public boolean isAllowPrecedingContent() {
         return true;
     }

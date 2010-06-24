@@ -12,62 +12,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.webflow.engine.builder;
+package org.codehaus.groovy.grails.webflow.engine.builder
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.webflow.action.AbstractAction;
-import org.springframework.webflow.core.collection.LocalAttributeMap;
-import org.springframework.webflow.execution.Event;
-import org.springframework.webflow.execution.RequestContext;
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.runtime.InvokerHelper
+import org.springframework.webflow.action.AbstractAction
+import org.springframework.webflow.core.collection.LocalAttributeMap
+import org.springframework.webflow.execution.Event
+import org.springframework.webflow.execution.RequestContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.binding.*
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.validation.Errors
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
-import java.util.Map
 import grails.util.GrailsUtil
 import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 
 /**
- * Invokes a closure as a Webflow action placing the returned model within the flow scope
+ * Invokes a closure as a Webflow action placing the returned model within the flow scope.
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jun 12, 2007
- *        Time: 12:00:23 PM
  */
-public class ClosureInvokingAction extends AbstractAction  {
-    private static final Log LOG = LogFactory.getLog(ClosureInvokingAction.class);
-    private static final String RESULT = "result";
+class ClosureInvokingAction extends AbstractAction {
 
-    Closure callable;
+    private static final Log LOG = LogFactory.getLog(ClosureInvokingAction)
+    private static final String RESULT = "result"
+
+    Closure callable
     def commandClasses
     def noOfParams
     boolean hasCommandObjects
     def applicationContext
 
-    public ClosureInvokingAction(Closure callable) {
-        this.callable = callable;
+    ClosureInvokingAction(Closure callable) {
+        this.callable = callable
         this.commandClasses = callable.parameterTypes
         this.noOfParams = commandClasses.size()
         this.hasCommandObjects = noOfParams > 1 || (noOfParams == 1 && commandClasses[0] != Object.class && commandClasses[0] != RequestContext.class)
-        if(hasCommandObjects) {
-            for(co in commandClasses) {
+        if (hasCommandObjects) {
+            for (co in commandClasses) {
                 co.metaClass.getErrors = {->
-                      RCH.currentRequestAttributes().getAttribute("${co.name}_${delegate.hashCode()}_errors",0)
+                    RCH.currentRequestAttributes().getAttribute("${co.name}_${delegate.hashCode()}_errors",0)
                 }
                 co.metaClass.setErrors = { Errors errors ->
-                     RCH.currentRequestAttributes().setAttribute("${co.name}_${delegate.hashCode()}_errors",errors,0)
+                    RCH.currentRequestAttributes().setAttribute("${co.name}_${delegate.hashCode()}_errors",errors,0)
                 }
                 co.metaClass.hasErrors = {-> errors?.hasErrors() ? true : false }
                 def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(co.newInstance())
@@ -77,10 +69,10 @@ public class ClosureInvokingAction extends AbstractAction  {
                     def localErrors = errors
 
                     checkAppContext()
-                    if(constrainedProperties) {                        
-                        for(prop in constrainedProperties.values()) {
+                    if (constrainedProperties) {
+                        for (prop in constrainedProperties.values()) {
                             prop.messageSource = applicationContext.getBean("messageSource")
-                            prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors);
+                            prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors)
                         }
                     }
                     !localErrors.hasErrors()
@@ -89,13 +81,11 @@ public class ClosureInvokingAction extends AbstractAction  {
         }
     }
 
-
-
     def checkAppContext() {
-        if(!applicationContext) {
+        if (!applicationContext) {
             def webRequest = RCH.currentRequestAttributes()
             applicationContext = webRequest.attributes.applicationContext
-        }        
+        }
     }
 
     protected Event doExecute(RequestContext context) throws Exception {
@@ -107,16 +97,17 @@ public class ClosureInvokingAction extends AbstractAction  {
             cloned.delegate = actionDelegate
             cloned.resolveStrategy = Closure.DELEGATE_FIRST
 
-            if(hasCommandObjects) {
+            if (hasCommandObjects) {
                 checkAppContext()
                 def commandInstances = []
-                for(p in commandClasses) {
+                for (p in commandClasses) {
                     def instance = p.newInstance()
 
-                    applicationContext.autowireCapableBeanFactory?.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                    applicationContext.autowireCapableBeanFactory?.autowireBeanProperties(
+                        instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
 
                     def params = noOfParams > 1 ? actionDelegate.params[GrailsNameUtils.getPropertyName(instance.class)] : actionDelegate.params
-                    if(params) {
+                    if (params) {
                         def binder = GrailsDataBinder.createBinder(instance, instance.class.name, actionDelegate.request)
                         binder.bind(params)
                     }
@@ -129,67 +120,65 @@ public class ClosureInvokingAction extends AbstractAction  {
                 result = cloned.call(context)
             }
             def event
-            if(result instanceof Map) {
+            if (result instanceof Map) {
                 context.flowScope.putAll(new LocalAttributeMap(result))
                 event = super.success(result)
             }
-            else if(result instanceof Event) {
-                event = result;
+            else if (result instanceof Event) {
+                event = result
                 context.flowScope.putAll(event.attributes)
             }
             else {
                 event = super.success(result)
             }
             // here we place any errors that have occured in groovy objects into flashScope so they
-                // can be restored upon deserialization of the flow
+            // can be restored upon deserialization of the flow
             checkForErrors(context,context.flowScope.asMap())
             checkForErrors(context,context.conversationScope.asMap())
-            return event;
-        } catch (Throwable e) {
+            return event
+        }
+        catch (Throwable e) {
             GrailsUtil.deepSanitize(e)
             LOG.error("Exception occured invoking flow action: ${e.message}", e)
-            throw e;
+            throw e
         }
-
     }
 
     def checkForErrors(context, scope) {
-        for(entry in scope) {
+        for (entry in scope) {
             try {
-                if(entry.value instanceof GroovyObject) {
+                if (entry.value instanceof GroovyObject) {
                     def errors = entry.value.errors
-                    if(errors?.hasErrors()) {
+                    if (errors?.hasErrors()) {
                         context.flashScope.put("${GrailsApplicationAttributes.ERRORS}_${entry.key}", errors )
                     }
                 }
             }
-            catch(MissingPropertyException) {
+            catch (MissingPropertyException e) {
                 // ignore
             }
         }
     }
 
-    public Object invokeMethod(String name, args) {
-        if(metaClass instanceof ExpandoMetaClass) {
+    Object invokeMethod(String name, args) {
+        if (metaClass instanceof ExpandoMetaClass) {
             def emc = metaClass
             MetaMethod metaMethod = emc.getMetaMethod(name, args)
-            if(metaMethod) return metaMethod.invoke(this, args)
-            else {
-                return invokeMethodAsEvent(name, args)
-            }
+            if (metaMethod) return metaMethod.invoke(this, args)
+            return invokeMethodAsEvent(name, args)
         }
         return invokeMethodAsEvent(name, args)
     }
 
     private Object invokeMethodAsEvent(String name, args) {
+        if (args.length == 0) {
+            return result(name)
+        }
 
-        if(args.length == 0)
-            return result(name);
-        else if(args[0] instanceof Map) {
+        if (args[0] instanceof Map) {
             return result(name,new LocalAttributeMap(args[0]))
         }
-        else {
-            return result(name,name, args)
-        }
+
+        return result(name,name, args)
     }
 }

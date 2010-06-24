@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import grails.util.GrailsUtil
-import java.util.ArrayList
 
 import org.apache.commons.logging.LogFactory
 
@@ -36,8 +35,6 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
  * @author Graeme Rocher
  *
  * @since 1.0
- *
- * Created: Oct 10, 2007
  */
 class FiltersGrailsPlugin {
 
@@ -133,7 +130,7 @@ class FiltersGrailsPlugin {
 
         def sortedFilterConfigs = [] // the new ordered filter list
         def list = new ArrayList(Arrays.asList(filterConfigs))
-		def addedDeps = [:]
+        def addedDeps = [:]
 
         while (list.size() > 0) {
             def filtersAdded = 0;
@@ -156,9 +153,9 @@ class FiltersGrailsPlugin {
                     // check dependencies to see if all the filters it depends on are already in the list
                     log.debug("  Checking filter '${bean.class.name}' dependencies (${dependsOn.size()})")
 
-            		def failedDep = false;
+                    def failedDep = false;
                     for (dep in dependsOn) {
-                    	log.debug("  Checking filter '${bean.class.name}' dependencies: ${dep.name}")
+                        log.debug("  Checking filter '${bean.class.name}' dependencies: ${dep.name}")
                         //if (sortedFilterConfigs.find{def b = applicationContext.getBean(it.fullName); b.class == dep} == null) {
                         if (!addedDeps.containsKey(dep)) {
                             // dep not in the list yet, we need to skip adding this to the list for now
@@ -167,7 +164,7 @@ class FiltersGrailsPlugin {
                             break
                         } else {
                             log.debug("  Filter '${bean.class.name}' dependency '${dep.name}' already added")
-						}
+                        }
                     }
 
                     if (failedDep) {
@@ -178,7 +175,7 @@ class FiltersGrailsPlugin {
 
                 log.debug("  Adding filter '${bean.class.name}', since all dependencies have been added")
                 sortedFilterConfigs.add(c)
-				addedDeps.put(bean.class, null);
+                addedDeps.put(bean.getClass(), null);
                 iter.remove()
                 filtersAdded++
             }
@@ -227,7 +224,7 @@ class FiltersGrailsPlugin {
                 def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
                 handlerAdapter.afterPropertiesSet()
                 handlers <<  handlerAdapter
-        		log.debug("  $handlerAdapter")
+                log.debug("  $handlerAdapter")
             }
         }
 

@@ -14,18 +14,23 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import java.text.DateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 
-import java.text.DateFormat;
-import java.util.*;
-
 /**
- * Structured editor for editing dates that takes 5 fields that represent the year, month, day, hour and minute
- * and constructs a Date instance
+ * Structured editor for editing dates that takes 5 fields that represent the year, month, day, hour
+ * and minute and constructs a Date instance
  *
+ * @author Graeme Rocher
  * @since 1.0.4
- * @author Graeme Rocher 
  */
 public class StructuredDateEditor extends CustomDateEditor implements StructuredPropertyEditor {
 
@@ -37,21 +42,15 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
         super(dateFormat, b, i);
     }
 
-    public List getRequiredFields() {
-        List requiredFields = new ArrayList();
-        requiredFields.add("year");
-        return requiredFields;
+    public List<String> getRequiredFields() {
+        return Arrays.asList("year");
     }
 
-    public List getOptionalFields() {
-        List optionalFields = new ArrayList();
-        optionalFields.add("month");
-        optionalFields.add("day");
-        optionalFields.add("hour");
-        optionalFields.add("minute");
-        return optionalFields;
+    public List<String> getOptionalFields() {
+        return Arrays.asList("month", "day", "hour", "minute");
     }
 
+    @SuppressWarnings("unchecked")
     public Object assemble(Class type, Map fieldValues) throws IllegalArgumentException {
         if (!fieldValues.containsKey("year")) {
             throw new IllegalArgumentException("Can't populate a date without a year");
@@ -59,14 +58,12 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
 
         String yearString = (String) fieldValues.get("year");
         int year;
-
         try {
-            if(StringUtils.isBlank(yearString)) {
+            if (StringUtils.isBlank(yearString)) {
                 throw new IllegalArgumentException("Can't populate a date without a year");
             }
-            else {
-                year = Integer.parseInt(yearString);
-            }
+
+            year = Integer.parseInt(yearString);
 
             int month = getIntegerValue(fieldValues, "month", 1);
             int day = getIntegerValue(fieldValues, "day", 1);
@@ -74,18 +71,20 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
             int minute = getIntegerValue(fieldValues, "minute", 0);
 
             Calendar c = new GregorianCalendar(year,month - 1,day,hour,minute);
-            if(type == Date.class) {
+            if (type == Date.class) {
                 return c.getTime();
-            } else if(type == java.sql.Date.class) {
+            }
+            if (type == java.sql.Date.class) {
                 return new java.sql.Date(c.getTime().getTime());
             }
             return c;
         }
-        catch(NumberFormatException nfe) {
+        catch (NumberFormatException nfe) {
             throw new IllegalArgumentException("Unable to parse structured date from request for date [\"+propertyName+\"]\"");
         }
     }
 
+    @SuppressWarnings("unchecked")
     private int getIntegerValue(Map values, String name, int defaultValue) throws NumberFormatException {
         if (values.get(name) != null) {
             return Integer.parseInt((String) values.get(name));

@@ -187,8 +187,10 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
                 LOG.debug(String.format("Building Bidirectional Enum Map..."));
             }
 
-            EnumMap enumToKey = new EnumMap(enumClass);
-            HashMap keytoEnum = new HashMap();
+            @SuppressWarnings("hiding")
+				EnumMap enumToKey = new EnumMap(enumClass);
+            @SuppressWarnings("hiding")
+				HashMap keytoEnum = new HashMap();
 
             Method idAccessor = enumClass.getMethod(ENUM_ID_ACCESSOR);
 

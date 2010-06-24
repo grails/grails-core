@@ -63,7 +63,7 @@ public class GrailsRepoResolver extends URLResolver{
     public String transformGrailsRepositoryPattern(ModuleRevisionId mrid, String pattern) {
         final String revision = mrid.getRevision();
         String versionTag;
-        if(revision.equals("latest.integration") || revision.equals("latest")) {
+        if (revision.equals("latest.integration") || revision.equals("latest")) {
             versionTag = "LATEST_RELEASE";
         }
         else {
@@ -78,21 +78,22 @@ public class GrailsRepoResolver extends URLResolver{
      * @param localFile The local file to save to XML too
      * @return The GPathResult reperesenting the XML
      */
+    @SuppressWarnings("unchecked")
     public GPathResult getPluginList(File localFile) {
-
         try {
             final Repository repo = getRepository();
             List list = repo.list(repositoryRoot.toString());
             for (Object entry : list) {
                 String url = entry.toString();
-                if(url.contains(".plugin-meta")) {
+                if (url.contains(".plugin-meta")) {
                     List metaList = repo.list(url);
                     for (Object current : metaList) {
                         url = current.toString();
-                        if(url.contains("plugins-list.xml")) {
-                        	Resource remoteFile = repo.getResource(url);
-                        	if(localFile.lastModified() < remoteFile.getLastModified())
-                        		repo.get(url, localFile);
+                        if (url.contains("plugins-list.xml")) {
+                            Resource remoteFile = repo.getResource(url);
+                            if (localFile.lastModified() < remoteFile.getLastModified()) {
+                                repo.get(url, localFile);
+                            }
                             return new XmlSlurper().parse(localFile);
                         }
                     }

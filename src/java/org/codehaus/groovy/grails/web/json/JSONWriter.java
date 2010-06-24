@@ -139,7 +139,8 @@ public class JSONWriter {
             this.append("[");
             this.comma = false;
             return this;
-        } else throw new JSONException("Misplaced array.");
+        }
+        throw new JSONException("Misplaced array.");
     }
 
     /**

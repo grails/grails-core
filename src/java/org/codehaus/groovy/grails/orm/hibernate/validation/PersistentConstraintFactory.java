@@ -18,25 +18,24 @@ import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.validation.Constraint;
 import org.codehaus.groovy.grails.validation.ConstraintFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 
 /**
- * A factory that creates PersistentConstraint instances ensuring that dependencies are provided
+ * A factory that creates PersistentConstraint instances ensuring that dependencies are provided.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 23, 2007
- *        Time: 3:04:34 PM
  */
 public class PersistentConstraintFactory implements ConstraintFactory {
-    private Class constraintClass;
+
+    private Class<?> constraintClass;
     private ApplicationContext applicationContext;
 
-
-    public PersistentConstraintFactory(ApplicationContext applicationContext, Class persistentConstraint) {
-        if(applicationContext == null) throw new IllegalArgumentException("Argument [applicationContext] cannot be null");
-        if(persistentConstraint == null || !PersistentConstraint.class.isAssignableFrom(persistentConstraint))
+    public PersistentConstraintFactory(ApplicationContext applicationContext, Class<?> persistentConstraint) {
+        Assert.notNull(applicationContext, "Argument [applicationContext] cannot be null");
+        if (persistentConstraint == null || !PersistentConstraint.class.isAssignableFrom(persistentConstraint)) {
             throw new IllegalArgumentException("Argument [persistentConstraint] must be an instance of " + PersistentConstraint.class);
+        }
 
         this.applicationContext = applicationContext;
         this.constraintClass = persistentConstraint;
@@ -47,10 +46,14 @@ public class PersistentConstraintFactory implements ConstraintFactory {
             PersistentConstraint instance = (PersistentConstraint)constraintClass.newInstance();
             instance.setApplicationContext(applicationContext);
             return instance;
-        } catch (InstantiationException e) {
-            throw new GrailsDomainException("Error instantiating constraint ["+constraintClass+"] during validation: " + e.getMessage(),e );
-        } catch (IllegalAccessException e) {
-            throw new GrailsDomainException("Error instantiating constraint ["+constraintClass+"] during validation: " + e.getMessage(),e );
+        }
+        catch (InstantiationException e) {
+            throw new GrailsDomainException("Error instantiating constraint [" + constraintClass +
+                    "] during validation: " + e.getMessage(),e );
+        }
+        catch (IllegalAccessException e) {
+            throw new GrailsDomainException("Error instantiating constraint [" + constraintClass +
+                    "] during validation: " + e.getMessage(),e );
         }
     }
 }

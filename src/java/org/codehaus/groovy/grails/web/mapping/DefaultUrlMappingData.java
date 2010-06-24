@@ -14,20 +14,21 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import java.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
 
 /**
  * Default implementating of the UrlMappingData interface.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Mar 5, 2007
- *        Time: 7:51:47 AM
  */
 public class DefaultUrlMappingData implements UrlMappingData {
+
     private static final String CAPTURED_WILDCARD = "(*)";
     private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final String QUESTION_MARK = "?";
@@ -37,50 +38,48 @@ public class DefaultUrlMappingData implements UrlMappingData {
     private final String[] logicalUrls;
     private String[] tokens;
 
-    private List optionalTokens = new ArrayList();
-
+    private List<Boolean> optionalTokens = new ArrayList<Boolean>();
 
     public DefaultUrlMappingData(String urlPattern) {
-        if(StringUtils.isBlank(urlPattern)) throw new IllegalArgumentException("Argument [urlPattern] cannot be null or blank");
-        if(!urlPattern.startsWith(SLASH)) throw new IllegalArgumentException("Argument [urlPattern] is not a valid URL. It must start with '/' !");
+        Assert.hasLength(urlPattern, "Argument [urlPattern] cannot be null or blank");
+        Assert.isTrue(urlPattern.startsWith(SLASH), "Argument [urlPattern] is not a valid URL. It must start with '/' !");
 
         this.urlPattern = StringUtils.replace(urlPattern, "(*)**", CAPTURED_DOUBLE_WILDCARD); // remove starting /
-        this.tokens = this.urlPattern.substring(1).split(SLASH);
-        List urls = new ArrayList();
-
+        tokens = this.urlPattern.substring(1).split(SLASH);
+        List<String> urls = new ArrayList<String>();
         parseUrls(urls);
 
-        this.logicalUrls = (String[])urls.toArray(new String[urls.size()]);
+        logicalUrls = urls.toArray(new String[urls.size()]);
     }
 
-    private void parseUrls(List urls) {
+    private void parseUrls(List<String> urls) {
         StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i].trim();
 
-            if(token.equals(SLASH)) continue;
+            if (token.equals(SLASH)) continue;
 
             boolean isOptional = false;
-            if(token.endsWith(QUESTION_MARK)) {
+            if (token.endsWith(QUESTION_MARK)) {
                 urls.add(buf.toString());
                 tokens[i] = token.substring(0, token.length()-1);
                 buf.append(SLASH).append(tokens[i]);
                 isOptional = true;
             }
             else {
-               buf.append(SLASH).append(token);
+                buf.append(SLASH).append(token);
             }
-            if(CAPTURED_WILDCARD.equals(tokens[i])) {
-                if(isOptional) {
-                    optionalTokens.add( Boolean.TRUE);
+            if (CAPTURED_WILDCARD.equals(tokens[i])) {
+                if (isOptional) {
+                    optionalTokens.add(Boolean.TRUE);
                 }
                 else {
-                    optionalTokens.add( Boolean.FALSE);
+                    optionalTokens.add(Boolean.FALSE);
                 }
             }
-            if(CAPTURED_DOUBLE_WILDCARD.equals(tokens[i])) {
-                optionalTokens.add( Boolean.TRUE);
+            if (CAPTURED_DOUBLE_WILDCARD.equals(tokens[i])) {
+                optionalTokens.add(Boolean.TRUE);
             }
         }
         urls.add(buf.toString());
@@ -100,7 +99,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
     }
 
     public boolean isOptional(int index) {
-        if(index >= optionalTokens.size()) return true;
+        if (index >= optionalTokens.size()) return true;
         return optionalTokens.get(index).equals(Boolean.TRUE);
     }
 }

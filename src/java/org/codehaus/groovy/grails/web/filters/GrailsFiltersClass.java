@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.filters;
 
 import org.codehaus.groovy.grails.commons.InjectableGrailsClass;
+import org.codehaus.groovy.grails.plugins.web.filters.FilterConfig;
 
 import java.util.List;
 
@@ -25,8 +26,9 @@ import java.util.List;
  * @author Graeme Rocher
  */
 public interface GrailsFiltersClass extends InjectableGrailsClass {
+
     /**
-     * @return A list of FilterConfig instances
+     * @return  the FilterConfig instances
      */
-    List getConfigs(Object filterInstance);
+    List<FilterConfig> getConfigs(Object filterInstance);
 }

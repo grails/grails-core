@@ -35,14 +35,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class HiddenHttpMethodFilter extends OncePerRequestFilter{
+public class HiddenHttpMethodFilter extends OncePerRequestFilter {
 
     /** Default method parameter: <code>_method</code> */
     public static final String DEFAULT_METHOD_PARAM = "_method";
 
     private String methodParam = DEFAULT_METHOD_PARAM;
     public static final String HEADER_X_HTTP_METHOD_OVERRIDE = "X-HTTP-Method-Override";
-
 
     /**
      * Set the parameter name to look for HTTP methods.
@@ -53,25 +52,28 @@ public class HiddenHttpMethodFilter extends OncePerRequestFilter{
         this.methodParam = methodParam;
     }
 
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
-        if("POST".equalsIgnoreCase(request.getMethod())) {
+        if ("POST".equalsIgnoreCase(request.getMethod())) {
             String httpMethod = getHttpMethodOverride(request);
-            if(StringUtils.hasLength(httpMethod))
+            if (StringUtils.hasLength(httpMethod)) {
                 filterChain.doFilter(new HttpMethodRequestWrapper(httpMethod, request), response);
-            else
+            }
+            else {
                 filterChain.doFilter(request, response);
+            }
         }
         else {
             filterChain.doFilter(request, response);
         }
-
     }
 
-    protected String getHttpMethodOverride(HttpServletRequest request) {        
+    protected String getHttpMethodOverride(HttpServletRequest request) {
         String httpMethod = request.getParameter(methodParam);
-        
-        if(httpMethod == null) {
+
+        if (httpMethod == null) {
             httpMethod = request.getHeader(HEADER_X_HTTP_METHOD_OVERRIDE);
         }
         return httpMethod != null ? httpMethod.toUpperCase() : null;
@@ -90,9 +92,9 @@ public class HiddenHttpMethodFilter extends OncePerRequestFilter{
             this.method = method;
         }
 
+        @Override
         public String getMethod() {
-            return this.method;
+            return method;
         }
     }
-    
 }

@@ -14,30 +14,32 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import org.springframework.util.Assert;
+
 import com.opensymphony.module.sitemesh.Factory;
 
 /**
- * A class that holds a reference to the Sitemesh Factory object
+ * Holds a reference to the Sitemesh Factory object.
  *
  * @author Graeme Rocher
  * @since 0.6
- *        <p/>
- *        Created: Jul 24, 2007
- *        Time: 5:05:25 PM
  */
-public class FactoryHolder { 
-    private FactoryHolder() {}
-  
+public class FactoryHolder {
+
+    private FactoryHolder() {
+        // static only
+    }
+
     private static Factory factory;
 
     public static Factory getFactory() {
-        if(factory == null) throw new IllegalStateException("Cannot return Sitemesh factory it has not been set!");
+        Assert.state(factory != null, "Cannot return Sitemesh factory it has not been set!");
         return factory;
     }
 
     public static void setFactory(Factory newFactory) {
         synchronized(FactoryHolder.class) {
-           factory = newFactory;
+            factory = newFactory;
         }
     }
 }

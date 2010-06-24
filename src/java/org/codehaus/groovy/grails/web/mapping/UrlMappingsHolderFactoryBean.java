@@ -15,6 +15,12 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Script;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.ServletContext;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
@@ -22,35 +28,28 @@ import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
-
-import javax.servlet.ServletContext;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A FactoryBean for constructing the UrlMappingsHolder from the registered UrlMappings class within a
- * GrailsApplication
+ * GrailsApplication.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- * 
- *        <p/>
- *        Created: Mar 6, 2007
- *        Time: 6:48:57 PM
  */
-public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBean, GrailsApplicationAware, ServletContextAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware {
+
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
     private UrlMappingEvaluator mappingEvaluator;
     private ServletContext servletContext;
 
-    public Object getObject() throws Exception {
-        return this.urlMappingsHolder;
+    public UrlMappingsHolder getObject() throws Exception {
+        return urlMappingsHolder;
     }
 
-    public Class getObjectType() {
+    public Class<UrlMappingsHolder> getObjectType() {
         return UrlMappingsHolder.class;
     }
 
@@ -58,15 +57,16 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     public void afterPropertiesSet() throws Exception {
-        if(grailsApplication == null) throw new IllegalStateException("Property [grailsApplication] must be set!");
+        Assert.state(grailsApplication != null, "Property [grailsApplication] must be set!");
 
         List urlMappings = new ArrayList();
         List excludePatterns = new ArrayList();
-        
+
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
 
-        this.mappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
+        mappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
 
         for (GrailsClass mapping : mappings) {
             GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
@@ -79,13 +79,12 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean, InitializingBe
             }
 
             urlMappings.addAll(grailsClassMappings);
-            if (mappingClass.getExcludePatterns() != null) excludePatterns.addAll(mappingClass.getExcludePatterns());
+            if (mappingClass.getExcludePatterns() != null) {
+                excludePatterns.addAll(mappingClass.getExcludePatterns());
+            }
         }
 
-
-
-        this.urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns);
-
+        urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns);
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

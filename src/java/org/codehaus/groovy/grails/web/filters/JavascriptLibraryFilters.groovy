@@ -11,23 +11,26 @@ import org.apache.commons.logging.Log
  *
  * @author Graeme Rocher
  * @since 1.2
- *
  */
 class JavascriptLibraryFilters implements GrailsApplicationAware {
+
     GrailsApplication grailsApplication
+
     static final Log LOG = LogFactory.getLog(JavascriptLibraryFilters)
+
     def filters = {
         def library = grailsApplication?.config?.grails?.views?.javascript?.library ?: null
 
-        LOG.debug "Using [$library] as the default Ajax provider." 
+        LOG.debug "Using [$library] as the default Ajax provider."
         all(controller:'*', action:'*') {
             before = {
-                if(!request[JavascriptTagLib.INCLUDED_LIBRARIES]) request[JavascriptTagLib.INCLUDED_LIBRARIES] = []
-                if(library) {                    
+                if (!request[JavascriptTagLib.INCLUDED_LIBRARIES]) {
+                    request[JavascriptTagLib.INCLUDED_LIBRARIES] = []
+                }
+                if (library) {
                     request[JavascriptTagLib.INCLUDED_LIBRARIES] << library
                 }
             }
         }
     }
-
 }

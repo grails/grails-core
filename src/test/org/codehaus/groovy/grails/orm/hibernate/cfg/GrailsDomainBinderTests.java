@@ -271,6 +271,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertColumnNullable("table_per_subclass_superclass", "some_optional_product_status", config);
     }
     
+    @SuppressWarnings("unchecked")
     public void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
         assertEquals("Tables created", 1, getTableCount(config));
@@ -473,6 +474,7 @@ public class GrailsDomainBinderTests extends TestCase {
     /**
      * @see GrailsDomainBinder#bindStringColumnConstraints(Column, ConstrainedProperty)
      */
+    @SuppressWarnings("unchecked")
     public void testBindStringColumnConstraints() {
         // Verify that the correct length is set when a maxSize constraint is applied
         ConstrainedProperty constrainedProperty = getConstrainedStringProperty();

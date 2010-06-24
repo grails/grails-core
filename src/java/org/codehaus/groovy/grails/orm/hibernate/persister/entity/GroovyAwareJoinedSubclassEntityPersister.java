@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.persister.entity;
 
+import java.io.Serializable;
+
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
 import org.hibernate.HibernateException;
@@ -24,34 +26,29 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.persister.entity.JoinedSubclassEntityPersister;
 
-import java.io.Serializable;
-
 /**
- * A customized EntityPersisteer that creates proxies valid for use with Groovy 
+ * A customized EntityPersisteer that creates proxies valid for use with Groovy.
  *
  * @author Graeme Rocher
  * @since 1.1.1
- * 
- *        <p/>
- *        Created: Apr 21, 2009
  */
-public class GroovyAwareJoinedSubclassEntityPersister extends JoinedSubclassEntityPersister   {
+public class GroovyAwareJoinedSubclassEntityPersister extends JoinedSubclassEntityPersister {
 
     private GroovyAwareJavassistProxyFactory proxyFactory;
 
-    public GroovyAwareJoinedSubclassEntityPersister(PersistentClass persistentClass, EntityRegionAccessStrategy cacheAccessStrategy, SessionFactoryImplementor factory, Mapping mapping) throws HibernateException {
+    public GroovyAwareJoinedSubclassEntityPersister(PersistentClass persistentClass,
+            EntityRegionAccessStrategy cacheAccessStrategy, SessionFactoryImplementor factory,
+            Mapping mapping) throws HibernateException {
         super(persistentClass, cacheAccessStrategy, factory, mapping);
-        this.proxyFactory = GrailsHibernateUtil.buildProxyFactory(persistentClass);
+        proxyFactory = GrailsHibernateUtil.buildProxyFactory(persistentClass);
     }
 
     @Override
-    public Object createProxy(Serializable id, SessionImplementor session) throws HibernateException
-    {
-        if(proxyFactory!=null) {
+    public Object createProxy(Serializable id, SessionImplementor session) throws HibernateException {
+        if (proxyFactory != null) {
             return proxyFactory.getProxy(id,session);
         }
-        else {
-            return super.createProxy(id, session);
-        }
+
+        return super.createProxy(id, session);
     }
 }

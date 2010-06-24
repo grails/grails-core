@@ -28,19 +28,13 @@ import org.springframework.webflow.engine.builder.support.FlowBuilderServices
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 
 /**
-* A flow execution repository that scans the set GrailsApplication instance for controllers
-* that contain flow closures
-*
-* @author Graeme Rocher
-* @since 0.6
+ * A flow execution repository that scans the set GrailsApplication instance for controllers
+ * that contain flow closures.
  *
-* Created: Jul 3, 2007
-* Time: 8:13:08 AM
-*
-*/
-
+ * @author Graeme Rocher
+ * @since 0.6
+ */
 class ControllerFlowRegistry implements GrailsApplicationAware, ApplicationContextAware, FactoryBean, InitializingBean {
-
 
     ApplicationContext applicationContext
     GrailsApplication grailsApplication
@@ -48,25 +42,25 @@ class ControllerFlowRegistry implements GrailsApplicationAware, ApplicationConte
     FlowBuilderServices flowBuilderServices
 
     /**
-     * Implements the doPopulate method by using a GrailsApplication instance and its contained
-     * controller classes to locate and populate flow definitions in the registry
-     */
+    * Implements the doPopulate method by using a GrailsApplication instance and its contained
+    * controller classes to locate and populate flow definitions in the registry
+    */
     protected void doPopulate(FlowDefinitionRegistry registry) {
-        if(grailsApplication) {
-            for(GrailsControllerClass c in grailsApplication.controllerClasses) {
-                for(flow in c.flows) {
-                    def flowId = ("${c.logicalPropertyName}/" + flow.key).toString()
-
-                    FlowBuilder builder = new FlowBuilder( flowId, flow.value,flowBuilderServices, registry)
-                    builder.viewPath = "/"
-                    builder.applicationContext = applicationContext
-                    FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
-                    registry.registerFlowDefinition new DefaultFlowHolder(assembler)
-                }
-            }
-
+        if (!grailsApplication) {
+            return
         }
 
+        for (GrailsControllerClass c in grailsApplication.controllerClasses) {
+            for (flow in c.flows) {
+                def flowId = ("${c.logicalPropertyName}/" + flow.key).toString()
+
+                FlowBuilder builder = new FlowBuilder( flowId, flow.value,flowBuilderServices, registry)
+                builder.viewPath = "/"
+                builder.applicationContext = applicationContext
+                FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
+                registry.registerFlowDefinition new DefaultFlowHolder(assembler)
+            }
+        }
     }
 
     Object getObject() { flowRegistry }
@@ -75,8 +69,7 @@ class ControllerFlowRegistry implements GrailsApplicationAware, ApplicationConte
 
     boolean isSingleton() { true }
 
-
-    public void afterPropertiesSet() {
+    void afterPropertiesSet() {
         flowRegistry = new FlowDefinitionRegistryImpl()
         doPopulate flowRegistry
     }

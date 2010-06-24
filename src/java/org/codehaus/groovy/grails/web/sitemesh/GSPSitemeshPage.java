@@ -1,159 +1,170 @@
+/* Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.web.sitemesh;
-
-import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
-import com.opensymphony.sitemesh.Content;
-
-import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
+import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
+import com.opensymphony.sitemesh.Content;
+
 /**
- * 
  * Grails/GSP specific implementation of Sitemesh's AbstractHTMLPage
- * 
+ *
  * g:capture* tags in RenderTagLib are used to capture head, meta, title, component & body contents.
  * No html parsing is required for templating since capture tags are added at GSP compilation time.
- * 
- * 
+ *
  * @see SitemeshPreprocessor
  * @author Lari Hotari, Sagire Software Oy
- *
  */
 public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
-	StreamCharBuffer headBuffer;
-	StreamCharBuffer bodyBuffer;
-	StreamCharBuffer pageBuffer;
-	boolean used=false;
-	boolean titleCaptured=false;
-	Map<String, StreamCharBuffer> contentBuffers;
-	
-	public GSPSitemeshPage() {
 
-	}
+    StreamCharBuffer headBuffer;
+    StreamCharBuffer bodyBuffer;
+    StreamCharBuffer pageBuffer;
+    boolean used = false;
+    boolean titleCaptured = false;
+    Map<String, StreamCharBuffer> contentBuffers;
 
-	public void addProperty(String name, Object value) {
-		addProperty(name, (String)(value == null ? null : String.valueOf(value)));
-	}
+    public void addProperty(String name, Object value) {
+        addProperty(name, (value == null ? null : String.valueOf(value)));
+    }
 
-	@Override
-	public void addProperty(String name, String value) {
-		if("title".equals(name)) {
-			titleCaptured=true;
-		}
-		super.addProperty(name, value);
-		this.used=true;		
-	}
-	
-	@Override
-	public void writeHead(Writer out) throws IOException {
-		if(headBuffer != null) {
-			if(titleCaptured) {
-				String headAsString = headBuffer.toString();
-				// strip out title for sitemesh version of <head>
-				out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
-			} else {
-				headBuffer.writeTo(out);
-			}
-		}
-	}
+    @Override
+    public void addProperty(String name, String value) {
+        if ("title".equals(name)) {
+            titleCaptured = true;
+        }
+        super.addProperty(name, value);
+        used = true;
+    }
 
-	@Override
-	public void writeBody(Writer out) throws IOException {
-		if(bodyBuffer != null) {
-			bodyBuffer.writeTo(out);
-		} else if (pageBuffer != null) {
-			// no body was captured, so write the whole page content
-			pageBuffer.writeTo(out);
-		}
-	}
+    @Override
+    public void writeHead(Writer out) throws IOException {
+        if (headBuffer == null) {
+            return;
+        }
 
-	@Override
-	public void writePage(Writer out) throws IOException {
-		if(pageBuffer != null) {
-			pageBuffer.writeTo(out);
-		}
-	}
+        if (titleCaptured) {
+            String headAsString = headBuffer.toString();
+            // strip out title for sitemesh version of <head>
+            out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
+        }
+        else {
+            headBuffer.writeTo(out);
+        }
+    }
 
-	public String getHead() {
-		if(headBuffer != null) {
-			return headBuffer.toString();
-		}
-		return null;
-	}
+    @Override
+    public void writeBody(Writer out) throws IOException {
+        if (bodyBuffer != null) {
+            bodyBuffer.writeTo(out);
+        }
+        else if (pageBuffer != null) {
+            // no body was captured, so write the whole page content
+            pageBuffer.writeTo(out);
+        }
+    }
 
-	@Override
-	public String getBody() {
-		if(bodyBuffer != null) {
-			return bodyBuffer.toString();
-		}
-		return null;
-	}
+    @Override
+    public void writePage(Writer out) throws IOException {
+        if (pageBuffer != null) {
+            pageBuffer.writeTo(out);
+        }
+    }
 
-	@Override
-	public String getPage() {
-		if(pageBuffer != null) {
-			return pageBuffer.toString();
-		}
-		return null;
-	}
+    public String getHead() {
+        if (headBuffer != null) {
+            return headBuffer.toString();
+        }
+        return null;
+    }
 
-	public int originalLength() {
-		return pageBuffer.size();
-	}
+    @Override
+    public String getBody() {
+        if (bodyBuffer != null) {
+            return bodyBuffer.toString();
+        }
+        return null;
+    }
 
-	public void writeOriginal(Writer writer) throws IOException {
-		writePage(writer);
-	}
+    @Override
+    public String getPage() {
+        if (pageBuffer != null) {
+            return pageBuffer.toString();
+        }
+        return null;
+    }
 
-	public void setHeadBuffer(StreamCharBuffer headBuffer) {
-		this.headBuffer = headBuffer;
-		this.used=true;
-	}
+    public int originalLength() {
+        return pageBuffer.size();
+    }
 
-	public void setBodyBuffer(StreamCharBuffer bodyBuffer) {
-		this.bodyBuffer = bodyBuffer;
-		this.used=true;
-	}
+    public void writeOriginal(Writer writer) throws IOException {
+        writePage(writer);
+    }
 
-	public void setPageBuffer(StreamCharBuffer pageBuffer) {
-		this.pageBuffer = pageBuffer;
-	}
+    public void setHeadBuffer(StreamCharBuffer headBuffer) {
+        this.headBuffer = headBuffer;
+        used = true;
+    }
 
-	public boolean isUsed() {
-		return used;
-	}
+    public void setBodyBuffer(StreamCharBuffer bodyBuffer) {
+        this.bodyBuffer = bodyBuffer;
+        used = true;
+    }
 
-	public void setUsed(boolean used) {
-		this.used = used;
-	}
+    public void setPageBuffer(StreamCharBuffer pageBuffer) {
+        this.pageBuffer = pageBuffer;
+    }
 
-	/**
-	 * @param tagName "tagName" name of buffer (without "page." prefix)
-	 * @param buffer
-	 */
-	public void setContentBuffer(String tagName, StreamCharBuffer buffer) {
-		this.used=true;
-		if(contentBuffers==null) {
-			contentBuffers=new HashMap<String, StreamCharBuffer>();
-		}
-		String propertyName = "page." + tagName;
-		contentBuffers.put(propertyName, buffer);
-		// just mark that the property is set
-		super.addProperty(propertyName, "");
-	}
-	
-	/**
-	 * @param name propertyName of contentBuffer (with "page." prefix)
-	 * @return
-	 */
-	public Object getContentBuffer(String name) {
-		if(contentBuffers==null) {
-			return null;
-		}
-		return contentBuffers.get(name);
-	}
+    public boolean isUsed() {
+        return used;
+    }
+
+    public void setUsed(boolean used) {
+        this.used = used;
+    }
+
+    /**
+     * @param tagName "tagName" name of buffer (without "page." prefix)
+     * @param buffer
+     */
+    public void setContentBuffer(String tagName, StreamCharBuffer buffer) {
+        used = true;
+        if (contentBuffers == null) {
+            contentBuffers = new HashMap<String, StreamCharBuffer>();
+        }
+        String propertyName = "page." + tagName;
+        contentBuffers.put(propertyName, buffer);
+        // just mark that the property is set
+        super.addProperty(propertyName, "");
+    }
+
+    /**
+     * @param name propertyName of contentBuffer (with "page." prefix)
+     * @return
+     */
+    public Object getContentBuffer(String name) {
+        if (contentBuffers == null) {
+            return null;
+        }
+        return contentBuffers.get(name);
+    }
 }

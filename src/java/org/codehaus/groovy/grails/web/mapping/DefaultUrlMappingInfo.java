@@ -16,10 +16,19 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsNameUtils;
 import groovy.util.ConfigObject;
+
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -27,25 +36,14 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Map;
-
 /**
- * A Class that implements the UrlMappingInfo interface and holds information established from a matched
- * URL
+ * Holds information established from a matched URL.
  *
  * @author Graeme Rocher
  * @since 0.5
- *        <p/>
- *        <p/>
- *        Created: Mar 1, 2007
- *        Time: 7:19:35 AM
  */
 public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements UrlMappingInfo {
-    
+
     private Object controllerName;
     private Object actionName;
     private Object id;
@@ -55,9 +53,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     private ServletContext servletContext;
     private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.web.disable.multipart";
     private boolean parsingRequest;
-	private Object uri;
+    private Object uri;
 
-
+    @SuppressWarnings("unchecked")
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
         this.params = Collections.unmodifiableMap(params);
         this.id = params.get(ID_PARAM);
@@ -65,35 +63,38 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         this.servletContext = servletContext;
     }
 
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
+    @SuppressWarnings("unchecked")
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params,
+            UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
-        if (controllerName == null && viewName == null)
-            throw new IllegalArgumentException("URL mapping must either provide a controller or view name to map to!");
-        if (params == null) throw new IllegalArgumentException("Argument [params] cannot be null");
+        Assert.isTrue(controllerName != null || viewName != null, "URL mapping must either provide a controller or view name to map to!");
+        Assert.notNull(params, "Argument [params] cannot be null");
         this.controllerName = controllerName;
         this.actionName = actionName;
-        if (actionName == null)
+        if (actionName == null) {
             this.viewName = viewName;
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         this.viewName = viewName;
-        if (viewName == null) throw new IllegalArgumentException("Argument [viewName] cannot be null or blank");
-
+        Assert.notNull(viewName, "Argument [viewName] cannot be null or blank");
     }
-    
+
     public DefaultUrlMappingInfo(Object uri, UrlMappingData data, ServletContext servletContext) {
-    	this(Collections.EMPTY_MAP, data,servletContext);
-    	this.uri = uri;
-    	
-    	if (uri == null) throw new IllegalArgumentException("Argument [uri] cannot be null or blank");
+        this(Collections.EMPTY_MAP, data, servletContext);
+        this.uri = uri;
+        Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
 
+    @Override
     public String toString() {
         return urlData.getUrlPattern();
     }
 
+    @SuppressWarnings("unchecked")
     public Map getParameters() {
         return params;
     }
@@ -107,16 +108,18 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     }
 
     public String getControllerName() {
-        String controllerName = evaluateNameForValue(this.controllerName);
-        if (controllerName == null && getViewName() == null)
-            throw new UrlMappingException("Unable to establish controller name to dispatch for [" + this.controllerName + "]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
-        return controllerName;
+        String name = evaluateNameForValue(this.controllerName);
+        if (name == null && getViewName() == null) {
+            throw new UrlMappingException("Unable to establish controller name to dispatch for [" +
+                    controllerName + "]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
+        }
+        return name;
     }
 
     public String getActionName() {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
 
-        String name = webRequest != null ? checkDispatchAction(webRequest.getCurrentRequest(), null) : null;
+        String name = webRequest != null ? checkDispatchAction(webRequest.getCurrentRequest()) : null;
         if (name == null) {
             name = evaluateNameForValue(this.actionName, webRequest);
         }
@@ -131,25 +134,28 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         return evaluateNameForValue(this.id);
     }
 
-    private String checkDispatchAction(HttpServletRequest request, String actionName) {
-        Enumeration paramNames = tryMultipartParams(request, request.getParameterNames());
+    @SuppressWarnings("unchecked")
+    private String checkDispatchAction(HttpServletRequest request) {
+        String dispatchActionName = null;
+        Enumeration<String> paramNames = tryMultipartParams(request, request.getParameterNames());
 
         for (; paramNames.hasMoreElements();) {
-            String name = (String) paramNames.nextElement();
+            String name = paramNames.nextElement();
             if (name.startsWith(WebUtils.DISPATCH_ACTION_PARAMETER)) {
                 // remove .x suffix in case of submit image
                 if (name.endsWith(".x") || name.endsWith(".y")) {
                     name = name.substring(0, name.length() - 2);
                 }
-                actionName = GrailsNameUtils.getPropertyNameRepresentation(name.substring((WebUtils.DISPATCH_ACTION_PARAMETER).length()));
+                dispatchActionName = GrailsNameUtils.getPropertyNameRepresentation(name.substring((WebUtils.DISPATCH_ACTION_PARAMETER).length()));
                 break;
             }
         }
-        return actionName;
+        return dispatchActionName;
     }
 
-    private Enumeration tryMultipartParams(HttpServletRequest request, Enumeration originalParams) {
-        Enumeration paramNames = originalParams;
+    @SuppressWarnings("unchecked")
+    private Enumeration<String> tryMultipartParams(HttpServletRequest request, Enumeration<String> originalParams) {
+        Enumeration<String> paramNames = originalParams;
         boolean disabled = getMultipartDisabled();
         if (!disabled) {
             MultipartResolver resolver = getResolver();
@@ -177,7 +183,8 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         Object disableMultipart = config.get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
         if (disableMultipart instanceof Boolean) {
             disabled = ((Boolean) disableMultipart).booleanValue();
-        } else if (disableMultipart instanceof String) {
+        }
+        else if (disableMultipart instanceof String) {
             disabled = Boolean.valueOf((String) disableMultipart).booleanValue();
         }
         return disabled;
@@ -185,14 +192,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
 
     private MultipartResolver getResolver() {
         WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        MultipartResolver resolver = (MultipartResolver)
-                ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
-        return resolver;
+        return (MultipartResolver)ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
     }
 
-	public String getURI() {
-		return evaluateNameForValue(this.uri);
-	}
-
-
+    public String getURI() {
+        return evaluateNameForValue(this.uri);
+    }
 }

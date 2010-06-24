@@ -17,20 +17,17 @@ package org.codehaus.groovy.grails.webflow.engine.builder
 import org.springframework.webflow.execution.RequestContext
 
 /**
- * A delegate that relays method calls onto the currently executing controller
-
+ * A delegate that relays method calls onto the currently executing controller.
+ *
  * @author Graeme Rocher
  * @since 0.6
-  *
- * Created: Jul 20, 2007
- * Time: 11:00:48 PM
- *
  */
 class ControllerDelegate extends AbstractDelegate {
 
     ControllerDelegate(RequestContext context) {
         super(context)
     }
+
     /**
      * invokes a method as an action if possible
      */
@@ -38,5 +35,4 @@ class ControllerDelegate extends AbstractDelegate {
         def controller = webRequest.attributes.getController(webRequest.currentRequest)
         controller.invokeMethod(name, args)
     }
-
 }

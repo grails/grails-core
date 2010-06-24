@@ -15,11 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.json;
 
-import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.*;
+import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.ARRAY;
+import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.KEY;
+import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.OBJECT;
 
 import java.io.IOException;
 import java.io.Writer;
-
 
 /**
  * A JSONWriter dedicated to create indented/pretty printed output.
@@ -38,9 +39,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
     }
 
     private int indentLevel = 0;
-
     private final String indentStr;
-
 
     public PrettyPrintJSONWriter(Writer w) {
         this(w, DEFAULT_INDENT_STR);
@@ -52,18 +51,21 @@ public class PrettyPrintJSONWriter extends JSONWriter {
     }
 
     private void newline() {
-            try {
-                writer.write(NEWLINE);
-            } catch (IOException e) {
-                throw new JSONException(e);
-            }
+        try {
+            writer.write(NEWLINE);
+        }
+        catch (IOException e) {
+            throw new JSONException(e);
+        }
     }
 
     private void indent() {
         try {
-            for (int i = 0; i < indentLevel; i++)
+            for (int i = 0; i < indentLevel; i++) {
                 writer.write(indentStr);
-        } catch (IOException e) {
+            }
+        }
+        catch (IOException e) {
             throw new JSONException(e);
         }
     }
@@ -73,17 +75,19 @@ public class PrettyPrintJSONWriter extends JSONWriter {
         if (s == null) {
             throw new JSONException("Null pointer");
         }
+
         if (mode == OBJECT || mode == ARRAY) {
             try {
                 if (comma && mode == ARRAY) {
                     comma();
                 }
-                if(mode == ARRAY) {
+                if (mode == ARRAY) {
                     newline();
                     indent();
                 }
                 writer.write(s);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 throw new JSONException(e);
             }
             if (mode == OBJECT) {
@@ -92,6 +96,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
             comma = true;
             return this;
         }
+
         throw new JSONException("Value out of sequence.");
     }
 
@@ -100,11 +105,6 @@ public class PrettyPrintJSONWriter extends JSONWriter {
         newline();
         indent();
         return super.end(m, c);
-    }
-
-    @Override
-    protected void comma() {
-        super.comma();
     }
 
     @Override
@@ -140,6 +140,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
         if (s == null) {
             throw new JSONException("Null key.");
         }
+
         if (mode == KEY) {
             try {
                 if (comma) {
@@ -152,7 +153,8 @@ public class PrettyPrintJSONWriter extends JSONWriter {
                 comma = false;
                 mode = OBJECT;
                 return this;
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 throw new JSONException(e);
             }
         }

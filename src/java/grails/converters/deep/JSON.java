@@ -24,11 +24,14 @@ import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigu
  * @author Siegfried Puchbauer
  * @deprecated The Converters framework has been refactored and this made the deep Converters obsolete
  */
+@Deprecated
 public class JSON extends grails.converters.JSON{
 
     public static final String CONFIGURATION_NAME = "deep";
 
+    @Override
     protected ConverterConfiguration<grails.converters.JSON> initConfig() {
-        return ConvertersConfigurationHolder.getNamedConverterConfiguration(CONFIGURATION_NAME, grails.converters.JSON.class);
+        return ConvertersConfigurationHolder.getNamedConverterConfiguration(
+                CONFIGURATION_NAME, grails.converters.JSON.class);
     }
 }

@@ -70,6 +70,7 @@ class DocumentationContext {
     /**
      * Documents an instance method
      */
+    @SuppressWarnings("unchecked")
     DocumentationContext documentMethod(String artefact, Class type, String name, Class<?>[] arguments) {
         if (!currentDocumentation) {
             if (GrailsClassUtils.isGetter(name, arguments)) {
@@ -87,6 +88,7 @@ class DocumentationContext {
     /**
      * Documents a static method
      */
+    @SuppressWarnings("unchecked")
     DocumentationContext documentStaticMethod(String artefact, Class type, String name, Class<?>[] arguments) {
         staticMethods << new DocumentedMethod(name:name, arguments:arguments,type:type,artefact:artefact,text:currentDocumentation)
         currentDocumentation = null
@@ -125,6 +127,7 @@ class DocumentedElement {
 }
 
 class DocumentedMethod extends DocumentedElement {
+    @SuppressWarnings("unchecked")
     Class<?>[] arguments
 
     String toString() {

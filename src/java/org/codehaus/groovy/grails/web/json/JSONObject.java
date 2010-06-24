@@ -82,6 +82,7 @@ import java.util.*;
  * @author JSON.org
  * @version 2
  */
+@SuppressWarnings("unchecked")
 public class JSONObject implements JSONElement,Map {
 
     /**
@@ -97,6 +98,7 @@ public class JSONObject implements JSONElement,Map {
          *
          * @return NULL.
          */
+        @Override
         protected final Object clone() {
             return this;
         }
@@ -109,6 +111,7 @@ public class JSONObject implements JSONElement,Map {
          * @return true if the object parameter is the JSONObject.NULL object
          *         or null.
          */
+        @Override
         public boolean equals(Object object) {
             return object == null || object == this;
         }
@@ -119,6 +122,7 @@ public class JSONObject implements JSONElement,Map {
          *
          * @return The string "null".
          */
+        @Override
         public String toString() {
             return "null";
         }
@@ -942,6 +946,7 @@ public class JSONObject implements JSONElement,Map {
      *         with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *         with <code>}</code>&nbsp;<small>(right brace)</small>.
      */
+    @Override
     public String toString() {
         try {
             Iterator keys = keys();
@@ -1196,6 +1201,7 @@ public class JSONObject implements JSONElement,Map {
         return this.myHashMap.entrySet();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -1207,6 +1213,7 @@ public class JSONObject implements JSONElement,Map {
         return true;
     }
 
+    @Override
     public int hashCode() {
         return (myHashMap != null ? myHashMap.hashCode() : 0);
     }

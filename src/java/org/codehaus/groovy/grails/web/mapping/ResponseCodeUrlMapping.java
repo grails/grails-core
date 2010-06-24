@@ -14,23 +14,27 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-
-import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+
 /**
- * A Url mapping for http response codes
+ * A Url mapping for http response codes.
  *
  * @author mike
  * @since 1.0-RC1
  */
 public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMapping {
+
     private final ResponseCodeMappingData urlData;
+    @SuppressWarnings("hiding")
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
+    @SuppressWarnings({ "hiding", "unchecked" })
     private Map parameterValues = Collections.EMPTY_MAP;
-    private Class exceptionType;
+    private Class<?> exceptionType;
 
     public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(controllerName, actionName, viewName, constraints, servletContext);
@@ -49,22 +53,28 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
         return urlData;
     }
 
+    @Override
     public ConstrainedProperty[] getConstraints() {
         return constraints;
     }
 
+    @Override
     public Object getControllerName() {
         return controllerName;
     }
 
+    @Override
     public Object getActionName() {
         return actionName;
     }
 
+    @Override
     public Object getViewName() {
         return this.viewName;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public void setParameterValues(Map parameterValues) {
         this.parameterValues = parameterValues;
     }
@@ -73,45 +83,49 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
         return 0;
     }
 
-    public String createURL(Map parameterValues, String encoding) {
+    @SuppressWarnings("unchecked")
+    public String createURL(Map values, String encoding) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
-    public String createURL(Map parameterValues, String encoding, String fragment) {
+    @SuppressWarnings("unchecked")
+    public String createURL(Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
-    public String createURL(String controller, String action, Map parameterValues, String encoding) {
+    @SuppressWarnings("unchecked")
+    public String createURL(String controller, String action, Map values, String encoding) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
-    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding) {
+    @SuppressWarnings("unchecked")
+    public String createRelativeURL(String controller, String action, Map values, String encoding) {
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
-    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+    @SuppressWarnings("unchecked")
+    public String createRelativeURL(String controller, String action, Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
-    public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
+    @SuppressWarnings("unchecked")
+    public String createURL(String controller, String action, Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
     public UrlMappingInfo match(int responseCode) {
-       if (responseCode == urlData.getResponseCode()) return new DefaultUrlMappingInfo(
-                controllerName,
-                actionName,
-                viewName,
-                parameterValues,
-                urlData, servletContext);
+        if (responseCode == urlData.getResponseCode()) {
+            return new DefaultUrlMappingInfo(controllerName, actionName, viewName,
+                    parameterValues, urlData, servletContext);
+        }
         return null;
     }
 
-    public void setExceptionType(Class exClass) {
+    public void setExceptionType(Class<?> exClass) {
         this.exceptionType = exClass;
     }
 
-    public Class getExceptionType() {
+    public Class<?> getExceptionType() {
         return exceptionType;
     }
 }

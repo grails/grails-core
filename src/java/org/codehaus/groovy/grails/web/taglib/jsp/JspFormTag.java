@@ -18,12 +18,11 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * JSP facade onto the GSP form tag
  *
  * @author Graeme Rocher
- * @since 28-Feb-2006
  */
 public class JspFormTag extends JspInvokeGrailsTagLibTag {
-	private static final long serialVersionUID = -3045238592311090749L;
+    private static final long serialVersionUID = -3045238592311090749L;
 
-	private static final String TAG_NAME = "form";
+    private static final String TAG_NAME = "form";
 
     private String controller;
     private String action;
@@ -68,10 +67,12 @@ public class JspFormTag extends JspInvokeGrailsTagLibTag {
         this.action = action;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }

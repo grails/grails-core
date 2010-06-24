@@ -14,45 +14,41 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
-import org.hibernate.SessionFactory;
 import org.hibernate.FlushMode;
-import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.SessionFactory;
 import org.hibernate.classic.Session;
 import org.hibernate.collection.PersistentCollection;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.validation.Errors;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-
 /**
- * A validator that first checks if the Hibernate PersistentCollection instance has been initialised before bothering
- * to cascade
+ * First checks if the Hibernate PersistentCollection instance has been initialised before bothering
+ * to cascade.
  *
  * @author Graeme Rocher
  * @since 0.5
- * 
- *        <p/>
- *        Created: Apr 13, 2007
- *        Time: 6:32:08 PM
  */
 public class HibernateDomainClassValidator extends GrailsDomainClassValidator implements ApplicationContextAware {
 
-
-    private static ThreadLocal validatedInstances = new ThreadLocal() {
-        protected Object initialValue() {
-            return new ArrayList();
+    private static ThreadLocal<ArrayList<Object>> validatedInstances = new ThreadLocal<ArrayList<Object>>() {
+        @Override
+        protected ArrayList<Object> initialValue() {
+            return new ArrayList<Object>();
         }
     };
+
     private ApplicationContext applicationContext;
     private SessionFactory sessionFactory;
 
@@ -70,7 +66,7 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
         final Session session = sessionFactory.getCurrentSession();
         FlushMode previousMode = null;
         try {
-            if(session!=null) {
+            if (session != null) {
                 previousMode = session.getFlushMode();
                 session.setFlushMode(FlushMode.MANUAL);
             }
@@ -78,7 +74,7 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
             super.validate(obj, errors, cascade);
         }
         finally {
-            if(session!=null && previousMode!=null) {
+            if (session != null && previousMode != null) {
                 session.setFlushMode(previousMode);
             }
         }
@@ -95,47 +91,53 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
      *
      * @see org.hibernate.collection.PersistentCollection#wasInitialized()
      */
+    @Override
     protected void cascadeValidationToMany(Errors errors, BeanWrapper bean, GrailsDomainClassProperty persistentProperty, String propertyName) {
         Object collection = bean.getPropertyValue(propertyName);
-        if(collection != null) {
-            if(collection instanceof PersistentCollection) {
-                PersistentCollection persistentCollection = (PersistentCollection)collection;
-                if(persistentCollection.wasInitialized()) {
-                    super.cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
-                }
-            }
-            else {
+        if (collection == null) {
+            return;
+        }
+
+        if (collection instanceof PersistentCollection) {
+            PersistentCollection persistentCollection = (PersistentCollection)collection;
+            if (persistentCollection.wasInitialized()) {
                 super.cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
             }
-
+        }
+        else {
+            super.cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
         }
     }
 
+    @Override
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject, GrailsDomainClassProperty persistentProperty, String propertyName) {
-        List validatedInstancesList = (List)validatedInstances.get();
+        List<Object> validatedInstancesList = validatedInstances.get();
         validatedInstancesList.add(associatedObject);
         super.cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName);
     }
 
+    @Override
     protected void postValidate(Object obj, Errors errors) {
+        if (applicationContext == null || !applicationContext.containsBean("sessionFactory")) {
+            return;
+        }
+
         try {
-            if(applicationContext != null && applicationContext.containsBean("sessionFactory")) {
-                SessionFactory sessionFactory = (SessionFactory) applicationContext.getBean("sessionFactory");
-                if(errors.hasErrors()) {
-                    GrailsHibernateUtil.setObjectToReadyOnly(obj, sessionFactory);
-                    List invalidInstances = (List) validatedInstances.get();
-                    for (Iterator i = invalidInstances.iterator(); i.hasNext();) {
-                        Object instance = i.next();
-                        GrailsHibernateUtil.setObjectToReadyOnly(instance, sessionFactory);
-                    }
-                }
-                else {
-                    GrailsHibernateUtil.setObjectToReadWrite(obj, sessionFactory);
+            SessionFactory sf = (SessionFactory)applicationContext.getBean("sessionFactory");
+            if (errors.hasErrors()) {
+                GrailsHibernateUtil.setObjectToReadyOnly(obj, sf);
+                List<Object> invalidInstances = validatedInstances.get();
+                for (Object instance : invalidInstances) {
+                    GrailsHibernateUtil.setObjectToReadyOnly(instance, sf);
                 }
             }
-        } finally {
-            List validatedInstancesList = (List)validatedInstances.get();
-            if(validatedInstancesList!=null) {
+            else {
+                GrailsHibernateUtil.setObjectToReadWrite(obj, sf);
+            }
+        }
+        finally {
+            List<Object> validatedInstancesList = validatedInstances.get();
+            if (validatedInstancesList != null) {
                 validatedInstancesList.clear();
             }
         }
@@ -143,13 +145,15 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        if(applicationContext!=null) {
-            try {
-                this.sessionFactory = applicationContext.getBean("sessionFactory", SessionFactory.class);
-            }
-            catch (BeansException e) {
-                // no session factory, continue
-            }
+        if (applicationContext == null) {
+            return;
+        }
+
+        try {
+            sessionFactory = applicationContext.getBean("sessionFactory", SessionFactory.class);
+        }
+        catch (BeansException e) {
+            // no session factory, continue
         }
     }
 }

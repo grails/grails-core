@@ -16,17 +16,13 @@ package org.codehaus.groovy.grails.webflow.engine.builder
 
 import org.springframework.binding.expression.Expression
 
-
 /**
-* Implements the Spring binding expression interface to allow an expression to evaluate a closure for using with dynamic transitions
-
-* @author Graeme Rocher
-* @since 0.6
+ * Implements the Spring binding expression interface to allow an expression to evaluate
+ * a closure for using with dynamic transitions.
  *
-* Created: Jul 20, 2007
-* Time: 10:47:57 PM
-*
-*/
+ * @author Graeme Rocher
+ * @since 0.6
+ */
 class ClosureExpression implements Expression {
 
     Closure closure
@@ -35,21 +31,20 @@ class ClosureExpression implements Expression {
         this.closure = c
     }
 
-    public Object getValue(Object context) {
-       def attrs = context?.attributes ? context.attributes : [:]
+    Object getValue(Object context) {
+        def attrs = context?.attributes ? context.attributes : [:]
         closure.delegate = new ControllerDelegate(context)
         closure.resolveStrategy = Closure.DELEGATE_ONLY
         closure.call()
     }
-    public void setValue(Object context, Object value) {
+
+    void setValue(Object context, Object value) {
         // do nothing
     }
 
-    public Class getValueType(Object context) {
-        return Object.class;
-    }
+    Class getValueType(Object context) { Object }
 
-    public String getExpressionString() {
-        return c.inspect()
+    String getExpressionString() {
+        c.inspect()
     }
 }

@@ -14,16 +14,16 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.io.Writer;
-import java.io.PrintWriter;
 
 /**
  * <p>A tag type that gets translated directly into Groovy syntax by the GSP parser.</p>
@@ -33,38 +33,39 @@ import java.io.PrintWriter;
  * the runtime view rendering level</p>
  *
  * @author Graeme Rocher
- * @since 11-Jan-2006
  */
 public abstract class GroovySyntaxTag implements GrailsTag {
+
     private static final String METHOD_EACH_WITH_INDEX = "eachWithIndex";
-	private static final String METHOD_EACH = "each";
-	private static final String ERROR_NO_VAR_WITH_STATUS = "When using <g:each> with a [status] attribute, you must also define a [var]. eg. <g:each var=\"myVar\">";
-	protected static final String ATTRIBUTE_IN = "in";
-	protected static final String ATTRIBUTE_VAR = "var";
-	protected static final String ATTRIBUTES_STATUS = "status";
-	protected Map tagContext;
+    private static final String METHOD_EACH = "each";
+    private static final String ERROR_NO_VAR_WITH_STATUS = "When using <g:each> with a [status] attribute, you must also define a [var]. eg. <g:each var=\"myVar\">";
+    protected static final String ATTRIBUTE_IN = "in";
+    protected static final String ATTRIBUTE_VAR = "var";
+    protected static final String ATTRIBUTES_STATUS = "status";
+    @SuppressWarnings("unchecked")
+    protected Map tagContext;
     protected PrintWriter out;
-    protected Map attributes = new HashMap();
+    protected Map<String, String> attributes = new HashMap<String, String>();
     protected GroovyPageParser parser;
 
-    public void init(Map tagContext) {
-        this.tagContext = tagContext;
-        this.parser = (GroovyPageParser) tagContext.get(GroovyPageParser.class);
-        Object outObj = tagContext.get(GroovyPage.OUT);
-        if(outObj instanceof PrintWriter) {
-        	this.out = (PrintWriter)tagContext.get(GroovyPage.OUT);
+    @SuppressWarnings("unchecked")
+    public void init(Map context) {
+        tagContext = context;
+        parser = (GroovyPageParser) context.get(GroovyPageParser.class);
+        Object outObj = context.get(GroovyPage.OUT);
+        if (outObj instanceof PrintWriter) {
+            out = (PrintWriter)context.get(GroovyPage.OUT);
         }
     }
 
     public void setWriter(Writer w) {
-        if(w instanceof PrintWriter) {
-            this.out = (PrintWriter)w;
-        }
-        else {
+        if (!(w instanceof PrintWriter)) {
             throw new IllegalArgumentException("A GroovySynax tag requires a java.io.PrintWriter instance");
         }
+        out = (PrintWriter)w;
     }
 
+    @SuppressWarnings("unchecked")
     public void setAttributes(Map attributes) {
         for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
             String attrName = (String) i.next();
@@ -73,17 +74,16 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     public void setAttribute(String name, Object value) {
-        if(value instanceof String ) {
-            String stringValue = (String)value;
-            if(stringValue.startsWith("${") && stringValue.endsWith("}")) {
-                stringValue = stringValue.substring(2,stringValue.length() -1);
-            }
-
-            this.attributes.put(name.substring(1,name.length()-1),stringValue);
-        }
-        else {
+        if (!(value instanceof String)) {
             throw new IllegalArgumentException("A GroovySynax tag requires only string valued attributes");
         }
+
+        String stringValue = (String)value;
+        if (stringValue.startsWith("${") && stringValue.endsWith("}")) {
+            stringValue = stringValue.substring(2,stringValue.length() -1);
+        }
+
+        attributes.put(name.substring(1,name.length()-1), stringValue);
     }
 
     /**
@@ -103,64 +103,72 @@ public abstract class GroovySyntaxTag implements GrailsTag {
      */
     public abstract boolean isAllowPrecedingContent();
 
-	protected String calculateExpression(String expr) {
-		if(StringUtils.isBlank(expr )) {
-			throw new IllegalArgumentException("Argument [expr] cannot be null or blank");
-		}
-		expr = expr.trim();
-        if(expr.startsWith("\"") && expr.endsWith("\"")) {
+    protected String calculateExpression(String expr) {
+        if (StringUtils.isBlank(expr)) {
+            throw new IllegalArgumentException("Argument [expr] cannot be null or blank");
+        }
+
+        expr = expr.trim();
+        if (expr.startsWith("\"") && expr.endsWith("\"")) {
             expr = expr.substring(1,expr.length()-1);
             expr = expr.trim();
         }
-        if(expr.startsWith("${") && expr.endsWith("}")) {
-        	expr = expr.substring(2,expr.length()-1);
+        if (expr.startsWith("${") && expr.endsWith("}")) {
+            expr = expr.substring(2,expr.length()-1);
             expr = expr.trim();
         }
-		return expr;
-	}
+        return expr;
+    }
 
-	/**
-	 * @param in
-	 */
-	protected void doEachMethod(String in) {
-		String var = (String) attributes.get(ATTRIBUTE_VAR);
-	    String status = (String)attributes.get(ATTRIBUTES_STATUS);
-	    var = extractAttributeValue(var);
-	    status = extractAttributeValue(status);
-	
-	
-	    boolean hasStatus = !StringUtils.isBlank(status);	    
-	    boolean hasVar = !StringUtils.isBlank(var);
-        if(hasStatus && !hasVar)
-	    	throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
-	    
-		String methodName = hasStatus ? METHOD_EACH_WITH_INDEX : METHOD_EACH;
-	    
-        if(var.equals(status) && (hasStatus))
-            throw new GrailsTagException("Attribute ["+ATTRIBUTE_VAR+"] cannot have the same value as attribute ["+ATTRIBUTES_STATUS+"]");
-        out.print(parser!=null?parser.getExpressionText(in) : in);  // object
+    /**
+     * @param in
+     */
+    protected void doEachMethod(String in) {
+        String var = attributes.get(ATTRIBUTE_VAR);
+        String status = attributes.get(ATTRIBUTES_STATUS);
+        var = extractAttributeValue(var);
+        status = extractAttributeValue(status);
+
+        boolean hasStatus = !StringUtils.isBlank(status);
+        boolean hasVar = !StringUtils.isBlank(var);
+        if (hasStatus && !hasVar) {
+            throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
+        }
+
+        String methodName = hasStatus ? METHOD_EACH_WITH_INDEX : METHOD_EACH;
+
+        if (var.equals(status) && (hasStatus)) {
+            throw new GrailsTagException("Attribute [" + ATTRIBUTE_VAR +
+                    "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]");
+        }
+
+        out.print(parser != null ? parser.getExpressionText(in) : in);  // object
         out.print('.'); // dot de-reference
         out.print(methodName); // method name
         out.print(" { "); // start closure
 
-        if(hasVar || hasStatus)
+        if (hasVar || hasStatus) {
             out.print(hasVar ? var : "it"); // var name
+        }
         // if eachWithIndex add status
-        if(hasStatus) {
+        if (hasStatus) {
             out.print(",");
             out.print(status);
         }
 
-        if(hasVar || hasStatus)
+        if (hasVar || hasStatus) {
             out.print(" ->"); // start closure body
+        }
         out.println();
-	}
+    }
 
-	private String extractAttributeValue(String attr) {
-		if(StringUtils.isBlank(attr))return "";	    
-	    if(attr.startsWith("\"") && attr.endsWith("\"") && attr.length() > 1) {
-	    	attr = attr.substring(1,attr.length()-1);
-	    }
-		return attr;
-	}
+    private String extractAttributeValue(String attr) {
+        if (StringUtils.isBlank(attr)) {
+            return "";
+        }
+        if (attr.startsWith("\"") && attr.endsWith("\"") && attr.length() > 1) {
+            attr = attr.substring(1,attr.length()-1);
+        }
+        return attr;
+    }
 }

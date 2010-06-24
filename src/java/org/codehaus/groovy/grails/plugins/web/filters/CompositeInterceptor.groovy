@@ -15,45 +15,48 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.springframework.web.servlet.HandlerInterceptor
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import org.springframework.web.servlet.ModelAndView
+
 import org.apache.commons.logging.LogFactory
 
+import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.ModelAndView
+
 /**
- * A HandlerInterceptor that is composed of other HandlerInterceptor instances
- * 
+ * Composed of other HandlerInterceptor instances.
+ *
  * @author mike
  * @author Graeme Rocher
  */
 class CompositeInterceptor implements HandlerInterceptor {
+
     static final LOG = LogFactory.getLog(CompositeInterceptor)
-    
+
     def handlers
 
     boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) {
         if (LOG.isDebugEnabled()) LOG.debug "preHandle ${request}, ${response}, ${o}"
 
         for (handler in handlers) {
-            if (!handler.preHandle(request, response, o)) return false;
+            if (!handler.preHandle(request, response, o)) return false
         }
-        return true;
+        return true
     }
 
     void postHandle(HttpServletRequest request, HttpServletResponse response,Object o, ModelAndView modelAndView) throws java.lang.Exception {
         if (LOG.isDebugEnabled()) LOG.debug "postHandle ${request}, ${response}, ${o}, ${modelAndView}"
 
-        handlers.reverseEach{ handler ->
-            handler.postHandle(request, response, o, modelAndView);
+        handlers.reverseEach { handler ->
+            handler.postHandle(request, response, o, modelAndView)
         }
     }
 
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws java.lang.Exception {
         if (LOG.isDebugEnabled()) LOG.debug "afterCompletion ${request}, ${response}, ${o}, ${e}"
 
-        handlers.reverseEach{ handler ->
-            handler.afterCompletion(request, response, o, e);
+        handlers.reverseEach { handler ->
+            handler.afterCompletion(request, response, o, e)
         }
     }
 }

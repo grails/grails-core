@@ -24,19 +24,18 @@ import java.util.Map;
  * @since 1.0.4
  * @author Graeme Rocher
  */
+@SuppressWarnings("unchecked")
 public interface StructuredPropertyEditor {
 
     /**
      * @return The required fields
      */
-    public List getRequiredFields();
-
+    List getRequiredFields();
 
     /**
      * @return The optional fields
      */
-    public List getOptionalFields();
-
+    List getOptionalFields();
 
     /**
      * Assemble and bind a property value from the specified fieldValues and the given type
@@ -45,5 +44,5 @@ public interface StructuredPropertyEditor {
      * @return A bound property
      * @throws IllegalArgumentException Thrown in one of the field values is illegal
      */
-    public Object assemble(Class type, Map fieldValues) throws IllegalArgumentException;
+    Object assemble(Class type, Map fieldValues) throws IllegalArgumentException;
 }

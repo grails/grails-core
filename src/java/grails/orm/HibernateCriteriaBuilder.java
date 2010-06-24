@@ -1,25 +1,55 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package grails.orm;
 
-import groovy.lang.*;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaMethod;
+import groovy.lang.MissingMethodException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.hibernate.*;
-import org.hibernate.criterion.*;
+import org.hibernate.Criteria;
+import org.hibernate.EntityMode;
+import org.hibernate.FetchMode;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.AggregateProjection;
+import org.hibernate.criterion.CountProjection;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Junction;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projection;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.PropertyProjection;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
@@ -31,42 +61,39 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.*;
-
 /**
- * <p>Wraps the Hibernate Criteria API in a builder. The builder can be retrieved through the "createCriteria()" dynamic static 
- * method of Grails domain classes (Example in Groovy): 
- * 
+ * <p>Wraps the Hibernate Criteria API in a builder. The builder can be retrieved through the "createCriteria()" dynamic static
+ * method of Grails domain classes (Example in Groovy):
+ *
  * <pre>
- * 		def c = Account.createCriteria()
- * 		def results = c {
- * 			projections {
- * 				groupProperty("branch")
- * 			}
- * 			like("holderFirstName", "Fred%")
- * 			and {
- * 				between("balance", 500, 1000)
- * 				eq("branch", "London")
- * 			}
- * 			maxResults(10)
- * 			order("holderLastName", "desc")
- * 		}
+ *         def c = Account.createCriteria()
+ *         def results = c {
+ *             projections {
+ *                 groupProperty("branch")
+ *             }
+ *             like("holderFirstName", "Fred%")
+ *             and {
+ *                 between("balance", 500, 1000)
+ *                 eq("branch", "London")
+ *             }
+ *             maxResults(10)
+ *             order("holderLastName", "desc")
+ *         }
  * </pre>
- * 
+ *
  * <p>The builder can also be instantiated standalone with a SessionFactory and persistent Class instance:
- * 
+ *
  * <pre>
- * 	 new HibernateCriteriaBuilder(clazz, sessionFactory).list {
- * 		eq("firstName", "Fred")
- * 	 }
+ *      new HibernateCriteriaBuilder(clazz, sessionFactory).list {
+ *         eq("firstName", "Fred")
+ *      }
  * </pre>
- * 
+ *
  * @author Graeme Rocher
- * @since Oct 10, 2005
  */
 public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
-	public static final String AND = "and"; // builder
+    public static final String AND = "and"; // builder
     public static final String IS_NULL = "isNull"; // builder
     public static final String IS_NOT_NULL = "isNotNull"; // builder
     public static final String NOT = "not";// builder
@@ -75,8 +102,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     public static final String IS_EMPTY = "isEmpty"; //builder
     public static final String IS_NOT_EMPTY = "isNotEmpty"; //builder
     public static final String RLIKE = "rlike";//method
-
-
     public static final String BETWEEN = "between";//method
     public static final String EQUALS = "eq";//method
     public static final String EQUALS_PROPERTY = "eqProperty";//method
@@ -96,8 +121,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     public static final String SIZE_EQUALS = "sizeEq"; //method
     public static final String ORDER_DESCENDING = "desc";
     public static final String ORDER_ASCENDING = "asc";
-
-
     private static final String ROOT_DO_CALL = "doCall";
     private static final String ROOT_CALL = "call";
     private static final String LIST_CALL = "list";
@@ -106,12 +129,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private static final String GET_CALL = "get";
     private static final String SCROLL_CALL = "scroll";
     private static final String SET_RESULT_TRANSFORMER_CALL = "setResultTransformer";
-
-
     private static final String PROJECTIONS = "projections";
+
     private SessionFactory sessionFactory;
     private Session hibernateSession;
-    private Class targetClass;
+    private Class<?> targetClass;
     private Criteria criteria;
     private MetaClass criteriaMetaClass;
 
@@ -125,29 +147,27 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private BeanWrapper targetBean;
     private List<String> aliasStack = new ArrayList<String>();
     private List<Criteria> aliasInstanceStack = new ArrayList<Criteria>();
-
     private Map<String, String> aliasMap = new HashMap<String, String>();
     private static final String ALIAS = "_alias";
     private ResultTransformer resultTransformer;
     private int aliasCount;
 
-	private boolean paginationEnabledList = false;
-	private ArrayList<Order> orderEntries;	
+    private boolean paginationEnabledList = false;
+    private List<Order> orderEntries;
 
+    @SuppressWarnings("unchecked")
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
-        super();
         this.targetClass = targetClass;
-        this.targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
+        targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
         this.sessionFactory = sessionFactory;
     }
 
+    @SuppressWarnings("unchecked")
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory, boolean uniqueResult) {
-        super();
         this.targetClass = targetClass;
         this.sessionFactory = sessionFactory;
         this.uniqueResult = uniqueResult;
     }
-
 
     /**
      * Returns the criteria instance
@@ -156,7 +176,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     public Criteria getInstance() {
         return criteria;
     }
-    
+
     /**
      * Set whether a unique result should be returned
      * @param uniqueResult True if a unique result should be returned
@@ -164,7 +184,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     public void setUniqueResult(boolean uniqueResult) {
         this.uniqueResult = uniqueResult;
     }
-
 
     /**
      * A projection that selects a property name
@@ -191,11 +210,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param alias The alias
      */
     protected void addProjectionToList(Projection propertyProjection, String alias) {
-        if(alias!=null) {
-            this.projectionList.add(propertyProjection,alias);
+        if (alias != null) {
+            projectionList.add(propertyProjection,alias);
         }
         else {
-            this.projectionList.add(propertyProjection);
+            projectionList.add(propertyProjection);
         }
     }
 
@@ -222,6 +241,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      * @param propertyNames The list of distince property names
      */
+    @SuppressWarnings("unchecked")
     public void distinct(Collection propertyNames) {
         distinct(propertyNames, null);
     }
@@ -232,6 +252,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyNames The list of distince property names
      * @param alias The alias to use
      */
+    @SuppressWarnings("unchecked")
     public void distinct(Collection propertyNames, String alias) {
         ProjectionList list = Projections.projectionList();
         for (Object o : propertyNames) {
@@ -253,14 +274,13 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     /**
      * Adds a projection that allows the criteria to return the property average value
      *
-     *  @param propertyName The name of the property
-     *  @param alias The alias to use
+     * @param propertyName The name of the property
+     * @param alias The alias to use
      */
     public void avg(String propertyName, String alias) {
         final AggregateProjection aggregateProjection = Projections.avg(calculatePropertyName(propertyName));
         addProjectionToList(aggregateProjection, alias);
     }
-
 
     /**
      * Use a join query
@@ -268,34 +288,33 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param associationPath The path of the association
      */
     public void join(String associationPath) {
-        this.criteria.setFetchMode(calculatePropertyName(associationPath),FetchMode.JOIN);
+        criteria.setFetchMode(calculatePropertyName(associationPath), FetchMode.JOIN);
     }
 
     /**
-     * Whether a pessimisick lock should be obtained
+     * Whether a pessimistic lock should be obtained.
      *
      * @param shouldLock True if it should
      */
     public void lock(boolean shouldLock) {
         String lastAlias = getLastAlias();
 
-        if(shouldLock) {
-            if(lastAlias != null) {
-               this.criteria.setLockMode(lastAlias, LockMode.UPGRADE);
+        if (shouldLock) {
+            if (lastAlias != null) {
+                criteria.setLockMode(lastAlias, LockMode.UPGRADE);
             }
             else {
-                this.criteria.setLockMode(LockMode.UPGRADE);
+                criteria.setLockMode(LockMode.UPGRADE);
             }
         }
         else {
-            if(lastAlias != null) {
-               this.criteria.setLockMode(lastAlias, LockMode.NONE);
+            if (lastAlias != null) {
+                criteria.setLockMode(lastAlias, LockMode.NONE);
             }
             else {
-                this.criteria.setLockMode(LockMode.NONE);
+                criteria.setLockMode(LockMode.NONE);
             }
         }
-
     }
 
     /**
@@ -304,7 +323,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param associationPath The path of the association
      */
     public void select(String associationPath) {
-        this.criteria.setFetchMode(calculatePropertyName(associationPath),FetchMode.SELECT);        
+        criteria.setFetchMode(calculatePropertyName(associationPath), FetchMode.SELECT);
     }
 
     /**
@@ -312,8 +331,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param shouldCache True if the query should be cached
      */
     public void cache(boolean shouldCache) {
-        this.criteria.setCacheable(shouldCache);
+        criteria.setCacheable(shouldCache);
     }
+
     /**
      * Calculates the property name including any alias paths
      *
@@ -322,15 +342,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     private String calculatePropertyName(String propertyName) {
         String lastAlias = getLastAlias();
-        if(lastAlias != null)
+        if (lastAlias != null) {
             return lastAlias +'.'+propertyName;
-        else
-            return propertyName;
+        }
+
+        return propertyName;
     }
 
     private String getLastAlias() {
-        if(this.aliasStack.size()>0) {
-            return this.aliasStack.get(this.aliasStack.size()-1).toString();
+        if (aliasStack.size() > 0) {
+            return aliasStack.get(aliasStack.size() - 1).toString();
         }
         return null;
     }
@@ -342,7 +363,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return The calculated property value
      */
     private Object calculatePropertyValue(Object propertyValue) {
-        if(propertyValue instanceof CharSequence) {
+        if (propertyValue instanceof CharSequence) {
             return propertyValue.toString();
         }
         return propertyValue;
@@ -492,20 +513,20 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param fetchMode The fetch mode to set
      */
     public void fetchMode(String associationPath, FetchMode fetchMode) {
-        if(criteria!=null) {
+        if (criteria != null) {
             criteria.setFetchMode(associationPath, fetchMode);
         }
     }
 
     /**
-     * Sets the resultTransformer.  
+     * Sets the resultTransformer.
      * @param resultTransformer The result transformer to use.
      */
-    public void resultTransformer(ResultTransformer resultTransformer) {
-		if (criteria == null) {
-            throwRuntimeException( new IllegalArgumentException("Call to [resultTransformer] not supported here"));
-		}
-        this.resultTransformer = resultTransformer;
+    public void resultTransformer(ResultTransformer transformer) {
+        if (criteria == null) {
+            throwRuntimeException(new IllegalArgumentException("Call to [resultTransformer] not supported here"));
+        }
+        resultTransformer = transformer;
     }
 
     /**
@@ -515,14 +536,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object eqProperty(String propertyName, String otherPropertyName) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [eqProperty] with propertyName ["+propertyName+"] and other property name ["+otherPropertyName+"] not allowed here.") );
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [eqProperty] with propertyName [" +
+                    propertyName + "] and other property name [" + otherPropertyName + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-        return addToCriteria(Restrictions.eqProperty( propertyName, otherPropertyName ));
+        return addToCriteria(Restrictions.eqProperty(propertyName, otherPropertyName));
     }
-
 
     /**
      * Creates a Criterion that compares to class properties for !equality
@@ -531,13 +553,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object neProperty(String propertyName, String otherPropertyName) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [neProperty] with propertyName ["+propertyName+"] and other property name ["+otherPropertyName+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [neProperty] with propertyName [" +
+                    propertyName + "] and other property name [" + otherPropertyName + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-        return addToCriteria(Restrictions.neProperty( propertyName, otherPropertyName ));
+        return addToCriteria(Restrictions.neProperty(propertyName, otherPropertyName));
     }
+
     /**
      * Creates a Criterion that tests if the first property is greater than the second property
      * @param propertyName The first property name
@@ -545,13 +570,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object gtProperty(String propertyName, String otherPropertyName) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [gtProperty] with propertyName ["+propertyName+"] and other property name ["+otherPropertyName+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [gtProperty] with propertyName [" +
+                    propertyName + "] and other property name [" + otherPropertyName + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-        return addToCriteria(Restrictions.gtProperty( propertyName, otherPropertyName ));
+        return addToCriteria(Restrictions.gtProperty(propertyName, otherPropertyName));
     }
+
     /**
      * Creates a Criterion that tests if the first property is greater than or equal to the second property
      * @param propertyName The first property name
@@ -559,13 +587,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object geProperty(String propertyName, String otherPropertyName) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [geProperty] with propertyName ["+propertyName+"] and other property name ["+otherPropertyName+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [geProperty] with propertyName [" +
+                    propertyName + "] and other property name [" + otherPropertyName + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-        return addToCriteria(Restrictions.geProperty( propertyName, otherPropertyName ));
+        return addToCriteria(Restrictions.geProperty(propertyName, otherPropertyName));
     }
+
     /**
      * Creates a Criterion that tests if the first property is less than the second property
      * @param propertyName The first property name
@@ -573,13 +604,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object ltProperty(String propertyName, String otherPropertyName) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [ltProperty] with propertyName ["+propertyName+"] and other property name ["+otherPropertyName+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [ltProperty] with propertyName [" +
+                    propertyName + "] and other property name [" + otherPropertyName + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
-        return addToCriteria(Restrictions.ltProperty( propertyName, otherPropertyName ));
+        return addToCriteria(Restrictions.ltProperty(propertyName, otherPropertyName));
     }
+
     /**
      * Creates a Criterion that tests if the first property is less than or equal to the second property
      * @param propertyName The first property name
@@ -587,13 +621,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object leProperty(String propertyName, String otherPropertyName) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [leProperty] with propertyName ["+propertyName+"] and other property name ["+otherPropertyName+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [leProperty] with propertyName [" +
+                    propertyName + "] and other property name [" + otherPropertyName + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         otherPropertyName = calculatePropertyName(otherPropertyName);
         return addToCriteria(Restrictions.leProperty(propertyName, otherPropertyName));
     }
+
     /**
      * Creates a "greater than" Criterion based on the specified property name and value
      * @param propertyName The property name
@@ -601,15 +638,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object gt(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [gt] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [gt] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.gt(propertyName, propertyValue));
     }
-
-
 
     /**
      * Creates a "greater than or equal to" Criterion based on the specified property name and value
@@ -618,13 +655,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object ge(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [ge] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [ge] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.ge(propertyName, propertyValue));
     }
+
     /**
      * Creates a "less than" Criterion based on the specified property name and value
      * @param propertyName The property name
@@ -632,13 +671,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object lt(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [lt] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [lt] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.lt(propertyName, propertyValue));
     }
+
     /**
      * Creates a "less than or equal to" Criterion based on the specified property name and value
      * @param propertyName The property name
@@ -646,13 +688,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object le(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [le] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [le] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.le(propertyName, propertyValue));
     }
+
     /**
      * Creates an "equals" Criterion based on the specified property name and value. Case-sensitive.
      * @param propertyName The property name
@@ -661,7 +706,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object eq(String propertyName, Object propertyValue) {
-   	 return eq(propertyName, propertyValue, Collections.emptyMap());
+        return eq(propertyName, propertyValue, Collections.emptyMap());
     }
 
     /**
@@ -672,8 +717,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyValue
      * @return A Criterion instance
      */
+    @SuppressWarnings("unchecked")
     public Object eq(Map params, String propertyName, Object propertyValue) {
-       return eq(propertyName, propertyValue, params);
+        return eq(propertyName, propertyValue, params);
     }
 
     /**
@@ -686,27 +732,30 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      * @return A Criterion instance
      */
+    @SuppressWarnings("unchecked")
     public Object eq(String propertyName, Object propertyValue, Map params) {
-       if (!validateSimpleExpression()) {
-           throwRuntimeException( new IllegalArgumentException("Call to [eq] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
-       }
-       propertyName = calculatePropertyName(propertyName);
-       propertyValue = calculatePropertyValue(propertyValue);
-       SimpleExpression eq =  Restrictions.eq(propertyName, propertyValue);
-       if (params != null) {
-      	 Object ignoreCase = params.get("ignoreCase");
-      	 if (ignoreCase instanceof Boolean && (Boolean)ignoreCase) {
-      		 eq = eq.ignoreCase();
-      	 }
-       }
-       return addToCriteria(eq);
-   }
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [eq] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
+        }
+
+        propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
+        SimpleExpression eq =  Restrictions.eq(propertyName, propertyValue);
+        if (params != null) {
+            Object ignoreCase = params.get("ignoreCase");
+            if (ignoreCase instanceof Boolean && (Boolean)ignoreCase) {
+                eq = eq.ignoreCase();
+            }
+        }
+        return addToCriteria(eq);
+    }
 
     /**
      * Applies a sql restriction to the results to allow something like:
       <pre>
        def results = Person.withCriteria {
-           sqlRestriction "char_length( first_name ) <= 4"
+           sqlRestriction "char_length(first_name) <= 4"
        }
       </pre>
      *
@@ -714,8 +763,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return a Criterion instance
      */
     public Object sqlRestriction(String sqlRestriction) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sqlRestriction] with value ["+sqlRestriction+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sqlRestriction] with value [" +
+                    sqlRestriction + "] not allowed here."));
         }
         return addToCriteria(Restrictions.sqlRestriction(sqlRestriction));
     }
@@ -728,28 +778,33 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object like(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [like] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [like] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.like(propertyName, propertyValue));
     }
+
     /**
      * Creates a Criterion with from the specified property name and "rlike" (a regular expression version of "like") expression
      * @param propertyName The property name
      * @param propertyValue The ilike value
      *
      * @return A Criterion instance
-    */
-   public Object rlike(String propertyName, Object propertyValue) {
-       if(!validateSimpleExpression()) {
-           throwRuntimeException( new IllegalArgumentException("Call to [rlike] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
-       }
-       propertyName = calculatePropertyName(propertyName);
-       propertyValue = calculatePropertyValue(propertyValue);
-       return addToCriteria(new RlikeExpression(propertyName, propertyValue));
-   }
+     */
+    public Object rlike(String propertyName, Object propertyValue) {
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [rlike] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
+        }
+
+        propertyName = calculatePropertyName(propertyName);
+        propertyValue = calculatePropertyValue(propertyValue);
+        return addToCriteria(new RlikeExpression(propertyName, propertyValue));
+    }
 
     /**
      * Creates a Criterion with from the specified property name and "ilike" (a case sensitive version of "like") expression
@@ -759,13 +814,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object ilike(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [ilike] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [ilike] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.ilike(propertyName, propertyValue));
     }
+
     /**
      * Applys a "in" contrain on the specified property
      * @param propertyName The property name
@@ -773,28 +831,32 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      * @return A Criterion instance
      */
+    @SuppressWarnings("unchecked")
     public Object in(String propertyName, Collection values) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [in] with propertyName ["+propertyName+"] and values ["+values+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [in] with propertyName [" +
+                    propertyName + "] and values [" + values + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.in(propertyName, values));
     }
 
-	/**
-	 * Delegates to in as in is a Groovy keyword
-	 **/
-	public Object inList(String propertyName, Collection values) {
-		return in(propertyName, values);
-	}
-	
-	/**
-	 * Delegates to in as in is a Groovy keyword
-	 **/
-	public Object inList(String propertyName, Object[] values) {
-		return in(propertyName, values);
-	}
-		
+    /**
+     * Delegates to in as in is a Groovy keyword
+     */
+    @SuppressWarnings("unchecked")
+    public Object inList(String propertyName, Collection values) {
+        return in(propertyName, values);
+    }
+
+    /**
+     * Delegates to in as in is a Groovy keyword
+     */
+    public Object inList(String propertyName, Object[] values) {
+        return in(propertyName, values);
+    }
+
     /**
      * Applys a "in" contrain on the specified property
      * @param propertyName The property name
@@ -803,9 +865,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object in(String propertyName, Object[] values) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [in] with propertyName ["+propertyName+"] and values ["+values+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [in] with propertyName [" +
+                    propertyName + "] and values [" + values + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.in(propertyName, values));
     }
@@ -817,15 +881,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Order instance
      */
     public Object order(String propertyName) {
-        if(this.criteria == null)
-                throwRuntimeException( new IllegalArgumentException("Call to [order] with propertyName ["+propertyName+"]not allowed here."));
+        if (criteria == null) {
+            throwRuntimeException(new IllegalArgumentException("Call to [order] with propertyName [" +
+                    propertyName + "]not allowed here."));
+        }
         propertyName = calculatePropertyName(propertyName);
         Order o = Order.asc(propertyName);
-		if (this.paginationEnabledList) {
-			orderEntries.add(o);
-		} else {
-			this.criteria.addOrder(o);
-		}
+        if (paginationEnabledList) {
+            orderEntries.add(o);
+        }
+        else {
+            criteria.addOrder(o);
+        }
         return o;
     }
 
@@ -838,23 +905,27 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Order instance
      */
     public Object order(String propertyName, String direction) {
-        if(this.criteria == null)
-                throwRuntimeException( new IllegalArgumentException("Call to [order] with propertyName ["+propertyName+"]not allowed here."));
+        if (criteria == null) {
+            throwRuntimeException(new IllegalArgumentException("Call to [order] with propertyName [" +
+                    propertyName + "]not allowed here."));
+        }
         propertyName = calculatePropertyName(propertyName);
         Order o;
-        if(direction.equals( ORDER_DESCENDING )) {
+        if (direction.equals(ORDER_DESCENDING)) {
             o = Order.desc(propertyName);
         }
         else {
             o = Order.asc(propertyName);
         }
-		if (this.paginationEnabledList) {
-			orderEntries.add(o);
-		} else {
-			this.criteria.addOrder(o);
-		}
+        if (paginationEnabledList) {
+            orderEntries.add(o);
+        }
+        else {
+            criteria.addOrder(o);
+        }
         return o;
     }
+
     /**
      * Creates a Criterion that contrains a collection property by size
      *
@@ -864,9 +935,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object sizeEq(String propertyName, int size) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+                    propertyName + "] and size [" + size + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.sizeEq(propertyName, size));
     }
@@ -880,9 +953,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object sizeGt(String propertyName, int size) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+                    propertyName + "] and size [" + size + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.sizeGt(propertyName, size));
     }
@@ -896,13 +971,14 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object sizeGe(String propertyName, int size) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+                    propertyName + "] and size [" + size + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.sizeGe(propertyName, size));
     }
-
 
     /**
      * Creates a Criterion that contrains a collection property to be less than or equal to the given size
@@ -913,9 +989,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object sizeLe(String propertyName, int size) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+                    propertyName + "] and size [" + size + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.sizeLe(propertyName, size));
     }
@@ -929,9 +1007,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object sizeLt(String propertyName, int size) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+                    propertyName + "] and size [" + size + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.sizeLt(propertyName, size));
     }
@@ -945,12 +1025,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object sizeNe(String propertyName, int size) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [sizeEq] with propertyName ["+propertyName+"] and size ["+size+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+                    propertyName + "] and size [" + size + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.sizeNe(propertyName, size));
     }
+
     /**
      * Creates a "not equal" Criterion based on the specified property name and value
      * @param propertyName The property name
@@ -958,17 +1041,20 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return The criterion object
      */
     public Object ne(String propertyName, Object propertyValue) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [ne] with propertyName ["+propertyName+"] and value ["+propertyValue+"] not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [ne] with propertyName [" +
+                    propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         return addToCriteria(Restrictions.ne(propertyName, propertyValue));
     }
 
-	public Object notEqual(String propertyName, Object propertyValue) {
-		return ne(propertyName, propertyValue);
-	}
+    public Object notEqual(String propertyName, Object propertyValue) {
+        return ne(propertyName, propertyValue);
+    }
+
     /**
      * Creates a "between" Criterion based on the property name and specified lo and hi values
      * @param propertyName The property name
@@ -977,222 +1063,228 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @return A Criterion instance
      */
     public Object between(String propertyName, Object lo, Object hi) {
-        if(!validateSimpleExpression()) {
-            throwRuntimeException( new IllegalArgumentException("Call to [between] with propertyName ["+propertyName+"]  not allowed here."));
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [between] with propertyName [" +
+                    propertyName + "]  not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         return addToCriteria(Restrictions.between(propertyName, lo, hi));
     }
 
-
     private boolean validateSimpleExpression() {
-        return this.criteria != null;
+        return criteria != null;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public Object invokeMethod(String name, Object obj) {
         Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};
 
-        if(paginationEnabledList && SET_RESULT_TRANSFORMER_CALL.equals(name) && args.length == 1 && args[0] instanceof ResultTransformer) {
-    		resultTransformer = (ResultTransformer) args[0];
-    		return null;
-    	}
+        if (paginationEnabledList && SET_RESULT_TRANSFORMER_CALL.equals(name) && args.length == 1 &&
+                args[0] instanceof ResultTransformer) {
+            resultTransformer = (ResultTransformer) args[0];
+            return null;
+        }
 
-        if(isCriteriaConstructionMethod(name, args)) {
-
-            if(this.criteria != null) {
-                throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+        if (isCriteriaConstructionMethod(name, args)) {
+            if (criteria != null) {
+                throwRuntimeException(new IllegalArgumentException("call to [" + name + "] not supported here"));
             }
-
 
             if (name.equals(GET_CALL)) {
-                this.uniqueResult = true;
+                uniqueResult = true;
             }
             else if (name.equals(SCROLL_CALL)) {
-                this.scroll = true;
+                scroll = true;
             }
             else if (name.equals(COUNT_CALL)) {
-                this.count = true;
+                count = true;
             }
             else if (name.equals(LIST_DISTINCT_CALL)) {
-                this.resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
+                resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY;
             }
 
             createCriteriaInstance();
 
             // Check for pagination params
-            if(name.equals(LIST_CALL) && args.length == 2) {
-            	paginationEnabledList = true;
-				orderEntries = new ArrayList<Order>();
+            if (name.equals(LIST_CALL) && args.length == 2) {
+                paginationEnabledList = true;
+                orderEntries = new ArrayList<Order>();
                 invokeClosureNode(args[1]);
-            } else {
+            }
+            else {
                 invokeClosureNode(args[0]);
             }
 
-
-           if(resultTransformer != null) {
-                this.criteria.setResultTransformer(resultTransformer);
+            if (resultTransformer != null) {
+                criteria.setResultTransformer(resultTransformer);
             }
             Object result;
-            if(!uniqueResult) {
-                if(scroll) {
-                    result = this.criteria.scroll();
+            if (!uniqueResult) {
+                if (scroll) {
+                    result = criteria.scroll();
                 }
-                else if(count) {
-                    this.criteria.setProjection(Projections.rowCount());
-                    result = this.criteria.uniqueResult();
-                } else if(paginationEnabledList) {
+                else if (count) {
+                    criteria.setProjection(Projections.rowCount());
+                    result = criteria.uniqueResult();
+                }
+                else if (paginationEnabledList) {
                     // Calculate how many results there are in total. This has been
                     // moved to before the 'list()' invocation to avoid any "ORDER
                     // BY" clause added by 'populateArgumentsForCriteria()', otherwise
                     // an exception is thrown for non-string sort fields (GRAILS-2690).
-                    this.criteria.setFirstResult(0);
-                    this.criteria.setMaxResults(Integer.MAX_VALUE);
-                    this.criteria.setProjection(Projections.rowCount());
-                    int totalCount = ((Integer)this.criteria.uniqueResult()).intValue();
+                    criteria.setFirstResult(0);
+                    criteria.setMaxResults(Integer.MAX_VALUE);
+                    criteria.setProjection(Projections.rowCount());
+                    int totalCount = ((Integer)criteria.uniqueResult()).intValue();
 
                     // Drop the projection, add settings for the pagination parameters,
                     // and then execute the query.
-                    this.criteria.setProjection(null);
-					for(Iterator<Order> it = orderEntries.iterator();it.hasNext();){
-						this.criteria.addOrder(it.next());
-					}
-					if(resultTransformer == null) {
-						this.criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
-					} else if(paginationEnabledList) {
-						// relevant to GRAILS-5692
-						this.criteria.setResultTransformer(resultTransformer);
-					}
-                    GrailsHibernateUtil.populateArgumentsForCriteria(targetClass, this.criteria, (Map)args[0]);
-                    PagedResultList pagedRes = new PagedResultList(this.criteria.list());
+                    criteria.setProjection(null);
+                    for (Iterator<Order> it = orderEntries.iterator(); it.hasNext();) {
+                        criteria.addOrder(it.next());
+                    }
+                    if (resultTransformer == null) {
+                        criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
+                    }
+                    else if (paginationEnabledList) {
+                        // relevant to GRAILS-5692
+                        criteria.setResultTransformer(resultTransformer);
+                    }
+                    GrailsHibernateUtil.populateArgumentsForCriteria(targetClass, criteria, (Map)args[0]);
+                    PagedResultList pagedRes = new PagedResultList(criteria.list());
 
-                    // Updated the paged results with the total number of records
-                    // calculated previously.
+                    // Updated the paged results with the total number of records calculated previously.
                     pagedRes.setTotalCount(totalCount);
                     result = pagedRes;
-                } else {
-                    result = this.criteria.list();
+                }
+                else {
+                    result = criteria.list();
                 }
             }
             else {
-                result = GrailsHibernateUtil.unwrapIfProxy(this.criteria.uniqueResult());
+                result = GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult());
             }
-            if(!this.participate) {
-                this.hibernateSession.close();
+            if (!participate) {
+                hibernateSession.close();
             }
             return result;
-
         }
-        else {
-            if(criteria==null) createCriteriaInstance();
 
-            MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
-            if(metaMethod != null) {
-                 return metaMethod.invoke(this, args);
+        if (criteria == null) createCriteriaInstance();
+
+        MetaMethod metaMethod = getMetaClass().getMetaMethod(name, args);
+        if (metaMethod != null) {
+            return metaMethod.invoke(this, args);
+        }
+
+        metaMethod = criteriaMetaClass.getMetaMethod(name, args);
+        if (metaMethod != null) {
+            return metaMethod.invoke(criteria, args);
+        }
+        metaMethod = criteriaMetaClass.getMetaMethod(GrailsClassUtils.getSetterName(name), args);
+        if (metaMethod != null) {
+            return metaMethod.invoke(criteria, args);
+        }
+
+        if (args.length == 1 && args[0] instanceof Closure) {
+            if (name.equals(AND) || name.equals(OR) || name.equals(NOT)) {
+                if (criteria == null) {
+                    throwRuntimeException(new IllegalArgumentException("call to [" + name + "] not supported here"));
+                }
+
+                logicalExpressionStack.add(new LogicalExpression(name));
+                invokeClosureNode(args[0]);
+
+                LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
+                addToCriteria(logicalExpression.toCriterion());
+
+                return name;
             }
 
-            metaMethod = criteriaMetaClass.getMetaMethod(name, args);
-            if(metaMethod != null) {
-                 return metaMethod.invoke(criteria, args);
-            }
-            metaMethod = criteriaMetaClass.getMetaMethod(GrailsClassUtils.getSetterName(name), args);
-            if(metaMethod != null) {
-                 return metaMethod.invoke(criteria, args);
-            }
-           else if(args.length == 1 && args[0] instanceof Closure) {
-                if(name.equals( AND ) ||
-                        name.equals( OR ) ||
-                        name.equals( NOT ) ) {
-                    if(this.criteria == null)
-                        throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+            if (name.equals(PROJECTIONS) && args.length == 1 && (args[0] instanceof Closure)) {
+                if (criteria == null) {
+                    throwRuntimeException(new IllegalArgumentException("call to [" + name + "] not supported here"));
+                }
 
-                    this.logicalExpressionStack.add(new LogicalExpression(name));
+                projectionList = Projections.projectionList();
+                invokeClosureNode(args[0]);
+
+                if (projectionList != null && projectionList.getLength() > 0) {
+                    criteria.setProjection(projectionList);
+                }
+
+                return name;
+            }
+
+            if (targetBean.isReadableProperty(name.toString())) {
+                ClassMetadata meta = sessionFactory.getClassMetadata(targetBean.getWrappedClass());
+                Type type = meta.getPropertyType(name.toString());
+                if (type.isAssociationType()) {
+                    String otherSideEntityName =
+                        ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
+                    Class oldTargetClass = targetClass;
+                    targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
+                    BeanWrapper oldTargetBean = targetBean;
+                    targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
+                    associationStack.add(name.toString());
+                    final String associationPath = getAssociationPath();
+                    createAliasIfNeccessary(name, associationPath);
+                    // the criteria within an association node are grouped with an implicit AND
+                    logicalExpressionStack.add(new LogicalExpression(AND));
                     invokeClosureNode(args[0]);
-
+                    aliasStack.remove(aliasStack.size() - 1);
+                    if (!aliasInstanceStack.isEmpty()) {
+                        aliasInstanceStack.remove(aliasInstanceStack.size() - 1);
+                    }
                     LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
-                    addToCriteria(logicalExpression.toCriterion());
-
-                    return name;
-                } else if(name.equals( PROJECTIONS ) && args.length == 1 && (args[0] instanceof Closure)) {
-                    if(this.criteria == null)
-                        throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
-
-                    this.projectionList = Projections.projectionList();
-                    invokeClosureNode(args[0]);
-
-                    if(this.projectionList != null && this.projectionList.getLength() > 0) {
-                        this.criteria.setProjection(this.projectionList);
+                    if (!logicalExpression.args.isEmpty()) {
+                        addToCriteria(logicalExpression.toCriterion());
                     }
-
-
+                    associationStack.remove(associationStack.size()-1);
+                    targetClass = oldTargetClass;
+                    targetBean = oldTargetBean;
                     return name;
-                }
-                else if(targetBean.isReadableProperty(name.toString())) {
-                    ClassMetadata meta = sessionFactory.getClassMetadata(targetBean.getWrappedClass());
-                    Type type = meta.getPropertyType(name.toString());
-                    if (type.isAssociationType()) {
-                        String otherSideEntityName =
-                                ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
-                        Class oldTargetClass = targetClass;
-                        targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
-                        BeanWrapper oldTargetBean = targetBean;
-                        targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
-                        associationStack.add(name.toString());
-                        final String associationPath = getAssociationPath();
-                        createAliasIfNeccessary(name, associationPath);
-                        // the criteria within an association node are grouped with an implicit AND
-                        logicalExpressionStack.add(new LogicalExpression(AND));
-                        invokeClosureNode(args[0]);
-                        aliasStack.remove(aliasStack.size() - 1);
-                        if(!aliasInstanceStack.isEmpty()) {
-                            aliasInstanceStack.remove(aliasInstanceStack.size() - 1);
-                        }
-                        LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
-                        if (!logicalExpression.args.isEmpty()) {
-                            addToCriteria(logicalExpression.toCriterion());
-                        }
-                        associationStack.remove(associationStack.size()-1);
-                        targetClass = oldTargetClass;
-                        targetBean = oldTargetBean;
-                        return name;
-                    }
                 }
             }
-            else if(args.length == 1 && args[0] != null) {
-                if(this.criteria == null)
-                    throwRuntimeException( new IllegalArgumentException("call to [" + name + "] not supported here"));
+        }
+        else if (args.length == 1 && args[0] != null) {
+            if (criteria == null) {
+                throwRuntimeException(new IllegalArgumentException("call to [" + name + "] not supported here"));
+            }
 
-                Object value = args[0];
-                Criterion c = null;
-                if(name.equals(ID_EQUALS)) {
-                    return eq("id", value);
-                }
-                else {
+            Object value = args[0];
+            Criterion c = null;
+            if (name.equals(ID_EQUALS)) {
+                return eq("id", value);
+            }
 
-                    if(	name.equals( IS_NULL ) ||
-                            name.equals( IS_NOT_NULL ) ||
-                            name.equals( IS_EMPTY ) ||
-                            name.equals( IS_NOT_EMPTY )) {
-                        if(!(value instanceof String))
-                            throwRuntimeException( new IllegalArgumentException("call to [" + name + "] with value ["+value+"] requires a String value."));
-                        String propertyName = calculatePropertyName((String)value);
-                        if(name.equals( IS_NULL )) {
-                            c = Restrictions.isNull( propertyName ) ;
-                        }
-                        else if(name.equals( IS_NOT_NULL )) {
-                            c = Restrictions.isNotNull( propertyName );
-                        }
-                        else if(name.equals( IS_EMPTY )) {
-                            c = Restrictions.isEmpty( propertyName );
-                        }
-                        else if(name.equals( IS_NOT_EMPTY )) {
-                            c = Restrictions.isNotEmpty(propertyName );
-                        }
-                    }
+            if (name.equals(IS_NULL) ||
+                    name.equals(IS_NOT_NULL) ||
+                    name.equals(IS_EMPTY) ||
+                    name.equals(IS_NOT_EMPTY)) {
+                if (!(value instanceof String)) {
+                    throwRuntimeException(new IllegalArgumentException("call to [" + name + "] with value [" +
+                            value + "] requires a String value."));
                 }
-                if(c != null) {
-                    return addToCriteria(c);
+                String propertyName = calculatePropertyName((String)value);
+                if (name.equals(IS_NULL)) {
+                    c = Restrictions.isNull(propertyName) ;
                 }
+                else if (name.equals(IS_NOT_NULL)) {
+                    c = Restrictions.isNotNull(propertyName);
+                }
+                else if (name.equals(IS_EMPTY)) {
+                    c = Restrictions.isEmpty(propertyName);
+                }
+                else if (name.equals(IS_NOT_EMPTY)) {
+                    c = Restrictions.isNotEmpty(propertyName);
+                }
+            }
 
+            if (c != null) {
+                return addToCriteria(c);
             }
         }
 
@@ -1200,29 +1292,29 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     }
 
     @SuppressWarnings("unused")
-	private void addToCurrentOrAliasedCriteria(Criterion criterion) {
-        if(!aliasInstanceStack.isEmpty()) {
+    private void addToCurrentOrAliasedCriteria(Criterion criterion) {
+        if (!aliasInstanceStack.isEmpty()) {
             Criteria c = aliasInstanceStack.get(aliasInstanceStack.size()-1);
             c.add(criterion);
         }
         else {
-            this.criteria.add(criterion);
+            criteria.add(criterion);
         }
     }
 
-
     private void createAliasIfNeccessary(String associationName, String associationPath) {
         String newAlias;
-        if(aliasMap.containsKey(associationPath)) {
+        if (aliasMap.containsKey(associationPath)) {
             newAlias = aliasMap.get(associationPath);
         }
         else {
             aliasCount++;
             newAlias = associationName + ALIAS + aliasCount;
             aliasMap.put(associationPath, newAlias);
-            this.aliasInstanceStack.add(this.criteria.createAlias(associationPath, newAlias, CriteriaSpecification.LEFT_JOIN));
+            aliasInstanceStack.add(criteria.createAlias(associationPath, newAlias,
+                    CriteriaSpecification.LEFT_JOIN));
         }
-        this.aliasStack.add(newAlias);
+        aliasStack.add(newAlias);
     }
 
     private String getAssociationPath() {
@@ -1236,15 +1328,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         return associationPath;
     }
 
+    @SuppressWarnings("unchecked")
     private boolean isCriteriaConstructionMethod(String name, Object[] args) {
         return (name.equals(LIST_CALL) && args.length == 2 && args[0] instanceof Map && args[1] instanceof Closure) ||
-               (name.equals(ROOT_CALL) ||
-                name.equals(ROOT_DO_CALL) ||
-                name.equals(LIST_CALL) ||
-                name.equals(LIST_DISTINCT_CALL) ||
-                name.equals(GET_CALL) ||
-                name.equals(COUNT_CALL) ||
-                name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure);
+                  (name.equals(ROOT_CALL) ||
+                    name.equals(ROOT_DO_CALL) ||
+                    name.equals(LIST_CALL) ||
+                    name.equals(LIST_DISTINCT_CALL) ||
+                    name.equals(GET_CALL) ||
+                    name.equals(COUNT_CALL) ||
+                    name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure);
     }
 
     public Criteria buildCriteria(Closure criteriaClosure) {
@@ -1255,17 +1348,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     }
 
     private void createCriteriaInstance() {
-        if(TransactionSynchronizationManager.hasResource(sessionFactory)) {
-            this.participate = true;
-            this.hibernateSession = ((SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory)).getSession();
+        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            participate = true;
+            hibernateSession = ((SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory)).getSession();
         }
         else {
-            this.hibernateSession = sessionFactory.openSession();
+            hibernateSession = sessionFactory.openSession();
         }
-        
-        this.criteria = this.hibernateSession.createCriteria(targetClass);
+
+        criteria = hibernateSession.createCriteria(targetClass);
         GrailsHibernateUtil.cacheCriteriaByMapping(targetClass, criteria);
-        this.criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
+        criteriaMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(criteria.getClass());
     }
 
     private void invokeClosureNode(Object args) {
@@ -1274,7 +1367,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();
     }
-
 
     /**
      * Throws a runtime exception where necessary to ensure the session gets closed
@@ -1285,14 +1377,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     }
 
     private void closeSessionFollowingException() {
-        if(this.hibernateSession != null && this.hibernateSession.isOpen() && !this.participate) {
-            this.hibernateSession.close();
+        if (hibernateSession != null && hibernateSession.isOpen() && !participate) {
+            hibernateSession.close();
         }
-        if(this.criteria != null) {
-            this.criteria = null;
-        }
+        criteria = null;
     }
-
 
     /**
      * adds and returns the given criterion to the currently active criteria set.
@@ -1301,62 +1390,61 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     private Criterion addToCriteria(Criterion c) {
         if (!logicalExpressionStack.isEmpty()) {
-            logicalExpressionStack.get(logicalExpressionStack.size()-1).args.add(c);
+            logicalExpressionStack.get(logicalExpressionStack.size() - 1).args.add(c);
         }
         else {
-            this.criteria.add(c);
+            criteria.add(c);
         }
         return c;
     }
 
-	/**
-	 * instances of this class are pushed onto the logicalExpressionStack
-	 * to represent all the unfinished "and", "or", and "not" expressions.
-	 */
+    /**
+     * instances of this class are pushed onto the logicalExpressionStack
+     * to represent all the unfinished "and", "or", and "not" expressions.
+     */
     private class LogicalExpression {
         final Object name;
-        final ArrayList args = new ArrayList();
-        
+        final List<Criterion> args = new ArrayList<Criterion>();
+
         LogicalExpression(Object name) {
             this.name = name;
         }
-        
+
         Criterion toCriterion() {
             if (name.equals(NOT)) {
                 switch (args.size()) {
                     case 0:
                         throwRuntimeException(new IllegalArgumentException("Logical expression [not] must contain at least 1 expression"));
-		                return null;
-                    
+                        return null;
+
                     case 1:
-                        return Restrictions.not((Criterion) args.get(0));
-                        
+                        return Restrictions.not(args.get(0));
+
                     default:
                         // treat multiple sub-criteria as an implicit "OR"
                         return Restrictions.not(buildJunction(Restrictions.disjunction(), args));
                 }
             }
-            else if (name.equals(AND)) {
+
+            if (name.equals(AND)) {
                 return buildJunction(Restrictions.conjunction(), args);
             }
-            else if (name.equals(OR)) {
+
+            if (name.equals(OR)) {
                 return buildJunction(Restrictions.disjunction(), args);
             }
-            else {
-                throwRuntimeException(new IllegalStateException("Logical expression [" + name + "] not handled!"));
-                return null;
-            }
+
+            throwRuntimeException(new IllegalStateException("Logical expression [" + name + "] not handled!"));
+            return null;
         }
-        
+
         // add the Criterion objects in the given list to the given junction.
-        Junction buildJunction(Junction junction, List criteria) {
-            for (Iterator i = criteria.iterator(); i.hasNext();) {
-                junction.add((Criterion) i.next());
+        Junction buildJunction(Junction junction, List<Criterion> criterions) {
+            for (Criterion c : criterions) {
+                junction.add(c);
             }
-            
+
             return junction;
         }
     }
-
 }
-

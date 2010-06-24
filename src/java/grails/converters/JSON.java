@@ -17,6 +17,19 @@ package grails.converters;
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,21 +42,17 @@ import org.codehaus.groovy.grails.web.converters.configuration.DefaultConverterC
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.json.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import org.codehaus.groovy.grails.web.json.JSONArray;
+import org.codehaus.groovy.grails.web.json.JSONElement;
+import org.codehaus.groovy.grails.web.json.JSONException;
+import org.codehaus.groovy.grails.web.json.JSONObject;
+import org.codehaus.groovy.grails.web.json.JSONTokener;
+import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
+import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
 
 /**
- * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON
+ * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.
  *
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
@@ -51,21 +60,16 @@ import java.util.Stack;
 public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSONWriter> {
 
     private final static Log log = LogFactory.getLog(JSON.class);
+    private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
 
     private Object target;
     private final String encoding;
+    private final ConverterConfiguration<JSON> config;
+    private final CircularReferenceBehaviour circularReferenceBehaviour;
+    private boolean prettyPrint;
 
     protected JSONWriter writer;
-
     protected Stack<Object> referenceStack;
-
-    private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
-
-    private final ConverterConfiguration<JSON> config;
-
-    private final CircularReferenceBehaviour circularReferenceBehaviour;
-
-    private boolean prettyPrint;
 
     protected ConverterConfiguration<JSON> initConfig() {
         return ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
@@ -76,10 +80,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      */
     public JSON() {
         config = initConfig();
-        this.encoding = config!= null ? this.config.getEncoding() : "UTF-8";
-        this.circularReferenceBehaviour = config!= null ? this.config.getCircularReferenceBehaviour() : CircularReferenceBehaviour.DEFAULT;
-        this.prettyPrint = config != null && this.config.isPrettyPrint();
-        this.target = null;
+        encoding = config != null ? config.getEncoding() : "UTF-8";
+        circularReferenceBehaviour = config != null ? config.getCircularReferenceBehaviour() : CircularReferenceBehaviour.DEFAULT;
+        prettyPrint = config != null && config.isPrettyPrint();
     }
 
     /**
@@ -97,14 +100,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     }
 
     private void prepareRender(Writer out) {
-        this.writer = this.prettyPrint ?
-                new PrettyPrintJSONWriter(out) :
-                new JSONWriter(out);
-        if(this.circularReferenceBehaviour == CircularReferenceBehaviour.PATH) {
-            if(log.isInfoEnabled()) {
+        writer = prettyPrint ? new PrettyPrintJSONWriter(out) : new JSONWriter(out);
+        if (circularReferenceBehaviour == CircularReferenceBehaviour.PATH) {
+            if (log.isInfoEnabled()) {
                 log.info(String.format("Using experimental CircularReferenceBehaviour.PATH for %s", getClass().getName()));
             }
-            this.writer = new PathCapturingJSONWriterWrapper(this.writer);
+            writer = new PathCapturingJSONWriterWrapper(writer);
         }
         referenceStack = new Stack<Object>();
     }
@@ -129,7 +130,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     public void render(Writer out) throws ConverterException {
         prepareRender(out);
         try {
-            value(this.target);
+            value(target);
         }
         finally {
             finalizeRender(out);
@@ -143,7 +144,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      * @throws ConverterException
      */
     public void render(HttpServletResponse response) throws ConverterException {
-        response.setContentType(GrailsWebUtil.getContentType("application/json", this.encoding));
+        response.setContentType(GrailsWebUtil.getContentType("application/json", encoding));
         try {
             render(response.getWriter());
         }
@@ -169,22 +170,26 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      * @throws ConverterException
      */
     public void value(Object o) throws ConverterException {
-    	o = this.config.getProxyHandler().unwrapIfProxy(o);
+        o = config.getProxyHandler().unwrapIfProxy(o);
         try {
             if (o == null || o.equals(JSONObject.NULL)) {
                 writer.value(null);
-            } else if (o instanceof CharSequence) {
+            }
+            else if (o instanceof CharSequence) {
                 writer.value(o);
-            } else if (o instanceof Class) {
-                writer.value(((Class) o).getName());
-            } else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class))
-                    || o instanceof Number || o instanceof Boolean) {
+            }
+            else if (o instanceof Class<?>) {
+                writer.value(((Class<?>)o).getName());
+            }
+            else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class)) ||
+                    o instanceof Number || o instanceof Boolean) {
                 writer.value(o);
-            } else {
-
-                if (referenceStack.contains(o) ) {
+            }
+            else {
+                if (referenceStack.contains(o)) {
                     handleCircularRelationship(o);
-                } else {
+                }
+                else {
                     referenceStack.push(o);
                     ObjectMarshaller<JSON> marshaller = config.getMarshaller(o);
                     if (marshaller == null) {
@@ -203,7 +208,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         }
     }
 
-    public ObjectMarshaller<JSON> lookupObjectMarshaller(Object target) {
+    public ObjectMarshaller<JSON> lookupObjectMarshaller(@SuppressWarnings("hiding") Object target) {
         return config.getMarshaller(target);
     }
 
@@ -223,14 +228,16 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      * @return a JSON String
      * @throws JSONException
      */
-    public String toString(boolean prettyPrint) throws JSONException {
+    public String toString(@SuppressWarnings("hiding") boolean prettyPrint) throws JSONException {
         String json = super.toString();
         if (prettyPrint) {
             Object jsonObject = new JSONTokener(json).nextValue();
-            if (jsonObject instanceof JSONObject)
+            if (jsonObject instanceof JSONObject) {
                 return ((JSONObject) jsonObject).toString(3);
-            else if (jsonObject instanceof JSONArray)
+            }
+            if (jsonObject instanceof JSONArray) {
                 return ((JSONArray) jsonObject).toString(3);
+            }
         }
         return json;
     }
@@ -243,7 +250,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(Reader reader) throws ConverterException {
-//        TODO: Migrate to new javacc based parser         
+//        TODO: Migrate to new javacc based parser
 //        JSONParser parser = new JSONParser(reader);
 //        try {
 //            return parser.parseJSON();
@@ -271,13 +278,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         // TODO: Migrate to new javacc based parser
         try {
             final Object value = new JSONTokener(source).nextValue();
-            if(value instanceof JSONElement)
+            if (value instanceof JSONElement) {
                 return (JSONElement) value;
-            else {
-                // return empty object
-                return new JSONObject();
             }
 
+            // return empty object
+            return new JSONObject();
         }
         catch (JSONException e) {
             throw new ConverterException("Error parsing JSON", e);
@@ -309,15 +315,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         }
     }
 
-//    public static Object oldParse(InputStream is, String encoding) throws ConverterException {
-//        try {
-//            return parse(IOUtils.toString(is, encoding));
-//        }
-//        catch (IOException e) {
-//            throw new ConverterException("Error parsing JSON", e);
-//        }
-//    }
-
     /**
      * Parses the given request's InputStream and returns ether a JSONObject or a JSONArry
      *
@@ -328,9 +325,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     public static Object parse(HttpServletRequest request) throws ConverterException {
         Object json = request.getAttribute(CACHED_JSON);
         if (json != null) return json;
+
         String encoding = request.getCharacterEncoding();
-        if (encoding == null)
+        if (encoding == null) {
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
+        }
         try {
             json = parse(request.getInputStream(), encoding);
             request.setAttribute(CACHED_JSON, json);
@@ -347,26 +346,24 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
      * @param target the Object
      * @see org.codehaus.groovy.grails.web.converters.Converter
      */
+    @Override
     public void setTarget(Object target) {
         this.target = target;
-
     }
 
     protected void handleCircularRelationship(Object o) throws ConverterException {
         switch (circularReferenceBehaviour) {
             case DEFAULT:
-                {
-                    if(!(Map.class.isAssignableFrom(o.getClass())||Collection.class.isAssignableFrom(o.getClass()))) {
-                        Map<String, Object> props = new HashMap<String, Object>();
-                        props.put("class", o.getClass());
-                        StringBuilder ref = new StringBuilder();
-                        int idx = referenceStack.indexOf(o);
-                        for (int i = referenceStack.size() - 1; i > idx; i--) {
-                            ref.append("../");
-                        }
-                        props.put("_ref", ref.substring(0, ref.length() - 1));
-                        value(props);
+                if (!(Map.class.isAssignableFrom(o.getClass()) || Collection.class.isAssignableFrom(o.getClass()))) {
+                    Map<String, Object> props = new HashMap<String, Object>();
+                    props.put("class", o.getClass());
+                    StringBuilder ref = new StringBuilder();
+                    int idx = referenceStack.indexOf(o);
+                    for (int i = referenceStack.size() - 1; i > idx; i--) {
+                        ref.append("../");
                     }
+                    props.put("_ref", ref.substring(0, ref.length() - 1));
+                    value(props);
                 }
                 break;
             case EXCEPTION:
@@ -375,14 +372,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
                 value(null);
                 break;
             case PATH:
-                {
-                    Map<String, Object> props = new HashMap<String, Object>();
-                    props.put("class", o.getClass());
-                    int idx = referenceStack.indexOf(o);
-                    PathCapturingJSONWriterWrapper pcWriter = (PathCapturingJSONWriterWrapper) this.writer;
-                    props.put("ref", String.format("root%s", pcWriter.getStackReference(idx)));
-                    value(props);
-                }
+                Map<String, Object> props = new HashMap<String, Object>();
+                props.put("class", o.getClass());
+                int idx = referenceStack.indexOf(o);
+                PathCapturingJSONWriterWrapper pcWriter = (PathCapturingJSONWriterWrapper) writer;
+                props.put("ref", String.format("root%s", pcWriter.getStackReference(idx)));
+                value(props);
                 break;
             case IGNORE:
                 break;
@@ -391,8 +386,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
     public static ConverterConfiguration<JSON> getNamedConfig(String configName) throws ConverterException {
         ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getNamedConverterConfiguration(configName, JSON.class);
-        if (cfg == null)
+        if (cfg == null) {
             throw new ConverterException(String.format("Converter Configuration with name '%s' not found!", configName));
+        }
         return cfg;
     }
 
@@ -409,25 +405,28 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
     }
 
     public static void use(String cfgName) throws ConverterException {
-        if (cfgName == null || "default".equals(cfgName))
+        if (cfgName == null || "default".equals(cfgName)) {
             ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, null);
-        else
+        }
+        else {
             ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, getNamedConfig(cfgName));
+        }
     }
 
-    public static void registerObjectMarshaller(Class clazz, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, Closure callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<JSON>(clazz, callable));
     }
 
-    public static void registerObjectMarshaller(Class clazz, int priority, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<JSON>(clazz, callable), priority);
     }
 
     public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {
         ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
-        if (cfg == null)
+        if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + JSON.class.getName());
-        if (!(cfg instanceof DefaultConverterConfiguration)) {
+        }
+        if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<JSON>(cfg);
             ConvertersConfigurationHolder.setDefaultConfiguration(JSON.class, cfg);
         }
@@ -436,15 +435,14 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
     public static void registerObjectMarshaller(ObjectMarshaller<JSON> om, int priority) throws ConverterException {
         ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
-        if (cfg == null)
+        if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + JSON.class.getName());
-        if (!(cfg instanceof DefaultConverterConfiguration)) {
+        }
+        if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<JSON>(cfg);
             ConvertersConfigurationHolder.setDefaultConfiguration(JSON.class, cfg);
         }
-        ((DefaultConverterConfiguration<JSON>) cfg).registerObjectMarshaller(
-                om, priority
-        );
+        ((DefaultConverterConfiguration<JSON>) cfg).registerObjectMarshaller(om, priority);
     }
 
     public static void createNamedConfig(String name, Closure callable) throws ConverterException {
@@ -460,9 +458,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
     public static void withDefaultConfiguration(Closure callable) throws ConverterException {
         ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
-        if (!(cfg instanceof DefaultConverterConfiguration)) {
+        if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<JSON>(cfg);
-
         }
         try {
             callable.call(cfg);
@@ -480,29 +477,32 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
         public Builder(JSON json) {
             this.json = json;
-            this.writer = json.writer;
+            writer = json.writer;
         }
 
         public void execute(Closure callable) {
             callable.setDelegate(this);
 //            callable.setDelegate(Closure.DELEGATE_FIRST);
-            this.invokeMethod("json", new Object[] { callable });
+            invokeMethod("json", new Object[] { callable });
         }
-        
+
         private Stack<BuilderMode> stack = new Stack<BuilderMode>();
-
         private boolean start = true;
-
+        @SuppressWarnings("hiding")
         private JSONWriter writer;
 
+        @Override
         protected Object createNode(Object name) {
             int retVal = 1;
             try {
-                if( start ){
+                if (start) {
                     start = false;
                     writeObject();
-                }else{
-                    if( getCurrent() == null && stack.peek() == BuilderMode.OBJECT) throw new IllegalArgumentException( "only call to [element { }] is allowed when creating array");
+                }
+                else {
+                    if (getCurrent() == null && stack.peek() == BuilderMode.OBJECT) {
+                        throw new IllegalArgumentException("only call to [element { }] is allowed when creating array");
+                    }
                     if (stack.peek() == BuilderMode.ARRAY) {
                         writeObject();
                         retVal = 2;
@@ -510,16 +510,19 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
                     writer.key(String.valueOf(name)).array();
                     stack.push(BuilderMode.ARRAY);
                 }
-            } catch (JSONException e) {
-                throw new IllegalArgumentException( "invalid element" );
+            }
+            catch (JSONException e) {
+                throw new IllegalArgumentException("invalid element");
             }
 
             return retVal;
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
         protected Object createNode(Object key, Map valueMap) {
             try {
-                if( stack.peek().equals(BuilderMode.OBJECT) ) writer.key(String.valueOf(key));
+                if (stack.peek().equals(BuilderMode.OBJECT)) writer.key(String.valueOf(key));
                 writer.object();
                 for (Object o : valueMap.entrySet()) {
                     Map.Entry element = (Map.Entry) o;
@@ -528,24 +531,32 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
                 }
                 writer.endObject();
                 return null;
-            } catch (JSONException e) {
-                throw new IllegalArgumentException( "invalid element" );
+            }
+            catch (JSONException e) {
+                throw new IllegalArgumentException("invalid element");
             }
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
         protected Object createNode(Object arg0, Map arg1, Object arg2) {
-            throw new IllegalArgumentException( "not implemented" );
+            throw new IllegalArgumentException("not implemented");
         }
 
+        @SuppressWarnings("unchecked")
+        @Override
         protected Object createNode(Object key, Object value) {
-            if( getCurrent() == null && stack.peek()== BuilderMode.OBJECT) throw new IllegalArgumentException( "only call to [element { }] is allowed when creating array");
+            if (getCurrent() == null && stack.peek()== BuilderMode.OBJECT) {
+                throw new IllegalArgumentException("only call to [element { }] is allowed when creating array");
+            }
+
             try {
                 int retVal = 0;
-                if( stack.peek().equals(BuilderMode.ARRAY) ){
+                if (stack.peek().equals(BuilderMode.ARRAY)) {
                     writeObject();
                     retVal = 1;
                 }
-                if(value instanceof Collection) {
+                if (value instanceof Collection) {
                     Collection c = (Collection)value;
                     writer.key(String.valueOf(key));
                     handleCollectionRecurse(c);
@@ -555,41 +566,48 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
                     json.convertAnother(value); //.value(value);
                 }
                 return retVal != 0 ? retVal : null;
-            } catch (JSONException e) {
-                throw new IllegalArgumentException( "invalid element");
+            }
+            catch (JSONException e) {
+                throw new IllegalArgumentException("invalid element");
             }
         }
 
+        @SuppressWarnings("unchecked")
         private void handleCollectionRecurse(Collection c) throws JSONException {
             writer.array();
             for (Object element : c) {
                 if (element instanceof Collection) {
                     handleCollectionRecurse((Collection) element);
-                } else {
+                }
+                else {
                     json.convertAnother(element);
                 }
             }
             writer.endArray();
         }
 
+        @Override
         protected void nodeCompleted(Object parent, Object node) {
             Object last = null;
 
-            if( node != null ){
-                try {
-                    int i = ((Integer)node);
-                    while( i-- > 0 ){
-                        last = stack.pop();
-                        if( BuilderMode.ARRAY == last ) writer.endArray();
-                        if( BuilderMode.OBJECT == last ) writer.endObject();
-                    }
+            if (node == null) {
+                return;
+            }
+
+            try {
+                int i = ((Integer)node);
+                while(i-- > 0) {
+                    last = stack.pop();
+                    if (BuilderMode.ARRAY == last) writer.endArray();
+                    if (BuilderMode.OBJECT == last) writer.endObject();
                 }
-                catch (JSONException e) {
-                    throw new IllegalArgumentException( "invalid element on the stack" );
-                }
+            }
+            catch (JSONException e) {
+                throw new IllegalArgumentException("invalid element on the stack");
             }
         }
 
+        @Override
         protected void setParent(Object arg0, Object arg1) {
             /* do nothing */
         }
@@ -604,5 +622,4 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         ARRAY,
         OBJECT
     }
-
 }

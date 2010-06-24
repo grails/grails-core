@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,27 +14,31 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import grails.util.GrailsUtil;
 
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+
 /**
- * Allows defining of variables within the page context
+ * Allows defining of variables within the page context.
  *
  * @author Graeme Rocher
- * @since 23-Feb-2006
  */
 public class GroovyDefTag extends GroovySyntaxTag {
+
     public static final String TAG_NAME = "def";
     private static final String ATTRIBUTE_VALUE = "value";
-    public void doStartTag() {
-        String expr = (String) attributes.get(ATTRIBUTE_VALUE);
-        String var = (String) attributes.get(ATTRIBUTE_VAR);
 
-        if(StringUtils.isBlank(var))
-            throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_VAR+"]");
-        if(StringUtils.isBlank(expr))
-            throw new GrailsTagException("Tag ["+TAG_NAME+"] missing required attribute ["+ATTRIBUTE_VALUE +"]");
+    public void doStartTag() {
+        String expr = attributes.get(ATTRIBUTE_VALUE);
+        if (StringUtils.isBlank(expr)) {
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VALUE + "]");
+        }
+
+        String var = attributes.get(ATTRIBUTE_VAR);
+        if (StringUtils.isBlank(var)) {
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VAR + "]");
+        }
 
         GrailsUtil.deprecated("The tag <g:def> is deprecated and will be removed in a future release. Use <g:set> instead.");
         out.print("def ");
@@ -51,10 +55,12 @@ public class GroovyDefTag extends GroovySyntaxTag {
         return TAG_NAME;
     }
 
+    @Override
     public boolean isKeepPrecedingWhiteSpace() {
         return true;
     }
 
+    @Override
     public boolean isAllowPrecedingContent() {
         return true;
     }

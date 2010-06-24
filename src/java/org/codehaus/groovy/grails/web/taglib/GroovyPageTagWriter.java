@@ -17,24 +17,22 @@ package org.codehaus.groovy.grails.web.taglib;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 
 /**
- * A temporary writer used by GSP to write to a StringWriter and later retrieve the value. It also converts
- * nulls into blank strings.
+ * A temporary writer used by GSP to write to a StringWriter and later retrieve the value.
+ * It also converts nulls into blank strings.
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Apr 19, 2007
- *        Time: 5:49:46 PM
  */
 public class GroovyPageTagWriter extends FastStringWriter {
-	private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("groovypagetagwriter.chunksize", 512);
-	
+
+    private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("groovypagetagwriter.chunksize", 512);
+
     public GroovyPageTagWriter(boolean preferSubChunkWhenWritingToOtherBuffer) {
         super(DEFAULT_CHUNK_SIZE);
         getBuffer().setPreferSubChunkWhenWritingToOtherBuffer(preferSubChunkWhenWritingToOtherBuffer);
     }
 
+    @Override
     public String getValue() {
         return super.toString();
     }

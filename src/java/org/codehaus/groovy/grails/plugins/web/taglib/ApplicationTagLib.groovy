@@ -1,3 +1,17 @@
+/* Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.util.Environment
@@ -15,50 +29,32 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
-/* Copyright 2004-2005 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT c;pWARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
- /**
+/**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
  *
  * @author Graeme Rocher
- * @since 17-Jan-2006
  */
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
     ApplicationContext applicationContext
     GrailsPluginManager pluginManager
-    
+
     def grailsUrlMappingsHolder
 
-
-	static final SCOPES = [page:'pageScope',
-						   application:'servletContext',
-						   request:'request',
-						   session:'session',
-						   flash:'flash']
-
+    static final SCOPES = [page: 'pageScope',
+                           application: 'servletContext',
+                           request:'request',
+                           session:'session',
+                           flash:'flash']
 
     boolean useJsessionId = false
 
-    public void afterPropertiesSet() {
-      def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
-      if(config.grails.views.enable.jsessionid instanceof Boolean) {
-         useJsessionId = config.grails.views.enable.jsessionid
-      }
+    void afterPropertiesSet() {
+        def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
+        if (config.grails.views.enable.jsessionid instanceof Boolean) {
+            useJsessionId = config.grails.views.enable.jsessionid
+        }
     }
 
     /**
@@ -66,33 +62,36 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      */
     def cookie = { attrs ->
         def cke = request.cookies.find {it.name == attrs['name']}
-        if(cke)
+        if (cke) {
             out << cke.value
+        }
     }
 
     def header = { attrs ->
-        if(attrs.name) {
+        if (attrs.name) {
             def hdr = request.getHeader(attrs.name)
-            if(hdr) out << hdr
+            if (hdr) out << hdr
         }
     }
 
     /**
      * Sets a variable in the pageContext or the specified scope
      */
-	def set = { attrs, body ->
-		def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
-		def var = attrs.var
-		def value = attrs.value
-		def containsValue = attrs.containsKey('value')
-		if(!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
-		if(!var) throw new IllegalArgumentException("[var] attribute must be specified to for <g:set>!")
+    def set = { attrs, body ->
+        def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
+        if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
 
-		if(!containsValue && body) value = body()
+        def var = attrs.var
+        if (!var) throw new IllegalArgumentException("[var] attribute must be specified to for <g:set>!")
 
-		this."$scope"."$var" = value
-		null
-	}
+        def value = attrs.value
+        def containsValue = attrs.containsKey('value')
+
+        if (!containsValue && body) value = body()
+
+        this."$scope"."$var" = value
+        null
+    }
 
     /**
      * Get the declared URL of the server from config, or guess at localhost for non-production
@@ -113,23 +112,21 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      */
     private handleAbsolute(attrs) {
         def base = attrs.remove('base')
-        if(base) {
+        if (base) {
             return base
         }
-        else {
-            def abs = attrs.remove("absolute")
-            if (Boolean.valueOf(abs)) {
-                def u = makeServerURL()
-                if (u) {
-                    return u
-                } else {
-                    throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
-                }
+
+        def abs = attrs.remove("absolute")
+        if (Boolean.valueOf(abs)) {
+            def u = makeServerURL()
+            if (u) {
+                return u
             }
-            else {
-               return GrailsWebRequest.lookup(request).contextPath
-            }
+
+            throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
         }
+
+        return GrailsWebRequest.lookup(request).contextPath
     }
 
     /**
@@ -148,28 +145,29 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      * eg. <link type="text/css" href="${resource(dir:'css',file:'main.css')}" />
      */
     def resource = { attrs ->
-		def writer = out
-		writer << handleAbsolute(attrs)
+        def writer = out
+        writer << handleAbsolute(attrs)
         def dir = attrs['dir']
-		if(attrs.plugin) {
-			writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
-		}
+        if (attrs.plugin) {
+            writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
+        }
         else {
-            if(attrs.contextPath != null) {
-                writer << attrs.contextPath.toString() 
+            if (attrs.contextPath != null) {
+                writer << attrs.contextPath.toString()
             }
             else {
                 def pluginContextPath = pageScope.pluginContextPath
-                if(dir != pluginContextPath)
+                if (dir != pluginContextPath) {
                     writer << pluginContextPath ?: ''
+                }
             }
         }
-        if(dir) {
-           writer << (dir.startsWith("/") ?  dir : "/${dir}")
+        if (dir) {
+            writer << (dir.startsWith("/") ?  dir : "/${dir}")
         }
         def file = attrs['file']
-        if(file) {
-           writer << (file.startsWith("/") || dir?.endsWith('/') ?  file : "/${file}")
+        if (file) {
+            writer << (file.startsWith("/") || dir?.endsWith('/') ?  file : "/${file}")
         }
     }
 
@@ -184,14 +182,13 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
         def writer = getOut()
         def elementId = attrs.remove('elementId')
         writer <<  "<a href=\"${createLink(attrs).encodeAsHTML()}\""
-        if(elementId) {
-           writer << " id=\"${elementId}\""
+        if (elementId) {
+            writer << " id=\"${elementId}\""
         }
 
         writer << "${attrs.collect {k, v -> " $k=\"$v\"" }.join('')}>"
         writer << "${body()}</a>"
     }
-
 
     /**
      * Creates a grails application link from a set of attributes. This
@@ -201,115 +198,116 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      *  <a href="${createLink(action:'list')}">List</a>
      */
     def createLink = { attrs ->
-    	def writer = getOut()
+        def writer = getOut()
 
-    	// prefer URI attribute
-		if(attrs['uri']) {
-			writer << handleAbsolute(attrs)
-			writer << attrs.uri.toString()
-		}
-		else {
-			// prefer a URL attribute
-			def urlAttrs = attrs
-			if(attrs['url'] instanceof Map) {
-				urlAttrs = attrs.remove('url').clone()
-			}
-			else if(attrs['url']) {
-				urlAttrs = attrs.remove('url').toString()
-			}
-			
-			if(urlAttrs instanceof String) {
-				if(useJsessionId)
-				writer << response.encodeURL(urlAttrs)
-				else
-				writer << urlAttrs
-			}
-			else {
-				def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller")?.toString() : controllerName
-				def action = urlAttrs.remove("action")?.toString()
-				if(controller && !action) {
-					GrailsControllerClass controllerClass = grailsApplication.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controller)
-					String defaultAction = controllerClass?.getDefaultAction()
-					if(controllerClass?.hasProperty(defaultAction))
-					action = defaultAction
-				}
-				def id = urlAttrs.remove("id")
-				def frag = urlAttrs.remove('fragment')?.toString()
-				def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
-				params.mappingName = urlAttrs.remove('mapping')
-				if(request['flowExecutionKey']) {
-					params."execution" = request['flowExecutionKey']
-				}
-				
-				if(urlAttrs.event) {
-					params."_eventId" = urlAttrs.remove('event')
-				}
-				def url
-				if(id != null) params.id = id
-				def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
-				UrlCreator mapping = urlMappings.getReverseMapping(controller,action,params)
-				
-				// cannot use jsessionid with absolute links
-				if(useJsessionId && !attrs.absolute) {
-					url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
-					def base = attrs.remove('base')
-					if(base) writer << base
-					writer << response.encodeURL(url)
-				}
-				else {
-					url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
-					out << handleAbsolute(attrs)
-					writer << url
-				}
-			}
-						
-		}
+        // prefer URI attribute
+        if (attrs['uri']) {
+            writer << handleAbsolute(attrs)
+            writer << attrs.uri.toString()
+        }
+        else {
+            // prefer a URL attribute
+            def urlAttrs = attrs
+            if (attrs['url'] instanceof Map) {
+                urlAttrs = attrs.remove('url').clone()
+            }
+            else if (attrs['url']) {
+                urlAttrs = attrs.remove('url').toString()
+            }
+
+            if (urlAttrs instanceof String) {
+                if (useJsessionId) {
+                    writer << response.encodeURL(urlAttrs)
+                }
+                else {
+                    writer << urlAttrs
+                }
+            }
+            else {
+                def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller")?.toString() : controllerName
+                def action = urlAttrs.remove("action")?.toString()
+                if (controller && !action) {
+                    GrailsControllerClass controllerClass = grailsApplication.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controller)
+                    String defaultAction = controllerClass?.getDefaultAction()
+                    if (controllerClass?.hasProperty(defaultAction)) {
+                        action = defaultAction
+                    }
+                }
+                def id = urlAttrs.remove("id")
+                def frag = urlAttrs.remove('fragment')?.toString()
+                def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
+                params.mappingName = urlAttrs.remove('mapping')
+                if (request['flowExecutionKey']) {
+                    params."execution" = request['flowExecutionKey']
+                }
+
+                if (urlAttrs.event) {
+                    params."_eventId" = urlAttrs.remove('event')
+                }
+                def url
+                if (id != null) params.id = id
+                def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder")
+                UrlCreator mapping = urlMappings.getReverseMapping(controller,action,params)
+
+                // cannot use jsessionid with absolute links
+                if (useJsessionId && !attrs.absolute) {
+                    url = mapping.createURL(controller, action, params, request.characterEncoding, frag)
+                    def base = attrs.remove('base')
+                    if (base) writer << base
+                    writer << response.encodeURL(url)
+                }
+                else {
+                    url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
+                    out << handleAbsolute(attrs)
+                    writer << url
+                }
+            }
+        }
     }
 
-	/**
-	 * Helper method for creating tags called like:
-	 *
-	 * withTag(name:'script',attrs:[type:'text/javascript']) {
-	 *
-	 * }
-	 */
-	def withTag = { attrs, body ->
-		def writer = out
-		writer << "<${attrs.name}"
-		if(attrs.attrs) {
-			attrs.attrs.each{ k,v ->
-				if(v) {
-					if(v instanceof Closure) {
-						writer << " $k=\""
-					    v()
-						writer << '"'
-					}
-					else {
-						writer << " $k=\"$v\""
-					}
-				}
-			}
-		}
-		writer << '>'
-		writer << body()
-		writer << "</${attrs.name}>"
-	}
+    /**
+     * Helper method for creating tags called like:
+     *
+     * withTag(name:'script',attrs:[type:'text/javascript']) {
+     *
+     * }
+     */
+    def withTag = { attrs, body ->
+        def writer = out
+        writer << "<${attrs.name}"
+        if (attrs.attrs) {
+            attrs.attrs.each { k,v ->
+                if (v) {
+                    if (v instanceof Closure) {
+                        writer << " $k=\""
+                        v()
+                        writer << '"'
+                    }
+                    else {
+                        writer << " $k=\"$v\""
+                    }
+                }
+            }
+        }
+        writer << '>'
+        writer << body()
+        writer << "</${attrs.name}>"
+    }
 
-	def join = { attrs ->
-		def collection = attrs.'in'
-		if(collection == null) {
-			throw new GrailsTagException('Tag ["join"] missing required attribute ["in"]')
-		}
-		def delimiter = attrs.delimiter == null ? ', ' : attrs.delimiter
+    def join = { attrs ->
+        def collection = attrs.'in'
+        if (collection == null) {
+            throw new GrailsTagException('Tag ["join"] missing required attribute ["in"]')
+        }
 
-		out << collection.join(delimiter)
-	}
+        def delimiter = attrs.delimiter == null ? ', ' : attrs.delimiter
+        out << collection.join(delimiter)
+    }
 
-	/**
-	 * Output application metadata that is loaded from application.properties
-	 */
+    /**
+     * Output application metadata that is loaded from application.properties
+     */
     def meta = { attrs ->
         out << Metadata.current[attrs.name]
     }
-
 }

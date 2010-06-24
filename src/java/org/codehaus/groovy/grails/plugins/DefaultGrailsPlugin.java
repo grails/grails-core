@@ -546,7 +546,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
             finally {
                 if (c != null) {
-                    IOUtils.closeQuietly(c.getInputStream());
+                    try {
+                        InputStream is = c.getInputStream();
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    catch (IOException e) {
+                        // ignore
+                    }
                 }
             }
         }

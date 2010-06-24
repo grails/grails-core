@@ -23,12 +23,14 @@ import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigu
  * @author Siegfried Puchbauer
  * @deprecated The Converters framework has been refactored and this made the deep Converters obsolete
  */
+@Deprecated
 public class XML extends grails.converters.XML {
 
     public static final String CONFIGURATION_NAME = "deep";
 
+    @Override
     protected ConverterConfiguration<grails.converters.XML> initConfig() {
-        return ConvertersConfigurationHolder.getNamedConverterConfiguration(CONFIGURATION_NAME, grails.converters.XML.class);
+        return ConvertersConfigurationHolder.getNamedConverterConfiguration(
+                CONFIGURATION_NAME, grails.converters.XML.class);
     }
-
 }

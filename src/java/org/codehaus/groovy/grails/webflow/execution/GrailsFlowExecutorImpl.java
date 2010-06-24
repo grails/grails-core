@@ -35,10 +35,9 @@ import org.springframework.webflow.executor.FlowExecutorImpl;
 /**
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Nov 18, 2008
  */
 public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
+
     private static final Log LOG = LogFactory.getLog(GrailsFlowExecutorImpl.class);
 
     /**
@@ -48,9 +47,10 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
      * @param executionFactory    the factory for creating executions of flow definitions
      * @param executionRepository the repository for persisting paused flow executions
      */
-    public GrailsFlowExecutorImpl(FlowDefinitionLocator definitionLocator, FlowExecutionFactory executionFactory, FlowExecutionRepository executionRepository) {
+    public GrailsFlowExecutorImpl(FlowDefinitionLocator definitionLocator,
+            FlowExecutionFactory executionFactory, FlowExecutionRepository executionRepository) {
         super(definitionLocator, executionFactory, executionRepository);
-	    this.executionRepository=executionRepository;
+        this.executionRepository = executionRepository;
     }
 
     FlowExecutionRepository executionRepository;
@@ -58,38 +58,39 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
     @Override
     public FlowExecutionResult resumeExecution(String flowExecutionKey, ExternalContext context) throws FlowException {
 
-
-         //Check if FlowExecutions Flowid matches flowId
+        //Check if FlowExecutions Flowid matches flowId
         try {
             ExternalContextHolder.setExternalContext(context);
             FlowExecutionKey key = executionRepository.parseFlowExecutionKey(flowExecutionKey);
             FlowExecution flowExecution = executionRepository.getFlowExecution(key);
             GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
 
-            if(isNotValidFlowDefinitionId(flowExecution, webRequest)) {
-                 return super.launchExecution(webRequest.getControllerName()+"/"+webRequest.getActionName(), context.getRequestMap(), context);
+            if (isNotValidFlowDefinitionId(flowExecution, webRequest)) {
+                return super.launchExecution(webRequest.getControllerName() + "/" +
+               		 webRequest.getActionName(), context.getRequestMap(), context);
             }
         }
         finally {
             ExternalContextHolder.setExternalContext(null);
         }
 
-
         try {
             return super.resumeExecution(flowExecutionKey, context);
-        } catch (FlowExecutionRestorationFailureException e) {
-            if(e.getCause() instanceof SnapshotUnmarshalException) {
+        }
+        catch (FlowExecutionRestorationFailureException e) {
+            if (e.getCause() instanceof SnapshotUnmarshalException) {
                 LOG.info("Classes changed during reload, restarting flow...");
                 GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-                return super.launchExecution(webRequest.getControllerName()+"/"+webRequest.getActionName(), context.getRequestMap(), context);
+                return super.launchExecution(webRequest.getControllerName() + "/" + webRequest.getActionName(),
+               		 context.getRequestMap(), context);
             }
-            else {
-                throw e;
-            }
+
+            throw e;
         }
     }
 
-    private boolean isNotValidFlowDefinitionId(FlowExecution flowExecution, GrailsWebRequest webRequest) {
+    private boolean isNotValidFlowDefinitionId(@SuppressWarnings("unused") FlowExecution flowExecution,
+            GrailsWebRequest webRequest) {
         final FlowDefinitionLocator locator = getDefinitionLocator();
         final String requestPath = webRequest.getControllerName() + "/" + webRequest.getActionName();
 
@@ -97,7 +98,7 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
             locator.getFlowDefinition(requestPath);
             return false;
         }
-        catch(NoSuchFlowDefinitionException e) {
+        catch (NoSuchFlowDefinitionException e) {
             return true;
         }
     }

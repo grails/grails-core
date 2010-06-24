@@ -15,22 +15,18 @@
 */
 package org.codehaus.groovy.grails.web.mapping;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main entry point of Grails URL mapping mechanism. This interface defines methods to match
- * URLs and create reverse mappings based on the UrlMapping instances the implementor contains
+ * URLs and create reverse mappings based on the UrlMapping instances the implementor contains.
  *
  * @author Graeme Rocher
  * @since 0.5
- * 
- *        <p/>
- *        Created: Mar 6, 2007
- *        Time: 8:03:25 AM
  */
 public interface UrlMappingsHolder {
-    
+
     String BEAN_ID = "grailsUrlMappingsHolder";
 
     /**
@@ -43,10 +39,11 @@ public interface UrlMappingsHolder {
     /**
      * Retrieves the held Exclude Pattern instances as a list, could be null if there is no exclude
      *
-     * @return An list of String 
+     * @return An list of String
      */
+    @SuppressWarnings("unchecked")
     List getExcludePatterns();
-    
+
     /**
      * Retrieves the best guess of a URI for the given controller, action and parameters
      *
@@ -55,6 +52,7 @@ public interface UrlMappingsHolder {
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
+    @SuppressWarnings("unchecked")
     UrlCreator getReverseMapping(String controller, String action, Map params);
 
     /**
@@ -98,5 +96,4 @@ public interface UrlMappingsHolder {
      * @return The UrlMappingInfo instance
      */
     UrlMappingInfo matchStatusCode(int responseCode, Throwable e);
-
 }

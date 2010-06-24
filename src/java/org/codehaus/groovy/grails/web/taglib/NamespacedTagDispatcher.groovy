@@ -20,37 +20,32 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 
 /**
-* <p>This class allows dispatching to namespaced tag libraries and is used within controllers and tag libraries
-* to allow namespaced tags to be invoked as methods (eg. g.link(action:'foo') )
-*
-* @author Graeme Rocher
-* @since 1.0
+ * Allows dispatching to namespaced tag libraries and is used within controllers and tag libraries
+ * to allow namespaced tags to be invoked as methods (eg. g.link(action:'foo')).
  *
-* Created: Sep 5, 2007
-* Time: 9:18:03 AM
-*
-*/
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class NamespacedTagDispatcher extends GroovyObjectSupport {
-   String namespace
-   GrailsApplication application
-   Class type
-   TagLibraryLookup lookup
 
-   NamespacedTagDispatcher(String ns, Class callingType, GrailsApplication application, TagLibraryLookup lookup) {
+    String namespace
+    GrailsApplication application
+    Class type
+    TagLibraryLookup lookup
+
+    NamespacedTagDispatcher(String ns, Class callingType, GrailsApplication application, TagLibraryLookup lookup) {
         this.namespace = ns
         this.application = application
         this.lookup = lookup
         this.type = callingType
-   }
+    }
 
-   def invokeMethod(String name, args) {
+    def invokeMethod(String name, args) {
         def tagBean = lookup.lookupTagLibrary(namespace, name)
-        if(tagBean) {
-            Object result = tagBean.invokeMethod(name, args)
-            return result
+        if (!tagBean) {
+            throw new MissingMethodException(name, type, args)
         }
-        else {
-            throw new groovy.lang.MissingMethodException(name,type, args )
-        }
-   }
+
+        return tagBean.invokeMethod(name, args)
+    }
 }

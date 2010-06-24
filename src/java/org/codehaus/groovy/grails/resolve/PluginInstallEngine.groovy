@@ -33,9 +33,8 @@ import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.report.ArtifactDownloadReport
 
 /**
- * This class is used to manage the installation and uninstallation of plugins
- * from a Grails project
- * 
+ * Manages the installation and uninstallation of plugins from a Grails project.
+ *
  * @author Graeme Rocher
  * @since 1.3
  */
@@ -64,7 +63,6 @@ class PluginInstallEngine {
     protected ant
     protected PluginResolveEngine resolveEngine
 
-
     PluginInstallEngine(grails.util.BuildSettings settings) {
         this(settings, new PluginBuildSettings(settings), Metadata.current, new AntBuilder())
     }
@@ -78,10 +76,10 @@ class PluginInstallEngine {
     }
 
     PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
-        if(settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
-        if(pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
-        if(md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
-        if(ant== null) throw new IllegalArgumentException("Argument [ant] cannot be null")
+        if (settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
+        if (pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
+        if (md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
+        if (ant== null) throw new IllegalArgumentException("Argument [ant] cannot be null")
 
         globalPluginsLocation = settings.globalPluginsDir
         applicationPluginsLocation = settings.getProjectPluginsDir()
@@ -93,22 +91,21 @@ class PluginInstallEngine {
     }
 
     /**
-     * This method will resolve the current dependencies and install any missing plugins or upgrades
-     * and remove any plugins that aren't present in the metadata but are installed 
-     */
+    * This method will resolve the current dependencies and install any missing plugins or upgrades
+    * and remove any plugins that aren't present in the metadata but are installed
+    */
     void resolvePluginDependencies() {
 
         IvyDependencyManager dependencyManager = settings.dependencyManager
 
         List pluginDeps = dependencyManager.pluginDependencyDescriptors.collect { DependencyDescriptor dd ->
-           dd.getDependencyRevisionId()
+            dd.getDependencyRevisionId()
         }
         List pluginsToInstall = findMissingOrUpgradePlugins(pluginDeps)
         installPlugins(pluginsToInstall)
 
         checkPluginsToUninstall(pluginDeps)
     }
-
 
     /**
      * Installs a list of plugins
@@ -145,7 +142,7 @@ class PluginInstallEngine {
         installedPlugins.clear()
         def pluginZip = resolveEngine.resolvePluginZip(name, version)
 
-        if(!pluginZip) {
+        if (!pluginZip) {
             errorHandler "Plugin not found for name [$name] and version [${version ?: 'not specified'}]"
         }
 
@@ -165,8 +162,8 @@ class PluginInstallEngine {
      * @param globalInstall Whether it is a global install or not (optional)
      */
     void installPlugin(File zipFile, boolean globalInstall = false, boolean overwrite = false) {
-        
-        if(zipFile.exists()) {
+
+        if (zipFile.exists()) {
             def (name, version) = readMetadataFromZip(zipFile.absolutePath)
             installPluginZipInternal name, version, zipFile, globalInstall, overwrite
         }
@@ -196,26 +193,25 @@ class PluginInstallEngine {
         installPlugin(file, globalInstall, true)
     }
 
-    protected void installPluginZipInternal(String name, String version, File pluginZip, boolean globalInstall = false, boolean overwrite = false) {
+    protected void installPluginZipInternal(String name, String version, File pluginZip,
+            boolean globalInstall = false, boolean overwrite = false) {
 
         def fullPluginName = "$name-$version"
         def pluginInstallPath = "${globalInstall ? globalPluginsLocation : applicationPluginsLocation}/${fullPluginName}"
 
-
         assertNoExistingInlinePlugin(name)
 
-        if(!overwrite) {
+        if (!overwrite) {
             def abort = checkExistingPluginInstall(name, version)
-            if(abort)  {
+            if (abort)  {
                 registerPluginWithMetadata(name, version)
                 return
             }
         }
-        
+
         eventHandler "StatusUpdate", "Installing zip ${pluginZip}..."
 
         installedPlugins << pluginInstallPath
-
 
         if (isNotInlinePluginLocation(new File(pluginInstallPath))) {
             ant.delete(dir: pluginInstallPath, failonerror: false)
@@ -226,7 +222,6 @@ class PluginInstallEngine {
         else {
             errorHandler "Cannot install plugin. Plugin install would override inline plugin configuration which is not allowed."
         }
-
 
         def pluginXmlFile = new File("${pluginInstallPath}/plugin.xml")
         if (!pluginXmlFile.exists()) {
@@ -284,37 +279,34 @@ class PluginInstallEngine {
                 def release = pluginXml.'@version'.text()
                 return [name, release, pluginXml]
             }
-            else {
-                errorHandler("Plugin $zipLocation is not a valid Grails plugin. No plugin.xml descriptor found!")
-            }
+
+            errorHandler("Plugin $zipLocation is not a valid Grails plugin. No plugin.xml descriptor found!")
         }
         catch (e) {
             errorHandler("Error reading plugin zip [$zipLocation]. The plugin zip file may be corrupt.")
         }
-
-
     }
 
     /**
      * Checks an existing plugin path to install and returns true if the installation should be aborted or false if it should continue
-     * 
+     *
      * If an error occurs the errorHandler is invoked.
-     * 
+     *
      * @param name The plugin name
      * @param version The plugin version
      * @return True if the installation should be aborted
      */
     protected boolean checkExistingPluginInstall(String name, version) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
-        
+
         if (currentInstall?.exists()) {
-        	
+
             PluginBuildSettings pluginSettings = pluginSettings
             def pluginDir = currentInstall.file.canonicalFile
             def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
             // if the versions are the same no need to continue
-            if(version == pluginInfo?.version) return true
-        	
+            if (version == pluginInfo?.version) return true
+
             if (pluginSettings.isInlinePluginLocation(currentInstall)) {
                 errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
                 return true
@@ -365,14 +357,14 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
             }
             else {
-                addJarsToRootLoader resolveReport.allArtifactsReports.localFile        
+                addJarsToRootLoader resolveReport.allArtifactsReports.localFile
             }
         }
         def pluginJars = new File("${pluginInstallPath}/lib").listFiles().findAll { it.name.endsWith(".jar")}
         addJarsToRootLoader(pluginJars)
     }
 
-    protected def addJarsToRootLoader(Collection pluginJars) {
+    protected addJarsToRootLoader(Collection pluginJars) {
         def loader = getClass().classLoader.rootLoader
         for (File jar in pluginJars) {
             loader.addURL(jar.toURI().toURL())
@@ -386,15 +378,16 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             String depVersion = dep.@version.toString()
             if (isCorePlugin(depName)) {
                 def grailsVersion = GrailsUtil.getGrailsVersion()
-                if (!GrailsPluginUtils.isValidVersion(grailsVersion, depVersion))
+                if (!GrailsPluginUtils.isValidVersion(grailsVersion, depVersion)) {
                     errorHandler("Plugin requires version [$depVersion] of Grails core, but installed version is [${grailsVersion}]. Please upgrade your Grails installation and try again.")
+                }
             }
             else {
                 dependencies[depName] = depVersion
                 def depDirName = GrailsNameUtils.getScriptName(depName)
                 def manager = settings.dependencyManager
 
-                if(manager.isExcludedFromPlugin(pluginName, depDirName)) {
+                if (manager.isExcludedFromPlugin(pluginName, depDirName)) {
                     dependencies.remove(depName)
                 }
                 else {
@@ -424,7 +417,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                         }
                     }
                 }
-
             }
         }
         return dependencies
@@ -455,14 +447,14 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             metadata.remove(pluginKey)
             metadata.persist()
             def pluginDir
-            if(name && version) {
+            if (name && version) {
                 pluginDir = new File("${applicationPluginsLocation}/$name-$version")
             }
             else {
                 pluginDir = pluginSettings.getPluginDirForName(name)?.file
             }
-            if(pluginDir?.exists()) {
 
+            if (pluginDir?.exists()) {
                 def uninstallScript = new File("${pluginDir}/scripts/_Uninstall.groovy")
                 runPluginScript(uninstallScript, pluginDir.name, "uninstall script")
                 if (isNotInlinePluginLocation(pluginDir)) {
@@ -477,12 +469,9 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
         catch (e) {
             e.printStackTrace()
-            errorHandler("An error occured installing the plugin [$name${version ? '-' + version : ''}]: ${e.message}")                        
+            errorHandler("An error occured installing the plugin [$name${version ? '-' + version : ''}]: ${e.message}")
         }
-
-
     }
-
 
     /**
      * Registers a plugin name and version as installed according to the plugin metadata
@@ -490,39 +479,37 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
      * @param pluginVersion the version of the plugin
      */
     void registerPluginWithMetadata(String pluginName, pluginVersion) {
-    	IvyDependencyManager dependencyManager = settings.getDependencyManager()
-    	
-    	// only register in metadata if not specified in BuildConfig.groovy
-    	if(dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)) {
+        IvyDependencyManager dependencyManager = settings.getDependencyManager()
+
+        // only register in metadata if not specified in BuildConfig.groovy
+        if (dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)) {
             metadata['plugins.' + pluginName] = pluginVersion
-            metadata.persist()    		
-    	}
-    	else {
-    		if(!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
+            metadata.persist()
+        }
+        else {
+            if (!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
                 metadata['plugins.' + pluginName] = pluginVersion
-                metadata.persist()    		    			
-    		}
-    	}
-    }
-
-
-    private void runPluginScript( File scriptFile, fullPluginName, msg ) {
-        if(pluginScriptRunner != null) {
-            if(pluginScriptRunner.maximumNumberOfParameters < 3) {
-                throw new IllegalStateException("The [pluginScriptRunner] closure property must accept at least 3 arguments")
-            }
-            else {
-                pluginScriptRunner.call(scriptFile, fullPluginName, msg)
+                metadata.persist()
             }
         }
     }
+
+    private void runPluginScript( File scriptFile, fullPluginName, msg ) {
+        if (pluginScriptRunner != null) {
+            if (pluginScriptRunner.maximumNumberOfParameters < 3) {
+                throw new IllegalStateException("The [pluginScriptRunner] closure property must accept at least 3 arguments")
+            }
+            pluginScriptRunner.call(scriptFile, fullPluginName, msg)
+        }
+    }
+
     /**
      * Check to see if the plugin directory is in plugins home.
      */
     boolean isNotInlinePluginLocation(File pluginDir) {
-      // insure all the directory is in the pluginsHome
-      checkPluginPathWithPluginDir(applicationPluginsLocation, pluginDir) ||
-              checkPluginPathWithPluginDir(globalPluginsLocation, pluginDir)
+        // insure all the directory is in the pluginsHome
+        checkPluginPathWithPluginDir(applicationPluginsLocation, pluginDir) ||
+            checkPluginPathWithPluginDir(globalPluginsLocation, pluginDir)
     }
 
     protected postUninstall() {
@@ -537,7 +524,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         pluginSettings.clearCache()
         postInstallEvent?.call(pluginInstallPath)
     }
-
 
     private checkPluginPathWithPluginDir (File pluginsHome, File pluginDir) {
         def absPluginsHome = pluginsHome.absolutePath
@@ -568,7 +554,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         commandLineHelper.userInput(msg, ['y','n'] as String[]) == 'y'
     }
 
-
     protected void checkPluginsToUninstall(List<DependencyDescriptor> pluginDeps) {
         // Find out which plugins are in the search path but not in the
         // metadata. We only check on the plugins in the project's "plugins"
@@ -596,8 +581,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-
-
     protected List<ModuleRevisionId> findMissingOrUpgradePlugins(List pluginDeps) {
         def pluginsToInstall = []
         for (p in pluginDeps) {
@@ -613,22 +596,19 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 def dirName = pluginLoc.file.canonicalFile.name
                 PluginBuildSettings settings = pluginSettings
                 if (!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
-                	// only print message if the version doesn't start with "latest." since we have
-                	// to do a check for a new version when there version is specified as "latest.integration" etc.
-                	if(!version.startsWith("latest."))
-                		eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
+                    // only print message if the version doesn't start with "latest." since we have
+                    // to do a check for a new version when there version is specified as "latest.integration" etc.
+                    if (!version.startsWith("latest."))
+                    eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
                     pluginsToInstall << p
                 }
             }
-
         }
         return pluginsToInstall
     }
-
 
     private registerMetadataForPluginLocation(Resource pluginDir) {
         def plugin = pluginSettings.getMetadataForPlugin(pluginDir.filename)
         registerPluginWithMetadata(plugin.@name.text(), plugin.@version.text())
     }
-
 }

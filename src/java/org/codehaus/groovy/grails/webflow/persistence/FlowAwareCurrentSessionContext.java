@@ -20,23 +20,22 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.springframework.orm.hibernate3.SpringSessionContext;
 import org.springframework.webflow.core.collection.MutableAttributeMap;
 import org.springframework.webflow.execution.FlowExecutionContext;
-import org.springframework.webflow.execution.RequestContextHolder;
 import org.springframework.webflow.execution.RequestContext;
+import org.springframework.webflow.execution.RequestContextHolder;
 import org.springframework.webflow.persistence.HibernateFlowExecutionListener;
 
 /**
- * A Hibernate CurrentSessionContext that is aware of flow requests and looks up the Session from the flow
- * instead of the current Thread
+ * A Hibernate CurrentSessionContext that is aware of flow requests and looks up the Session
+ * from the flow instead of the current Thread.
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Jan 18, 2008
  */
 public class FlowAwareCurrentSessionContext extends SpringSessionContext{
-	private static final long serialVersionUID = -836141275847835219L;
 
-	/**
+    private static final long serialVersionUID = -836141275847835219L;
+
+    /**
      * Create a new SpringSessionContext for the given Hibernate SessionFactory.
      *
      * @param sessionFactory the SessionFactory to provide current Sessions for
@@ -45,19 +44,19 @@ public class FlowAwareCurrentSessionContext extends SpringSessionContext{
         super(sessionFactory);
     }
 
+    @Override
     public Session currentSession() throws HibernateException {
         try {
             RequestContext requestContext = RequestContextHolder.getRequestContext();
             Session s = null;
-            if(requestContext != null) {
-
+            if (requestContext != null) {
                 FlowExecutionContext context = requestContext.getFlowExecutionContext();
                 MutableAttributeMap flowScope = context.getActiveSession().getScope();
                 s = (Session)flowScope.get(HibernateFlowExecutionListener.PERSISTENCE_CONTEXT_ATTRIBUTE, org.hibernate.Session.class);
             }
-            if(s == null) return super.currentSession();
-            else return s;
-        } catch (IllegalStateException e) {
+            return s == null ? super.currentSession() : s;
+        }
+        catch (IllegalStateException e) {
             return super.currentSession();
         }
     }

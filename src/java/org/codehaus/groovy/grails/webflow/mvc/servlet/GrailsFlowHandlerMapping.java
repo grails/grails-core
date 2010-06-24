@@ -14,29 +14,30 @@
  */
 package org.codehaus.groovy.grails.webflow.mvc.servlet;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping;
 import org.springframework.core.Ordered;
 import org.springframework.webflow.mvc.servlet.AbstractFlowHandler;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * A HandlerMapping implementation that maps Grails controller classes onto flows
+ * A HandlerMapping implementation that maps Grails controller classes onto flows.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-public class GrailsFlowHandlerMapping extends GrailsControllerHandlerMapping implements Ordered{
+public class GrailsFlowHandlerMapping extends GrailsControllerHandlerMapping implements Ordered {
 
     @Override
     protected Object getHandlerForControllerClass(GrailsControllerClass controllerClass, HttpServletRequest request) {
         final String actionName = (String) request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE);
-        if(controllerClass!=null && actionName != null) {
-            if(controllerClass.isFlowAction(actionName)) {
+        if (controllerClass != null && actionName != null) {
+            if (controllerClass.isFlowAction(actionName)) {
                 final String flowid = controllerClass.getLogicalPropertyName() + "/" + actionName;
                 return new AbstractFlowHandler() {
+                    @Override
                     public String getFlowId() {
                         return flowid;
                     }
@@ -45,5 +46,4 @@ public class GrailsFlowHandlerMapping extends GrailsControllerHandlerMapping imp
         }
         return null;
     }
-
 }

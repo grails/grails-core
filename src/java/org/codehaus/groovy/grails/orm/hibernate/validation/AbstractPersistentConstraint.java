@@ -15,20 +15,18 @@
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import org.codehaus.groovy.grails.validation.AbstractConstraint;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.validation.Errors;
-import org.springframework.context.ApplicationContext;
-import org.springframework.beans.BeansException;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.util.Assert;
+import org.springframework.validation.Errors;
 
 /**
- * Constraints that require access to the HibernateTemplate should subclass this class
+ * Constraints that require access to the HibernateTemplate should subclass this class.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Jan 23, 2007
- *        Time: 1:58:21 PM
  */
 abstract class AbstractPersistentConstraint extends AbstractConstraint implements PersistentConstraint {
 
@@ -39,10 +37,10 @@ abstract class AbstractPersistentConstraint extends AbstractConstraint implement
     }
 
     public HibernateTemplate getHibernateTemplate() {
-        if(this.applicationContext == null) throw new IllegalStateException("AbstractPersistentConstraint requires an instance of ApplicationContext, but it was null");
+        Assert.state(applicationContext != null, "AbstractPersistentConstraint requires an instance of ApplicationContext, but it was null");
 
-        if(applicationContext.containsBean("sessionFactory")) {
-            return new HibernateTemplate((SessionFactory) applicationContext.getBean("sessionFactory"),true);
+        if (applicationContext.containsBean("sessionFactory")) {
+            return new HibernateTemplate((SessionFactory) applicationContext.getBean("sessionFactory"), true);
         }
         return null;
     }
@@ -50,10 +48,9 @@ abstract class AbstractPersistentConstraint extends AbstractConstraint implement
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#validate(java.lang.Object, org.springframework.validation.Errors)
      */
+    @Override
     public void validate(Object target, Object propertyValue, Errors errors) {
-        if(getHibernateTemplate() == null)
-            throw new IllegalStateException("PersistentConstraint requires an instance of HibernateTemplate.");
-
+        Assert.state(getHibernateTemplate() != null, "PersistentConstraint requires an instance of HibernateTemplate.");
         super.validate(target, propertyValue, errors);
     }
 }

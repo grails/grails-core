@@ -12,17 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.resolve
 
+import java.lang.reflect.Field
+
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
-import org.apache.ivy.core.module.id.ModuleId
-import org.apache.ivy.core.module.id.ArtifactId
 import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor
+import org.apache.ivy.core.module.id.ArtifactId
+import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.plugins.matcher.ExactPatternMatcher
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor
-import java.lang.reflect.Field
 
 /**
  * Adds new methods to make access to this class Groovier
@@ -30,50 +30,49 @@ import java.lang.reflect.Field
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor{
+class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
 
     static final String WILDCARD = '*'
-
 
     /**
      * Configuration scope of the plugin 'runtime', 'build', 'test' etc.
      */
     String scope
+
     /**
      * Plugin that the dependency relates to, null if it is a framework or application dependency
      */
     String plugin
+
     /**
      * Whether the dependency is inherted from a plugin or framework and not an application dependency
      */
     boolean inherited
 
     /**
-     * Whether a plugin dependencies is 'exported' to the application or not 
+     * Whether a plugin dependencies is 'exported' to the application
      */
     boolean exported = true
 
-
     private confList
+
     /**
      * Whether the dependency should be exposed to the application
      */
     boolean isExportedToApplication() {
-        if(plugin && !exported) return false
+        if (plugin && !exported) return false
         return true
     }
 
-
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
-        super(mrid, force);
+        super(mrid, force)
         this.scope = scope
         confList = getModuleConfigurations().toList()
     }
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, boolean transitive, String scope) {
-        this(mrid, force, scope);        
-        setTransitive(transitive) 
+        this(mrid, force, scope)
+        setTransitive(transitive)
     }
 
     void setExport(boolean b) {
@@ -81,8 +80,8 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
     }
 
     void excludes(Object... args) {
-        for(arg in args) {
-            exclude(arg)            
+        for (arg in args) {
+            exclude(arg)
         }
     }
 
@@ -100,24 +99,23 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
         addRuleForModuleId(mid, scope)
     }
 
-
     private excludeForMap (Map args) {
         def mid = ModuleId.newInstance(args?.group ?: WILDCARD, args?.name ?: WILDCARD)
         addRuleForModuleId(mid, scope)
     }
-    
-    void dependencyConfiguration(String config){
-    	addDependencyConfiguration(scope, config)
+
+    void dependencyConfiguration(String config) {
+        addDependencyConfiguration(scope, config)
     }
 
-    void setTransitive (boolean b) {
+    void setTransitive(boolean b) {
         // nasty hack since the isTransitive Ivy field is not public
         Field field = getClass().getSuperclass().getDeclaredField("isTransitive")
         field.accessible = true
-        field.set(this, b)         
+        field.set(this, b)
     }
 
-    void setChanging ( boolean b ) {
+    void setChanging(boolean b) {
         // nasty hack since the isChanging Ivy field is not public
         Field field = getClass().getSuperclass().getDeclaredField("isChanging")
         field.accessible = true
@@ -126,11 +124,9 @@ public class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescri
 
     void addRuleForModuleId(ModuleId mid, String scope) {
         def id = new ArtifactId(mid, WILDCARD, WILDCARD, WILDCARD)
-        
         def rule = new DefaultExcludeRule(id, ExactPatternMatcher.INSTANCE, null)
         addExcludeRule scope, rule
     }
-
 
     boolean isSupportedInConfiguration(String conf) {
         scope == conf

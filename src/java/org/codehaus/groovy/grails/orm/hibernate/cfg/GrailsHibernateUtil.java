@@ -330,10 +330,10 @@ public class GrailsHibernateUtil {
      * @param target The GroovyObject
      * @param persistentClass The persistent class
      */
-    public static void ensureCorrectGroovyMetaClass(Object target, Class persistentClass) {
-		if(target instanceof GroovyObject) {
+    public static void ensureCorrectGroovyMetaClass(Object target, Class<?> persistentClass) {
+		if (target instanceof GroovyObject) {
 			GroovyObject go = ((GroovyObject)target);
-			if(!go.getMetaClass().getTheClass().equals(persistentClass)) {
+			if (!go.getMetaClass().getTheClass().equals(persistentClass)) {
 				go.setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(persistentClass));
 			}
 		}

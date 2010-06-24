@@ -15,27 +15,29 @@
 package org.codehaus.groovy.grails.resolve;
 
 import grails.util.BuildSettings;
-import org.apache.ivy.plugins.resolver.FileSystemResolver;
-import org.apache.ivy.core.settings.IvySettings;
 
 import java.io.File;
 
+import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.resolver.FileSystemResolver;
+
 /**
- * A resolver that resolves JAR files from plugin lib directories
+ * A resolver that resolves JAR files from plugin lib directories.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-public class GrailsPluginsDirectoryResolver extends FileSystemResolver{
+public class GrailsPluginsDirectoryResolver extends FileSystemResolver {
+
     private static final String GRAILS_PLUGINS = "grailsPlugins";
     private static final String LIB_DIR_PATTERN = "/lib/[artifact]-[revision].[ext]";
 
     public GrailsPluginsDirectoryResolver(BuildSettings buildSettings, IvySettings ivySettings) {
-        if(buildSettings != null) {
+        if (buildSettings != null) {
             final File pluginsDir = buildSettings.getProjectPluginsDir();
             final File basedir = buildSettings.getBaseDir();
-            if(basedir!=null) {
-                addArtifactPattern(basedir.getAbsolutePath()+ LIB_DIR_PATTERN);
+            if (basedir != null) {
+                addArtifactPattern(basedir.getAbsolutePath() + LIB_DIR_PATTERN);
             }
             addPatternsForPluginsDirectory(pluginsDir);
             addPatternsForPluginsDirectory(buildSettings.getGlobalPluginsDir());
@@ -45,13 +47,15 @@ public class GrailsPluginsDirectoryResolver extends FileSystemResolver{
     }
 
     private void addPatternsForPluginsDirectory(File pluginsDir) {
-        if(pluginsDir!=null) {
-            final File[] files = pluginsDir.listFiles();
-            if(files!=null) {
-                for(File f : files) {
-                    if(f.isDirectory()) {
-                        addArtifactPattern(f.getAbsolutePath()+ LIB_DIR_PATTERN);
-                    }
+        if (pluginsDir == null) {
+            return;
+        }
+
+        final File[] files = pluginsDir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    addArtifactPattern(f.getAbsolutePath()+ LIB_DIR_PATTERN);
                 }
             }
         }

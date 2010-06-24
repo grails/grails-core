@@ -29,6 +29,7 @@ import java.util.*;
  * @author Graeme Rocher
  * @since 05-Jan-2006
  */
+@SuppressWarnings("unchecked")
 public class GrailsDataBinderTests extends TestCase {
 
     public static final String DATE_TIME_FORMAT = "MM/dd/yyyy hh:mm a";

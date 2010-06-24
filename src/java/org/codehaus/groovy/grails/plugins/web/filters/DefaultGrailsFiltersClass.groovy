@@ -15,41 +15,38 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-
 import org.codehaus.groovy.grails.commons.AbstractInjectableGrailsClass
 import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
 /**
- * Loads filter definitions into a set of FilterConfig instances
+ * Loads filter definitions into a set of FilterConfig instances.
  *
  * @author mike
  * @author Graeme Rocher
  */
 class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implements GrailsFiltersClass  {
-    static FILTERS = "Filters";
+    static FILTERS = "Filters"
 
     DefaultGrailsFiltersClass(Class aClass) {
         super(aClass, FILTERS)
     }
 
-    public List getConfigs(Object filters) {
+    List<FilterConfig> getConfigs(Object filters) {
 
-        if (!filters) return [];
+        if (!filters) return []
 
         def loader = new Loader(filters)
         def filtersClosure = filters.filters
         filtersClosure.delegate = loader
         filtersClosure.call()
 
-        return loader.filters;
+        return loader.filters
     }
-    
+
     @Override
-	public MetaClass getMetaClass() {
-    	GroovySystem.metaClassRegistry.getMetaClass DefaultGrailsFiltersClass
-   	}
+    MetaClass getMetaClass() {
+        GroovySystem.metaClassRegistry.getMetaClass DefaultGrailsFiltersClass
+    }
 }
 
 class Loader {
@@ -59,29 +56,31 @@ class Loader {
     Loader(filtersDefinition) {
         this.filtersDefinition = filtersDefinition
     }
-	
-	def methodMissing(String methodName, args) {
-        if(args) {
-            def fc = new FilterConfig(name: methodName, filtersDefinition: filtersDefinition)
-            filters << fc
 
-            if(args[0] instanceof Closure) {
-                fc.scope = [ uri: '/**' ]
-                def closure = args[0]
+    def methodMissing(String methodName, args) {
+        if (!args) {
+            return
+        }
+
+        def fc = new FilterConfig(name: methodName, filtersDefinition: filtersDefinition)
+        filters << fc
+
+        if (args[0] instanceof Closure) {
+            fc.scope = [ uri: '/**' ]
+            def closure = args[0]
+            closure.delegate = fc
+            closure.resolveStrategy = Closure.DELEGATE_FIRST
+            closure.call()
+        }
+        else if (args[0] instanceof Map) {
+            fc.scope = args[0]
+            if (args.size() > 1 && args[1] instanceof Closure) {
+                def closure = args[1]
                 closure.delegate = fc
                 closure.resolveStrategy = Closure.DELEGATE_FIRST
                 closure.call()
             }
-            else if(args[0] instanceof Map) {
-                fc.scope = args[0]
-                if(args.size() > 1 && args[1] instanceof Closure) {
-                    def closure = args[1]
-                    closure.delegate = fc
-                    closure.resolveStrategy = Closure.DELEGATE_FIRST
-                    closure.call()
-                }
-            }
-            fc.initialised = true
-        }		
-	}
+        }
+        fc.initialised = true
+    }
 }

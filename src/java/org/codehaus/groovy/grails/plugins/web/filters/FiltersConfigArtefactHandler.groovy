@@ -19,16 +19,15 @@ import org.codehaus.groovy.grails.commons.ArtefactHandlerAdapter
 import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
 /**
-* An ArtefactHandler that detects artefact types that end with *Filter
-*
-* @author mike
-* @author Graeme Rocher
-*/
+ * Detects artefact types that end with *Filter.
+ *
+ * @author mike
+ * @author Graeme Rocher
+ */
 class FiltersConfigArtefactHandler extends ArtefactHandlerAdapter {
     static TYPE = "Filters"
 
     FiltersConfigArtefactHandler() {
-        super(TYPE, GrailsFiltersClass.class, DefaultGrailsFiltersClass.class, TYPE)
+        super(TYPE, GrailsFiltersClass, DefaultGrailsFiltersClass, TYPE)
     }
-
 }

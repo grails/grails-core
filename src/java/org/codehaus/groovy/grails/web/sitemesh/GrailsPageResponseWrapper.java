@@ -39,22 +39,21 @@ import com.opensymphony.module.sitemesh.filter.TextEncoder;
 /**
  * @author Graeme Rocher
  * @since 1.0.4
- *        <p/>
- *        Created: Nov 14, 2008
  */
 public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
+
     private final GrailsRoutablePrintWriter routablePrintWriter;
     private final RoutableServletOutputStream routableServletOutputStream;
     private final PageParserSelector parserSelector;
     private final HttpServletRequest request;
-    
+
     private GrailsBuffer buffer;
     private boolean aborted = false;
     private boolean parseablePage = false;
     private GSPSitemeshPage gspSitemeshPage;
 
-
-    public GrailsPageResponseWrapper(final HttpServletRequest request, final HttpServletResponse response, PageParserSelector parserSelector) {
+    public GrailsPageResponseWrapper(final HttpServletRequest request, final HttpServletResponse response,
+            PageParserSelector parserSelector) {
         super(response);
         this.parserSelector = parserSelector;
 
@@ -68,57 +67,63 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                 return response.getOutputStream();
             }
         });
-    
+
         this.request = request;
-        
+
         gspSitemeshPage = (GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
     }
 
+    @Override
     public void sendError(int sc) throws IOException {
-    	aborted = true;
+        aborted = true;
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
         try {
             super.sendError(sc);
-        } finally {
+        }
+        finally {
             WebUtils.storeGrailsWebRequest(webRequest);
         }
     }
 
+    @Override
     public void sendError(int sc, String msg) throws IOException {
-    	aborted = true;
+        aborted = true;
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
         try {
             super.sendError(sc, msg);
-        } finally {
+        }
+        finally {
             WebUtils.storeGrailsWebRequest(webRequest);
         }
-
     }
-
 
     /**
      * Set the content-type of the request and store it so it can
      * be passed to the {@link com.opensymphony.module.sitemesh.PageParser}.
      */
+    @Override
     public void setContentType(String type) {
         super.setContentType(type);
 
-        if (type != null) {
-            HttpContentType httpContentType = new HttpContentType(type);
-
-            if (parserSelector.shouldParsePage(httpContentType.getType())) {
-                activateSiteMesh(httpContentType.getType(), httpContentType.getEncoding());
-            } else {
-                deactivateSiteMesh();
-            }
+        if (type == null) {
+            return;
         }
 
+        HttpContentType httpContentType = new HttpContentType(type);
+
+        if (parserSelector.shouldParsePage(httpContentType.getType())) {
+            activateSiteMesh(httpContentType.getType(), httpContentType.getEncoding());
+        }
+        else {
+            deactivateSiteMesh();
+        }
     }
 
     public void activateSiteMesh(String contentType, String encoding) {
         if (parseablePage) {
             return; // already activated
         }
+
         buffer = new GrailsBuffer(parserSelector.getPageParser(contentType), encoding, gspSitemeshPage);
         routablePrintWriter.updateDestination(new GrailsRoutablePrintWriter.DestinationFactory() {
             public PrintWriter activateDestination() {
@@ -151,6 +156,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     /**
      * Prevent content-length being set if page is parseable.
      */
+    @Override
     public void setContentLength(int contentLength) {
         if (!parseablePage) super.setContentLength(contentLength);
     }
@@ -158,6 +164,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     /**
      * Prevent buffer from being flushed if this is a page being parsed.
      */
+    @Override
     public void flushBuffer() throws IOException {
         if (!parseablePage) super.flushBuffer();
     }
@@ -165,10 +172,12 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     /**
      * Prevent content-length being set if page is parseable.
      */
+    @Override
     public void setHeader(String name, String value) {
         if (name.toLowerCase().equals("content-type")) { // ensure ContentType is always set through setContentType()
             setContentType(value);
-        } else if (!parseablePage || !name.toLowerCase().equals("content-length")) {
+        }
+        else if (!parseablePage || !name.toLowerCase().equals("content-length")) {
             super.setHeader(name, value);
         }
     }
@@ -176,10 +185,12 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     /**
      * Prevent content-length being set if page is parseable.
      */
+    @Override
     public void addHeader(String name, String value) {
         if (name.toLowerCase().equals("content-type")) { // ensure ContentType is always set through setContentType()
             setContentType(value);
-        } else if (!parseablePage || !name.toLowerCase().equals("content-length")) {
+        }
+        else if (!parseablePage || !name.toLowerCase().equals("content-length")) {
             super.addHeader(name, value);
         }
     }
@@ -187,6 +198,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     /**
      * If 'not modified' (304) HTTP status is being sent - then abort parsing, as there shouldn't be any body
      */
+    @Override
     public void setStatus(int sc) {
         if (sc == HttpServletResponse.SC_NOT_MODIFIED) {
             aborted = true;
@@ -196,10 +208,12 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         super.setStatus(sc);
     }
 
+    @Override
     public ServletOutputStream getOutputStream() {
         return routableServletOutputStream;
     }
 
+    @Override
     public PrintWriter getWriter() {
         return routablePrintWriter;
     }
@@ -207,16 +221,17 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     public Page getPage() throws IOException {
         if (isSitemeshNotActive()) {
             return null;
-        } else {
-        	GSPSitemeshPage page=(GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
-        	if(page != null && page.isUsed()) {
-        		return page;
-        	} else {
-        		return buffer.parse();
-        	}
         }
+
+        GSPSitemeshPage page = (GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        if (page != null && page.isUsed()) {
+            return page;
+        }
+
+        return buffer.parse();
     }
 
+    @Override
     public void sendRedirect(String location) throws IOException {
         aborted = true;
         super.sendRedirect(location);
@@ -229,18 +244,18 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     public char[] getContents() throws IOException {
         if (isSitemeshNotActive()) {
             return null;
-        } else {
-            return buffer.getContents();
         }
+
+        return buffer.getContents();
     }
 
     public boolean isSitemeshActive() {
         return !isSitemeshNotActive();
     }
 
-	public boolean isGspSitemeshActive() {
-		return (gspSitemeshPage != null && gspSitemeshPage.isUsed());
-	}
+    public boolean isGspSitemeshActive() {
+        return (gspSitemeshPage != null && gspSitemeshPage.isUsed());
+    }
 
     private boolean isSitemeshNotActive() {
         return aborted || !parseablePage;
@@ -267,11 +282,12 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         private char[] getContents() throws IOException {
             if (charBuffer != null) {
                 return charBuffer.toCharArray();
-            } else if (byteBuffer != null) {
-                return TEXT_ENCODER.encode(byteBuffer.readAsByteArray(), encoding);
-            } else {
-                return new char[0];
             }
+            if (byteBuffer != null) {
+                return TEXT_ENCODER.encode(byteBuffer.readAsByteArray(), encoding);
+            }
+
+            return new char[0];
         }
 
         public Page parse() throws IOException {
@@ -284,8 +300,8 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                     throw new IllegalStateException("response.getWriter() called after response.getOutputStream()");
                 }
                 charBuffer=new StreamCharBuffer();
-                if(gspSitemeshPage != null) {
-                	gspSitemeshPage.setPageBuffer(charBuffer);
+                if (gspSitemeshPage != null) {
+                    gspSitemeshPage.setPageBuffer(charBuffer);
                 }
                 exposedWriter = new GrailsPrintWriter(charBuffer.getWriter());
                 exposedWriter.setFinalTargetHere(true);
@@ -301,21 +317,20 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                 byteBuffer = new StreamByteBuffer();
                 final OutputStream out=byteBuffer.getOutputStream();
                 exposedStream = new ServletOutputStream() {
-					@Override
-					public void write(byte[] b, int off, int len)
-							throws IOException {
-						out.write(b, off, len);
-					}
+                    @Override
+                    public void write(byte[] b, int off, int len) throws IOException {
+                        out.write(b, off, len);
+                    }
 
-					@Override
-					public void write(byte[] b) throws IOException {
-						out.write(b);
-					}
+                    @Override
+                    public void write(byte[] b) throws IOException {
+                        out.write(b);
+                    }
 
-					@Override
-					public void write(int b) throws IOException {
-						out.write(b);
-					}
+                    @Override
+                    public void write(int b) throws IOException {
+                        out.write(b);
+                    }
                 };
             }
             return exposedStream;
@@ -324,6 +339,5 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         public boolean isUsingStream() {
             return byteBuffer != null;
         }
-
     }
 }

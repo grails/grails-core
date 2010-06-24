@@ -142,10 +142,12 @@ public class JspSubmitToRemoteTag extends JspInvokeGrailsTagLibTag {
         this.action = action;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }

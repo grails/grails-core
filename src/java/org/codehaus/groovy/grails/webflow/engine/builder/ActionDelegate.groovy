@@ -24,17 +24,13 @@ import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.RequestContext
 
 /**
-* A class that acts as a delegate to a flow action
-
-* @author Graeme Rocher
-* @since 0.6
+ * Acts as a delegate to a flow action.
  *
-* Created: Jul 19, 2007
-* Time: 4:55:03 PM
-*
-*/
-
+ * @author Graeme Rocher
+ * @since 0.6
+ */
 class ActionDelegate extends AbstractDelegate {
+
     Action action
     MetaClass actionMetaClass
 
@@ -43,45 +39,42 @@ class ActionDelegate extends AbstractDelegate {
         this.action = action
         this.actionMetaClass = action.class.metaClass
     }
+
     /**
      * invokes a method as an action if possible
      */
     def methodMissing(String name, args) {
         def controller = webRequest.attributes.getController(webRequest.currentRequest)
         def metaMethod = controller?.metaClass?.getMetaMethod(name, args)
-        if(metaMethod) return metaMethod.invoke(controller, args)
-        else {
-            def application = applicationContext?.getBean(GrailsApplication.APPLICATION_ID)
-            def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
-            def tagLibraryClass = application?.getArtefactForFeature(
-                                                TagLibArtefactHandler.TYPE, tagName.toString())
-
-            if(tagLibraryClass) {
-                WebMetaUtils.registerMethodMissingForTags(ActionDelegate.metaClass, applicationContext, tagLibraryClass, name)
-                return invokeMethod(name, args)
-            }
-            else {
-                return invokeMethodAsEvent(name,args)
-            }
+        if (metaMethod) {
+            return metaMethod.invoke(controller, args)
         }
+
+        def application = applicationContext?.getBean(GrailsApplication.APPLICATION_ID)
+        def tagName = "${GroovyPage.DEFAULT_NAMESPACE}:$name"
+        def tagLibraryClass = application?.getArtefactForFeature(
+            TagLibArtefactHandler.TYPE, tagName.toString())
+
+        if (tagLibraryClass) {
+            WebMetaUtils.registerMethodMissingForTags(ActionDelegate.metaClass, applicationContext, tagLibraryClass, name)
+            return invokeMethod(name, args)
+        }
+
+        return invokeMethodAsEvent(name,args)
     }
 
     def invokeMethodAsEvent(String name, args) {
-        if(!args || args[0] == null) {
+        if (!args || args[0] == null) {
             return action.result(name)
         }
-        else {
-            if(args[0] instanceof Map) {
-                LocalAttributeMap model = new LocalAttributeMap(args[0])
-                return action.result(name, model)
-            }
-            else {
-                def obj = args[0]
-                def modelName = GrailsClassUtils.getPropertyName(name.getClass())
-                return action.result(name, [(modelName):obj])
-            }
+
+        if (args[0] instanceof Map) {
+            LocalAttributeMap model = new LocalAttributeMap(args[0])
+            return action.result(name, model)
         }
 
+        def obj = args[0]
+        def modelName = GrailsClassUtils.getPropertyName(name.getClass())
+        return action.result(name, [(modelName):obj])
     }
-
 }

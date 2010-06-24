@@ -17,14 +17,11 @@ package org.codehaus.groovy.grails.web.mapping
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * A customizable UrlMappingInfo instance used for forwards and includes
- * 
+ * A customizable UrlMappingInfo instance used for forwards and includes.
+ *
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Jan 27, 2009
  */
-
 class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
 
     String controllerName
@@ -38,18 +35,19 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
     void setAction(String action) { actionName = action }
     void setView(String view) { viewName = view }
     void setParams(Map params) {
-        if(params)
+        if (params) {
             parameters = params
+        }
     }
 
     Map getParameters() {
-        if(id) {
+        if (id) {
             parameters.id = id
         }
         return parameters
     }
 
-    public boolean isParsingRequest() {
-        return false;
+    boolean isParsingRequest() {
+        return false
     }
 }

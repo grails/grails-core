@@ -14,34 +14,43 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
-import org.apache.ivy.core.module.descriptor.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.ivy.core.module.descriptor.Configuration;
+import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
+import org.apache.ivy.core.module.descriptor.ExcludeRule;
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.plugins.matcher.PatternMatcher;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * Base class for IvyDependencyManager with some logic implemented
- * in Java
+ * Base class for IvyDependencyManager with some logic implemented in Java.
  *
  * @author Graeme Rocher
  * @since 1.3
  */
 @SuppressWarnings("serial")
-abstract public class AbstractIvyDependencyManager {
+public abstract class AbstractIvyDependencyManager {
 
-   /*
-    * Out of the box Ivy configurations are:
-    *
-    * - build: Dependencies for the build system only
-    * - compile: Dependencies for the compile step
-    * - runtime: Dependencies needed at runtime but not for compilation (see above)
-    * - test: Dependencies needed for testing but not at runtime (see above)
-    * - provided: Dependencies needed at development time, but not during WAR deployment
-    */
+    /*
+     * Out of the box Ivy configurations are:
+     *
+     * - build: Dependencies for the build system only
+     * - compile: Dependencies for the compile step
+     * - runtime: Dependencies needed at runtime but not for compilation (see above)
+     * - test: Dependencies needed for testing but not at runtime (see above)
+     * - provided: Dependencies needed at development time, but not during WAR deployment
+     */
     public static Configuration BUILD_CONFIGURATION  = new Configuration("build",
                                                                 Configuration.Visibility.PUBLIC,
                                                                 "Build system dependencies",
@@ -71,44 +80,32 @@ abstract public class AbstractIvyDependencyManager {
                                                                 "Dependencies provided by the container",
                                                                 new String[]{"default"},
                                                                 true, null);
-    
+
     public static Configuration DOCS_CONFIGURATION = new Configuration("docs",
             Configuration.Visibility.PUBLIC,
             "Dependencies for the documenation engine",
             new String[]{"build"},
             true, null);
-    
 
-    public static List<Configuration> ALL_CONFIGURATIONS = new ArrayList<Configuration>() {{
-        add(BUILD_CONFIGURATION);
-        add(COMPILE_CONFIGURATION);
-        add(RUNTIME_CONFIGURATION);
-        add(TEST_CONFIGURATION);
-        add(PROVIDED_CONFIGURATION);
-        add(DOCS_CONFIGURATION);
+    public static List<Configuration> ALL_CONFIGURATIONS = Arrays.asList(
+            BUILD_CONFIGURATION,
+            COMPILE_CONFIGURATION,
+            RUNTIME_CONFIGURATION,
+            TEST_CONFIGURATION,
+            PROVIDED_CONFIGURATION,
+            DOCS_CONFIGURATION);
+
+    Map<String, List<String>> configurationMappings = new HashMap<String, List<String>>() {{
+       put("runtime", Arrays.asList("runtime(*)", "master(*)"));
+       put("build", Arrays.asList("default"));
+       put("compile", Arrays.asList("'compile(*)", "master(*)"));
+       put("provided", Arrays.asList("'compile(*)", "master(*)"));
+       put("docs", Arrays.asList("'compile(*)", "master(*)"));
+       put("test", Arrays.asList("''runtime(*)'(*)", "master(*)"));
     }};
 
-    Map<String, List> configurationMappings = new HashMap<String, List>() {{
-        put("runtime", new ArrayList<String>() {{
-            add("runtime(*)"); add("master(*)");
-        }});
-        put("build", new ArrayList<String>() {{
-            add("default");
-        }});
-        put("compile", new ArrayList<String>() {{
-            add("'compile(*)"); add("master(*)");
-        }});
-        put("provided", new ArrayList<String>() {{
-            add("'compile(*)"); add("master(*)");
-        }});
-        put("docs", new ArrayList<String>() {{
-            add("'compile(*)"); add("master(*)");
-        }});        
-        put("test", new ArrayList<String>() {{
-            add("''runtime(*)'(*)"); add("master(*)");
-        }});
-    }};
-    protected String[] configurationNames = configurationMappings.keySet().toArray(new String[configurationMappings.size()]);
+    protected String[] configurationNames = configurationMappings.keySet().toArray(
+            new String[configurationMappings.size()]);
     protected Set<ModuleId> modules = new HashSet<ModuleId>();
     protected Set<ModuleRevisionId> dependencies = new HashSet<ModuleRevisionId>();
     protected Set<DependencyDescriptor> dependencyDescriptors = new HashSet<DependencyDescriptor>();
@@ -117,32 +114,28 @@ abstract public class AbstractIvyDependencyManager {
     protected Set<String> metadataRegisteredPluginNames = new HashSet<String>();
     protected Map<String, Collection<ModuleRevisionId>> orgToDepMap = new HashMap<String, Collection<ModuleRevisionId>>();
 
-
-    protected Map<String, DependencyDescriptor> pluginNameToDescriptorMap = new ConcurrentHashMap<String, DependencyDescriptor>();
+    protected Map<String, DependencyDescriptor> pluginNameToDescriptorMap =
+        new ConcurrentHashMap<String, DependencyDescriptor>();
     protected String applicationName;
     protected String applicationVersion;
 
     /**
-    * Obtains a set of dependency descriptors defined in the project
+     * Obtains a set of dependency descriptors defined in the project
      */
     Set<DependencyDescriptor> getDependencyDescriptors() {
         return dependencyDescriptors;
-    };
+    }
 
-    
     public Set<String> getMetadataRegisteredPluginNames() {
-		return metadataRegisteredPluginNames;
-	}
+        return metadataRegisteredPluginNames;
+    }
 
+    public void setMetadataRegisteredPluginNames(Set<String> metadataRegisteredPluginNames) {
+        this.metadataRegisteredPluginNames = metadataRegisteredPluginNames;
+    }
 
-	public void setMetadataRegisteredPluginNames(
-			Set<String> metadataRegisteredPluginNames) {
-		this.metadataRegisteredPluginNames = metadataRegisteredPluginNames;
-	}
-
-
-	/**
-    * Obtains a set of plugin dependency descriptors defined in the project
+    /**
+     * Obtains a set of plugin dependency descriptors defined in the project
      */
     Set<DependencyDescriptor> getPluginDependencyDescriptors() {
         return pluginDependencyDescriptors;
@@ -168,7 +161,6 @@ abstract public class AbstractIvyDependencyManager {
      */
     public Set<ModuleRevisionId> getDependencies() { return this.dependencies; }
 
-
     public String getApplicationName() {
         return applicationName;
     }
@@ -189,7 +181,7 @@ abstract public class AbstractIvyDependencyManager {
         return configurationNames;
     }
 
-    public Map<String, List> getConfigurationMappings() {
+    public Map<String, List<String>> getConfigurationMappings() {
         return configurationMappings;
     }
 
@@ -213,7 +205,7 @@ abstract public class AbstractIvyDependencyManager {
         modules.add(revisionId.getModuleId());
         dependencies.add(revisionId);
         final String org = revisionId.getOrganisation();
-        if(orgToDepMap.containsKey(org)) {
+        if (orgToDepMap.containsKey(org)) {
             orgToDepMap.get(org).add(revisionId);
         }
         else {
@@ -221,9 +213,7 @@ abstract public class AbstractIvyDependencyManager {
             deps.add(revisionId);
             orgToDepMap.put(org, deps);
         }
-
     }
-
 
     protected ArtifactId createExcludeArtifactId(String excludeName) {
         return createExcludeArtifactId(excludeName, PatternMatcher.ANY_EXPRESSION);
@@ -242,7 +232,7 @@ abstract public class AbstractIvyDependencyManager {
      * @param dd The DependencyDescriptor instance
      */
     public void addDependencyDescriptor(DependencyDescriptor dd) {
-        if(dd != null) {
+        if (dd != null) {
             dependencyDescriptors.add(dd);
             addDependency(dd.getDependencyRevisionId());
         }
@@ -260,23 +250,28 @@ abstract public class AbstractIvyDependencyManager {
             DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance("org.grails.internal", applicationName, applicationVersion));
 
         // TODO: make configurations extensible
-        moduleDescriptor.addConfiguration( BUILD_CONFIGURATION );
-        moduleDescriptor.addConfiguration( COMPILE_CONFIGURATION );
-        moduleDescriptor.addConfiguration( RUNTIME_CONFIGURATION );
-        moduleDescriptor.addConfiguration( TEST_CONFIGURATION );
-        moduleDescriptor.addConfiguration( PROVIDED_CONFIGURATION );
-        moduleDescriptor.addConfiguration( DOCS_CONFIGURATION );
+        moduleDescriptor.addConfiguration(BUILD_CONFIGURATION);
+        moduleDescriptor.addConfiguration(COMPILE_CONFIGURATION);
+        moduleDescriptor.addConfiguration(RUNTIME_CONFIGURATION);
+        moduleDescriptor.addConfiguration(TEST_CONFIGURATION);
+        moduleDescriptor.addConfiguration(PROVIDED_CONFIGURATION);
+        moduleDescriptor.addConfiguration(DOCS_CONFIGURATION);
         return moduleDescriptor;
     }
 
     public boolean isExcludedFromPlugin(String plugin, String dependencyName) {
         DependencyDescriptor dd = pluginNameToDescriptorMap.get(plugin);
-        if(dd == null) return false;
-        if(!dd.isTransitive()) return true;
-        else {
-            ArtifactId aid = createExcludeArtifactId(dependencyName);
-            return isExcludedFromPlugin(dd, aid);
+        if (dd == null) {
+            return false;
         }
+
+        if (!dd.isTransitive()) {
+            return true;
+        }
+
+
+        ArtifactId aid = createExcludeArtifactId(dependencyName);
+        return isExcludedFromPlugin(dd, aid);
     }
 
     public boolean isExcludedFromPlugin(DependencyDescriptor currentPlugin, ArtifactId dependency) {
@@ -286,12 +281,11 @@ abstract public class AbstractIvyDependencyManager {
     public Set<String> getPluginExcludes(String plugin) {
         Set<String> excludes = new HashSet<String>();
         DependencyDescriptor dd = pluginNameToDescriptorMap.get(plugin);
-        if(dd != null)  {
-            for(ExcludeRule er : dd.getAllExcludeRules()) {
-              excludes.add(er.getId().getName());
+        if (dd != null)  {
+            for (ExcludeRule er : dd.getAllExcludeRules()) {
+                excludes.add(er.getId().getName());
             }
         }
         return excludes;
     }
-
 }

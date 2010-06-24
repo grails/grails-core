@@ -1,18 +1,18 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
@@ -26,9 +26,8 @@ import org.apache.ivy.plugins.repository.Resource
 import groovy.util.slurpersupport.GPathResult
 
 /**
- *
- * A class with utility methods for resolving plugin zips and information
- * used in conjunction with an IvyDependencyManager instance
+ * Utility methods for resolving plugin zips and information
+ * used in conjunction with an IvyDependencyManager instance.
  *
  * @author Graeme Rocher
  * @since 1.3
@@ -40,19 +39,19 @@ final class PluginResolveEngine {
     Closure messageReporter = { it ? println(it) : println() }
 
     PluginResolveEngine(IvyDependencyManager dependencyManager, BuildSettings settings) {
-        this.dependencyManager = dependencyManager;
-        this.settings = settings;
+        this.dependencyManager = dependencyManager
+        this.settings = settings
     }
 
     IvyDependencyManager createFreshDependencyManager() {
-        IvyDependencyManager dm = new IvyDependencyManager(dependencyManager.applicationName, dependencyManager.applicationVersion ?: "0.1", settings)
+        IvyDependencyManager dm = new IvyDependencyManager(dependencyManager.applicationName,
+            dependencyManager.applicationVersion ?: "0.1", settings)
         dm.chainResolver = dependencyManager.chainResolver
-        if(dependencyManager.logger) {            
+        if (dependencyManager.logger) {
             dm.logger = dependencyManager.logger
         }
         return dm
     }
-
 
     /**
      * Resolves a list of plugins and produces a ResolveReport
@@ -64,7 +63,7 @@ final class PluginResolveEngine {
         IvyDependencyManager newManager = createFreshDependencyManager()
         newManager.parseDependencies {
             plugins {
-                for(ModuleRevisionId id in pluginsToInstall) {
+                for (ModuleRevisionId id in pluginsToInstall) {
                     runtime group:id.organisation ?: "org.grails.plugins", name:id.name, version:id.revision
                 }
             }
@@ -91,20 +90,18 @@ final class PluginResolveEngine {
         messageReporter "Resolving plugin ${pluginName}. Please wait..."
         messageReporter()
         def report = dependencyManager.resolvePluginDependencies(scope,args)
-        if(report.hasError()) {
+        if (report.hasError()) {
             messageReporter "Error resolving plugin ${resolveArgs}."
             return null
         }
-        else {
-            def artifactReport = report.allArtifactsReports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-            if(artifactReport) {
-                return artifactReport.localFile
-            }
-            else {
-                messageReporter "Error resolving plugin ${resolveArgs}. Plugin not found."
-                return null
-            }
+
+        def artifactReport = report.allArtifactsReports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
+        if (artifactReport) {
+            return artifactReport.localFile
         }
+
+        messageReporter "Error resolving plugin ${resolveArgs}. Plugin not found."
+        return null
     }
 
     def createResolveArguments(String pluginName, String pluginVersion) {
@@ -131,12 +128,12 @@ final class PluginResolveEngine {
             }
         }
         def report = dependencyManager.resolvePluginDependencies('runtime', [download:false])
-        if(!report.hasError() && report.allArtifactsReports) {
+        if (!report.hasError() && report.allArtifactsReports) {
             ArtifactOrigin origin = report.allArtifactsReports.origin.first()
             def location = origin.location
             def parent = location[0..location.lastIndexOf('/')-1]
-            for(DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
-                if(dr instanceof RepositoryResolver) {
+            for (DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
+                if (dr instanceof RepositoryResolver) {
                     Repository r = dr.repository
 
                     def pluginFile = "$parent/plugin.xml"
@@ -149,7 +146,7 @@ final class PluginResolveEngine {
                         }
                         finally {
                             input.close()
-                        }                        
+                        }
                     }
                     catch(e) {
                         // ignore
@@ -159,7 +156,7 @@ final class PluginResolveEngine {
         }
 
         // if the plugin.xml was never found, try via maven-style attachments using a classifier
-        if(!report.hasError()) {
+        if (!report.hasError()) {
             resolveArgs.classifier = "plugin"
             dependencyManager = createFreshDependencyManager()
 
@@ -171,13 +168,11 @@ final class PluginResolveEngine {
 
             report = dependencyManager.resolvePluginDependencies()
 
-            if(report.hasError() || !report.allArtifactsReports) {
+            if (report.hasError() || !report.allArtifactsReports) {
                 return null
             }
-            else {
-                return new XmlSlurper().parse(report.allArtifactsReports.localFile.first())
-            }
-        }
 
+            return new XmlSlurper().parse(report.allArtifactsReports.localFile.first())
+        }
     }
 }

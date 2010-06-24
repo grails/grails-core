@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,18 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import groovy.lang.Writable;
 import groovy.text.Template;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.BeansException;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -35,6 +24,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeansException;
 
 /**
  * A tag that attempts to render an input for a bean property into an appropriate component based on the type.
@@ -62,67 +62,71 @@ public class RenderInputTag extends RequestContextTag {
 
     private static final String BEAN_PROPERTY = "bean";
 
+    @SuppressWarnings("hiding")
     private Object bean;
     private String property;
     private BeanWrapper beanWrapper;
+    @SuppressWarnings("unchecked")
     private Map constrainedProperties = Collections.EMPTY_MAP;
-    private Map cachedUris = new ConcurrentHashMap();
+    private Map<Class<?>, String> cachedUris = new ConcurrentHashMap<Class<?>, String>();
 
     protected RenderInputTag() {
         super(TAG_NAME);
     }
 
-
+    @Override
     protected void doStartTagInternal() {
 
-         GrailsDomainClass domainClass = (GrailsDomainClass) this.grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-             bean.getClass().getName());
-         if(domainClass != null) {
-             this.constrainedProperties = domainClass.getConstrainedProperties();
-         }
-        this.beanWrapper = new BeanWrapperImpl(bean);
+        GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(
+                DomainClassArtefactHandler.TYPE, bean.getClass().getName());
+        if (domainClass != null) {
+            constrainedProperties = domainClass.getConstrainedProperties();
+        }
+        beanWrapper = new BeanWrapperImpl(bean);
         PropertyDescriptor pd = null;
         try {
-            pd = this.beanWrapper.getPropertyDescriptor(property);
-        } catch (BeansException e) {
-            throw new GrailsTagException("Property ["+property+"] is not a valid bean property in tag [renderInput]:" + e.getMessage(),e);
+            pd = beanWrapper.getPropertyDescriptor(property);
         }
-        GroovyPagesTemplateEngine engine = (GroovyPagesTemplateEngine)servletContext.getAttribute(GrailsApplicationAttributes.GSP_TEMPLATE_ENGINE);
+        catch (BeansException e) {
+            throw new GrailsTagException("Property [" + property +
+                    "] is not a valid bean property in tag [renderInput]:" + e.getMessage(),e);
+        }
+        GroovyPagesTemplateEngine engine = (GroovyPagesTemplateEngine)servletContext.getAttribute(
+                GrailsApplicationAttributes.GSP_TEMPLATE_ENGINE);
 
         Template t = null;
         try {
             String uri = findUriForType(pd.getPropertyType());
             t = engine.createTemplate(uri);
-            if(t == null)
-                throw new GrailsTagException("Type ["+pd.getPropertyType()+"] is unsupported by tag [scaffold]. No template found.");
+            if (t == null) {
+                throw new GrailsTagException("Type [" + pd.getPropertyType() +
+                        "] is unsupported by tag [scaffold]. No template found.");
+            }
 
-            Map binding = new HashMap();
+            Map<String, Object> binding = new HashMap<String, Object>();
             binding.put("name", pd.getName());
-            binding.put("value",this.beanWrapper.getPropertyValue(property));
-            if(this.constrainedProperties.containsKey(property)) {
-                binding.put("constraints",this.constrainedProperties.get(property));
+            binding.put("value",beanWrapper.getPropertyValue(property));
+            if (constrainedProperties.containsKey(property)) {
+                binding.put("constraints",constrainedProperties.get(property));
             }
             else {
                 binding.put("constraints",null);
             }
-            Writable  w = t.make(binding);
-            w.writeTo(out);
-
-        } catch (IOException e) {
-            throw new GrailsTagException("I/O error writing tag ["+getName()+"] to writer: " + e.getMessage(),e);
+            t.make(binding).writeTo(out);
         }
-
-
+        catch (IOException e) {
+            throw new GrailsTagException("I/O error writing tag [" + getName() +
+                    "] to writer: " + e.getMessage(),e);
+        }
     }
 
+    @Override
     protected void doEndTagInternal() {
         // do nothing
     }
 
     public boolean isDynamicAttribute(String attr) {
-        if(BEAN_PROPERTY.equals(attr))
-            return true;
-        return false;
+        return BEAN_PROPERTY.equals(attr);
     }
 
     public Object getBean() {
@@ -141,32 +145,30 @@ public class RenderInputTag extends RequestContextTag {
         this.property = property;
     }
 
+    public String findUriForType(Class<?> type) throws MalformedURLException {
 
-   public String findUriForType(Class type)
-            throws MalformedURLException {
-
-        if(LOG.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("[JspRenderInputTag] Attempting to retrieve template for type ["+type+"]");
         }
         String templateUri;
-        if(cachedUris.containsKey(type)) {
-            templateUri = (String)cachedUris.get(type);
+        if (cachedUris.containsKey(type)) {
+            templateUri = cachedUris.get(type);
         }
         else {
             templateUri = locateTemplateUrl(type);
-            cachedUris.put(type,templateUri);
+            cachedUris.put(type, templateUri);
         }
-       return templateUri;
-   }
+        return templateUri;
+    }
 
-    private String locateTemplateUrl(Class type)
-                throws MalformedURLException {
-        if(type == Object.class)
+    private String locateTemplateUrl(Class<?> type) throws MalformedURLException {
+        if (type == Object.class) {
             return null;
+        }
 
         String uri = PATH_PREFIX + type.getName() + PATH_SUFFIX;
         URL returnUrl = servletContext.getResource(uri);
-        if(returnUrl == null) {
+        if (returnUrl == null) {
             return locateTemplateUrl(type.getSuperclass());
         }
         return uri;
