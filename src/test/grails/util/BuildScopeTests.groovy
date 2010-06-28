@@ -1,10 +1,10 @@
 package grails.util
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class BuildScopeTests extends GroovyTestCase{
+class BuildScopeTests extends GroovyTestCase {
 
     protected void tearDown() {
         System.setProperty(BuildScope.KEY, "")
@@ -18,9 +18,7 @@ public class BuildScopeTests extends GroovyTestCase{
         assertEquals BuildScope.WAR, BuildScope.getCurrent()
     }
 
-
     void testIsValid() {
-
 
         assertTrue BuildScope.isValid("war")
         assertTrue BuildScope.isValid("test")
@@ -31,7 +29,5 @@ public class BuildScopeTests extends GroovyTestCase{
         assertTrue BuildScope.isValid("war")
         assertTrue BuildScope.isValid("war", "test")
         assertFalse BuildScope.isValid("test")
-
     }
-
 }

@@ -4,14 +4,12 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 
 /**
-* @author Graeme Rocher
-* @since 1.0
-*
-* Created: Jan 31, 2008
-*/
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class RestfulReverseUrlRenderingTests extends AbstractGrailsTagTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass '''
 class UrlMappings {
     static mappings = {
@@ -27,33 +25,23 @@ class BookController {
 '''
     }
 
-
     void testLinkTagRendering() {
         def template = '<g:link controller="book">create</g:link>'
-
         assertOutputEquals '<a href="/book">create</a>', template
     }
 
     void testFormTagRendering() {
         def template = '<g:form controller="book" name="myForm" method="POST">save</g:form>'
-
         assertOutputEquals '<form action="/book" method="post" name="myForm" id="myForm" >save</form>', template
-
     }
 
     void testFormTagRenderingWithControllerAndAction() {
         def template = '<g:form controller="book" action="save" name="myForm" method="POST">save</g:form>'
-
         assertOutputEquals '<form action="/book" method="post" name="myForm" id="myForm" >save</form>', template
-
     }
 
     void testFormTagRenderGETRequest() {
         def template = '<g:form controller="book" name="myForm" method="GET">create</g:form>'
-
         assertOutputEquals '<form action="/book" method="get" name="myForm" id="myForm" >create</form>', template
-
     }
-
-
 }

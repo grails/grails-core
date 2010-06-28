@@ -28,27 +28,25 @@ abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
     GrailsWebRequest webRequest
     MockHttpServletRequest request
     MockHttpServletResponse response
-    GroovyClassLoader gcl = new GroovyClassLoader(this.getClass().classLoader)
-    GrailsApplication ga;
+    GroovyClassLoader gcl = new GroovyClassLoader(getClass().classLoader)
+    GrailsApplication ga
     def mockManager
-    MockApplicationContext ctx;
-    ApplicationContext appCtx;
+    MockApplicationContext ctx
+    ApplicationContext appCtx
     def originalHandler
 
-    protected void onSetUp() {
-    }
+    protected void onSetUp() {}
 
     protected void setUp() {
-        super.setUp();
+        super.setUp()
 
         ExpandoMetaClass.enableGlobally()
 
+        GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
 
-        GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle();
-
-        ctx = new MockApplicationContext();
-        onSetUp();
-        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl);
+        ctx = new MockApplicationContext()
+        onSetUp()
+        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
         mockManager = new MockGrailsPluginManager(ga)
         ctx.registerMockBean("manager", mockManager)
         PluginManagerHolder.setPluginManager(mockManager)
@@ -68,20 +66,20 @@ abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
 
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
-        mockManager.doArtefactConfiguration();
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager());
+        mockManager.doArtefactConfiguration()
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
         ga.initialise()
-        ga.setApplicationContext(ctx);
+        ga.setApplicationContext(ctx)
         ApplicationHolder.application = ga
 
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
-        def springConfig = new WebRuntimeSpringConfiguration(ctx) 
+        def springConfig = new WebRuntimeSpringConfiguration(ctx)
         servletContext = ctx.getServletContext()
-        
+
         springConfig.servletContext = servletContext
 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
@@ -98,47 +96,28 @@ abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
         webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
         request = webRequest.currentRequest
         request.characterEncoding = "utf-8"
-        response = webRequest.currentResponse        
+        response = webRequest.currentResponse
     }
 
     protected void tearDown() {
-        servletContext = null
-        webRequest = null
-        request = null
-        response = null
-        gcl = null
-        ga = null
-        mockManager = null
-        ctx = null
-        appCtx = null
-
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()
 
         ApplicationHolder.application = null
         PluginManagerHolder.setPluginManager(null)
 
-        originalHandler = null
-
         super.tearDown()
     }
 
-
-
     void runTest(Closure callable) {
         callable.call()
-	}
+    }
 
-	protected MockServletContext createMockServletContext() {
-		return new MockServletContext();
-	}
+    protected MockServletContext createMockServletContext() { new MockServletContext() }
 
-	protected MockApplicationContext createMockApplicationContext() {
-		return new MockApplicationContext();
-	}
+    protected MockApplicationContext createMockApplicationContext() { new MockApplicationContext() }
 
-	protected Resource[] getResources(String pattern) throws IOException {
-		return new PathMatchingResourcePatternResolver().getResources(pattern);
-	}
-
+    protected Resource[] getResources(String pattern) {
+        new PathMatchingResourcePatternResolver().getResources(pattern)
+    }
 }

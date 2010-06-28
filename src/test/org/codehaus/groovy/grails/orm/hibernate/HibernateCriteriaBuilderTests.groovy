@@ -7,8 +7,6 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Jan 14, 2009
  */
 class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
@@ -544,7 +542,6 @@ class CriteriaBuilderTestClass2 {
                 "}", "Test1","CriteriaBuilderTestClass")
 
         assertEquals 3, results.size()
-        println results
     }
 
     void testHibernateCriteriaBuilder() {
@@ -860,7 +857,6 @@ class CriteriaBuilderTestClass2 {
                         "order('firstName', 'asc');" +
                     "}" +
                 "}", "Test1","CriteriaBuilderTestClass")
-        println results.get(0)
    }
 
    void testOrderDesc() {
@@ -889,8 +885,6 @@ class CriteriaBuilderTestClass2 {
                         "order('firstName','desc');" +
                     "}" +
                 "}", "Test1","CriteriaBuilderTestClass")
-
-        println results.get(0)
    }
 
    void testEqProperty() {

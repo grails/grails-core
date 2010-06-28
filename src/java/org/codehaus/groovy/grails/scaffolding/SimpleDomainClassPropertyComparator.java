@@ -27,20 +27,20 @@ import org.springframework.util.Assert;
 @SuppressWarnings("unchecked")
 public class SimpleDomainClassPropertyComparator implements Comparator {
 
-	private GrailsDomainClass domainClass;
+    private GrailsDomainClass domainClass;
 
-	public SimpleDomainClassPropertyComparator(GrailsDomainClass domainClass) {
-		Assert.notNull(domainClass, "Argument 'domainClass' is required!");
-		this.domainClass = domainClass;
-	}
+    public SimpleDomainClassPropertyComparator(GrailsDomainClass domainClass) {
+        Assert.notNull(domainClass, "Argument 'domainClass' is required!");
+        this.domainClass = domainClass;
+    }
 
-	public int compare(Object o1, Object o2) {
-		if (o1.equals(domainClass.getIdentifier())) {
-			return -1;
-		}
-		if (o2.equals(domainClass.getIdentifier())) {
-			return 1;
-		}
-		return 0;
-	}
+    public int compare(Object o1, Object o2) {
+        if (o1.equals(domainClass.getIdentifier())) {
+            return -1;
+        }
+        if (o2.equals(domainClass.getIdentifier())) {
+            return 1;
+        }
+        return 0;
+    }
 }

@@ -1,19 +1,16 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- *
- * Created: Nov 27, 2007
- */
 package org.codehaus.groovy.grails.web.converters
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import groovy.util.ConfigSlurper
 import org.codehaus.groovy.grails.web.mime.MimeType
 
-class AutoParamsJSONMarshallingTests extends AbstractGrailsControllerTests {      
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
+class AutoParamsJSONMarshallingTests extends AbstractGrailsControllerTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         def config = new ConfigSlurper().parse( """
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
@@ -55,18 +52,15 @@ class AutoParamsJSONMarshallingAuthor {
     static get(Object id) {
         new AutoParamsJSONMarshallingAuthor(id:id.toLong())
     }
-
 }
 '''
     }
 
-    public void tearDown() {
-        super.tearDown();
+    protected void tearDown() {
+        super.tearDown()
         ConfigurationHolder.setConfig null
         MimeType.reset()
     }
-
-
 
     void testJSONMarshallingIntoParamsObject() {
         def controller = ga.getControllerClass("TestController").newInstance()
@@ -74,9 +68,9 @@ class AutoParamsJSONMarshallingAuthor {
         controller.request.contentType = "application/json"
         controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
 
-		webRequest.informParameterCreationListeners()
+        webRequest.informParameterCreationListeners()
         def model = controller.create()
-        
+
         assert model
         assert model.book
         assertEquals "The Stand", model.book.title
@@ -86,6 +80,4 @@ class AutoParamsJSONMarshallingAuthor {
         // "id" should not bind because we are binding to a domain class.
         assertNull model.book.id
     }
-
-
 }

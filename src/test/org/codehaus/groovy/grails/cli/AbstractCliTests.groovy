@@ -12,7 +12,7 @@ abstract class AbstractCliTests extends GroovyTestCase {
     String scriptName
 
     protected appBase = "test/cliTestApp"
-	protected ant = new AntBuilder()
+    protected ant = new AntBuilder()
 
     private GantBinding binding
     private ClassLoader savedContextLoader
@@ -32,14 +32,14 @@ abstract class AbstractCliTests extends GroovyTestCase {
             name = name[0..-6]
         }
 
-        this.scriptName = name
+        scriptName = name
     }
 
     AbstractCliTests(String scriptName) {
         this.scriptName = scriptName
     }
 
-    void setUp() {
+    protected void setUp() {
         ExpandoMetaClass.enableGlobally()
         ant.delete(dir:appBase, failonerror:false)
         System.setProperty("base.dir", appBase)
@@ -47,8 +47,8 @@ abstract class AbstractCliTests extends GroovyTestCase {
 
         savedContextLoader = Thread.currentThread().contextClassLoader
     }
-	
-	void tearDown() {
+
+    protected void tearDown() {
         Thread.currentThread().contextClassLoader = savedContextLoader
 
         ant.delete(dir:appBase, failonerror:false)
@@ -59,28 +59,28 @@ abstract class AbstractCliTests extends GroovyTestCase {
         ConfigurationHolder.config = null
         PluginManagerHolder.pluginManager = null
         ant = null
-	}
+    }
 
-	protected String createTestApp(appName = "testapp") {
+    protected String createTestApp(appName = "testapp") {
         // Pass the name of the test project to the create-app script.
         System.setProperty("grails.cli.args", appName)
 
         // Create the application.
-	    gantRun("CreateApp_")
+        gantRun("CreateApp_")
 
-	    // Update the base directory to the application dir.
+        // Update the base directory to the application dir.
         def appDir = appBase + File.separator + appName
         System.setProperty("base.dir", appDir)
 
-		// Finally, clear the CLI arguments.
+        // Finally, clear the CLI arguments.
         System.setProperty("grails.cli.args", "")
 
         // Return the path to the new app.
         return appDir
     }
 
-	protected void gantRun() {
-        gantRun(this.scriptName)
+    protected void gantRun() {
+        gantRun(scriptName)
     }
 
     protected void gantRun(String scriptName) {
@@ -102,8 +102,7 @@ abstract class AbstractCliTests extends GroovyTestCase {
         settings.projectPluginsDir = new File("$projectDir/plugins")
         settings.globalPluginsDir = new File("$workDir/global-plugins")
 
-        // Set up a binding for Gant and put some essential variables
-        // in there.
+        // Set up a binding for Gant and put some essential variables in there.
         binding = new GantBinding()
         binding.with {
             // Core properties.
@@ -129,7 +128,7 @@ abstract class AbstractCliTests extends GroovyTestCase {
             globalPluginsDirPath = settings.globalPluginsDir.path
 
             // Closure for specifying script dependencies.
-            grailsScript = { return new File("./scripts/${it}.groovy") }
+            grailsScript = { new File("./scripts/${it}.groovy") }
         }
 
         BuildSettingsHolder.settings = settings
@@ -142,7 +141,5 @@ abstract class AbstractCliTests extends GroovyTestCase {
         gant.processTargets()
     }
 
-    protected GantBinding getBinding() {
-        return this.binding
-    }
+    protected GantBinding getBinding() { binding }
 }

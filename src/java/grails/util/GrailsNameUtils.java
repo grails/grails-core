@@ -22,13 +22,12 @@ import java.util.Locale;
 /**
  * Utility methods for converting between different name types,
  * for example from class names -> property names and vice-versa. The
- * key aspect of this class is that it has no dependencies outside the
- * JDK! 
+ * key aspect of this class is that it has no dependencies outside the JDK!
  */
 public class GrailsNameUtils {
 
     private static final String PROPERTY_SET_PREFIX = "set";
-    
+
     /**
      * Retrieves the name of a setter for the specified property name
      * @param propertyName The property name
@@ -37,7 +36,7 @@ public class GrailsNameUtils {
     public static String getSetterName(String propertyName) {
         return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
     }
-    
+
     /**
      * Calculate the name for a getter method to retrieve the specified property
      * @param propertyName
@@ -47,7 +46,7 @@ public class GrailsNameUtils {
         return "get" + Character.toUpperCase(propertyName.charAt(0))
             + propertyName.substring(1);
     }
-    
+
     /**
      * Returns the class name for the given logical name and trailing name. For example "person" and "Controller" would evaluate to "PersonController"
      *
@@ -89,7 +88,7 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Converts foo-bar into FooBar. Empty and null strings are returned as-is. 
+     * Converts foo-bar into FooBar. Empty and null strings are returned as-is.
      *
      * @param name The lower case hyphen separated name
      * @return The class name equivalent.

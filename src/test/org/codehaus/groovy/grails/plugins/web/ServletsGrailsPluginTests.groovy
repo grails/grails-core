@@ -9,11 +9,10 @@ import org.springframework.web.util.*
 
 class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
+    protected void onSetUp() {
 
-	void onSetUp() {
-
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
 
         def remove = GroovySystem.metaClassRegistry.&removeMetaClass
 
@@ -22,39 +21,34 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         remove MockHttpServletResponse
         remove MockHttpServletRequest
     }
-	
-	void testIsXhrRequest() {
-		def request = new MockHttpServletRequest()
-		
-		assert !request.xhr : "This should not be an XHR request"
-		
-		request.addHeader "X-Requested-With", "XMLHttpRequest"
-		
-		assert request.xhr : "This should be an XHR request"
-		
-		request = new MockHttpServletRequest()
-		request.addHeader "X-Requested-With", "Ext.basex"
-		assert request.xhr : "This should be an XHR request"
-	}
-	
-	void testServletContextObject() {
+
+    void testIsXhrRequest() {
+        def request = new MockHttpServletRequest()
+        assert !request.xhr : "This should not be an XHR request"
+
+        request.addHeader "X-Requested-With", "XMLHttpRequest"
+        assert request.xhr : "This should be an XHR request"
+
+        request = new MockHttpServletRequest()
+        request.addHeader "X-Requested-With", "Ext.basex"
+        assert request.xhr : "This should be an XHR request"
+    }
+
+    void testServletContextObject() {
         def context = new MockServletContext()
 
-       context["foo"] = "bar"
+        context["foo"] = "bar"
         assertEquals "bar", context["foo"]
 
         context.foo = "fred"
         assertEquals "fred", context.foo
-
-
-        assertEquals "fred", context.getAttribute('foo')        
+        assertEquals "fred", context.getAttribute('foo')
 
         context.removeAttribute("foo")
     }
 
     void testHttpSessionObject() {
         def session = new MockHttpSession()
-
         assert session.creationTime
 
         session["foo"] = "bar"
@@ -74,22 +68,19 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         response << "foo"
         response << 10
 
-        assertEquals "foo10", response.contentAsString    
+        assertEquals "foo10", response.contentAsString
     }
-
 
     void testGetForwardURI() {
         def request = new MockHttpServletRequest()
         request.requestURI = "/foo/bar"
-
         assertEquals "/foo/bar", request.forwardURI
 
         request[WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE] = "/bar/foo"
-
-        assertEquals "/bar/foo", request.forwardURI            
+        assertEquals "/bar/foo", request.forwardURI
     }
 
-	void testHttpMethodMethods() {
+    void testHttpMethodMethods() {
         def request = new MockHttpServletRequest()
 
         request.method = "POST"
@@ -108,7 +99,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
     void testAccessRequestAttributes() {
         def request = new MockHttpServletRequest()
 
-        request["foo"] = "bar"        
+        request["foo"] = "bar"
         assertEquals "bar", request["foo"]
         assertEquals "bar", request.foo
 
@@ -116,7 +107,6 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
         assertEquals "foo", request["foo"]
         assertEquals "foo", request.foo
-
     }
 
     void testEachMethod() {
@@ -126,12 +116,9 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         request["bar"] = "foo"
 
         def list = []
-        request.each { k,v ->
-            list << v
-        }
+        request.each { k,v -> list << v }
         assert list.contains("bar")
         assert list.contains("foo")
-
     }
 
     void testFindAllMethod() {
@@ -142,7 +129,6 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         request["foobar"] = "yes!"
 
         def results = request.findAll {
-            println it
             it.key.toString().startsWith("foo")
         }
 

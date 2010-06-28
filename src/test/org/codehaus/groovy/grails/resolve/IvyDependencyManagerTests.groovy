@@ -22,15 +22,14 @@ import org.apache.ivy.core.module.id.ModuleId
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class IvyDependencyManagerTests extends GroovyTestCase{
+class IvyDependencyManagerTests extends GroovyTestCase {
 
     protected void setUp() {
         System.metaClass.static.getenv = { String name -> "." }
     }
 
     protected void tearDown() {
-        GroovySystem.metaClassRegistry.removeMetaClass(System) 
+        GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
     void testChanging() {
@@ -38,28 +37,26 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"] ) {
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"]) {
                 changing = true
             }
         }
 
-
         def dep = manager.dependencyDescriptors.iterator().next()
         assert dep.changing
-
     }
+
     void testClassifier() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"])
         }
 
         ModuleRevisionId dep = manager.dependencies.iterator().next()
 
         assertEquals "source",dep.extraAttributes['classifier']
-
     }
 
     void testPluginResolve() {
@@ -76,7 +73,6 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         }
 
         def report = manager.resolvePluginDependencies()
-
     }
 
     void testCheckPluginDependencyScope() {
@@ -134,7 +130,6 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertEquals "quartz", dd.dependencyId.name
         assertEquals "0.5.6", dd.getDependencyRevisionId().revision
         assertEquals "runtime", dd.scope
-        
     }
 
     void testEbrResolver() {
@@ -148,8 +143,8 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         }
 
         assertEquals 2,manager.chainResolver.resolvers.size()
-
     }
+
     void testCredentials() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
@@ -164,12 +159,10 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         }
 
         def store = CredentialsStore.INSTANCE
-
         def creds = store.getCredentials('foo', 'bar')
 
         assertEquals 'test', creds.userName
         assertEquals 'pass', creds.passwd
-
     }
 
     void testUseBranch() {
@@ -177,44 +170,43 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"])
         }
 
         ModuleRevisionId dep = manager.dependencies.iterator().next()
-
         assertEquals "jdk14",dep.branch
     }
-    
+
     void testModuleConf(){
-       	def settings = new BuildSettings()
+        def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"] ){
-            	dependencyConfiguration("oscache-runtime")
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"]){
+                dependencyConfiguration("oscache-runtime")
             }
         }
 
         DependencyDescriptor dep = manager.dependencyDescriptors.iterator().next()
 
-				assertEquals 1, dep.getModuleConfigurations().length
-        def configs = dep.getDependencyConfigurations("runtime");
-				assertEquals 1, configs.length
+        assertEquals 1, dep.getModuleConfigurations().length
+        def configs = dep.getDependencyConfigurations("runtime")
+        assertEquals 1, configs.length
         assertEquals "oscache-runtime", configs[0]
     }
-    
+
     void testWithoutModuleConf(){
-       	def settings = new BuildSettings()
+        def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"])
         }
 
         DependencyDescriptor dep = manager.dependencyDescriptors.iterator().next()
 
-				def configs = dep.getDependencyConfigurations("runtime");
-				assertEquals 2, configs.length
+        def configs = dep.getDependencyConfigurations("runtime")
+        assertEquals 2, configs.length
         assertEquals "runtime(*)", configs[0]
         assertEquals "master(*)", configs[1]
     }
@@ -231,25 +223,18 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         }
 
         def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'oscache' }
-
-
         assert dd.exported : "should be an exported dependency"
 
         dd = manager.dependencyDescriptors.find { DependencyDescriptor d -> d.dependencyRevisionId.name == 'oscache2' }
-
         assert dd.exported : "should be an exported dependency"
 
         dd = manager.dependencyDescriptors.find { DependencyDescriptor d -> d.dependencyRevisionId.name == 'oscache3' }
-
         assert !dd.exported : "should be an exported dependency"
 
         dd = manager.dependencyDescriptors.find { DependencyDescriptor d -> d.dependencyRevisionId.name == 'oscache4' }
-
         assert !dd.exported : "should be an exported dependency"
 
-
         def list = manager.getExportedDependencyDescriptors('runtime')
-
         assertEquals 2, list.size()
     }
 
@@ -258,8 +243,8 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+            runtime([group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false])
             plugins {
                 runtime(":foo:1.5") {
                     excludes "junit"
@@ -282,17 +267,15 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertEquals "4.8.1", junit.id.revision
 
         def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'junit' }
-
     }
-
 
     void testConfigurePluginDependenciesWithExclude() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            runtime( [group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+            runtime([group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false])
             plugins {
                 runtime(":foo:1.0") {
                     excludes "junit"
@@ -314,18 +297,18 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
-        def springDMVersion = '2.0.0.M1'        
+        def springDMVersion = '2.0.0.M1'
         manager.parseDependencies {
-            build ("org.springframework.osgi:spring-osgi-core:$springDMVersion",
-                    "org.springframework.osgi:spring-osgi-extender:$springDMVersion",
-                    "org.springframework.osgi:spring-osgi-io:$springDMVersion",
-                    "org.springframework.osgi:spring-osgi-web:$springDMVersion",
-                    "org.springframework.osgi:spring-osgi-web-extender:$springDMVersion") {
-                transitive = false
-            }
+            build("org.springframework.osgi:spring-osgi-core:$springDMVersion",
+                  "org.springframework.osgi:spring-osgi-extender:$springDMVersion",
+                  "org.springframework.osgi:spring-osgi-io:$springDMVersion",
+                  "org.springframework.osgi:spring-osgi-web:$springDMVersion",
+                  "org.springframework.osgi:spring-osgi-web-extender:$springDMVersion") {
+                        transitive = false
+                    }
         }
-		
-		assertEquals 5, manager.listDependencies("build").size()
+
+        assertEquals 5, manager.listDependencies("build").size()
     }
 
     void testResolveApplicationDependencies() {
@@ -337,12 +320,11 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         // test simple exclude
         manager.parseDependencies {
             inherits "test"
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            test( [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+            test([group:"junit", name:"junit", version:"4.8.1", transitive:true])
         }
 
         manager.resolveApplicationDependencies()
-        
     }
 
     void testGetApplicationDependencies() {
@@ -354,15 +336,14 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         // test simple exclude
         manager.parseDependencies {
             inherits "test"
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false] )
-            test( [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+            test([group:"junit", name:"junit", version:"4.8.1", transitive:true])
         }
 
         assertEquals 2, manager.getApplicationDependencyDescriptors().size()
         assertEquals 1, manager.getApplicationDependencyDescriptors('runtime').size()
         assertEquals 1, manager.getApplicationDependencyDescriptors('test').size()
         assertEquals 0, manager.getApplicationDependencyDescriptors('build').size()
-
     }
 
     void testReadMavenPom() {
@@ -379,7 +360,6 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         def deps = manager.listDependencies("test")
         assertEquals 1, deps.size()
         assertEquals "junit", deps[0].moduleId.name
-
     }
 
     void testHasApplicationDependencies() {
@@ -400,13 +380,11 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
             inherits "test"
 
             runtime("opensymphony:foocache:2.4.1") {
-                     excludes 'jms'
+                excludes 'jms'
             }
-
         }
 
         assertTrue "application has dependencies!",manager.hasApplicationDependencies()
-
     }
 
     void testDynamicAddDependencyDescriptor() {
@@ -418,14 +396,14 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertEquals 1, manager.listDependencies("runtime").size()
     }
+
     void testSerializerToMarkup() {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
             test "org.grails:grails-test:1.2"
         }
-
 
         // test simple exclude
         manager.parseDependencies {
@@ -434,11 +412,11 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
                 grailsHome()
                 mavenRepo "http://snapshots.repository.codehaus.org"
             }
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
-                     [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
+                    [group:"junit", name:"junit", version:"4.8.1", transitive:true])
 
             runtime("opensymphony:foocache:2.4.1") {
-                     excludes 'jms'
+                excludes 'jms'
             }
         }
 
@@ -447,16 +425,13 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         manager.serialize(builder)
 
-        println w
         def xml = new XmlSlurper().parseText(w.toString())
-
-        println xml
         def dependencies = xml.dependency
 
         assertEquals 3, dependencies.size()
 
         def oscache = dependencies.find { it.@name == 'oscache' }
-        
+
         assertEquals 'opensymphony', oscache.@group.text()
         assertEquals 'oscache', oscache.@name.text()
         assertEquals '2.4.1', oscache.@version.text()
@@ -479,22 +454,22 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
 
         assertEquals 0, inherited.size()
     }
+
     void testMapSyntaxForDependencies() {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
         def manager = new IvyDependencyManager("test", "0.1")
         // test simple exclude
         manager.parseDependencies {
-            runtime( [group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
-                     [group:"junit", name:"junit", version:"4.8.1", transitive:true] )
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
+                    [group:"junit", name:"junit", version:"4.8.1", transitive:true])
         }
-
 
         assertEquals 2, manager.listDependencies('runtime').size()
     }
 
     void testDefaultDependencyDefinition() {
 
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
         def manager = new IvyDependencyManager("test", "0.1")
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
@@ -505,9 +480,9 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
 
-        // This should be a functional test since it relies on the Grails
-        // JAR files being built. It also runs Ivy, which isn't ideal
-        // in unit tests.
+    // This should be a functional test since it relies on the Grails
+    // JAR files being built. It also runs Ivy, which isn't ideal
+    // in unit tests.
 //        def report = manager.resolveDependencies()
 //        assertFalse "dependency resolve should have no errors!",report.hasError()
     }
@@ -522,30 +497,7 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
     }
 
     void testInheritanceAndExcludes() {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
-
-          def settings = new BuildSettings()
-          def manager = new IvyDependencyManager("test", "0.1",settings)
-          settings.config.grails.test.dependency.resolution = {
-              test "junit:junit:4.8.1"
-          }
-          // test simple exclude
-          manager.parseDependencies {
-               inherits('test') {
-                   excludes 'junit'
-               }
-               runtime("opensymphony:oscache:2.4.1") {
-                   excludes 'jms'
-               }
-          }
-
-          assertEquals 1, manager.listDependencies("test").size()
-
-
-    }
-
-    void testInheritence() {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
 
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
@@ -554,25 +506,43 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         }
         // test simple exclude
         manager.parseDependencies {
-             inherits 'test'
-             runtime("opensymphony:oscache:2.4.1") {
-                 excludes 'jms'
-             }
+            inherits('test') {
+                excludes 'junit'
+            }
+            runtime("opensymphony:oscache:2.4.1") {
+                excludes 'jms'
+            }
+        }
+
+        assertEquals 1, manager.listDependencies("test").size()
+    }
+
+    void testInheritence() {
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
+
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+        settings.config.grails.test.dependency.resolution = {
+            test "junit:junit:4.8.1"
+        }
+        // test simple exclude
+        manager.parseDependencies {
+            inherits 'test'
+            runtime("opensymphony:oscache:2.4.1") {
+                excludes 'jms'
+            }
         }
 
         assertEquals 2, manager.listDependencies("test").size()
-
-
-
     }
 
     void testExcludes() {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO);
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
         def manager = new IvyDependencyManager("test", "0.1")
         // test simple exclude
         manager.parseDependencies {
             runtime("opensymphony:oscache:2.4.1") {
-               excludes 'jms'
+                excludes 'jms'
             }
         }
 
@@ -593,7 +563,6 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         dd = manager.getDependencyDescriptors().iterator().next()
         aid = createExcludeArtifactId("jms", 'javax.jms')
         assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
-
     }
 
     void testTranstiveWithPlugin() {
@@ -602,43 +571,42 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         manager.parseDependencies {
             plugins {
                 runtime(":feeds:1.5") {
-                   transitive = false
+                    transitive = false
                 }
             }
         }
         DefaultDependencyDescriptor dd = manager.getPluginDependencyDescriptors().iterator().next()
         assertFalse "should not be transtive",dd.isTransitive()
-
     }
+
     void testExcludesWithPlugin() {
         def manager = new IvyDependencyManager("test", "0.1")
         // test simple exclude
         manager.parseDependencies {
             plugins {
                 runtime(":feeds:1.5") {
-                   excludes 'jms'
+                    excludes 'jms'
                 }
             }
         }
         DefaultDependencyDescriptor dd = manager.getPluginDependencyDescriptors().iterator().next()
         ArtifactId aid = createExcludeArtifactId("jms")
         assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
-
     }
+
     protected ArtifactId createExcludeArtifactId(String excludeName, String group = PatternMatcher.ANY_EXPRESSION) {
         def mid = ModuleId.newInstance(group, excludeName)
-        def aid = new ArtifactId(
-                mid, PatternMatcher.ANY_EXPRESSION,
-                PatternMatcher.ANY_EXPRESSION,
-                PatternMatcher.ANY_EXPRESSION)
-        return aid
+        return new ArtifactId(
+            mid, PatternMatcher.ANY_EXPRESSION,
+            PatternMatcher.ANY_EXPRESSION,
+            PatternMatcher.ANY_EXPRESSION)
     }
 
     void testResolve() {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO); 
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
-        manager.resolveDependencies()        
+        manager.resolveDependencies()
     }
 
     void testListDependencies() {
@@ -649,8 +617,6 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertEquals 22, manager.listDependencies("test").size()
     }
 
-
-
     void testParseDependencyDefinition() {
         def manager = new IvyDependencyManager("test", "0.1")
 
@@ -660,17 +626,14 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assertFalse "should have resolved some dependencies",manager.dependencies.isEmpty()
 
         def orgDeps = manager.getModuleRevisionIds("org.apache.ant")
-
         assertEquals "should have found 3 dependencies for the given organization", 3, orgDeps.size()
 
         ModuleRevisionId entry = orgDeps.find { ModuleRevisionId rev -> rev.name == 'ant-junit'}
-
         assertEquals "org.apache.ant", entry.organisation
         assertEquals "ant-junit", entry.name
         assertEquals "1.7.1", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
-
         assertEquals 4, resolvers.size()
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
@@ -691,68 +654,66 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
         assert md.moduleRevisionId.revision == "0.1"
     }
 
-
     static final TEST_DATA = {
-                repositories {
-                    flatDir name: 'mine', dirs: "lib"
-                    grailsHome()
-                    mavenCentral()
-                }
-                dependencies {
+        repositories {
+            flatDir name: 'mine', dirs: "lib"
+            grailsHome()
+            mavenCentral()
+        }
+        dependencies {
 
-                    build "org.tmatesoft.svnkit:svnkit:1.2.0",
-                          "org.apache.ant:ant-junit:1.7.1",
-                          "org.apache.ant:ant-nodeps:1.7.1",
-                          "org.apache.ant:ant-trax:1.7.1",
-                          "radeox:radeox:1.0-b2",
-                          "hsqldb:hsqldb:1.8.0.10",
-                          "apache-tomcat:jasper-compiler:5.5.15",
-                          "jline:jline:0.9.91",
-                          "javax.servlet:servlet-api:2.5",
-                          "javax.servlet:jsp-api:2.1",
-                          "javax.servlet:jstl:1.1.2",
-                          "xalan:serializer:2.7.1",
-                          "test:test:0.5"
+            build "org.tmatesoft.svnkit:svnkit:1.2.0",
+                  "org.apache.ant:ant-junit:1.7.1",
+                  "org.apache.ant:ant-nodeps:1.7.1",
+                  "org.apache.ant:ant-trax:1.7.1",
+                  "radeox:radeox:1.0-b2",
+                  "hsqldb:hsqldb:1.8.0.10",
+                  "apache-tomcat:jasper-compiler:5.5.15",
+                  "jline:jline:0.9.91",
+                  "javax.servlet:servlet-api:2.5",
+                  "javax.servlet:jsp-api:2.1",
+                  "javax.servlet:jstl:1.1.2",
+                  "xalan:serializer:2.7.1",
+                  "test:test:0.5"
 
-                    test "junit:junit:4.8.1"
+            test "junit:junit:4.8.1"
 
-                    runtime "apache-taglibs:standard:1.1.2",
-                            "org.aspectj:aspectjweaver:1.6.2",
-                            "org.aspectj:aspectjrt:1.6.2",
-                            "cglib:cglib-nodep:2.1_3",
-                            "commons-beanutils:commons-beanutils:1.8.0",
-                            "commons-collections:commons-collections:3.2.1",
-                            "commons-dbcp:commons-dbcp:1.2.2",
-                            "commons-fileupload:commons-fileupload:1.2.1",
-                            "commons-io:commons-io:1.4",
-                            "commons-lang:commons-lang:2.4",
-                            "javax.transaction:jta:1.1",
-                            "log4j:log4j:1.2.15",
-                            "net.sf.ehcache:ehcache:1.6.1",
-                            "opensymphony:oscache:2.4.1",
-                            "opensymphony:sitemesh:2.4",
-                            "org.slf4j:jcl-over-slf4j:1.5.6",
-                            "org.slf4j:slf4j-api:1.5.6",
-                            "oro:oro:2.0.8",
-                            "xpp3:xpp3_min:1.1.3.4.O"
+            runtime "apache-taglibs:standard:1.1.2",
+                    "org.aspectj:aspectjweaver:1.6.2",
+                    "org.aspectj:aspectjrt:1.6.2",
+                    "cglib:cglib-nodep:2.1_3",
+                    "commons-beanutils:commons-beanutils:1.8.0",
+                    "commons-collections:commons-collections:3.2.1",
+                    "commons-dbcp:commons-dbcp:1.2.2",
+                    "commons-fileupload:commons-fileupload:1.2.1",
+                    "commons-io:commons-io:1.4",
+                    "commons-lang:commons-lang:2.4",
+                    "javax.transaction:jta:1.1",
+                    "log4j:log4j:1.2.15",
+                    "net.sf.ehcache:ehcache:1.6.1",
+                    "opensymphony:oscache:2.4.1",
+                    "opensymphony:sitemesh:2.4",
+                    "org.slf4j:jcl-over-slf4j:1.5.6",
+                    "org.slf4j:slf4j-api:1.5.6",
+                    "oro:oro:2.0.8",
+                    "xpp3:xpp3_min:1.1.3.4.O"
 
-                    runtime "commons-validator:commons-validator:1.3.1",
-                            "commons-el:commons-el:1.0"
-                            [transitive:false]
-                }
+            runtime "commons-validator:commons-validator:1.3.1",
+                    "commons-el:commons-el:1.0"
 
+            [transitive: false]
+        }
     }
 }
+
 class DummyMavenAwareDependencyManager extends IvyDependencyManager {
 
-    public DummyMavenAwareDependencyManager(String applicationName, String applicationVersion, BuildSettings settings) {
-        super(applicationName, applicationVersion, settings);    
+    DummyMavenAwareDependencyManager(String applicationName, String applicationVersion, BuildSettings settings) {
+        super(applicationName, applicationVersion, settings)
     }
 
-    public List readDependenciesFromPOM() {
-        return [
-                [getExcludedModules:{[]}, getGroupId:{"junit"}, getArtifactId:{"junit"}, getVersion:{"4.8.1"}, getScope:{"test"}] as PomDependencyMgt
-        ]
+    List readDependenciesFromPOM() {
+        [[getExcludedModules: {[]}, getGroupId: {"junit"}, getArtifactId: {"junit"},
+          getVersion: {"4.8.1"}, getScope: {"test"}] as PomDependencyMgt]
     }
-
 }

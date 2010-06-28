@@ -1,23 +1,15 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Sep 5, 2007
- * Time: 6:23:11 PM
- * 
- */
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class PageScopeTests extends AbstractGrailsTagTests {
 
     void testNamedBodyParams() {
-
         def template = '<g:set var="foo" value="bar" />one: <g:test1 /> two: ${bar} three: ${pageScope.bar}'
-
         assertOutputEquals('one: bar two: foo three: foo', template)
     }
 
@@ -31,8 +23,7 @@ class PageScopeTests extends AbstractGrailsTagTests {
         assertOutputEquals('one: two two: three three: four', template, [:], { it.toString().trim() })
     }
 
-
-    void onInit() {
+    protected void onInit() {
         def tagClass = gcl.parseClass( '''
 class MyTagLib {
     def test1 = { attrs, body ->

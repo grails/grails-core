@@ -10,11 +10,8 @@ import grails.util.Metadata
 /**
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Feb 6, 2009
  */
-
-public class PluginAwareResourceBundleMessageSourceTests extends GroovyTestCase{
+class PluginAwareResourceBundleMessageSourceTests extends GroovyTestCase {
 
     protected void setUp() {
         Metadata.getCurrent().put(Metadata.WAR_DEPLOYED, "true")
@@ -24,22 +21,20 @@ public class PluginAwareResourceBundleMessageSourceTests extends GroovyTestCase{
         Metadata.getCurrent().put(Metadata.WAR_DEPLOYED, "")
     }
 
-
-
-
     void testMessageSource() {
         def testPlugin = new GroovyClassLoader().parseClass('''
 class TestTwoGrailsPlugin {
     def version = 0.2
 }
 ''')
+
         def messageSource = new TestPluginAwareResourceBundleMessageSource()
 
-
-        def pluginManager = new DefaultGrailsPluginManager([testPlugin] as Class[], new DefaultGrailsApplication())
+        def pluginManager = new DefaultGrailsPluginManager([testPlugin] as Class[],
+            new DefaultGrailsApplication())
 
         pluginManager.loadPlugins()
-        
+
         messageSource.pluginManager = pluginManager
         messageSource.basename = "WEB-INF/grails-app/i18n/messages"
         def loader = new MockStringResourceLoader()
@@ -51,7 +46,6 @@ one.two=wrong
 one.two=test
 ''')
 
-
         messageSource.resourceLoader = loader
         messageSource.afterPropertiesSet()
 
@@ -62,10 +56,11 @@ one.two=test
         assertEquals "test", messageSource.getMessage("one.two", [] as Object[], Locale.default)
     }
 }
+
 class TestPluginAwareResourceBundleMessageSource extends PluginAwareResourceBundleMessageSource {
     protected Resource[] getPluginBundles(String pluginName) {
         [new MockFileResource("grails-app/i18n/messages.properties", '''
 foo.bar=test
-''')] as Resource[]        
+''')] as Resource[]
     }
 }

@@ -15,12 +15,10 @@
 package grails.web.container;
 
 /**
- * An interface used to define the container implementation used by Grails during development.
+ * Defines the container implementation used by Grails during development.
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Jan 7, 2009
  */
 public interface EmbeddableServer {
 
@@ -44,7 +42,7 @@ public interface EmbeddableServer {
      * @param host The host to start on
      * @param port The port number
      */
-    void start(String host, int port);    
+    void start(String host, int port);
 
     /**
      * Starts a secure container running over HTTPS
@@ -56,6 +54,7 @@ public interface EmbeddableServer {
      * @param port The port
      */
     void startSecure(int port);
+
     /**
      * Starts a secure container running over HTTPS for the given port and host.
      * @param host The server host
@@ -63,7 +62,6 @@ public interface EmbeddableServer {
      * @param httpsPort The port for HTTPS traffic.
      */
     void startSecure(String host, int httpPort, int httpsPort);
-
 
     /**
      * Stops the container

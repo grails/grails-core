@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.codecs
 
-
 class MD5Codec {
-	// Returns the byte[] of the digest, taken from UTF-8 of the string representation
+    // Returns the byte[] of the digest, taken from UTF-8 of the string representation
     // or the raw data coerced to bytes
     static encode = { theTarget ->
         HexCodec.encode(MD5BytesCodec.encode(theTarget))
-	}
+    }
 
-	static decode = { theTarget ->
-		throw new UnsupportedOperationException("Cannot decode MD5 hashes")
-	}
+    static decode = { theTarget ->
+        throw new UnsupportedOperationException("Cannot decode MD5 hashes")
+    }
 }

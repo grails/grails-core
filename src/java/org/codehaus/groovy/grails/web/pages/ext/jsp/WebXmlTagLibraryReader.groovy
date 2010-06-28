@@ -22,43 +22,37 @@ import org.xml.sax.Attributes
  * A SAX handler that reads the tag library definitions from a web.xml file
  *
  * @author Graeme Rocher
- *
  */
 class WebXmlTagLibraryReader extends DefaultHandler {
 
-   static final TAG_TAGLIB_URI = "taglib-uri"
-   static final TAG_TAGLIB_LOC = "taglib-location"
-   static final TAG_TAGLIB = "taglib"
-   /**
-    * Contains a map of URI to tag library locations once the handler has read the web.xml file
-    */
-   Map tagLocations = [:]
+    static final TAG_TAGLIB_URI = "taglib-uri"
+    static final TAG_TAGLIB_LOC = "taglib-location"
+    static final TAG_TAGLIB = "taglib"
 
-   private location
-   private uri
-   private buf
+    /**
+     * Contains a map of URI to tag library locations once the handler has read the web.xml file
+     */
+    Map tagLocations = [:]
+
+    private location
+    private uri
+    private buf
 
     void startElement(String ns, String localName, String qName, Attributes attributes) {
-        if(TAG_TAGLIB_URI == qName ||
-           TAG_TAGLIB_LOC == qName) buf = new StringBuffer()
+        if (TAG_TAGLIB_URI == qName || TAG_TAGLIB_LOC == qName) {
+            buf = new StringBuffer()
+        }
     }
 
-    public void characters(char[] chars, int offset, int length) {
+    void characters(char[] chars, int offset, int length) {
         buf?.append(chars,offset, length)
     }
 
-    public void endElement(String ns, String localName, String qName) {
-       switch(qName) {
-           case TAG_TAGLIB_URI:
-                uri = buf.toString().trim()
-                break
-
-           case TAG_TAGLIB_LOC:
-                location = buf.toString().trim()
-                break
-           case TAG_TAGLIB:
-                tagLocations[uri] = location
-                break
-       }
+    void endElement(String ns, String localName, String qName) {
+        switch (qName) {
+            case TAG_TAGLIB_URI: uri = buf.toString().trim();      break
+            case TAG_TAGLIB_LOC: location = buf.toString().trim(); break
+            case TAG_TAGLIB:     tagLocations[uri] = location;     break
+        }
     }
 }

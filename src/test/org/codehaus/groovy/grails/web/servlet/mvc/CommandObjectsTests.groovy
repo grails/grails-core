@@ -1,26 +1,14 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.web.servlet.*
-import org.springframework.mock.web.*
-import org.springframework.validation.*
-import org.springframework.web.servlet.*
 import grails.util.GrailsWebUtil
 
-@SuppressWarnings("unused")
 class CommandObjectsTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
-                gcl.parseClass(
-        '''
+        gcl.parseClass '''
         class TestController {
            def someProperty
-           
+
            def action1 = {
                 someProperty
            }
@@ -55,15 +43,13 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
                 age range: 10..50
             }
         }
-        ''')
+        '''
     }
-
 
     void testCommandObjectAutoWiring() {
         // no command objects
         def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
         def result = testCtrl.action4()
-
 
         assert result.command.groovyPagesTemplateEngine
     }
@@ -102,7 +88,7 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         // two command objects with params
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
-        
+
         request.setParameter('name', 'Sergey')
         request.setParameter('data', 'Some data')
         result = testCtrl.action3()
@@ -126,7 +112,7 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         // command objects validation should fail for 'command2' since 'data' param is too short
         def webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
-        
+
         request.setParameter('name', 'Sergey')
         request.setParameter('data', 'Some')
         result = testCtrl.action3()
@@ -139,15 +125,15 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         assertTrue codes.contains("constrainedCommand.data.size.error")
     }
 
-	void testValidationWithInheritedConstraints() {
+    void testValidationWithInheritedConstraints() {
         // command objects validation should pass
-		request.setParameter('age', '9')
-		request.setParameter('data', 'Some')
+        request.setParameter('age', '9')
+        request.setParameter('data', 'Some')
         def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
         def result = testCtrl.action5()
-		assertNotNull result.command
-		assert result.command.hasErrors()
-		def codes = result.command.errors.getFieldError('data').codes.toList()
-		assertTrue codes.contains("constrainedCommandSubclass.data.size.error")
-	}
+        assertNotNull result.command
+        assert result.command.hasErrors()
+        def codes = result.command.errors.getFieldError('data').codes.toList()
+        assertTrue codes.contains("constrainedCommandSubclass.data.size.error")
+    }
 }

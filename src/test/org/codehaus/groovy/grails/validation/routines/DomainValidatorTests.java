@@ -20,8 +20,6 @@ import junit.framework.TestCase;
 
 /**
  * Tests for the DomainValidator.
- *
- * @version $Revision: 589930 $ $Date: 2007-10-30 04:39:55 +0300 (Вт, 30 окт 2007) $
  */
 public class DomainValidatorTests extends TestCase {
 

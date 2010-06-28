@@ -56,9 +56,6 @@ public class DomainClassPropertyComparatorTests extends TestCase {
 
         GrailsDomainClassProperty[] props = domainClass.getProperties();
         Arrays.sort(props, comp);
-        for (int i = 0; i < props.length; i++) {
-            System.out.println(props[i].getName());
-        }
 
         List<String> nonConstrainedProps = new ArrayList<String>();
         nonConstrainedProps.add("zip");

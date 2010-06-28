@@ -7,22 +7,19 @@ import org.springframework.mock.web.MockServletContext
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: May 28, 2008
  */
-class UrlMappingParameterTests extends AbstractGrailsMappingTests{
-
+class UrlMappingParameterTests extends AbstractGrailsMappingTests {
 
     def test1 = '''
 class UrlMappings {
     static mappings = {
 
       "/$controller/$action?/$id?"{
-		  lang = "de"
+          lang = "de"
           constraints {
-			 // apply constraints here
-		  }
-	  }
+             // apply constraints here
+          }
+      }
     }
 }
 '''
@@ -31,7 +28,7 @@ class UrlMappings {
 class UrlMappings {
     static mappings = {
         "/news/$action?/$category" {
-        	controller = "blog"
+            controller = "blog"
             constraints {
                 action(inList:['archive', 'latest'])
             }
@@ -45,21 +42,17 @@ class UrlMappings {
         def mappings = evaluator.evaluateMappings(closure)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
-
         def info = holder.match('/foo/list')
 
         info.configure webRequest
 
         assertEquals "de", webRequest.params.lang
-
     }
 
     void testDynamicMappingWithAdditionalParameterAndAppliedConstraints() {
         Closure closure = new GroovyClassLoader().parseClass(test2).mappings
         def mappings = evaluator.evaluateMappings(closure)
-
         def holder = new DefaultUrlMappingsHolder(mappings)
-
         def info = holder.match('/news/latest/sport')
 
         info.configure webRequest
@@ -68,10 +61,7 @@ class UrlMappings {
         assertEquals "latest", info.actionName
         assertEquals "sport", info.parameters.category
 
-
         def urlCreator = holder.getReverseMapping("blog", "latest", [category:"sport"])
         assertEquals "/news/latest/sport",urlCreator.createURL("blog", "latest", [category:"sport"], "utf-8")
-
     }
-
 }

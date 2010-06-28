@@ -8,8 +8,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class JSONBindingTests extends AbstractGrailsControllerTests{
+class JSONBindingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         def config = new ConfigSlurper().parse( """
@@ -57,15 +56,13 @@ class SiteController {
         return s
     }
 
-    def simple = {
-    }
+    def simple = {}
 }
 ''')
     }
 
-
-    public void tearDown() {
-        super.tearDown();
+    protected void tearDown() {
+        super.tearDown()
         ConfigurationHolder.setConfig null
         MimeType.reset()
     }
@@ -78,9 +75,9 @@ class SiteController {
  {"foo": { "bar": "baz" } }
 '''.bytes
 
-		webRequest.informParameterCreationListeners()
+        webRequest.informParameterCreationListeners()
 
-        controller.simple()   
+        controller.simple()
 
         assertEquals "baz", controller.params.foo.bar
         assertEquals "baz", controller.params['foo.bar']
@@ -100,18 +97,13 @@ class SiteController {
  "unwanted2":"blah1"}
 '''.bytes
 
-		webRequest.informParameterCreationListeners()
+        webRequest.informParameterCreationListeners()
 
         def site = controller.put()
-
-        println site.errors
-        
         assertFalse site.hasErrors()
 
         assertEquals "asite", site.description
         assertEquals "blah", site.mode.code
         assertEquals "blah2", site.unwanted1
     }
-
-
 }

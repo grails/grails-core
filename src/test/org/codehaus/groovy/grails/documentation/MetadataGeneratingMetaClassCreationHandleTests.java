@@ -27,6 +27,8 @@ public class MetadataGeneratingMetaClassCreationHandleTests extends TestCase {
         GroovySystem.getMetaClassRegistry().removeMetaClass(String.class);
         MetadataGeneratingMetaClassCreationHandle.enable();
 
-        assertTrue( "MetadataGeneratingMetaClassCreationHandle should have created a MetadataGeneratingExpandoMetaClass", GroovySystem.getMetaClassRegistry().getMetaClass(String.class) instanceof MetadataGeneratingExpandoMetaClass);
+        assertTrue(
+                "MetadataGeneratingMetaClassCreationHandle should have created a MetadataGeneratingExpandoMetaClass",
+                GroovySystem.getMetaClassRegistry().getMetaClass(String.class) instanceof MetadataGeneratingExpandoMetaClass);
     }
 }

@@ -20,20 +20,19 @@ import org.springframework.beans.BeanUtils
 /**
  * @author Graeme Rocher
  */
-
 class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
 
-	void testRegexMethodDefinition() {
-       def metaClass = new DynamicMethodsExpandoMetaClass(Book.class)
-       metaClass.initialize()
+    void testRegexMethodDefinition() {
+        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class)
+        metaClass.initialize()
 
-       metaClass./^findBy(\w+)$/ = { matcher, args ->
+        metaClass./^findBy(\w+)$/ = { matcher, args ->
             assert matcher instanceof java.util.regex.Matcher
             assert args != null
             assert delegate instanceof Book
 
             return "foo${matcher[0][1]}"
-       }
+        }
 
         def b = new Book()
         b.metaClass = metaClass
@@ -42,34 +41,27 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
     }
 
     void testRegexStaticMethodDefinition() {
-       def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
-       metaClass.initialize()
+        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
+        metaClass.initialize()
 
-       metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
+        metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
             assert matcher instanceof java.util.regex.Matcher
             assert args != null
-            println delegate.getName()
-            println delegate.getClass()
-
             return "foo${matcher[0][1]}"
-       }
+        }
 
         assertEquals "fooBar", Book.findByBar()
-
     }
 
     void testMixStandardAndRegixMethodDefinitions() {
-       def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
-       metaClass.initialize()
+        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
+        metaClass.initialize()
 
-       metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
+        metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
             assert matcher instanceof java.util.regex.Matcher
             assert args != null
-            println delegate.getName()
-            println delegate.getClass()
-
             return "foo${matcher[0][1]}"
-       }
+        }
 
         metaClass.'static'.anotherFoo = {String obj-> "bar ${obj}" }
         metaClass.anotherBar = {-> "foo" }
@@ -82,10 +74,9 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
         assertEquals "foo", b.anotherBar()
         assertEquals "bar", b.foo
         assertEquals "bar", b.getFoo()
-
     }
-
 }
+
 class Book {
     String title
 }

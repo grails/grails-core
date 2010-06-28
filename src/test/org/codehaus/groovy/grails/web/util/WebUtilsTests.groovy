@@ -1,9 +1,3 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Nov 26, 2007
- */
 package org.codehaus.groovy.grails.web.util
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -14,6 +8,10 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class WebUtilsTests extends GroovyTestCase {
 
     protected void setUp() {
@@ -34,7 +32,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                     ]        """)
 
         ConfigurationHolder.setConfig config
-
     }
 
     protected void tearDown() {
@@ -42,16 +39,15 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
         RequestContextHolder.setRequestAttributes null
     }
 
-
     void testAreFileExtensionsEnabled() {
-         assert !WebUtils.areFileExtensionsEnabled()
+        assert !WebUtils.areFileExtensionsEnabled()
 
         def config = new ConfigSlurper().parse( """
 grails.mime.file.extensions=true
        """)
-         ConfigurationHolder.config = config
-         
-         assert WebUtils.areFileExtensionsEnabled()
+        ConfigurationHolder.config = config
+
+        assert WebUtils.areFileExtensionsEnabled()
     }
 
     void testGetFormatFromURI() {

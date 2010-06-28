@@ -80,7 +80,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 final Object value = attributes.get(constraintName);
                 if (SHARED_CONSTRAINT.equals(constraintName)) {
                     if (value != null) {
-                  	  sharedConstraints.put(property, value.toString());
+                        sharedConstraints.put(property, value.toString());
                     }
                     continue;
                 }
@@ -91,9 +91,9 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                     if (ConstrainedProperty.hasRegisteredConstraint(constraintName)) {
                         // constraint is registered but doesn't support this property's type
                         GrailsUtil.warn("Property [" + cp.getPropertyName() + "] of domain class " +
-                        		targetClass.getName() + " has type [" + cp.getPropertyType().getName() +
-                        		"] and doesn't support constraint [" + constraintName +
-                        		"]. This constraint will not be checked during validation.");
+                                targetClass.getName() + " has type [" + cp.getPropertyType().getName() +
+                                "] and doesn't support constraint [" + constraintName +
+                                "]. This constraint will not be checked during validation.");
                     }
                     else {
                         // in the case where the constraint is not supported we still retain meta data

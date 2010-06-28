@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.web.sitemesh
 
-import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 import com.opensymphony.module.sitemesh.RequestConstants
+
+import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -14,7 +15,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         def result = applyTemplate(template, [:])
         assertEquals 'this is the captured content', gspSiteMeshPage.getContentBuffer('page.testtag').toString()
     }
-    
+
     void testCaptureContent2() {
         def template='<sitemesh:captureContent tag=\"testtag\">this is the <g:if test="${true}">captured</g:if> content</sitemesh:captureContent>'
         def gspSiteMeshPage = new GSPSitemeshPage()
@@ -30,7 +31,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         def result = applyTemplate(template, [:])
         assertEquals 'this is the captured content', gspSiteMeshPage.getContentBuffer('page.testtag').toString()
     }
-    
+
     void testCaptureTitleAndBody() {
         def template='<html><head><title>This is the title</title></head><body onload="somejs();">body here</body></html>'
         def gspSiteMeshPage = new GSPSitemeshPage()
@@ -42,16 +43,16 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         assertEquals 'body here', writer.toString()
         assertEquals 'somejs();', gspSiteMeshPage.getProperty('body.onload')
     }
-	
-	void testMetaObjectValues() {
-		// GRAILS-5603 test case
-		def template='<html><head><meta name="intval" content="${123}"/><meta name="dateval" content="${new Date(0)}"/><title>This is the title</title></head><body onload="somejs();">body here</body></html>'
-		def gspSiteMeshPage = new GSPSitemeshPage()
-		webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
-		def result = applyTemplate(template, [:])
-		assertEquals '123', gspSiteMeshPage.getProperty('meta.intval')
-		assertEquals new Date(0).toString(), gspSiteMeshPage.getProperty('meta.dateval')
-	}	
+
+    void testMetaObjectValues() {
+        // GRAILS-5603 test case
+        def template='<html><head><meta name="intval" content="${123}"/><meta name="dateval" content="${new Date(0)}"/><title>This is the title</title></head><body onload="somejs();">body here</body></html>'
+        def gspSiteMeshPage = new GSPSitemeshPage()
+        webRequest.currentRequest.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+        def result = applyTemplate(template, [:])
+        assertEquals '123', gspSiteMeshPage.getProperty('meta.intval')
+        assertEquals new Date(0).toString(), gspSiteMeshPage.getProperty('meta.dateval')
+    }
 
     void testLayoutTags() {
         def template='<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body onload="somejs();">body here</body></html>'
@@ -65,7 +66,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         webRequest.currentRequest.setAttribute(RequestConstants.PAGE, gspSiteMeshPage)
         def template2='<html><head><title><g:layoutTitle/></title><g:layoutHead/></head><body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/></body></html>'
         def result2 = applyTemplate(template2, [:])
-        	
+
         assertEquals '<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body onload="somejs();">body here</body></html>', result2
     }
 
@@ -84,7 +85,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         gspSiteMeshPage2.setPageBuffer(target2.buffer)
         def template2='<body><g:layoutBody/></body>'
         def result2 = applyTemplate(template2, [:], target2)
-        	
+
         assertEquals '<body>body here</body>', result2
     }
 
@@ -100,11 +101,10 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         webRequest.currentRequest.setAttribute(RequestConstants.PAGE, gspSiteMeshPage)
         def template2='<html><head><title><g:layoutTitle/></title><g:layoutHead/></head><body onload=\"${pageProperty(name:\'body.onload\')}\"><g:layoutBody/> <g:pageProperty name="page.nav"/></body></html>'
         def result2 = applyTemplate(template2, [:])
-        	
+
         assertEquals '<html><head><title>This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head><body onload="somejs();">body here Navigation content</body></html>', result2
     }
 
-    
     void tearDown() {
          RequestContextHolder.setRequestAttributes(null)
     }

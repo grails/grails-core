@@ -1,9 +1,3 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Jan 8, 2008
- */
 package org.codehaus.groovy.grails.web.filters
 
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
@@ -11,6 +5,10 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class FilterToHandlerAdapterTests extends GroovyTestCase {
     private originalApp
 
@@ -22,7 +20,6 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
             [getDefaultAction: {->'index'}] as GrailsControllerClass
         }]
         ApplicationHolder.application = mockApp as GrailsApplication
-
     }
 
     protected void tearDown() {
@@ -31,47 +28,47 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
     }
 
     void testURIMapping() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.uri = "/restricted/**"
-		filterAdapter.afterPropertiesSet()
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.uri = "/restricted/**"
+        filterAdapter.afterPropertiesSet()
 
-		assert filterAdapter.accept("Ignore", "index", "/restricted/1")
-		assert filterAdapter.accept("Ignore", "index", "/restricted/1/2")
-		assert !filterAdapter.accept("Ignore", "index", "/foo/1/2")
-	}
+        assert filterAdapter.accept("Ignore", "index", "/restricted/1")
+        assert filterAdapter.accept("Ignore", "index", "/restricted/1/2")
+        assert !filterAdapter.accept("Ignore", "index", "/foo/1/2")
+    }
 
-	void testURIMapping2() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = "trol"
-		filterAdapter.filterConfig.scope.find = true
-		filterAdapter.afterPropertiesSet()
+    void testURIMapping2() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "trol"
+        filterAdapter.filterConfig.scope.find = true
+        filterAdapter.afterPropertiesSet()
 
-		assert filterAdapter.accept("Controller", "index", "/restricted/1")
-		assert filterAdapter.accept("Controller", "index", "/restricted/1/2")
-		assert filterAdapter.accept("Controller", "index", "/foo/1/2")
-		assert !filterAdapter.accept("Contoller", "index", "/foo/1/2")
-	}
+        assert filterAdapter.accept("Controller", "index", "/restricted/1")
+        assert filterAdapter.accept("Controller", "index", "/restricted/1/2")
+        assert filterAdapter.accept("Controller", "index", "/foo/1/2")
+        assert !filterAdapter.accept("Contoller", "index", "/foo/1/2")
+    }
 
-	void testURIMapping3() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = ".*trol.*"
-		filterAdapter.filterConfig.scope.action = "index"
-		filterAdapter.filterConfig.scope.invert = true
-		filterAdapter.filterConfig.scope.find = false
-		filterAdapter.filterConfig.scope.regex = true
-		filterAdapter.afterPropertiesSet()
+    void testURIMapping3() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = ".*trol.*"
+        filterAdapter.filterConfig.scope.action = "index"
+        filterAdapter.filterConfig.scope.invert = true
+        filterAdapter.filterConfig.scope.find = false
+        filterAdapter.filterConfig.scope.regex = true
+        filterAdapter.afterPropertiesSet()
 
-		assert !filterAdapter.accept("Controller", "index", "/restricted/1")
-		assert !filterAdapter.accept("Controller", "index", "/restricted/1/2")
-		assert !filterAdapter.accept("Controller", "index", "/foo/1/2")
-		assert filterAdapter.accept("Contoller", "index", "/foo/1/2")
-	}
+        assert !filterAdapter.accept("Controller", "index", "/restricted/1")
+        assert !filterAdapter.accept("Controller", "index", "/restricted/1/2")
+        assert !filterAdapter.accept("Controller", "index", "/foo/1/2")
+        assert filterAdapter.accept("Contoller", "index", "/foo/1/2")
+    }
 
     void testDefaultActionWithControllerMatchAndActionWildcard() {
         def filterAdapter = new FilterToHandlerAdapter()
@@ -127,59 +124,58 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
         assertTrue filterAdapter.accept("demo", null, "/ignored")
     }
 
-	void testAppRootWithWildcardedControllerAndAction() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = "*"
-		filterAdapter.filterConfig.scope.action = "*"
-		filterAdapter.afterPropertiesSet()
+    void testAppRootWithWildcardedControllerAndAction() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "*"
+        filterAdapter.filterConfig.scope.action = "*"
+        filterAdapter.afterPropertiesSet()
 
-		assertTrue filterAdapter.accept(null, null, '/')
-	}
-	
-	
-	void testAppRootWithWildcardedControllerAndActionRegex() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = ".*"
-		filterAdapter.filterConfig.scope.action = ".*"
-		filterAdapter.filterConfig.scope.regex = true
-		filterAdapter.afterPropertiesSet()
-		
-		assertTrue filterAdapter.accept(null, null, '/')
-	}
-	
-	void testAppRootWithWildcardedControllerAndNoAction() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = "*"
-		filterAdapter.afterPropertiesSet()
+        assertTrue filterAdapter.accept(null, null, '/')
+    }
 
-		assertTrue filterAdapter.accept(null, null, '/')
-	}
+    void testAppRootWithWildcardedControllerAndActionRegex() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = ".*"
+        filterAdapter.filterConfig.scope.action = ".*"
+        filterAdapter.filterConfig.scope.regex = true
+        filterAdapter.afterPropertiesSet()
 
-	void testAppRootWithWildcardedControllerAndSpecificAction() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = "*"
-		filterAdapter.filterConfig.scope.action = "something"
-		filterAdapter.afterPropertiesSet()
+        assertTrue filterAdapter.accept(null, null, '/')
+    }
 
-		assertFalse filterAdapter.accept(null, null, '/')
-	}
+    void testAppRootWithWildcardedControllerAndNoAction() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "*"
+        filterAdapter.afterPropertiesSet()
 
-	void testAppRootWithSpecificControllerAndWildcardedAction() {
-		def filterAdapter = new FilterToHandlerAdapter()
-		filterAdapter.filterConfig = new Expando()
-		filterAdapter.filterConfig.scope = new Expando()
-		filterAdapter.filterConfig.scope.controller = "something"
-		filterAdapter.filterConfig.scope.action = "*"
-		filterAdapter.afterPropertiesSet()
+        assertTrue filterAdapter.accept(null, null, '/')
+    }
 
-		assertFalse filterAdapter.accept(null, null, '/')
-	}
+    void testAppRootWithWildcardedControllerAndSpecificAction() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "*"
+        filterAdapter.filterConfig.scope.action = "something"
+        filterAdapter.afterPropertiesSet()
+
+        assertFalse filterAdapter.accept(null, null, '/')
+    }
+
+    void testAppRootWithSpecificControllerAndWildcardedAction() {
+        def filterAdapter = new FilterToHandlerAdapter()
+        filterAdapter.filterConfig = new Expando()
+        filterAdapter.filterConfig.scope = new Expando()
+        filterAdapter.filterConfig.scope.controller = "something"
+        filterAdapter.filterConfig.scope.action = "*"
+        filterAdapter.afterPropertiesSet()
+
+        assertFalse filterAdapter.accept(null, null, '/')
+    }
 }

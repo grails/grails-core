@@ -5,29 +5,19 @@ package org.codehaus.groovy.grails.commons;
  */
 class DefaultGrailsControllerClassTests extends GroovyTestCase {
 
-	def gcl
-
-	void setUp() {
-		gcl = new GroovyClassLoader()
-	}
-
-    void tearDown() {
-        gcl = null
-    }
-
+    def gcl = new GroovyClassLoader()
 
     void testEvaluateFlowDefinitions() {
-        gcl.parseClass("""
+        gcl.parseClass """
 class FooController {
     def bookFlow = { }
     def storeFlow = { }
     def index = { }
     def test = { }
-}
-        """)
+}"""
 
-        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)   
-		ga.initialise()
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
 
         def foo = ga.getControllerClass("FooController")
         assertEquals 2, foo.flows.size()
@@ -46,18 +36,17 @@ class FooController {
         assertFalse foo.isFlowAction("test")
         assertFalse foo.isFlowAction("index")
     }
+
     void testInterceptorInheritance() {
-        gcl.parseClass("""
+        gcl.parseClass """
 abstract class ParentController {
-            def beforeInterceptor = { "foo" }
-            def afterInterceptor = {  "bar" }
+    def beforeInterceptor = { "foo" }
+    def afterInterceptor = {  "bar" }
 }
+
 class  ChildController extends ParentController {
-
     def index = { }
-}
-        """)
-
+}"""
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()

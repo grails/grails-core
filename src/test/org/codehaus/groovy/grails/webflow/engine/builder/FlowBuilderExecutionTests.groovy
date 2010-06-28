@@ -7,7 +7,7 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
 
 class FlowBuilderExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests{
 
-    public Closure getFlowClosure() {
+    Closure getFlowClosure() {
         return {
             displaySearchForm {
                 on("submit").to "executeSearch"
@@ -27,28 +27,22 @@ class FlowBuilderExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests
         }
     }
 
-
-
     def searchService = [executeSearch:{["foo", "bar"]}]
     def params = [q:"foo"]
 
     void testFlowExecution() {
         grails.util.GrailsWebUtil.bindMockWebRequest()
         startFlow()
-
         assertCurrentStateEquals "displaySearchForm"
 
         signalEvent( "submit" )
-
         assertCurrentStateEquals "displayResults"
 
         def model = getFlowScope()
         assertEquals( ["foo", "bar"],model.results)
 
         signalEvent("return")
-
         assertCurrentStateEquals "displaySearchForm"
-        
     }
 
     void testFlowExecutionException() {
@@ -56,17 +50,12 @@ class FlowBuilderExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests
         searchService.executeSearch = { throw new FooException() }
 
         startFlow()
-
         assertCurrentStateEquals "displaySearchForm"
 
-
         signalEvent( "submit" )
-
         assertFlowExecutionEnded()
-
         assertFlowExecutionOutcomeEquals "errorView"
-
     }
-
 }
+
 class FooException extends Exception {}

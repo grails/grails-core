@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package grails.doc.ant
 
 import org.apache.tools.ant.Task
@@ -20,13 +19,12 @@ import grails.doc.DocPublisher
 import org.apache.tools.ant.BuildException
 
 /**
- * An ant task for using the DocEngine
+ * An ant task for using the DocEngine.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class DocPublisherTask extends Task {
+class DocPublisherTask extends Task {
 
     DocPublisher publisher = new DocPublisher()
 
@@ -43,7 +41,6 @@ public class DocPublisherTask extends Task {
     void setDest(File dest) {
         publisher.target = dest
     }
-
 
     /**
      * The encoding to use (default is UTF-8)
@@ -65,6 +62,7 @@ public class DocPublisherTask extends Task {
     void setCssDir(File cssDir) {
         publisher.css = cssDir
     }
+
     /**
      * The directory of the images (optional)
      */
@@ -83,13 +81,16 @@ public class DocPublisherTask extends Task {
      * A properties file containing the title, author etc.
      */
     void setProperties(File propsFile) {
-       if(!propsFile?.exists()) throw new BuildException("Documentation properties file [${propsFile?.absolutePath}] doesn't exit")
+        if (!propsFile?.exists()) {
+            throw new BuildException("Documentation properties file [${propsFile?.absolutePath}] doesn't exist")
+        }
 
-       def props = new Properties()
-       propsFile.withInputStream { props.load(it) }
+        def props = new Properties()
+        propsFile.withInputStream { props.load(it) }
 
-       setProperties(props)
+        setProperties(props)
     }
+
     /**
      * A properties containing the title, author etc.
      */
@@ -97,10 +98,8 @@ public class DocPublisherTask extends Task {
         publisher.engineProperties = props
     }
 
-    public void execute() {
+    void execute() {
         publisher.ant = new AntBuilder(this)
         publisher.publish()
     }
-
-
 }

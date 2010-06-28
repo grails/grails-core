@@ -1,17 +1,14 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Feb 5, 2009
  */
-
-public class GroovyPageLineNumberTests extends AbstractGrailsTagTests{
+class GroovyPageLineNumberTests extends AbstractGrailsTagTests {
 
     void testSpanningMultipleLines() {
         def template = '''
@@ -27,21 +24,18 @@ public class GroovyPageLineNumberTests extends AbstractGrailsTagTests{
 
     void testExpressionWithQuotes() {
         def template = '${foo + \' \' + bar}'
-
         assertOutputEquals "one two", template, [foo:"one", bar:"two"]
 
         template = '<g:createLinkTo dir="${foo}" file="${foo + \' \' + bar}" />'
-
         assertOutputEquals "/one/one two", template, [foo:"one", bar:"two"]
 
-
         template = '<g:link name="blah" action="${remoteFunction(action:\'bar\', params:\'\\\'grp=\\\' + encodeURIComponent(this.value)\')}"></g:link>'
-
         printCompiledSource template
 
         // test will fail if compilation fails
         applyTemplate(template)
     }
+
     void testLineNumberDataInsideTagAttribute() {
         def template = '''
 
@@ -51,22 +45,18 @@ public class GroovyPageLineNumberTests extends AbstractGrailsTagTests{
 
 <p />
 '''
-        printCompiledSource template 
+        printCompiledSource template
         try {
             applyTemplate(template)
         }
-        catch (org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException e) {
+        catch (GroovyPagesException e) {
             def cause = e.cause
             while(cause != cause.cause && cause.cause) {
                 cause = cause.cause
             }
             assertTrue "The cause should have been a NPE but was ${cause}", cause instanceof NullPointerException
-            assertEquals 5,e.lineNumber
-            
+            assertEquals 5, e.lineNumber
         }
-
-
-
     }
 
     void testLineNumberingDataInsideExpression() {
@@ -82,40 +72,36 @@ ${foo.bar.path}
         try {
             applyTemplate(template)
         }
-        catch (org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException e) {
-
+        catch (GroovyPagesException e) {
             def cause = e.cause
-            while(cause != cause.cause && cause.cause) {
+            while (cause != cause.cause && cause.cause) {
                 cause = cause.cause
             }
             assertTrue "The cause should have been a NPE but was ${cause}", cause instanceof NullPointerException
             assertEquals 5,e.lineNumber
         }
-
     }
 
     void testEachWithQuestionMarkAtEnd() {
         def template = '<g:each in="${list?}">${it}</g:each>'
-
         assertOutputEquals "123", template, [list:[1,2,3]]
     }
 
     void testStringWithQuestionMark() {
         def template = '${"hello?"}'
-
         assertOutputEquals "hello?", template
-
     }
+
     void testComplexPage() {
         def template = '''
 <html>
     <head>
         <title>Welcome to Grails</title>
-		<meta name="layout" content="main" />
+        <meta name="layout" content="main" />
     </head>
     <body>
         <h1 style="margin-left:20px;">Welcome to Grails</h1>
-		${foo.bar.suck}
+        ${foo.bar.suck}
         <p style="margin-left:20px;width:80%">Congratulations, you have successfully started your first Grails application! At the moment
         this is the default page, feel free to modify it to either redirect to a controller or display whatever
         content you may choose. Below is a list of controllers that are currently deployed in this application,
@@ -136,11 +122,7 @@ ${foo.bar.path}
             applyTemplate(template)
         }
         catch (GroovyPagesException e) {
-
             assertEquals 9,e.lineNumber
         }
-
-
     }
-
 }

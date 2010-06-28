@@ -11,7 +11,6 @@ class GrailsBuildHelperTests extends GroovyTestCase {
     def testSettings
 
     void testSetDepedenciesExternallyConfigured() {
-
         def testHelper = new GrailsBuildHelper(new CustomClassLoader(this))
         testHelper.setDependenciesExternallyConfigured(true)
     }
@@ -74,17 +73,16 @@ class MockGrailsScriptRunner {
 
     MockGrailsScriptRunner(MockBuildSettings settings) {
         testCase.testRunner = this
-
         Assert.assertSame testCase.testSettings, settings
     }
-    
+
     int executeCommand(String scriptName, String args) {
-        this.lastScript = [ name: scriptName, args: args ]
+        lastScript = [ name: scriptName, args: args ]
         return 0
     }
 
     int executeCommand(String scriptName, String args, String env) {
-        this.lastScript = [ name: scriptName, args: args, env: env ]
+        lastScript = [ name: scriptName, args: args, env: env ]
         return 1
     }
 }
@@ -124,7 +122,7 @@ class CustomClassLoader extends URLClassLoader {
 
     CustomClassLoader(test) {
         super([] as URL[])
-        this.testCase = test
+        testCase = test
     }
 
     Class<?> loadClass(String name) {
@@ -132,12 +130,12 @@ class CustomClassLoader extends URLClassLoader {
             MockGrailsScriptRunner.testCase = this.testCase
             return MockGrailsScriptRunner
         }
-        else if (name == "grails.util.BuildSettings") {
+
+        if (name == "grails.util.BuildSettings") {
             MockBuildSettings.testCase = this.testCase
             return MockBuildSettings
         }
-        else {
-            throw new AssertionFailedError("Asked to load unrecognised class: ${name}")
-        }
+
+        throw new AssertionFailedError("Asked to load unrecognised class: ${name}")
     }
 }

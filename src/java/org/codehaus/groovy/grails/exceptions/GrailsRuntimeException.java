@@ -15,27 +15,24 @@
 package org.codehaus.groovy.grails.exceptions;
 
 /**
- * Generic global runtime exception
+ * Generic global runtime exception.
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Feb 9, 2007
- *        Time: 7:31:39 PM
  */
-public class GrailsRuntimeException extends GrailsException{
+public class GrailsRuntimeException extends GrailsException {
 
-	private static final long serialVersionUID = -1335036736215845295L;
+    private static final long serialVersionUID = -1335036736215845295L;
 
-	public GrailsRuntimeException(String arg0) {
-        super(arg0);
+    public GrailsRuntimeException(String message) {
+        super(message);
     }
 
-    public GrailsRuntimeException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public GrailsRuntimeException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public GrailsRuntimeException(Throwable arg0) {
-        super(arg0);
+    public GrailsRuntimeException(Throwable cause) {
+        super(cause);
     }
 }

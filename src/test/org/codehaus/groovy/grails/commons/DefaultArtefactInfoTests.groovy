@@ -1,18 +1,15 @@
 package org.codehaus.groovy.grails.commons
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 26, 2009
  */
-
-public class DefaultArtefactInfoTests extends GroovyTestCase{
+class DefaultArtefactInfoTests extends GroovyTestCase {
 
     void testAddGrailsClass() {
         def info = new DefaultArtefactInfo()
 
         def gcl = new GroovyClassLoader()
-
 
         info.updateComplete()
 
@@ -52,7 +49,6 @@ class BarController {}
         assertEquals 2, info.grailsClassesByName.size()
         assertEquals 2, info.grailsClassesArray.size()
 
-
         // test class of same name
         def c3 = gcl.parseClass('''
 class FooController {}
@@ -67,8 +63,5 @@ class FooController {}
         assertEquals 2, info.grailsClasses.size()
         assertEquals 2, info.grailsClassesByName.size()
         assertEquals 2, info.grailsClassesArray.size()
-        
     }
-
 }
-

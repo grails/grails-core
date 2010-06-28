@@ -21,31 +21,28 @@ import junit.framework.TestCase;
 /**
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: May 1, 2009
  */
-public class GroovyPageUtilsTests extends TestCase{
+public class GroovyPageUtilsTests extends TestCase {
+
     public void testGetViewURI() {
-    	GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar.gsp", uriSupport.getViewURI("foo", "bar"));
         assertEquals("/bar/foo.gsp", uriSupport.getViewURI("foo", "/bar/foo"));
         assertEquals("/foo/bar/foo.gsp", uriSupport.getViewURI("foo", "bar/foo"));
     }
 
     public void testNoSuffxGetViewURI() {
-    	GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar", uriSupport.getNoSuffixViewURI("foo", "bar"));
         assertEquals("/bar/foo", uriSupport.getNoSuffixViewURI("foo", "/bar/foo"));
         assertEquals("/foo/bar/foo", uriSupport.getNoSuffixViewURI("foo", "bar/foo"));
     }
 
-
     public void testGetTemplateURI() {
-    	GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
+        GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/_bar.gsp", uriSupport.getTemplateURI("foo", "bar"));
         assertEquals("/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "/bar/foo"));
         assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "bar/foo"));
-
     }
 
     public void testGetTemplateURIForController() throws IllegalAccessException, InstantiationException {
@@ -54,7 +51,6 @@ public class GroovyPageUtilsTests extends TestCase{
         assertEquals("/foo/_bar.gsp", uriSupport.getTemplateURI(controller, "bar"));
         assertEquals("/bar/_foo.gsp", uriSupport.getTemplateURI(controller, "/bar/foo"));
         assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI(controller, "bar/foo"));
-
     }
 
     public void testGetViewURIForController() throws IllegalAccessException, InstantiationException {

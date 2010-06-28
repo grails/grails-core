@@ -1,24 +1,23 @@
+package org.codehaus.groovy.grails.plugins.web.filters
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.ModelAndView
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Oct 11, 2007
  */
-package org.codehaus.groovy.grails.plugins.web.filters
-
-import org.springframework.web.servlet.HandlerInterceptor
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import org.springframework.web.servlet.ModelAndView
-
 class CompositeInterceptorTests extends GroovyTestCase {
 
     void testCompositeInterceptorPostHandle() {
         def t1
         def t2
-        def i1 = [postHandle:{ HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView mv -> t1='foo';true}] as HandlerInterceptor
+        def i1 = [postHandle: { HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView mv -> t1='foo';true}] as HandlerInterceptor
         def i2 = [postHandle:{ HttpServletRequest request, HttpServletResponse response, Object o,ModelAndView mv  ->t2='bar';true}] as HandlerInterceptor
 
         def ci= new CompositeInterceptor()
@@ -57,6 +56,4 @@ class CompositeInterceptorTests extends GroovyTestCase {
         assertEquals 'foo', t1
         assertEquals 'bar', t2
     }
-
-
 }

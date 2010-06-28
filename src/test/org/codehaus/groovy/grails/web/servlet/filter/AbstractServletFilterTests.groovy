@@ -37,10 +37,10 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
     def evaluator
     def filter
 
-    void setUp() {
+    protected void setUp() {
         super.setUp()
 
-        servletContext = new MockServletContext();
+        servletContext = new MockServletContext()
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
         response = webRequest.currentResponse
@@ -55,7 +55,7 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
     }
 
     void tearDown() {
-        ServletContextHolder.setServletContext(null);
+        ServletContextHolder.setServletContext(null)
         PluginManagerHolder.setPluginManager(null)
     }
 
@@ -65,7 +65,7 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
      * Initialise the given filter so that it can tested.
      */
     protected final void initFilter(Filter filter) {
-        filter.init(new MockFilterConfig(this.servletContext))
+        filter.init(new MockFilterConfig(servletContext))
     }
 
     /**
@@ -73,25 +73,24 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
      * servlet context.
      */
     protected final void bindApplicationContext() {
-        this.servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT, this.appCtx);
+        servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT, appCtx)
     }
 
     /**
      * Set up the Grails application and bind it to the servlet context.
      */
     protected final void bindGrailsApplication() {
-        // Create a new Grails application with the stored Groovy class
-        // loader.
-        this.application = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-        this.pluginManager = new MockGrailsPluginManager(this.application)
+        // Create a new Grails application with the stored Groovy class loader.
+        application = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        pluginManager = new MockGrailsPluginManager(application)
 
         // Register the application instance and plugin manager with
         // the mock application context.
-        this.appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, this.application)
-        this.appCtx.registerMockBean(GrailsPluginManager.BEAN_NAME, this.pluginManager)
-        PluginManagerHolder.setPluginManager(this.pluginManager)
+        appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, application)
+        appCtx.registerMockBean(GrailsPluginManager.BEAN_NAME, pluginManager)
+        PluginManagerHolder.setPluginManager(pluginManager)
 
         // Configure everything as if it's a running app.
-        GrailsConfigUtils.configureWebApplicationContext(this.servletContext, this.appCtx)
+        GrailsConfigUtils.configureWebApplicationContext(servletContext, appCtx)
     }
 }

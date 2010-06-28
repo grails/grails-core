@@ -3,14 +3,12 @@ package org.codehaus.groovy.grails.web.servlet
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
-* @author Graeme Rocher
-* @since 1.0
-*
-* Created: Mar 14, 2008
-*/
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass '''
 class MultipleRenderController {
     def test = {
@@ -26,7 +24,6 @@ class MultipleRenderController {
 }
 '''
     }
-
 
     void testLastContentTypeWins() {
         def controller = ga.getControllerClass("MultipleRenderController").newInstance()

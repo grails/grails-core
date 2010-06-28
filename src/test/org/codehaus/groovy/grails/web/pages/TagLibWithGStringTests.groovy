@@ -7,13 +7,10 @@ import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Feb 25, 2009
  */
+class TagLibWithGStringTests extends AbstractGrailsTagTests {
 
-public class TagLibWithGStringTests extends AbstractGrailsTagTests{
-
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass('''
 class MyTagLib {
 
@@ -26,11 +23,9 @@ class MyTagLib {
 ''')
     }
 
-
     void testMissingPropertyGString() {
         def template = '<jeff:doit />'
 
-                
         try {
             applyTemplate(template)
         }
@@ -38,7 +33,6 @@ class MyTagLib {
             def cause = GrailsExceptionResolver.getRootCause(e)
             assertTrue "The cause should have been a MPE but was ${cause}", cause instanceof MissingPropertyException
             assertEquals 1,e.lineNumber
-
         }
     }
 }

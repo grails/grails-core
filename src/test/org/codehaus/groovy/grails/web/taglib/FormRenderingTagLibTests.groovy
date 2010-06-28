@@ -1,10 +1,6 @@
-package org.codehaus.groovy.grails.web.taglib;
-
-import org.codehaus.groovy.runtime.InvokerHelper
-import org.codehaus.groovy.grails.commons.*
+package org.codehaus.groovy.grails.web.taglib
 
 class FormRenderingTagLibTests extends AbstractGrailsTagTests {
-
 
     void testTimeZoneSelect() {
         def template = '<g:timeZoneSelect name="foo"/>'
@@ -23,10 +19,8 @@ class FormRenderingTagLibTests extends AbstractGrailsTagTests {
 
         def output = sw.toString()
 
-        println output
         assertTrue output.startsWith('<select name="foo" id="foo" >')
         assertTrue output.endsWith('</select>')
-
     }
 
     void assertOutputEquals(expected, template, params = [:]) {
@@ -44,5 +38,4 @@ class FormRenderingTagLibTests extends AbstractGrailsTagTests {
 
         assertEquals expected, sw.toString()
     }
-
 }

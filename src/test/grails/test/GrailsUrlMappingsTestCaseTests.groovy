@@ -24,23 +24,25 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver
  * @author Luke Daley
  */
 class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
+
     def mockApplicationContext
     def mockApplication
 
     protected void setUp() {
         super.setUp()
-        
+
         mockApplication = new DefaultGrailsApplication(
-                [ GrailsUrlMappingsTestCaseFakeController, MoneyController, GRAILS_3571_UrlMappings, TestInternalUrlMappings, OverrideUrlMappings,
-                  GrailsUrlMappingTestCaseTestsBaseController, GrailsUrlMappingTestCaseTestsSubclassController
-                ] as Class[],
-                new GroovyClassLoader(this.getClass().classLoader))
+            [GrailsUrlMappingsTestCaseFakeController, MoneyController, GRAILS_3571_UrlMappings,
+             TestInternalUrlMappings, OverrideUrlMappings,
+             GrailsUrlMappingTestCaseTestsBaseController, GrailsUrlMappingTestCaseTestsSubclassController
+            ] as Class[],
+            new GroovyClassLoader(getClass().classLoader))
         mockApplication.initialise()
         mockApplication.config.disableMultipart = true
 
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, mockApplication)
-        ctx.registerMockBean("multipartResolver", new CommonsMultipartResolver()) 
+        ctx.registerMockBean("multipartResolver", new CommonsMultipartResolver())
         mockApplication.applicationContext = ctx
 
         def servletContext = ctx.servletContext
@@ -50,7 +52,7 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         mockApplicationContext = ctx
         ctx = new GrailsWebApplicationContext(ctx)
         ctx.servletContext = servletContext
-        
+
         GrailsWebUtil.bindMockWebRequest(ctx)
     }
 
@@ -91,7 +93,7 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         assertEquals([Class, String, Integer], test.urlMappingEvaluatees)
 
         test.grailsApplication = [
-                urlMappingsClasses: [ new Expando(clazz: String), new Expando(clazz: Integer) ]
+            urlMappingsClasses: [ new Expando(clazz: String), new Expando(clazz: Integer) ]
         ]
 
         test.mappings = null
@@ -106,11 +108,11 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         }
 
         test.mappingEvaluator = [
-                evaluateMappings: {
-                    assertTrue "evaluateMappings() argument should be a closure.", it instanceof Closure
-                    assertSame ExplicitMappingTestCase.mappings, it
-                    return [ new MockUrlMapping("a", "show"), new MockUrlMapping("c", "list") ]
-                }
+            evaluateMappings: {
+                assertTrue "evaluateMappings() argument should be a closure.", it instanceof Closure
+                assertSame ExplicitMappingTestCase.mappings, it
+                return [ new MockUrlMapping("a", "show"), new MockUrlMapping("c", "list") ]
+            }
         ]
 
         def holder = test.createMappingsHolder()
@@ -123,16 +125,15 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         def test = new GrailsUrlMappingsTestCase()
 
         test.grailsApplication = [
-                controllerClasses: [
-                        [
-                                getLogicalPropertyName: {-> "dilbert"},
-                                newInstance: {-> "DilbertController"}
-                        ] as GrailsControllerClass,
-                        [
-                                getLogicalPropertyName: {-> "catbert"},
-                                newInstance: {-> "CatbertController"}
-                        ] as GrailsControllerClass
-                ]
+            controllerClasses: [
+                [getLogicalPropertyName: {-> "dilbert"},
+                 newInstance: {-> "DilbertController"}
+                ] as GrailsControllerClass,
+
+                [getLogicalPropertyName: {-> "catbert"},
+                 newInstance: {-> "CatbertController"}
+                ] as GrailsControllerClass
+            ]
         ]
 
         def controllers = test.createControllerMap()
@@ -155,10 +156,10 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         def test = new GrailsUrlMappingsTestCase()
         def expectedPattern = ""
         test.patternResolver = [
-                getResources: {
-                    assertEquals(expectedPattern, it)
-                    return [1]
-                }
+            getResources: {
+                assertEquals(expectedPattern, it)
+                return [1]
+            }
         ]
 
         expectedPattern = "grails-app/views/c/v.*"
@@ -174,7 +175,6 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         test.setUp()
 
         test.testMoneyMapping()
-
     }
 
     void testAssertUrlMapping() {
@@ -201,10 +201,8 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         shouldFail(ComparisonFailure) {
             try {
                 test.assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "action2")
-            } catch (e) {
-                e.printStackTrace()
-
             }
+            catch (e) {}
         }
 
         test.assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
@@ -266,7 +264,7 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         test.setUp()
         test.testSuperClassMapping()
     }
-    
+
     private void checkFailures(TestResult result) {
         result.errors().each { TestFailure failure ->
             println ">> Error: ${failure.toString()}"
@@ -289,29 +287,26 @@ class Grails5786TestCase extends GrailsUrlMappingsTestCase {
 }
 
 class GRAILS_3571_UrlMappings {
-  static mappings = {
-    "/$controller/$action?/$id?"{
-      constraints {
-        // apply constraints here
-      }
+
+    static mappings = {
+        "/$controller/$action?/$id?" {}
+
+        "/showMoney/$currencyName" (controller: 'money', action: 'display')
+
+        "500"(view:'/error')
     }
-
-    "/showMoney/$currencyName" (controller: 'money', action: 'display')
-
-    "500"(view:'/error')
-  }
 }
+
 class MoneyMappingTestCase extends GrailsUrlMappingsTestCase {
 
     void testMoneyMapping() {
-        assertUrlMapping('/showMoney/dollars',
-                         controller: 'money', action:'display') {
+        assertUrlMapping('/showMoney/dollars', controller: 'money', action:'display') {
             currencyName = 'dollars'
         }
     }
 }
-class MoneyController {
 
+class MoneyController {
     def display = {
         render "display action called for currencyName ${params.currencyName}"
     }
@@ -370,7 +365,6 @@ class GrailsUrlMappingsTestCaseFakeController {
     def action3Flow = {}
     def notAction1 = 1
     def notAction2 = 2
-
 }
 
 class MockUrlMapping implements UrlMapping {
@@ -384,84 +378,50 @@ class MockUrlMapping implements UrlMapping {
     }
 
     boolean equals(other) {
-        return other instanceof MockUrlMapping && other.controller == this.controller && other.action == this.action
+        other instanceof MockUrlMapping && other.controller == controller && other.action == action
     }
 
-    public UrlMappingInfo match(String uri) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    UrlMappingInfo match(String uri) { null }
 
-    public UrlMappingData getUrlData() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    UrlMappingData getUrlData() { null }
 
-    public int compareTo(Object o) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    int compareTo(Object o) { 0 }
 
-    public String createURL(Map parameterValues, String encoding) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String createURL(Map parameterValues, String encoding) { null }
 
-    public String createURL(Map parameterValues, String encoding, String fragment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String createURL(Map parameterValues, String encoding, String fragment) { null }
 
-    public String createURL(String controller, String action, Map parameterValues, String encoding) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String createURL(String controller, String action, Map parameterValues, String encoding) { null }
 
-    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String createRelativeURL(String controller, String action, Map parameterValues, String encoding) { null }
 
-    public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) { null }
 
-    public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) { null }
 
-    public ConstrainedProperty[] getConstraints() {
-        return new ConstrainedProperty[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    ConstrainedProperty[] getConstraints() { new ConstrainedProperty[0] }
 
-    public Object getControllerName() {
-        return this.controller
-    }
+    Object getControllerName() { controller }
 
-    public Object getActionName() {
-        return this.action
-    }
+    Object getActionName() { action }
 
-    public Object getViewName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    Object getViewName() { null }
 
-    public void setParameterValues(Map parameterValues) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+    void setParameterValues(Map parameterValues) {}
 
-    public void setParseRequest(boolean shouldParse) {
+    void setParseRequest(boolean shouldParse) {
         // do nothing
     }
 
-    public String getMappingName() {
-        return null;
-    }
+    String getMappingName() { null }
 
-    public void setMappingName(String name) {
-    }
+    void setMappingName(String name) {}
 
-	public boolean hasRuntimeVariable(String name) {
-		return false;
-	}
-    
+    boolean hasRuntimeVariable(String name) { false }
 }
 
 abstract class GrailsUrlMappingTestCaseTestsBaseController {
-	def base = {}
+    def base = {}
 }
 
 class GrailsUrlMappingTestCaseTestsSubclassController extends GrailsUrlMappingTestCaseTestsBaseController {}

@@ -35,35 +35,30 @@ import org.xml.sax.ErrorHandler
 import org.xml.sax.InputSource
 
 /**
- * Used by BeanBuilder to read a Spring namespace expression in the Groovy DSL
+ * Used by BeanBuilder to read a Spring namespace expression in the Groovy DSL.
  *
  * @see BeanBuilder
  *
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Jan 15, 2009
  */
-
-public class DynamicElementReader extends GroovyObjectSupport{
-
+class DynamicElementReader extends GroovyObjectSupport {
 
     private static final LOG = LogFactory.getLog(BeanBuilder)
 
     private Map xmlNamespaces
     private String rootNamespace
-    ErrorHandler errorHandler = new SimpleSaxErrorHandler(LOG);
+    ErrorHandler errorHandler = new SimpleSaxErrorHandler(LOG)
     int validationMode = XmlValidationModeDetector.VALIDATION_NONE
     EntityResolver entityResolver = new DelegatingEntityResolver(DynamicElementReader.class.getClassLoader())
     ParserContext parserContext
     NamespaceHandler namespaceHandler
     BeanConfiguration beanConfiguration
-    boolean beanDecorator  = false
+    boolean beanDecorator = false
     boolean firstCall = true
 
-    public DynamicElementReader(String namespace, Map namespaceMap=Collections.EMPTY_MAP, NamespaceHandler namespaceHandler = null, ParserContext parserContext = null) {
-        super();
-        this.xmlNamespaces = namespaceMap;
+    DynamicElementReader(String namespace, Map namespaceMap=Collections.EMPTY_MAP, NamespaceHandler namespaceHandler = null, ParserContext parserContext = null) {
+        this.xmlNamespaces = namespaceMap
         this.rootNamespace = namespace
         this.namespaceHandler = namespaceHandler
         this.parserContext = parserContext
@@ -74,80 +69,79 @@ public class DynamicElementReader extends GroovyObjectSupport{
     }
 
     /**
-     * Hook that subclass or anonymous classes can overwrite to implement custom behavior after invocation
-     * completes
-     */
+    * Hook that subclass or anonymous classes can overwrite to implement custom behavior after invocation
+    * completes
+    */
     protected void afterInvocation() {
         // NOOP
     }
-    
+
     @Override
-    public Object invokeMethod(String name, Object args) {
+    Object invokeMethod(String name, Object args) {
         boolean invokeAfterInterceptor = false
-        if(firstCall) {
+        if (firstCall) {
             invokeAfterInterceptor = true
-            firstCall=false
+            firstCall = false
         }
-        if(name.equals("doCall")) {
+        if (name.equals("doCall")) {
             def callable = args[0]
             callable.resolveStrategy = Closure.DELEGATE_FIRST
             callable.delegate = this
             def result = callable.call()
-            if(invokeAfterInterceptor) {
+            if (invokeAfterInterceptor) {
                 afterInvocation()
             }
             return result            
         }
-        else {
-            StreamingMarkupBuilder builder = new StreamingMarkupBuilder();
-            def myNamespaces = xmlNamespaces
-            def myNamespace = rootNamespace
 
-            def callable = {
-                for(namespace in myNamespaces) {
-                    mkp.declareNamespace( [(namespace.key):namespace.value] )
-                }
-                if(args && (args[-1] instanceof Closure)) {
-                    args[-1].resolveStrategy = Closure.DELEGATE_FIRST
-                    args[-1].delegate = builder
-                }
-                delegate."$myNamespace"."$name"(*args)
+        StreamingMarkupBuilder builder = new StreamingMarkupBuilder()
+        def myNamespaces = xmlNamespaces
+        def myNamespace = rootNamespace
+
+        def callable = {
+            for (namespace in myNamespaces) {
+                mkp.declareNamespace([(namespace.key):namespace.value])
             }
+            if (args && (args[-1] instanceof Closure)) {
+                args[-1].resolveStrategy = Closure.DELEGATE_FIRST
+                args[-1].delegate = builder
+            }
+            delegate."$myNamespace"."$name"(*args)
+        }
 
-            callable.resolveStrategy=Closure.DELEGATE_FIRST
-            callable.delegate = builder
-            def writable = builder.bind( callable )
+        callable.resolveStrategy = Closure.DELEGATE_FIRST
+        callable.delegate = builder
+        def writable = builder.bind(callable)
 
-            def sw = new StringWriter()
-            writable.writeTo(sw)
+        def sw = new StringWriter()
+        writable.writeTo(sw)
 
-            def documentLoader = new DefaultDocumentLoader()
-            InputSource is = new InputSource(new StringReader(sw.toString()))
-            Element element = documentLoader.loadDocument(is, entityResolver, errorHandler, validationMode, true).getDocumentElement()
+        def documentLoader = new DefaultDocumentLoader()
+        InputSource is = new InputSource(new StringReader(sw.toString()))
+        Element element = documentLoader.loadDocument(is, entityResolver, errorHandler, validationMode, true).getDocumentElement()
 
-            parserContext?.delegate?.initDefaults element
-            if(namespaceHandler && parserContext) {
-                if(beanDecorator && beanConfiguration) {
-                    BeanDefinitionHolder holder = new BeanDefinitionHolder(beanConfiguration.getBeanDefinition(), beanConfiguration.getName());
-                    holder = namespaceHandler.decorate(element,holder, parserContext)
-                    beanConfiguration.setBeanDefinition(holder.getBeanDefinition())
-                }
-                else {
-
-                    def beanDefinition = namespaceHandler.parse(element, parserContext)
-                    if(beanDefinition) {
-                        beanConfiguration?.setBeanDefinition(beanDefinition) 
-                    }
-                }
+        parserContext?.delegate?.initDefaults element
+        if (namespaceHandler && parserContext) {
+            if (beanDecorator && beanConfiguration) {
+                BeanDefinitionHolder holder = new BeanDefinitionHolder(beanConfiguration.getBeanDefinition(), beanConfiguration.getName())
+                holder = namespaceHandler.decorate(element,holder, parserContext)
+                beanConfiguration.setBeanDefinition(holder.getBeanDefinition())
             }
             else {
-                throw new BeanDefinitionParsingException(new Problem("No namespace handler found for element ${sw}", new Location(parserContext?.readerContext?.resource ?: new ByteArrayResource(new byte[0]))))
+                def beanDefinition = namespaceHandler.parse(element, parserContext)
+                if (beanDefinition) {
+                    beanConfiguration?.setBeanDefinition(beanDefinition) 
+                }
             }
-            if(invokeAfterInterceptor) {
-                afterInvocation()
-            }
-            return element
-
         }
+        else {
+            throw new BeanDefinitionParsingException(new Problem("No namespace handler found for element ${sw}", new Location(parserContext?.readerContext?.resource ?: new ByteArrayResource(new byte[0]))))
+        }
+
+        if (invokeAfterInterceptor) {
+            afterInvocation()
+        }
+
+        return element
     }
 }

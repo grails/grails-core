@@ -1,15 +1,13 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- *
- * Created: Oct 10, 2007
- */
 package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockServletContext
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class DynamicParameterValuesTests extends AbstractGrailsMappingTests {
     def mappingScript = '''
 mappings {
@@ -49,7 +47,6 @@ mappings {
         assertEquals "The Stand", info.id
         assertEquals "The Stand", webRequest.params.id
         assertEquals 10.5, webRequest.params.price
-
     }
 
     void testTwoNamedVariableMapping() {
@@ -68,7 +65,5 @@ mappings {
         assertEquals "page", info.controllerName
         assertEquals "show", info.actionName
         assertEquals "2", info.id
-
     }
-
 }

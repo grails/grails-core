@@ -23,7 +23,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
  * Tests for the bindData method
  *
  * @author Marc Palmer
- *
  */
 class BindDataMethodTests extends AbstractGrailsControllerTests {
     def mockController
@@ -31,8 +30,8 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
     def target
     def safeMeta
 
-	void testBindDataFromMap() {
-	    runTest() {
+    void testBindDataFromMap() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer' ]
 
@@ -41,10 +40,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
         }
-	}
+    }
 
-	void testBindDataWithExcluded() {
-	    runTest() {
+    void testBindDataWithExcluded() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def excludes = [exclude:['email']]
@@ -55,10 +54,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertEquals safeMeta, target.metaClass
             assertNull target.email
         }
-	}
+    }
 
-	void testBindDataWithIncluded() {
-	    runTest() {
+    void testBindDataWithIncluded() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def includes = [include:['name']]
@@ -69,10 +68,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertEquals safeMeta, target.metaClass
             assertNull target.email
         }
-	}
+    }
 
-	void testBindDataWithNeitherIncludeOrExcludeIncludesAll() {
-	    runTest() {
+    void testBindDataWithNeitherIncludeOrExcludeIncludesAll() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dowantthis' ]
             method.invoke( mockController,"bindData", [target, src, [:]].toArray() )
@@ -81,10 +80,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertEquals safeMeta, target.metaClass
             assertEquals target.email, 'dowantthis'
         }
-	}
+    }
 
-	void testBindDataExcludedOverridesIncluded() {
-	    runTest() {
+    void testBindDataExcludedOverridesIncluded() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def includedAndExcluded = [include:['name','email'], exclude:['email']]
@@ -95,10 +94,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertEquals safeMeta, target.metaClass
             assertNull target.email
         }
-	}
+    }
 
-	void testBindDataWithPrefixFilter() {
-	    runTest() {
+    void testBindDataWithPrefixFilter() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
                         'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
@@ -108,7 +107,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertEquals "lee@mail.com", target.email
             assertEquals safeMeta, target.metaClass
         }
-	}
+    }
 
     void testBindDataWithDisallowedWithGrailsParameterMap() {
         runTest() {
@@ -131,7 +130,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testBindDataWithPrefixFilterAndDisallowed() {
-	    runTest() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
                         'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
@@ -142,10 +141,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertNull target.email
             assertEquals safeMeta, target.metaClass
         }
-	}
+    }
 
-	 void testBindDataConvertsSingleStringInMapToList() {
-	    runTest() {
+     void testBindDataConvertsSingleStringInMapToList() {
+        runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
                         'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
@@ -156,10 +155,10 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             assertNull target.email
             assertEquals safeMeta, target.metaClass
         }
-	}
+    }
 
-	void onSetUp() {
-		gcl.parseClass(
+    void onSetUp() {
+        gcl.parseClass(
 '''
 class BindController {
 }

@@ -7,12 +7,10 @@ import grails.util.MockHttpServletResponse
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 2, 2008
  */
 class ChainMethodTests extends AbstractGrailsControllerTests{
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass('''
 class TestChainController {
     def save = {
@@ -52,8 +50,5 @@ class TestChainBook {
         org.springframework.mock.web.MockHttpServletResponse response = controller.response
 
         assertEquals '/testChain/create', response.redirectedUrl
-        println flash
     }
-
-
 }

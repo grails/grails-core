@@ -7,7 +7,6 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
 
 class FlowBuilderDynamicTransitionTests extends AbstractGrailsTagAwareFlowExecutionTests{
 
-
     void testFlowDefinition() {
 
         def startState = flowDefinition.getStartState()
@@ -18,8 +17,8 @@ class FlowBuilderDynamicTransitionTests extends AbstractGrailsTagAwareFlowExecut
 
         def stepTwo = flowDefinition.getState("stepTwo")
         assertTrue stepTwo instanceof ActionState
-        
     }
+
     void testFlowExecution() {
         grails.util.GrailsWebUtil.bindMockWebRequest()
         startFlow()
@@ -29,7 +28,6 @@ class FlowBuilderDynamicTransitionTests extends AbstractGrailsTagAwareFlowExecut
 
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "stepFour"
-        
     }
 
     String getFlowId() { "myFlow" }

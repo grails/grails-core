@@ -1,9 +1,3 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Nov 22, 2007
- */
 package org.codehaus.groovy.grails.reload
 
 import grails.spring.BeanBuilder
@@ -11,6 +5,10 @@ import org.springframework.aop.framework.ProxyFactoryBean
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class SpringProxiedBeanReloadTests extends GroovyTestCase {
 
     void testReloadCGLibProxiedBean() {
@@ -32,11 +30,8 @@ class SpringProxiedBeanReloadTests extends GroovyTestCase {
 
         def appCtx = bb.createApplicationContext()
 
-        println "Bean = " + appCtx.getBean("myBean")
-        println "Class = " + appCtx.getBean('myBean').getClass()
         assertEquals "The Stand", appCtx.getBean('myBean').title
         assertEquals "Stephen King", appCtx.getBean('myBean').author
-
 
         gcl = new GroovyClassLoader()
         cls = gcl.parseClass("class Book { String title = 'The Shining'; String author }")
@@ -62,8 +57,7 @@ class SpringProxiedBeanReloadTests extends GroovyTestCase {
 
 }
 class DummyInterceptor implements MethodInterceptor {
-    public Object invoke(MethodInvocation methodInvocation) {
-        return methodInvocation.proceed();
+    Object invoke(MethodInvocation methodInvocation) {
+        methodInvocation.proceed()
     }
-
 }

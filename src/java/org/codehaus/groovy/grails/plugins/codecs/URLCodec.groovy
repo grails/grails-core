@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.codecs
 
 import java.net.URLEncoder
@@ -21,7 +20,7 @@ import java.net.URLDecoder
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
- * A code that encodes and decodes Objects to and from URL encoded strings
+ * A codec that encodes and decodes Objects to and from URL encoded strings.
  *
  * @author Marc Palmer
  * @since 0.5
@@ -35,12 +34,12 @@ class URLCodec {
         URLDecoder.decode(obj.toString(), URLCodec.getEncoding())
     }
 
-	private static def getEncoding() {
-		def request = RequestContextHolder.getRequestAttributes()?.request
-		def encoding = "UTF-8"
-		if (request?.characterEncoding) {
-			encoding = request?.characterEncoding
-		}
-		return encoding
-	}
+    private static def getEncoding() {
+        def request = RequestContextHolder.getRequestAttributes()?.request
+        def encoding = "UTF-8"
+        if (request?.characterEncoding) {
+            encoding = request?.characterEncoding
+        }
+        return encoding
+    }
 }

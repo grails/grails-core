@@ -31,26 +31,27 @@ import org.hibernate.event.def.DefaultFlushEventListener;
  */
 public class PatchedDefaultFlushEventListener extends DefaultFlushEventListener{
 
-	private static final long serialVersionUID = -7413770767669684078L;
-	private static final Log LOG = LogFactory.getLog(PatchedDefaultFlushEventListener.class);
+    private static final long serialVersionUID = -7413770767669684078L;
+    private static final Log LOG = LogFactory.getLog(PatchedDefaultFlushEventListener.class);
+
     @Override
     protected void performExecutions(EventSource session) throws HibernateException {
         session.getPersistenceContext().setFlushing(true);
         try {
-          session.getJDBCContext().getConnectionManager().flushBeginning();
-          // we need to lock the collection caches before
-          // executing entity inserts/updates in order to
-          // account for bidi associations
-          session.getActionQueue().prepareActions();
-          session.getActionQueue().executeActions();
+            session.getJDBCContext().getConnectionManager().flushBeginning();
+            // we need to lock the collection caches before
+            // executing entity inserts/updates in order to
+            // account for bidi associations
+            session.getActionQueue().prepareActions();
+            session.getActionQueue().executeActions();
         }
         catch (HibernateException he) {
-          LOG.error("Could not synchronize database state with session", he);
-          throw he;
+            LOG.error("Could not synchronize database state with session", he);
+            throw he;
         }
         finally {
-          session.getPersistenceContext().setFlushing(false);
-          session.getJDBCContext().getConnectionManager().flushEnding();
+            session.getPersistenceContext().setFlushing(false);
+            session.getJDBCContext().getConnectionManager().flushEnding();
         }
     }
 }

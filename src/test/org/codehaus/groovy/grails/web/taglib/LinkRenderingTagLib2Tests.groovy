@@ -5,20 +5,20 @@ import org.codehaus.groovy.grails.commons.*
 
 class LinkRenderingTagLib2Tests extends AbstractGrailsTagTests {
 
-    void onInit() {
+    protected void onInit() {
         def mappingClass = gcl.parseClass('''
 class TestUrlMappings {
-	static mappings = {
-	    "/$id?"{
-			controller = "content"
-			action = "view"
-		}
+    static mappings = {
+        "/$id?"{
+            controller = "content"
+            action = "view"
+        }
 
-		"/$dir/$id"{
-			controller = "content"
-			action = "view"
-		}
-	}
+        "/$dir/$id"{
+            controller = "content"
+            action = "view"
+        }
+    }
 }
         ''')
 
@@ -27,13 +27,11 @@ class TestUrlMappings {
 
     void testLinkWithOnlyId() {
         def template = '<g:link id="competition">Enter</g:link>'
-
         assertOutputEquals('<a href="/competition">Enter</a>', template)
     }
 
     void testLinkWithOnlyIdAndAction() {
         def template = '<g:link id="competition" controller="content" action="view">Enter</g:link>'
-
         assertOutputEquals('<a href="/competition">Enter</a>', template)
     }
 
@@ -52,5 +50,4 @@ class TestUrlMappings {
 
         assertEquals expected, sw.toString()
     }
-
 }

@@ -6,8 +6,6 @@ import java.sql.Types
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Sep 27, 2007
  */
 class MappingDslTests extends AbstractGrailsHibernateTests {
 
@@ -297,11 +295,11 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         stmt.executeUpdate "INSERT INTO Composite_Id_Assigned_AUTHOR VALUES('Frank Herbert',0)"
         stmt.executeUpdate "INSERT INTO Composite_Id_Assigned_BOOK VALUES('first','Frank Herbert',0)"
         stmt.executeUpdate "INSERT INTO Composite_Id_Assigned_BOOK VALUES('second','Frank Herbert',0)"
-    	con.close()
+        con.close()
 
-    	def authorClass = ga.getDomainClass('CompositeIdAssignedAuthor').clazz
+        def authorClass = ga.getDomainClass('CompositeIdAssignedAuthor').clazz
 
-    	// per GRAILS-6289, this will throw an exception because the afterLoad property cannot be found...
+        // per GRAILS-6289, this will throw an exception because the afterLoad property cannot be found...
         authorClass.executeQuery 'select distinct a from CompositeIdAssignedAuthor as a inner join fetch a.books'
     }
 
@@ -451,13 +449,14 @@ class PersonDSL2 {
 }
 @grails.persistence.Entity
 class CompositeIdAssignedAuthor {
-	   String id
-	   static hasMany = [books:CompositeIdAssignedBook]
+    String id
+    static hasMany = [books:CompositeIdAssignedBook]
 
-	   static mapping = {
-	      id column: 'name', generator:'assigned'
-	   }
+    static mapping = {
+       id column: 'name', generator:'assigned'
+    }
 }
+
 @grails.persistence.Entity
 class CompositeIdAssignedBook implements Serializable {
    String edition

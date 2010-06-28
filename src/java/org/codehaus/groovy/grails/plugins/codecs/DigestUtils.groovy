@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.codecs
 
 import java.security.MessageDigest
@@ -21,22 +20,24 @@ import java.security.MessageDigest
 abstract class DigestUtils {
 
     // Digest byte[], any list/array or string into a byte[]
-    static def digest(String algorithm, data) {
+    static digest(String algorithm, data) {
         if (data == null) {
             return null
-        } else {
-            def md = MessageDigest.getInstance(algorithm)
-            def src
-            if ((data instanceof Byte[]) || (data instanceof byte[])) {
-                src = data
-            } else if ((data instanceof List) || data.class.isArray()) {
-                src = new byte[data.size()]
-                data.eachWithIndex { v, i -> src[i] = v }
-            } else {
-                src = data.toString().getBytes("UTF-8")
-            }
-            md.update(src) // This probably needs to use the thread's Locale encoding
-            return md.digest()
         }
+
+        def md = MessageDigest.getInstance(algorithm)
+        def src
+        if (data instanceof Byte[] || data instanceof byte[]) {
+            src = data
+        }
+        else if (data instanceof List || data.getClass().isArray()) {
+            src = new byte[data.size()]
+            data.eachWithIndex { v, i -> src[i] = v }
+        }
+        else {
+            src = data.toString().getBytes("UTF-8")
+        }
+        md.update(src) // This probably needs to use the thread's Locale encoding
+        return md.digest()
     }
 }

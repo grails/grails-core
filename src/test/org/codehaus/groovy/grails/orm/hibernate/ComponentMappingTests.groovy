@@ -61,29 +61,29 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
         assertEquals "3345243", p.homeAddress.postCode
     }
 
-	void testJira2773() {
+    void testJira2773() {
 
-		def RegularPayment2773 = ga.getDomainClass('RegularPayment2773').clazz
-		def payment = RegularPayment2773.newInstance()
+        def RegularPayment2773 = ga.getDomainClass('RegularPayment2773').clazz
+        def payment = RegularPayment2773.newInstance()
 
-		def RegularPaymentPart2773 = ga.getDomainClass('RegularPaymentPart2773').clazz
-		def paymentPart = RegularPaymentPart2773.newInstance()
+        def RegularPaymentPart2773 = ga.getDomainClass('RegularPaymentPart2773').clazz
+        def paymentPart = RegularPaymentPart2773.newInstance()
 
-		def Money2773 = ga.getDomainClass('Money2773').clazz
-		def money = Money2773.newInstance()
+        def Money2773 = ga.getDomainClass('Money2773').clazz
+        def money = Money2773.newInstance()
 
-		money.value = 123
-		payment.regular = paymentPart
-		paymentPart.amount = money
+        money.value = 123
+        payment.regular = paymentPart
+        paymentPart.amount = money
 
-		assertNotNull payment.save()
+        assertNotNull payment.save()
 
-		session.flush()
-		session.clear()
+        session.flush()
+        session.clear()
 
-		payment = RegularPayment2773.list()[0]
-		assertEquals 123, payment.regular.amount.value
-	}
+        payment = RegularPayment2773.list()[0]
+        assertEquals 123, payment.regular.amount.value
+    }
 
     protected void onSetUp() {
         gcl.parseClass '''

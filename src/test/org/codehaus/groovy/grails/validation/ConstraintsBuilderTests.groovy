@@ -1,52 +1,48 @@
 package org.codehaus.groovy.grails.validation
 
-import  org.codehaus.groovy.grails.commons.test.*
-import  org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.commons.metaclass.*
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors;
 
 class ConstraintsBuilderTests extends AbstractGrailsMockTests {
 
     void testPrimitiveIntAndMinConstraint() {
-         def bookClass = ga.getDomainClass("Book")
-         def book = bookClass.newInstance()
-         book.title = "foo"
+        def bookClass = ga.getDomainClass("Book")
+        def book = bookClass.newInstance()
+        book.title = "foo"
 
-         def bookMetaClass = new ExpandoMetaClass(bookClass.clazz)
+        def bookMetaClass = new ExpandoMetaClass(bookClass.clazz)
 
-         
-         def errorsProp = null
-         def setter = { Object obj -> errorsProp = obj }
+        def errorsProp = null
+        def setter = { Object obj -> errorsProp = obj }
 
-         bookMetaClass.setErrors = setter
-         bookMetaClass.initialize()
-         book.metaClass = bookMetaClass
+        bookMetaClass.setErrors = setter
+        bookMetaClass.initialize()
+        book.metaClass = bookMetaClass
 
         def bookValidator = new GrailsDomainClassValidator()
-        
 
         bookValidator.domainClass = bookClass
         bookValidator.messageSource = createMessageSource()
         bookClass.validator = bookValidator
-        
+
         def errors = new BindException(book, book.class.name)
 
         bookValidator.validate(book, errors, true)
 
-
-         assert !errors.hasErrors()
-         book.totalSales = -10
+        assert !errors.hasErrors()
+        book.totalSales = -10
         errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
-         assert errors.hasErrors()
-         book.totalSales = 10
+        assert errors.hasErrors()
+        book.totalSales = 10
 
         errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
-         assert !errors.hasErrors()
+        assert !errors.hasErrors()
     }
-
 
     void testURLValidation() {
         def theClass = ga.getDomainClass("Site")
@@ -57,7 +53,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         instance.anotherURL = "http://grails.org"
         def errors = validateInstance(instance, validator)
         assert !errors.hasErrors()
-        
+
         instance.anotherURL = "a_bad_url"
         errors = validateInstance(instance, validator)
         assert errors.hasErrors()
@@ -74,10 +70,6 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         instance.url = new URL("http://localhost:8080/tau_gwi_00/clif/cb/19")
         errors = validateInstance(instance, validator)
         assert !errors.hasErrors()
-
-
-
-                      
     }
 
     Errors validateInstance(instance, validator) {
@@ -101,7 +93,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         return validator
     }
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass('''
 class Book {
     Long id

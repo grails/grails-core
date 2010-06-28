@@ -18,19 +18,11 @@ package org.codehaus.groovy.grails.plugins.converters.codecs
 import grails.converters.XML
 
 /**
- * A Grails codec capability of converting an object to XML
-
+ * A Grails codec capable of converting an object to XML.
+ *
  * @author Siegfried Puchbauer
  * @since 0.6
-  *
- * Created: Aug 3, 2007
- * Time: 5:54:23 PM
- *
  */
 class XMLCodec {
-
-	static encode = { target ->
-		return new XML(target).toString()
-	}
-
+    static encode = { target -> new XML(target).toString() }
 }

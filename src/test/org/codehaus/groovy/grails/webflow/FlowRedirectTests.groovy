@@ -4,42 +4,32 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
 import org.springframework.webflow.definition.FlowDefinition
 import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
 
-
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jul 22, 2008
  */
-class FlowRedirectTests extends AbstractGrailsTagAwareFlowExecutionTests{
+class FlowRedirectTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
     void testRedirectToControllerAndAction() {
         startFlow()
 
         def context = signalEvent("test1")
-
         assertFlowExecutionEnded()
-
         assertEquals "contextRelative:/test/foo",context.getExternalRedirectUrl()
-
     }
 
     void testRedirectToControllerAndActionWithParamsObjectAccess() {
 
-       webRequest.params.id = "1"
-       startFlow()
-
-       def context = signalEvent("test2")
-
-       assertFlowExecutionEnded()
-
-       assertEquals "contextRelative:/test/foo/1",context.getExternalRedirectUrl()
+        webRequest.params.id = "1"
+        startFlow()
+        def context = signalEvent("test2")
+        assertFlowExecutionEnded()
+        assertEquals "contextRelative:/test/foo/1",context.getExternalRedirectUrl()
     }
-
 
     Map params = [id:10] // this should not be resolved
 
-    public Closure getFlowClosure() {
+    Closure getFlowClosure() {
         return {
             one {
                 on("test1").to "test1"
@@ -53,7 +43,4 @@ class FlowRedirectTests extends AbstractGrailsTagAwareFlowExecutionTests{
             }
         }
     }
-
-
-
 }

@@ -13,21 +13,19 @@ import javax.servlet.jsp.JspWriter
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 9, 2009
  */
+class SimpleTagTests extends GroovyTestCase {
 
-public class SimpleTagTests extends GroovyTestCase{
     GrailsWebRequest webRequest
+
     protected void setUp() {
         webRequest = GrailsWebUtil.bindMockWebRequest()
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
-     }
+    }
 
-     protected void tearDown() {
-         RequestContextHolder.setRequestAttributes null
-     }
-
+    protected void tearDown() {
+        RequestContextHolder.setRequestAttributes null
+    }
 
     void testSimpleTagWithBodyUsage() {
         def resolver = new MockRootLoaderTagLibraryResolver()
@@ -41,12 +39,9 @@ public class SimpleTagTests extends GroovyTestCase{
         }
 
         assertEquals "bodySimpleTagSupport:testbody", sw.toString().trim()
-
     }
 
     void testSimpleTagUsage() {
-
-
 
         def resolver = new MockRootLoaderTagLibraryResolver()
         resolver.servletContext = new MockServletContext()
@@ -58,19 +53,18 @@ public class SimpleTagTests extends GroovyTestCase{
 
         assertEquals "extendsSimpleTagSupport:output", sw.toString().trim()
     }
-
-
 }
+
 class ExtendsSimpleTagSupport extends SimpleTagSupport {
     @Override
-    public void doTag() throws JspException, IOException {
+    void doTag() throws JspException, IOException {
         getJspContext().getOut().println("extendsSimpleTagSupport:output");
     }
 }
+
 class BodySimpleTagSupport extends SimpleTagSupport {
     @Override
-    public void doTag() throws JspException, IOException {
-
+    void doTag() throws JspException, IOException {
         JspWriter out = getJspContext().getOut()
         out.print("bodySimpleTagSupport:");
         super.getJspBody().invoke(out)

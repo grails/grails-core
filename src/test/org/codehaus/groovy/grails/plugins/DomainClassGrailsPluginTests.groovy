@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector
@@ -7,13 +7,12 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.control.SourceUnit
 
-
 class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
-   
+
     void onSetUp() {
         gcl = new GrailsAwareClassLoader()
         def injector = new AlwaysInjector()
-        gcl.setClassInjectors([injector] as ClassInjector[]);
+        gcl.setClassInjectors([injector] as ClassInjector[])
 
         def fs = File.separator
         gcl.parseClass(
@@ -70,7 +69,7 @@ class Parent2 {
         instance = appCtx.getBean("grails.test.Parent2DomainClass").newInstance()
         instance.id = 3
         def parent2ToString = 'my toString'
-        assertEquals(parent2ToString, instance.toString())  
+        assertEquals(parent2ToString, instance.toString())
 
         instance = appCtx.getBean("Child2DomainClass").newInstance()
         instance.id = 4
@@ -80,8 +79,6 @@ class Parent2 {
         instance.id = 5
         assertEquals(parent2ToString, instance.toString())
     }
-
-
 
     void testInjectIds() {
         def clz = gcl.parseClass('''
@@ -111,7 +108,6 @@ class AssocTest {}
         assertEquals 10, obj.id
         assertEquals 2, obj.version
         assertTrue obj.others instanceof Set
-
     }
 
     void testInjectBelongsToAssociation()  {
@@ -127,7 +123,6 @@ class IdTest {
         obj.version = 2
         def assocTest = gcl.loadClass("AssocTest")
         obj.other = assocTest.newInstance()
-
 
         assertEquals 10, obj.id
         assertEquals 2, obj.version
@@ -164,22 +159,14 @@ class TheSubClass extends TheClass {
         assertEquals "foo", sub.id
         assertEquals "bar", sub.name
         assertEquals "stuff", sub.secondName
-
     }
 }
 
 class AlwaysInjector extends DefaultGrailsDomainClassInjector {
 
-    public boolean shouldInject(URL url) {
-        return true
-    }
+    boolean shouldInject(URL url) { true }
 
-    protected boolean isDomainClass(ClassNode classNode, SourceUnit sourceNode) {
-        return true;
-    }
+    protected boolean isDomainClass(ClassNode classNode, SourceUnit sourceNode) { true  }
 
-    protected boolean shouldInjectClass(ClassNode classNode) {
-        return true;
-    }
-
+    protected boolean shouldInjectClass(ClassNode classNode) { true }
 }

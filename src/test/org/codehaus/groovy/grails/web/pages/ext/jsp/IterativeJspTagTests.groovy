@@ -13,26 +13,22 @@ import org.springframework.core.io.FileSystemResource
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 9, 2008
  */
 class IterativeJspTagTests extends GroovyTestCase {
 
     GrailsWebRequest webRequest
+
     protected void setUp() {
         webRequest = GrailsWebUtil.bindMockWebRequest()
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
-     }
+    }
 
-     protected void tearDown() {
-         RequestContextHolder.setRequestAttributes null
-         GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolver
-     }
-
+    protected void tearDown() {
+        RequestContextHolder.setRequestAttributes null
+        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolver
+    }
 
     void testIterativeTag() {
-
-
 
         TagLibraryResolver.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
@@ -40,38 +36,32 @@ class IterativeJspTagTests extends GroovyTestCase {
             rootLoader.addURL res.getURL()
             return rootLoader
         }
+
         def resolver =  new TagLibraryResolver()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication= new DefaultGrailsApplication()
 
-        JspTagLib tagLib = resolver.resolveTagLibrary( "http://java.sun.com/jstl/core_rt" )
-
+        JspTagLib tagLib = resolver.resolveTagLibrary("http://java.sun.com/jstl/core_rt")
         assert tagLib
 
-
         JspTag formatNumberTag = tagLib.getTag("forEach")
-
         assert formatNumberTag
 
         def writer = new StringWriter()
-
 
         JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
 
         int count = 0
         def pageContext = PageContextFactory.getCurrent()
         def array = []
-        formatNumberTag.doTag( writer, [items:[1,2,3], var:"num"] ) {
+        formatNumberTag.doTag(writer, [items:[1,2,3], var:"num"]) {
             array << pageContext.getAttribute("num")
             count++
         }
 
         assertEquals 3, count
-        assertEquals( [1,2,3],array )
+        assertEquals([1,2,3],array)
         // forEach is a TryCatchFinally tag and should remove all attributes in the scope at the end of the loop
         assertNull pageContext.getAttribute("num")
-
     }
-
-
 }

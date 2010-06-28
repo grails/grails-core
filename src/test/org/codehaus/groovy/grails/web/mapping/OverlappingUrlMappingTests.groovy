@@ -1,19 +1,12 @@
-/**
- * Class description here.
-
- * @author Graeme Rocher
- * @since 0.4
- *
- * Created: Aug 9, 2007
- * Time: 7:04:11 PM
- *
- */
-
 package org.codehaus.groovy.grails.web.mapping
 
 import org.springframework.core.io.ByteArrayResource
 import grails.util.GrailsWebUtil
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class OverlappingUrlMappingTests extends AbstractGrailsMappingTests {
 
     def mappingScript = '''
@@ -33,7 +26,6 @@ mappings {
         GrailsWebUtil.bindMockWebRequest()
 
         def res = new ByteArrayResource(mappingScript.bytes)
-
         def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(res))
 
         Map params = [id: "contact"]
@@ -44,6 +36,5 @@ mappings {
         params.dir = "fred"
         reverse = holder.getReverseMapping("content", "view", params)
         assertEquals "/contact/fred", reverse.createURL(params, "utf-8")
-
     }
 }

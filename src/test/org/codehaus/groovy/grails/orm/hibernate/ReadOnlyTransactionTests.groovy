@@ -2,8 +2,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 class ReadOnlyTransactionTests extends AbstractGrailsHibernateTests {
 
-	protected void onSetUp() {
-		gcl.parseClass '''
+    protected void onSetUp() {
+        gcl.parseClass '''
 class Gorpledanger {
     Long id
     Long version
@@ -19,21 +19,21 @@ class GorpledangerService {
     }
 }
 '''
-	}
+    }
 
-	void testReadOnlyAnnotation() {
-		def clazz = ga.getDomainClass('Gorpledanger').clazz
-		def instance = clazz.newInstance()
-		instance.name = 'foo'
-		assertNotNull instance.save(flush: true)
-		session.clear()
+    void testReadOnlyAnnotation() {
+        def clazz = ga.getDomainClass('Gorpledanger').clazz
+        def instance = clazz.newInstance()
+        instance.name = 'foo'
+        assertNotNull instance.save(flush: true)
+        session.clear()
 
-		instance = clazz.get(instance.id)
-		def service = appCtx.gorpledangerService
-		service.doNotModify instance
-		session.clear()
+        instance = clazz.get(instance.id)
+        def service = appCtx.gorpledangerService
+        service.doNotModify instance
+        session.clear()
 
-		instance = clazz.get(instance.id)
-		assertEquals 'foo', instance.name
-	}
+        instance = clazz.get(instance.id)
+        assertEquals 'foo', instance.name
+    }
 }

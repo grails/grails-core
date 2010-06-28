@@ -12,25 +12,21 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: May 1, 2008
  */
-class SimpleJspTagTests extends GroovyTestCase{
+class SimpleJspTagTests extends GroovyTestCase {
 
     GrailsWebRequest webRequest
+
     protected void setUp() {
         webRequest = GrailsWebUtil.bindMockWebRequest()
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
-     }
+    }
 
-     protected void tearDown() {
-         RequestContextHolder.setRequestAttributes null
-     }
+    protected void tearDown() {
+        RequestContextHolder.setRequestAttributes null
+    }
 
-    
     void testSimpleTagUsage() {
-
-        
 
         def resolver = new MockRootLoaderTagLibraryResolver()
         resolver.servletContext = new MockServletContext()
@@ -40,19 +36,15 @@ class SimpleJspTagTests extends GroovyTestCase{
 
         assert tagLib
 
-
         JspTag formatNumberTag = tagLib.getTag("formatNumber")
 
         assert formatNumberTag
 
         def writer = new StringWriter()
 
-
         JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
         formatNumberTag.doTag writer, [value:"10", pattern:".00"]
 
         assertEquals "10.00", writer.toString()
-
     }
-
 }

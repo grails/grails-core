@@ -35,89 +35,90 @@ import org.springframework.context.ApplicationContext
  */
 class ScaffoldingGrailsPlugin {
 
-	static final LOG = LogFactory.getLog(DefaultGrailsPlugin)
-	def version = grails.util.GrailsUtil.getGrailsVersion()
-	def dependsOn = [controllers:version, groovyPages:version]
-	def observe = ['controllers']
-	def loadAfter = ['controllers']
+    static final LOG = LogFactory.getLog(DefaultGrailsPlugin)
 
-	def doWithSpring = {
-		ScaffoldingViewResolver.clearViewCache()
+    def version = grails.util.GrailsUtil.getGrailsVersion()
+    def dependsOn = [controllers:version, groovyPages:version]
+    def observe = ['controllers']
+    def loadAfter = ['controllers']
 
-		scaffoldedActionMap(HashMap)
-		controllerToScaffoldedDomainClassMap(HashMap)
-		scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader"))
-		BeanDefinition beanDef = getBeanDefinition("jspViewResolver")
+    def doWithSpring = {
+        ScaffoldingViewResolver.clearViewCache()
 
-		jspViewResolver(ScaffoldingViewResolver) {
-			templateGenerator = scaffoldingTemplateGenerator
-			scaffoldedActionMap = ref("scaffoldedActionMap")
-			scaffoldedDomains = controllerToScaffoldedDomainClassMap
-			// copy values from other bean def
-			if (beanDef) {
-				for (PropertyValue pv in beanDef.getPropertyValues().getPropertyValueList()) {
-					delegate."${pv.name}" = pv.value
-				}
-			}
-		}
-	}
+        scaffoldedActionMap(HashMap)
+        controllerToScaffoldedDomainClassMap(HashMap)
+        scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader"))
+        BeanDefinition beanDef = getBeanDefinition("jspViewResolver")
 
-	def doWithApplicationContext = { ApplicationContext appCtx ->
-		for (GrailsControllerClass controllerClass in application.controllerClasses) {
-			configureScaffoldingController(appCtx, application, controllerClass)
-		}
-	}
+        jspViewResolver(ScaffoldingViewResolver) {
+            templateGenerator = scaffoldingTemplateGenerator
+            scaffoldedActionMap = ref("scaffoldedActionMap")
+            scaffoldedDomains = controllerToScaffoldedDomainClassMap
+            // copy values from other bean def
+            if (beanDef) {
+                for (PropertyValue pv in beanDef.getPropertyValues().getPropertyValueList()) {
+                    delegate."${pv.name}" = pv.value
+                }
+            }
+        }
+    }
 
-	private configureScaffoldingController(ApplicationContext appCtx, application, GrailsControllerClass controllerClass) {
+    def doWithApplicationContext = { ApplicationContext appCtx ->
+        for (GrailsControllerClass controllerClass in application.controllerClasses) {
+            configureScaffoldingController(appCtx, application, controllerClass)
+        }
+    }
 
-		def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
-		if (!scaffoldProperty) {
-			return
-		}
+    private configureScaffoldingController(ApplicationContext appCtx, application, GrailsControllerClass controllerClass) {
 
-		Map scaffoldedActionMap = appCtx.getBean("scaffoldedActionMap")
-		GrailsDomainClass domainClass = getScaffoldedDomainClass(application, controllerClass, scaffoldProperty)
-		scaffoldedActionMap[controllerClass.logicalPropertyName] = []
-		if (!domainClass) {
-			LOG.error "Cannot generate controller logic for scaffolded class ${scaffoldProperty}. It is not a domain class!"
-			return
-		}
+        def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
+        if (!scaffoldProperty) {
+            return
+        }
 
-		GrailsTemplateGenerator generator = appCtx.getBean("scaffoldingTemplateGenerator")
-		ClassLoader parentLoader = appCtx.getBean("classLoader")
+        Map scaffoldedActionMap = appCtx.getBean("scaffoldedActionMap")
+        GrailsDomainClass domainClass = getScaffoldedDomainClass(application, controllerClass, scaffoldProperty)
+        scaffoldedActionMap[controllerClass.logicalPropertyName] = []
+        if (!domainClass) {
+            LOG.error "Cannot generate controller logic for scaffolded class ${scaffoldProperty}. It is not a domain class!"
+            return
+        }
 
-		Map scaffoldedDomains = appCtx.getBean("controllerToScaffoldedDomainClassMap")
-		scaffoldedDomains[controllerClass.logicalPropertyName] = domainClass
-		String controllerSource = generateControllerSource(generator, domainClass)
-		def scaffoldedInstance = createScaffoldedInstance(parentLoader, controllerSource)
-		List actionProperties = getScaffoldedActions(scaffoldedInstance)
+        GrailsTemplateGenerator generator = appCtx.getBean("scaffoldingTemplateGenerator")
+        ClassLoader parentLoader = appCtx.getBean("classLoader")
 
-		def javaClass = controllerClass.clazz
-		def metaClass = javaClass.metaClass
+        Map scaffoldedDomains = appCtx.getBean("controllerToScaffoldedDomainClassMap")
+        scaffoldedDomains[controllerClass.logicalPropertyName] = domainClass
+        String controllerSource = generateControllerSource(generator, domainClass)
+        def scaffoldedInstance = createScaffoldedInstance(parentLoader, controllerSource)
+        List actionProperties = getScaffoldedActions(scaffoldedInstance)
 
-		for (MetaProperty actionProp in actionProperties) {
-			if (!actionProp) {
-				continue
-			}
+        def javaClass = controllerClass.clazz
+        def metaClass = javaClass.metaClass
 
-			String propertyName = actionProp.name
-			def mp = metaClass.getMetaProperty(propertyName)
-			scaffoldedActionMap[controllerClass.logicalPropertyName] << propertyName
+        for (MetaProperty actionProp in actionProperties) {
+            if (!actionProp) {
+                continue
+            }
 
-			if (!mp) {
-				Closure propertyValue = actionProp.getProperty(scaffoldedInstance)
-				metaClass."${GrailsClassUtils.getGetterName(propertyName)}" = {->
-					propertyValue.delegate = delegate
-					propertyValue.resolveStrategy = Closure.DELEGATE_FIRST
-					propertyValue
-				}
-			}
-			controllerClass.registerMapping(propertyName)
-			if (propertyName == GrailsControllerClass.INDEX_ACTION) {
-				controllerClass.defaultActionName = propertyName
-			}
-		}
-	}
+            String propertyName = actionProp.name
+            def mp = metaClass.getMetaProperty(propertyName)
+            scaffoldedActionMap[controllerClass.logicalPropertyName] << propertyName
+
+            if (!mp) {
+                Closure propertyValue = actionProp.getProperty(scaffoldedInstance)
+                metaClass."${GrailsClassUtils.getGetterName(propertyName)}" = {->
+                    propertyValue.delegate = delegate
+                    propertyValue.resolveStrategy = Closure.DELEGATE_FIRST
+                    propertyValue
+                }
+            }
+            controllerClass.registerMapping(propertyName)
+            if (propertyName == GrailsControllerClass.INDEX_ACTION) {
+                controllerClass.defaultActionName = propertyName
+            }
+        }
+    }
 
     def onChange = { event ->
         ScaffoldingViewResolver.clearViewCache()

@@ -1,23 +1,15 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Sep 4, 2007
- * Time: 11:08:48 AM
- * 
- */
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class NamedTagBodyParamsTests extends AbstractGrailsTagTests {
 
     void testNamedBodyParams() {
-
         def template = '<g:test1>foo: ${foo} one: ${one}</g:test1>'
-
         assertOutputEquals('foo: bar one: 2', template)
     }
 
@@ -30,7 +22,7 @@ class NamedTagBodyParamsTests extends AbstractGrailsTagTests {
         assertOutputEquals('foo: bar one: 2', template, [:], { it.toString().trim() })
     }
 
-    void onInit() {
+    protected void onInit() {
         def tagClass = gcl.parseClass( '''
 class MyTagLib {
     def test1 = { attrs, body ->

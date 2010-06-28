@@ -1,41 +1,28 @@
+package org.codehaus.groovy.grails.plugins
+
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
+
+import org.apache.commons.io.FileUtils
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
+import org.springframework.core.io.Resource
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Nov 29, 2007
  */
-package org.codehaus.groovy.grails.plugins
-
-import org.apache.commons.io.FileUtils
-import grails.util.BuildSettingsHolder
-import grails.util.BuildSettings
-import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
-
 class GrailsPluginUtilsTests extends GroovyTestCase {
     BuildSettings settings
 
-    void setUp() {
-		GrailsPluginUtils.clearCaches()
-        System.setProperty("disable.grails.plugin.transform","true")
-        settings = new BuildSettings(new File("."))
-        BuildSettingsHolder.settings = settings
-        def resourceDir = "test/resources/grails-plugin-utils"
-        settings.projectPluginsDir = new File("$resourceDir/plugins")
-        settings.globalPluginsDir = new File("$resourceDir/global-plugins")
-
-
-//        new File("tmp/plugins/searchable-0.5").mkdirs()
-//        new File("tmp/plugins/jsecurity-0.3").mkdirs()
-//        new File("tmp/plugins/.hidden").mkdirs()
-//        new File("tmp/global-plugins/logging-0.1").mkdirs()
-//        new File("tmp/global-plugins/notAPlugin").mkdirs()
-//        new File("tmp/grails-debug").mkdirs()
-//        new File("tmp/grails-dummy").mkdirs()
-        
-
-
-        settings.config = new ConfigSlurper().parse("""\
+     protected void setUp() {
+         GrailsPluginUtils.clearCaches()
+         System.setProperty("disable.grails.plugin.transform","true")
+         settings = new BuildSettings(new File("."))
+         BuildSettingsHolder.settings = settings
+         def resourceDir = "test/resources/grails-plugin-utils"
+         settings.projectPluginsDir = new File("$resourceDir/plugins")
+         settings.globalPluginsDir = new File("$resourceDir/global-plugins")
+         settings.config = new ConfigSlurper().parse("""\
 grails {
     plugin {
         location {
@@ -50,15 +37,13 @@ grails {
     void tearDown() {
         System.setProperty("disable.grails.plugin.transform","false")
         BuildSettingsHolder.settings = null
-
-//        new File("tmp").deleteDir()
     }
 
     void testOsgiFormatVersionNumbers() {
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.1-SNAPSHOT")
-        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.2", "1.2.0.BUILD-SNAPSHOT > *")
-        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.2 > *")
-        assertFalse "version with SNAPSHOT should not match", GrailsPluginUtils.isValidVersion( "1.2.0.BUILD-SNAPSHOT", "1.3 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0","0.6 > 1.1-SNAPSHOT")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion("1.2", "1.2.0.BUILD-SNAPSHOT > *")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion("1.2.0.BUILD-SNAPSHOT", "1.2 > *")
+        assertFalse "version with SNAPSHOT should not match", GrailsPluginUtils.isValidVersion("1.2.0.BUILD-SNAPSHOT", "1.3 > *")
     }
 
     void testGetPluginName() {
@@ -71,46 +56,42 @@ grails {
         assertEquals "1.0", GrailsPluginUtils.getPluginVersion(TestPluginAnnotation)
         assertNull GrailsPluginUtils.getPluginVersion(null)
         assertNull GrailsPluginUtils.getPluginName(String)
-
     }
+
     void testVersionValidity() {
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1-SNAPSHOT","1.0 > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0 > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1.1","1.1 > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1.1-SNAPSHOT","1.1 > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.1.1","1.1-SNAPSHOT > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","1.0-SNAPSHOT > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.1-SNAPSHOT")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "0.7","0.6 > 1.0")
-        assertFalse "version should be outside range", GrailsPluginUtils.isValidVersion(  "1.1","0.6 > 1.0")
-        assertTrue "versions should match", GrailsPluginUtils.isValidVersion( "1.0", "1.0")
-        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.0-SNAPSHOT", "1.0")
-        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.0-RC2-SNAPSHOT", "1.0")
-        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion( "1.0-RC2-SNAPSHOT", "1.0-RC2-SNAPSHOT")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.1-SNAPSHOT","1.0 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0","1.0 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.1.1","1.1 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.1.1-SNAPSHOT","1.1 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.1.1","1.1-SNAPSHOT > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0","1.0-SNAPSHOT > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0","0.6 > 1.1-SNAPSHOT")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("0.7","0.6 > 1.0")
+        assertFalse "version should be outside range", GrailsPluginUtils.isValidVersion("1.1","0.6 > 1.0")
+        assertTrue "versions should match", GrailsPluginUtils.isValidVersion("1.0", "1.0")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion("1.0-SNAPSHOT", "1.0")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion("1.0-RC2-SNAPSHOT", "1.0")
+        assertTrue "version with SNAPSHOT tag should match", GrailsPluginUtils.isValidVersion("1.0-RC2-SNAPSHOT", "1.0-RC2-SNAPSHOT")
 
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.0")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.6","1.0 > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0.7","1.0 > *")
-        assertFalse "version should be outside range", GrailsPluginUtils.isValidVersion( "0.9", "1.0 > *")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion( "1.0.7", "1.0 > 2.7")
-        assertTrue "version with RC tag should be within range",GrailsPluginUtils.isValidVersion( "1.0.7-RC1", "1.0 > 2.7")
-        assertTrue "version with SNAPSHOT tag should be within range", GrailsPluginUtils.isValidVersion( "1.0-SNAPSHOT", "1.0 > 2.7" )
-        assertFalse "version should be outside range", GrailsPluginUtils.isValidVersion( "0.9","1.0 > 2.7" )
-        assertFalse "version should be outside range",GrailsPluginUtils.isValidVersion(  "2.8", "1.0 > 2.7")
-        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion(  "1.0","0.6 > 1.0-SNAPSHOT")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0","0.6 > 1.0")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.6","1.0 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0.7","1.0 > *")
+        assertFalse "version should be outside range", GrailsPluginUtils.isValidVersion("0.9", "1.0 > *")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0.7", "1.0 > 2.7")
+        assertTrue "version with RC tag should be within range",GrailsPluginUtils.isValidVersion("1.0.7-RC1", "1.0 > 2.7")
+        assertTrue "version with SNAPSHOT tag should be within range", GrailsPluginUtils.isValidVersion("1.0-SNAPSHOT", "1.0 > 2.7")
+        assertFalse "version should be outside range", GrailsPluginUtils.isValidVersion("0.9","1.0 > 2.7")
+        assertFalse "version should be outside range",GrailsPluginUtils.isValidVersion("2.8", "1.0 > 2.7")
+        assertTrue "version should be within range", GrailsPluginUtils.isValidVersion("1.0","0.6 > 1.0-SNAPSHOT")
     }
-
 
     void testIsAtLeastVersion() {
         assertFalse "should not support 1.1", GrailsPluginUtils.supportsAtLeastVersion("1.1 > *", "1.2")
         assertFalse "should not support 1.1", GrailsPluginUtils.supportsAtLeastVersion("1.1", "1.2")
         assertFalse "should not support anything", GrailsPluginUtils.supportsAtLeastVersion("*", "1.2")
         assertFalse "should not support anything", GrailsPluginUtils.supportsAtLeastVersion("* > 1.2", "1.2")
-
         assertTrue "should support 1.2 and above", GrailsPluginUtils.supportsAtLeastVersion("1.2 > *", "1.2")
         assertTrue "should support 1.2 and above", GrailsPluginUtils.supportsAtLeastVersion("1.2", "1.2")
-
-
     }
 
     void testGetUpperVersion() {
@@ -138,7 +119,6 @@ grails {
         assertEquals 4, pluginDirs.size()
         assertNotNull pluginDirs.find { it.filename == "jsecurity-0.3" }
         assertNotNull pluginDirs.find { it.filename == "logging-0.1" }
-        //assertNotNull pluginDirs.find { it.filename == "searchable-0.5" }
         assertNotNull pluginDirs.find { it.filename == "grails-debug" }
         assertNotNull pluginDirs.find { it.filename == "grails-dummy" }
     }
@@ -148,7 +128,6 @@ grails {
         assertEquals 2, pluginDirs.size()
         assertNotNull pluginDirs.find { it.filename == "jsecurity-0.3" }
         assertNotNull pluginDirs.find { it.filename == "logging-0.1" }
-        //assertNotNull pluginDirs.find { it.filename == "searchable-0.5" }
     }
 
     void testGetPluginScripts() {
@@ -163,6 +142,4 @@ grails {
 }
 
 @GrailsPlugin(name="foo", version="1.0")
-class TestPluginAnnotation {
-
-}
+class TestPluginAnnotation {}

@@ -10,29 +10,26 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
 
-    void onSetUp() {
-        gcl.parseClass(
-                """
+    protected void onSetUp() {
+        gcl.parseClass """
 class TestController {
-   def list = {}			
+   def list = {}
 }
-""")
+"""
 
-        gcl.parseClass("""\
+        gcl.parseClass """
 abstract class BaseController {
     def index = {}
 }
-""")
+"""
 
-        gcl.parseClass(
-                """
+        gcl.parseClass """
 class SubController extends BaseController {
    def list = {}
 }
-""")
+"""
 
-        gcl.parseClass(
-                """
+        gcl.parseClass """
 class TagLibTestController {
     def list = {
         StringWriter w = new StringWriter()
@@ -52,15 +49,15 @@ class TagLibTestController {
         render html
     }
 }
-""")
+"""
 
-        gcl.parseClass(
-                """class FormTagLib {
+        gcl.parseClass """
+class FormTagLib {
     def form = {  attrs, body ->
         out << 'dummy form tag'
     }
 }
-""")
+"""
 
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
@@ -88,7 +85,6 @@ class TagLibTestController {
         assertEquals(0, bean.pages)
         assertEquals("beanName", bean.name)
         assertNull(bean.address)
-
     }
 
     void testBindDataConvertsSingleIncludeToListInternally() {
@@ -106,21 +102,18 @@ class TagLibTestController {
         tearDown()
         ConfigurationHolder.setConfig(null)
 
-        this.gcl = new GroovyClassLoader()
+        gcl = new GroovyClassLoader()
         gcl.parseClass("grails.disableCommonsMultipart=true", 'Config.groovy')
         setUp()
 
         assertTrue ga.config.grails.disableCommonsMultipart
-        try {
+        shouldFail(NoSuchBeanDefinitionException) {
             appCtx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN)
-            fail('Multipart was not disabled')
-        } catch (NoSuchBeanDefinitionException e) {
-            //expected
         }
 
         tearDown()
         ConfigurationHolder.setConfig(null)
-        this.gcl = new GroovyClassLoader()
+        gcl = new GroovyClassLoader()
         setUp()
 
         assertTrue ga.config.grails.disableCommonsMultipart.size() == 0
@@ -148,8 +141,8 @@ class TagLibTestController {
 
             beanDef = bb.getBeanDefinition("jspViewResolver")
             assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
-
-        } finally {
+        }
+        finally {
             System.setProperty("grails.env", "")
         }
     }
@@ -164,7 +157,8 @@ class TagLibTestController {
             bb.setBinding(new Binding(mock))
             bb.beans(beans)
             assertNull bb.getBeanDefinition('groovyPageResourceLoader')
-        } finally {
+        }
+        finally {
             System.setProperty("grails.env", "")
         }
     }
@@ -190,15 +184,12 @@ class TagLibTestController {
     }
 
     Class parseTestBean() {
-        return gcl.parseClass(
-                """
+        gcl.parseClass """
         class TestDomainObject {
            String name
            int pages = 0
            String address
         }
-        """)
+        """
     }
-
-
 }

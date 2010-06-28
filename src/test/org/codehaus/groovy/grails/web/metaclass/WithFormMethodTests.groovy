@@ -22,19 +22,13 @@ import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 /**
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Jan 8, 2009
  */
-
-public class WithFormMethodTests extends GroovyTestCase{
-
-
+class WithFormMethodTests extends GroovyTestCase {
 
     void testMissingToken() {
         def withForm = new WithFormMethod()
 
         def request = new MockHttpServletRequest()
-
 
         shouldFail(GrailsRuntimeException) {
             withForm.withForm(request) {
@@ -47,7 +41,7 @@ public class WithFormMethodTests extends GroovyTestCase{
     }
 
     void testTokenNotProvided() {
-        def withForm = new WithFormMethod()   
+        def withForm = new WithFormMethod()
 
         def request = new MockHttpServletRequest()
 
@@ -110,7 +104,6 @@ public class WithFormMethodTests extends GroovyTestCase{
 
         request.addParameter(SynchronizerToken.KEY,token.currentToken.toString())
 
-
         def result = withForm.withForm(request) {
            return [foo:"bar"]
         }.invalidToken {
@@ -119,7 +112,7 @@ public class WithFormMethodTests extends GroovyTestCase{
 
         assertEquals "bar", result.foo
 
-       shouldFail(GrailsRuntimeException) {
+        shouldFail(GrailsRuntimeException) {
             withForm.withForm(request) {
                // should not get here
             }.invalidToken {
@@ -127,5 +120,4 @@ public class WithFormMethodTests extends GroovyTestCase{
             }
         }
     }
-
 }

@@ -6,18 +6,18 @@ import org.w3c.dom.Document
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
+ *
  * Created: Jan 25, 2008
  */
 class SelectTagTests extends AbstractGrailsTagTests {
-    private static final def SELECT_TAG_NAME = "testSelect";
+
+    private static final String SELECT_TAG_NAME = "testSelect"
 
     void testSelectTagEscaping() {
-    	def template = '<g:select id="${foo}.genre" name="${foo}.genre" value="${book?.genre}" from="${[\'non-fiction\',\'fiction\']}" noSelection="[\'\':\'-Genre-\']" />'
+        def template = '<g:select id="${foo}.genre" name="${foo}.genre" value="${book?.genre}" from="${[\'non-fiction\',\'fiction\']}" noSelection="[\'\':\'-Genre-\']" />'
+        def result = applyTemplate(template, [foo:'bar" /><script>alert("gotcha")</script>'])
 
-    	def result = applyTemplate(template, [foo:'bar" /><script>alert("gotcha")</script>'])
-
-    	assertTrue "should have HTML escaped attributes", result.startsWith('<select name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
+        assertTrue "should have HTML escaped attributes", result.startsWith('<select name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
     }
 
     void testSelectUsesExpressionForDisable() {
@@ -43,7 +43,6 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertOutputContains('<option value="3" >3</option>', template)
     }
 
-
     void testMultiSelect() {
         def template = '<g:select name="foo" from="[1,2,3]" value="[2,3]" />'
 
@@ -60,7 +59,6 @@ class SelectTagTests extends AbstractGrailsTagTests {
         def template = '<g:select optionKey="id" optionValue="name" name="foo" from="${objList}" value="2" />'
         assertOutputContains('<option value="2" selected="selected" >Bar</option>', template,[objList:list])
         assertOutputContains('<option value="1" >Foo</option>', template,[objList:list])
-
     }
 
     void testMultiSelectWithCustomOptionKeyAndValue() {
@@ -74,27 +72,24 @@ class SelectTagTests extends AbstractGrailsTagTests {
 
     void testSelectWithCustomOptionKeyAndValueAsClosure() {
         def list = [new SelectTestObject(id:1L, name:"Foo"),new SelectTestObject(id:2L, name:"Bar")]
-
         def template = '<g:select optionKey="id" optionValue="${{it.name?.toUpperCase()}}" name="foo" from="${objList}" value="2" />'
 
-
-        printCompiledSource(template,[objList:list]) 
+        printCompiledSource(template,[objList:list])
         assertOutputContains('<option value="2" selected="selected" >BAR</option>', template,[objList:list])
         assertOutputContains('<option value="1" >FOO</option>', template,[objList:list])
-
     }
 
     void testSelectTag() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
         def range = 1..10
 
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, from: range ])
-    		tag.call(attributes)
-    	}
+        withTag("select", pw) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([name: SELECT_TAG_NAME, from: range ])
+            tag.call(attributes)
+        }
 
         def doc = parseText(sw.toString())
         assertNotNull(doc)
@@ -103,17 +98,16 @@ class SelectTagTests extends AbstractGrailsTagTests {
             assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
         }
 
-    	sw = new StringWriter();
-    	pw = new PrintWriter(sw);
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
 
         def sel = '5'
 
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, value: sel, from: range ])
-    		tag.call(attributes)
-    	}
-
+        withTag("select", pw) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([name: SELECT_TAG_NAME, value: sel, from: range ])
+            tag.call(attributes)
+        }
 
         doc = parseText(sw.toString())
         assertNotNull(doc)
@@ -125,24 +119,19 @@ class SelectTagTests extends AbstractGrailsTagTests {
                 assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, it.toString() )
             }
         }
-
-
     }
 
     void testSelectTagWithNoSelectionSet() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
         def range = ['a', 'b', 'c', 'd', 'e']
 
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, noSelection:['?':'NONE'], from: range ])
-    		tag.call(attributes)
-    	}
-
-
-        println "SELECT = $sw"
+        withTag("select", pw) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([name: SELECT_TAG_NAME, noSelection:['?':'NONE'], from: range ])
+            tag.call(attributes)
+        }
 
         def xml = new XmlSlurper().parseText(sw.toString())
 
@@ -156,15 +145,14 @@ class SelectTagTests extends AbstractGrailsTagTests {
             assertEquals e, xml.option[i+1].@value.toString()
         }
 
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
 
-    	sw = new StringWriter();
-    	pw = new PrintWriter(sw);
-
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, value: '', noSelection:['':'NONE'], from: range ])
-    		tag.call(attributes)
-    	}
+        withTag("select", pw) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([name: SELECT_TAG_NAME, value: '', noSelection:['':'NONE'], from: range ])
+            tag.call(attributes)
+        }
 
 
         def doc = parseText(sw.toString())
@@ -174,60 +162,55 @@ class SelectTagTests extends AbstractGrailsTagTests {
         range.each() {
             assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
         }
-
-
     }
 
     void testSelectTagWithValueMessagePrefixSet() {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
         def categoryMap = ['M':'Mystery' , 'T':'Thriller', 'F':'Fantasy']
         def categoryList = categoryMap.keySet()
 
-    	def valueMessagePrefix = "book.category"
+        def valueMessagePrefix = "book.category"
 
-		// test without messages set; value will be used as text
+        // test without messages set; value will be used as text
 
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
-    		tag.call(attributes)
-    	}
+        withTag("select", pw) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
+            tag.call(attributes)
+        }
 
         def doc = parseText(sw.toString())
         assertNotNull(doc)
 
-		// assert select field uses value for both the value as the text (as there is no text found within messages)
+        // assert select field uses value for both the value as the text (as there is no text found within messages)
         categoryMap.each() { value, text ->
-	        assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, value )
+            assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, value )
         }
-
 
         // test with messages set
 
         categoryMap.each() { value, text ->
-        	messageSource.addMessage(valueMessagePrefix + "." + value, RCU.getLocale(request), text)
+            messageSource.addMessage(valueMessagePrefix + "." + value, RCU.getLocale(request), text)
         }
 
-        sw = new StringWriter();
-    	pw = new PrintWriter(sw);
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
 
-    	withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
-    		tag.call(attributes)
-    	}
+        withTag("select", pw) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([name: SELECT_TAG_NAME, valueMessagePrefix: valueMessagePrefix, from: categoryList])
+            tag.call(attributes)
+        }
 
         doc = parseText(sw.toString())
         assertNotNull(doc)
 
-		// assert select field uses value and text
+        // assert select field uses value and text
         categoryMap.each() { value, text ->
             assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, text )
         }
-
-
     }
 
     void testMultipleSelect() {
@@ -257,27 +240,27 @@ class SelectTagTests extends AbstractGrailsTagTests {
 
 
     void checkMultiSelect(List categories, List selected, Closure isSelected) {
-    	final StringWriter sw = new StringWriter();
-    	final PrintWriter pw = new PrintWriter(sw);
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
         // Execute the tag.
         withTag("select", pw) { tag ->
-	    	// use sorted map to be able to predict the order in which tag attributes are generated
-    		def attributes = new TreeMap(
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap(
                     name: SELECT_TAG_NAME,
                     from: categories,
                     value: selected,
                     optionKey: 'code',
                     optionValue: 'label')
             tag.call(attributes)
-    	}
+        }
 
         def doc = parseText(sw.toString())
         assertNotNull(doc)
 
         // Make sure that the "multiple" attribute is there.
-        def value = xpath.evaluate("//select[@name='" + SELECT_TAG_NAME + "']/@multiple", doc);
-        assertEquals("multiple", value);
+        def value = xpath.evaluate("//select[@name='" + SELECT_TAG_NAME + "']/@multiple", doc)
+        assertEquals("multiple", value)
 
         // assert select field uses value for both the value as the text (as there is no text found within messages)
         int actualSelected = 0
@@ -294,37 +277,37 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertEquals("expecting selected options", selected.size(), actualSelected)
     }
 
-
     private void assertSelectFieldPresentWithSelectedValue(Document document, String fieldName, String value) {
         assertXPathExists(
                 document,
-                "//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "']");
+                "//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "']")
     }
 
     private void assertSelectFieldPresentWithValue(Document document, String fieldName, String value) {
         assertXPathExists(
                 document,
-                "//select[@name='" + fieldName + "']/option[@value='" + value + "']");
+                "//select[@name='" + fieldName + "']/option[@value='" + value + "']")
     }
 
     private void assertSelectFieldPresentWithValueAndText(Document document, String fieldName, String value, String label) {
         assertXPathExists(
                 document,
-                "//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='"+label+"']");
+                "//select[@name='" + fieldName + "']/option[@value='" + value + "' and text()='"+label+"']")
     }
 
     private void assertSelectFieldPresentWithSelectedValueAndText(Document document, String fieldName, String value, String label) {
         assertXPathExists(
                 document,
-                "//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "' and text()='"+label+"']");
+                "//select[@name='" + fieldName + "']/option[@selected='selected' and @value='" + value + "' and text()='"+label+"']")
     }
 
     private void assertSelectFieldNotPresent(Document document, String fieldName) {
         assertXPathNotExists(
                 document,
-                "//select[@name='" + fieldName + "']");
+                "//select[@name='" + fieldName + "']")
     }
 }
+
 class SelectTestObject {
     Long id
     String name

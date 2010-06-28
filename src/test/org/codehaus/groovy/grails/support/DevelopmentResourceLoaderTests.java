@@ -17,26 +17,24 @@ package org.codehaus.groovy.grails.support;
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 
 import java.io.File;
+
+import junit.framework.TestCase;
+
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 
 /**
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Jan 30, 2008
  */
 public class DevelopmentResourceLoaderTests extends TestCase {
-
 
     @Override
     protected void setUp() throws Exception {
         BuildSettings settings = new BuildSettings();
         settings.setProjectPluginsDir(new File("/home/fred/plugins"));
         BuildSettingsHolder.setSettings(settings);
-
     }
 
     @Override
@@ -44,31 +42,32 @@ public class DevelopmentResourceLoaderTests extends TestCase {
         BuildSettingsHolder.setSettings(null);
     }
 
-
     public void testDevelopmentPluginLocation() {
-        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
+        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(
+                new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
 
-        assertEquals("file:/home/fred/plugins/test-one-0.1/grails-app/i18n", resourceLoader.getRealLocationInProject("WEB-INF/plugins/test-one-0.1/grails-app/i18n"));
-
+        assertEquals("file:/home/fred/plugins/test-one-0.1/grails-app/i18n",
+                resourceLoader.getRealLocationInProject("WEB-INF/plugins/test-one-0.1/grails-app/i18n"));
     }
 
     public void testDevelopmentResourceLoaderNoSlash() {
-        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
+        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(
+                new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
 
         assertEquals("file:./grails-app/i18n", resourceLoader.getRealLocationInProject("WEB-INF/grails-app/i18n"));
     }
 
-
     public void testDevelopmentResourceLoader() {
-        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
+        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(
+                new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()));
 
         assertEquals("file:./grails-app/i18n", resourceLoader.getRealLocationInProject("/WEB-INF/grails-app/i18n"));
     }
 
     public void testDevelopmentResourceLoaderAndBaseLoc() {
-        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()), "/home");
+        DevelopmentResourceLoader resourceLoader = new DevelopmentResourceLoader(
+                new DefaultGrailsApplication(new Class[0], new GroovyClassLoader()), "/home");
 
         assertEquals("file:/home/grails-app/i18n", resourceLoader.getRealLocationInProject("/WEB-INF/grails-app/i18n"));
     }
-
 }

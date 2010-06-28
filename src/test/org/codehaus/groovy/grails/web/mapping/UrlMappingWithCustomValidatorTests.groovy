@@ -1,16 +1,15 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Jan 7, 2008
- */
 package org.codehaus.groovy.grails.web.mapping
 
 import org.springframework.core.io.ByteArrayResource
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class UrlMappingWithCustomValidatorTests extends AbstractGrailsControllerTests {
-   def topLevelMapping = '''
+
+    def topLevelMapping = '''
 mappings {
     "/help/$path**"(controller : "wiki", action : "show", id : "1") {
         constraints {
@@ -21,8 +20,7 @@ mappings {
 '''
     def UrlMappingsHolder holder
 
-
-    void setUp() {
+    protected void setUp() {
         super.setUp()
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
@@ -34,11 +32,9 @@ mappings {
 
     void testMatchWithCustomValidator() {
         def info = holder.match("/help/foo.html")
-
         assert info
 
         info = holder.match("/help/js/foo.js")
-
         assert !info
     }
 }

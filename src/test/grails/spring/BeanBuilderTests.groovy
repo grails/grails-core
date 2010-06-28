@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *                                                              
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0             s
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package grails.spring
 
 import org.springframework.aop.SpringProxy
+import org.springframework.beans.factory.BeanIsAbstractException;
 import org.springframework.beans.factory.ObjectFactory
 import org.springframework.beans.factory.config.Scope
 import org.springframework.context.ApplicationContext
@@ -26,39 +27,37 @@ import org.springframework.stereotype.Component
 /**
  * @author Graeme Rocher
  * @since 0.4
- *
  */
-
 class BeanBuilderTests extends GroovyTestCase {
 
-	void testImportSpringXml() {
-		def bb = new grails.spring.BeanBuilder()
+    void testImportSpringXml() {
+        def bb = new BeanBuilder()
 
-		bb.beans {
-			importBeans "classpath:grails/spring/test.xml"
-		}
+        bb.beans {
+            importBeans "classpath:grails/spring/test.xml"
+        }
 
-		def ctx = bb.createApplicationContext()
+        def ctx = bb.createApplicationContext()
 
-		def foo = ctx.getBean("foo")
-		assertEquals "hello", foo
-	}
+        def foo = ctx.getBean("foo")
+        assertEquals "hello", foo
+    }
 
-	void testImportBeansFromGroovy() {
-		def bb = new grails.spring.BeanBuilder()
+    void testImportBeansFromGroovy() {
+        def bb = new BeanBuilder()
 
-		bb.beans {
-			importBeans "file:test/resources/spring/test.groovy"
-		}
+        bb.beans {
+            importBeans "file:test/resources/spring/test.groovy"
+        }
 
-		def ctx = bb.createApplicationContext()
+        def ctx = bb.createApplicationContext()
 
-		def foo = ctx.getBean("foo")
-		assertEquals "hello", foo		
-	}
+        def foo = ctx.getBean("foo")
+        assertEquals "hello", foo
+    }
 
     void testInheritPropertiesFromAbstractBean() {
-        def bb = new grails.spring.BeanBuilder()
+        def bb = new BeanBuilder()
 
         bb.beans {
             myB(Bean1){
@@ -70,7 +69,7 @@ class BeanBuilderTests extends GroovyTestCase {
                 age = 10
                 bean1 = myB
             }
-            myConcreteB {  
+            myConcreteB {
                 it.parent = myAbstractA
             }
         }
@@ -78,7 +77,7 @@ class BeanBuilderTests extends GroovyTestCase {
         def ctx = bb.createApplicationContext()
         def bean = ctx.getBean("myConcreteB")
 
-        assertEquals 10, bean.age  
+        assertEquals 10, bean.age
         assertNotNull bean.bean1
     }
 
@@ -124,7 +123,6 @@ class BeanBuilderTests extends GroovyTestCase {
         def appCtx = bb.createApplicationContext()
         def fred = appCtx.getBean("fred")
         assertTrue (fred instanceof SpringProxy )
-
 
         fred.birthday()
 
@@ -194,8 +192,6 @@ class BeanBuilderTests extends GroovyTestCase {
 
             // should only be true because bean not initialized until proxy called
             assertEquals 4, scope.instanceCount
-
-
         }
         finally {
             builder.deactivate()
@@ -203,7 +199,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSpringAOPSupport() {
-
 
         def bb = new BeanBuilder()
 
@@ -219,15 +214,13 @@ class BeanBuilderTests extends GroovyTestCase {
             aop.config("proxy-target-class":true) {
                 aspect( id:"sendBirthdayCard",ref:"birthdayCardSenderAspect" ) {
                     after method:"onBirthday", pointcut: "execution(void grails.spring.AdvisedPerson.birthday()) and this(person)"
-                }                
+                }
             }
         }
-
 
         def appCtx = bb.createApplicationContext()
         def fred = appCtx.getBean("fred")
         assertTrue (fred instanceof SpringProxy )
-
 
         fred.birthday()
 
@@ -235,7 +228,6 @@ class BeanBuilderTests extends GroovyTestCase {
 
         assertEquals 1, birthDaySender.peopleSentCards.size()
         assertEquals "Fred", birthDaySender.peopleSentCards[0].name
-
     }
 
     void testSpringScopedProxyBean() {
@@ -264,7 +256,7 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSpringNamespaceBean() {
-        def bb = new grails.spring.BeanBuilder()
+        def bb = new BeanBuilder()
 
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder()
         try {
@@ -279,7 +271,7 @@ class BeanBuilderTests extends GroovyTestCase {
 
             ApplicationContext appCtx = bb.createApplicationContext()
 
-            assertEquals "success", appCtx.getBean("foo")            
+            assertEquals "success", appCtx.getBean("foo")
         }
         finally {
             builder.deactivate()
@@ -287,7 +279,7 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testNamedArgumentConstructor() {
-        def bb = new grails.spring.BeanBuilder()
+        def bb = new BeanBuilder()
         bb.beans {
             holyGrail(HolyGrailQuest)
             knights(KnightOfTheRoundTable, "Camelot", leader:"lancelot", quest: holyGrail)
@@ -304,51 +296,50 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals quest, knights.quest
     }
 
-    void testAbstractBeanDefinition() {      
-          def bb = new grails.spring.BeanBuilder()
-          bb.beans {
-              abstractBean {
-                  leader = "Lancelot"
-              }
-              quest(HolyGrailQuest)
-              knights(KnightOfTheRoundTable, "Camelot") { bean ->
-                  bean.parent = abstractBean
-                  quest = quest
-              }
-          }
-          def ctx = bb.createApplicationContext()
+    void testAbstractBeanDefinition() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            abstractBean {
+                leader = "Lancelot"
+            }
+            quest(HolyGrailQuest)
+            knights(KnightOfTheRoundTable, "Camelot") { bean ->
+                bean.parent = abstractBean
+                quest = quest
+            }
+        }
+        def ctx = bb.createApplicationContext()
 
-          def knights = ctx.knights   
-          assert knights
-          shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
-              ctx.abstractBean
-          }
-          assertEquals "Lancelot", knights.leader
+        def knights = ctx.knights
+        assert knights
+        shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
+            ctx.abstractBean
+        }
+        assertEquals "Lancelot", knights.leader
     }
 
     void testAbstractBeanDefinitionWithClass() {
-          def bb = new grails.spring.BeanBuilder()
-          bb.beans {                                          
-              abstractBean(KnightOfTheRoundTable) { bean ->
-                  bean.'abstract' = true                  
-                  leader = "Lancelot"
-              }
-              quest(HolyGrailQuest)
-              knights("Camelot") { bean ->
-                  bean.parent = abstractBean
-                  quest = quest
-              }
-          }
-          def ctx = bb.createApplicationContext()
+        def bb = new BeanBuilder()
+        bb.beans {
+            abstractBean(KnightOfTheRoundTable) { bean ->
+                bean.'abstract' = true
+                leader = "Lancelot"
+            }
+            quest(HolyGrailQuest)
+            knights("Camelot") { bean ->
+                bean.parent = abstractBean
+                quest = quest
+            }
+        }
+        def ctx = bb.createApplicationContext()
 
-          shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
-              ctx.abstractBean                                                         
-          }                                
-          def knights = ctx.knights
-          assert knights
-          assertEquals "Lancelot", knights.leader
+        shouldFail(BeanIsAbstractException) {
+            ctx.abstractBean
+        }
+        def knights = ctx.knights
+        assert knights
+        assertEquals "Lancelot", knights.leader
     }
-
 
     void testScopes() {
         def bb = new BeanBuilder()
@@ -372,206 +363,204 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSimpleBean() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			bean1(Bean1) {
-				person = "homer"
-				age = 45
-				props = [overweight:true, height:"1.8m"]
-				children = ["bart", "lisa"]				         
-			}
-		}
-		def ctx  = bb.createApplicationContext()
-		
-		assert ctx.containsBean("bean1")
-		def bean1 = ctx.getBean("bean1")
-		
-		assertEquals "homer", bean1.person
-		assertEquals 45, bean1.age
-		assertEquals true, bean1.props?.overweight
-		assertEquals "1.8m", bean1.props?.height
-		assertEquals(["bart", "lisa"], bean1.children)
-		
-	}
-	
-	void testBeanWithParentRef() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			homer(Bean1) {
-				person = "homer"
-				age = 45
-				props = [overweight:true, height:"1.8m"]
-				children = ["bart", "lisa"]				         
-			}
-		}
-		bb = new BeanBuilder(bb.createApplicationContext())
-		bb.beans {
-			bart(Bean2) {
-				person = "bart"
-				parent = ref("homer", true)
-			}
-		}
-		
-		def ctx = bb.createApplicationContext()
-        assert ctx != null		
-		assert ctx.containsBean("bart")
-		def bart = ctx.getBean("bart")
-		assertEquals "homer",bart.parent?.person
-	}
-	
-	void testWithAnonymousInnerBean() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			bart(Bean1) {
-				person = "bart"
-				age = 11
-			}
-			lisa(Bean1) {
-				person = "lisa"
-				age = 9				
-			}			
-			marge(Bean2) {
-				person = "marge"
-				bean1 =  { Bean1 b ->
-				     	    person = "homer"
-						    age = 45
-						    props = [overweight:true, height:"1.8m"]
-						    children = ["bart", "lisa"] }
-				children = [bart, lisa]
-			}
-		}
-		
-		def ctx  = bb.createApplicationContext()
-		
-		def marge = ctx.getBean("marge")
-		
-		assertEquals "homer", marge.bean1.person
-	}
-	
-	void testWithUntypedAnonymousInnerBean() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			homer(Bean1Factory) 
-			bart(Bean1) {
-				person = "bart"
-				age = 11
-			}
-			lisa(Bean1) {
-				person = "lisa"
-				age = 9				
-			}			
-			marge(Bean2) {
-				person = "marge"
-				bean1 =  { bean -> 
-							bean.factoryBean = "homer"
-							bean.factoryMethod = "newInstance"
-							person = "homer" }
-				children = [bart, lisa]
-			}
-		}
-		
-		def ctx  = bb.createApplicationContext()
-		
-		def marge = ctx.getBean("marge")
-		
-		assertEquals "homer", marge.bean1.person		
-	}
-	
-	void testBeanReferences() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			homer(Bean1) {
-				person = "homer"
-				age = 45
-				props = [overweight:true, height:"1.8m"]
-				children = ["bart", "lisa"]				         
-			}
-			bart(Bean1) {
-				person = "bart"
-				age = 11
-			}
-			lisa(Bean1) {
-				person = "lisa"
-				age = 9				
-			}
-			marge(Bean2) {
-				person = "marge"
-				bean1 = homer
-				children = [bart, lisa]
-			}
-		}
-		def ctx  = bb.createApplicationContext()
-		
-		def homer = ctx.getBean("homer")
-		def marge = ctx.getBean("marge")
-		def bart = ctx.getBean("bart")
-		def lisa = ctx.getBean("lisa")
-		
-		assertEquals homer, marge.bean1
-		assertEquals 2, marge.children.size()
-		
-		assertTrue marge.children.contains(bart)
-		assertTrue marge.children.contains(lisa)
-	}
-	
-	void testBeanWithConstructor() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			homer(Bean1) {
-				person = "homer"
-				age = 45
-			}
-			marge(Bean3, "marge", homer) {
-				age = 40				
-			}
-		}	
-		def ctx  = bb.createApplicationContext()
-		
-		def marge = ctx.getBean("marge")
-		
-		assertEquals "marge", marge.person
-		assertEquals "homer", marge.bean1.person
-		assertEquals 40, marge.age
-	}
-	
-	void testBeanWithFactoryMethod() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			homer(Bean1) {
-				person = "homer"
-				age = 45
-			}
-			def marge = marge(Bean4) {
-				person = "marge"				
-			}
-			marge.factoryMethod = "getInstance"
-		}	
-		def ctx  = bb.createApplicationContext()
-		
-		def marge = ctx.getBean("marge")
-		
-		assert "marge", marge.person
+        def bb = new BeanBuilder()
+        bb.beans {
+            bean1(Bean1) {
+                person = "homer"
+                age = 45
+                props = [overweight:true, height:"1.8m"]
+                children = ["bart", "lisa"]
+            }
+        }
+        def ctx  = bb.createApplicationContext()
 
-	}
-	
-	void testBeanWithFactoryMethodUsingClosureArgs() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			homer(Bean1) {
-				person = "homer"
-				age = 45
-			}
-			marge(Bean4) { bean ->
-			    bean.factoryMethod = "getInstance"
-				person = "marge"				
-			}
-		}	
-		def ctx  = bb.createApplicationContext()
-		
-		def marge = ctx.getBean("marge")
-		
-		assert "marge", marge.person		
-	}
+        assert ctx.containsBean("bean1")
+        def bean1 = ctx.getBean("bean1")
+
+        assertEquals "homer", bean1.person
+        assertEquals 45, bean1.age
+        assertEquals true, bean1.props?.overweight
+        assertEquals "1.8m", bean1.props?.height
+        assertEquals(["bart", "lisa"], bean1.children)
+    }
+
+    void testBeanWithParentRef() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            homer(Bean1) {
+                person = "homer"
+                age = 45
+                props = [overweight:true, height:"1.8m"]
+                children = ["bart", "lisa"]
+            }
+        }
+        bb = new BeanBuilder(bb.createApplicationContext())
+        bb.beans {
+            bart(Bean2) {
+                person = "bart"
+                parent = ref("homer", true)
+            }
+        }
+
+        def ctx = bb.createApplicationContext()
+        assert ctx != null
+        assert ctx.containsBean("bart")
+        def bart = ctx.getBean("bart")
+        assertEquals "homer",bart.parent?.person
+    }
+
+    void testWithAnonymousInnerBean() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            bart(Bean1) {
+                person = "bart"
+                age = 11
+            }
+            lisa(Bean1) {
+                person = "lisa"
+                age = 9
+            }
+            marge(Bean2) {
+                person = "marge"
+                bean1 =  { Bean1 b ->
+                             person = "homer"
+                            age = 45
+                            props = [overweight:true, height:"1.8m"]
+                            children = ["bart", "lisa"] }
+                children = [bart, lisa]
+            }
+        }
+
+        def ctx  = bb.createApplicationContext()
+
+        def marge = ctx.getBean("marge")
+
+        assertEquals "homer", marge.bean1.person
+    }
+
+    void testWithUntypedAnonymousInnerBean() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            homer(Bean1Factory)
+            bart(Bean1) {
+                person = "bart"
+                age = 11
+            }
+            lisa(Bean1) {
+                person = "lisa"
+                age = 9
+            }
+            marge(Bean2) {
+                person = "marge"
+                bean1 =  { bean ->
+                            bean.factoryBean = "homer"
+                            bean.factoryMethod = "newInstance"
+                            person = "homer" }
+                children = [bart, lisa]
+            }
+        }
+
+        def ctx  = bb.createApplicationContext()
+
+        def marge = ctx.getBean("marge")
+
+        assertEquals "homer", marge.bean1.person
+    }
+
+    void testBeanReferences() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            homer(Bean1) {
+                person = "homer"
+                age = 45
+                props = [overweight:true, height:"1.8m"]
+                children = ["bart", "lisa"]
+            }
+            bart(Bean1) {
+                person = "bart"
+                age = 11
+            }
+            lisa(Bean1) {
+                person = "lisa"
+                age = 9
+            }
+            marge(Bean2) {
+                person = "marge"
+                bean1 = homer
+                children = [bart, lisa]
+            }
+        }
+        def ctx  = bb.createApplicationContext()
+
+        def homer = ctx.getBean("homer")
+        def marge = ctx.getBean("marge")
+        def bart = ctx.getBean("bart")
+        def lisa = ctx.getBean("lisa")
+
+        assertEquals homer, marge.bean1
+        assertEquals 2, marge.children.size()
+
+        assertTrue marge.children.contains(bart)
+        assertTrue marge.children.contains(lisa)
+    }
+
+    void testBeanWithConstructor() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            homer(Bean1) {
+                person = "homer"
+                age = 45
+            }
+            marge(Bean3, "marge", homer) {
+                age = 40
+            }
+        }
+        def ctx  = bb.createApplicationContext()
+
+        def marge = ctx.getBean("marge")
+
+        assertEquals "marge", marge.person
+        assertEquals "homer", marge.bean1.person
+        assertEquals 40, marge.age
+    }
+
+    void testBeanWithFactoryMethod() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            homer(Bean1) {
+                person = "homer"
+                age = 45
+            }
+            def marge = marge(Bean4) {
+                person = "marge"
+            }
+            marge.factoryMethod = "getInstance"
+        }
+        def ctx  = bb.createApplicationContext()
+
+        def marge = ctx.getBean("marge")
+
+        assert "marge", marge.person
+    }
+
+    void testBeanWithFactoryMethodUsingClosureArgs() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            homer(Bean1) {
+                person = "homer"
+                age = 45
+            }
+            marge(Bean4) { bean ->
+                bean.factoryMethod = "getInstance"
+                person = "marge"
+            }
+        }
+        def ctx  = bb.createApplicationContext()
+
+        def marge = ctx.getBean("marge")
+
+        assert "marge", marge.person
+    }
 
     void testGetBeanDefinitions() {
         def bb = new BeanBuilder()
@@ -596,76 +585,74 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithFactoryBean() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			myFactory(Bean1Factory)
-			
-			homer(myFactory) { bean ->
-				bean.factoryMethod = "newInstance"
-				person = "homer"
-				age = 45
-			}
-		}
-		
-		def ctx  = bb.createApplicationContext()
-		
-		def homer = ctx.getBean("homer")
-		
-		assertEquals "homer", homer.person
-	}
-	
-	void testBeanWithFactoryBeanAndMethod() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			myFactory(Bean1Factory)
-			
-			homer(myFactory:"newInstance") { bean ->
-				person = "homer"
-				age = 45
-			}
-		}
-		
-		def ctx  = bb.createApplicationContext()
-		
-		def homer = ctx.getBean("homer")
-		
-		assertEquals "homer", homer.person
-	}	
-	
-	void testLoadExternalBeans() {
-		def pr = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
-		def r = pr.getResource("grails/spring/resources1.groovy")
-		
-		def bb = new BeanBuilder()
-		bb.loadBeans(r)
-		
-		def ctx = bb.createApplicationContext()
-		
-		assert ctx.containsBean("dataSource")
-		
-		def dataSource = ctx.getBean("dataSource")
-		
-	}
-	
-	void testHolyGrailWiring() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            myFactory(Bean1Factory)
 
-		def bb = new grails.spring.BeanBuilder()
+            homer(myFactory) { bean ->
+                bean.factoryMethod = "newInstance"
+                person = "homer"
+                age = 45
+            }
+        }
 
-		bb.beans {
-		 quest(HolyGrailQuest) 
+        def ctx  = bb.createApplicationContext()
 
-		 knight(KnightOfTheRoundTable, "Bedivere") {
-		   quest = ref("quest")
-		 }
-		}
+        def homer = ctx.getBean("homer")
 
-		def ctx = bb.createApplicationContext()
+        assertEquals "homer", homer.person
+    }
 
-		def knight = ctx.getBean("knight")
+    void testBeanWithFactoryBeanAndMethod() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            myFactory(Bean1Factory)
 
-		knight.embarkOnQuest()
-		
-	}
+            homer(myFactory:"newInstance") { bean ->
+                person = "homer"
+                age = 45
+            }
+        }
+
+        def ctx  = bb.createApplicationContext()
+
+        def homer = ctx.getBean("homer")
+
+        assertEquals "homer", homer.person
+    }
+
+    void testLoadExternalBeans() {
+        def pr = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
+        def r = pr.getResource("grails/spring/resources1.groovy")
+
+        def bb = new BeanBuilder()
+        bb.loadBeans(r)
+
+        def ctx = bb.createApplicationContext()
+
+        assert ctx.containsBean("dataSource")
+
+        def dataSource = ctx.getBean("dataSource")
+    }
+
+    void testHolyGrailWiring() {
+
+        def bb = new BeanBuilder()
+
+        bb.beans {
+            quest(HolyGrailQuest)
+
+            knight(KnightOfTheRoundTable, "Bedivere") {
+                quest = ref("quest")
+            }
+        }
+
+        def ctx = bb.createApplicationContext()
+
+        def knight = ctx.getBean("knight")
+
+        knight.embarkOnQuest()
+    }
 
     void testAbstractBeanSpecifyingClass() {
         def bb = new BeanBuilder()
@@ -690,7 +677,6 @@ class BeanBuilderTests extends GroovyTestCase {
             }
         }
 
-
         def ctx = bb.createApplicationContext()
 
         def lancelot = ctx.getBean("lancelot")
@@ -700,10 +686,10 @@ class BeanBuilderTests extends GroovyTestCase {
         def homerBean = ctx.getBean("homerBean")
 
         assertEquals 45, homerBean.age
-        assertEquals "homer", homerBean.person 
+        assertEquals "homer", homerBean.person
     }
 
-	void testBeanBuilderWithScript() {
+    void testBeanBuilderWithScript() {
         def script = '''
 def bb = new grails.spring.BeanBuilder()
 
@@ -713,7 +699,7 @@ quest(grails.spring.HolyGrailQuest) {}
 knight(grails.spring.KnightOfTheRoundTable, "Bedivere") { quest = quest }
 }
 bb.createApplicationContext()
- '''                                                                                
+ '''
         def ctx = new GroovyShell().evaluate(script)
 
         def knight = ctx.getBean('knight')
@@ -744,103 +730,101 @@ bb.createApplicationContext()
 
         assertEquals "Fred", appCtx.getBean("personA").name
     }
-
 }
+
 class HolyGrailQuest {
-	   void start() { println "lets begin" }
+    void start() { println "lets begin" }
 }
-class KnightOfTheRoundTable {
-   String name
-   String leader
-   KnightOfTheRoundTable(String n) {
-      this.name = n
-   }
-   HolyGrailQuest quest
 
-   void embarkOnQuest() {
-       quest.start()
-   }
+class KnightOfTheRoundTable {
+    String name
+    String leader
+    KnightOfTheRoundTable(String n) {
+        this.name = n
+    }
+    HolyGrailQuest quest
+
+    void embarkOnQuest() {
+        quest.start()
+    }
 }
 
 // simple bean
 class Bean1 {
-	String person
-	int age
-	Properties props
-	List children
+    String person
+    int age
+    Properties props
+    List children
 }
+
 // bean referencing other bean
 class Bean2 {
     int age
-	String person
-	Bean1 bean1
-	Properties props
-	List children
-	Bean1 parent
+    String person
+    Bean1 bean1
+    Properties props
+    List children
+    Bean1 parent
 }
+
 // bean with constructor args
 class Bean3 {
-	Bean3(String person, Bean1 bean1) {
-		this.person = person
-		this.bean1 = bean1
-	}
-	String person
-	Bean1 bean1
-	int age
+    Bean3(String person, Bean1 bean1) {
+        this.person = person
+        this.bean1 = bean1
+    }
+    String person
+    Bean1 bean1
+    int age
 }
+
 // bean with factory method
 class Bean4 {
-	private Bean4() {}
-	static Bean4 getInstance() {
-		return new Bean4()
-	}
-	String person
+    private Bean4() {}
+    static Bean4 getInstance() { new Bean4() }
+    String person
 }
+
 // a factory bean
 class Bean1Factory {
-	Bean1 newInstance() {
-		return new Bean1()
-	}
+    Bean1 newInstance() { new Bean1() }
 }
+
 class ScopeTest {}
+
 class TestScope implements Scope {
 
     int instanceCount
 
-
-    public Object remove(String name) {
+    Object remove(String name) {
          // do nothing
     }
 
-    public void registerDestructionCallback(String name, Runnable callback) {
-    }
+    void registerDestructionCallback(String name, Runnable callback) {}
 
-    public String getConversationId() {
-        return "mock"
-    }
+    String getConversationId() { "mock" }
 
-    public Object get(String name, ObjectFactory<?> objectFactory) {
+    Object get(String name, ObjectFactory<?> objectFactory) {
         instanceCount++
         objectFactory.getObject()
-
     }
 
-    public Object resolveContextualObject(String s) {
-        return null;  // noop
-    }
+    Object resolveContextualObject(String s) { null }
 }
+
 class BirthdayCardSender {
    List peopleSentCards = []
-   public void onBirthday(AdvisedPerson person) {
+   void onBirthday(AdvisedPerson person) {
       peopleSentCards << person
    }
 }
-@Component(value = "person")
-public class AdvisedPerson {
- int age;
- String name;
 
- public void birthday() {
-      ++age;
- }
+@Component(value = "person")
+class AdvisedPerson {
+    int age
+    String name
+
+    void birthday() {
+        ++age
+    }
 }

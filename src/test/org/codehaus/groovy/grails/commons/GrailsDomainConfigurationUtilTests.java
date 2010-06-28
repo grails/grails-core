@@ -14,21 +14,17 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import java.net.URI;
+import java.net.URL;
+import java.util.Date;
+
 import junit.framework.TestCase;
 
-import java.util.Date;
-import java.net.URL;
-import java.net.URI;
-
 /**
- * Tests for the GrailsDomainConfigurationUtil class
- *
+ * Tests for the GrailsDomainConfigurationUtil class.
  *
  * @author Graeme Rocher
  * @since 0.5
- *        <p/>
- *        Created: Apr 27, 2007
- *        Time: 11:24:21 AM
  */
 public class GrailsDomainConfigurationUtilTests extends TestCase {
 
@@ -67,6 +63,6 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(Character[].class));
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(Double[].class));
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(Float[].class));
-        assertTrue(GrailsDomainConfigurationUtil.isBasicType(Byte[].class));        
+        assertTrue(GrailsDomainConfigurationUtil.isBasicType(Byte[].class));
     }
 }

@@ -21,12 +21,10 @@ import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.hibernate.criterion.CriteriaSpecification
 
 /**
- * A builder that implements the ORM named queries DSL
-
+ * A builder that implements the ORM named queries DSL.
+ * 
  * @author Jeff Brown
- *
  */
-
 class HibernateNamedQueriesBuilder {
 
     private final domainClass
@@ -39,23 +37,22 @@ class HibernateNamedQueriesBuilder {
      * @param ctx the main spring application context
      */
     HibernateNamedQueriesBuilder(domainClass, grailsApplication, ctx) {
-		this.domainClass = domainClass
+        this.domainClass = domainClass
 
         def classLoader = grailsApplication.classLoader
         def sessionFactory = ctx.getBean('sessionFactory')
 
         dynamicMethods = [
-                new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                new ListOrderByPersistentMethod(sessionFactory, classLoader)
+            new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new ListOrderByPersistentMethod(sessionFactory, classLoader)
         ]
-
     }
 
-	def evaluate(Closure namedQueriesClosure) {
+    def evaluate(Closure namedQueriesClosure) {
         def closure = namedQueriesClosure.clone()
         closure.resolveStrategy = Closure.DELEGATE_ONLY
         closure.delegate = this
@@ -86,13 +83,13 @@ class NamedCriteriaProxy {
     private domainClass
     private dynamicMethods
     private namedCriteriaParams
-	private previousInChain
+    private previousInChain
     private queryBuilder
 
-	private invokeCriteriaClosure(additionalCriteriaClosure = null) {
-		def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
-		crit()
-	}
+    private invokeCriteriaClosure(additionalCriteriaClosure = null) {
+        def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
+        crit()
+    }
 
     private listInternal(Object[] params, Closure additionalCriteriaClosure, Boolean isDistinct) {
         def listClosure = {
@@ -108,7 +105,7 @@ class NamedCriteriaProxy {
             if (paramsMap?.offset) {
                 firstResult paramsMap.offset instanceof Integer ? paramsMap.offset : paramsMap.offset.toInteger()
             }
-            if(isDistinct) {
+            if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }
         }
@@ -124,22 +121,23 @@ class NamedCriteriaProxy {
     }
 
     def call(Object[] params) {
-		if(params && params[-1] instanceof Closure) {
-			def additionalCriteriaClosure = params[-1]
-			params = params.length > 1 ? params[0..-2] : [:]
-			list(params, additionalCriteriaClosure)
-		} else {
-			namedCriteriaParams = params
-			this
-		}
+        if (params && params[-1] instanceof Closure) {
+            def additionalCriteriaClosure = params[-1]
+            params = params.length > 1 ? params[0..-2] : [:]
+            list(params, additionalCriteriaClosure)
+        }
+        else {
+            namedCriteriaParams = params
+            this
+        }
     }
 
     def get(id) {
-		id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
+        id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
             queryBuilder = delegate
             invokeCriteriaClosure()
-			eq 'id', id
+            eq 'id', id
             uniqueResult = true
         }
         domainClass.clazz.withCriteria(getClosure)
@@ -165,7 +163,7 @@ class NamedCriteriaProxy {
         def queryClosure = {
             queryBuilder = delegate
             invokeCriteriaClosure()
-			params.each {key, val ->
+            params.each {key, val ->
                 eq key, val
             }
             if (uniq) {
@@ -176,14 +174,14 @@ class NamedCriteriaProxy {
         domainClass.clazz.withCriteria(queryClosure)
     }
 
-	def propertyMissing(String propertyName) {
-		if(domainClass.metaClass.getMetaProperty(propertyName)) {
-			def nextInChain = domainClass.metaClass.getMetaProperty(propertyName).getProperty(domainClass)
-			nextInChain.previousInChain = this
-			return nextInChain
-		}
-		throw new MissingPropertyException(propertyName, NamedCriteriaProxy)
-	}
+    def propertyMissing(String propertyName) {
+        if (domainClass.metaClass.getMetaProperty(propertyName)) {
+            def nextInChain = domainClass.metaClass.getMetaProperty(propertyName).getProperty(domainClass)
+            nextInChain.previousInChain = this
+            return nextInChain
+        }
+        throw new MissingPropertyException(propertyName, NamedCriteriaProxy)
+    }
 
     def methodMissing(String methodName, args) {
 
@@ -192,44 +190,46 @@ class NamedCriteriaProxy {
         if (method) {
             def preparedClosure = getPreparedCriteriaClosure()
             return method.invoke(domainClass.clazz, methodName, preparedClosure, args)
-        } else if(!queryBuilder && domainClass.metaClass.getMetaProperty(methodName)) {
-        	def nextInChain = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass)
-			nextInChain.previousInChain = this
-		    return nextInChain(args)
-        } else {
-            def metaProperty = domainClass.metaClass.getMetaProperty(methodName)
-            if(metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
-                def staticProperty = metaProperty.getProperty(domainClass)
-                if(staticProperty instanceof NamedCriteriaProxy) {
-                    def nestedCriteria = staticProperty.criteriaClosure.clone()
-                    nestedCriteria.delegate = queryBuilder
-                    return nestedCriteria(*args)
-                }
+        }
+
+        if (!queryBuilder && domainClass.metaClass.getMetaProperty(methodName)) {
+            def nextInChain = domainClass.metaClass.getMetaProperty(methodName).getProperty(domainClass)
+            nextInChain.previousInChain = this
+            return nextInChain(args)
+        }
+
+        def metaProperty = domainClass.metaClass.getMetaProperty(methodName)
+        if (metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
+            def staticProperty = metaProperty.getProperty(domainClass)
+            if (staticProperty instanceof NamedCriteriaProxy) {
+                def nestedCriteria = staticProperty.criteriaClosure.clone()
+                nestedCriteria.delegate = queryBuilder
+                return nestedCriteria(*args)
             }
         }
         queryBuilder."${methodName}"(*args)
     }
 
     private getPreparedCriteriaClosure(additionalCriteriaClosure = null) {
-		def closureClone = criteriaClosure.clone()
-		closureClone.resolveStrategy = Closure.DELEGATE_FIRST
-		if (namedCriteriaParams) {
-			closureClone = closureClone.curry(namedCriteriaParams)
-		}
-		def c = {
-			closureClone.delegate = delegate
-			if(previousInChain) {
-				def previousClosure = previousInChain.getPreparedCriteriaClosure()
-				previousClosure.delegate = delegate
-				previousClosure()
-			}
-			closureClone()
-			if(additionalCriteriaClosure) {
-				additionalCriteriaClosure = additionalCriteriaClosure.clone()
-				additionalCriteriaClosure.delegate = delegate
-				additionalCriteriaClosure()
-			}
-		}
-		c
+        def closureClone = criteriaClosure.clone()
+        closureClone.resolveStrategy = Closure.DELEGATE_FIRST
+        if (namedCriteriaParams) {
+            closureClone = closureClone.curry(namedCriteriaParams)
+        }
+        def c = {
+            closureClone.delegate = delegate
+            if (previousInChain) {
+                def previousClosure = previousInChain.getPreparedCriteriaClosure()
+                previousClosure.delegate = delegate
+                previousClosure()
+            }
+            closureClone()
+            if (additionalCriteriaClosure) {
+                additionalCriteriaClosure = additionalCriteriaClosure.clone()
+                additionalCriteriaClosure.delegate = delegate
+                additionalCriteriaClosure()
+            }
+        }
+        c
     }
 }

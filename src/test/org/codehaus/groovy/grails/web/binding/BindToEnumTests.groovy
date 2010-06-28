@@ -6,11 +6,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class BindToEnumTests extends AbstractGrailsControllerTests{
+class BindToEnumTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -34,10 +33,8 @@ class EnumBindingController {
         [holder:h]
     }
 }
-
-''')
+'''
     }
-
 
     void testBindBlankValueToEnum() {
         def controller = ga.getControllerClass("EnumBindingController").newInstance()
@@ -57,7 +54,5 @@ class EnumBindingController {
         def model = controller.save()
 
         assertEquals "USER", model.holder.role.toString()
-
     }
-
 }

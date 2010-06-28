@@ -21,19 +21,15 @@ import org.springframework.mock.web.MockHttpSession
  * map and property notation, i.e. "session['attr']" and "session.attr".
  */
 class GrailsMockHttpSession extends MockHttpSession {
+
     Object getProperty(String name) {
         def mp = getClass().metaClass.getMetaProperty(name)
-        if (mp) {
-            return mp.getProperty(this)
-        }
-        else {
-            return getAttribute(name)
-        }
+        return mp ? mp.getProperty(this) : getAttribute(name)
     }
 
     void setProperty(String name, Object value) {
         def mp = getClass().metaClass.getMetaProperty(name)
-        if(mp) {
+        if (mp) {
             mp.setProperty(this, value)
         }
         else {

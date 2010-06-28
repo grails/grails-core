@@ -503,12 +503,12 @@ class MockUtilsTests extends GroovyTestCase {
             assertSame aliceDoeUS, relation.testDomain
         }
     }
-    
+
     void testAddToWithRelationshipToSameClass() {
         def c1 = new Company(name: 'c1')
         def c2 = new Company(name: 'c2')
         def c3 = new Company(name: 'c3')
-        
+
         MockUtils.mockDomain (Company, [c1, c2, c3])
         c1.addToSubsidiaries(c2)
         c2.addToSubsidiaries(c3)
@@ -651,8 +651,7 @@ class MockUtilsTests extends GroovyTestCase {
         dc.validate()
         assertTrue dc.errors.isEmpty()
 
-        // Test that class hierarchies with multiple "constraints" blocks
-        // work ok.
+        // Test that class hierarchies with multiple "constraints" blocks work ok.
         MockUtils.prepareForConstraintsTests(B, errorsMap)
         dc = new B(name: "Bee", country: "US", age: 5, b: "supercallifragilistic")
         assertFalse  dc.validate()
@@ -1165,8 +1164,6 @@ class MockUtilsTests extends GroovyTestCase {
         assertNotNull dc.child
         assertEquals 12345L, dc.child.id
         assertNull dc.child.name
-
-        println ">>> Validation result: ${dc.validate(deep: true)}"
     }
 
     /**
@@ -1466,10 +1463,8 @@ class Company {
     static hasMany = [subsidiaries: Company]
     static belongsTo = [parentCompany: Company]
     Set subsidiaries
-                        
-    String toString() {
-        name
-    }
+
+    String toString() { name }
 }
 
 /**

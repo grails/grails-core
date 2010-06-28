@@ -68,11 +68,6 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
     @Override
     protected final void tearDown() throws Exception {
         onTearDown();
-
-        ga = null;
-        ctx = null;
-        gcl = null;
-
         ExpandoMetaClass.disableGlobally();
         super.tearDown();
     }

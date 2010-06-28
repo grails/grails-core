@@ -69,8 +69,6 @@ import org.hibernate.util.StringHelper;
  *
  * @author Graeme Rocher
  * @since 0.1
- *        <p/>
- *        Created: 06-Jul-2005
  */
 public final class GrailsDomainBinder {
 
@@ -437,7 +435,7 @@ public final class GrailsDomainBinder {
             if (referenced != null && !referenced.isRoot() && !tablePerSubclass) {
                 Mapping rootMapping = getRootMapping(referenced);
                 String discriminatorColumnName = RootClass.DEFAULT_DISCRIMINATOR_COLUMN_NAME;
-                
+
                 if (rootMapping != null) {
                     final ColumnConfig discriminatorColumn = rootMapping.getDiscriminatorColumn();
                     if (discriminatorColumn!=null) {
@@ -706,7 +704,7 @@ public final class GrailsDomainBinder {
 
     private static void bindCollectionForPropertyConfig(Collection collection, PropertyConfig config) {
         if (config != null) {
-            collection.setLazy(config.getLazy());            
+            collection.setLazy(config.getLazy());
         } else {
             collection.setLazy(true);
             collection.setExtraLazy(false);
@@ -761,7 +759,7 @@ public final class GrailsDomainBinder {
      * @return The DependantValue (key)
      */
     private static DependantValue createPrimaryKeyValue(@SuppressWarnings("unused") GrailsDomainClassProperty property,
-   		 Collection collection, @SuppressWarnings("unused") Map<?, ?> persistentClasses) {
+            Collection collection, @SuppressWarnings("unused") Map<?, ?> persistentClasses) {
         KeyValue keyValue;
         DependantValue key;
         String propertyRef = collection.getReferencedPropertyName();
@@ -1341,9 +1339,9 @@ public final class GrailsDomainBinder {
             entity.setDiscriminatorInsertable((Boolean)m.getDiscriminatorMap().get("insert"));
         }
         if (m!=null && m.getDiscriminatorMap().get("type") != null){
-            d.setTypeName((String)m.getDiscriminatorMap().get("type")); 
+            d.setTypeName((String)m.getDiscriminatorMap().get("type"));
         }
-        
+
         if (m!=null && m.getDiscriminatorMap().get("formula") != null){
             Formula formula = new Formula();
             formula.setFormula((String)m.getDiscriminatorMap().get("formula"));
@@ -1730,7 +1728,7 @@ public final class GrailsDomainBinder {
      * @param mappings   The Hibernate Mappings object
      */
     private static void bindComponent(Component component, GrailsDomainClassProperty property,
-   		 @SuppressWarnings("unused") boolean isNullable, Mappings mappings) {
+            @SuppressWarnings("unused") boolean isNullable, Mappings mappings) {
         component.setEmbedded(true);
         Class<?> type = property.getType();
         String role = StringHelper.qualify(type.getName(), property.getName());
@@ -1738,7 +1736,7 @@ public final class GrailsDomainBinder {
         component.setComponentClassName(type.getName());
 
         GrailsDomainClass domainClass = property.getReferencedDomainClass() != null ? property.getReferencedDomainClass() : property.getComponent();
-        
+
         evaluateMapping(domainClass);
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
         Table table = component.getOwner().getTable();
@@ -1886,7 +1884,7 @@ public final class GrailsDomainBinder {
      * @param mappings
      */
     private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one,
-   		 @SuppressWarnings("unused") Mappings mappings) {
+            @SuppressWarnings("unused") Mappings mappings) {
         one.setReferencedEntityName(currentGrailsProp.getReferencedPropertyType().getName());
         one.setIgnoreNotFound(true);
     }
@@ -1980,7 +1978,7 @@ public final class GrailsDomainBinder {
                                     ForeignKeyDirection.FOREIGN_KEY_FROM_PARENT :
                                     ForeignKeyDirection.FOREIGN_KEY_TO_PARENT);
         oneToOne.setAlternateUniqueKey(true);
-        
+
         if (config != null && config.getFetch() != null) {
             oneToOne.setFetchMode(config.getFetch());
         }
@@ -1990,8 +1988,8 @@ public final class GrailsDomainBinder {
 
         oneToOne.setReferencedEntityName(otherSide.getDomainClass().getFullName());
         oneToOne.setPropertyName(property.getName());
-        
-        if (otherSide.isHasOne()) {            
+
+        if (otherSide.isHasOne()) {
             PropertyConfig pc = getPropertyConfig(property);
             bindSimpleValue(property, oneToOne, path, pc);
         }
@@ -2240,7 +2238,7 @@ public final class GrailsDomainBinder {
      * @param mappings    The Hibernate mappings instance
      */
     private static void bindSimpleValue(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty,
-   		 SimpleValue simpleValue, String path, @SuppressWarnings("unused") Mappings mappings) {
+            SimpleValue simpleValue, String path, @SuppressWarnings("unused") Mappings mappings) {
         // set type
         PropertyConfig propertyConfig = getPropertyConfig(property);
         bindSimpleValue(property,parentProperty, simpleValue, path, propertyConfig);
@@ -2317,7 +2315,7 @@ public final class GrailsDomainBinder {
      * @param mappings    The mappings
      */
     private static void bindSimpleValue(String type, SimpleValue simpleValue, boolean nullable,
-   		 String columnName, @SuppressWarnings("unused") Mappings mappings) {
+            String columnName, @SuppressWarnings("unused") Mappings mappings) {
 
         simpleValue.setTypeName(type);
         Table t = simpleValue.getTable();

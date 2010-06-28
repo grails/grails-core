@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -22,15 +21,14 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.mock.web.MockServletContext
 
-class TagLibraryResolverTests extends GroovyTestCase{
-    
+class TagLibraryResolverTests extends GroovyTestCase {
 
     void testResolveTagLibraryFromJar() {
         def resolver = new MockRootLoaderTagLibraryResolver()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication= new DefaultGrailsApplication()
 
-        JspTagLib tagLib = resolver.resolveTagLibrary( "http://java.sun.com/jsp/jstl/fmt" )
+        JspTagLib tagLib = resolver.resolveTagLibrary("http://java.sun.com/jsp/jstl/fmt")
 
         assert tagLib
 
@@ -53,23 +51,17 @@ class TagLibraryResolverTests extends GroovyTestCase{
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication= new DefaultGrailsApplication()
 
-        JspTagLib tagLib = resolver.resolveTagLibrary( "http://grails.codehaus.org/tags" )
+        JspTagLib tagLib = resolver.resolveTagLibrary("http://grails.codehaus.org/tags")
 
         assert tagLib
 
         assert tagLib.getTag("javascript")
-
     }
-
 }
+
 class MockWebXmlTagLibraryResolver extends TagLibraryResolver {
 
     protected RootLoader resolveRootLoader() {
-        println "WHAT THE FUCK"
-        println "WHAT THE FUCK"
-        println "WHAT THE FUCK"
-        println "WHAT THE FUCK"
-        
         new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
     }
 
@@ -153,6 +145,4 @@ class MockWebXmlTagLibraryResolver extends TagLibraryResolver {
 
 '''.getBytes())
     }
-
-
 }

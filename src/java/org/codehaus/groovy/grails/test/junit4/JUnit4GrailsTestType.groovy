@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.junit4
 
 import org.codehaus.groovy.grails.test.junit4.listener.SuiteRunListener
@@ -36,32 +35,31 @@ import java.lang.reflect.Modifier
 /**
  * An {@code GrailsTestType} for JUnit4 tests.
  */
-public class JUnit4GrailsTestType extends GrailsTestTypeSupport {
+class JUnit4GrailsTestType extends GrailsTestTypeSupport {
 
-    public static final SUFFIXES = ["Test", "Tests"].asImmutable()
+    static final SUFFIXES = ["Test", "Tests"].asImmutable()
 
     protected suite
     protected mode
 
-    public JUnit4GrailsTestType(String name, String sourceDirectory) {
+    JUnit4GrailsTestType(String name, String sourceDirectory) {
         this(name, sourceDirectory, null)
     }
 
-    public JUnit4GrailsTestType(String name, String sourceDirectory, GrailsTestMode mode) {
+    JUnit4GrailsTestType(String name, String sourceDirectory, GrailsTestMode mode) {
         super(name, sourceDirectory)
         this.mode = mode
     }
 
-    protected List<String> getTestSuffixes() {
-        SUFFIXES
-    }
+    protected List<String> getTestSuffixes() { SUFFIXES }
 
     protected int doPrepare() {
         def testClasses = getTestClasses()
         if (testClasses) {
             suite = createSuite(testClasses)
             suite.testCount()
-        } else {
+        }
+        else {
             0
         }
     }
@@ -80,7 +78,8 @@ public class JUnit4GrailsTestType extends GrailsTestTypeSupport {
     protected createRunnerBuilder() {
         if (mode) {
             new GrailsTestCaseRunnerBuilder(mode, getApplicationContext(), testTargetPatterns)
-        } else {
+        }
+        else {
             new GrailsTestCaseRunnerBuilder(testTargetPatterns)
         }
     }
@@ -112,5 +111,4 @@ public class JUnit4GrailsTestType extends GrailsTestTypeSupport {
         notifier.fireTestRunFinished(result)
         new JUnit4ResultGrailsTestTypeResultAdapter(result)
     }
-
 }

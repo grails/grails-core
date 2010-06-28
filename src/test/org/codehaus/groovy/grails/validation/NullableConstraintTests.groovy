@@ -8,10 +8,10 @@ import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
  */
 class NullableConstraintTests extends GroovyTestCase {
 
-	def gcl
+    def gcl
 
-	void setUp() {
-		gcl = new GroovyClassLoader()
+    protected void setUp() {
+        gcl = new GroovyClassLoader()
         gcl.parseClass("""
 class Project {
     Long id
@@ -50,15 +50,9 @@ class ProjectVersion {
     Double number
 }
         """)
-	}
-
-    void tearDown() {
-        gcl = null
     }
 
     void testNullableConstraint() {
-
-
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
@@ -79,31 +73,25 @@ class ProjectVersion {
     }
 
     void testBindToNullable() {
-      def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-      ga.initialise()
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
 
-      def projectDomain = ga.getDomainClass("Project")
-      def projectClass = projectDomain.clazz
+        def projectDomain = ga.getDomainClass("Project")
+        def projectClass = projectDomain.clazz
 
-      def projectInfoDomain = ga.getDomainClass("ProjectInfo")
-      def projectInfoClass = projectInfoDomain.clazz
+        def projectInfoDomain = ga.getDomainClass("ProjectInfo")
+        def projectInfoClass = projectInfoDomain.clazz
 
-      projectClass.metaClass.getConstraints = {->
-        projectDomain.constrainedProperties              
-      }
-      projectInfoClass.metaClass.getConstraints = {->
-        projectInfoDomain.constrainedProperties
-      }
+        projectClass.metaClass.getConstraints = {-> projectDomain.constrainedProperties }
+        projectInfoClass.metaClass.getConstraints = { -> projectInfoDomain.constrainedProperties }
 
-      def project = projectClass.newInstance()
+        def project = projectClass.newInstance()
 
-      DataBindingUtils.bindObjectToInstance(project, ['info.blah':'', name:'test', group:'' ])
+        DataBindingUtils.bindObjectToInstance(project, ['info.blah':'', name:'test', group:'' ])
 
-
-       assertFalse project.errors.hasErrors()
-       assertNull "should have bound String property to null with nullable:true",project.group
-       assertNull "should have bound nested String property to null with nullable:true", project.info.blah
-       assertEquals "test", project.name
-
+        assertFalse project.errors.hasErrors()
+        assertNull "should have bound String property to null with nullable:true",project.group
+        assertNull "should have bound nested String property to null with nullable:true", project.info.blah
+        assertEquals "test", project.name
     }
 }

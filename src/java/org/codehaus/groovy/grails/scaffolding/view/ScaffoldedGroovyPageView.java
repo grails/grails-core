@@ -38,62 +38,62 @@ import org.springframework.util.Assert;
  */
 public class ScaffoldedGroovyPageView extends GroovyPageView {
 
-	private String contents;
-	private static final Log LOG = LogFactory.getLog(ScaffoldedGroovyPageView.class);
+    private String contents;
+    private static final Log LOG = LogFactory.getLog(ScaffoldedGroovyPageView.class);
 
-	public ScaffoldedGroovyPageView(String uri, String contents) {
-		Assert.hasLength(contents, "Argument [contents] cannot be blank or null");
-		Assert.hasLength(uri, "Argument [uri] cannot be blank or null");
+    public ScaffoldedGroovyPageView(String uri, String contents) {
+        Assert.hasLength(contents, "Argument [contents] cannot be blank or null");
+        Assert.hasLength(uri, "Argument [uri] cannot be blank or null");
 
-		this.contents = contents;
-		setUrl(uri);
-	}
+        this.contents = contents;
+        setUrl(uri);
+    }
 
-	/**
-	 * Used for debug reporting.
-	 *
-	 * @return The URL of the view
-	 */
-	@Override
-	public String getBeanName() {
-		return getUrl();
-	}
+    /**
+     * Used for debug reporting.
+     *
+     * @return The URL of the view
+     */
+    @Override
+    public String getBeanName() {
+        return getUrl();
+    }
 
-	/**
-	 * Overrides the default implementation to render a GSP view using an in-memory representation
-	 * held in the #contents property.
-	 *
-	 * @param templateEngine The GroovyPagesTemplateEngine instance
-	 * @param model The model
-	 * @param response The HttpServletResponse instance
-	 *
-	 * @throws IOException Thrown if there was an IO error rendering the view
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
-			HttpServletResponse response, HttpServletRequest request) throws IOException {
+    /**
+     * Overrides the default implementation to render a GSP view using an in-memory representation
+     * held in the #contents property.
+     *
+     * @param templateEngine The GroovyPagesTemplateEngine instance
+     * @param model The model
+     * @param response The HttpServletResponse instance
+     *
+     * @throws IOException Thrown if there was an IO error rendering the view
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
+            HttpServletResponse response, HttpServletRequest request) throws IOException {
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
-		}
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
+        }
 
-		Template t = templateEngine.createTemplate(contents, getUrl());
-		Writable w = t.make(model);
-		Writer out = null;
-		try {
-			out = createResponseWriter(response);
-			w.writeTo(out);
-		}
-		catch(Exception e) {
-			// create fresh response writer
-			out = createResponseWriter(response);
-			handleException(e, out, templateEngine, request, response);
-		}
-		finally {
-			if (out != null) {
-				out.close();
-			}
-		}
-	}
+        Template t = templateEngine.createTemplate(contents, getUrl());
+        Writable w = t.make(model);
+        Writer out = null;
+        try {
+            out = createResponseWriter(response);
+            w.writeTo(out);
+        }
+        catch(Exception e) {
+            // create fresh response writer
+            out = createResponseWriter(response);
+            handleException(e, out, templateEngine, request, response);
+        }
+        finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+    }
 }

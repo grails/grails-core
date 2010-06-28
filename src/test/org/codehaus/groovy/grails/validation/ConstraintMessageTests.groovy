@@ -8,19 +8,19 @@ class ConstraintMessageTests extends GroovyTestCase {
 
     def testProperty
 
-    public void testMessageCodeOrder() {
+    void testMessageCodeOrder() {
         Constraint c = new TestConstraint()
         c.setOwningClass(this.class)
         c.setPropertyName("testProperty")
-        def errors = new BeanPropertyBindingResult(this, "TestObjectName");
+        def errors = new BeanPropertyBindingResult(this, "TestObjectName")
         String[] codes = ['test']
         Object[] values = []
-        c.rejectValueWithDefaultMessage(this, errors, 'default.message', codes, values);
+        c.rejectValueWithDefaultMessage(this, errors, 'default.message', codes, values)
         assertArraysEqual([
                 'org.codehaus.groovy.grails.validation.ConstraintMessageTests.testProperty.TestConstraint.error.TestObjectName.testProperty',
                 'org.codehaus.groovy.grails.validation.ConstraintMessageTests.testProperty.TestConstraint.error.testProperty',
                 'org.codehaus.groovy.grails.validation.ConstraintMessageTests.testProperty.TestConstraint.error.java.lang.Object',
-                'org.codehaus.groovy.grails.validation.ConstraintMessageTests.testProperty.TestConstraint.error',                   
+                'org.codehaus.groovy.grails.validation.ConstraintMessageTests.testProperty.TestConstraint.error',
                 'constraintMessageTests.testProperty.TestConstraint.error.TestObjectName.testProperty',
                 'constraintMessageTests.testProperty.TestConstraint.error.testProperty',
                 'constraintMessageTests.testProperty.TestConstraint.error.java.lang.Object',
@@ -40,27 +40,22 @@ class ConstraintMessageTests extends GroovyTestCase {
 
     }
 
-     private void assertArraysEqual( Object[] left, Object[] right ) {
-        assertEquals( left.length, right.length );
-        for( int i = 0; i < left.length; i++ ) {
+     private void assertArraysEqual(Object[] left, Object[] right) {
+        assertEquals(left.length, right.length)
+        for (int i = 0; i < left.length; i++) {
             Object l = left[i]
             Object r = right[i]
-            assertEquals( l, r );
+            assertEquals(l, r)
         }
     }
-
 }
 
 class TestConstraint extends AbstractConstraint {
     void processValidate(Object target, Object propertyValue, Errors errors) {
-        super.rejectValue(target, errors, 'default.message', 'testconstraint', []);
+        super.rejectValue(target, errors, 'default.message', 'testconstraint', [])
     }
 
-    public boolean supports(Class type) {
-        return true;
-    }
+    boolean supports(Class type) { true }
 
-    public String getName() {
-        return "TestConstraint"
-    }
+    String getName() { "TestConstraint" }
 }

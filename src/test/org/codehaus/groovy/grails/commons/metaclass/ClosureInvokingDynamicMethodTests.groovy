@@ -1,7 +1,3 @@
-package org.codehaus.groovy.grails.commons.metaclass;
-
-import java.util.regex.*
-
 /* Copyright 2004-2005 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,42 +12,45 @@ import java.util.regex.*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.grails.commons.metaclass;
+
+import java.util.regex.*
 
 class ClosureInvokingDynamicMethodTests extends GroovyTestCase {
 
     void testClosureInvokingDynamicMethod() {
-         def method1 = new ClosureInvokingDynamicMethod(/^find\w+$/, {
-                assertTrue it instanceof Matcher
-               return "foo"
-            }
-         )
-         def method2 = new ClosureInvokingDynamicMethod(/^find\w+$/, { matcher, args ->
-                assertTrue matcher instanceof Matcher
-                return args[1]
-            }
-         )
-         def method3 = new ClosureInvokingDynamicMethod(/^find\w+$/, {-> "foo" })
+        def method1 = new ClosureInvokingDynamicMethod(/^find\w+$/, {
+            assertTrue it instanceof Matcher
+            return "foo"
+        })
 
-         assertTrue method1.isMethodMatch("findBar")
-         assertTrue method2.isMethodMatch("findBar")
-         assertTrue method3.isMethodMatch("findBar")
+        def method2 = new ClosureInvokingDynamicMethod(/^find\w+$/, { matcher, args ->
+            assertTrue matcher instanceof Matcher
+            return args[1]
+        })
 
-         assertEquals "foo", method1.invoke(this, "findBar", null)
-         assertEquals  2, method2.invoke(this, "findBar",[1,2,3] as Object[])
-         assertEquals "foo", method3.invoke(this,"findBar", null)
+        def method3 = new ClosureInvokingDynamicMethod(/^find\w+$/, {-> "foo" })
+
+        assertTrue method1.isMethodMatch("findBar")
+        assertTrue method2.isMethodMatch("findBar")
+        assertTrue method3.isMethodMatch("findBar")
+
+        assertEquals "foo", method1.invoke(this, "findBar", null)
+        assertEquals  2, method2.invoke(this, "findBar",[1,2,3] as Object[])
+        assertEquals "foo", method3.invoke(this,"findBar", null)
     }
 
     void testClosureInvokingDynamicMethodFailures() {
         shouldFail {
-             new ClosureInvokingDynamicMethod(null, { })
+            new ClosureInvokingDynamicMethod(null, { })
         }
 
         shouldFail {
-             new ClosureInvokingDynamicMethod(null, null)
+            new ClosureInvokingDynamicMethod(null, null)
         }
 
         shouldFail {
-             new ClosureInvokingDynamicMethod("foo", null)
+            new ClosureInvokingDynamicMethod("foo", null)
         }
     }
 }

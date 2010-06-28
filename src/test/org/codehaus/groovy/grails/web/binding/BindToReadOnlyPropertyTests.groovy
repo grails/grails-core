@@ -6,11 +6,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class BindToReadOnlyPropertyTests extends AbstractGrailsControllerTests{
+class BindToReadOnlyPropertyTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -28,13 +27,11 @@ class Book {
 
     int sum() { calculateField.sum() }
 }
-''')
+'''
     }
-
 
     void testBindToReadyOnlyProperty() {
         def Book = ga.getDomainClass("Book").clazz
-
         def b = Book.newInstance()
 
         b.properties = [calculatedField:[1,2,3], title:"blah"]

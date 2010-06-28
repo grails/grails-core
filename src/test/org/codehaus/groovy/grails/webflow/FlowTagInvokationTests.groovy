@@ -1,13 +1,3 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Sep 7, 2007
- * Time: 8:33:22 AM
- * 
- */
 package org.codehaus.groovy.grails.webflow
 
 import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExecutionTests
@@ -16,6 +6,10 @@ import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class FlowTagInvokationTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
     void testRegularTagInvokation() {
@@ -33,20 +27,19 @@ class FlowTagInvokationTests extends AbstractGrailsTagAwareFlowExecutionTests {
         signalEvent( 'three' )
 
         def model = getFlowScope()
-
         assertEquals '<a href="/foo/bar?execution=1"></a>',model.theLink
     }
 
     void onInit() {
         def controllerClass = gcl.parseClass('''
 class TestController {
-    def index = {}       
+    def index = {}
 }
         ''')
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
     }
 
-    public Closure getFlowClosure() {
+    Closure getFlowClosure() {
         return {
             one {
                 on('two'){

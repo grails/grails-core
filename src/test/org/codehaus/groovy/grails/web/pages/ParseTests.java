@@ -178,13 +178,6 @@ public class ParseTests extends TestCase {
         assertEquals(src, output.htmlParts[0]);
     }
 
-    @SuppressWarnings("unused")
-    private void dumpCharValues(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            System.out.println("char " +i+" is: " +(int) str.charAt(i));
-        }
-    }
-
     /**
      * Eliminate potential issues caused by operating system differences
      * and minor output differences that we don't care about.
@@ -251,8 +244,6 @@ public class ParseTests extends TestCase {
                  "\n" +
                  "Thanks");
 
-         System.out.println("Output: " +output.generatedGsp);
-         System.out.println("Expect: " +expected);
          assertEquals(expected, output.generatedGsp);
          assertEquals("Please click the link below to confirm your email address:\n\n", output.htmlParts[0]);
          assertEquals("\n\n\nThanks", output.htmlParts[1]);

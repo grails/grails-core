@@ -10,14 +10,11 @@ import org.springframework.beans.factory.support.RootBeanDefinition
 /**
  * @author Graeme Rocher
  * @since 1.1.1
- * 
- * Created: May 1, 2009
  */
+class PropertyEditorTests extends AbstractGrailsTagTests {
 
-public class PropertyEditorTests extends AbstractGrailsTagTests {
-
-    public void onSetUp() {
-        gcl = new GroovyClassLoader(this.getClass().classLoader)
+    protected void onSetUp() {
+        gcl = new GroovyClassLoader(getClass().classLoader)
         gcl.parseClass '''
 import grails.persistence.*
 import org.codehaus.groovy.grails.web.taglib.*
@@ -60,7 +57,7 @@ class OneToManyPropertyEditorDomain {
 
         def template = '<g:fieldValue bean="${obj}" field="custom" />'
 
-        assertOutputEquals 'custom:good', template, [obj:obj] 
+        assertOutputEquals 'custom:good', template, [obj:obj]
     }
 
     void testUseCustomPropertyEditorOnCollectionOfSimpleType() {
@@ -90,17 +87,16 @@ class OneToManyPropertyEditorDomain {
         def template = '<g:fieldValue bean="${obj}" field="tags" />'
         assertOutputEquals "grails, groovy", template, [obj: obj]
     }
-
 }
 
 class TestCustomPropertyEditorRegistrar implements PropertyEditorRegistrar {
-    public void registerCustomEditors(PropertyEditorRegistry registry) {
+    void registerCustomEditors(PropertyEditorRegistry registry) {
         registry.registerCustomEditor CustomProperty, new TestCustomPropertyEditor()
     }
 }
 
 class TestSimpleListEditorRegistrar implements PropertyEditorRegistrar {
-    public void registerCustomEditors(PropertyEditorRegistry registry) {
+    void registerCustomEditors(PropertyEditorRegistry registry) {
         registry.registerCustomEditor List, new TestSimpleListEditor()
     }
 }
@@ -112,17 +108,15 @@ class TestDomainListEditorRegistrar implements PropertyEditorRegistrar {
         this.ga = ga
     }
 
-    public void registerCustomEditors(PropertyEditorRegistry registry) {
+    void registerCustomEditors(PropertyEditorRegistry registry) {
         registry.registerCustomEditor List, new TestDomainListEditor(type: ga.getDomainClass("Tag").clazz)
     }
 }
 
 class TestCustomPropertyEditor extends PropertyEditorSupport {
-    public String getAsText() {
-        return "custom:${value?.name}"
-    }
+    String getAsText() { "custom:${value?.name}" }
 
-    public void setAsText(String s) {
+    void setAsText(String s) {
         Object v = getValue()
         if(v == null) v = new CustomProperty()
         value = v

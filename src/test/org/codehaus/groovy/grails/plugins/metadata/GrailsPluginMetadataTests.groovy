@@ -8,9 +8,7 @@ import grails.util.GrailsUtil
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class GrailsPluginMetadataTests extends GroovyTestCase{
-
+class GrailsPluginMetadataTests extends GroovyTestCase {
 
     void testAnnotatedMetadata() {
         def app = new DefaultGrailsApplication([Test1, Test2, Test3] as Class[], getClass().classLoader)
@@ -25,12 +23,10 @@ public class GrailsPluginMetadataTests extends GroovyTestCase{
         assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}", pluginManager.getPluginPathForInstance(new Test2())
         assertNull pluginManager.getPluginPathForInstance(new Test3())
 
-
         assertEquals "/plugins/controllers-${GrailsUtil.grailsVersion}/grails-app/views", pluginManager.getPluginViewsPathForClass(Test1)
         assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}/grails-app/views", pluginManager.getPluginViewsPathForClass(Test2)
         assertNull pluginManager.getPluginViewsPathForClass(Test3)
     }
-
 }
 
 @GrailsPlugin(name='controllers', version='1.0')

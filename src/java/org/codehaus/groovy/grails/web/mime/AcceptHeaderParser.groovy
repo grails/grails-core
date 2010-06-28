@@ -1,5 +1,4 @@
 /*
-
  * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.mime;
+package org.codehaus.groovy.grails.web.mime
 
 /**
  * <p>Defines an interface for classes that parse the HTTP Accept header into a set or MimeType definitions ordered by
@@ -25,14 +24,11 @@ package org.codehaus.groovy.grails.web.mime;
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 26, 2007
  */
-public interface AcceptHeaderParser {
+interface AcceptHeaderParser {
 
     /**
      * Parses an Accept header into an ordered array of MimeType definitions
-     *
      */
-    public MimeType[] parse(String header);
+    MimeType[] parse(String header)
 }

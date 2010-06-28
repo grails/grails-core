@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.codecs
 
 class SHA256BytesCodec {
-	// Returns the byte[] of the digest
+    // Returns the byte[] of the digest
     static encode = { theTarget ->
         DigestUtils.digest("SHA-256", theTarget)
-	}
+    }
 
-	static decode = { theTarget ->
-		throw new UnsupportedOperationException("Cannot decode SHA-256 hashes")
-	}
+    static decode = { theTarget ->
+        throw new UnsupportedOperationException("Cannot decode SHA-256 hashes")
+    }
 }

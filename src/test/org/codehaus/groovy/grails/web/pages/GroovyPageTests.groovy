@@ -1,74 +1,38 @@
-package org.codehaus.groovy.grails.web.pages;
+package org.codehaus.groovy.grails.web.pages
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.io.IOException;
-
-import groovy.lang.MissingPropertyException;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.Binding;
-import groovy.lang.Script;
-import org.codehaus.groovy.runtime.InvokerHelper;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.web.metaclass.GetParamsDynamicProperty;
-import org.codehaus.groovy.grails.web.metaclass.GetSessionDynamicProperty;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
-import org.springframework.context.ApplicationContext;
-
-
-import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockServletContext;
-import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.web.servlet.*
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-import org.springframework.mock.web.*
-import org.springframework.validation.*
-import org.springframework.web.servlet.*
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
+import org.springframework.context.ApplicationContext
 
 /**
  * Tests the page execution environment, including how tags are invoked.
- * 
+ *
  * The method executePage() has been added to simplify the testing code.
- * The method getBinding() is a copy of the code from 
+ * The method getBinding() is a copy of the code from
  * GroovyPagesTemplateEngine.GroovyPageTemplateWritable, except that
  * the context variable is being passed in.
- * 
- * @author Daiji
  *
+ * @author Daiji
  */
-public class GroovyPageTests extends AbstractGrailsControllerTests {
+class GroovyPageTests extends AbstractGrailsControllerTests {
 
-	void onSetUp() {
-		String taglibCode = "import org.codehaus.groovy.grails.web.taglib.*\n"+
-		"\n"+
-		"class MyTagLib {\n"+
-		"def isaid = { attrs, body ->\n"+
-		"out.print('I said, \"')\n"+
-		"out << body()\n" +
-		"out.print('\"')\n"+
-		"}\n"+
-		"}" ;
-		
-		gcl.parseClass(taglibCode)
-		
-	}
+    protected void onSetUp() {
+        String taglibCode = "import org.codehaus.groovy.grails.web.taglib.*\n"+
+        "\n"+
+        "class MyTagLib {\n"+
+        "def isaid = { attrs, body ->\n"+
+        "out.print('I said, \"')\n"+
+        "out << body()\n" +
+        "out.print('\"')\n"+
+        "}\n"+
+        "}"
+
+        gcl.parseClass(taglibCode)
+    }
 
     void testReservedNames() {
         assertTrue GroovyPage.isReservedName(GroovyPage.REQUEST)
@@ -82,41 +46,40 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
         assertTrue GroovyPage.isReservedName(GroovyPage.PAGE_SCOPE)
     }
 
-    public void testRunPage() throws Exception {
-		
-		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-		"import org.codehaus.groovy.grails.web.taglib.*\n"+
-		"\n"+
-		"class test_index_gsp extends GroovyPage {\n"+
+    void testRunPage() {
+
+        String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
+        "import org.codehaus.groovy.grails.web.taglib.*\n"+
+        "\n"+
+        "class test_index_gsp extends GroovyPage {\n"+
         "String getGroovyPageFileName() { \"test\" }\n"+
-		"public Object run() {\n"+
-		"def out=binding.out\n"+
-		"out.print('<div>RunPage test</div>')\n"+
-		"}\n"+
-		"}" ;
-		
-		def result = runPageCode(pageCode)
-		
-		assertEquals("<div>RunPage test</div>",result);
-	}
-	
-	def runPageCode(pageCode) {
-		def result = null
-		runTest {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new GrailsPrintWriter(sw);
-			
-			String contentType = "text/html;charset=UTF-8";
-	    	response.setContentType(contentType); // must come before response.getWriter()
-	    	
-	    	GroovyPage gspScript = parseGroovyPage(pageCode)
-	    	gspScript.binding = getBinding(pw)
-	    	gspScript.initRun(pw, webRequest)
-	    	gspScript.run()
-	    	result =  sw.toString()
-		}
-		return result
-	}
+        "public Object run() {\n"+
+        "def out=binding.out\n"+
+        "out.print('<div>RunPage test</div>')\n"+
+        "}\n"+
+        "}"
+
+        def result = runPageCode(pageCode)
+        assertEquals("<div>RunPage test</div>",result)
+    }
+
+    def runPageCode(pageCode) {
+        def result = null
+        runTest {
+            StringWriter sw = new StringWriter()
+            PrintWriter pw = new GrailsPrintWriter(sw)
+
+            String contentType = "text/html;charset=UTF-8"
+            response.setContentType(contentType) // must come before response.getWriter()
+
+            GroovyPage gspScript = parseGroovyPage(pageCode)
+            gspScript.binding = getBinding(pw)
+            gspScript.initRun(pw, webRequest)
+            gspScript.run()
+            result =  sw.toString()
+        }
+        return result
+    }
 
     private GroovyPage parseGroovyPage(pageCode) {
         GroovyPage gspScript = gcl.parseClass(pageCode).newInstance()
@@ -125,25 +88,25 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
         return gspScript
     }
 
-    public void testInvokeBodyTag() throws Exception {
+    void testInvokeBodyTag() {
 
-		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-        		"import org.codehaus.groovy.grails.web.taglib.*\n"+
-        		"\n"+
-        		"class test_index_gsp extends GroovyPage {\n"+
+        String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
+                "import org.codehaus.groovy.grails.web.taglib.*\n"+
+                "\n"+
+                "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
-        		"public Object run() {\n"+
-        		"body1 = { out.print('Boo!') }\n"+
-        		"invokeTag('isaid',[:],body1)\n"+
-        		"}\n"+
-        		"}" ;
+                "public Object run() {\n"+
+                "body1 = { out.print('Boo!') }\n"+
+                "invokeTag('isaid',[:],body1)\n"+
+                "}\n"+
+                "}"
 
-		String expectedOutput = "I said, \"Boo!\"";
-		def result = runPageCode(pageCode)
-		assertEquals(expectedOutput,result);
-	}
-	
-    public void testInvokeBodyTagWithUnknownNamespace() throws Exception {
+        String expectedOutput = "I said, \"Boo!\""
+        def result = runPageCode(pageCode)
+        assertEquals(expectedOutput,result)
+    }
+
+    void testInvokeBodyTagWithUnknownNamespace() throws Exception {
 
         String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
                 "import org.codehaus.groovy.grails.web.taglib.*\n"+
@@ -155,49 +118,46 @@ public class GroovyPageTests extends AbstractGrailsControllerTests {
                 "body1 = { out.print('Boo!') }\n"+
                 "invokeTag('Person','foaf',[a:'b',c:'d'],body1)\n"+
                 "}\n"+
-                "}" ;
+                "}"
 
-        String expectedOutput = "<foaf:Person a=\"b\" c=\"d\">Boo!</foaf:Person>";
+        String expectedOutput = "<foaf:Person a=\"b\" c=\"d\">Boo!</foaf:Person>"
         def result = runPageCode(pageCode)
-        assertEquals(expectedOutput,result);
+        assertEquals(expectedOutput,result)
     }
 
-	public void testInvokeBodyTagAsMethod() throws Exception {
-		String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
-        		"import org.codehaus.groovy.grails.web.taglib.*\n"+
-        		"\n"+
-        		"class test_index_gsp extends GroovyPage {\n"+
+    void testInvokeBodyTagAsMethod() {
+        String pageCode = "import org.codehaus.groovy.grails.web.pages.GroovyPage\n" +
+                "import org.codehaus.groovy.grails.web.taglib.*\n"+
+                "\n"+
+                "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
-        		"public Object run() {\n"+
-        		"out.print(isaid([:],'Boo!'))\n"+
-        		"}\n"+
-        		"}" ;
-		String expectedOutput = "I said, \"Boo!\"";
-		
-		def result = runPageCode(pageCode)
-		assertEquals(expectedOutput,result);
-	}
-	
-		
-	
-	def getBinding(out) {
-    	// if there is no controller in the request configure using existing attributes, creating objects where necessary
-    	Binding binding = new GroovyPageBinding();
-    	GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext)            	
-        binding.setVariable(GroovyPage.REQUEST, request);
-        binding.setVariable(GroovyPage.RESPONSE, response);
-        binding.setVariable(GroovyPage.FLASH, attrs.getFlashScope(request));
-        binding.setVariable(GroovyPage.SERVLET_CONTEXT, servletContext);
+                "public Object run() {\n"+
+                "out.print(isaid([:],'Boo!'))\n"+
+                "}\n"+
+                "}"
+        String expectedOutput = "I said, \"Boo!\""
+
+        def result = runPageCode(pageCode)
+        assertEquals(expectedOutput,result)
+    }
+
+    def getBinding(out) {
+        // if there is no controller in the request configure using existing attributes, creating objects where necessary
+        Binding binding = new GroovyPageBinding()
+        GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext)
+        binding.setVariable(GroovyPage.REQUEST, request)
+        binding.setVariable(GroovyPage.RESPONSE, response)
+        binding.setVariable(GroovyPage.FLASH, attrs.getFlashScope(request))
+        binding.setVariable(GroovyPage.SERVLET_CONTEXT, servletContext)
         ApplicationContext appContext = attrs.applicationContext
-        binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext);
-        binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID));	            
-        binding.setVariable(GroovyPage.SESSION, request.getSession());
-        binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request));
+        binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext)
+        binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID))
+        binding.setVariable(GroovyPage.SESSION, request.getSession())
+        binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request))
         binding.setVariable(GroovyPage.WEB_REQUEST, webRequest)
-        binding.setVariable(GroovyPage.OUT, out);
+        binding.setVariable(GroovyPage.OUT, out)
         webRequest.out = out
 
         return binding
-	}
-
+    }
 }

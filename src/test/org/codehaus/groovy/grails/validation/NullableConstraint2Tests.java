@@ -13,50 +13,44 @@ public class NullableConstraint2Tests extends AbstractConstraintTests {
 
     public void testValidation() {
         testConstraintMessageCodes(
-                getConstraint( "testString", Boolean.FALSE ),
+                getConstraint("testString", Boolean.FALSE),
                 null,
                 new String[] {"testClass.testString.nullable.error","testClass.testString.nullable"},
-                new Object[] {"testString",TestClass.class }
-        );
+                new Object[] {"testString",TestClass.class });
 
         testConstraintPassed(
-                getConstraint( "testString", Boolean.FALSE ),
-                "test"
-        );
+                getConstraint("testString", Boolean.FALSE),
+                "test");
 
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                ""
-        );
+                getConstraint("testString", Boolean.TRUE),
+                "");
 
         testConstraintFailedAndVetoed(
-                getConstraint( "testString", Boolean.FALSE ),
-                null
-        );
+                getConstraint("testString", Boolean.FALSE),
+                null);
 
         testConstraintDefaultMessage(
-                getConstraint( "testString", Boolean.FALSE ),
+                getConstraint("testString", Boolean.FALSE),
                 null,
-                "Property [{0}] of class [{1}] cannot be null"
-        );
+                "Property [{0}] of class [{1}] cannot be null");
     }
 
     public void testCreation() {
-        NullableConstraint constraint = (NullableConstraint) getConstraint( "testString", Boolean.FALSE );
-        assertEquals( ConstrainedProperty.NULLABLE_CONSTRAINT, constraint.getName() );
-        assertTrue( constraint.supports( String.class ));
-        assertTrue( constraint.supports( Object.class ));
-        assertFalse(  constraint.supports( int.class ));
-        assertFalse(  constraint.supports( float.class ));
-        assertFalse(  constraint.supports( null ));
-        assertFalse( constraint.isNullable() );
+        NullableConstraint constraint = (NullableConstraint) getConstraint("testString", Boolean.FALSE);
+        assertEquals(ConstrainedProperty.NULLABLE_CONSTRAINT, constraint.getName());
+        assertTrue(constraint.supports(String.class));
+        assertTrue(constraint.supports(Object.class));
+        assertFalse(constraint.supports(int.class));
+        assertFalse(constraint.supports(float.class));
+        assertFalse(constraint.supports(null));
+        assertFalse(constraint.isNullable());
 
         try {
-            getConstraint( "testString", "wrong");
+            getConstraint("testString", "wrong");
             fail("NullableConstraint must throw an exception for non-boolean parameters.");
-        } catch( IllegalArgumentException iae ) {
+        } catch(IllegalArgumentException iae) {
             // Great
         }
-
     }
 }

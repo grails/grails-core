@@ -27,13 +27,13 @@ import org.springframework.transaction.TransactionDefinition
  */
 class GrailsHibernateTransactionManager extends HibernateTransactionManager {
 
-	@Override
-	protected void doBegin(Object transaction, TransactionDefinition definition) {
-		super.doBegin transaction, definition
+    @Override
+    protected void doBegin(Object transaction, TransactionDefinition definition) {
+        super.doBegin transaction, definition
 
-		if (definition.isReadOnly()) {
-			// always set to manual; the base class doesn't because the OSIVI has already registered a session
-			transaction.sessionHolder.session.flushMode = FlushMode.MANUAL
-		}
-	}
+        if (definition.isReadOnly()) {
+            // always set to manual; the base class doesn't because the OSIVI has already registered a session
+            transaction.sessionHolder.session.flushMode = FlushMode.MANUAL
+        }
+    }
 }

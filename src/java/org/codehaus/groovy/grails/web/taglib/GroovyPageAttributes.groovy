@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap
 
 /**
- * Class used to define attributes passed to a GSP tag. Mixes in
- * TypeConvertingMap for ease of type conversion
+ * Defines attributes passed to a GSP tag. Mixes in
+ * TypeConvertingMap for ease of type conversion.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
-
-
-public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable{
+class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
 
     GroovyPageAttributes() {
         this([:])
     }
 
     GroovyPageAttributes(Map map) {
-        super(map);
+        super(map)
     }
 
     protected Object clone() {
@@ -47,6 +44,7 @@ public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable
      * @return The integer value or null if there isn't one
      */
     private Byte 'byte'(String name) { getByte(name) }
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
@@ -91,12 +89,12 @@ public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable
         getBoolean(name)
     }
 
-  /**
+    /**
      * Helper method for obtaining a list of values from parameter
      * @param name The name of the parameter
      * @return A list of values
      */
     List list(String name) {
         getList(name)
-    }    
+    }
 }

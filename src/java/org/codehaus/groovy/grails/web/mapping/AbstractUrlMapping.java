@@ -30,107 +30,107 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
  */
 public abstract class AbstractUrlMapping implements UrlMapping {
 
-	protected final ConstrainedProperty[] constraints;
-	protected Object controllerName;
-	protected Object actionName;
-	protected Object viewName;
-	protected Object forwardURI;
-	protected ServletContext servletContext;
-	@SuppressWarnings("unchecked")
-	protected Map parameterValues = Collections.EMPTY_MAP;
-	protected boolean parseRequest;
-	protected String mappingName;
-	protected boolean restful;
+    protected final ConstrainedProperty[] constraints;
+    protected Object controllerName;
+    protected Object actionName;
+    protected Object viewName;
+    protected Object forwardURI;
+    protected ServletContext servletContext;
+    @SuppressWarnings("unchecked")
+    protected Map parameterValues = Collections.EMPTY_MAP;
+    protected boolean parseRequest;
+    protected String mappingName;
+    protected boolean restful;
 
-	/**
-	 * Base constructor required to construct a UrlMapping instance
-	 *
-	 * @param controllerName The name of the controller
-	 * @param actionName The name of the action
-	 * @param constraints Any constraints that apply to the mapping
-	 * @param servletContext
-	 */
-	public AbstractUrlMapping(Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-		this.controllerName = controllerName;
-		this.actionName = actionName;
-		this.constraints = constraints;
-		this.viewName = viewName;
-		this.servletContext = servletContext;
-	}
+    /**
+     * Base constructor required to construct a UrlMapping instance
+     *
+     * @param controllerName The name of the controller
+     * @param actionName The name of the action
+     * @param constraints Any constraints that apply to the mapping
+     * @param servletContext
+     */
+    public AbstractUrlMapping(Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this.controllerName = controllerName;
+        this.actionName = actionName;
+        this.constraints = constraints;
+        this.viewName = viewName;
+        this.servletContext = servletContext;
+    }
 
-	protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-		this.viewName = viewName;
-		this.constraints = constraints;
-		this.servletContext = servletContext;
-	}
+    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this.viewName = viewName;
+        this.constraints = constraints;
+        this.servletContext = servletContext;
+    }
 
-	protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
-		this.forwardURI = uri;
-		this.constraints = constraints;
-		this.servletContext = servletContext;
-	}
+    protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this.forwardURI = uri;
+        this.constraints = constraints;
+        this.servletContext = servletContext;
+    }
 
-	/**
-	 * @see UrlMapping#getConstraints()
-	 */
-	public ConstrainedProperty[] getConstraints() {
-		return constraints;
-	}
+    /**
+     * @see UrlMapping#getConstraints()
+     */
+    public ConstrainedProperty[] getConstraints() {
+        return constraints;
+    }
 
-	/**
-	 * @see UrlMapping#getControllerName()
-	 */
-	public Object getControllerName() {
-		return controllerName;
-	}
+    /**
+     * @see UrlMapping#getControllerName()
+     */
+    public Object getControllerName() {
+        return controllerName;
+    }
 
-	/**
-	 * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getActionName()
-	 */
-	public Object getActionName() {
-		return actionName;
-	}
+    /**
+     * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getActionName()
+     */
+    public Object getActionName() {
+        return actionName;
+    }
 
-	/**
-	 * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getViewName()
-	 *
-	 */
-	public Object getViewName() {
-		return viewName;
-	}
+    /**
+     * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getViewName()
+     *
+     */
+    public Object getViewName() {
+        return viewName;
+    }
 
-	@SuppressWarnings("unchecked")
-	public void setParameterValues(Map parameterValues) {
-		this.parameterValues = Collections.unmodifiableMap(parameterValues);
-	}
+    @SuppressWarnings("unchecked")
+    public void setParameterValues(Map parameterValues) {
+        this.parameterValues = Collections.unmodifiableMap(parameterValues);
+    }
 
-	public void setParseRequest(boolean shouldParse) {
-		this.parseRequest = shouldParse;
-	}
+    public void setParseRequest(boolean shouldParse) {
+        this.parseRequest = shouldParse;
+    }
 
-	public String getMappingName() {
-		return mappingName;
-	}
+    public String getMappingName() {
+        return mappingName;
+    }
 
-	public void setMappingName(String name) {
-		mappingName = name;
-	}
+    public void setMappingName(String name) {
+        mappingName = name;
+    }
 
-	public void setRestfulMapping(boolean isREST) {
-		this.restful = isREST;
-	}
+    public void setRestfulMapping(boolean isREST) {
+        this.restful = isREST;
+    }
 
-	public boolean isRestfulMapping() {
-		return restful;
-	}
+    public boolean isRestfulMapping() {
+        return restful;
+    }
 
-	public boolean hasRuntimeVariable(String name) {
-		if (constraints != null) {
-			for (int i = 0; i < constraints.length; i++) {
-				ConstrainedProperty cp = constraints[i];
-				if (cp.getPropertyName().equals(name)) return true;
-			}
-		}
-		return false;
-	}
+    public boolean hasRuntimeVariable(String name) {
+        if (constraints != null) {
+            for (int i = 0; i < constraints.length; i++) {
+                ConstrainedProperty cp = constraints[i];
+                if (cp.getPropertyName().equals(name)) return true;
+            }
+        }
+        return false;
+    }
 }

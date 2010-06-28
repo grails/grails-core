@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,48 +15,44 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.springframework.web.context.request.RequestContextHolder as RCH
-
 import grails.util.GrailsUtil
-import groovy.lang.MissingMethodException;
 
 import java.lang.reflect.Modifier
+
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
-import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter;
+import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.metaclass.ChainMethod
+import org.codehaus.groovy.grails.web.metaclass.ForwardMethod
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
+import org.codehaus.groovy.grails.web.metaclass.WithFormMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
+import org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter
+import org.codehaus.groovy.grails.web.servlet.mvc.CommandObjectEnablingPostProcessor
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+
+import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationContext
-import org.springframework.validation.BindException
 import org.springframework.validation.Errors
+import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
-import org.codehaus.groovy.grails.web.metaclass.WithFormMethod
-import org.codehaus.groovy.grails.web.metaclass.ForwardMethod
-import org.springframework.beans.BeanUtils
-import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
-import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
-import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.web.servlet.mvc.CommandObjectEnablingPostProcessor
 
 /**
- * A plug-in that handles the configuration of controllers for Grails
+ * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -66,37 +62,40 @@ class ControllersGrailsPlugin {
     def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
                             "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
 
-    def version = grails.util.GrailsUtil.getGrailsVersion()
+    def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version, urlMappings: version]
-
 
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
+
         exceptionHandler(GrailsExceptionResolver) {
             exceptionMappings = ['java.lang.Exception': '/error']
         }
+
         if (!application.config.grails.disableCommonsMultipart) {
             multipartResolver(ContentLengthAwareCommonsMultipartResolver)
         }
-        mainSimpleController(SimpleGrailsController.class) {
+
+        mainSimpleController(SimpleGrailsController) {
             grailsApplication = ref("grailsApplication", true)
         }
 
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
         def interceptorsClosure = {
-        	interceptors = handlerInterceptors
+            interceptors = handlerInterceptors
         }
         // allow @Controller annotated beans
         annotationHandlerMapping(DefaultAnnotationHandlerMapping, interceptorsClosure)
         // allow default controller mappings
         controllerHandlerMappings(GrailsControllerHandlerMapping, interceptorsClosure)
 
-
         annotationHandlerAdapter(AnnotationMethodHandlerAdapter)
+
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
-             stripLeadingSlash = false
-        }   
-        for(controller in application.controllerClasses) {
+            stripLeadingSlash = false
+        }
+
+        for (controller in application.controllerClasses) {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
                 "${controller.fullName}"(controller.clazz) { bean ->
@@ -104,10 +103,8 @@ class ControllersGrailsPlugin {
                     bean.autowire = "byName"
                 }
             }
-
         }
     }
-
 
     def doWithWebDescriptor = {webXml ->
 
@@ -118,8 +115,7 @@ class ControllersGrailsPlugin {
         mappingElement = mappingElement[mappingElement.size() - 1]
 
         mappingElement + {
-            'servlet-mapping'
-            {
+            'servlet-mapping' {
                 'servlet-name'("grails")
                 'url-pattern'("*.dispatch")
             }
@@ -134,64 +130,59 @@ class ControllersGrailsPlugin {
 
         // add the Grails web request filter
         lastFilter + {
-        	filter {
-        		'filter-name'('hiddenHttpMethod')
-        		'filter-class'(HiddenHttpMethodFilter.name)
-        	}
-        	
+            filter {
+                'filter-name'('hiddenHttpMethod')
+                'filter-class'(HiddenHttpMethodFilter.name)
+            }
+
             filter {
                 'filter-name'('grailsWebRequest')
-                'filter-class'(org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter.getName())
+                'filter-class'(GrailsWebRequestFilter.name)
             }
             if (grailsEnv == "development") {
                 filter {
                     'filter-name'('reloadFilter')
-                    'filter-class'(org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter.getName())
+                    'filter-class'(GrailsReloadServletFilter.name)
                 }
             }
         }
+
         def grailsWebRequestFilter = {
             'filter-mapping' {
                 'filter-name'('hiddenHttpMethod')
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
-                'dispatcher'("REQUEST")                
-            }        	        		
-            'filter-mapping'
-            {
+                'dispatcher'("REQUEST")
+            }
+            'filter-mapping' {
                 'filter-name'('grailsWebRequest')
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
                 'dispatcher'("REQUEST")
-                
             }
             if (grailsEnv == "development") {
                 // Install the reload filter, which allows you to make
-                // changes to artefacts and views while the app is
-                // running.
+                // changes to artefacts and views while the app is running.
                 //
                 // All URLs are filtered, including any images, JS, CSS,
                 // etc. Fortunately the reload filter now has much less
                 // of an impact on response times.
-                'filter-mapping'
-                {
+                'filter-mapping' {
                     'filter-name'('reloadFilter')
                     'url-pattern'("/*")
                     'dispatcher'("FORWARD")
-                    'dispatcher'("REQUEST")						                    
+                    'dispatcher'("REQUEST")
                 }
             }
         }
+
         if (charEncodingFilterMapping) {
             charEncodingFilterMapping + grailsWebRequestFilter
         }
         else {
             lastFilterMapping + grailsWebRequestFilter
         }
-
     }
-
-
 
     def doWithDynamicMethods = {ApplicationContext ctx ->
 
@@ -214,11 +205,10 @@ class ControllersGrailsPlugin {
             mc.setProperties = {Object o ->
                 DataBindingUtils.bindObjectToDomainInstance(dc, delegate, o)
             }
-            mc.getProperties = {->
+            mc.getProperties = { ->
                 new DataBindingLazyMetaPropertyMap(delegate)
             }
         }
-
 
         // add commons objects and dynamic methods like render and redirect to controllers
         for (GrailsClass controller in application.controllerClasses) {
@@ -229,12 +219,12 @@ class ControllersGrailsPlugin {
             registerControllerMethods(mc, ctx)
             Class superClass = controller.clazz.superclass
 
-            mc.getPluginContextPath = {->
+            mc.getPluginContextPath = { ->
                 pluginManager.getPluginPathForInstance(delegate) ?: ''
             }
 
             // deal with abstract super classes
-            while (superClass != Object.class) {
+            while (superClass != Object) {
                 if (Modifier.isAbstract(superClass.getModifiers())) {
                     WebMetaUtils.registerCommonWebProperties(superClass.metaClass, application)
                     registerControllerMethods(superClass.metaClass, ctx)
@@ -242,40 +232,39 @@ class ControllersGrailsPlugin {
                 superClass = superClass.superclass
             }
 
-            mc.constructor = {->
-               ctx.getBean(controllerClass.name) 
+            mc.constructor = { ->
+                ctx.getBean(controllerClass.name)
             }
         }
-
     }
-    
+
     def registerControllerMethods(MetaClass mc, ApplicationContext ctx) {
-        mc.getActionUri = {-> "/$controllerName/$actionName".toString()}
-        mc.getControllerUri = {-> "/$controllerName".toString()}
+        mc.getActionUri = { -> "/$controllerName/$actionName".toString()}
+        mc.getControllerUri = { -> "/$controllerName".toString()}
         mc.getTemplateUri = {String name ->
             def webRequest = RCH.currentRequestAttributes()
             webRequest.attributes.getTemplateUri(name, webRequest.currentRequest)
         }
-        mc.getViewUri = {String name ->
+        mc.getViewUri = { String name ->
             def webRequest = RCH.currentRequestAttributes()
             webRequest.attributes.getViewUri(name, webRequest.currentRequest)
         }
-        mc.setErrors = {Errors errors ->
+        mc.setErrors = { Errors errors ->
             RCH.currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0)
         }
-        mc.getErrors = {->
+        mc.getErrors = { ->
             RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
         }
-        mc.setModelAndView = {ModelAndView mav ->
+        mc.setModelAndView = { ModelAndView mav ->
             RCH.currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
         }
-        mc.getModelAndView = {->
+        mc.getModelAndView = { ->
             RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
         }
-        mc.getChainModel = {->
+        mc.getChainModel = { ->
             RCH.currentRequestAttributes().flashScope["chainModel"]
         }
-        mc.hasErrors = {->
+        mc.hasErrors = { ->
             errors?.hasErrors() ? true : false
         }
 
@@ -329,25 +318,26 @@ class ControllersGrailsPlugin {
         // the withForm method
         def withFormMethod = new WithFormMethod()
         mc.withForm = { Closure callable ->
-           withFormMethod.withForm(delegate.request, callable)
+            withFormMethod.withForm(delegate.request, callable)
         }
 
         def forwardMethod = new ForwardMethod(ctx.getBean("grailsUrlMappingsHolder"))
         mc.forward = { Map params ->
             forwardMethod.forward(delegate.request,delegate.response, params)
         }
-
     }
-
 
     def onChange = {event ->
         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
             def context = event.ctx
             if (!context) {
-                if (log.isDebugEnabled())
+                if (log.isDebugEnabled()) {
                     log.debug("Application context not found. Can't reload")
+                }
+
                 return
             }
+
             def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
             def beanDefinitions = beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->

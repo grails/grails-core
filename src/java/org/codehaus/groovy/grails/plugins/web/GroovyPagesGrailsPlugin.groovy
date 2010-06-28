@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.util.BuildSettings
@@ -48,8 +47,6 @@ import org.springframework.web.servlet.view.JstlView
  *
  * @author Graeme Rocher
  * @since 1.1
- *
- * Created: Jan 5, 2009
  */
 class GroovyPagesGrailsPlugin {
 
@@ -190,19 +187,20 @@ class GroovyPagesGrailsPlugin {
      * Modifies the web.xml when in development mode to allow viewing of sources
      */
     def doWithWebDescriptor = { webXml ->
-        if (Environment.current == Environment.DEVELOPMENT) {
-            // Find the GSP servlet and allow viewing generated source in
-            // development mode
-            def gspServlet = webXml.servlet.find {it.'servlet-name'?.text() == 'gsp' }
-            gspServlet.'servlet-class' + {
-                'init-param' {
-                    description """
-                        Allows developers to view the intermediade source code, when they pass
-                        a spillGroovy argument in the URL.
-                    """
-                    'param-name'('showSource')
-                    'param-value'(1)
-                }
+        if (Environment.current != Environment.DEVELOPMENT) {
+            return
+        }
+
+        // Find the GSP servlet and allow viewing generated source in development mode
+        def gspServlet = webXml.servlet.find {it.'servlet-name'?.text() == 'gsp' }
+        gspServlet.'servlet-class' + {
+            'init-param' {
+                description """
+                Allows developers to view the intermediate source code, when they pass
+                a spillGroovy argument in the URL.
+                """
+                'param-name'('showSource')
+                'param-value'(1)
             }
         }
     }
@@ -296,7 +294,7 @@ class GroovyPagesGrailsPlugin {
                 throw new MissingPropertyException(name, delegate.class)
             }
 
-            mc.methodMissing = {String name, args ->
+            mc.methodMissing = { String name, args ->
                 def usednamespace = namespace
                 def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
                 if (!tagLibrary) {

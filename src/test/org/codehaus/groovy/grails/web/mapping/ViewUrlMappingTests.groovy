@@ -1,12 +1,13 @@
-/**
- * @author mike
- */
 package org.codehaus.groovy.grails.web.mapping
 
 import org.springframework.core.io.ByteArrayResource
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
+/**
+ * @author mike
+ */
 class ViewUrlMappingTests extends AbstractGrailsControllerTests {
+
     def topLevelMapping = '''
 mappings {
   "/book/$author/$title" {
@@ -18,8 +19,7 @@ mappings {
 '''
     def UrlMappingsHolder holder
 
-
-    void setUp() {
+    protected void setUp() {
         super.setUp()
         def res = new ByteArrayResource(topLevelMapping.bytes)
 

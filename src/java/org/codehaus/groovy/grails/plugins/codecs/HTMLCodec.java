@@ -19,27 +19,26 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.RequestAttributes;
 
 /**
- * A codecs that encodes and decodes strings to and from HTML
- * 
+ * A codec that encodes and decodes strings to and from HTML.
+ *
  * @author Graeme Rocher
  * @since 1.1
  */
 public class HTMLCodec {
 
     public static String encode(Object target) {
-        if(target != null) {
+        if (target != null) {
             return HtmlUtils.htmlEscape(target.toString());
         }
         return null;
     }
 
-    
     public static boolean shouldEncode() {
         final RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if(attributes!=null) {
-
-            Object codecName = attributes.getAttribute("org.codehaus.groovy.grails.GSP_CODEC",RequestAttributes.SCOPE_REQUEST);
-            if(codecName!=null && codecName.toString().equalsIgnoreCase("html")) {
+        if (attributes != null) {
+            Object codecName = attributes.getAttribute("org.codehaus.groovy.grails.GSP_CODEC",
+                    RequestAttributes.SCOPE_REQUEST);
+            if (codecName != null && codecName.toString().equalsIgnoreCase("html")) {
                 return false;
             }
         }
@@ -47,10 +46,9 @@ public class HTMLCodec {
     }
 
     public static String decode(Object target) {
-        if(target != null) {
+        if (target != null) {
             return HtmlUtils.htmlUnescape(target.toString());
         }
         return null;
-
     }
 }

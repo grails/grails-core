@@ -1,18 +1,18 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import grails.util.GrailsWebUtil;
@@ -197,7 +197,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertNotNull(modelAndView);
     }
 
-   @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public void testCommandObjectDateStruct() throws Exception {
         Properties props = new Properties();
         props.put("birthday", "struct");
@@ -210,7 +210,6 @@ public class SimpleGrailsControllerTests extends TestCase {
         Map model = modelAndView.getModelMap();
         Errors validationErrors = (Errors) model.get("validationErrors");
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
-        System.out.println("model = " + model);
         Date birthDate = (Date) model.get("theDate");
         assertNotNull("null birthday", birthDate);
         Calendar expectedCalendar = Calendar.getInstance();

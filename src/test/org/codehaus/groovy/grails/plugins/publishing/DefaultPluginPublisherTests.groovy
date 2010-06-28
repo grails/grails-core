@@ -8,9 +8,9 @@ import org.springframework.core.io.Resource
  * @author Graeme Rocher
  * @since 1.2
  */
+class DefaultPluginPublisherTests extends GroovyTestCase {
 
-public class DefaultPluginPublisherTests extends GroovyTestCase{
-     void testPublishNewPluginRelease() {
+    void testPublishNewPluginRelease() {
         def publisher = new TestPluginPublisher()
         publisher.testPluginsXml = '''\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -56,35 +56,30 @@ Brief description of the plugin.
 </plugin>
 '''
 
+        def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
 
+        def writer = new StringWriter()
+        publisher.writePluginList(result, writer)
 
-         def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
+        result = new XmlSlurper().parseText(writer.toString())
 
-         def writer = new StringWriter()
-         publisher.writePluginList(result, writer)
+        assertEquals 3, result.plugin.size()
 
-         println writer
-         
-         result = new XmlSlurper().parseText(writer.toString())
+        def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
 
-         assertEquals 3, result.plugin.size()
+        assertEquals 'foo-bar', testPlugin.@name.text()
+        assertEquals '0.1', testPlugin.'@latest-release'.text()
+        def releaseInfo = testPlugin.release
 
-         def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
+        assertEquals 'RELEASE_0_1', releaseInfo.@tag.text()
+        assertEquals '0.1', releaseInfo.@version.text()
+        assertEquals 'Bob', releaseInfo.author.text()
+        assertEquals 'FooBar Plugin', releaseInfo.title.text()
+    }
 
-         assertEquals 'foo-bar', testPlugin.@name.text()
-         assertEquals '0.1', testPlugin.'@latest-release'.text()
-         def releaseInfo = testPlugin.release
-
-         assertEquals 'RELEASE_0_1', releaseInfo.@tag.text()
-         assertEquals '0.1', releaseInfo.@version.text()
-         assertEquals 'Bob', releaseInfo.author.text()
-         assertEquals 'FooBar Plugin', releaseInfo.title.text()
-
-     }
-
-     void testPublishExistingPluginRelease() {
-         def publisher = new TestPluginPublisher()
-         publisher.testPluginsXml = '''\
+    void testPublishExistingPluginRelease() {
+        def publisher = new TestPluginPublisher()
+        publisher.testPluginsXml = '''\
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins revision="0">
     <plugin latest-release="0.1" name="foo-bar">
@@ -99,7 +94,7 @@ Brief description of the plugin.
     </plugin>
 
 </plugins>'''
-          publisher.testMetadata = '''\
+        publisher.testMetadata = '''\
  <plugin name='foo-bar' version='0.2' grailsVersion='1.2-SNAPSHOT &gt; *'>
    <author>Bob</author>
    <title>FooBar Plugin</title>
@@ -112,39 +107,35 @@ Brief description of the plugin.
    <dependencies />
    <behavior />
  </plugin>
- '''
+'''
 
-             def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
+        def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
 
-          def writer = new StringWriter()
-          writer << new groovy.xml.StreamingMarkupBuilder().bind {
-                mkp.yield result
-          }
-          new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
-          result = new XmlSlurper().parseText(writer.toString())
+        def writer = new StringWriter()
+        writer << new groovy.xml.StreamingMarkupBuilder().bind { mkp.yield result }
+        new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
+        result = new XmlSlurper().parseText(writer.toString())
 
-          assertEquals 1, result.plugin.size()
+        assertEquals 1, result.plugin.size()
 
-          def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
+        def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
 
-          assertEquals 'foo-bar', testPlugin.@name.text()
-          assertEquals '0.2', testPlugin.'@latest-release'.text()
-          def releaseInfo = testPlugin.release
+        assertEquals 'foo-bar', testPlugin.@name.text()
+        assertEquals '0.2', testPlugin.'@latest-release'.text()
+        def releaseInfo = testPlugin.release
 
-          assertEquals 2, releaseInfo.size()
+        assertEquals 2, releaseInfo.size()
 
-          assertEquals 'RELEASE_0_1', releaseInfo[0].@tag.text()
-          assertEquals '0.1', releaseInfo[0].@version.text()
-          assertEquals 'Bob', releaseInfo[0].author.text()
-          assertEquals 'FooBar Plugin', releaseInfo[0].title.text()
+        assertEquals 'RELEASE_0_1', releaseInfo[0].@tag.text()
+        assertEquals '0.1', releaseInfo[0].@version.text()
+        assertEquals 'Bob', releaseInfo[0].author.text()
+        assertEquals 'FooBar Plugin', releaseInfo[0].title.text()
 
-         assertEquals 'RELEASE_0_2', releaseInfo[1].@tag.text()
-         assertEquals '0.2', releaseInfo[1].@version.text()
-         assertEquals 'Bob', releaseInfo[1].author.text()
-         assertEquals 'FooBar Plugin', releaseInfo[1].title.text()
-
-     }
-
+        assertEquals 'RELEASE_0_2', releaseInfo[1].@tag.text()
+        assertEquals '0.2', releaseInfo[1].@version.text()
+        assertEquals 'Bob', releaseInfo[1].author.text()
+        assertEquals 'FooBar Plugin', releaseInfo[1].title.text()
+    }
 
     void testPublishExistingPluginReleaseDontMakeLatest() {
         def publisher = new TestPluginPublisher()
@@ -163,7 +154,7 @@ Brief description of the plugin.
 </plugin>
 
 </plugins>'''
-         publisher.testMetadata = '''\
+        publisher.testMetadata = '''\
 <plugin name='foo-bar' version='0.2' grailsVersion='1.2-SNAPSHOT &gt; *'>
   <author>Bob</author>
   <title>FooBar Plugin</title>
@@ -178,43 +169,39 @@ Brief description of the plugin.
 </plugin>
 '''
 
-            def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes),false)
+        def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes),false)
 
-         def writer = new StringWriter()
-         writer << new groovy.xml.StreamingMarkupBuilder().bind {
-               mkp.yield result
-         }
-         new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
-         result = new XmlSlurper().parseText(writer.toString())
+        def writer = new StringWriter()
+        writer << new groovy.xml.StreamingMarkupBuilder().bind { mkp.yield result }
+        new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
+        result = new XmlSlurper().parseText(writer.toString())
 
-         assertEquals 1, result.plugin.size()
+        assertEquals 1, result.plugin.size()
 
-         def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
+        def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
 
-         assertEquals 'foo-bar', testPlugin.@name.text()
-         assertEquals '0.1', testPlugin.'@latest-release'.text()
-         def releaseInfo = testPlugin.release
+        assertEquals 'foo-bar', testPlugin.@name.text()
+        assertEquals '0.1', testPlugin.'@latest-release'.text()
+        def releaseInfo = testPlugin.release
 
-         assertEquals 2, releaseInfo.size()
+        assertEquals 2, releaseInfo.size()
 
-         assertEquals 'RELEASE_0_1', releaseInfo[0].@tag.text()
-         assertEquals '0.1', releaseInfo[0].@version.text()
-         assertEquals 'Bob', releaseInfo[0].author.text()
-         assertEquals 'FooBar Plugin', releaseInfo[0].title.text()
-
+        assertEquals 'RELEASE_0_1', releaseInfo[0].@tag.text()
+        assertEquals '0.1', releaseInfo[0].@version.text()
+        assertEquals 'Bob', releaseInfo[0].author.text()
+        assertEquals 'FooBar Plugin', releaseInfo[0].title.text()
 
         assertEquals 'RELEASE_0_2', releaseInfo[1].@tag.text()
         assertEquals '0.2', releaseInfo[1].@version.text()
         assertEquals 'Bob', releaseInfo[1].author.text()
         assertEquals 'FooBar Plugin', releaseInfo[1].title.text()
         assertEquals 'http://testrepo.com/grails-foo-bar/tags/RELEASE_0_2/grails-foo-bar-0.2.zip',releaseInfo[1].file.text()
-
     }
 
-     void testPublishFirstPluginRelease() {
-         def publisher = new TestPluginPublisher()
-         publisher.testPluginsXml = '<?xml version="1.0" encoding="UTF-8"?><plugins revision="0" />'
-          publisher.testMetadata = '''\
+    void testPublishFirstPluginRelease() {
+        def publisher = new TestPluginPublisher()
+        publisher.testPluginsXml = '<?xml version="1.0" encoding="UTF-8"?><plugins revision="0" />'
+        publisher.testMetadata = '''\
  <plugin name='foo-bar' version='0.1' grailsVersion='1.2-SNAPSHOT &gt; *'>
    <author>Bob</author>
    <title>FooBar Plugin</title>
@@ -227,40 +214,35 @@ Brief description of the plugin.
    <dependencies />
    <behavior />
  </plugin>
- '''
+'''
 
+        def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
 
+        def writer = new StringWriter()
+        writer << new groovy.xml.StreamingMarkupBuilder().bind { mkp.yield result }
+        new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
+        result = new XmlSlurper().parseText(writer.toString())
 
-          def result = publisher.publishRelease("foo-bar", new ByteArrayResource("".bytes))
+        assertEquals 1, result.plugin.size()
 
-          def writer = new StringWriter()
-          writer << new groovy.xml.StreamingMarkupBuilder().bind {
-                mkp.yield result
-          }
-          new XmlNodePrinter().print(new XmlParser().parseText(writer.toString()))
-          result = new XmlSlurper().parseText(writer.toString())
+        def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
 
-          assertEquals 1, result.plugin.size()
+        assertEquals 'foo-bar', testPlugin.@name.text()
+        assertEquals '0.1', testPlugin.'@latest-release'.text()
+        def releaseInfo = testPlugin.release
 
-          def testPlugin = result.plugin.find { it.@name == 'foo-bar' }
-
-          assertEquals 'foo-bar', testPlugin.@name.text()
-          assertEquals '0.1', testPlugin.'@latest-release'.text()
-          def releaseInfo = testPlugin.release
-
-          assertEquals 'RELEASE_0_1', releaseInfo.@tag.text()
-          assertEquals '0.1', releaseInfo.@version.text()
-          assertEquals 'Bob', releaseInfo.author.text()
-          assertEquals 'FooBar Plugin', releaseInfo.title.text()
-
-     }
+        assertEquals 'RELEASE_0_1', releaseInfo.@tag.text()
+        assertEquals '0.1', releaseInfo.@version.text()
+        assertEquals 'Bob', releaseInfo.author.text()
+        assertEquals 'FooBar Plugin', releaseInfo.title.text()
+    }
 }
 
-class TestPluginPublisher extends DefaultPluginPublisher{
+class TestPluginPublisher extends DefaultPluginPublisher {
     String testPluginsXml
     String testMetadata
 
-    public TestPluginPublisher(String revNumber) {
+    TestPluginPublisher(String revNumber) {
         super("0", "http://testrepo.com");
     }
 
@@ -268,9 +250,7 @@ class TestPluginPublisher extends DefaultPluginPublisher{
         new XmlSlurper().parseText(testMetadata)
     }
 
-    public GPathResult parsePluginList(Resource pluginsListFile) {
+    GPathResult parsePluginList(Resource pluginsListFile) {
         new XmlSlurper().parseText(testPluginsXml)
     }
-
-
 }

@@ -1,29 +1,18 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * @author Jeff Brown
- *
  */
-public class GroovyFindAllTagTests extends GroovyTestCase {
+class GroovyFindAllTagTests extends GroovyTestCase {
 
-    def tag;
-    def sw;
+    def tag = new GroovyFindAllTag()
+    def sw = new StringWriter()
 
     protected void setUp() {
         super.setUp()
-        sw = new StringWriter()
-        tag = new GroovyFindAllTag()
         tag.setWriter(new PrintWriter(sw))
-    }
-
-
-    protected void tearDown() {
-        tag = null
-        sw = null
-        super.tearDown()
     }
 
     void testIsBufferWhiteSpace() {
@@ -51,8 +40,8 @@ public class GroovyFindAllTagTests extends GroovyTestCase {
     void testDoStartTag() {
         tag.attributes = ['"expr"': " \${it.age > 19}", '"in"': "myObj"]
         tag.doStartTag()
-        
-       assertEquals("myObj.findAll {it.age > 19}.each { "+ System.getProperty("line.separator"),sw.toString());
+
+        assertEquals("myObj.findAll {it.age > 19}.each { "+ System.getProperty("line.separator"),sw.toString())
     }
 
     void testDoEndTag() {

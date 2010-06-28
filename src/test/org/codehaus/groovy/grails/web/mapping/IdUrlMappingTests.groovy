@@ -1,39 +1,37 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- *
- * Created: Sep 20, 2007
- */
 package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockServletContext
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class IdUrlMappingTests extends AbstractGrailsMappingTests {
 
     def mappingScript = '''
 mappings {
-		"/emailConfirmation/$id?" {
+        "/emailConfirmation/$id?" {
             controller = "emailConfirmation"
             action = "index"
-		}
-		"/$id?" {
-		    controller = "content"
-		    action = "index"
         }
-}        
+        "/$id?" {
+            controller = "content"
+            action = "index"
+        }
+}
 '''
 
     void onSetUp() {
         gcl.parseClass('''
 class EmailConfirmationController {
-	def index = {
-		[result: "ID = " + params.id]
- 	}
+    def index = {
+        [result: "ID = " + params.id]
+     }
 }
 class ContentController {
-	def index = {}
+    def index = {}
 }
         ''')
     }

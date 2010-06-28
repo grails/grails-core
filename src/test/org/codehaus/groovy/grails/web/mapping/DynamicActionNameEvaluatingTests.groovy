@@ -15,7 +15,7 @@ mappings {
       ctrl = { params.controller }
       act = { params.action }
       identity = { params.id }
-  }    
+  }
 }
 '''
 
@@ -41,16 +41,13 @@ mappings {
             assertEquals "book", info.controllerName
             assertEquals "show", info.actionName
             assertEquals "1", info.id
-
         }
-
     }
 
     void testNamedParameterAction() {
         runTest {
             def res = new ByteArrayResource(mappingScript.bytes)
             def mappings = evaluator.evaluateMappings(res)
-
 
             def m = mappings[0]
             assert m
@@ -60,7 +57,6 @@ mappings {
             info.configure(webRequest)
             assert info.controllerName
             assertEquals "read", info.actionName
-
         }
     }
 
@@ -81,11 +77,6 @@ mappings {
             assertEquals "show", webRequest.params.act
             assertEquals "1", info.id
             assertEquals "1", webRequest.params.identity
-
         }
-
     }
-
-
 }
-

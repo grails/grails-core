@@ -37,10 +37,9 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
     def pluginsToLoad = []
     def resolver = new PathMatchingResourcePatternResolver()
 
-    protected void onSetUp() {
-    }
+    protected void onSetUp() {}
 
-    final void setUp() {
+    protected final void setUp() {
         super.setUp()
 
         ExpandoMetaClass.enableGlobally()
@@ -58,11 +57,11 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl)
 
-        ctx.registerMockBean("manager", mockManager )
+        ctx.registerMockBean("manager", mockManager)
 
         def configurator = new GrailsRuntimeConfigurator(ga)
         configurator.pluginManager = mockManager
-        ctx.registerMockBean(GrailsRuntimeConfigurator.BEAN_ID, configurator )
+        ctx.registerMockBean(GrailsRuntimeConfigurator.BEAN_ID, configurator)
 
         springConfig = new WebRuntimeSpringConfiguration(ctx)
         servletContext = new MockServletContext(new MockResourceLoader())
@@ -70,30 +69,15 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         mockManager.registerProvidedArtefacts(ga)
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
-
         appCtx = springConfig.getApplicationContext()
         mockManager.applicationContext = appCtx
-        servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         dependentPlugins*.doWithDynamicMethods(appCtx)
         dependentPlugins*.doWithApplicationContext(appCtx)
     }
 
     protected final void tearDown() {
-        servletContext = null
-        webRequest = null
-        request = null
-        response = null
-        gcl = null
-        ga = null
-        mockManager = null
-        ctx = null
         pluginsToLoad = []
-        appCtx = null
-        springConfig = null
-        resolver = null
-
         ExpandoMetaClass.disableGlobally()
-
-        originalHandler = null
     }
 }

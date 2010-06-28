@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.logging
+
+import grails.util.Environment
 
 import org.apache.log4j.Logger
 import org.apache.log4j.LogManager
 import org.apache.log4j.Level
-import grails.util.Environment
 import org.apache.log4j.net.SMTPAppender
 import org.apache.log4j.WriterAppender
 import org.apache.log4j.ConsoleAppender
@@ -28,7 +28,7 @@ import org.apache.log4j.Appender
 class Log4jDslTests extends GroovyTestCase {
 
     protected void setUp() {
-        super.setUp();
+        super.setUp()
         System.setProperty(Environment.KEY, "")
     }
 
@@ -36,23 +36,21 @@ class Log4jDslTests extends GroovyTestCase {
         System.setProperty(Environment.KEY, "")
     }
 
-
     void testSingleDebugStatement() {
         LogManager.resetConfiguration()
 
         Log4jConfig config = new Log4jConfig()
         config.configure {
-                debug 'org.hibernate.SQL'
+            debug 'org.hibernate.SQL'
         }
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
 
         assertEquals hibernateLogger.level, Level.DEBUG
-    	
     }
 
     void testEnvironmentSpecificLogging() {
-        System.setProperty(Environment.KEY, "production")
 
+        System.setProperty(Environment.KEY, "production")
 
         LogManager.resetConfiguration()
 
@@ -66,12 +64,10 @@ class Log4jDslTests extends GroovyTestCase {
                     error 'org.hibernate.SQL'
                 }
             }
-
         }
+
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
-
         assertEquals hibernateLogger.level, Level.ERROR
-
     }
 
     void testTraceLevel() {
@@ -83,7 +79,6 @@ class Log4jDslTests extends GroovyTestCase {
         }
 
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
-
         assertEquals hibernateLogger.level, Level.TRACE
     }
 
@@ -146,7 +141,6 @@ class Log4jDslTests extends GroovyTestCase {
         assertEquals "writerAppender",a.name
         a = appenders.nextElement()
         assertEquals "stdout",a.name
-
     }
 
     void testSensibleDefaults() {
@@ -156,14 +150,12 @@ class Log4jDslTests extends GroovyTestCase {
 
         config.configure {
             debug 'org.codehaus.groovy.grails.web.servlet',
-                   'org.codehaus.groovy.grails.web.pages'
+                  'org.codehaus.groovy.grails.web.pages'
 
             error 'org.codehaus.groovy.grails.web.sitemesh'
         }
 
-
         def root = Logger.getRootLogger()
-
         assertEquals Level.ERROR, root.level
 
         def appenders = root.getAllAppenders()
@@ -181,9 +173,7 @@ class Log4jDslTests extends GroovyTestCase {
         assertEquals "stacktrace.log", fileAppender.file
 
         def logger = Logger.getLogger('org.codehaus.groovy.grails.web.servlet')
-
         assertEquals Level.DEBUG, logger.level
-
     }
 
     void testCustomAppender() {
@@ -195,19 +185,17 @@ class Log4jDslTests extends GroovyTestCase {
         def consoleAppender
         config.configure {
             appenders {
-                console follow:true,name:'customAppender', layout:pattern(conversionPattern: '%c{2} %m%n')
+                console follow: true, name: 'customAppender', layout: pattern(conversionPattern: '%c{2} %m%n')
                 appender name:'writerAppender', new WriterAppender()
             }
             debug customAppender: ['org.codehaus.groovy.grails.web.servlet',
-                        'org.codehaus.groovy.grails.web.pages']
+                                   'org.codehaus.groovy.grails.web.pages']
 
-            error customAppender:'org.codehaus.groovy.grails.web.sitemesh',
-                   writerAppender:'org.codehaus.groovy.grails.web.sitemesh'
+            error customAppender: 'org.codehaus.groovy.grails.web.sitemesh',
+                  writerAppender: 'org.codehaus.groovy.grails.web.sitemesh'
         }
 
-
         def logger = Logger.getLogger('org.codehaus.groovy.grails.web.servlet')
-
         assertEquals Level.DEBUG, logger.level
         def appender = logger.getAppender("customAppender")
 
@@ -221,7 +209,7 @@ class Log4jDslTests extends GroovyTestCase {
 
         appender = logger.getAppender("customAppender")
         assert appender
-        assertEquals '%c{2} %m%n', appender.layout.conversionPattern        
+        assertEquals '%c{2} %m%n', appender.layout.conversionPattern
     }
 
     void testCustomAppenderWithInstance() {
@@ -230,7 +218,8 @@ class Log4jDslTests extends GroovyTestCase {
 
         config.configure {
             appenders {
-                def consoleAppender = new ConsoleAppender(follow:true, target: "System.out", layout:pattern(conversionPattern: '%c{2} %m%n'))
+                def consoleAppender = new ConsoleAppender(follow: true, target: "System.out",
+                    layout: pattern(conversionPattern: '%c{2} %m%n'))
                 appender name:'customAppender', consoleAppender
             }
 
@@ -247,7 +236,7 @@ class Log4jDslTests extends GroovyTestCase {
         assertEquals "System.out", appender.target
         assertEquals '%c{2} %m%n', appender.layout.conversionPattern
     }
-    
+
     /**
      * Tests that you can configure the root loader via the argument
      * passed into the Log4J closure.
@@ -259,8 +248,9 @@ class Log4jDslTests extends GroovyTestCase {
         Log4jConfig config = new Log4jConfig()
 
         config.configure { root ->
-            root.level = org.apache.log4j.Level.DEBUG
+            root.level = Level.DEBUG
         }
+
         def rootLogger = Logger.rootLogger
         assertEquals Level.DEBUG, rootLogger.level
     }

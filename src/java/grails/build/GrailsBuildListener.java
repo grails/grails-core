@@ -12,17 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package grails.build;
 
 /**
- * An interface that classes can implement to receive events raised by the Grails build system.
+ * Implement to receive events raised by the Grails build system.
  */
 public interface GrailsBuildListener {
-    
+
     /**
      * Responds to the event.
      */
     void receiveGrailsBuildEvent(String name, Object... args);
-    
 }

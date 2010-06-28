@@ -1,32 +1,21 @@
-/**
- * Class description here.
- 
- * @author Graeme Rocher
- * @since 0.4
-  *
- * Created: Sep 5, 2007
- * Time: 8:06:33 AM
- * 
- */
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
+/**
+ * @author Graeme Rocher
+ * @since 0.4
+ */
 class ControllerTagLibMethodDispatchTests extends AbstractGrailsTagTests {
 
     void testControllerTagLibMethodDispatch() {
-
         def controller = ga.getControllerClass("TestController").newInstance()
-
         controller.foo()
-
         assertEquals '<a href="/test/foo"></a>hello! bar', response.contentAsString
     }
 
-
-
-    void onInit() {
+    protected void onInit() {
         def tagClass = gcl.parseClass( '''
 class MyTagLib {
     static namespace = "my"
@@ -55,7 +44,7 @@ class SecondTagLib {
         // test invoke core tag
         response.writer << link(controller:'test',action:'foo')
         // test invoke namespaced tag
-        response.writer << my.test2(foo:"bar") 
+        response.writer << my.test2(foo:"bar")
     }
  }
  ''')

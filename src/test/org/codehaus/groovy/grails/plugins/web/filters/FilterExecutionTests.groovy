@@ -1,9 +1,3 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Oct 11, 2007
- */
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
@@ -12,33 +6,36 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class FilterExecutionTests extends AbstractGrailsControllerTests {
 
-    public void onSetUp() {
-        FilterConfig.metaClass.getLog = {->
-            [ error: { msg -> println "ERROR: $msg" },
-              warn: { msg -> println "WARN: $msg" },
-              info: { msg -> println "INFO: $msg" }]
+    protected void onSetUp() {
+        FilterConfig.metaClass.getLog = { ->
+            [error: { msg -> println "ERROR: $msg" },
+             warn: { msg -> println "WARN: $msg" },
+             info: { msg -> println "INFO: $msg" }]
         }
 
-		gcl.parseClass(
-'''
+        gcl.parseClass '''
 import junit.framework.Assert
 class ItemController {
     def count = {
         render(view:'testView')
     }
 
-	def show = {
-		render(template:"xmlTemplate",contentType:"text/xml")
-	}
+    def show = {
+        render(template:"xmlTemplate",contentType:"text/xml")
+    }
 }
 
 class AuthorController {
     def index = {}
     def list = {}
 }
-		        
+
 class TestController {
     def index = {}
     def list = {}
@@ -58,18 +55,18 @@ class Filters {
         return "$firstName $lastName".toString()
     }
 
-	def beforeClosure = { ctx ->
-		println "***beforeClosure: $ctx.uri"
-		return true
-	}
+    def beforeClosure = { ctx ->
+        println "***beforeClosure: $ctx.uri"
+        return true
+    }
 
-	def afterClosure = {
-		println "afterClosure!!!"
-	}
+    def afterClosure = {
+        println "afterClosure!!!"
+    }
 
-	def afterCompleteClosure = {
-		println "afterCompleteClosure!!!"
-	}
+    def afterCompleteClosure = {
+        println "afterCompleteClosure!!!"
+    }
 
     def filters = {
       "default"(controller:"*", action:"*") {
@@ -88,29 +85,29 @@ class Filters {
             afterView = afterCompleteClosure
         }
 
-		author(controller:"author") {
-			before = {
+        author(controller:"author") {
+            before = {
                 // Check that the filters method is available. This
                 // tests that FilterConfig's methodMissing handling
                 // is working.
                 Assert.assertEquals("Filters method 'sum' not available.", 10, sum([ 1, 2, 3, 4 ]))
 
                 request.beforeTwo = "two"
-			}
-		}
+            }
+        }
 
-		list(action:"list") {
-			before = {
-				request.beforeThree = "three"
-			}
-		}
+        list(action:"list") {
+            before = {
+                request.beforeThree = "three"
+            }
+        }
 
-		uri(uri:"/*/list") {
-			before = {
+        uri(uri:"/*/list") {
+            before = {
                 request.beforeFour = "four"
                 false
-			}
-		}
+            }
+        }
 
         testRedirect(controller: "admin", action: "index") {
             before = {
@@ -152,12 +149,12 @@ class Filters {
             }
         }
 
-		shouldNotGetHere(controller:"*") {
-			before = {
+        shouldNotGetHere(controller:"*") {
+            before = {
                 request.beforeFive = "five"
                 false
-			}
-		}
+            }
+        }
     }
 }
 
@@ -168,12 +165,12 @@ class Group1Filters {
     def filters = {
         filter1(uri:"/dependsOn") {
             before = {
-		        request.testString = request.testString + '4'
+                request.testString = request.testString + '4'
             }
         }
         filter2(uri:"/dependsOn") {
             before = {
-		        request.testString = request.testString + '5'
+                request.testString = request.testString + '5'
             }
         }
     }
@@ -185,16 +182,16 @@ class Group2Filters {
     def filters = {
         filter3(uri:"/dependsOn") {
             before = {
-		        request.testString = '1'
+                request.testString = '1'
             }
         }
         filter4(uri:"/neverCall") {
             before = {
-		        // uri doesn't match so this should not be called
-		        request.testString = request.testString + 'SHOULD_NEVER_HAPPEN'
+                // uri doesn't match so this should not be called
+                request.testString = request.testString + 'SHOULD_NEVER_HAPPEN'
             }
         }
-	}
+    }
 }
 
 class Group3Filters {
@@ -203,17 +200,17 @@ class Group3Filters {
     def filters = {
         filter5(uri:"/dependsOn") {
             before = {
-		        request.testString = request.testString + '2'
+                request.testString = request.testString + '2'
             }
         }
         filter6(uri:"/dependsOn") {
             before = {
-		        request.testString = request.testString + '3'
+                request.testString = request.testString + '3'
             }
         }
     }
 }
-        ''')
+        '''
     }
 
     void testFilterOrdering() {
@@ -335,7 +332,7 @@ class Group3Filters {
 
         // Check that the new model and view have been set.
         def filterConfig = filterInterceptor.handlers.find{ it.filterConfig.name == "testRenderWithViewBefore" }.filterConfig
-        
+
         assert !filterInterceptor.preHandle(request, response, null)
         assertEquals 1000, filterConfig.modelAndView.model['total']
         assertEquals "/item/error", filterConfig.modelAndView.viewName

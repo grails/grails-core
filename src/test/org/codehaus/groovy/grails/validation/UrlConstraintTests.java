@@ -15,7 +15,7 @@ public class UrlConstraintTests extends AbstractConstraintTests {
     }
 
     @SuppressWarnings("unchecked")
-	public void testValidation() {
+    public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint("testURL", Boolean.TRUE),
                 "wrong_url",
@@ -107,11 +107,10 @@ public class UrlConstraintTests extends AbstractConstraintTests {
                 "wrong_url",
                 "Property [{0}] of class [{1}] with value [{2}] is not a valid URL"
         );
-
     }
 
     @SuppressWarnings("unchecked")
-	public void testCreation() {
+    public void testCreation() {
         UrlConstraint constraint = (UrlConstraint) getConstraint("testString", Boolean.FALSE);
         assertEquals(ConstrainedProperty.URL_CONSTRAINT, constraint.getName());
         assertTrue(constraint.supports(String.class));
@@ -147,6 +146,5 @@ public class UrlConstraintTests extends AbstractConstraintTests {
         } catch (IllegalArgumentException iae) {
             // Great
         }
-
     }
 }

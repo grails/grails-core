@@ -33,57 +33,57 @@ import org.springframework.context.ApplicationContext;
  */
 public class Console extends groovy.ui.Console {
 
-	public Console(ClassLoader parent, Binding binding) {
-		super(parent, binding);
-	}
+    public Console(ClassLoader parent, Binding binding) {
+        super(parent, binding);
+    }
 
-	public static void main(String... args) {
-		final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
-		GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
+    public static void main(String... args) {
+        final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
+        GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
 
-		Binding b = new Binding();
-		b.setVariable(GrailsApplication.APPLICATION_ID, app);
-		b.setVariable("ctx", ctx);
-		Console c = new Console(app.getClassLoader(), b);
-		c.setBeforeExecution(new Closure(c) {
-			private static final long serialVersionUID = 4773257809080703257L;
+        Binding b = new Binding();
+        b.setVariable(GrailsApplication.APPLICATION_ID, app);
+        b.setVariable("ctx", ctx);
+        Console c = new Console(app.getClassLoader(), b);
+        c.setBeforeExecution(new Closure(c) {
+            private static final long serialVersionUID = 4773257809080703257L;
 
-			@SuppressWarnings("unused")
-			public Object doCall() {
-				Map<String, PersistenceContextInterceptor> beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
-				for (PersistenceContextInterceptor interceptor : beans.values()) {
-					interceptor.init();
-				}
-				return null;
-			}
-		});
-		c.setAfterExecution(new Closure(c) {
-			private static final long serialVersionUID = 7292229320100706377L;
+            @SuppressWarnings("unused")
+            public Object doCall() {
+                Map<String, PersistenceContextInterceptor> beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
+                for (PersistenceContextInterceptor interceptor : beans.values()) {
+                    interceptor.init();
+                }
+                return null;
+            }
+        });
+        c.setAfterExecution(new Closure(c) {
+            private static final long serialVersionUID = 7292229320100706377L;
 
-			public Object doCall() {
-				Map<String, PersistenceContextInterceptor> beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
-				for (PersistenceContextInterceptor interceptor : beans.values()) {
-					interceptor.flush();
-					interceptor.destroy();
-				}
-				return null;
-			}
+            public Object doCall() {
+                Map<String, PersistenceContextInterceptor> beans = ctx.getBeansOfType(PersistenceContextInterceptor.class);
+                for (PersistenceContextInterceptor interceptor : beans.values()) {
+                    interceptor.flush();
+                    interceptor.destroy();
+                }
+                return null;
+            }
 
-			@Override
-			public Object call() {
-				return doCall();
-			}
+            @Override
+            public Object call() {
+                return doCall();
+            }
 
-			@Override
-			public Object call(Object[] arguments) {
-				return doCall();
-			}
+            @Override
+            public Object call(Object[] arguments) {
+                return doCall();
+            }
 
-			@Override
-			public Object call(Object arguments) {
-				return doCall();
-			}
-		});
-		c.run();
-	}
+            @Override
+            public Object call(Object arguments) {
+                return doCall();
+            }
+        });
+        c.run();
+    }
 }

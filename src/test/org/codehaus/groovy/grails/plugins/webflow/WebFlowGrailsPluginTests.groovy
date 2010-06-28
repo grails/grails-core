@@ -22,12 +22,10 @@ import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Sep 1, 2008
  */
 class WebFlowGrailsPluginTests extends AbstractGrailsPluginTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
 
         gcl.parseClass('''
 class WebFlowGrailsPluginTestController {
@@ -50,24 +48,22 @@ class WebFlowGrailsPluginTestController {
     }
 }
 ''')
-        super.onSetUp();
+        super.onSetUp()
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
-	    pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
-		pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.webflow.MockWebFlowGrailsPlugin")
-
     }
 
-
     void testWebFlowGrailsPluginBeans() {
-         assert appCtx.containsBean("viewFactoryCreator")
+        assert appCtx.containsBean("viewFactoryCreator")
 
-         assertEquals MvcViewFactoryCreator, appCtx.viewFactoryCreator.getClass()
+        assertEquals MvcViewFactoryCreator, appCtx.viewFactoryCreator.getClass()
 
         assertTrue appCtx.containsBean("flowBuilderServices")
         assertTrue appCtx.containsBean("flowScopeRegistrar")

@@ -1,22 +1,22 @@
-package org.codehaus.groovy.grails.web.mapping;
+package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests;
+import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 
-public class RootUrlMappingTests extends AbstractGrailsTagTests{
+class RootUrlMappingTests extends AbstractGrailsTagTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass '''
 class StoreUrlMappings {
     static mappings = {
-	  "/"(controller:"store")
+      "/"(controller:"store")
       "/$controller/$action?/$id?"{
-	      constraints {
-			 // apply constraints here
-		  }
-	  }
+          constraints {
+             // apply constraints here
+          }
+      }
       "/"(view:"/index")
-	  "500"(view:'/error')
-	}
+      "500"(view:'/error')
+    }
 }'''
 
         gcl.parseClass '''
@@ -24,27 +24,21 @@ class StoreController {
 
     def index = { }
 
-	def showTime = {
-		render "${new Date()}"
-	}
+    def showTime = {
+        render "${new Date()}"
+    }
 }
 
 '''
     }
 
+    void testMappingToControllerAndAction() {
+        def template = '<g:link controller="store" action="showTime">Show the time !</g:link>'
+        assertOutputEquals('<a href="/store/showTime">Show the time !</a>', template)
+    }
 
-	void testMappingToControllerAndAction() {
-		def template = '<g:link controller="store" action="showTime">Show the time !</g:link>'
-
-	    assertOutputEquals('<a href="/store/showTime">Show the time !</a>', template)
-	}
-
-	void testMappingToController() {
-		def template = '<g:link controller="store">Show the time !</g:link>'
-
+    void testMappingToController() {
+        def template = '<g:link controller="store">Show the time !</g:link>'
         assertOutputEquals('<a href="/">Show the time !</a>', template)
-		
-	}
-
-	
+    }
 }

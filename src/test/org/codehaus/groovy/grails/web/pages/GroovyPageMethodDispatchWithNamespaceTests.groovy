@@ -1,81 +1,71 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.web.servlet.*
-import org.springframework.mock.web.*
-import org.springframework.validation.*
-import org.springframework.web.servlet.*
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.springframework.web.context.request.RequestContextHolder
 
 class GroovyPageMethodDispatchWithNamespaceTests extends AbstractGrailsControllerTests {
-	
-	void onSetUp() {
-		gcl.parseClass(
+
+    void onSetUp() {
+        gcl.parseClass(
 """
 import org.codehaus.groovy.grails.web.taglib.*
 class TestController {
-	def index = {}
+    def index = {}
 }
 class Test1TagLib {
     static namespace = "t1"
-	def tag = { attrs, body ->
-	   
-		out << "print"
- 
-		def result = g.tag2(test:'blah')
-		out << result
+    def tag = { attrs, body ->
 
-		result = body()
+        out << "print"
 
-		out << result
-	}
+        def result = g.tag2(test:'blah')
+        out << result
+
+        result = body()
+
+        out << result
+    }
 }
 class Test2TagLib {
-	def tag2 = { attrs, body -> out << attrs.test }
+    def tag2 = { attrs, body -> out << attrs.test }
 }
 class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
     String getGroovyPageFileName() { "test" }
-	def run() {
-		invokeTag("tag", "t1", [attr1:"test"]) {
-		    out << "foo"
-		    ""
-		}
-		out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest, {
+    def run() {
+        invokeTag("tag", "t1", [attr1:"test"]) {
+            out << "foo"
+            ""
+        }
+        out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest, {
 
         }))
-	}
+    }
 }
 """)
-	}
+    }
 
-	void testGroovyPage() {
-		runTest {
-			def webRequest = RequestContextHolder.currentRequestAttributes()
-			def script = gcl.loadClass("MyPage").newInstance()
+    void testGroovyPage() {
+        runTest {
+            def webRequest = RequestContextHolder.currentRequestAttributes()
+            def script = gcl.loadClass("MyPage").newInstance()
 
             script.setJspTagLibraryResolver(appCtx.getBean('jspTagLibraryResolver'))
             script.setGspTagLibraryLookup(appCtx.getBean('gspTagLibraryLookup'))
-            
-			def controller = ga.getControllerClass("TestController").newInstance()
-			def sw = new StringWriter()
-			webRequest.out =  new PrintWriter(sw)
-			def b = new Binding(application:controller.servletContext,
-								request:controller.request,
-								response:controller.response,
-								flash:controller.flash,
-								out: webRequest.out ,
-								webRequest:webRequest)			
-			script.binding = b
-			script.initRun(webRequest.out, webRequest)
-			script.run()
-			
-			assertEquals "printblahfoohellotest2",sw.toString()
-		}
-	}
-	
-}
 
+            def controller = ga.getControllerClass("TestController").newInstance()
+            def sw = new StringWriter()
+            webRequest.out =  new PrintWriter(sw)
+            def b = new Binding(application:controller.servletContext,
+                                request:controller.request,
+                                response:controller.response,
+                                flash:controller.flash,
+                                out: webRequest.out ,
+                                webRequest:webRequest)
+            script.binding = b
+            script.initRun(webRequest.out, webRequest)
+            script.run()
+
+            assertEquals "printblahfoohellotest2",sw.toString()
+        }
+    }
+}

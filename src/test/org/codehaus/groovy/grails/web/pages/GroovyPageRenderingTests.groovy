@@ -7,11 +7,8 @@ import grails.util.Environment
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Feb 5, 2009
  */
-
-public class GroovyPageRenderingTests extends AbstractGrailsTagTests{
+class GroovyPageRenderingTests extends AbstractGrailsTagTests {
 
     void testGroovyPageExpressionExceptionInDevelopmentEnvironment() {
         def template = '${foo.bar.next}'
@@ -19,7 +16,6 @@ public class GroovyPageRenderingTests extends AbstractGrailsTagTests{
         shouldFail(GroovyPagesException) {
             applyTemplate(template)
         }
-        
     }
 
     void testGroovyPageExpressionExceptionInOtherEnvironments() {
@@ -35,6 +31,4 @@ public class GroovyPageRenderingTests extends AbstractGrailsTagTests{
     protected void onDestroy() {
         System.setProperty(Environment.KEY, "")
     }
-
-
 }

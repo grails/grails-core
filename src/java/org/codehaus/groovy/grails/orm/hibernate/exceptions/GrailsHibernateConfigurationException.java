@@ -12,32 +12,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.orm.hibernate.exceptions;
 
 /**
- * An exception thrown when configuration Hibernate for GORM features
+ * Thrown when configuration Hibernate for GORM features.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
 public class GrailsHibernateConfigurationException extends GrailsHibernateException{
 
-	private static final long serialVersionUID = 5212907914995954558L;
+    private static final long serialVersionUID = 5212907914995954558L;
 
-	public GrailsHibernateConfigurationException() {
+    public GrailsHibernateConfigurationException() {
         super();
     }
 
-    public GrailsHibernateConfigurationException(String arg0) {
-        super(arg0);
+    public GrailsHibernateConfigurationException(String message) {
+        super(message);
     }
 
-    public GrailsHibernateConfigurationException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public GrailsHibernateConfigurationException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public GrailsHibernateConfigurationException(Throwable arg0) {
-        super(arg0);
+    public GrailsHibernateConfigurationException(Throwable cause) {
+        super(cause);
     }
 }

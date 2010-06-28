@@ -15,9 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.xml.sax.InputSource
 import javax.xml.parsers.SAXParserFactory
+
 import org.codehaus.groovy.grails.web.pages.ext.jsp.WebXmlTagLibraryReader
+import org.xml.sax.InputSource
 
 class WebXmlTagLibraryReaderTests extends GroovyTestCase{
 
@@ -40,7 +41,6 @@ class WebXmlTagLibraryReaderTests extends GroovyTestCase{
         def map =   webXmlReader.tagLocations
         assertEquals map["http://java.sun.com/jstl/core"], "/WEB-INF/tld/c.tld"
     }
-
 
     def testWebXml = '''<?xml version="1.0" encoding="UTF-8"?>
 
@@ -161,6 +161,4 @@ class WebXmlTagLibraryReaderTests extends GroovyTestCase{
     </taglib>
 </web-app>
 '''
-
-
 }

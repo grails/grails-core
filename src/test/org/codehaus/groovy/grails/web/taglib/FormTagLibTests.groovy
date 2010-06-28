@@ -16,7 +16,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     // test for GRAILS-3865
     void testHiddenFieldWithZeroValue() {
         def template = '<g:hiddenField name="index" value="${0}" />'
-
         assertOutputContains 'value="0"', template
     }
 
@@ -34,17 +33,14 @@ class FormTagLibTests extends AbstractGrailsTagTests {
 
     void testTextFieldTag() {
         def template = '<g:textField name="testField" value="1" />'
-
         assertOutputEquals('<input type="text" name="testField" value="1" id="testField" />', template)
 
         template = '<g:textField name="testField" value="${value}" />'
-
         assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; \'" id="testField" />', template, [value:/foo > " & < '/])
     }
 
     void testTextAreaWithBody() {
         def template = '<g:textArea name="test">This is content</g:textArea>'
-
         assertOutputEquals '<textarea name="test" id="test" >This is content</textarea>', template
     }
 
@@ -52,7 +48,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:passwordField name="myPassword" value="foo"/>'
         assertOutputEquals('<input type="password" name="myPassword" value="foo" id="myPassword" />', template)
     }
-
 
     void testFormWithURL() {
         final StringWriter sw = new StringWriter()

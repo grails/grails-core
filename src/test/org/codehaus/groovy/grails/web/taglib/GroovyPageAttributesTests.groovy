@@ -1,16 +1,17 @@
 package org.codehaus.groovy.grails.web.taglib
 
-public class GroovyPageAttributesTests extends GroovyTestCase {
+class GroovyPageAttributesTests extends GroovyTestCase {
 
     void testCloneAttributes() {
         def originalMap = [framework: 'Grails', company: 'SpringSource']
         def wrapper = new GroovyPageAttributes(originalMap)
-		def cloned = wrapper.clone()
-		assertNotNull cloned
+        def cloned = wrapper.clone()
+        assertNotNull cloned
         assert System.identityHashCode(cloned) != System.identityHashCode(wrapper) : "Should not be the same map"
-		assertEquals "Grails", cloned.framework
-		assertEquals "SpringSource", cloned.company
+        assertEquals "Grails", cloned.framework
+        assertEquals "SpringSource", cloned.company
     }
+
     void testMutatingImpactsWrappedMap() {
         def originalMap = [framework: 'Grails', company: 'SpringSource']
         def wrapper = new GroovyPageAttributes(originalMap)
@@ -35,8 +36,7 @@ public class GroovyPageAttributesTests extends GroovyTestCase {
         assertNull originalMap.framework
         assertEquals 'SpringSource', originalMap.company
         assertEquals 'Groovy', originalMap.lang
-        assertEquals 'STS', originalMap.ide        
+        assertEquals 'STS', originalMap.ide
         assertEquals 'JVM', originalMap.target
     }
-
 }

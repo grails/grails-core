@@ -1,23 +1,21 @@
 package org.codehaus.groovy.grails.scaffolding.view
 
-import grails.util.*
-import org.springframework.web.context.request.*
-import org.springframework.mock.web.*
-import org.codehaus.groovy.grails.web.pages.*
-import org.codehaus.groovy.grails.support.*
-import org.codehaus.groovy.grails.scaffolding.view.ScaffoldedGroovyPageView
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
 
+import grails.util.GrailsWebUtil
 
 class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
 
     void testScaffoldedGroovyPageView() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
-
         def url = "/WEB-INF/grails-apps/views/test.gsp"
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
-        
+
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
 
@@ -32,6 +30,6 @@ class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
     }
 
     void tearDown() {
-         RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.setRequestAttributes(null)
     }
 }

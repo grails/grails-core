@@ -1,19 +1,18 @@
 /*
  * Copyright 2009 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.support
 
 import org.springframework.transaction.support.DefaultTransactionDefinition
@@ -28,11 +27,11 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 class GrailsTestTransactionInterceptor {
 
     static final String TRANSACTIONAL = "transactional"
-    
+
     ApplicationContext applicationContext
     protected final transactionManager
     protected transactionStatus
-    
+
     GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
 
@@ -40,50 +39,57 @@ class GrailsTestTransactionInterceptor {
             transactionManager = applicationContext.getBean("transactionManager")
         }
     }
-    
+
     /**
      * Establishes a transaction.
      */
     void init() {
-        if (transactionManager) {
-            if (transactionStatus == null) {
-                transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
-            } else {
-                throw new RuntimeException("init() called on test transaction interceptor during transaction")
-            }
+        if (!transactionManager) {
+            return
+        }
+
+        if (transactionStatus == null) {
+            transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
+        }
+        else {
+            throw new RuntimeException("init() called on test transaction interceptor during transaction")
         }
     }
 
     /**
-     * Rollsback the current transaction
-     */    
+     * Rolls back the current transaction.
+     */
     void destroy() {
-        if (transactionManager) {
-            if (transactionStatus) {
-                transactionManager.rollback(transactionStatus)
-                transactionStatus = null
-            }
+        if (!transactionManager) {
+            return
+        }
+
+        if (transactionStatus) {
+            transactionManager.rollback(transactionStatus)
+            transactionStatus = null
         }
     }
-    
+
     /**
      * Calls init() before and destroy() after invoking {@code body}.
-     * 
+     *
      * Note: it is the callers responsibility to verify that {@code body} should be run in a transaction.
      */
     void doInTransaction(Closure body) {
         if (transactionManager) {
-            init() 
+            init()
             try {
                 body()
-            } finally {
+            }
+            finally {
                 destroy()
             }
-        } else {
+        }
+        else {
             body()
         }
     }
-    
+
     /**
      * A test is non transactional if it defines an instance or static property name 'transactional' with
      * a value of {@code false}.
@@ -92,5 +98,4 @@ class GrailsTestTransactionInterceptor {
         def value = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(test, TRANSACTIONAL)
         !(value instanceof Boolean) || (Boolean) value
     }
-
 }

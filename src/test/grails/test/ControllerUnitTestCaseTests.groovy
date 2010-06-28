@@ -1,11 +1,12 @@
-package grails.test;
+package grails.test
 
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.ModelAndView
 
 /**
  * Test case for {@link ControllerUnitTestCase}.
  */
 class ControllerUnitTestCaseTests extends GroovyTestCase {
+
     void testControllerClass() {
         UnitTestControllerTestCase testCase = new UnitTestControllerTestCase()
         testCase.setUp()
@@ -27,22 +28,21 @@ class ControllerUnitTestCaseTests extends GroovyTestCase {
         testCase.testCommandObject()
         testCase.tearDown()
     }
-	
-	void testGetSetModelAndView() {
-		def testCase = new UnitTestControllerTestCase()
-		testCase.setUp()
-		testCase.testModelAndView()
-		testCase.tearDown()
-				
-	}
+
+    void testGetSetModelAndView() {
+        def testCase = new UnitTestControllerTestCase()
+        testCase.setUp()
+        testCase.testModelAndView()
+        testCase.tearDown()
+    }
 }
 
 class UnitTestControllerTestCase extends ControllerUnitTestCase {
-	
-	void testModelAndView() {
-		controller.testSetModelAndView()
-	}
-	
+
+    void testModelAndView() {
+        controller.testSetModelAndView()
+    }
+
     void testControllerClass() {
         assertEquals UnitTestController, controllerClass
         assertEquals "unitTest", controller.controllerName
@@ -86,14 +86,11 @@ class OtherTestCase extends ControllerUnitTestCase {
 class UnitTestController {
     String name
 
-    def index = {
-        
+    def index = {}
+
+    def testSetModelAndView() {
+        modelAndView = new ModelAndView()
     }
-	
-	def testSetModelAndView() {
-    	modelAndView = new ModelAndView()
-		println modelAndView.viewName
-	}
 }
 
 class ControllerUnitTestCaseCommandObject {

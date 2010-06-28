@@ -6,8 +6,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class EnumBindingTests extends AbstractGrailsControllerTests{
+class EnumBindingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
@@ -30,10 +29,8 @@ class StatusController {
 ''')
     }
 
-
     void testBindEnumInConstructor() {
         def ctrl = ga.getControllerClass("StatusController").newInstance()
-
         def model = ctrl.bindMe()
 
         assertEquals "blah", model.statusTransition.title

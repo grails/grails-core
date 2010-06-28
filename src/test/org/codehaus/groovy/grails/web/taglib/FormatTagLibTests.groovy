@@ -1,18 +1,14 @@
+package org.codehaus.groovy.grails.web.taglib
+
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+
 /**
  * Tests for the FormatTagLib.
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- * Created: Jul 25, 2007
- * Time: 7:57:59 AM
- * 
  */
-
-package org.codehaus.groovy.grails.web.taglib
-
 class FormatTagLibTests extends AbstractGrailsTagTests {
-
 
     void testFormatBoolean() {
         messageSource.addMessage("default.boolean.true",request.locale, "Yeah!")
@@ -28,9 +24,7 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals "Yippeee!", template, [theBoolean:true]
         assertOutputEquals "Urghh!", template, [theBoolean:false]
-
     }
-
 
     void testFormatDate() {
         def calender = new GregorianCalendar(1980,1,3)
@@ -71,17 +65,11 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals("", template, [myNumber:null])
     }
 
-    void testFormatNumberNoNumber() {
-        try
-        {
-        	applyTemplate('<g:formatNumber/>')
-        	fail('Expecting a GrailsTagException')
-        }
-        catch(org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException e)
-        {
-        	// expected
-        }
-    }
+     void testFormatNumberNoNumber() {
+         shouldFail(GrailsTagException) {
+            applyTemplate('<g:formatNumber/>')
+         }
+     }
 
     void testFormatDateFromBundle() {
         def calender = new GregorianCalendar(1980,1,3)
@@ -99,9 +87,7 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
 
     void testEncodeAs() {
         def template = '<g:encodeAs codec="HTML">Coheed & Cambria</g:encodeAs>'
-
         assertOutputEquals('Coheed &amp; Cambria', template, [:])
-
     }
 
     void testFormatBigDecimal() {
@@ -114,25 +100,25 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         def number = "3.12325678" as BigDecimal
         def template = '<g:formatNumber type="currency" number="${number}" locale="fi_FI" />'
         assertOutputEquals("3,12 €", template, [number: number])
-    }    
+    }
 
     void testFormatCurrencyWithCodeAndLocale() {
         def number = "3.12325678" as BigDecimal
         def template = '<g:formatNumber type="currency" currencyCode="USD" number="${number}" locale="fi_FI" />'
         assertOutputEquals("3,12 USD", template, [number: number])
-    }    
-    
+    }
+
     void testFormatCurrencyWithCode() {
         def number = "3.12325678" as BigDecimal
         def template = '<g:formatNumber type="currency" currencyCode="USD" number="${number}" locale="en_US" />'
         assertOutputEquals("\$3.12", template, [number: number])
-    }    
+    }
 
     void testFormatNumberDecimals() {
         def number = "3.12325678" as BigDecimal
         def template = '<g:formatNumber type="number" number="${number}" locale="fi_FI" minFractionDigits="3" maxFractionDigits="3" />'
         assertOutputEquals("3,123", template, [number: number])
-    }    
+    }
 
     void testFormatNumberRoundingModeHalfDown() {
         def number = "3.125" as BigDecimal
@@ -162,34 +148,35 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         def number = "3.12325678" as BigDecimal
         def template = '<g:formatNumber type="number" number="${number}" locale="fi_FI" minIntegerDigits="3" maxIntegerDigits="3" minFractionDigits="0" maxFractionDigits="0"/>'
         assertOutputEquals("003", template, [number: number])
-    }    
+    }
 
-	void testFormatNumberInteger2() {
-		def number = 1
-		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3"/>'
-		assertOutputEquals("001", template, [number: number])
-	} 
-	
-	void testFormatNumberIntegerWithNoGrouping() {
-		def number = 1234
-		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="false" locale="en_US"/>'
-		assertOutputEquals("1234", template, [number: number])
-	} 
-	
-	void testFormatNumberIntegerWithGrouping() {
-		def number = 1234
-		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="true" locale="en_US"/>'
-		assertOutputEquals("1,234", template, [number: number])
-	} 	
-	
-	void testFormatNumberIntegerWithGroupingAsBoolean() {
-		def number = 1234
-		def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="${true}" locale="en_US"/>'
-		assertOutputEquals("1,234", template, [number: number])
-	}
-	void testFormatNumberParsingString() {
-        def number = "3,12325678" as String
+    void testFormatNumberInteger2() {
+        def number = 1
+        def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3"/>'
+        assertOutputEquals("001", template, [number: number])
+    }
+
+    void testFormatNumberIntegerWithNoGrouping() {
+        def number = 1234
+        def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="false" locale="en_US"/>'
+        assertOutputEquals("1234", template, [number: number])
+    }
+
+    void testFormatNumberIntegerWithGrouping() {
+        def number = 1234
+        def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="true" locale="en_US"/>'
+        assertOutputEquals("1,234", template, [number: number])
+    }
+
+    void testFormatNumberIntegerWithGroupingAsBoolean() {
+        def number = 1234
+        def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="${true}" locale="en_US"/>'
+        assertOutputEquals("1,234", template, [number: number])
+    }
+
+    void testFormatNumberParsingString() {
+        def number = "3,12325678"
         def template = '<g:formatNumber type="number" number="${number}" locale="fi_FI" minFractionDigits="3" maxFractionDigits="3" />'
         assertOutputEquals("3,123", template, [number: number])
-    }    
+    }
 }

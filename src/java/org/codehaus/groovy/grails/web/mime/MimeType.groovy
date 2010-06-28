@@ -1,5 +1,4 @@
 /*
-
  * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,56 +20,51 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Nov 23, 2007       
  */
-public class MimeType {
+class MimeType {
 
     static final XML = 'application/xml'
-    
 
     private static MIMES
 
     MimeType(String n, Map params = [:]) {
-        this.name = n        
-        this.parameters.putAll(params)
+        name = n
+        parameters.putAll(params)
     }
 
-    
     String name
     String extension
     Map parameters = [q:"1.0"]
 
     boolean equals(Object o) { o instanceof MimeType && name.equals(o.name) }
-    public int hashCode() { name.hashCode() }  
-
+    int hashCode() { name.hashCode() }
 
     String toString() {
         return "MimeType { name=$name,extension=$extension,parameters=$parameters }".toString()
     }
 
     static MimeType[] getConfiguredMimeTypes() {
-        if(MIMES) return MIMES
-        else {
-            def config = ConfigurationHolder.getConfig()
-            def mimeConfig = config?.grails?.mime?.types
-            if(!mimeConfig) return createDefaults()
-            def mimes = []
-            for(entry in mimeConfig) {
-                if(entry.value instanceof List) {
-                    for(i in entry.value) {
-                        mimes << new MimeType(i)
-                        mimes[-1].extension = entry.key
-                    }
-                }
-                else {
-                    mimes << new MimeType(entry.value)
+        if (MIMES) return MIMES
+
+        def config = ConfigurationHolder.getConfig()
+        def mimeConfig = config?.grails?.mime?.types
+        if (!mimeConfig) return createDefaults()
+
+        def mimes = []
+        for (entry in mimeConfig) {
+            if (entry.value instanceof List) {
+                for (i in entry.value) {
+                    mimes << new MimeType(i)
                     mimes[-1].extension = entry.key
                 }
             }
-            MIMES = mimes as MimeType[]
-            return MIMES 
+            else {
+                mimes << new MimeType(entry.value)
+                mimes[-1].extension = entry.key
+            }
         }
+        MIMES = mimes as MimeType[]
+        return MIMES
     }
 
     static reset() {

@@ -40,6 +40,7 @@ import org.springframework.beans.BeanUtils
  * @author Luke Daley
  */
 class GrailsUrlMappingsTestCase extends GroovyTestCase {
+
     def webRequest
     def mappingsHolder
     def controllers
@@ -53,9 +54,9 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
 
     def createMappingsHolder() {
         new DefaultUrlMappingsHolder(
-                this.urlMappingEvaluatees.collect {
-                    mappingEvaluator.evaluateMappings((it instanceof Closure) ? it : GrailsClassUtils.getStaticPropertyValue(it, "mappings"))
-                }.flatten()
+            urlMappingEvaluatees.collect {
+                mappingEvaluator.evaluateMappings((it instanceof Closure) ? it : GrailsClassUtils.getStaticPropertyValue(it, "mappings"))
+            }.flatten()
         )
     }
 
@@ -71,11 +72,13 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
         def m = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(this, "mappings")
         if (m == null) {
             return grailsApplication.urlMappingsClasses*.clazz
-        } else if (mappings instanceof Closure || mappings instanceof Class) {
-            return [mappings]
-        } else {
-            return mappings
         }
+
+        if (mappings instanceof Closure || mappings instanceof Class) {
+            return [mappings]
+        }
+
+        return mappings
     }
 
     void setUp() {
@@ -94,7 +97,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
         BeanUtils.getPropertyDescriptors(instance.class).findAll {
             GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(instance, it.name) instanceof Closure
         }.collect {
-            StringUtils.substringBeforeLast(it.name, "Flow")
+        StringUtils.substringBeforeLast(it.name, "Flow")
         }
     }
 
@@ -119,7 +122,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
         def pathPattern = "grails-app/views/" + ((controller) ? "$controller/" : "") + "${view}.*"
         if (!patternResolver.getResources(pathPattern)) {
             throw new IllegalArgumentException(
-                    (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view"
+                (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view"
             )
         }
     }
@@ -134,7 +137,6 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
             assertReverseUrlMapping(assertions, url, paramAssertions)
         }
     }
-
 
     void assertForwardUrlMapping(assertions, url) {
         assertForwardUrlMapping(assertions, url, null)
@@ -155,7 +157,8 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
             mappingInfos = []
             def mapping = mappingsHolder.matchStatusCode(url)
             if (mapping) mappingInfos << mapping
-        } else {
+        }
+        else {
             mappingInfos = mappingsHolder.matchAll(url)
         }
 
@@ -163,13 +166,13 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
 
         mappingInfos.find {mapping ->
             mapping.configure(webRequest)
-            for(key in assertionKeys) {
+            for (key in assertionKeys) {
                 if (assertions.containsKey(key)) {
                     def expected = assertions[key]
                     def actual = mapping."${key}Name"
 
                     // if this is not a match and there are still more potential matches try the next one
-                    if(!controllers.containsKey(actual) && mappingInfos.size() > 1) return
+                    if (!controllers.containsKey(actual) && mappingInfos.size() > 1) return
 
                     if (key == "view") {
                         if (actual[0] == "/") actual = actual.substring(1)

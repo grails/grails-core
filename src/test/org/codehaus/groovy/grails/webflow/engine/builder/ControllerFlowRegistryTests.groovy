@@ -10,16 +10,11 @@ import org.springframework.webflow.expression.DefaultExpressionParserFactory
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 
 /**
-* Tests for the ControllerFlowRegistry class
-
+ * Tests for the ControllerFlowRegistry class.
+ *
 * @author Graeme Rocher
 * @since 0.6
- *
-* Created: Jul 3, 2007
-* Time: 9:22:23 AM
-*
 */
-
 class ControllerFlowRegistryTests extends GroovyTestCase {
 
     def gcl = new GroovyClassLoader()
@@ -28,32 +23,32 @@ class ControllerFlowRegistryTests extends GroovyTestCase {
         gcl.parseClass('''
 class FooController {
     def searchService = [executeSearch: { ['book'] }]
-	def shoppingCartFlow = {
-		enterPersonalDetails {
-			on("submit").to "enterShipping"
-		}
-		enterShipping  {
-			on("back").to "enterPersonDetails"
-			on("submit").to "enterPayment"
-		}
-		enterPayment  {
-			on("back").to "enterShipping"
-			on("submit").to "confirmPurchase"
-		}
-		confirmPurchase  {
-			on("confirm").to "processPurchaseOrder"
-		}
-		processPurchaseOrder  {
-			action {
-				println "processing purchase order"
-				[order:"done"]
-			}
-			on("error").to "confirmPurchase"
-			on(Exception).to "confirmPurchase"
-			on("success").to "displayInvoice"
-		}
-		displayInvoice()
-	}
+    def shoppingCartFlow = {
+        enterPersonalDetails {
+            on("submit").to "enterShipping"
+        }
+        enterShipping  {
+            on("back").to "enterPersonDetails"
+            on("submit").to "enterPayment"
+        }
+        enterPayment  {
+            on("back").to "enterShipping"
+            on("submit").to "confirmPurchase"
+        }
+        confirmPurchase  {
+            on("confirm").to "processPurchaseOrder"
+        }
+        processPurchaseOrder  {
+            action {
+                println "processing purchase order"
+                [order:"done"]
+            }
+            on("error").to "confirmPurchase"
+            on(Exception).to "confirmPurchase"
+            on("success").to "displayInvoice"
+        }
+        displayInvoice()
+    }
 
     def anotherAction = {
 
@@ -85,8 +80,7 @@ class FooController {
         assert registry
         assertEquals 1,registry.getFlowDefinitionCount()
         def cartFlow = registry.getFlowDefinition("foo/shoppingCart")
-         assert cartFlow
+        assert cartFlow
         assertEquals 6,cartFlow.stateCount
-
     }
 }

@@ -11,7 +11,7 @@ class BuildSettingsTests extends GroovyTestCase {
     private File defaultWorkPath
     private Map savedSystemProps
 
-    void setUp() {
+    protected void setUp() {
         def props = new Properties()
         new File("build.properties").withInputStream { InputStream is ->
             props.load(is)
@@ -24,7 +24,7 @@ class BuildSettingsTests extends GroovyTestCase {
         savedSystemProps = new HashMap()
     }
 
-    void tearDown() {
+    protected void tearDown() {
         // Restore any overridden system properties.
         savedSystemProps.each { String key, String value ->
             if (value == null) {
@@ -230,7 +230,7 @@ class BuildSettingsTests extends GroovyTestCase {
 
         System.setProperty(name, value)
     }
-    
+
     void testBuildListenersViaSystemProperty() {
         try {
             def config = new ConfigObject()

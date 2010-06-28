@@ -1,12 +1,9 @@
 package org.codehaus.groovy.grails.reload;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.commons.*
-import org.apache.commons.logging.*
-import org.codehaus.groovy.grails.plugins.web.*
+import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 
 /**
- * Tests for auto-reloading of transactional services
+ * Tests for auto-reloading of transactional services.
  *
  * @author Graeme Rocher
  */
@@ -61,13 +58,13 @@ class TransactionalService {
 
     gcl.parseClass '''\
 dataSource {
-	   pooling = true
-	   logSql = true
-	   dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-	   url = "jdbc:hsqldb:mem:testDB"
-	   driverClassName = "org.hsqldb.jdbcDriver"
-	   username = "sa"
-	   password = ""
+    pooling = true
+    logSql = true
+    dbCreate = "create-drop" // one of 'create', 'create-drop','update'
+    url = "jdbc:hsqldb:mem:testDB"
+    driverClassName = "org.hsqldb.jdbcDriver"
+    username = "sa"
+    password = ""
 }
 ''', "DataSource"
 

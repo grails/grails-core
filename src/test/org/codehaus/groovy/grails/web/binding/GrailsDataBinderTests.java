@@ -14,20 +14,26 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
-import junit.framework.TestCase;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.mock.web.MockHttpServletRequest;
-
 import java.beans.PropertyEditorSupport;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import junit.framework.TestCase;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Graeme Rocher
- * @since 05-Jan-2006
  */
 @SuppressWarnings("unchecked")
 public class GrailsDataBinderTests extends TestCase {
@@ -155,13 +161,12 @@ public class GrailsDataBinderTests extends TestCase {
             try {
                 TestDateTimeBean dt = new TestDateTimeBean();
                 dt.setDateTime(dateFormat.parse(dateTime));
-                return dt; 
+                return dt;
             }
             catch (Exception nfe) {
                 throw new IllegalArgumentException("Unable to parse structured DateTime from request for date (" + dateTime + ").");
             }
         }
-
     }
 
     public void testBindStructuredDateWithYearPrecision() throws Exception {
@@ -268,28 +273,28 @@ public class GrailsDataBinderTests extends TestCase {
 
     class Author {
 
-    	private String name;
-    	private int age;
+        private String name;
+        private int age;
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public void setName(String name) {
-			this.name = name;
-		}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-		public int getAge() {
-			return this.age;
-		}
+        public int getAge() {
+            return this.age;
+        }
 
-		public void setAge(int age){
-			this.age = age;
-		}
+        public void setAge(int age){
+            this.age = age;
+        }
     }
 
     public void testBindingWithPrefix() throws Exception {
-    	MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletRequest request = new MockHttpServletRequest();
 
         request.addParameter("author1.name","Graeme Rocher");
         request.addParameter("author1.age","33");
@@ -360,7 +365,6 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(new BigDecimal("1203.45"), testBean.getCredit());
         assertEquals(103.48674D, testBean.getAngle().doubleValue(), 0.1D);
     }
-
 
     /**
      * Tests the <code>GrailsDataBinder</code> using the specified request parameters.  Assumes that each of the
@@ -435,7 +439,6 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(expectedDayValue,c.get(Calendar.DAY_OF_MONTH));
     }
 
-
     private TestBean bindDateTimeWithCustomEditor(String date, String time) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addParameter("myDateTime", "struct");
@@ -448,5 +451,4 @@ public class GrailsDataBinderTests extends TestCase {
         binder.bind(request);
         return testBean;
     }
-
 }

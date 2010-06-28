@@ -7,7 +7,7 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
 
 class FlowBuilderDecisionExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests{
 
-    public Closure getFlowClosure() {
+    Closure getFlowClosure() {
         return {
             displaySearchForm {
                 on("submit").to "executeSearch"
@@ -35,30 +35,22 @@ class FlowBuilderDecisionExecutionTests extends AbstractGrailsTagAwareFlowExecut
         searchService = [executeSearch:{[]}]
 
         startFlow()
-
         assertCurrentStateEquals "displaySearchForm"
 
         signalEvent( "submit" )
-
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "noResults"
     }
+
     void testSuccessFlowExecution() {
         grails.util.GrailsWebUtil.bindMockWebRequest()
         searchService = [executeSearch:{["foo", "bar"]}]
 
         startFlow()
-
         assertCurrentStateEquals "displaySearchForm"
 
         signalEvent( "submit" )
-
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "displayResults"
-
     }
-
-
-
-
 }

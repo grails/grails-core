@@ -63,8 +63,8 @@ class Publication {
        }
 
        latestBooks {
- 			maxResults(10)
- 			order("datePublished", "desc")
+           maxResults(10)
+           order("datePublished", "desc")
        }
 
        publishedBetween { start, end ->
@@ -77,9 +77,9 @@ class Publication {
 
        paperbackOrRecent {
            or {
-        		def now = new Date()
-        		gt 'datePublished', now - 365
-        		paperbacks()
+                def now = new Date()
+                gt 'datePublished', now - 365
+                paperbacks()
            }
        }
 
@@ -102,20 +102,20 @@ class Publication {
 ''')
     }
 
-	void testNamedQueryWithRelationshipInCriteria() {
+    void testNamedQueryWithRelationshipInCriteria() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
-                       .addToPlants(goesInPatch:true, name:"Lettuce")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:true, name:"Lettuce")
+                                 .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"groovy")
-                       .addToPlants(goesInPatch: true, name: 'Gplant')
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch: true, name: 'Gplant')
+                                 .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"grapes")
-                       .addToPlants(goesInPatch:false, name:"Gray")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:false, name:"Gray")
+                                 .save(flush:true)
 
         session.clear()
 
@@ -132,54 +132,54 @@ class Publication {
         results = plantCategoryClass.withPlantsInPatchThatStartWithG.list()
         assertEquals 1, results.size()
         assertEquals 'groovy', results[0].name
-	}
-	
+    }
+
     void testListDistinct() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
-                       .addToPlants(goesInPatch:true, name:"lettuce")
-                       .addToPlants(goesInPatch:true, name:"cabbage")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:true, name:"lettuce")
+                                 .addToPlants(goesInPatch:true, name:"cabbage")
+                                 .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"orange")
-                       .addToPlants(goesInPatch:true, name:"carrots")
-                       .addToPlants(goesInPatch:true, name:"pumpkin")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:true, name:"carrots")
+                                 .addToPlants(goesInPatch:true, name:"pumpkin")
+                                 .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"grapes")
-                       .addToPlants(goesInPatch:false, name:"red")
-                       .addToPlants(goesInPatch:false, name:"white")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:false, name:"red")
+                                 .addToPlants(goesInPatch:false, name:"white")
+                                 .save(flush:true)
 
         session.clear()
 
         def categories = plantCategoryClass.withPlantsInPatch().listDistinct()
-        
+
         assertEquals 2, categories.size()
         def names = categories*.name
         assertEquals 2, names.size()
         assertTrue 'leafy' in names
         assertTrue 'orange' in names
     }
-    
+
     void testListDistinct2() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
-                       .addToPlants(goesInPatch:true, name:"lettuce")
-                       .addToPlants(goesInPatch:true, name:"cabbage")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:true, name:"lettuce")
+                                 .addToPlants(goesInPatch:true, name:"cabbage")
+                                 .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"orange")
-                       .addToPlants(goesInPatch:true, name:"carrots")
-                       .addToPlants(goesInPatch:true, name:"pumpkin")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:true, name:"carrots")
+                                 .addToPlants(goesInPatch:true, name:"pumpkin")
+                                 .save(flush:true)
 
         assert plantCategoryClass.newInstance(name:"grapes")
-                       .addToPlants(goesInPatch:false, name:"red")
-                       .addToPlants(goesInPatch:true, name:"white")
-                       .save(flush:true)
+                                 .addToPlants(goesInPatch:false, name:"red")
+                                 .addToPlants(goesInPatch:true, name:"white")
+                                 .save(flush:true)
 
         session.clear()
 
@@ -192,242 +192,241 @@ class Publication {
         assertTrue 'orange' in names
         assertTrue 'grapes' in names
     }
-	
-	void testFindAllWhereAttachedToChainedNamedQueries() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
-		def now = new Date()
 
-		assert publicationClass.newInstance(title: "Some Book",
-				datePublished: now - 10, paperback: false).save()
-		assert publicationClass.newInstance(title: "Some Book",
-				datePublished: now - 1000, paperback: true).save()
-		assert publicationClass.newInstance(title: "Some Book",
-				datePublished: now - 10, paperback: true).save()
+    void testFindAllWhereAttachedToChainedNamedQueries() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        def now = new Date()
 
-		assert publicationClass.newInstance(title: "Some Title",
-				datePublished: now - 10, paperback: false).save()
-		assert publicationClass.newInstance(title: "Some Title",
-				datePublished: now - 1000, paperback: false).save()
-		assert publicationClass.newInstance(title: "Some Title",
-				datePublished: now - 10, paperback: true).save()
-		session.clear()
+        assert publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 10, paperback: false).save()
+        assert publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 1000, paperback: true).save()
+        assert publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 10, paperback: true).save()
 
-		def results = publicationClass.recentPublications().publicationsWithBookInTitle().findAllWhere(paperback: true)
+        assert publicationClass.newInstance(title: "Some Title",
+                datePublished: now - 10, paperback: false).save()
+        assert publicationClass.newInstance(title: "Some Title",
+                datePublished: now - 1000, paperback: false).save()
+        assert publicationClass.newInstance(title: "Some Title",
+                datePublished: now - 10, paperback: true).save()
+        session.clear()
 
-		assertEquals 1, results?.size()
-	}
+        def results = publicationClass.recentPublications().publicationsWithBookInTitle().findAllWhere(paperback: true)
 
-	void testNamedQueryPassingMultipleParamsToNestedNamedQuery() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
-		def now = new Date()
-		
-		assert publicationClass.newInstance(title: "Some Book",
-		datePublished: now - 10, paperback: false).save()
-		assert publicationClass.newInstance(title: "Some Book",
-											datePublished: now - 1000, paperback: true).save()
-	    assert publicationClass.newInstance(title: "Some Book",
-	    									datePublished: now - 2, paperback: true).save()
-								
-	    assert publicationClass.newInstance(title: "Some Title",
+        assertEquals 1, results?.size()
+    }
+
+    void testNamedQueryPassingMultipleParamsToNestedNamedQuery() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        def now = new Date()
+
+        assert publicationClass.newInstance(title: "Some Book",
+        datePublished: now - 10, paperback: false).save()
+        assert publicationClass.newInstance(title: "Some Book",
+                                            datePublished: now - 1000, paperback: true).save()
+        assert publicationClass.newInstance(title: "Some Book",
+                                            datePublished: now - 2, paperback: true).save()
+
+        assert publicationClass.newInstance(title: "Some Title",
                                             datePublished: now - 2, paperback: false).save()
         assert publicationClass.newInstance(title: "Some Title",
                                             datePublished: now - 1000, paperback: false).save()
         assert publicationClass.newInstance(title: "Some Title",
-		                                    datePublished: now - 2, paperback: true).save()
+                                            datePublished: now - 2, paperback: true).save()
         session.clear()
-														
-		def results = publicationClass.thisWeeksPaperbacks().list()
-														
+
+        def results = publicationClass.thisWeeksPaperbacks().list()
+
         assertEquals 2, results?.size()
-	}
-	
-	void testGetAttachedToChainedNamedQueries() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
-		def now = new Date()
+    }
 
-		def oldPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
-				datePublished: now - 1000, paperback: true).save().id
-		def newPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
-				datePublished: now, paperback: true).save().id
+    void testGetAttachedToChainedNamedQueries() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        def now = new Date()
 
-		assertNull publicationClass.publicationsWithBookInTitle().publishedAfter(now - 5).get(oldPaperBackWithBookInTitleId)
-		assertNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(oldPaperBackWithBookInTitleId)
-		assertNotNull publicationClass.publicationsWithBookInTitle().publishedAfter(now - 5).get(newPaperBackWithBookInTitleId)
-		assertNotNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(newPaperBackWithBookInTitleId)
-	}
+        def oldPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
+                datePublished: now - 1000, paperback: true).save().id
+        def newPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
+                datePublished: now, paperback: true).save().id
 
-	void testChainingNamedQueries() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
+        assertNull publicationClass.publicationsWithBookInTitle().publishedAfter(now - 5).get(oldPaperBackWithBookInTitleId)
+        assertNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(oldPaperBackWithBookInTitleId)
+        assertNotNull publicationClass.publicationsWithBookInTitle().publishedAfter(now - 5).get(newPaperBackWithBookInTitleId)
+        assertNotNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(newPaperBackWithBookInTitleId)
+    }
 
-		def now = new Date()
-		[true, false].each { isPaperback ->
-			4.times {
-				assert publicationClass.newInstance(title: "Some Book",
-						datePublished: now - 10, paperback: isPaperback).save()
-				assert publicationClass.newInstance(title: "Some Other Book",
-						datePublished: now - 10, paperback: isPaperback).save()
-				assert publicationClass.newInstance(title: "Some Other Title",
-						datePublished: now - 10, paperback: isPaperback).save()
-				assert publicationClass.newInstance(title: "Some Book",
-						datePublished: now - 1000, paperback: isPaperback).save()
-				assert publicationClass.newInstance(title: "Some Other Book",
-						datePublished: now - 1000, paperback: isPaperback).save()
-				assert publicationClass.newInstance(title: "Some Other Title",
-						datePublished: now - 1000, paperback: isPaperback).save()
-			}
-		}
-		session.clear()
+    void testChainingNamedQueries() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
-		def results = publicationClass.recentPublications().publicationsWithBookInTitle().list()
-		assertEquals 'wrong number of books were returned from chained queries', 16, results?.size()
-		results = publicationClass.recentPublications().publicationsWithBookInTitle().count()
-		assertEquals 16, results
+        def now = new Date()
+        [true, false].each { isPaperback ->
+            4.times {
+                assert publicationClass.newInstance(title: "Some Book",
+                        datePublished: now - 10, paperback: isPaperback).save()
+                assert publicationClass.newInstance(title: "Some Other Book",
+                        datePublished: now - 10, paperback: isPaperback).save()
+                assert publicationClass.newInstance(title: "Some Other Title",
+                        datePublished: now - 10, paperback: isPaperback).save()
+                assert publicationClass.newInstance(title: "Some Book",
+                        datePublished: now - 1000, paperback: isPaperback).save()
+                assert publicationClass.newInstance(title: "Some Other Book",
+                        datePublished: now - 1000, paperback: isPaperback).save()
+                assert publicationClass.newInstance(title: "Some Other Title",
+                        datePublished: now - 1000, paperback: isPaperback).save()
+            }
+        }
+        session.clear()
 
-		results = publicationClass.recentPublications.publicationsWithBookInTitle.list()
-		assertEquals 'wrong number of books were returned from chained queries', 16, results?.size()
-		results = publicationClass.recentPublications.publicationsWithBookInTitle.count()
-		assertEquals 16, results
+        def results = publicationClass.recentPublications().publicationsWithBookInTitle().list()
+        assertEquals 'wrong number of books were returned from chained queries', 16, results?.size()
+        results = publicationClass.recentPublications().publicationsWithBookInTitle().count()
+        assertEquals 16, results
 
-		results = publicationClass.paperbacks().recentPublications().publicationsWithBookInTitle().list()
-		assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
-		results = publicationClass.paperbacks().recentPublications().publicationsWithBookInTitle().count()
-		assertEquals 8, results
+        results = publicationClass.recentPublications.publicationsWithBookInTitle.list()
+        assertEquals 'wrong number of books were returned from chained queries', 16, results?.size()
+        results = publicationClass.recentPublications.publicationsWithBookInTitle.count()
+        assertEquals 16, results
 
-		results = publicationClass.recentPublications().publicationsWithBookInTitle().findAllByPaperback(true)
-		assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
+        results = publicationClass.paperbacks().recentPublications().publicationsWithBookInTitle().list()
+        assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
+        results = publicationClass.paperbacks().recentPublications().publicationsWithBookInTitle().count()
+        assertEquals 8, results
 
-		results = publicationClass.paperbacks.recentPublications.publicationsWithBookInTitle.list()
-		assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
-		results = publicationClass.paperbacks.recentPublications.publicationsWithBookInTitle.count()
-		assertEquals 8, results
-	}
+        results = publicationClass.recentPublications().publicationsWithBookInTitle().findAllByPaperback(true)
+        assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
 
-	void testChainingQueriesWithParams() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
+        results = publicationClass.paperbacks.recentPublications.publicationsWithBookInTitle.list()
+        assertEquals 'wrong number of books were returned from chained queries', 8, results?.size()
+        results = publicationClass.paperbacks.recentPublications.publicationsWithBookInTitle.count()
+        assertEquals 8, results
+    }
 
-		def now = new Date()
-		def lastWeek = now - 7
-		def longAgo = now - 1000
-		2.times {
-			assert publicationClass.newInstance(title: 'Some Book',
-					datePublished: now).save()
-			assert publicationClass.newInstance(title: 'Some Title',
-					datePublished: now).save()
-		}
-		3.times {
-			assert publicationClass.newInstance(title: 'Some Book',
-					datePublished: lastWeek).save()
-			assert publicationClass.newInstance(title: 'Some Title',
-					datePublished: lastWeek).save()
-		}
-		4.times {
-			assert publicationClass.newInstance(title: 'Some Book',
-					datePublished: longAgo).save()
-			assert publicationClass.newInstance(title: 'Some Title',
-					datePublished: longAgo).save()
-		}
-		session.clear()
+    void testChainingQueriesWithParams() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
-		def results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(now - 2).list()
-		assertEquals 'wrong number of books were returned from chained queries', 2, results?.size()
+        def now = new Date()
+        def lastWeek = now - 7
+        def longAgo = now - 1000
+        2.times {
+            assert publicationClass.newInstance(title: 'Some Book',
+                    datePublished: now).save()
+            assert publicationClass.newInstance(title: 'Some Title',
+                    datePublished: now).save()
+        }
+        3.times {
+            assert publicationClass.newInstance(title: 'Some Book',
+                    datePublished: lastWeek).save()
+            assert publicationClass.newInstance(title: 'Some Title',
+                    datePublished: lastWeek).save()
+        }
+        4.times {
+            assert publicationClass.newInstance(title: 'Some Book',
+                    datePublished: longAgo).save()
+            assert publicationClass.newInstance(title: 'Some Title',
+                    datePublished: longAgo).save()
+        }
+        session.clear()
 
-		results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(now - 2).count()
-		assertEquals 2, results
+        def results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(now - 2).list()
+        assertEquals 'wrong number of books were returned from chained queries', 2, results?.size()
 
-		results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(lastWeek - 2).list()
-		assertEquals 'wrong number of books were returned from chained queries', 5, results?.size()
+        results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(now - 2).count()
+        assertEquals 2, results
 
-		results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(lastWeek - 2).count()
-		assertEquals 5, results
-	}
+        results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(lastWeek - 2).list()
+        assertEquals 'wrong number of books were returned from chained queries', 5, results?.size()
 
-	void testReferencingNamedQueryBeforeAnyDynamicMethodsAreInvoked() {
-		// GRAILS-5809
-		def publicationClass = ga.getDomainClass("Publication").clazz
-		
-		/*
-		 * currently this will work:
-		 *   publicationClass.recentPublications().list()
-		 * but this will not:
-		 *   publicationClass.recentPublications.list()
-		 *  
-		 * the static property isn't being added to the class until
-		 * the first dynamic method (recentPublications(), save(), list() etc...) is
-		 * invoked
-		 */
-		def publications = publicationClass.recentPublications.list()
-		assertEquals 0, publications.size()
-	}
-	
-	void testAdditionalCriteriaClosure() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
-		
-		def now = new Date()
-		6.times {
-			assert publicationClass.newInstance(title: "Some Book",
-			datePublished: now - 10).save()
-			assert publicationClass.newInstance(title: "Some Other Book",
-			datePublished: now - 10).save()
-			assert publicationClass.newInstance(title: "Some Book",
-			datePublished: now - 900).save()
-		}
-		session.clear()
-		
-		def publications = publicationClass.recentPublications {
-			eq 'title', 'Some Book'
-		}
-		assertEquals 6, publications?.size()
-		
-		publications = publicationClass.recentPublications {
-			like 'title', 'Some%'
-		}
-		assertEquals 12, publications?.size()
-				
-		publications = publicationClass.recentPublications(max: 3) {
-			like 'title', 'Some%'
-		}
-		assertEquals 3, publications?.size()
-		
-		def cnt = publicationClass.recentPublications.count {
-			eq 'title', 'Some Book'
-			
-		}
-		assertEquals 6, cnt
-	}
-	
-	void testDisjunction() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
+        results = publicationClass.recentPublicationsByTitle('Some Book').publishedAfter(lastWeek - 2).count()
+        assertEquals 5, results
+    }
 
-		def now = new Date()
-		def oldDate = now - 2000
+    void testReferencingNamedQueryBeforeAnyDynamicMethodsAreInvoked() {
+        // GRAILS-5809
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
-		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
-		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
-		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
-		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
-		session.clear()
+        /*
+         * currently this will work:
+         *   publicationClass.recentPublications().list()
+         * but this will not:
+         *   publicationClass.recentPublications.list()
+         *
+         * the static property isn't being added to the class until
+         * the first dynamic method (recentPublications(), save(), list() etc...) is
+         * invoked
+         */
+        def publications = publicationClass.recentPublications.list()
+        assertEquals 0, publications.size()
+    }
 
-		def publications = publicationClass.paperbackOrRecent.list()
-		assertEquals 3, publications?.size()
+    void testAdditionalCriteriaClosure() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
-		def titles = publications.title
-	}
+        def now = new Date()
+        6.times {
+            assert publicationClass.newInstance(title: "Some Book",
+            datePublished: now - 10).save()
+            assert publicationClass.newInstance(title: "Some Other Book",
+            datePublished: now - 10).save()
+            assert publicationClass.newInstance(title: "Some Book",
+            datePublished: now - 900).save()
+        }
+        session.clear()
 
-	void testConjunction() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
+        def publications = publicationClass.recentPublications {
+            eq 'title', 'Some Book'
+        }
+        assertEquals 6, publications?.size()
 
-		def now = new Date()
-		def oldDate = now - 2000
+        publications = publicationClass.recentPublications {
+            like 'title', 'Some%'
+        }
+        assertEquals 12, publications?.size()
 
-		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
-		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
-		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
-		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
-		session.clear()
+        publications = publicationClass.recentPublications(max: 3) {
+            like 'title', 'Some%'
+        }
+        assertEquals 3, publications?.size()
 
-		def publications = publicationClass.paperbackAndRecent.list()
-		assertEquals 1, publications?.size()
-	}
+        def cnt = publicationClass.recentPublications.count {
+            eq 'title', 'Some Book'
+        }
+        assertEquals 6, cnt
+    }
+
+    void testDisjunction() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        def oldDate = now - 2000
+
+        assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+        assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
+        assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
+        session.clear()
+
+        def publications = publicationClass.paperbackOrRecent.list()
+        assertEquals 3, publications?.size()
+
+        def titles = publications.title
+    }
+
+    void testConjunction() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        def oldDate = now - 2000
+
+        assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+        assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
+        assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
+        session.clear()
+
+        def publications = publicationClass.paperbackAndRecent.list()
+        assertEquals 1, publications?.size()
+    }
 
     void testList() {
         def publicationClass = ga.getDomainClass("Publication").clazz
@@ -592,21 +591,21 @@ class Publication {
 
     void testThatParameterToGetIsConverted() {
         def publicationClass = ga.getDomainClass("Publication").clazz
-    	
+
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book", datePublished: now - 10).save()
         assert newPublication
         def oldPublication = publicationClass.newInstance(title: "Some Old Book",
         datePublished: now - 900).save()
         assert oldPublication
-    					
+
         session.clear()
-    				
+
         def publication = publicationClass.recentPublications.get(newPublication.id.toString())
         assert publication
         assertEquals 'Some New Book', publication.title
     }
-    
+
     void testGetReturnsNull() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
@@ -691,7 +690,7 @@ class Publication {
         (6..15).each {num ->
             assert pubs.find { it.title == "Book Number ${num}" }
         }
-        
+
         pubs = publicationClass.recentPublications.list(max: '10', offset: '5')
         assertEquals 10, pubs?.size()
         (6..15).each {num ->
@@ -715,26 +714,26 @@ class Publication {
     }
 
     void testFindAllWhereWithNamedQueryAndDisjuction() {
-		def publicationClass = ga.getDomainClass("Publication").clazz
-		
-		def now = new Date()
-		def oldDate = now - 2000
+        def publicationClass = ga.getDomainClass("Publication").clazz
 
-		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
-		assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
-		assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
-		assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
-		assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
-		session.clear()
+        def now = new Date()
+        def oldDate = now - 2000
 
-		def publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'Old Paperback')
-		assertEquals 1, publications?.size()
+        assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+        assert publicationClass.newInstance(title: 'New Paperback', datePublished: now, paperback: true).save()
+        assert publicationClass.newInstance(title: 'Old Paperback', datePublished: oldDate, paperback: true).save()
+        assert publicationClass.newInstance(title: 'New Hardback', datePublished: now, paperback: false).save()
+        assert publicationClass.newInstance(title: 'Old Hardback', datePublished: oldDate, paperback: false).save()
+        session.clear()
+
+        def publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'Old Paperback')
+        assertEquals 1, publications?.size()
         publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'Old Hardback')
         assertEquals 0, publications?.size()
         publications = publicationClass.paperbackOrRecent.findAllWhere(title: 'New Paperback')
         assertEquals 2, publications?.size()
     }
-    
+
     void testGetWithParameterizedNamedQuery() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 

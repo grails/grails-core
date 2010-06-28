@@ -1,16 +1,14 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- *
- * Created: Nov 28, 2007
- */
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import org.springframework.validation.Errors
 
-class CommandObjectErrorsTests extends AbstractGrailsControllerTests{
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
+class CommandObjectErrorsTests extends AbstractGrailsControllerTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass '''
 class TestController {
 
@@ -32,7 +30,7 @@ class TestController {
     }
 
     def five = { Form form ->
-		[form: new Form()]
+        [form: new Form()]
     }
 
     def six = { Form form ->
@@ -56,28 +54,27 @@ class Form {
 }
 '''
     }
-	
-	
-	void testCommandObjectsDontShareErrors() {
-		def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
-		def model = controller.five()
+    void testCommandObjectsDontShareErrors() {
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
+
+        def model = controller.five()
 
         def error
-		def form = model.form
-		assertNotNull 'did not find expected form', form
-		assertFalse 'form should not have had errors', form.hasErrors()
-	}
+        def form = model.form
+        assertNotNull 'did not find expected form', form
+        assertFalse 'form should not have had errors', form.hasErrors()
+    }
 
-	void testValidatingNewlyCreatedCommandObject() {
-		def controller = ga.getControllerClass("TestController").clazz.newInstance()
-		def model = controller.six()
-		def errors = model.formErrors
-		assertNotNull 'did not find expected errors', errors
-		assertEquals 1, errors.allErrors.size()
-	}
-	
-	void testClearErrors() {
+    void testValidatingNewlyCreatedCommandObject() {
+        def controller = ga.getControllerClass("TestController").clazz.newInstance()
+        def model = controller.six()
+        def errors = model.formErrors
+        assertNotNull 'did not find expected errors', errors
+        assertEquals 1, errors.allErrors.size()
+    }
+
+    void testClearErrors() {
         def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         controller.params.url = "not_a_url"
@@ -96,14 +93,12 @@ class Form {
         def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         assertTrue controller.index()['formErrors']
-
     }
 
     void testValidate() {
         def controller = ga.getControllerClass("TestController").clazz.newInstance()
 
         assertFalse controller.validate()['formErrors']
-
     }
 
     void testHasBindingErrors() {
@@ -135,5 +130,4 @@ class Form {
         assert errors.hasErrors()
         assertEquals 1, errors.allErrors.size()
     }
-
 }

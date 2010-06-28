@@ -16,21 +16,13 @@
 package org.codehaus.groovy.grails.plugins.converters.codecs
 
 /**
- * A Grails codec capability of converting an object to JSON
-
+ * A Grails codec capable of converting an object to JSON.
+ *
  * @author Siegfried Puchbauer
  * @since 0.6
-  *
- * Created: Aug 3, 2007
- * Time: 5:54:23 PM
- *
  */
 import grails.converters.JSON
 
 class JSONCodec {
-
-	static encode = { target ->
-		return new JSON(target).toString()
-	}
-
+    static encode = { target -> new JSON(target).toString() }
 }

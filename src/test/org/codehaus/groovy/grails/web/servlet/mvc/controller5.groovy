@@ -1,8 +1,8 @@
-class NoViewController {
-    Closure list = {
-      request, response ->
+import grails.util.OpenRicoBuilder
 
-      new grails.util.OpenRicoBuilder(response).ajax { element(id:"test") { } };
-      return null;
-   }
+class NoViewController {
+    Closure list = { request, response ->
+        new OpenRicoBuilder(response).ajax { element(id:"test") { } }
+        null
+    }
 }

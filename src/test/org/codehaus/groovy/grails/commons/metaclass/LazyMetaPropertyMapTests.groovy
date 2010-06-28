@@ -1,4 +1,5 @@
 package org.codehaus.groovy.grails.commons.metaclass
+
 /**
  * @author Graeme Rocher
  */
@@ -11,9 +12,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
 
         assertFalse obj.properties.containsKey('properties')
         assertEquals 5, obj.properties.size()
-        obj.properties.each {
-            println "${it.key} : ${it.value}"
-        }
     }
 
     void testSelectSubMap() {
@@ -28,14 +26,12 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
 
     void testSize() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
-
         assertEquals 5, map.size()
     }
 
     void testIsEmpty() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
-
-        assertFalse map.isEmpty()        
+        assertFalse map.isEmpty()
     }
 
     void testContainsKey() {
@@ -44,7 +40,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertTrue map.containsKey("name")
         assertTrue map.containsKey("age")
         assertFalse map.containsKey("fo")
-
     }
 
     void testContainsValue() {
@@ -53,7 +48,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertTrue map.containsValue("Homer")
         assertTrue map.containsValue(45)
         assertFalse map.containsValue("fo")
-
     }
 
     void testGet() {
@@ -70,7 +64,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertNull map.foo
         assertNull map['foo']
         assertNull map.get('foo')
-
     }
 
     void testPut() {
@@ -86,7 +79,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertEquals "Homer", old
 
         assertEquals "lisa", map.name
-
     }
 
     void testKeySet() {
@@ -99,7 +91,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertTrue keys.contains("class")
     }
 
-
     void testValues() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Bart", age:11))
 
@@ -109,9 +100,8 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertTrue values.contains(11)
         assertTrue values.contains(PropertyMapTest)
     }
-
-
 }
+
 class PropertyMapTest {
     String name
     Integer age

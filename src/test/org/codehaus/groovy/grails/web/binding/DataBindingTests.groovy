@@ -1,21 +1,18 @@
-/**
- * Tests Grails data binding capabilities
-
- * @author Graeme Rocher
- * @since 1.0
-  *
- * Created: Sep 12, 2007
- * Time: 11:50:39 AM
- *
- */
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import java.text.SimpleDateFormat
 
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+
+/**
+ * Tests Grails data binding capabilities.
+ *
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class DataBindingTests extends AbstractGrailsControllerTests {
 
-    void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass('''
 import grails.persistence.*
 
@@ -28,8 +25,6 @@ class Book {
     String title
     Author author
     URL site
-
-
 }
 
 @Entity
@@ -100,8 +95,8 @@ class City {
         assertEquals "The Stand",b.title
         assertEquals "Maine", b.author.placeOfBirth.name
         assertEquals "Stephen King", b.author.name
-
     }
+
     void testBindBlankToNullWhenNullable() {
         def c = ga.getControllerClass("TestController").newInstance()
         def a = ga.getDomainClass("Author").newInstance()
@@ -114,7 +109,6 @@ class City {
 
         assertNull a.name
         assertEquals '', a.hairColour
-
     }
 
     void testTypeConversionErrorsWithNestedAssociations() {
@@ -122,7 +116,6 @@ class City {
 
         request.addParameter("author.name", "Stephen King")
         request.addParameter("author.hairColour", "Black")
-
 
         def params = c.params
 
@@ -133,15 +126,13 @@ class City {
         def a = b.author
 
         assert !a.hasErrors()
-        println b.errors
         assert !b.hasErrors()
-
     }
+
     void testTypeConversionErrors() {
         def c = ga.getControllerClass("TestController").newInstance()
 
         request.addParameter("site", "not_a_valid_URL")
-
 
         def params = c.params
 
@@ -149,12 +140,9 @@ class City {
 
         b.properties = params
 
-        println b.errors
         assert b.hasErrors()
 
         def error = b.errors.getFieldError('site')
-
-
     }
 
     void testValidationAfterBindingFails() {
@@ -168,7 +156,6 @@ class City {
 
         // binding should fail for this one...
         request.addParameter("thirdIntProperty", "bar")
-
 
         def params = c.params
 
@@ -233,7 +220,6 @@ class City {
 
         b.properties = params
 
-
         assertEquals "Wrong 'title' property", "The Stand", b.title
         assertNotNull "Association 'author' should be binded", b.author
         assertEquals 5, b.author.id
@@ -251,17 +237,13 @@ class City {
         def a = ga.getDomainClass("Author").newInstance()
 
         assertEquals "Stephen King",params['author'].name
-        println params['author']
         a.properties = params['author']
         assertEquals "Stephen King", a.name
         assertEquals "Black", a.hairColour
-
 
         def b = ga.getDomainClass("Book").newInstance()
         b.properties = params
         assertEquals "The Stand", b.title
         assertEquals "Stephen King", b.author?.name
-
     }
-
 }

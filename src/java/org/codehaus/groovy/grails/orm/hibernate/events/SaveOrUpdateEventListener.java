@@ -17,16 +17,12 @@ package org.codehaus.groovy.grails.orm.hibernate.events;
 import org.hibernate.event.def.DefaultSaveOrUpdateEventListener;
 
 /**
- *
- * Intermediary class, because def in package name is blocking IntelliJ from compiling. Seems to be an intellij bug not a Groovy one
+ * Intermediary class, because def in package name is blocking IntelliJ from compiling.
+ * Seems to be an intellij bug not a Groovy one
  *
  * @author Graeme Rocher
  * @since 1.1
- *
- *        <p/>
- *        Created: Oct 13, 2008
  */
-public class SaveOrUpdateEventListener extends DefaultSaveOrUpdateEventListener{
-
-	private static final long serialVersionUID = 5329080291582964284L;
+public class SaveOrUpdateEventListener extends DefaultSaveOrUpdateEventListener {
+    private static final long serialVersionUID = 5329080291582964284L;
 }

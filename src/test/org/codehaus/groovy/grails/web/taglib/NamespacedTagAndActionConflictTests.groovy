@@ -1,13 +1,12 @@
 package org.codehaus.groovy.grails.web.taglib
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Mar 14, 2008
  */
 class NamespacedTagAndActionConflictTests extends AbstractGrailsTagTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass '''
 class FeedsTagLib {
     static namespace = "feed"
@@ -28,7 +27,6 @@ class TestController  {
 '''
     }
 
-
     void testTagLibNamespaceAndActionConflict() {
         def controllerClass = ga.getControllerClass("TestController").clazz
 
@@ -37,8 +35,5 @@ class TestController  {
         controller.test()
 
         assertEquals "foo", response.contentAsString
-        
     }
-
-
 }

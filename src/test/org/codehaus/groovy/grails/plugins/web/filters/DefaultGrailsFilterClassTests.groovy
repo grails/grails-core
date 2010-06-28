@@ -1,13 +1,12 @@
+package org.codehaus.groovy.grails.plugins.web.filters
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Oct 11, 2007
  */
-package org.codehaus.groovy.grails.plugins.web.filters
-
 class DefaultGrailsFilterClassTests extends GroovyTestCase {
-	GroovyClassLoader gcl = new GroovyClassLoader()
+
+    GroovyClassLoader gcl = new GroovyClassLoader()
 
     /**
      * Tests that a filter definition with a controller and action
@@ -22,16 +21,13 @@ class FirstFilters {
             before = {
                 log.info "Request received with parameters ${params.dump()}"
             }
-            after = {
-
-            }
-            afterView = {
-                
-            }
+            after = {}
+            afterView = {}
         }
     }
 }
 ''')
+
         def filterClass = new DefaultGrailsFiltersClass(testClass)
 
         def configs = filterClass.getConfigs(filterClass.newInstance())
@@ -57,21 +53,15 @@ class FirstFilters {
 class FirstFilters {
     def filters = {
         listActions(uri: '/*/list') {
-            before = {
-
-            }
-            after = {
-
-            }
-            afterView = {
-
-            }
+            before = {}
+            after = {}
+            afterView = {}
         }
     }
 }
 ''')
-        def filterClass = new DefaultGrailsFiltersClass(testClass)
 
+        def filterClass = new DefaultGrailsFiltersClass(testClass)
         def configs = filterClass.getConfigs(filterClass.newInstance())
         def first = configs[0]
 
@@ -97,21 +87,15 @@ class FirstFilters {
 
     def filters = {
         all {
-            before = {
-
-            }
-            after = {
-
-            }
-            afterView = {
-
-            }
+            before = {}
+            after = {}
+            afterView = {}
         }
     }
 }
 ''')
-        def filterClass = new DefaultGrailsFiltersClass(testClass)
 
+        def filterClass = new DefaultGrailsFiltersClass(testClass)
         def configs = filterClass.getConfigs(filterClass.newInstance())
         def first = configs[0]
 
@@ -136,45 +120,27 @@ class FirstFilters {
 
     def filters = {
         all(uri: '/**') {
-            before = {
-
-            }
-            after = {
-
-            }
-            afterView = {
-
-            }
+            before = {}
+            after = {}
+            afterView = {}
         }
 
         allShow(controller: '*', action: 'show') {
-            before = {
-
-            }
-            after = {
-
-            }
-            afterView = {
-
-            }
+            before = {}
+            after = {}
+            afterView = {}
         }
 
         book(controller: 'book', action: '*') {
-            before = {
-
-            }
-            after = {
-
-            }
-            afterView = {
-
-            }
+            before = {}
+            after = {}
+            afterView = {}
         }
     }
 }
 ''')
-        def filterClass = new DefaultGrailsFiltersClass(testClass)
 
+        def filterClass = new DefaultGrailsFiltersClass(testClass)
         def configs = filterClass.getConfigs(filterClass.newInstance())
         def first = configs[0]
 
@@ -238,8 +204,8 @@ class FirstFilters {
     }
 }
 ''')
-        def filterClass = new DefaultGrailsFiltersClass(testClass)
 
+        def filterClass = new DefaultGrailsFiltersClass(testClass)
         def configs = filterClass.getConfigs(filterClass.newInstance())
         def first = configs[0]
 
@@ -276,6 +242,7 @@ class FirstFilters {
     }
 }
 ''')
+
         def filterClass = new DefaultGrailsFiltersClass(testClass)
 
         shouldFail(MissingPropertyException) {
@@ -292,6 +259,7 @@ class SecondFilters {
     }
 }
 ''')
+
         filterClass = new DefaultGrailsFiltersClass(testClass)
 
         shouldFail(MissingPropertyException) {
@@ -308,6 +276,7 @@ class SecondFilters {
     }
 }
 ''')
+
         filterClass = new DefaultGrailsFiltersClass(testClass)
 
         shouldFail(IllegalStateException) {

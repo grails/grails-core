@@ -1,47 +1,41 @@
-/**
- * Tests some of the core tags when rendering inside GSP
- 
- * @author Graeme Rocher
- * @since 0.6
-  *
- * Created: Jul 30, 2007
- * Time: 2:35:30 PM
- * 
- */
-
 package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
+/**
+ * Tests some of the core tags when rendering inside GSP.
+ *
+ * @author Graeme Rocher
+ * @since 0.6
+ */
 class CoreTagsTests extends AbstractGrailsTagTests {
 
-	void testUnlessWithTestCondition() {
-		def template = '<g:unless test="${cond}">body text</g:unless>'
-		assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}	
-		assertOutputEquals '', template, [cond: true], {it.toString().trim()}	
-	}
-	
-	void testUnlessWithEnvCondition() {
-		def template = '<g:unless env="production">body text</g:unless>'
-		assertOutputEquals 'body text', template, [:], {it.toString().trim()}	
-		template = '<g:unless env="development">body text</g:unless>'
-		assertOutputEquals '', template, [:], {it.toString().trim()}	
-	}
-	
-	void testUnlessWithEnvAndTestConditions() {
-		def template = '<g:unless env="production" test="${cond}">body text</g:unless>'
-		assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
-		assertOutputEquals 'body text', template, [cond: true], {it.toString().trim()}
-		
-		template = '<g:unless env="development" test="${cond}">body text</g:unless>'
-		assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
-		assertOutputEquals '', template, [cond: true], {it.toString().trim()}
-	}
-	
-    void testIfElse() {
+    void testUnlessWithTestCondition() {
+        def template = '<g:unless test="${cond}">body text</g:unless>'
+        assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
+        assertOutputEquals '', template, [cond: true], {it.toString().trim()}
+    }
 
+    void testUnlessWithEnvCondition() {
+        def template = '<g:unless env="production">body text</g:unless>'
+        assertOutputEquals 'body text', template, [:], {it.toString().trim()}
+        template = '<g:unless env="development">body text</g:unless>'
+        assertOutputEquals '', template, [:], {it.toString().trim()}
+    }
+
+    void testUnlessWithEnvAndTestConditions() {
+        def template = '<g:unless env="production" test="${cond}">body text</g:unless>'
+        assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
+        assertOutputEquals 'body text', template, [cond: true], {it.toString().trim()}
+
+        template = '<g:unless env="development" test="${cond}">body text</g:unless>'
+        assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
+        assertOutputEquals '', template, [cond: true], {it.toString().trim()}
+    }
+
+    void testIfElse() {
 
         def template = '''
 <g:if test="${foo}">foo</g:if>
@@ -51,7 +45,7 @@ class CoreTagsTests extends AbstractGrailsTagTests {
         assertOutputEquals("foo", template, [foo:true], { it.toString().trim() })
         assertOutputEquals("bar", template, [foo:false], { it.toString().trim() })
     }
-    
+
    void testIfElseWithSpace() {
        def template = '''
 <g:if test="${foo}">
@@ -65,7 +59,6 @@ bar
 
        assertOutputEquals("foo", template, [foo:true]) { it.toString().trim() }
        assertOutputEquals("bar", template, [foo:false]) { it.toString().trim() }
-
    }
 
     void testIfWithEnv() {
@@ -87,7 +80,7 @@ bar
         assertOutputEquals("foo", template)
     }
 
-    void testIfWithoutEnvAndTestAttributes() {  
+    void testIfWithoutEnvAndTestAttributes() {
         shouldFail(GrailsTagException) {
             applyTemplate("<g:if>foo</g:if>")
         }
@@ -119,6 +112,5 @@ bar
 <g:elseif test="${!foo}" env="development">bar</g:elseif>
 '''
         assertOutputEquals("bar", template, [foo:false], { it.toString().trim() })
-
     }
 }

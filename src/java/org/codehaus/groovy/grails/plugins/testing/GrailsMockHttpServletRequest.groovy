@@ -22,8 +22,8 @@ import org.springframework.mock.web.MockHttpServletRequest
  * and methods normally injected by the "servlets" plugin.
  */
 class GrailsMockHttpServletRequest extends MockHttpServletRequest {
-    boolean invalidToken
 
+    boolean invalidToken
     private cachedJson
     private cachedXml
 
@@ -80,12 +80,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
      */
     def getProperty(String name) {
         def mp = getClass().metaClass.getMetaProperty(name)
-        if (mp) {
-            return mp.getProperty(this)
-        }
-        else {
-            return getAttribute(name)
-        }
+        return mp ? mp.getProperty(this) : getAttribute(name)
     }
 
     /**
@@ -101,19 +96,14 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
         }
     }
 
-    boolean isGet() {
-        method == "GET"
-    }
-
-    boolean isPost() {
-        method == "POST"
-    }
+    boolean isGet() { method == "GET" }
+    boolean isPost() { method == "POST" }
 
     /**
-     * Parses the request content as XML using XmlSlurper and returns
-     * the GPath result object. Throws an exception if there is no
-     * content or the content is not valid XML.
-     */
+    * Parses the request content as XML using XmlSlurper and returns
+    * the GPath result object. Throws an exception if there is no
+    * content or the content is not valid XML.
+    */
     def getXML() {
         if (!cachedXml) {
             cachedXml = grails.converters.XML.parse(this)
@@ -136,24 +126,23 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
     /**
      * Adds a "find()" method to the request that searches the request's
      * attributes. Returns the first attribute for which the closure
-     * returns <code>true</code>, just like the normal Groovy find()
-     * method.
+     * returns <code>true</code>, just like the normal Groovy find() method.
      */
     def find(Closure c) {
         def result = [:]
         for (String name in attributeNames) {
             def match = false
             switch (c.parameterTypes.length) {
-            case 0:
-                match = c.call()
-                break
+                case 0:
+                    match = c.call()
+                    break
 
-            case 1:
-                match = c.call(key:name, value:getAttribute(name))
-                break
+                case 1:
+                    match = c.call(key:name, value:getAttribute(name))
+                    break
 
-            default:
-                match =  c.call(name, getAttribute(name))
+                default:
+                    match =  c.call(name, getAttribute(name))
             }
             if (match) {
                 result[name] = getAttribute(name)
@@ -170,24 +159,24 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
      * conditions.
      */
     def findAll(Closure c) {
-       def results = [:]
-       for (String name in attributeNames) {
+        def results = [:]
+        for (String name in attributeNames) {
             def match = false
             switch (c.parameterTypes.length) {
-            case 0:
-                match = c.call()
-                break
+                case 0:
+                    match = c.call()
+                    break
 
-            case 1:
-                match = c.call(key:name, value:getAttribute(name))
-                break
+                case 1:
+                    match = c.call(key:name, value:getAttribute(name))
+                    break
 
-            default:
-               match =  c.call(name, getAttribute(name))
+                default:
+                    match =  c.call(name, getAttribute(name))
             }
             if (match) { results[name] = getAttribute(name) }
-       }
-       results
+        }
+        results
     }
 
     /**
@@ -196,16 +185,16 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
     def each(Closure c) {
         for (String name in attributeNames) {
             switch (c.parameterTypes.length) {
-            case 0:
-                c.call()
-                break
+                case 0:
+                    c.call()
+                    break
 
-            case 1:
-                c.call(key:name, value:getAttribute(name))
-                break
+                case 1:
+                    c.call(key:name, value:getAttribute(name))
+                    break
 
-            default:
-                c.call(name, getAttribute(name))
+                default:
+                    c.call(name, getAttribute(name))
             }
         }
     }

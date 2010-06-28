@@ -1,17 +1,15 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Dec 6, 2007
- */
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class NamespacedTagLibRenderMethodTests extends AbstractGrailsTagTests {
 
-    void onInit() {
+    protected void onInit() {
         def tagClass = gcl.parseClass( '''
 class WithNamespaceTagLib {
 
@@ -42,7 +40,6 @@ class NormalTagLib {
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass)
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass2)
     }
-
 
     void testInvokeNamespacedTagLib() {
 

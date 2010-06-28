@@ -5,12 +5,11 @@ import org.springframework.webflow.test.execution.*
 import org.springframework.webflow.definition.*
 import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExecutionTests
 
-
 class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests{
 
     def searchMoreAction = { [moreResults:["one", "two", "three"]] }
-    
-    public Closure getFlowClosure() {
+
+    Closure getFlowClosure() {
         def searchService = [executeSearch:{["foo", "bar"]}]
         def params = [q:"foo"]
 
@@ -30,8 +29,8 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
             }
             moreResults()
             noResults()
-
         }
+
         return {
             displaySearchForm {
                 on("submit").to "executeSearch"
@@ -58,18 +57,15 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
         }
     }
 
-
-    def foo() {
-        "bar"
-    }
+    def foo() { "bar" }
 
     void testClosureMetaClassModifications() {
-     def callable = {
+        def callable = {
             foo()
-         }
-         def metaClass = GroovySystem.metaClassRegistry.getMetaClass(callable.class)
-         metaClass.invokeMethod = {String name, args-> "foo" }
-         assertEquals "foo", callable()
+        }
+        def metaClass = GroovySystem.metaClassRegistry.getMetaClass(callable.class)
+        metaClass.invokeMethod = {String name, args-> "foo" }
+        assertEquals "foo", callable()
     }
 
     void testSubFlowDefinition() {
@@ -89,26 +85,18 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
         assert subflow.getState('noResults') instanceof EndState
     }
 
-
     void testSubFlowExecution() {
         grails.util.GrailsWebUtil.bindMockWebRequest()
-
         startFlow()
-
         assertCurrentStateEquals "displaySearchForm"
 
         signalEvent( "submit" )
-
         assertCurrentStateEquals "displayResults"
 
-
         signalEvent("searchDeeper")
-
-
         assertCurrentStateEquals "startExtendedSearch"
 
         signalEvent("findMore")
-
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "displayMoreResults"
     }
@@ -117,23 +105,16 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
     void testSubFlowExecution2() {
         searchMoreAction = { error() }
         startFlow()
-
         assertCurrentStateEquals "displaySearchForm"
 
         signalEvent( "submit" )
-
         assertCurrentStateEquals "displayResults"
 
         signalEvent("searchDeeper")
-
         assertCurrentStateEquals "startExtendedSearch"
-                      
 
         signalEvent("findMore")
-
         assertFlowExecutionEnded()
-        assertFlowExecutionOutcomeEquals "displayNoMoreResults"        
+        assertFlowExecutionOutcomeEquals "displayNoMoreResults"
     }
-
-
 }

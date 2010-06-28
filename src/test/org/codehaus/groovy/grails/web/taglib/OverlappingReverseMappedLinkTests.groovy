@@ -1,21 +1,16 @@
-/**
- * Some more tests for the behaviour of reverse linking from mappings
- 
- * @author Graeme Rocher
- * @since 0.6
-  *
- * Created: Aug 29, 2007
- * Time: 8:44:26 AM
- * 
- */
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.*
 
+/**
+ * Some more tests for the behaviour of reverse linking from mappings.
+ *
+ * @author Graeme Rocher
+ * @since 0.6
+ */
 class OverlappingReverseMappedLinkTests extends AbstractGrailsTagTests {
 
-
-    void onInit() {
+    protected void onInit() {
         def mappingClass = gcl.parseClass('''
 class UrlMappings {
     static mappings = {
@@ -34,9 +29,7 @@ class UrlMappings {
         ''')
 
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, mappingClass)
-
     }
-
 
     void testSimpleLink() {
         def expected = '<a href="/authors">link1</a>'

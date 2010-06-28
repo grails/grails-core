@@ -13,53 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.logging
 
-import org.apache.log4j.Logger
-import org.apache.log4j.ConsoleAppender
-import org.apache.log4j.PatternLayout
-import org.apache.log4j.Level
-import org.apache.log4j.FileAppender
-import org.apache.log4j.xml.XMLLayout
-import org.apache.log4j.HTMLLayout
-import org.apache.log4j.SimpleLayout
-import org.apache.log4j.jdbc.JDBCAppender
-import org.apache.log4j.varia.NullAppender
-import org.apache.log4j.net.SMTPAppender
-import grails.util.GrailsUtil
-import org.apache.log4j.helpers.LogLog
-import org.apache.log4j.Appender
-import org.apache.log4j.RollingFileAppender
-import org.apache.commons.beanutils.BeanUtils
-import grails.util.Environment
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
+import grails.util.Environment
+import grails.util.GrailsUtil
+
+import org.apache.commons.beanutils.BeanUtils
+import org.apache.log4j.Appender
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.FileAppender
+import org.apache.log4j.HTMLLayout
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import org.apache.log4j.PatternLayout
+import org.apache.log4j.RollingFileAppender
+import org.apache.log4j.SimpleLayout
+import org.apache.log4j.helpers.LogLog
+import org.apache.log4j.jdbc.JDBCAppender
+import org.apache.log4j.net.SMTPAppender
+import org.apache.log4j.varia.NullAppender
+import org.apache.log4j.xml.XMLLayout
 
 /**
- * Encapsulates the configuration of Log4j
+ * Encapsulates the configuration of Log4j.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
 class Log4jConfig {
 
-    static final DEFAULT_PATTERN_LAYOUT = new PatternLayout(conversionPattern:'%d [%t] %-5p %c{2} %x - %m%n')
+    static final DEFAULT_PATTERN_LAYOUT = new PatternLayout(
+        conversionPattern: '%d [%t] %-5p %c{2} %x - %m%n')
 
-    static final LAYOUTS = [xml: XMLLayout, html:HTMLLayout, simple:SimpleLayout, pattern:PatternLayout]
-    static final APPENDERS = [jdbc:JDBCAppender, "null":NullAppender, console:ConsoleAppender, file:FileAppender, rollingFile:RollingFileAppender]
+    static final LAYOUTS = [xml: XMLLayout, html: HTMLLayout, simple: SimpleLayout, pattern: PatternLayout]
+    static final APPENDERS = [jdbc: JDBCAppender, "null": NullAppender, console: ConsoleAppender,
+                              file: FileAppender, rollingFile: RollingFileAppender]
 
     private appenders = [:]
 
     def methodMissing(String name, args) {
-        if(APPENDERS.containsKey(name) && args) {
+        if (APPENDERS.containsKey(name) && args) {
             def constructorArgs = args[0] instanceof Map ? args[0] : [:]
-            if(!constructorArgs.layout) {
-                constructorArgs.layout = DEFAULT_PATTERN_LAYOUT                
+            if (!constructorArgs.layout) {
+                constructorArgs.layout = DEFAULT_PATTERN_LAYOUT
             }
             def appender = APPENDERS[name].newInstance()
-            BeanUtils.populate appender, constructorArgs 
-            if(!appender.name) {
+            BeanUtils.populate appender, constructorArgs
+            if (!appender.name) {
                 LogLog.error "Appender of type $name doesn't define a name attribute, and hence is ignored."
             }
             else {
@@ -68,18 +70,22 @@ class Log4jConfig {
             appender.activateOptions()
             return appenders[name]
         }
-        else if(LAYOUTS.containsKey(name) && args) {
+
+        if (LAYOUTS.containsKey(name) && args) {
             return LAYOUTS[name].newInstance(args[0])
         }
-        else if(isCustomEnvironmentMethod(name, args)) {
-            invokeCallable args[0]        
+
+        if (isCustomEnvironmentMethod(name, args)) {
+            return invokeCallable(args[0])
         }
 
         LogLog.error "Method missing when configuring log4j: $name"
     }
 
     private boolean isCustomEnvironmentMethod(String name, args) {
-        return (Environment.current == Environment.CUSTOM) && (Environment.current.name == name) && (args && (args[0] instanceof Closure))
+        Environment.current == Environment.CUSTOM &&
+            Environment.current.name == name &&
+            args && (args[0] instanceof Closure)
     }
 
     def configure() {
@@ -90,25 +96,29 @@ class Log4jConfig {
         invokeCallable(callable)
     }
 
-    private def invokeCallable(Closure callable) {
+    private invokeCallable(Closure callable) {
         callable.delegate = this
         callable.resolveStrategy = Closure.DELEGATE_FIRST
         callable.call()
     }
 
     def development(Closure callable) {
-        if(Environment.current == Environment.DEVELOPMENT)
+        if (Environment.current == Environment.DEVELOPMENT) {
             invokeCallable(callable)
-    }
-    def production(Closure callable) {
-        if(Environment.current == Environment.PRODUCTION)
-            invokeCallable(callable)
-    }
-    def test(Closure callable) {
-        if(Environment.current == Environment.TEST)
-            invokeCallable(callable)
+        }
     }
 
+    def production(Closure callable) {
+        if (Environment.current == Environment.PRODUCTION) {
+            invokeCallable(callable)
+        }
+    }
+
+    def test(Closure callable) {
+        if (Environment.current == Environment.TEST) {
+            invokeCallable(callable)
+        }
+    }
 
     def configure(Closure callable) {
 
@@ -117,10 +127,9 @@ class Log4jConfig {
         def consoleAppender = createConsoleAppender()
         root.setLevel Level.ERROR
         appenders['stdout'] = consoleAppender
-        
+
         error 'org.springframework',
               'org.hibernate'
-
 
         callable.delegate = this
         callable.resolveStrategy = Closure.DELEGATE_FIRST
@@ -128,20 +137,19 @@ class Log4jConfig {
         try {
             callable.call(root)
 
-            if(!root.allAppenders.hasMoreElements()) {                
+            if (!root.allAppenders.hasMoreElements()) {
                 root.addAppender appenders['stdout']
             }
             Logger logger = Logger.getLogger("StackTrace")
             logger.additivity = false
             def fileAppender = createFullstackTraceAppender()
-            if(!logger.allAppenders.hasMoreElements()) {
+            if (!logger.allAppenders.hasMoreElements()) {
                 logger.addAppender fileAppender
             }
-
-        } catch (Exception e) {
-            org.apache.log4j.helpers.LogLog.error "WARNING: Exception occured configuring log4j logging: $e.message"
         }
-
+        catch (Exception e) {
+            LogLog.error "WARNING: Exception occured configuring log4j logging: $e.message"
+        }
     }
 
     private createConsoleAppender() {
@@ -152,30 +160,29 @@ class Log4jConfig {
     }
 
     private createFullstackTraceAppender() {
-        if(appenders.stacktrace) {
+        if (appenders.stacktrace) {
             return appenders.stacktrace
         }
-        else {
-            def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
-            if(Environment.current == Environment.DEVELOPMENT) {
-                BuildSettings settings = BuildSettingsHolder.getSettings()
-                def targetDir = settings?.getProjectTargetDir()
-				if(targetDir) targetDir.mkdirs()
-                fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
-            }
-            else {
-                fileAppender.file = "stacktrace.log"
-            }
-            fileAppender.activateOptions()
-            appenders.stacktrace = fileAppender
-            return fileAppender
+
+        def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
+        if (Environment.current == Environment.DEVELOPMENT) {
+            BuildSettings settings = BuildSettingsHolder.getSettings()
+            def targetDir = settings?.getProjectTargetDir()
+            if (targetDir) targetDir.mkdirs()
+            fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
         }
+        else {
+            fileAppender.file = "stacktrace.log"
+        }
+        fileAppender.activateOptions()
+        appenders.stacktrace = fileAppender
+        return fileAppender
     }
 
     Logger root(Closure c) {
         def root = Logger.getRootLogger()
 
-        if(c) {
+        if (c) {
             c.delegate = new RootLog4jConfig(root, this)
             c.resolveStrategy = Closure.DELEGATE_FIRST
             c.call()
@@ -190,9 +197,8 @@ class Log4jConfig {
         callable.call()
     }
 
-
     def appender(Map name, Appender instance) {
-        if(name && instance) {
+        if (name && instance) {
             String appenderName = name.values().iterator().next()
             instance.name = appenderName
             appenders[appenderName] = instance
@@ -201,9 +207,9 @@ class Log4jConfig {
     }
 
     def appender(Appender instance) {
-        if(instance && instance.name) {
-           appenders[instance.name] = instance  
-           instance.activateOptions()
+        if (instance && instance.name) {
+            appenders[instance.name] = instance
+            instance.activateOptions()
         }
         else {
             LogLog.error "Appender [$instance] is null or does not define a name."
@@ -237,7 +243,7 @@ class Log4jConfig {
     def trace(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.TRACE)
     }
-    
+
     def all(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ALL)
     }
@@ -249,7 +255,7 @@ class Log4jConfig {
         appenderAndPackages?.each { appender, packages ->
             eachLogger(packages) { Logger logger ->
                 logger.level = level
-                if(appenders[appender]) {
+                if (appenders[appender]) {
                     logger.addAppender appenders[appender]
                     logger.additivity = additivity
                 }
@@ -258,75 +264,55 @@ class Log4jConfig {
                 }
             }
         }
-
     }
 
     def eachLogger(packages, Closure callable) {
-        if(packages instanceof String || packages instanceof GString) {
+        if (packages instanceof String || packages instanceof GString) {
             Logger logger = Logger.getLogger(packages)
             callable(logger)
         }
         else {
-
-            for(p in packages) {
+            for (p in packages) {
                 p = p?.toString()
-                if(p) {
+                if (p) {
                     Logger logger = Logger.getLogger(p)
                     callable(logger)
                 }
             }
         }
-
     }
 
     def off(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.OFF
-        }
+        eachLogger(packages) { logger -> logger.level = Level.OFF }
     }
 
     def fatal(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.FATAL
-        }
+        eachLogger(packages) { logger -> logger.level = Level.FATAL }
     }
 
     def error(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.ERROR
-        }
+        eachLogger(packages) { logger -> logger.level = Level.ERROR }
     }
 
     def warn(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.WARN
-        }
+        eachLogger(packages) { logger -> logger.level = Level.WARN }
     }
 
     def info(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.INFO
-        }
+        eachLogger(packages) { logger -> logger.level = Level.INFO }
     }
 
     def debug(Object[] packages) {
-        eachLogger(packages) { Logger logger ->
-            logger.level = Level.DEBUG
-        }
+        eachLogger(packages) { Logger logger -> logger.level = Level.DEBUG }
     }
 
     def trace(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.TRACE
-        }
+        eachLogger(packages) { logger -> logger.level = Level.TRACE }
     }
 
     def all(Object[] packages) {
-        eachLogger(packages) { logger ->
-            logger.level = Level.ALL
-        }
+        eachLogger(packages) { logger -> logger.level = Level.ALL }
     }
-
 
     def removeAppender(String name) {
         Logger.getRootLogger().removeAppender name
@@ -338,20 +324,19 @@ class RootLog4jConfig {
     Log4jConfig config
 
     def RootLog4jConfig(root, config) {
-        this.root = root;
-        this.config = config;
+        this.root = root
+        this.config = config
     }
 
-
-    def debug(Object[] appenders=null) {
-       setLevelAndAppender(Level.DEBUG,appenders)
+    def debug(Object[] appenders = null) {
+        setLevelAndAppender(Level.DEBUG,appenders)
     }
 
-    private def setLevelAndAppender(Level level,Object[] appenders) {
+    private setLevelAndAppender(Level level,Object[] appenders) {
         root.level = level
-        for(appName in appenders){
+        for (appName in appenders) {
             Appender app
-            if(appName instanceof Appender) {
+            if (appName instanceof Appender) {
                 app = appName
             }
             else {
@@ -359,34 +344,39 @@ class RootLog4jConfig {
             }
             if (app) {
                 root.addAppender app
-            }            
+            }
         }
     }
 
-    def info(Object[] appenders=null) {
-       setLevelAndAppender(Level.INFO,appenders)
-    }
-    def warn(Object[] appenders=null) {
-       setLevelAndAppender(Level.WARN,appenders)
+    def info(Object[] appenders = null) {
+        setLevelAndAppender(Level.INFO,appenders)
     }
 
-    def trace(Object[] appenders=null) {
-       setLevelAndAppender(Level.TRACE,appenders)
+    def warn(Object[] appenders = null) {
+        setLevelAndAppender(Level.WARN,appenders)
     }
-    def all(Object[] appenders=null) {
-       setLevelAndAppender(Level.ALL,appenders)
+
+    def trace(Object[] appenders = null) {
+        setLevelAndAppender(Level.TRACE,appenders)
     }
-    def error(Object[] appenders=null) {
+
+    def all(Object[] appenders = null) {
+        setLevelAndAppender(Level.ALL,appenders)
+    }
+
+    def error(Object[] appenders = null) {
         setLevelAndAppender(Level.ERROR,appenders)
     }
-    def fatal(Object[] appenders=null) {
+
+    def fatal(Object[] appenders = null) {
         setLevelAndAppender(Level.FATAL,appenders)
     }
-    def off(Object[] appenders=null) {
+
+    def off(Object[] appenders = null) {
         setLevelAndAppender(Level.OFF,appenders)
     }
 
-    public void setProperty(String s, Object o) {
+    void setProperty(String s, Object o) {
         root."$s" = o
     }
 }

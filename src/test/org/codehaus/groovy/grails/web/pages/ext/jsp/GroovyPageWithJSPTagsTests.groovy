@@ -11,10 +11,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 9, 2008
  */
-class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
+class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests {
 
     protected void onInit() {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver()
@@ -26,7 +24,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
             rootLoader.addURL res.getURL()
             resolver.getResources("file:lib/org.springframework.web*.jar").each {
                 rootLoader.addURL it.getURL()
-            }            
+            }
             return rootLoader
         }
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
@@ -36,8 +34,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
         GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolver
     }
 
-
-    // test for GRAILS-4573 
+    // test for GRAILS-4573
     void testIterativeTags() {
 
         def template = '''
@@ -49,21 +46,20 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
 </html>
 '''
 
-        printCompiledSource(template) 
+        printCompiledSource(template)
         assertOutputContains("1 . 1<br/>2 . 2<br/>3 . 3<br/>",template)
-    } 
+    }
 
     void testGRAILS3797() {
-        println request.locale
-		
-		File tempdir=new File(System.getProperty("java.io.tmpdir"),"gspgen")
+
+        File tempdir = new File(System.getProperty("java.io.tmpdir"),"gspgen")
         tempdir.mkdir()
-		
+
         withConfig("grails.views.gsp.keepgenerateddir='${tempdir.absolutePath}'") {
 
-        messageSource.addMessage("A_ICON",request.locale, "test")
-        
-          def template = '''
+            messageSource.addMessage("A_ICON",request.locale, "test")
+
+            def template = '''
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <html>
   <body>
@@ -75,10 +71,8 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests{
   </body>
 </html>
 '''
-         assertOutputContains '<img src="test"/>', template
+            assertOutputContains '<img src="test"/>', template
         }
-        println "gsp source generated to ${tempdir}"
-
     }
 
     // test for GRAILS-3845
@@ -106,8 +100,7 @@ goodbye
         assertOutputNotContains "goodbye", template
     }
     void testGSPCantOverrideDefaultNamespaceWithJSP() {
-       def template = '<%@ taglib prefix="g" uri="http://java.sun.com/jsp/jstl/fmt" %><g:formatNumber number="10" format=".00"/>'
-
+        def template = '<%@ taglib prefix="g" uri="http://java.sun.com/jsp/jstl/fmt" %><g:formatNumber number="10" format=".00"/>'
         assertOutputEquals '10.00', template
     }
 
@@ -123,27 +116,21 @@ goodbye
 
     void testSimpleTagWithValue() {
         def template = '<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %><fmt:formatNumber value="${10}" pattern=".00"/>'
-
         assertOutputEquals '10.00', template
     }
 
     void testInvokeJspTagAsMethod() {
         def template = '<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>${fmt.formatNumber(value:10, pattern:".00")}'
-
         assertOutputEquals '10.00', template
-
     }
 
     void testInvokeJspTagAsMethodWithBody() {
         def template = '<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>${fmt.formatNumber(pattern:".00",10)}'
-
         assertOutputEquals '10.00', template
-
     }
 
     void testSimpleTagWithBody() {
         def template = '<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %><fmt:formatNumber pattern=".00">10</fmt:formatNumber>'
-
         assertOutputEquals '10.00', template
     }
 
@@ -158,6 +145,7 @@ goodbye
                 template, [:], { it.toString().trim() }
     }
 }
+
 class TestJspTagAddress {
     String zip
 }

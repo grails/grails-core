@@ -27,12 +27,12 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
 
     private Map errorsMap
 
-    void setUp() {
+    protected void setUp() {
         metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
     }
 
-    void tearDown() {
+    protected void tearDown() {
         metaTestHelper.tearDown()
         MockUtils.resetIds()
     }
@@ -80,17 +80,17 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
         assertEquals 1, testInstances.size()
     }
 
-	/**
-	 * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
-	 */
-	void testSaveWithFailOnErrorTrue() {
-		MockUtils.mockDomain(TestDomain, errorsMap)
+    /**
+     * Tests that the mocked <code>save()</code> method respects the <code>failOnError: true</code> argument.
+     */
+    void testSaveWithFailOnErrorTrue() {
+        MockUtils.mockDomain(TestDomain, errorsMap)
 
-		def domain = new TestDomain()
-		shouldFail(grails.validation.ValidationException) {
-			domain.save(failOnError: true)
-		}
-	}
+        def domain = new TestDomain()
+        shouldFail(grails.validation.ValidationException) {
+            domain.save(failOnError: true)
+        }
+    }
 
     void testInsertAndUpdateDomainEvents() {
         MockUtils.mockDomain(TestDomain, errorsMap)
@@ -137,5 +137,4 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
         assertEquals 'beforeUpdated was not called', 1, domain.beforeUpdated
         assertEquals 'afterUpdated was not called', 1, domain.afterUpdated
     }
-
 }

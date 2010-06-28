@@ -17,7 +17,7 @@ package grails.web
 import grails.converters.JSON;
 
 /**
- * Used to build JSON data. Replaces {@link grails.util.JSonBuilder}.
+ * Builds JSON data. Replaces {@link grails.util.JSonBuilder}.
  *
  * @author Marc Palmer
  * @author Graeme Rocher
@@ -26,7 +26,7 @@ import grails.converters.JSON;
  */
 class JSONBuilder {
 
-   static NODE_ELEMENT = "element"
+    static NODE_ELEMENT = "element"
 
     def root
 
@@ -45,7 +45,7 @@ class JSONBuilder {
         root = [:]
         current = root
         def returnValue = c.call()
-        if(!root) {
+        if (!root) {
             return returnValue
         }
         return root
@@ -59,7 +59,6 @@ class JSONBuilder {
         def prev = current
         def list = []
         try {
-
             current = list
             c.call(list)
         }
@@ -76,22 +75,25 @@ class JSONBuilder {
                 if ((current == root) && (methodName == NODE_ELEMENT) && !(root instanceof List)) {
                     if (root.size()) {
                         throw new IllegalArgumentException('Cannot have array elements in root node if properties of root have already been set')
-                    } else {
-                        root = []
-                        current = root
                     }
+
+                    root = []
+                    current = root
                 }
                 def n = [:]
                 if (current instanceof List) {
                     current << n
-                } else {
+                }
+                else {
                     current[methodName] = n
                 }
                 n.putAll(args[0])
-            } else if (args[-1] instanceof Closure) {
+            }
+            else if (args[-1] instanceof Closure) {
                 final Object callable = args[-1]
                 handleClosureNode(methodName, callable)
-            } else if (args.size() == 1) {
+            }
+            else if (args.size() == 1) {
                 if (methodName != NODE_ELEMENT) {
                     throw new IllegalArgumentException('Array elements must be defined with the "element" method call eg: element(value)')
                 }
@@ -99,20 +101,25 @@ class JSONBuilder {
                 if (current == root) {
                     if (root.size() && methodName != NODE_ELEMENT) {
                         throw new IllegalArgumentException('Cannot have array elements in root node if properties of root have already been set')
-                    } else if(!(root instanceof List)) {                        
+                    }
+
+                    if (!(root instanceof List)) {
                         root = []
                         current = root
                     }
                 }
                 if (current instanceof List) {
                     current << args[0]
-                } else {
+                }
+                else {
                     throw new IllegalArgumentException('Array elements can only be defined under "array" nodes')
                 }
-            } else {
+            }
+            else {
                 throw new IllegalArgumentException("This builder does not support invocation of [$methodName] with arg list ${args.dump()}")
             }
-        } else {
+        }
+        else {
             current[methodName] = []
         }
     }
@@ -132,14 +139,13 @@ class JSONBuilder {
         current = nestingStack.pop()
     }
 
-
     void setProperty(String propName, Object value) {
-        if(value instanceof Closure) {
+        if (value instanceof Closure) {
             handleClosureNode(propName, value)
         }
-        else if(value instanceof List) {
+        else if (value instanceof List) {
             value = value.collect {
-                if(it instanceof Closure) {
+                if (it instanceof Closure) {
                     def callable = it
                     final JSONBuilder localBuilder = new JSONBuilder()
                     callable.delegate = localBuilder
@@ -147,10 +153,8 @@ class JSONBuilder {
                     final Map nestedObject = localBuilder.buildRoot(callable)
                     return nestedObject
                 }
-                else {
-                    return it
-                }
 
+                return it
             }
             current[propName] = value
         }
@@ -162,5 +166,4 @@ class JSONBuilder {
     def getProperty(String propName) {
         current[propName]
     }
-    
 }

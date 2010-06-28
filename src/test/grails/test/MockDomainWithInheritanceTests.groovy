@@ -1,45 +1,39 @@
 package grails.test
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: May 8, 2009
- */
 
 import grails.persistence.*
 
-public class MockDomainWithInheritanceTests extends GroovyTestCase{
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
+class MockDomainWithInheritanceTests extends GroovyTestCase {
 
     void testMockDomainWithInheritance() {
         def test = new PersonTests()
         test.setUp()
-
         test.testLoadingPirateInstance()
     }
 }
-class PersonTests extends GrailsUnitTestCase {
-    void setUp() {
-        super.setUp()
-		def aPerson = new Person(name: "Rob Fletcher")
-		def aPirate = new Pirate(name: "Edward Teach", nickname: "Blackbeard")
-		mockDomain(Person, [aPerson, aPirate])
-    }
 
-    void tearDown() {
-        super.tearDown()
+class PersonTests extends GrailsUnitTestCase {
+    protected void setUp() {
+        super.setUp()
+        def aPerson = new Person(name: "Rob Fletcher")
+        def aPirate = new Pirate(name: "Edward Teach", nickname: "Blackbeard")
+        mockDomain(Person, [aPerson, aPirate])
     }
 
     void testLoadingPersonInstance() {
-		def person = Person.findByName("Rob Fletcher")
-		assertTrue person instanceof Person
-		assertFalse person instanceof Pirate
+        def person = Person.findByName("Rob Fletcher")
+        assertTrue person instanceof Person
+        assertFalse person instanceof Pirate
     }
 
-	void testLoadingPirateInstance() {
-		def person = Person.findByName("Edward Teach")
-		assertTrue person instanceof Person
-		assertTrue person instanceof Pirate
-		assertEquals("Blackbeard", person.nickname)
+    void testLoadingPirateInstance() {
+        def person = Person.findByName("Edward Teach")
+        assertTrue person instanceof Person
+        assertTrue person instanceof Pirate
+        assertEquals("Blackbeard", person.nickname)
 
         person = Pirate.findByName("Edward Teach")
 
@@ -48,15 +42,16 @@ class PersonTests extends GrailsUnitTestCase {
         assertTrue person instanceof Pirate
         assertEquals("Blackbeard", person.nickname)
 
-        assertNull "That's not a pirate!", Pirate.findByName("Rob Fletcher") 
-	}
+        assertNull "That's not a pirate!", Pirate.findByName("Rob Fletcher")
+    }
 }
 
 @Entity
 class Person {
-	String name
+    String name
 }
+
 @Entity
 class Pirate extends Person {
-	String nickname
+    String nickname
 }

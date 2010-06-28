@@ -35,49 +35,49 @@ import org.springframework.util.Assert;
  */
 public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>, InitializingBean {
 
-	private DataSource dataSource;
-	private Properties vendorNameDialectMappings;
-	private String hibernateDialectClassName;
-	private Dialect hibernateDialect;
+    private DataSource dataSource;
+    private Properties vendorNameDialectMappings;
+    private String hibernateDialectClassName;
+    private Dialect hibernateDialect;
 
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-	}
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
-	public void setVendorNameDialectMappings(Properties mappings) {
-		vendorNameDialectMappings = mappings;
-	}
+    public void setVendorNameDialectMappings(Properties mappings) {
+        vendorNameDialectMappings = mappings;
+    }
 
-	public String getObject() {
-		return hibernateDialectClassName;
-	}
+    public String getObject() {
+        return hibernateDialectClassName;
+    }
 
-	public Class<String> getObjectType() {
-		return String.class;
-	}
+    public Class<String> getObjectType() {
+        return String.class;
+    }
 
-	public boolean isSingleton() {
-		return true;
-	}
+    public boolean isSingleton() {
+        return true;
+    }
 
-	public void afterPropertiesSet() throws MetaDataAccessException {
-		Assert.notNull(dataSource, "Data source is not set!");
-		Assert.notNull(vendorNameDialectMappings, "Vendor name/dialect mappings are not set!");
+    public void afterPropertiesSet() throws MetaDataAccessException {
+        Assert.notNull(dataSource, "Data source is not set!");
+        Assert.notNull(vendorNameDialectMappings, "Vendor name/dialect mappings are not set!");
 
-		String dbName = (String)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName");
-		Integer majorVersion = (Integer)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseMajorVersion");
+        String dbName = (String)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName");
+        Integer majorVersion = (Integer)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseMajorVersion");
 
-		try {
-			hibernateDialect = DialectFactory.determineDialect(dbName,majorVersion.intValue());
-			hibernateDialectClassName = hibernateDialect.getClass().getName();
-		}
-		catch (HibernateException e) {
-			hibernateDialectClassName = vendorNameDialectMappings.getProperty(dbName);
-		}
+        try {
+            hibernateDialect = DialectFactory.determineDialect(dbName,majorVersion.intValue());
+            hibernateDialectClassName = hibernateDialect.getClass().getName();
+        }
+        catch (HibernateException e) {
+            hibernateDialectClassName = vendorNameDialectMappings.getProperty(dbName);
+        }
 
-		if (StringUtils.isBlank(hibernateDialectClassName)) {
-			throw new CouldNotDetermineHibernateDialectException(
-					"Could not determine Hibernate dialect for database name [" + dbName + "]!");
-		}
-	}
+        if (StringUtils.isBlank(hibernateDialectClassName)) {
+            throw new CouldNotDetermineHibernateDialectException(
+                    "Could not determine Hibernate dialect for database name [" + dbName + "]!");
+        }
+    }
 }

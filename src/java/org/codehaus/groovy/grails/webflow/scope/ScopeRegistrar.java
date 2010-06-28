@@ -14,31 +14,33 @@
  */
 package org.codehaus.groovy.grails.webflow.scope;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.core.Ordered;
 import org.springframework.webflow.execution.ScopeType;
-import org.springframework.webflow.scope.*;
+import org.springframework.webflow.scope.ConversationScope;
+import org.springframework.webflow.scope.FlashScope;
+import org.springframework.webflow.scope.FlowScope;
+import org.springframework.webflow.scope.ViewScope;
 
 /**
- * Replaces Webflow ScopeRegistrar since we don't need to the RequestScope implementation of WebFlow
+ * Replaces Webflow ScopeRegistrar since we don't need to the RequestScope implementation of WebFlow.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
 public class ScopeRegistrar implements BeanFactoryPostProcessor, Ordered {
 
-	@SuppressWarnings("deprecation")
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		beanFactory.registerScope(ScopeType.FLASH.getLabel().toLowerCase(), new FlashScope());
-		beanFactory.registerScope(ScopeType.VIEW.getLabel().toLowerCase(), new ViewScope());
-		beanFactory.registerScope(ScopeType.FLOW.getLabel().toLowerCase(), new FlowScope());
-		beanFactory.registerScope(ScopeType.CONVERSATION.getLabel().toLowerCase(), new ConversationScope());
-	}
+    @SuppressWarnings("deprecation")
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        beanFactory.registerScope(ScopeType.FLASH.getLabel().toLowerCase(), new FlashScope());
+        beanFactory.registerScope(ScopeType.VIEW.getLabel().toLowerCase(), new ViewScope());
+        beanFactory.registerScope(ScopeType.FLOW.getLabel().toLowerCase(), new FlowScope());
+        beanFactory.registerScope(ScopeType.CONVERSATION.getLabel().toLowerCase(), new ConversationScope());
+    }
 
-	public int getOrder() {
-		return Ordered.LOWEST_PRECEDENCE;
-	}
-
+    public int getOrder() {
+        return Ordered.LOWEST_PRECEDENCE;
+    }
 }

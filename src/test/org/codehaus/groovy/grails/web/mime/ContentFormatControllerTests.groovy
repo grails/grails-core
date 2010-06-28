@@ -1,17 +1,15 @@
-/**
- * @author Graeme Rocher
- * @since 1.0
- * 
- * Created: Nov 26, 2007
- */
 package org.codehaus.groovy.grails.web.mime
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
+/**
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
-    public void onSetUp() {
+    protected void onSetUp() {
         def config = new ConfigSlurper().parse( """
 
 grails.mime.use.accept.header = true
@@ -68,16 +66,16 @@ class ContentController {
     def testWithFormatRenderAs = {
         def gizmos = Gizmo.get()
         withFormat {
-			html {
-				render "<html>hello</html>"
-			}
-			xml {
-				render gizmos as XML
-			}
-			json {
-				render gizmos as JSON
-			}
-		}
+            html {
+                render "<html>hello</html>"
+            }
+            xml {
+                render gizmos as XML
+            }
+            json {
+                render gizmos as JSON
+            }
+        }
     }
 }
 
@@ -91,10 +89,9 @@ class Gizmo {
     }
 }
 '''
-
     }
 
-    public void tearDown() {
+    protected void tearDown() {
         super.tearDown();
         ConfigurationHolder.setConfig null
         MimeType.reset()
@@ -104,24 +101,21 @@ class Gizmo {
         request.setParameter "format", "xml"
         def c = ga.getControllerClass("ContentController").newInstance()
 
-         webRequest.controllerName = 'content'
-         c.testWithFormatRenderAs.call()
+        webRequest.controllerName = 'content'
+        c.testWithFormatRenderAs.call()
 
-         assertEquals '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''', response.contentAsString
+        assertEquals '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''', response.contentAsString
     }
-
 
     void testFormatWithRenderAsJSON() {
         request.setParameter "format", "json"
         def c = ga.getControllerClass("ContentController").newInstance()
 
-         webRequest.controllerName = 'content'
-         c.testWithFormatRenderAs.call()
+        webRequest.controllerName = 'content'
+        c.testWithFormatRenderAs.call()
 
-         assertEquals '{"class":"Gizmo","id":null,"name":"iPod"}', response.contentAsString
-
+        assertEquals '{"class":"Gizmo","id":null,"name":"iPod"}', response.contentAsString
     }
-
 
     void testAllFormat() {
         request.addHeader "Accept", "*/*"
@@ -162,7 +156,7 @@ class Gizmo {
         // should favour content type header
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         request.addHeader "Content-Type", "text/html"
-        
+
         def c = ga.getControllerClass("ContentController").newInstance()
         webRequest.controllerName = 'content'
         c.testFormat.call()
@@ -172,31 +166,29 @@ class Gizmo {
     void testFirefox2AcceptHeader() {
         request.addHeader "Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
         def c = ga.getControllerClass("ContentController").newInstance()
-         webRequest.controllerName = 'content'
-         c.testFormat.call()
+        webRequest.controllerName = 'content'
+        c.testFormat.call()
 
-
-         assertEquals "html", response.contentAsString
+        assertEquals "html", response.contentAsString
     }
 
     void testFirefox3AcceptHeader() {
         request.addHeader "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         def c = ga.getControllerClass("ContentController").newInstance()
-         webRequest.controllerName = 'content'
-         c.testFormat.call()
+        webRequest.controllerName = 'content'
+        c.testFormat.call()
 
-         
-         assertEquals "html", response.contentAsString
+        assertEquals "html", response.contentAsString
     }
 
     void testFirefox2AcceptHeaderWithFormatOrdering() {
         request.addHeader "Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
         def c = ga.getControllerClass("ContentController").newInstance()
-         webRequest.controllerName = 'content'
-         c.testWithFormatAndEqualQualityGrading.call()
+        webRequest.controllerName = 'content'
+        c.testWithFormatAndEqualQualityGrading.call()
 
-         assertEquals "<html></html>", response.contentAsString
-         assertEquals "html", request.format
+        assertEquals "<html></html>", response.contentAsString
+        assertEquals "html", request.format
     }
 
 
@@ -205,7 +197,7 @@ class Gizmo {
         def c = ga.getControllerClass("ContentController").newInstance()
         webRequest.controllerName = 'content'
         c.testFormat.call()
-        assertEquals "js", response.contentAsString        
+        assertEquals "js", response.contentAsString
     }
 
     void testOverrideWithRequestParameter() {
@@ -214,8 +206,7 @@ class Gizmo {
         def c = ga.getControllerClass("ContentController").newInstance()
         webRequest.controllerName = 'content'
         c.testFormat.call()
-        assertEquals "xml", response.contentAsString        
-
+        assertEquals "xml", response.contentAsString
     }
 
     void testOverrideWithControllerParameter() {
@@ -226,12 +217,11 @@ class Gizmo {
         webRequest.controllerName = 'content'
         c.testFormat.call()
         assertEquals "xml", response.contentAsString
-
     }
 
     void testWithFormatAndDefaults() {
         def c = ga.getControllerClass("ContentController").newInstance()
-        webRequest.controllerName = 'content'         
+        webRequest.controllerName = 'content'
         c.testWithFormat.call()
         assertEquals "<html></html>", response.contentAsString
     }
@@ -242,7 +232,6 @@ class Gizmo {
         webRequest.controllerName = 'content'
         c.testWithFormat.call()
         assertEquals "alert('hello')", response.contentAsString
-
     }
 
     void testWithFormatParameterOverride() {
@@ -256,11 +245,10 @@ class Gizmo {
     void testWithFormatAndModel() {
         request.addHeader "Accept", "text/html"
         def c = ga.getControllerClass("ContentController").newInstance()
-          webRequest.controllerName = 'content'
-          def model = c.testWithFormatAndModel.call()
+        webRequest.controllerName = 'content'
+        def model = c.testWithFormatAndModel.call()
 
-          assertEquals 'world', model?.hello
-
+        assertEquals 'world', model?.hello
     }
 
     void testWithFormatZeroArgs() {
@@ -270,5 +258,4 @@ class Gizmo {
         c.testWithFormatZeroArgs.call()
         assertEquals "html", request.format
     }
-
 }

@@ -15,20 +15,18 @@ class GroovyPageViewTests extends GroovyTestCase {
 
     void testGroovyPageView() {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-        
+
         def rl = new MockStringResourceLoader()
 
         def url = "/WEB-INF/grails-apps/views/test.gsp"
 
         rl.registerMockResource(url, "<%='success'+foo%>")
 
-
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext(rl))
         gpte.afterPropertiesSet()
-        
+
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
-
 
         def view = new GroovyPageView()
         view.url = url

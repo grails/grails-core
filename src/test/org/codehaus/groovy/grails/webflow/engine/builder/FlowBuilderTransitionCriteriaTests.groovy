@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.webflow.engine.builder
 
-import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExecutionTests;
+import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExecutionTests
 
-class FlowBuilderTransitionCriteriaTests extends AbstractGrailsTagAwareFlowExecutionTests{
+class FlowBuilderTransitionCriteriaTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
-    public Closure getFlowClosure() {
+    Closure getFlowClosure() {
         return {
             enterPersonalDetails {
                 on("submit") { ctx ->
@@ -22,20 +22,14 @@ class FlowBuilderTransitionCriteriaTests extends AbstractGrailsTagAwareFlowExecu
         }
     }
 
-
     void testFlowExecution() {
         startFlow()
-
         assertCurrentStateEquals "enterPersonalDetails"
 
         signalEvent( "submit" )
-
         assertCurrentStateEquals "enterPersonalDetails"
 
-
         signalEvent("another")
-
         assertCurrentStateEquals "enterShipping"
     }
-
 }

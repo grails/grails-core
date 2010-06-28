@@ -1,16 +1,10 @@
 package org.codehaus.groovy.grails.web.codecs
 
+import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 
-class SHA1CodecTests extends GroovyTestCase{
-    def GroovyObject codec
+class SHA1CodecTests extends GroovyTestCase {
 
-    void setUp() {
-        codec = new org.codehaus.groovy.grails.plugins.codecs.SHA1Codec()
-    }
-
-    void tearDown() {
-        codec = null
-    }
+    def codec = new SHA1Codec()
 
     void testEncode() {
 
@@ -24,15 +18,12 @@ class SHA1CodecTests extends GroovyTestCase{
         assertEquals(expectedResult,toStringResult)
 
         //make sure encoding null returns null
-        assertEquals(codec.encode(null), null)
+        assertNull codec.encode(null)
     }
 
     void testDecode() {
-        byte[] data = [1,2,3,4,5]
         shouldFail {
-            byte[] result = codec.decode(data)
+            codec.decode [1,2,3,4,5]
         }
     }
-
 }
-

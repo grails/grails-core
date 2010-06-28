@@ -6,11 +6,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests{
+class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        gcl.parseClass('''
+        gcl.parseClass '''
 import grails.persistence.*
 
 @Entity
@@ -30,7 +29,7 @@ class MenuController {
         [menu:m]
     }
 }
-''')
+'''
     }
 
     void testBindStringArrayToGenericList() {
@@ -42,8 +41,5 @@ class MenuController {
         def model = controller.save()
 
         assertEquals( ['rice', 'soup'], model.menu.items )
-
     }
-    
-
 }

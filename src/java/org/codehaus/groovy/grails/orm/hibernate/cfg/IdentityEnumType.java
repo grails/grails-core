@@ -188,9 +188,9 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
             }
 
             @SuppressWarnings("hiding")
-				EnumMap enumToKey = new EnumMap(enumClass);
+            EnumMap enumToKey = new EnumMap(enumClass);
             @SuppressWarnings("hiding")
-				HashMap keytoEnum = new HashMap();
+            HashMap keytoEnum = new HashMap();
 
             Method idAccessor = enumClass.getMethod(ENUM_ID_ACCESSOR);
 

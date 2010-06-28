@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.web.i18n
 
-import org.springframework.web.context.request.RequestContextHolder
 import grails.util.GrailsWebUtil
+
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import org.springframework.mock.web.MockHttpServletRequest
@@ -9,18 +10,15 @@ import org.springframework.mock.web.MockHttpServletRequest
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: May 28, 2008
  */
-class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase{
+class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
     }
 
-
     void testSwitchLocaleWithStringArrayParamsObject() {
-        
+
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         def request = webRequest.getCurrentRequest()
@@ -49,6 +47,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase{
         assertEquals "de", locale.getLanguage()
         assertEquals "DE", locale.getCountry()
     }
+
     void testSwitchLocaleWithParamsObject() {
 
         def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -78,7 +77,6 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase{
 
         assertEquals "de", locale.getLanguage()
         assertEquals "DE", locale.getCountry()
-
     }
 
     void testSwithLocaleWithRequestParameter() {
@@ -111,5 +109,4 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase{
         assertEquals "de", locale.getLanguage()
         assertEquals "DE", locale.getCountry()
     }
-
 }

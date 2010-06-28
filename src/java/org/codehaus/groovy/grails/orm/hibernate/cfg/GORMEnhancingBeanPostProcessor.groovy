@@ -35,43 +35,41 @@ import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
  *
  * @author Graeme Rocher
  * @since 1.1
- *
- * Created: Jan 16, 2009
  */
 class GORMEnhancingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 
-	ApplicationContext applicationContext
+    ApplicationContext applicationContext
 
-	def postProcessBeforeInitialization(Object bean, String beanName) { bean }
+    def postProcessBeforeInitialization(Object bean, String beanName) { bean }
 
-	Object postProcessAfterInitialization(Object bean, String beanName) {
-		if (bean instanceof SessionFactory) {
-			GrailsApplication application
-			if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
-				application = applicationContext.getBean(GrailsApplication.APPLICATION_ID)
-			}
-			else {
-				application = new DefaultGrailsApplication()
-				application.initialise()
-			}
+    Object postProcessAfterInitialization(Object bean, String beanName) {
+        if (bean instanceof SessionFactory) {
+            GrailsApplication application
+            if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
+                application = applicationContext.getBean(GrailsApplication.APPLICATION_ID)
+            }
+            else {
+                application = new DefaultGrailsApplication()
+                application.initialise()
+            }
 
-			bean.allClassMetadata.each { className, ClassMetadata metadata ->
-				Class mappedClass = metadata.getMappedClass(EntityMode.POJO)
+            bean.allClassMetadata.each { className, ClassMetadata metadata ->
+                Class mappedClass = metadata.getMappedClass(EntityMode.POJO)
 
-				if (!application.getDomainClass(mappedClass.name)) {
-					application.addDomainClass(mappedClass)
-				}
-			}
+                if (!application.getDomainClass(mappedClass.name)) {
+                    application.addDomainClass(mappedClass)
+                }
+            }
 
-			try {
-				DomainClassGrailsPlugin.enhanceDomainClasses(application, applicationContext)
-				HibernatePluginSupport.enhanceSessionFactory(bean, application, applicationContext)
-			}
-			catch (Throwable e) {
-				throw new BeanInstantiationException(ConfigurableLocalSessionFactoryBean,
-						"Error configuring GORM dynamic behavior: $e.message", e)
-			}
-		}
-		return bean
-	}
+            try {
+                DomainClassGrailsPlugin.enhanceDomainClasses(application, applicationContext)
+                HibernatePluginSupport.enhanceSessionFactory(bean, application, applicationContext)
+            }
+            catch (Throwable e) {
+                throw new BeanInstantiationException(ConfigurableLocalSessionFactoryBean,
+                        "Error configuring GORM dynamic behavior: $e.message", e)
+            }
+        }
+        return bean
+    }
 }

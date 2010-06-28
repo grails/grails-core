@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import grails.util.GrailsUtil;
+import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptProvider
@@ -9,19 +9,19 @@ import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.util.WebUtils
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 
+class JavascriptTagLibTests extends AbstractGrailsTagTests {
 
-public class JavascriptTagLibTests extends AbstractGrailsTagTests {
     private static final String EOL = new String([(char)13,(char)10] as char[])
 
-    public void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass('''
 class TestController {}
 ''')
     }
 
-    void onInit() {
+    protected void onInit() {
         def urlMappingsClass = gcl.parseClass('''\
 class TestUrlMappings {
     static mappings = {
@@ -44,27 +44,21 @@ class TestUrlMappings {
 
         String newLine = EOL
         assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" controller="bar" action="list"></a></p><a href="/foo/list" onclick="<remote>return false;" controller="foo" action="list"></a>', template)
-
     }
 
     void testJavascriptIncludeWithPluginAttribute() {
         def template = '<g:javascript src="foo.js" plugin="controllers" />'
-
         def grailsVersion = GrailsUtil.getGrailsVersion()
-
         assertOutputContains "<script type=\"text/javascript\" src=\"/plugins/controllers-$grailsVersion/js/foo.js\"></script>", template
-    	
     }
-    
+
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
-
         assertOutputContains '<script type="text/javascript" src="/js/foo.js"></script>', template
     }
 
     void testJavascriptIncludeWithPlugin() {
         def template = '<g:javascript src="foo.js" />'
-
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
     }
@@ -77,35 +71,29 @@ class TestUrlMappings {
 
         template = '<g:javascript src="foo.js" contextPath="/foo" />'
         assertOutputContains '<script type="text/javascript" src="/foo/js/foo.js"></script>', template
-
     }
 
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
         def template = '<g:javascript src="foo.js" />'
-
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugin/one"))
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
-
     void testRemoteFieldWithExtraParams() {
         def template = '<g:remoteField controller="test" action="hello" id="1" params="[var1: \'one\', var2: \'two\']" update="success" name="myname" value="myvalue"/>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals '<input type="text" name="myname" value="myvalue" onkeyup="new Ajax.Updater(\'success\',\'/test/hello/1\',{asynchronous:true,evalScripts:true,parameters:\'value=\'+this.value+\'&var1=one&var2=two\'});" />', template
     }
 
     void testPrototypeSubmitToRemoteWithExtraParams() {
         def template = '<g:submitToRemote name="myButton" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ></g:submitToRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals('<input onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this.form)+\'&var2=two\'});return false" type="button" name="myButton"></input>', template)
     }
 
     void testPrototypeFormRemoteWithExtraParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
     }
 
@@ -143,32 +131,25 @@ class TestUrlMappings {
     void testPrototypeFormRemoteWithExactParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
     }
-
 
     void testPrototypeWithAsyncProperty() {
         def template = '<g:remoteFunction controller="bar" action="foo" options="[asynchronous:false]" />'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals("new Ajax.Request('/bar/foo',{asynchronous:false,evalScripts:true});", template)
     }
 
     void testPrototypeWithExtraParams() {
         def template = '<g:remoteFunction controller="person" action="show" params="[var1:\'one\', var2:\'two\']" />'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals("new Ajax.Request('/people/details/one',{asynchronous:true,evalScripts:true,parameters:'var2=two'});", template)
     }
-
 
     void testPrototypeLinkWithExtraParams() {
         def template = '<g:remoteLink controller="person" action="show" params="[var1:\'one\', var2:\'two\']" >hello</g:remoteLink>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-
         assertOutputEquals('<a href="/people/details/one?var2=two" onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:\'var2=two\'});return false;">hello</a>', template)
-
     }
 
     void testRemoteLinkWithSpaceBeforeGStringVariable() {
@@ -188,7 +169,7 @@ class TestUrlMappings {
         assertOutputEquals '<input type="text" name="nv" value="" onkeyup="new Ajax.Request(\'/bar/storeField/2\',{asynchronous:true,evalScripts:true,parameters:\'a=b&\'+\'pnv=\'+this.value});" />', template
     }
 
-    public void testPrototypeRemoteFunction() throws Exception {
+    void testPrototypeRemoteFunction() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
 
@@ -214,10 +195,7 @@ class TestUrlMappings {
         }
     }
 
-
-
-
-    public void testRemoteField() {
+    void testRemoteField() {
         // <g:remoteField action="changeTitle" update="titleDiv"  name="title" value="${book?.title}"/>
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
@@ -232,17 +210,15 @@ class TestUrlMappings {
             def retval = tag.call(attrs) {"body"}
             assertEquals("<input type=\"text\" name=\"title\" value=\"testValue\" onkeyup=\"new Ajax.Updater('titleDiv','/test/changeTitle',{asynchronous:true,evalScripts:true,parameters:'value='+this.value});\" />", sw.toString())
         }
-
     }
 
-    public void testRemoteLink() {
+    void testRemoteLink() {
         // test for GRAILS-1304
         def template = '<g:remoteLink controller="person" action="show" update="async" params="[var1:\'0\']">Show async</g:remoteLink>'
         assertOutputEquals '<a href="/people/details/0" onclick="new Ajax.Updater(\'async\',\'/people/details/0\',{asynchronous:true,evalScripts:true});return false;">Show async</a>', template
-
     }
 
-    public void testPluginAwareJSSrc() {
+    void testPluginAwareJSSrc() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -253,7 +229,7 @@ class TestUrlMappings {
         }
     }
 
-    public void testPluginAwareJSSrcTrailingSlash() {
+    void testPluginAwareJSSrcTrailingSlash() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -265,7 +241,7 @@ class TestUrlMappings {
         }
     }
 
-    public void testPluginAwareJSLib() {
+    void testPluginAwareJSLib() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -276,7 +252,7 @@ class TestUrlMappings {
         }
     }
 
-    public void testJSSrc() {
+    void testJSSrc() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -287,7 +263,7 @@ class TestUrlMappings {
         }
     }
 
-    public void testJSSrcTrailingSlash() {
+    void testJSSrcTrailingSlash() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -298,19 +274,19 @@ class TestUrlMappings {
         }
     }
 
-    public void testJSSrcWithNoController() {
+    void testJSSrcWithNoController() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
             def attrs = [src: 'lib.js']
             setRequestContext()
-            request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null);
+            request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null)
             tag.call(attrs) {}
             assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
         }
     }
 
-    public void testJSLib() {
+    void testJSLib() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -321,7 +297,7 @@ class TestUrlMappings {
         }
     }
 
-    public void testJSLibTrailingSlash() {
+    void testJSLibTrailingSlash() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -332,7 +308,7 @@ class TestUrlMappings {
         }
     }
 
-    public void testJSWithBody() {
+    void testJSWithBody() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -343,7 +319,7 @@ class TestUrlMappings {
     }
 
 
-    public void testJSLibWithBase() {
+    void testJSLibWithBase() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -355,7 +331,7 @@ class TestUrlMappings {
     }
 
 
-    public void testJSSrcWithBase() {
+    void testJSSrcWithBase() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
         withTag("javascript", pw) {tag ->
@@ -379,24 +355,21 @@ class TestUrlMappings {
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugins/myplugin"))
     }
 
-    public void testEscapeJavascript() throws Exception {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
+    void testEscapeJavascript() {
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         withTag("escapeJavascript", pw) {tag ->
-
-            tag.call("This is some \"text\" to be 'escaped'", Collections.EMPTY_MAP);
-            assertEquals("This is some \\\"text\\\" to be \\'escaped\\'", sw.toString());
+            tag.call("This is some \"text\" to be 'escaped'", Collections.EMPTY_MAP)
+            assertEquals("This is some \\\"text\\\" to be \\'escaped\\'", sw.toString())
         }
     }
 }
 class TestProvider implements JavascriptProvider {
 
-    public doRemoteFunction(Object taglib, Object attrs, Object out) {
+    def doRemoteFunction(Object taglib, Object attrs, Object out) {
         out << "<remote>"
     }
 
-    public prepareAjaxForm(Object attrs) {
-    }
-
+    def prepareAjaxForm(Object attrs) {}
 }

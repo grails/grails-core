@@ -36,16 +36,16 @@ mappings {
   "/bar"(uri:"/x/y")
 }
 '''
-	void testMaptoURI() {
+    void testMaptoURI() {
         def res = new ByteArrayResource(mappingScript.bytes)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
 
         def info = holder.match("/bar")
-        assertEquals "/x/y", info.getURI()    	
-    }	
-    
+        assertEquals "/x/y", info.getURI()
+    }
+
     void testParseRequestArgument() {
 
         def res = new ByteArrayResource(mappingScript.bytes)
@@ -68,7 +68,6 @@ mappings {
 
         assertEquals 1, m.constraints.length
         assertTrue m.constraints[0].nullable
-
     }
 
     void testCreateUrlFromMapping() {
@@ -268,7 +267,6 @@ mappings {
         Collections.sort(urls)
         Collections.reverse(urls)
         assertEquals(correctOrder, urls)
-
     }
 
     void testMatchUriWithConstraints() {
@@ -285,9 +283,7 @@ mappings {
         assert info
         assertEquals "test", info.controllerName
         assertEquals "action", info.actionName
-        println info.parameters
         assertEquals "world", info.parameters.hello
-
     }
 
     void testMatchUriWithMatchesConstraints() {
@@ -303,7 +299,6 @@ mappings {
         assert info
         assertEquals "test", info.controllerName
         assertEquals "action", info.actionName
-        println info.parameters
         assertEquals "2007", info.parameters.year
 
         info = m.match("/foo/blah/bar")
@@ -314,7 +309,6 @@ mappings {
     void testInit() {
         def parser = new DefaultUrlMappingParser()
         def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, [] as ConstrainedProperty[], servletContext)
-
     }
 
     void testMatchUriNoConstraints() {

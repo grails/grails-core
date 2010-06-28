@@ -5,19 +5,18 @@ import org.codehaus.groovy.grails.commons.metaclass.*
 import org.springframework.beans.BeanUtils
 
 /**
- * Tests for the GrailsMetaClassUtils class
-
+ * Tests for the GrailsMetaClassUtils class.
+ *
  * @author Graeme Rocher
- **/
-public class GrailsMetaClassUtilsTests extends GroovyTestCase {
-
+ */
+class GrailsMetaClassUtilsTests extends GroovyTestCase {
 
     void testGetMetaRegistry() {
         assertNotNull(GrailsMetaClassUtils.getRegistry())
     }
 
     void testCopyExpandoMetaClass() {
-        def metaClass = new ExpandoMetaClass(Dummy.class, true)
+        def metaClass = new ExpandoMetaClass(Dummy, true)
 
         // add property
         metaClass.getFoo = {-> "bar" }
@@ -27,34 +26,35 @@ public class GrailsMetaClassUtilsTests extends GroovyTestCase {
         metaClass.'static'.bar = {-> "foo" }
         // add constructor
         metaClass.constructor = { String txt ->
-            def obj = BeanUtils.instantiateClass(Dummy.class)
+            def obj = BeanUtils.instantiateClass(Dummy)
             obj.name = txt
             obj
-       }
+        }
 
-       metaClass.initialize()
-       
-       def d = new Dummy("foo")
-       assertEquals "foo", d.name
-       assertEquals "bar", d.foo
-       assertEquals "bar", d.getFoo()
-       assertEquals "bar:1", d.foo("1")
-       assertEquals "foo", Dummy.bar()
+        metaClass.initialize()
 
-       GrailsMetaClassUtils.copyExpandoMetaClass(Dummy.class, Dummy2.class, false)
+        def d = new Dummy("foo")
+        assertEquals "foo", d.name
+        assertEquals "bar", d.foo
+        assertEquals "bar", d.getFoo()
+        assertEquals "bar:1", d.foo("1")
+        assertEquals "foo", Dummy.bar()
 
-       d = new Dummy2("foo")
-       assertEquals "foo", d.name
-       assertEquals "bar", d.foo
-       assertEquals "bar", d.getFoo()
-       assertEquals "bar:1", d.foo("1")
-       assertEquals "foo", Dummy.bar()
+        GrailsMetaClassUtils.copyExpandoMetaClass(Dummy, Dummy2, false)
+
+        d = new Dummy2("foo")
+        assertEquals "foo", d.name
+        assertEquals "bar", d.foo
+        assertEquals "bar", d.getFoo()
+        assertEquals "bar:1", d.foo("1")
+        assertEquals "foo", Dummy.bar()
     }
-
 }
+
 class Dummy {
     String name
 }
+
 class Dummy2 {
     String name
 }

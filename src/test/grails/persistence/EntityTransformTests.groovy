@@ -1,12 +1,10 @@
 package grails.persistence
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Dec 17, 2008
  */
-
-public class EntityTransformTests extends GroovyShellTestCase{
+class EntityTransformTests extends GroovyShellTestCase {
 
     // test for http://jira.codehaus.org/browse/GRAILS-5238
     void testGRAILS_5238() {
@@ -16,7 +14,7 @@ import grails.persistence.*
 @Entity
 class Permission {
     String permission
-                       
+
     static belongsTo = [ user: User ]
 
     void setOwner(User owner) {
@@ -87,5 +85,4 @@ p = new Permission(user:u, permission:"uber")
         assertEquals "joe, bloggs", entities[0].toString()
         assertEquals "jack, dee", entities[1].toString()
     }
-
 }

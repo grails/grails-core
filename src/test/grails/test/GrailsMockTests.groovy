@@ -20,11 +20,12 @@ import junit.framework.AssertionFailedError
  * Test case for {@link GrailsMock}.
  */
 class GrailsMockTests extends GroovyTestCase {
+
     def savedMetaClass
 
-    void setUp() {
+    protected void setUp() {
         super.setUp()
-        this.savedMetaClass = GrailsMockCollaborator.metaClass
+        savedMetaClass = GrailsMockCollaborator.metaClass
 
         // Create a new EMC for the class and attach it.
         def emc = new ExpandoMetaClass(GrailsMockCollaborator, true, true)
@@ -32,33 +33,33 @@ class GrailsMockTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.setMetaClass(GrailsMockCollaborator, emc)
     }
 
-    void tearDown() {
+    protected void tearDown() {
         super.tearDown()
 
         // Restore the saved meta class.
-        GroovySystem.metaClassRegistry.setMetaClass(GrailsMockCollaborator, this.savedMetaClass)
+        GroovySystem.metaClassRegistry.setMetaClass(GrailsMockCollaborator, savedMetaClass)
     }
 
     void testMethod() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.save(1..1) {-> return false }
+        mockControl.demand.save(1..1) { -> false }
 
         def testClass = new GrailsMockTestClass()
         testClass.collaborator = mockControl.createMock()
 
-        assertEquals false, testClass.testMethod()
+        assertFalse testClass.testMethod()
 
         mockControl.verify()
     }
 
     void testVerifyFails() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.save(2..2) {-> return false }
+        mockControl.demand.save(2..2) { -> false }
 
         def testClass = new GrailsMockTestClass()
         testClass.collaborator = mockControl.createMock()
 
-        assertEquals false, testClass.testMethod()
+        assertFalse testClass.testMethod()
 
         shouldFail(AssertionFailedError) {
             mockControl.verify()
@@ -67,9 +68,7 @@ class GrailsMockTests extends GroovyTestCase {
 
     void testTooManyCalls() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.save(1..1) {->
-            return false
-        }
+        mockControl.demand.save(1..1) { -> false }
 
         def testClass = new GrailsMockTestClass()
         testClass.collaborator = mockControl.createMock()
@@ -81,9 +80,7 @@ class GrailsMockTests extends GroovyTestCase {
 
     void testMissingMethod() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.merge(1..1) {->
-            return false
-        }
+        mockControl.demand.merge(1..1) { -> false }
 
         def testClass = new GrailsMockTestClass()
         testClass.collaborator = mockControl.createMock()
@@ -94,10 +91,10 @@ class GrailsMockTests extends GroovyTestCase {
     }
 
     void testOverridingMetaClassMethod() {
-        GrailsMockCollaborator.metaClass.update = {-> return "Failed!"}
+        GrailsMockCollaborator.metaClass.update = { -> "Failed!"}
 
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.update() {-> return "Success!"}
+        mockControl.demand.update() { -> "Success!"}
 
         def testClass = new GrailsMockTestClass()
         testClass.collaborator = mockControl.createMock()
@@ -107,7 +104,7 @@ class GrailsMockTests extends GroovyTestCase {
 
     void testStaticMethod() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.static.get(1..1) { assert it == 5; return "Success!" }
+        mockControl.demand.static.get(1..1) { assertEquals 5, it; "Success!" }
 
         def testClass = new GrailsMockTestClass()
         assertEquals "Success!", testClass.testStaticMethod()
@@ -117,7 +114,7 @@ class GrailsMockTests extends GroovyTestCase {
 
     void testStaticVerifyFails() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.static.get(2..2) { assert it == 5; return "Success!" }
+        mockControl.demand.static.get(2..2) { assertEquals 5, it; "Success!" }
 
         def testClass = new GrailsMockTestClass()
         assertEquals "Success!", testClass.testStaticMethod()
@@ -129,7 +126,7 @@ class GrailsMockTests extends GroovyTestCase {
 
     void testStaticTooManyCalls() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.static.get(1..1) { assert it == 5; return "Success!" }
+        mockControl.demand.static.get(1..1) { assertEquals 5, it; "Success!" }
 
         def testClass = new GrailsMockTestClass()
         shouldFail(AssertionFailedError) {
@@ -139,7 +136,7 @@ class GrailsMockTests extends GroovyTestCase {
 
     void testStaticMissingMethod() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.static.find(1..1) { assert it == 5; return "Success!" }
+        mockControl.demand.static.find(1..1) { assertEquals 5, it; "Success!" }
 
         def testClass = new GrailsMockTestClass()
         shouldFail(MissingMethodException) {
@@ -148,11 +145,10 @@ class GrailsMockTests extends GroovyTestCase {
     }
 
     void testOverridingStaticMetaClassMethod() {
-        GrailsMockCollaborator.metaClass.static.findByNothing = {-> return "Failed!"}
+        GrailsMockCollaborator.metaClass.static.findByNothing = { -> "Failed!"}
 
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.static.findByNothing() {-> return "Success!"}
-
+        mockControl.demand.static.findByNothing() { -> "Success!"}
 
         def testClass = new GrailsMockTestClass()
         assertEquals "Success!", testClass.testDynamicStaticMethod()
@@ -199,22 +195,22 @@ class GrailsMockTests extends GroovyTestCase {
      */
     void testArgumentMatching() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
-        mockControl.demand.multiMethod(1..1) {-> return "dynamic" }
+        mockControl.demand.multiMethod(1..1) { -> "dynamic" }
         mockControl.demand.multiMethod(1..1) { String str ->
             assertEquals "Test string", str
-            return "dynamic"
+            "dynamic"
         }
         mockControl.demand.multiMethod(1..1) { String str, Map map ->
             assertEquals "Test string", str
             assertNotNull map
             assertEquals 1, map["arg1"]
             assertEquals 2, map["arg2"]
-            return "dynamic"
+            "dynamic"
         }
 
         def testClass = new GrailsMockTestClass()
         testClass.collaborator = mockControl.createMock()
-        
+
         def retval = testClass.testMultiMethod()
 
         // Check that the dynamic methods were called rather than the
@@ -232,7 +228,7 @@ class GrailsMockTests extends GroovyTestCase {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
         mockControl.demand.multiMethod(1..1) { String str ->
             assertNull str
-            return "dynamic"
+            "dynamic"
         }
 
         def testClass = new GrailsMockTestClass()
@@ -241,17 +237,17 @@ class GrailsMockTests extends GroovyTestCase {
         assertEquals "dynamic", testClass.testNullArgument()
     }
 
-	void testEmptyArrayArguments() {
-		def mockControl = new GrailsMock(GrailsMockCollaborator)
-		mockControl.demand.testEmptyArrayArguments(1..1) { String str1, Object[] args, String str2 ->
-			return "dynamic"
-		}
+    void testEmptyArrayArguments() {
+        def mockControl = new GrailsMock(GrailsMockCollaborator)
+        mockControl.demand.testEmptyArrayArguments(1..1) { String str1, Object[] args, String str2 ->
+            "dynamic"
+        }
 
-		def testClass = new GrailsMockTestClass()
-		testClass.collaborator = mockControl.createMock()
+        def testClass = new GrailsMockTestClass()
+        testClass.collaborator = mockControl.createMock()
 
-		assertEquals "dynamic", testClass.testEmptyArrayArguments()
-	}
+        assertEquals "dynamic", testClass.testEmptyArrayArguments()
+    }
 
     /**
      * Tests that mocking an interface works.
@@ -259,9 +255,9 @@ class GrailsMockTests extends GroovyTestCase {
     void testInterface() {
         def mockControl = new GrailsMock(GrailsMockInterface)
         mockControl.demand.testMethod(1..1) { String name, int qty ->
-            assert name == "brussels"
-            assert qty == 5
-            return "brussels-5"
+            assertEquals "brussels", name
+            assertEquals 5, qty
+            "brussels-5"
         }
 
         def testClass = new GrailsMockTestClass()
@@ -275,83 +271,59 @@ class GrailsMockTestClass {
     GrailsMockCollaborator collaborator
     GrailsMockInterface gmi
 
-    boolean testMethod() {
-        return this.collaborator.save()
-    }
+    boolean testMethod() { collaborator.save() }
 
-    String testDynamicMethod() {
-        return this.collaborator.update()
-    }
+    String testDynamicMethod() { collaborator.update() }
 
-    boolean testMethod2() {
-        this.testMethod()
-        return this.testMethod()
-    }
+    boolean testMethod2() { testMethod(); testMethod() }
 
-    String testStaticMethod() {
-        return GrailsMockCollaborator.get(5)
-    }
+    String testStaticMethod() { GrailsMockCollaborator.get(5) }
 
-    String testStaticMethod2() {
-        testStaticMethod()
-        return testStaticMethod()
-    }
+    String testStaticMethod2() { testStaticMethod(); testStaticMethod() }
 
     String testDynamicStaticMethod() {
-        return GrailsMockCollaborator.findByNothing()
+        GrailsMockCollaborator.findByNothing()
     }
 
     void testCorrectOrder() {
         GrailsMockCollaborator.get(5)
-        this.collaborator.update()
+        collaborator.update()
     }
 
     void testWrongOrder() {
-        this.collaborator.update()
+        collaborator.update()
         GrailsMockCollaborator.get(5)
     }
 
     String testNullArgument() {
-        return this.collaborator.multiMethod(null)
+        collaborator.multiMethod(null)
     }
 
-	String testEmptyArrayArguments() {
-		return this.collaborator.testEmptyArrayArguments('abc', [] as Object[], 'def')
-	}
+    String testEmptyArrayArguments() {
+        collaborator.testEmptyArrayArguments('abc', [] as Object[], 'def')
+    }
 
     String testInterfaceCollaborator() {
-        return this.gmi.testMethod("brussels", 5)
+        gmi.testMethod("brussels", 5)
     }
 
     List testMultiMethod() {
-        List methodReturns = []
-        methodReturns << this.collaborator.multiMethod()
-        methodReturns << this.collaborator.multiMethod("Test string")
-        methodReturns << this.collaborator.multiMethod("Test string", [arg1: 1, arg2: 2])
-        return methodReturns
+        [collaborator.multiMethod(),
+         collaborator.multiMethod("Test string"),
+         collaborator.multiMethod("Test string", [arg1: 1, arg2: 2])]
     }
 }
 
 class GrailsMockCollaborator {
-    def save() {
-        return true
-    }
+    def save() { true }
 
-    String multiMethod() {
-        return "static"
-    }
+    String multiMethod() { "static" }
 
-    String multiMethod(String str) {
-        return "static"
-    }
+    String multiMethod(String str) { "static" }
 
-    String multiMethod(String str, Map map) {
-        return "static"
-    }
+    String multiMethod(String str, Map map) { "static" }
 
-	String someMethod(String str1, Object[] args, String str2) {
-		return 'static'
-	}
+    String someMethod(String str1, Object[] args, String str2) { 'static' }
 }
 
 interface GrailsMockInterface {
@@ -359,7 +331,5 @@ interface GrailsMockInterface {
 }
 
 class GrailsMockImpl implements GrailsMockInterface {
-    String testMethod(String name, int quantity) {
-        return name * quantity
-    }
+    String testMethod(String name, int quantity) { name * quantity }
 }

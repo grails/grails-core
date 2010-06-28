@@ -1,17 +1,13 @@
-/**
- * Tests the behaviour of the GrailsParameterMap params object
- 
- * @author Graeme Rocher
- * @since 1.1
-  *
- * Created: Sep 12, 2007
- * Time: 10:23:17 AM
- * 
- */
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import org.springframework.mock.web.MockHttpServletRequest
 
+/**
+ * Tests the behaviour of the GrailsParameterMap params object.
+ *
+ * @author Graeme Rocher
+ * @since 1.1
+ */
 class ParamsObjectTests extends GroovyTestCase {
 
     /**

@@ -46,14 +46,13 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
         assertFalse 'someothernickname' in u.nicknames
     }
 
-	void testWithMapAddition() {
-		def personClass = ga.getDomainClass("Person")
-		def addressClass = ga.getDomainClass("Address")
+    void testWithMapAddition() {
+        def personClass = ga.getDomainClass("Person")
+        def addressClass = ga.getDomainClass("Address")
 
-		def p = personClass.newInstance()
+        def p = personClass.newInstance()
 
-		p.name = "Homer Simpson"
-
+        p.name = "Homer Simpson"
 
         p.addToAddresses(number:"22")
         def address = p.addresses.iterator().next()
@@ -65,23 +64,21 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 
         assertFalse p.addresses.contains(address)
         assert !address.person
-	}
+    }
 
-	void testWithInstanceAddition() {
-		def personClass = ga.getDomainClass("Person")
-		def addressClass = ga.getDomainClass("Address")
+    void testWithInstanceAddition() {
+        def personClass = ga.getDomainClass("Person")
+        def addressClass = ga.getDomainClass("Address")
 
-		def p = personClass.newInstance()
+        def p = personClass.newInstance()
 
-		p.name = "Homer Simpson"
-
-
+        p.name = "Homer Simpson"
 
         def address = addressClass.newInstance()
         address.number = "22"
 
         p.addToAddresses(address)
-        
+
         assertTrue p.addresses.contains(address)
 
         assert address
@@ -92,12 +89,11 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 
         assertFalse p.addresses.contains(address)
         assert !address.person
+    }
 
-	}
-
-	void testWithManyToManyRelationship() {
-	    def bookmarkClass = ga.getDomainClass("Bookmark")
-	    def tagClass = ga.getDomainClass("Tag")
+    void testWithManyToManyRelationship() {
+        def bookmarkClass = ga.getDomainClass("Bookmark")
+        def tagClass = ga.getDomainClass("Tag")
 
         def bookmark = bookmarkClass.newInstance()
         bookmark.url='http://www.ru'
@@ -113,12 +109,11 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
         bookmark.removeFromTags(tag)
         assert !bookmark.tags.contains(tag)
         assert !tag.bookmarks.contains(bookmark)
-
     }
 
-	void testSubclassWithManyToManyRelationship() {
-	    def bookmarkClass = ga.getDomainClass("BookmarkSubclass")
-	    def tagClass = ga.getDomainClass("Tag")
+    void testSubclassWithManyToManyRelationship() {
+        def bookmarkClass = ga.getDomainClass("BookmarkSubclass")
+        def tagClass = ga.getDomainClass("Tag")
 
         def bookmark = bookmarkClass.newInstance()
         bookmark.url='http://www.ru'
@@ -134,33 +129,32 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
         bookmark.removeFromTags(tag)
         assert !bookmark.tags.contains(tag)
         assert !tag.bookmarks.contains(bookmark)
-
     }
 
-	void onSetUp() {
+    void onSetUp() {
 
-		this.gcl.parseClass('''
+        gcl.parseClass('''
 @grails.persistence.Entity
 class DemoUser {
   String name
   static hasMany = [nicknames: String]
 }
 class Person {
-	Long id
-	Long version
-	String name
-	Set addresses
-	static hasMany = [addresses:Address]
+    Long id
+    Long version
+    String name
+    Set addresses
+    static hasMany = [addresses:Address]
 }
 class Address {
-	Long id
-	Long version
-	String number
-	Person person
+    Long id
+    Long version
+    String number
+    Person person
 }
 class Bookmark {
-	Long id
-	Long version
+    Long id
+    Long version
 
     String url
     Set tags = new HashSet()
@@ -170,18 +164,14 @@ class Bookmark {
 class BookmarkSubclass extends Bookmark {
 }
 class Tag {
-	Long id
-	Long version
+    Long id
+    Long version
 
     String name
     Set bookmarks = new HashSet()
     static hasMany = [bookmarks:Bookmark]
 }
 '''
-		)
-	}
-	
-	void onTearDown() {
-		
-	}
+        )
+    }
 }

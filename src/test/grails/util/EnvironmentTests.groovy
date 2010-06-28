@@ -1,12 +1,10 @@
 package grails.util
+
 /**
  * @author Graeme Rocher
  * @since 1.1
- * 
- * Created: Dec 12, 2008
  */
-
-public class EnvironmentTests extends GroovyTestCase{
+class EnvironmentTests extends GroovyTestCase {
 
     protected void tearDown() {
         System.setProperty(Environment.KEY, "")
@@ -17,10 +15,9 @@ public class EnvironmentTests extends GroovyTestCase{
     }
 
     void testExecuteForEnvironment() {
+
         System.setProperty("grails.env", "prod")
-
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
-
 
         assertEquals "prod", Environment.executeForCurrentEnvironment {
             environments {
@@ -35,7 +32,6 @@ public class EnvironmentTests extends GroovyTestCase{
                 }
             }
         }
-
 
         assertEquals "dev", Environment.executeForEnvironment(Environment.DEVELOPMENT) {
             environments {
@@ -52,7 +48,6 @@ public class EnvironmentTests extends GroovyTestCase{
         }
 
         System.setProperty("grails.env", "dev")
-
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
 
         assertEquals "dev", Environment.executeForCurrentEnvironment {
@@ -70,7 +65,6 @@ public class EnvironmentTests extends GroovyTestCase{
         }
 
         System.setProperty("grails.env", "soe")
-
         assertEquals Environment.CUSTOM, Environment.getCurrent()
 
         assertEquals "some other environment", Environment.executeForCurrentEnvironment {
@@ -89,8 +83,8 @@ public class EnvironmentTests extends GroovyTestCase{
     }
 
     void testGetEnvironmentSpecificBlock() {
-        System.setProperty("grails.env", "prod")
 
+        System.setProperty("grails.env", "prod")
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
 
         def callable = Environment.getEnvironmentSpecificBlock {
@@ -107,11 +101,9 @@ public class EnvironmentTests extends GroovyTestCase{
             }
         }
 
-
         assertEquals "prod", callable.call()
 
         System.setProperty("grails.env", "dev")
-
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
 
         callable = Environment.getEnvironmentSpecificBlock {
@@ -130,10 +122,7 @@ public class EnvironmentTests extends GroovyTestCase{
 
         assertEquals "dev", callable.call()
 
-
-
         System.setProperty("grails.env", "soe")
-
         assertEquals Environment.CUSTOM, Environment.getCurrent()
 
         callable = Environment.getEnvironmentSpecificBlock {
@@ -153,25 +142,19 @@ public class EnvironmentTests extends GroovyTestCase{
         assertEquals "some other environment", callable.call()
     }
 
-
-
     void testGetCurrent() {
-        System.setProperty("grails.env", "prod")
 
+        System.setProperty("grails.env", "prod")
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
 
         System.setProperty("grails.env", "dev")
-
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
 
         System.setProperty("grails.env", "soe")
-
         assertEquals Environment.CUSTOM, Environment.getCurrent()
-        
     }
 
     void testGetEnvironment() {
-
         assertEquals Environment.DEVELOPMENT, Environment.getEnvironment("dev")
         assertEquals Environment.TEST, Environment.getEnvironment("test")
         assertEquals Environment.PRODUCTION, Environment.getEnvironment("prod")
@@ -186,17 +169,13 @@ grails.env=production
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
 
         System.setProperty("grails.env", "dev")
-
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
 
         System.setProperty("grails.env", "")
-
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
 
         Metadata.getInstance(new ByteArrayInputStream(''.bytes))
-
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
-
     }
 
     void testReloadEnabled() {
@@ -204,33 +183,22 @@ grails.env=production
 grails.env=production
 '''.bytes))
 
-        
         assertFalse "reload should be disabled by default in production", Environment.getCurrent().isReloadEnabled()
 
-
         System.setProperty("grails.env", "dev")
-
         assertFalse "reload should be disabled by default in development unless base.dir set", Environment.getCurrent().isReloadEnabled()
 
         System.setProperty("base.dir", ".")
-
         assertTrue "reload should be enabled by default in development if base.dir set", Environment.getCurrent().isReloadEnabled()
 
         System.setProperty("base.dir", "")
-
         System.setProperty("grails.env", "prod")
-
         assertFalse "reload should be disabled by default in production if base.dir set", Environment.getCurrent().isReloadEnabled()
 
         System.setProperty(Environment.RELOAD_ENABLED, "true")
-
         assertFalse "reload should be disabled by default in production if reload enabled set but not location", Environment.getCurrent().isReloadEnabled()
 
         System.setProperty(Environment.RELOAD_LOCATION, ".")
-
         assertTrue "reload should be enabled by default in production if reload enabled and location set", Environment.getCurrent().isReloadEnabled()
-
-
     }
-
 }

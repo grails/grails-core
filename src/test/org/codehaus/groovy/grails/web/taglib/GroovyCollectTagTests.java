@@ -14,8 +14,8 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 public class GroovyCollectTagTests extends TestCase {
 
-    private GroovyCollectTag tag;
-    private StringWriter sw;
+    private GroovyCollectTag tag = new GroovyCollectTag();
+    private StringWriter sw = new StringWriter();
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -23,16 +23,7 @@ public class GroovyCollectTagTests extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        sw = new StringWriter();
-        tag = new GroovyCollectTag();
         tag.setWriter(new PrintWriter(sw));
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        tag = null;
-        sw = null;
-        super.tearDown();
     }
 
     /**

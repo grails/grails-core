@@ -13,29 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.plugins.web.mimes
 
+import grails.util.GrailsUtil
+
 import javax.servlet.http.HttpServletRequest
+
+import org.apache.commons.collections.map.ListOrderedMap
 import org.codehaus.groovy.grails.web.mime.DefaultAcceptHeaderParser
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.mime.*
-import org.apache.commons.collections.map.ListOrderedMap
+
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
-* A plug-in that provides content negotiation capabilities to Grails via a new withFormat method on controllers
-* as well as a format property on the HttpServletRequest instance
-*
-* @author Graeme Rocher
-* @since 1.0
-*
-* Created: Nov 26, 2007
-*/
+ * Provides content negotiation capabilities to Grails via a new withFormat method on controllers
+ * as well as a format property on the HttpServletRequest instance.
+ *
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class MimeTypesGrailsPlugin {
 
-    def version = grails.util.GrailsUtil.getGrailsVersion()
+    def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version, servlets:version, controllers:version]
     def observe = ['controllers']
 
@@ -44,13 +45,13 @@ class MimeTypesGrailsPlugin {
         def config = application.config.grails.mime
         boolean useAcceptHeader = config.use.accept.header ? true : false
 
-	    // Reads the request format by parsing request headers. Will check for the existance of a format parameter first as an override
-        HttpServletRequest.metaClass.getFormat = {->
+        // Reads the request format by parsing request headers. Will check for the existance of a format parameter first as an override
+        HttpServletRequest.metaClass.getFormat = { ->
             def result = delegate.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT)
-            if(!result) {
+            if (!result) {
 
                 def formatOverride = RequestContextHolder.currentRequestAttributes().params.format
-                if(formatOverride) {
+                if (formatOverride) {
                     def allMimes = MimeType.getConfiguredMimeTypes()
                     def mime = allMimes.find { it.extension == formatOverride }
                     result = mime ? mime.extension : mimeTypes[0].extension
@@ -77,16 +78,16 @@ class MimeTypesGrailsPlugin {
 
         HttpServletRequest.metaClass.getMimeTypes = {->
             def result = delegate.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
-            if(!result) {
+            if (!result) {
 
                 def userAgent = delegate.getHeader(HttpHeaders.USER_AGENT)
-                def msie = userAgent && useAgent ==~ /msie(?i)/ ?: false 
+                def msie = userAgent && useAgent ==~ /msie(?i)/ ?: false
 
                 def parser = new DefaultAcceptHeaderParser()
                 def header = delegate.contentType
-                if(!header) header = delegate.getHeader(HttpHeaders.CONTENT_TYPE)
-                if(msie) header = "*/*"
-                if(!header && useAcceptHeader) header = delegate.getHeader(HttpHeaders.ACCEPT)
+                if (!header) header = delegate.getHeader(HttpHeaders.CONTENT_TYPE)
+                if (msie) header = "*/*"
+                if (!header && useAcceptHeader) header = delegate.getHeader(HttpHeaders.ACCEPT)
                 result = parser.parse(header)
 
                 delegate.setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, result)
@@ -95,9 +96,7 @@ class MimeTypesGrailsPlugin {
         }
 
         addWithFormatMethod(application.controllerClasses)
-
     }
-
 
     def onChange = { event ->
         addWithFormatMethod([event.source])
@@ -111,31 +110,30 @@ class MimeTypesGrailsPlugin {
                 callable.resolveStrategy = Closure.DELEGATE_ONLY
                 callable.call()
                 formats = callable.delegate.formatOptions
-            } finally {
+            }
+            finally {
                 callable.delegate = delegate
                 callable.resolveStrategy = Closure.OWNER_FIRST
             }
-
 
             def result
             def req = request
             def mimeTypes = req.mimeTypes
             def format = req.format
-            if(formats) {
-                if(format == 'all') {
+            if (formats) {
+                if (format == 'all') {
                     def firstKey = formats.firstKey()
-
                     result = getResponseForFormat(formats[firstKey], firstKey, req)
                 }
                 else {
                     // if the format has been specified then use that
-                    if(formats.containsKey(format)) {
+                    if (formats.containsKey(format)) {
                         result = getResponseForFormat(formats[format], format, req)
                     }
                     // otherwise look for the best match
                     else {
-                        for(mime in req.mimeTypes) {
-                            if(formats.containsKey(mime.extension)) {
+                        for (mime in req.mimeTypes) {
+                            if (formats.containsKey(mime.extension)) {
                                 result = getResponseForFormat(formats[mime.extension], mime.extension, req)
                                 break
                             }
@@ -149,20 +147,19 @@ class MimeTypesGrailsPlugin {
 
     private getResponseForFormat(formatResponse, format, req) {
         req[GrailsApplicationAttributes.CONTENT_FORMAT] = format
-        if(formatResponse instanceof Map) {
+        if (formatResponse instanceof Map) {
             return formatResponse
         }
-        else {
-            return formatResponse?.call()
-        }
 
+        return formatResponse?.call()
     }
 }
+
 class FormatInterceptor {
     def formatOptions = new ListOrderedMap()
     Object invokeMethod(String name,args) {
-        if(args.size() > 0 && (args[0] instanceof Closure || args[0] instanceof Map)) {
-            formatOptions[name] = args[0] 
+        if (args.size() > 0 && (args[0] instanceof Closure || args[0] instanceof Map)) {
+            formatOptions[name] = args[0]
         }
         else {
             formatOptions[name] = null

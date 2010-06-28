@@ -1,16 +1,11 @@
 package org.codehaus.groovy.grails.web.codecs
 
+import org.codehaus.groovy.grails.plugins.codecs.HexCodec
+
 // TODO: Fix these tests
-class HexCodecTests extends GroovyTestCase{
-    def GroovyObject codec
+class HexCodecTests extends GroovyTestCase {
 
-    void setUp() {
-        codec = new org.codehaus.groovy.grails.plugins.codecs.HexCodec()
-    }
-
-    void tearDown() {
-        codec = null
-    }
+    def codec = new HexCodec()
 
     void testEncode() {
 
@@ -41,4 +36,3 @@ class HexCodecTests extends GroovyTestCase{
 //        assertEquals([65,32,66,32,67,32,68,32,69], codec.decode(codec.encode('A B C D E')).toList())
     }
 }
-

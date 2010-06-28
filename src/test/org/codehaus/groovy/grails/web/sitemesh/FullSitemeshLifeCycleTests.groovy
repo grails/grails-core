@@ -9,31 +9,30 @@ import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
+class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
 
     void testSimpleLayout() {
         def template = '''
 <html>
-		<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
-		<body onload="test();">body text</body>
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
+        <body onload="test();">body text</body>
 </html>
 '''
 
         assertOutputEquals '''
 <html>
-		<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
-		<body onload="test();">body text</body>
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
+        <body onload="test();">body text</body>
 </html>
 ''', template
-        
+
         def layout = '''
 <html>
     <head><title>Decorated <g:layoutTitle /></title><g:layoutHead /></head>
     <body><h1>Hello</h1><g:layoutBody /></body>
 </html>
 '''
-         def result = applyLayout(layout, template)
+        def result = applyLayout(layout, template)
 
         assertEquals '''
 <html>
@@ -42,42 +41,41 @@ public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
 </html>
 ''', result
     }
-	
-	void testTitleInSubTemplate() {
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/_title.gsp', '<title>This is the title</title>')
-		appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
-		
-		def template = '''
+
+    void testTitleInSubTemplate() {
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_title.gsp', '<title>This is the title</title>')
+        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+
+        def template = '''
 <html>
-		<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><g:render template="/title"/></head>
-		<body onload="test();">body text</body>
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><g:render template="/title"/></head>
+        <body onload="test();">body text</body>
 </html>
 '''
-		
-		assertOutputEquals '''
+
+        assertOutputEquals '''
 <html>
-		<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
-		<body onload="test();">body text</body>
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
+        <body onload="test();">body text</body>
 </html>
 ''', template
-		
-		def layout = '''
+
+        def layout = '''
 <html>
     <head><title>Decorated <g:layoutTitle /></title><g:layoutHead /></head>
     <body><h1>Hello</h1><g:layoutBody /></body>
 </html>
 '''
-		def result = applyLayout(layout, template)
-		
-		assertEquals '''
+        def result = applyLayout(layout, template)
+
+        assertEquals '''
 <html>
     <head><title>Decorated This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
     <body><h1>Hello</h1>body text</body>
 </html>
 ''', result
-	}	
-
+    }
 
     void testParameters() {
         def template = '''
@@ -95,9 +93,8 @@ public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
 
         def result = applyLayout(layout, template)
 
-        assertEquals '<h1>pageProperty: here!</h1>', result 
+        assertEquals '<h1>pageProperty: here!</h1>', result
     }
-
 
     void testParametersWithLogic() {
         def template = '''
@@ -114,7 +111,6 @@ public class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests{
 
         def result = applyLayout(layout, template)
 
-        assertEquals 'good', result 
-
+        assertEquals 'good', result
     }
 }

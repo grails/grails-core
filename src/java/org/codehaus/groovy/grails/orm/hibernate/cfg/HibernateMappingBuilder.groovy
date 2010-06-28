@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
-/**
- * A builder that implements the ORM mapping DSL constructing a model that can be evaluated by the
- * GrailsDomainBinder class which maps GORM classes onto the database
-
- * @author Graeme Rocher
- * @since 1.0
-  *
- * Created: Sep 26, 2007
- * Time: 2:24:45 PM
- *
- */
 
 import org.apache.commons.logging.LogFactory
 import org.hibernate.InvalidMappingException
 import org.hibernate.FetchMode
 import org.apache.commons.beanutils.BeanUtils
 
+/**
+ * A builder that implements the ORM mapping DSL constructing a model that can be evaluated by the
+ * GrailsDomainBinder class which maps GORM classes onto the database
+ *
+ * @author Graeme Rocher
+ * @since 1.0
+ */
 class HibernateMappingBuilder {
 
     static final LOG = LogFactory.getLog(HibernateMappingBuilder.class)
@@ -55,20 +51,20 @@ class HibernateMappingBuilder {
      * @param mappingClosure The closure that defines the ORM DSL 
      */
     Mapping evaluate(Closure mappingClosure) {
-        if(mapping==null)
+        if (mapping == null) {
             mapping = new Mapping()
+        }
         mappingClosure.resolveStrategy = Closure.DELEGATE_ONLY
         mappingClosure.delegate = this
         mappingClosure.call()
         mapping
     }
 
-
     /**
      * Include another config in this one
      */
     void includes(Closure callable) {
-        if(callable) {
+        if (callable) {
             callable.resolveStrategy = Closure.DELEGATE_ONLY
             callable.delegate = this
             callable.call()
@@ -76,15 +72,17 @@ class HibernateMappingBuilder {
     }
 
     void hibernateCustomUserType(Map args) {
-        if(args.type && (args['class'] instanceof Class))
+        if (args.type && (args['class'] instanceof Class)) {
             mapping.userTypes[args['class']] = args.type
+        }
     }
+
     /**
-    * <p>Configures the table name. Example:
-    * <code> { table 'foo' }
-    *
-    * @param name The name of the table
-    */
+     * <p>Configures the table name. Example:
+     * <code> { table 'foo' }
+     *
+     * @param name The name of the table
+     */
     void table(String name) {
         mapping.tableName = name
     }
@@ -99,25 +97,25 @@ class HibernateMappingBuilder {
         mapping.discriminator = name
     }
 
-   /**
-    * <p>Configures the discriminator name. Example:
-    * <code> { discriminator name:'foo', column:'type' }
-    *
-    * @param name The name of the table
-    */
+    /**
+     * <p>Configures the discriminator name. Example:
+     * <code> { discriminator name:'foo', column:'type' }
+     *
+     * @param name The name of the table
+     */
     void discriminator(Map args) {
         mapping.discriminator = args?.remove('value')
-        if(args.column instanceof String) {
+        if (args.column instanceof String) {
             mapping.discriminatorColumn = new ColumnConfig(name:args.column)
         }
-        else if(args.column instanceof Map) {
+        else if (args.column instanceof Map) {
             ColumnConfig config = new ColumnConfig()
             BeanUtils.populate config, args.column 
             mapping.discriminatorColumn = config
         }
-		mapping.discriminatorMap.type = args?.remove('type')
-		mapping.discriminatorMap.insert = args?.remove('insert')
-		mapping.discriminatorMap.formula = args?.remove('formula')
+        mapping.discriminatorMap.type = args?.remove('type')
+        mapping.discriminatorMap.insert = args?.remove('insert')
+        mapping.discriminatorMap.formula = args?.remove('formula')
     }
 
     /**
@@ -138,15 +136,14 @@ class HibernateMappingBuilder {
         mapping.table.catalog = tableDef?.catalog?.toString()
     }
 
-
     /**
-    * <p>Configures the default sort column. Example:
-    * <code> { sort 'foo' }
-    *
-    * @param name The name of the property to sort by
-    */    
+     * <p>Configures the default sort column. Example:
+     * <code> { sort 'foo' }
+     *
+     * @param name The name of the property to sort by
+     */    
     void sort(String name) {
-        if(name) {
+        if (name) {
             mapping.sort = name
         }
     }
@@ -165,15 +162,14 @@ class HibernateMappingBuilder {
         mapping.dynamicInsert = b
     }
 
-
     /**
-    * <p>Configures the default sort column. Example:
-    * <code> { sort foo:'desc' }
-    *
-    * @param name The name of the property to sort by
-    */
+     * <p>Configures the default sort column. Example:
+     * <code> { sort foo:'desc' }
+     *
+     * @param name The name of the property to sort by
+     */
     void sort(Map nameAndDirection) {
-        if(nameAndDirection) {
+        if (nameAndDirection) {
             def entry = nameAndDirection.entrySet().iterator().next()
             sort entry.key
             order entry.value
@@ -185,20 +181,21 @@ class HibernateMappingBuilder {
      * @param num The batch size to use
      */
     void batchSize(Integer num) {
-        if(num) {
+        if (num) {
             mapping.batchSize = num
         }
     }
 
     /**
-    * <p>Configures the default sort direction. Example:
-    * <code> { order 'desc' }
-    *
-    * @param name The name of the property to sort by
-    */
+     * <p>Configures the default sort direction. Example:
+     * <code> { order 'desc' }
+     *
+     * @param name The name of the property to sort by
+     */
     void order(String direction) {
-        if("desc".equalsIgnoreCase(direction) || "asc".equalsIgnoreCase(direction))
+        if ("desc".equalsIgnoreCase(direction) || "asc".equalsIgnoreCase(direction)) {
             mapping.order = direction
+        }
     }
 
     /**
@@ -209,69 +206,72 @@ class HibernateMappingBuilder {
     }
 
     /**
-    * <p>Configures whether to use versioning for optimistic locking
-    * <code> { version false }
-    *
-    * @param isVersioned True if a version property should be configured
-    */
+     * <p>Configures whether to use versioning for optimistic locking
+     * <code> { version false }
+     *
+     * @param isVersioned True if a version property should be configured
+     */
     void version(boolean isVersioned) {
         mapping.versioned = isVersioned 
     }
 
     /**
-    * <p>Configures the name of the version column
-    * <code> { version 'foo' }
-    *
-    * @param isVersioned True if a version property should be configured
-    */
+     * <p>Configures the name of the version column
+     * <code> { version 'foo' }
+     *
+     * @param isVersioned True if a version property should be configured
+     */
     void version(String versionColumn) {
         PropertyConfig pc = mapping.getPropertyConfig("version")
-        if(!pc) {
+        if (!pc) {
             pc = new PropertyConfig()
             mapping.columns['version'] = pc
         }
         pc.columns << new ColumnConfig(name:versionColumn)
-
     }
 
-
     /**
-    * <p>Configures the second-level cache for the class
-    * <code> { cache usage:'read-only', include:'all' }
-    *
-    * @param args Named arguments that contain the "usage" and/or "include" parameters
-    */
+     * <p>Configures the second-level cache for the class
+     * <code> { cache usage:'read-only', include:'all' }
+     *
+     * @param args Named arguments that contain the "usage" and/or "include" parameters
+     */
     void cache(Map args) {
         mapping.cache = new CacheConfig(enabled:true)
-        if(args.usage) {
-            if(CacheConfig.USAGE_OPTIONS.contains(args.usage))
+        if (args.usage) {
+            if (CacheConfig.USAGE_OPTIONS.contains(args.usage)) {
                 mapping.cache.usage = args.usage
-            else
+            }
+            else {
                 LOG.warn("ORM Mapping Invalid: Specified [usage] with value [$args.usage] of [cache] in class [$className] is not valid")
+            }
         }
-        if(args.include) {
-            if(CacheConfig.INCLUDE_OPTIONS.contains(args.include))
+        if (args.include) {
+            if (CacheConfig.INCLUDE_OPTIONS.contains(args.include)) {
                 mapping.cache.include = args.include
-            else
+            }
+            else {
                 LOG.warn("ORM Mapping Invalid: Specified [include] with value [$args.include] of [cache] in class [$className] is not valid")            
+            }
         }
     }
 
     /**
-    * <p>Configures the second-level cache for the class
-    * <code> { cache 'read-only' }
-    *
-    * @param usage The usage type for the cache which is one of CacheConfig.USAGE_OPTIONS
-    */
+     * <p>Configures the second-level cache for the class
+     * <code> { cache 'read-only' }
+     *
+     * @param usage The usage type for the cache which is one of CacheConfig.USAGE_OPTIONS
+     */
     void cache(String usage) {
         cache(usage:usage)
     }
+
     /**
-    * <p>Configures the second-level cache for the class
-    * <code> { cache 'read-only', include:'all }
-    *
-    * @param usage The usage type for the cache which is one of CacheConfig.USAGE_OPTIONS
-    */
+     * <p>Configures the second-level cache for the class
+     * <code> { cache 'read-only', include:'all }
+     *
+     * @param usage The usage type for the cache which is one of CacheConfig.USAGE_OPTIONS
+     */
     void cache(String usage, Map args) {
         args = args ? args : [:]
         args.usage = usage
@@ -293,80 +293,79 @@ class HibernateMappingBuilder {
     }
 
     /**
-    * <p>Configures the second-level cache with the default usage of 'read-write' and the default include of 'all' if
-    *  the passed argument is true
-
-    * <code> { cache true }
-    *
-    * @param shouldCache True if the default cache configuration should be applied
-    */
+     * <p>Configures the second-level cache with the default usage of 'read-write' and the default include of 'all' if
+     *  the passed argument is true
+     *  
+     * <code> { cache true }
+     *
+     * @param shouldCache True if the default cache configuration should be applied
+     */
     void cache(boolean shouldCache) {
         mapping.cache = new CacheConfig(enabled:shouldCache)
     }
 
-   /**
-    * <p>Configures the identity strategy for the mapping. Examples
-
-    * <code>
-    *    { id generator:'sequence' }
-    *    { id composite: ['one', 'two'] }
-    * </code>
-    *
-    * @param args The named arguments to the id method
-    */
+    /**
+     * <p>Configures the identity strategy for the mapping. Examples
+     *
+     * <code>
+     *    { id generator:'sequence' }
+     *    { id composite: ['one', 'two'] }
+     * </code>
+     *
+     * @param args The named arguments to the id method
+     */
     void id(Map args) {
-        if(args.composite) {
+        if (args.composite) {
             mapping.identity = new CompositeIdentity(propertyNames:args.composite as String[])
-            if(args.compositeClass) {
+            if (args.compositeClass) {
                 mapping.identity.compositeClass = args.compositeClass
             }
         }
         else {
-            if(args?.generator) {
+            if (args?.generator) {
                 mapping.identity.generator = args.remove('generator')
             }
-            if(args?.name) {
+            if (args?.name) {
                 mapping.identity.name = args.remove('name').toString()
             }
-            if(args?.params) {
+            if (args?.params) {
                 def params = args.remove('params')
-                for(entry in params) {
+                for (entry in params) {
                     params[entry.key] = entry.value?.toString()
                 }
                 mapping.identity.params = params
             }
-            if(args?.natural) {
+            if (args?.natural) {
                 def naturalArgs = args.remove('natural')
                 def propertyNames = naturalArgs instanceof Map ? naturalArgs.remove('properties') : naturalArgs
 
-                if(propertyNames) {
+                if (propertyNames) {
                     def ni = new NaturalId()
                     ni.mutable = (naturalArgs instanceof Map) && naturalArgs.mutable ?: false
-                    if(propertyNames instanceof List)  {
-                       ni.propertyNames = propertyNames
+                    if (propertyNames instanceof List)  {
+                        ni.propertyNames = propertyNames
                     }
                     else {
-                       ni.propertyNames = [propertyNames.toString()]
+                        ni.propertyNames = [propertyNames.toString()]
                     }
                     mapping.identity.natural = ni
                 }
             }
             // still more arguments?
-            if(args) {
+            if (args) {
                 handleMethodMissing("id", [args] as Object[])
             }
         }
-
     }
 
     /**
      * A closure used by methodMissing to create column definitions
      */
     private handleMethodMissing = { String name, args ->
-        if(args && args[0] instanceof Map) {
+        if (args && args[0] instanceof Map) {
             def namedArgs = args[0]
             PropertyConfig property = mapping.columns[name] ?: new PropertyConfig()
-			property.formula = namedArgs.formula
+            property.formula = namedArgs.formula
             property.type = namedArgs.type ?: property.type
             property.lazy = namedArgs.lazy != null ? namedArgs.lazy : property.lazy
             property.cascade = namedArgs.cascade ?: property.cascade
@@ -375,7 +374,7 @@ class HibernateMappingBuilder {
             property.batchSize = namedArgs.batchSize instanceof Integer ? namedArgs.batchSize : property.batchSize
             property.ignoreNotFound = namedArgs.ignoreNotFound != null ? namedArgs.ignoreNotFound : property.ignoreNotFound
             property.typeParams = namedArgs.params ?: property.typeParams
-            if(namedArgs.fetch) {
+            if (namedArgs.fetch) {
                 switch(namedArgs.fetch) {
                     case ~/(join|JOIN)/:
                         property.fetch = FetchMode.JOIN; break
@@ -399,11 +398,11 @@ class HibernateMappingBuilder {
                 // definitions, so pick up any column settings from
                 // the argument map.
                 def cc
-                if(property.columns) {
+                if (property.columns) {
                     cc = property.columns[0]
                 }
                 else {
-                    cc= new ColumnConfig()
+                    cc = new ColumnConfig()
                     property.columns << cc
                 }
 
@@ -415,66 +414,67 @@ class HibernateMappingBuilder {
                 cc.length = namedArgs["length"] ?: -1
                 cc.precision = namedArgs["precision"] ?: -1
                 cc.scale = namedArgs["scale"] ?: -1
-
-
             }
 
-            if(namedArgs.cache instanceof String) {
+            if (namedArgs.cache instanceof String) {
                 CacheConfig cc = new CacheConfig()
-                if(CacheConfig.USAGE_OPTIONS.contains(namedArgs.cache))
+                if (CacheConfig.USAGE_OPTIONS.contains(namedArgs.cache)) {
                     cc.usage = namedArgs.cache
-                else
+                }
+                else {
                     LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
+                }
                 property.cache = cc
             }
-            else if(namedArgs.cache == true) {
+            else if (namedArgs.cache == true) {
                 property.cache = new CacheConfig()
             }
-            else if(namedArgs.cache instanceof Map) {
+            else if (namedArgs.cache instanceof Map) {
                 def cacheArgs = namedArgs.cache
                 CacheConfig cc = new CacheConfig()
-                if(CacheConfig.USAGE_OPTIONS.contains(cacheArgs.usage))
+                if (CacheConfig.USAGE_OPTIONS.contains(cacheArgs.usage)) {
                     cc.usage = cacheArgs.usage
-                else
+                }
+                else {
                     LOG.warn("ORM Mapping Invalid: Specified [usage] of [cache] with value [$args.usage] for association [$name] in class [$className] is not valid")
-
-                if(CacheConfig.INCLUDE_OPTIONS.contains(cacheArgs.include))
+                }
+                if (CacheConfig.INCLUDE_OPTIONS.contains(cacheArgs.include)) {
                     cc.include = cacheArgs.include
-                else
+                }
+                else {
                     LOG.warn("ORM Mapping Invalid: Specified [include] of [cache] with value [$args.include] for association [$name] in class [$className] is not valid")
-
+                }
                 property.cache = cc
-
             }
 
-            if(namedArgs.indexColumn) {
+            if (namedArgs.indexColumn) {
                 def pc = new PropertyConfig()
                 property.indexColumn = pc
                 def cc = new ColumnConfig()
                 pc.columns << cc
                 def indexColArg = namedArgs.indexColumn
-                if(indexColArg instanceof Map) {
-                    if(indexColArg.type) {
+                if (indexColArg instanceof Map) {
+                    if (indexColArg.type) {
                         pc.type = indexColArg.remove('type')
                     }
                     bindArgumentsToColumnConfig(indexColArg, cc)
                 }
                 else {
-                   cc.name = indexColArg.toString()
+                    cc.name = indexColArg.toString()
                 }
             }
-            if(namedArgs.joinTable) {
+            if (namedArgs.joinTable) {
                 def join = new JoinTable()
                 def joinArgs = namedArgs.joinTable
-                if(joinArgs instanceof String) {
+                if (joinArgs instanceof String) {
                     join.name = joinArgs
                 }
-                else if(joinArgs instanceof Map) {
-                    if(joinArgs.name) join.name = joinArgs.remove('name')
-                    if(joinArgs.key) {
+                else if (joinArgs instanceof Map) {
+                    if (joinArgs.name) join.name = joinArgs.remove('name')
+                    if (joinArgs.key) {
                         join.key = new ColumnConfig(name:joinArgs.remove('key'))
                     }
-                    if(joinArgs.column){                        
+                    if (joinArgs.column){                        
                         ColumnConfig cc = new ColumnConfig(name: joinArgs.column)
                         join.column = cc
                         bindArgumentsToColumnConfig(joinArgs, cc)
@@ -482,21 +482,21 @@ class HibernateMappingBuilder {
                 }
                 property.joinTable = join
             }
-            else if(namedArgs.containsKey('joinTable') && namedArgs.joinTable == false) {
+            else if (namedArgs.containsKey('joinTable') && namedArgs.joinTable == false) {
                 property.joinTable = null
             }
 
             mapping.columns[name] = property
         }
-
     }
 
-    private def bindArgumentsToColumnConfig(argMap, ColumnConfig cc) {
+    private bindArgumentsToColumnConfig(argMap, ColumnConfig cc) {
         argMap.each {k, v ->
             if (cc.metaClass.hasProperty(cc, k)) {
                 try {
                     cc."$k" = v
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     LOG.warn("Parameter [$k] cannot be used with [joinTable] argument")
                 }
             }
@@ -515,11 +515,10 @@ class HibernateMappingBuilder {
     }
 
     void methodMissing(String name, args) {
-        if('user-type' == name && args && (args[0] instanceof Map)) {
-
-           hibernateCustomUserType(args[0])
+        if ('user-type' == name && args && (args[0] instanceof Map)) {
+            hibernateCustomUserType(args[0])
         }
-        else if(args && args[0] instanceof Map) {
+        else if (args && args[0] instanceof Map) {
             handleMethodMissing(name, args)
         }
         else {
@@ -549,8 +548,7 @@ class PropertyDefinitionDelegate {
         // Check that this column has a name
         if (!args["name"]) throw new InvalidMappingException("Column definition must have a name!")
 
-        // Create a new column configuration based on the mapping for
-        // this column.
+        // Create a new column configuration based on the mapping for this column.
         def column = new ColumnConfig()
         column.name = args["name"]
         column.sqlType = args["sqlType"]

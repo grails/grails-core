@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.test.junit4.runner
 
-import org.junit.runners.model.Statement
-
 import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
+import org.junit.runners.model.Statement
 
 class GrailsTestEnvironmentStatement extends Statement {
 
@@ -37,5 +35,4 @@ class GrailsTestEnvironmentStatement extends Statement {
             testStatement.evaluate()
         }
     }
-
 }

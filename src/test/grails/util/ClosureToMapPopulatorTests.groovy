@@ -1,10 +1,10 @@
 package grails.util
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-
-public class ClosureToMapPopulatorTests extends GroovyTestCase{
+class ClosureToMapPopulatorTests extends GroovyTestCase {
 
     void testPopulate() {
         def populator = new ClosureToMapPopulator()
@@ -15,9 +15,8 @@ public class ClosureToMapPopulatorTests extends GroovyTestCase{
             three "four", "five"
         }
 
-
         assertEquals "bar", result.foo
         assertEquals "two", result.one
-        assert ["four", "five"] == result.three : "should have returned a list"
+        assertEquals "should have returned a list", ["four", "five"], result.three
     }
 }

@@ -3,13 +3,12 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp
 import grails.util.GrailsWebUtil
 import org.springframework.web.context.request.RequestContextHolder
 import javax.servlet.jsp.PageContext
+
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: May 1, 2008
  */
-class GroovyPagesPageContextTests extends GroovyTestCase{
+class GroovyPagesPageContextTests extends GroovyTestCase {
 
     protected void setUp() {
         GrailsWebUtil.bindMockWebRequest()
@@ -18,9 +17,6 @@ class GroovyPagesPageContextTests extends GroovyTestCase{
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
     }
-
-
-
 
     void testPageContextState() {
 
@@ -31,8 +27,6 @@ class GroovyPagesPageContextTests extends GroovyTestCase{
         assert pageContext.getRequest()
         assert pageContext.getResponse()
         assert pageContext.getPage()
-
-        
     }
 
     void testPageContextScopes() {
@@ -65,7 +59,5 @@ class GroovyPagesPageContextTests extends GroovyTestCase{
         assertEquals "diff", pageContext.getAttribute("foo", PageContext.SESSION_SCOPE)
         assertNull pageContext.getAttribute("foo")
         assertNull pageContext.getAttribute("foo", PageContext.PAGE_SCOPE)
-
     }
-
 }

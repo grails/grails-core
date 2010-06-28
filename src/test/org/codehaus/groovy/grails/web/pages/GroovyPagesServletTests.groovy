@@ -1,14 +1,16 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.springframework.mock.web.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.web.errors.*
-import grails.util.*
+import grails.util.GrailsWebUtil
+import grails.util.MockHttpServletResponse
+
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockServletConfig
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
 
 class GroovyPagesServletTests extends GroovyTestCase {
-
 
     void testCreateResponseWriter() {
         shouldFail {
@@ -16,9 +18,9 @@ class GroovyPagesServletTests extends GroovyTestCase {
             def writer = gps.createResponseWriter(new MockHttpServletResponse())
         }
 
-        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
-        RequestContextHolder.setRequestAttributes(webRequest)
-        
+        RequestContextHolder.setRequestAttributes new GrailsWebRequest(
+            new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+
         def gps = new GroovyPagesServlet()
         def writer = gps.createResponseWriter(new MockHttpServletResponse())
 
@@ -27,32 +29,30 @@ class GroovyPagesServletTests extends GroovyTestCase {
 
     void testHandleException() {
 
-         def webRequest = GrailsWebUtil.bindMockWebRequest()
-         def request = webRequest.currentRequest
-        
-         MockServletContext servletContext = new MockServletContext()
-         MockApplicationContext ctx = new MockApplicationContext()
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def request = webRequest.currentRequest
 
-         servletContext.setAttribute("app.ctx", ctx) 
-         def gpte = new GroovyPagesTemplateEngine(servletContext)
-         ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte) 
-         def gps = new GroovyPagesServlet()
-         gps.contextAttribute = "app.ctx"
-         gps.init(new MockServletConfig(servletContext))
-         def e = new Exception()
+        MockServletContext servletContext = new MockServletContext()
+        MockApplicationContext ctx = new MockApplicationContext()
 
-         def response = new MockHttpServletResponse()
+        servletContext.setAttribute("app.ctx", ctx)
+        def gpte = new GroovyPagesTemplateEngine(servletContext)
+        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
+        def gps = new GroovyPagesServlet()
+        gps.contextAttribute = "app.ctx"
+        gps.init(new MockServletConfig(servletContext))
+        def e = new Exception()
 
+        def response = new MockHttpServletResponse()
 
-
-         gps.handleException(request, response,e,response.getWriter(),gpte)
-
+        gps.handleException(request, response,e,response.getWriter(),gpte)
     }
 
     void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
     }
+
     void setUp() {
-        RequestContextHolder.setRequestAttributes(null)    
+        RequestContextHolder.setRequestAttributes(null)
     }
 }

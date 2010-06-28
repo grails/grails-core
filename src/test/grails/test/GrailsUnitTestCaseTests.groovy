@@ -14,19 +14,18 @@
  */
 package grails.test
 
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import grails.converters.JSON
 import grails.converters.XML
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 import junit.framework.AssertionFailedError
+
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 
 /**
  * Test case for {@link GrailsUnitTestCase}.
  */
 class GrailsUnitTestCaseTests extends GroovyTestCase {
-    protected void setUp() {
-        super.setUp()
-    }
 
     void testMockConfig() {
         def testCase = new TestUnitTestCase()
@@ -38,8 +37,8 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
         new GrailsUnitTestClass().testConfig()
 
         testCase.tearDown()
-
     }
+
     void testMockLogging() {
         def testCase = new TestUnitTestCase()
         testCase.setUp()
@@ -121,9 +120,7 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
         testCase.setUp()
 
         testCase.testMockInstances1()
-
         testCase.tearDown()
-
         testCase.testMockInstances2()
     }
 
@@ -159,12 +156,14 @@ class TestUnitTestCase extends GrailsUnitTestCase {
         assertEquals 0, GrailsUnitTestClass.list().size()
         assertNull GrailsUnitTestClass.findByName("foo")
     }
+
     void testMockInstances2() {
         mockDomain(GrailsUnitTestClass, [new GrailsUnitTestClass(id:1, name:"foo")])
 
         assertEquals 1, GrailsUnitTestClass.list().size()
         assertNotNull GrailsUnitTestClass.findByName("foo")
     }
+
     void testConstraints() {
         mockForConstraintsTests(GrailsUnitTestClass)
 
@@ -257,11 +256,11 @@ class TestUnitTestCase extends GrailsUnitTestCase {
 
     void testAsXml() {
         mockDomain(GrailsUnitTestClass, [
-                new GrailsUnitTestClass(
-                        id: 555,
-                        name: "The Parent",
-                        age: 46,
-                        child: new GrailsUnitChildClass(id: 673, memo: "Test"))
+            new GrailsUnitTestClass(
+                id: 555,
+                name: "The Parent",
+                age: 46,
+                child: new GrailsUnitChildClass(id: 673, memo: "Test"))
         ])
         mockController(GrailsUnitController)
 
@@ -271,7 +270,7 @@ class TestUnitTestCase extends GrailsUnitTestCase {
         def xml = XML.parse(controller.response.contentAsString)
         assertEquals "46", xml.age.text()
         assertEquals "673", xml.child.id.text()
-        assertEquals "The Parent", xml.name.text() 
+        assertEquals "The Parent", xml.name.text()
     }
 
     void testFailingCase() {
@@ -346,21 +345,19 @@ class GrailsUnitTestPerson {
     String name
     String city
 
-    int hashCode() {
-        return name.hashCode()
-    }
+    int hashCode() { name.hashCode() }
 
     boolean equals(Object obj) {
-        return obj instanceof GrailsUnitTestPerson && name == obj?.name
+        obj instanceof GrailsUnitTestPerson && name == obj?.name
     }
 }
 
 class ClassToMock {
-  def foo(s) { 1 }
+    def foo(s) { 1 }
 }
 
 interface InterfaceToMock {
-  int foo(String s)
+    int foo(String s)
 }
 
 class GrailsUnitController {

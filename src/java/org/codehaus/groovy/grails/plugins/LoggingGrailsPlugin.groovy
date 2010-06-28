@@ -15,13 +15,15 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.GrailsNameUtils
+import grails.util.GrailsUtil
+
 import org.apache.commons.logging.LogFactory
 import org.apache.log4j.LogManager
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
-import grails.util.GrailsNameUtils
 
 /**
- * A plug-in that provides a lazy initialized commons logging log property for all classes.
+ * Provides a lazy initialized commons logging log property for all classes.
  *
  * @author Marc Palmer
  * @author Graeme Rocher
@@ -30,13 +32,13 @@ import grails.util.GrailsNameUtils
  */
 class LoggingGrailsPlugin {
 
-    def version = grails.util.GrailsUtil.getGrailsVersion()
+    def version = GrailsUtil.getGrailsVersion()
     def loadBefore = ['core']
     def observe = ['*']
 
     def doWithSpring = {
         def usebridge = application.config?.grails?.logging?.jul?.usebridge
-        if(usebridge) {
+        if (usebridge) {
             def juLogMgr = application.classLoader.loadClass("java.util.logging.LogManager").logManager
             juLogMgr.readConfiguration(new ByteArrayInputStream(".level=INFO".bytes))
             org.slf4j.bridge.SLF4JBridgeHandler.install()
@@ -44,8 +46,8 @@ class LoggingGrailsPlugin {
     }
 
     def doWithDynamicMethods = {applicationContext ->
-        for(handler in application.artefactHandlers) {
-            for( artefact in application."${handler.type}Classes" ) {
+        for (handler in application.artefactHandlers) {
+            for (artefact in application."${handler.type}Classes") {
                 addLogMethod(artefact.clazz, handler)
             }
         }
@@ -60,12 +62,14 @@ class LoggingGrailsPlugin {
     }
 
     def onChange = {event ->
-        if (event.source instanceof Class) {
-            log.debug "Adding log method to modified artefact [${event.source}]"
-            def handler = application.artefactHandlers.find {it.isArtefact(event.source)}
-            if (handler) {
-                addLogMethod(event.source, handler)
-            }
+        if (!(event.source instanceof Class)) {
+            return
+        }
+
+        log.debug "Adding log method to modified artefact [${event.source}]"
+        def handler = application.artefactHandlers.find {it.isArtefact(event.source)}
+        if (handler) {
+            addLogMethod(event.source, handler)
         }
     }
 
@@ -77,6 +81,6 @@ class LoggingGrailsPlugin {
 
         def log = LogFactory.getLog(logName)
 
-        artefactClass.metaClass.getLog << {-> log}
+        artefactClass.metaClass.getLog << { -> log}
     }
 }
