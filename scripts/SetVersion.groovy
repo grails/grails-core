@@ -27,6 +27,11 @@
 includeTargets << grailsScript("_GrailsEvents")
 
 target ('default': "Sets the current application version") {
+    if (isPluginProject) {
+        println "The set-version command cannot update the version of a plugin project. Change the value of the 'version' property in ${pluginSettings.basePluginDescriptor.filename} instead." 
+        exit(1)
+    }
+
     if (args != null) {
         ant.property(name:"app.version.new", value: args)
     }
