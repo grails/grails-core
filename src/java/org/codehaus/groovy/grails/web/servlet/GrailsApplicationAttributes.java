@@ -57,6 +57,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
     String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
     String APP_URI_ATTRIBUTE = "org.codehaus.groovy.grails.APP_URI_ATTRIBUTE";
+    String RENDERING_ERROR_ATTRIBUTE = "org.codehaus.groovy.grails.RENDERING_ERROR_ATTRIBUTE";
 
     /**
      * Retrieves the plugin context path for the current request. The plugin context path is the path

@@ -325,11 +325,31 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 try {
                     render(mv, processedRequest, response);
-                }
-                catch (Exception e) {
-                    mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
-                    handlerException = e;
-                    render(mv, processedRequest, response);
+                } catch (Exception e) {
+                    // Only render the error view if we're not already trying to render it.
+                    // This prevents a recursion if the error page itself has errors.
+                    if (request.getAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE) == null) {
+                        request.setAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE, Boolean.TRUE);
+                        
+                        mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
+                        handlerException = e;
+                        render(mv, processedRequest, response);
+                    }
+                    else {
+                        request.removeAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE);
+                        logger.warn("Recursive rendering of error view detected.", e);
+
+                        try {
+                            response.setContentType("text/plain");
+                            response.getWriter().write("Internal server error");
+                            response.flushBuffer();
+                        } catch (Exception e2) {
+                            logger.error("Internal server error - problem rendering error view", e2);
+                        }
+
+                        requestAttributes.setRenderView(false);
+                        return;
+                    }
                 }
             }
             else {
