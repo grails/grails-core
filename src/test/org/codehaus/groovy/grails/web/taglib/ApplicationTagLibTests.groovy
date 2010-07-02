@@ -1,12 +1,16 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import grails.util.GrailsUtil
+
 import javax.servlet.http.Cookie
 
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
-import grails.util.GrailsUtil
-import grails.util.MockHttpServletResponse
+import org.springframework.mock.web.MockHttpServletResponse
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
