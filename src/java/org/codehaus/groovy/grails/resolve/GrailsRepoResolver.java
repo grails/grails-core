@@ -16,15 +16,6 @@ package org.codehaus.groovy.grails.resolve;
 
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Date;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.ivy.core.module.descriptor.Artifact;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.plugins.repository.Repository;
@@ -32,7 +23,15 @@ import org.apache.ivy.plugins.repository.Resource;
 import org.apache.ivy.plugins.resolver.URLResolver;
 import org.apache.ivy.plugins.resolver.util.ResolvedResource;
 import org.apache.ivy.plugins.resolver.util.ResourceMDParser;
+import org.apache.ivy.util.url.IvyAuthenticator;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Overrides the default Ivy resolver to substitute the release tag in Grails'
@@ -56,8 +55,13 @@ public class GrailsRepoResolver extends URLResolver{
 
     @Override
     protected ResolvedResource findResourceUsingPattern(ModuleRevisionId mrid, String pattern, Artifact artifact, ResourceMDParser rmdparser, Date date) {
+        installIvyAuth();
         pattern = transformGrailsRepositoryPattern(mrid, pattern);
         return super.findResourceUsingPattern(mrid, pattern, artifact, rmdparser, date);    
+    }
+
+    private void installIvyAuth() {
+        java.net.Authenticator.setDefault(IvyAuthenticator.INSTANCE);
     }
 
     public String transformGrailsRepositoryPattern(ModuleRevisionId mrid, String pattern) {
@@ -80,6 +84,7 @@ public class GrailsRepoResolver extends URLResolver{
      */
     @SuppressWarnings("unchecked")
     public GPathResult getPluginList(File localFile) {
+        installIvyAuth();
         try {
             final Repository repo = getRepository();
             List list = repo.list(repositoryRoot.toString());
