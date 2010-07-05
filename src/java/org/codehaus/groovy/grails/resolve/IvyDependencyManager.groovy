@@ -1080,7 +1080,11 @@ class IvyDomainSpecificLanguageEvaluator {
                 if (dependency.group && name && dependency.version) {
                     boolean isExcluded = currentPluginBeingConfigured ? isExcludedFromPlugin(currentPluginBeingConfigured, name) : isExcluded(name)
                     if (!isExcluded) {
-                        def attrs = ["m:classifier":dependency.classifier ?: 'jar']
+                        def attrs = [:]
+                        if(dependency.classifier) {
+                            attrs["m:classifier"] = dependency.classifier
+                        }
+
                         def mrid
                         if (dependency.branch) {
                             mrid = ModuleRevisionId.newInstance(dependency.group, name, dependency.branch, dependency.version, attrs)
