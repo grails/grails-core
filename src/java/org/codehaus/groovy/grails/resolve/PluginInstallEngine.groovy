@@ -201,12 +201,11 @@ class PluginInstallEngine {
 
         assertNoExistingInlinePlugin(name)
 
-        if (!overwrite) {
-            def abort = checkExistingPluginInstall(name, version)
-            if (abort)  {
-                registerPluginWithMetadata(name, version)
-                return
-            }
+        def abort = checkExistingPluginInstall(name, version)
+
+        if (abort && !overwrite) {
+            registerPluginWithMetadata(name, version)
+            return
         }
 
         eventHandler "StatusUpdate", "Installing zip ${pluginZip}..."
