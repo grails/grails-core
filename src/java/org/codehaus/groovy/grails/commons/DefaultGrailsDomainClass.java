@@ -16,24 +16,15 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.springframework.validation.Validator;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -248,20 +239,22 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
             DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty) o;
             if (!currentProp.isPersistent()) continue;
 
-            Class<?> currentPropType = currentProp.getType();
+            Class currentPropType = currentProp.getType();
             // establish if the property is a one-to-many
             // if it is a Set and there are relationships defined
             // and it is defined as persistent
-            if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
-                establishRelationshipForCollection(currentProp);
-            }
-            // otherwise if the type is a domain class establish relationship
-            else if (DomainClassArtefactHandler.isDomainClass(currentPropType) &&
-                    currentProp.isPersistent()) {
-                establishDomainClassRelationship(currentProp);
-            }
-            else if (embedded.contains(currentProp.getName())) {
-                establishDomainClassRelationship(currentProp);
+            if(currentPropType != null) {
+                if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
+                    establishRelationshipForCollection(currentProp);
+                }
+                // otherwise if the type is a domain class establish relationship
+                else if (DomainClassArtefactHandler.isDomainClass(currentPropType) &&
+                        currentProp.isPersistent()) {
+                    establishDomainClassRelationship(currentProp);
+                }
+                else if (embedded.contains(currentProp.getName())) {
+                    establishDomainClassRelationship(currentProp);
+                }
             }
         }
     }
