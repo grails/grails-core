@@ -128,11 +128,14 @@ target(uninstallPlugin:"Uninstalls a plug-in for a given name") {
 target(listPlugins: "Implementation target") {
     depends(parseArguments,configureProxy)
 
-    if (argsMap.repository) {
-        configureRepositoryForName(argsMap.repository)
-        updatePluginsList()
-        printRemotePluginList(argsMap.repository)
-        printInstalledPlugins()
+    def repository = argsMap.repository
+    if (repository) {
+        eachRepository { name, url ->
+            if(name == repository) {
+                printRemotePluginList(repository)
+                printInstalledPlugins()
+            }
+        }
     }
     else if (argsMap.installed) {
         printInstalledPlugins()
