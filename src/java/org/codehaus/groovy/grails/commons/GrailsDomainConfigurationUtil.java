@@ -396,7 +396,7 @@ public class GrailsDomainConfigurationUtil {
                     // specified otherwise by the constraints
                     // If the field is a Java entity annotated with @Entity skip this
                     applyDefaultConstraints(propertyName, p, cp,
-                            defaultConstraints, delegate.getSharedConstraint(propertyName));
+                            defaultConstraints, delegate.getSharedConstraint(propertyName), propertyConfig);
                 }
             }
         }
@@ -451,7 +451,7 @@ public class GrailsDomainConfigurationUtil {
 
     @SuppressWarnings("unchecked")
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
-            ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
+            ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference, PropertyConfig propertyConfig) {
 
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
             if (defaultConstraints.containsKey("*")) {
@@ -473,10 +473,14 @@ public class GrailsDomainConfigurationUtil {
         }
 
         if (canApplyNullableConstraint(propertyName, p, cp)) {
-            cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
-                    Collection.class.isAssignableFrom(p.getType()) ||
-                    Map.class.isAssignableFrom(p.getType())
-            );
+            if (propertyConfig!=null && !propertyConfig.getInsertable()) {
+                cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,true);
+            } else {
+                cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
+                        Collection.class.isAssignableFrom(p.getType()) ||
+                        Map.class.isAssignableFrom(p.getType())
+                );
+            }
         }
     }
 
