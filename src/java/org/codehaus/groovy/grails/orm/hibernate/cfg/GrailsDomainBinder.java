@@ -701,7 +701,7 @@ public final class GrailsDomainBinder {
         }
     }
 
-    private static PropertyConfig getPropertyConfig(GrailsDomainClassProperty property) {
+    public static PropertyConfig getPropertyConfig(GrailsDomainClassProperty property) {
         Mapping m = getMapping(property.getDomainClass().getClazz());
         PropertyConfig config = m != null ? m.getPropertyConfig(property.getName()) : null;
         return config;

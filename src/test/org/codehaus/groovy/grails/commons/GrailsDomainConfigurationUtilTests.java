@@ -46,12 +46,6 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
         ExpandoMetaClass.enableGlobally();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
-    }
-
     public void testIsBasicType() {
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(boolean.class));
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(long.class));
