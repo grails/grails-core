@@ -1,5 +1,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import org.springframework.context.MessageSourceResolvable
@@ -9,8 +12,11 @@ import org.springframework.validation.FieldError
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
-    void onSetUp() {
-        gcl.parseClass('''
+    protected void onSetUp() {
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
+        gcl.parseClass '''
 class Book {
     Long id
     Long version
@@ -19,16 +25,19 @@ class Book {
     Date releaseDate
     BigDecimal usPrice
 }
-        ''')
+'''
 
-        gcl.parseClass('''
+        gcl.parseClass '''
 class Article {
     Long id
     Long version
     String title
 }
-        ''')
+'''
+    }
 
+    protected void onTearDown() {
+        PluginManagerHolder.pluginManager = null
     }
 
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {

@@ -102,6 +102,8 @@ hibernate {
         mockManager.doArtefactConfiguration()
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
+        afterPluginInitialization()
+
         ga.initialise()
         ga.setApplicationContext(ctx)
         ApplicationHolder.setApplication(ga)
@@ -163,6 +165,9 @@ hibernate {
     }
 
     protected void onTearDown() {
+    }
+	 
+    protected void afterPluginInitialization() {
     }
 }
 

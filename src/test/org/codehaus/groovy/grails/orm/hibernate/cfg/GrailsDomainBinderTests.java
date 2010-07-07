@@ -20,18 +20,22 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.lang.reflect.Field;
 
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGeneratorTests;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.TestClass;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -212,12 +216,16 @@ public class GrailsDomainBinderTests extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         ExpandoMetaClass.enableGlobally();
+        MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
+        PluginManagerHolder.setPluginManager(pluginManager);
+        pluginManager.registerMockPlugin(DefaultGrailsTemplateGeneratorTests.fakeHibernatePlugin);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
+        PluginManagerHolder.setPluginManager(null);
     }
 
     public void testCachedMapProperty() {

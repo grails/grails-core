@@ -5,6 +5,9 @@ import grails.spring.BeanBuilder
 
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.hibernate.SessionFactory
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.context.support.StaticMessageSource
@@ -12,10 +15,19 @@ import org.springframework.context.support.StaticMessageSource
 /**
  * @author Graeme Rocher
  * @since 1.1
- *
- * Created: Jan 16, 2009
  */
 class GORMNamespaceHandlerTests extends GroovyTestCase {
+
+    protected void setUp() {
+        super.setUp()
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        PluginManagerHolder.pluginManager = null
+    }
 
    /* void testGORMSessionFromXML() {
         def appCtx = new GenericApplicationContext()

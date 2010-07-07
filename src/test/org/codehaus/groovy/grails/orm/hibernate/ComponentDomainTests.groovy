@@ -1,6 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 class ComponentDomainTests extends AbstractGrailsMockTests {
 
@@ -17,6 +20,9 @@ class ComponentDomainTests extends AbstractGrailsMockTests {
     }
 
     protected void onSetUp() {
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
         gcl.parseClass('''
 class Person {
     Long id
@@ -35,5 +41,9 @@ class Address {
 }
 '''
         )
+    }
+
+    protected void onTearDown() {
+        PluginManagerHolder.pluginManager = null
     }
 }

@@ -1,12 +1,15 @@
 package org.codehaus.groovy.grails.validation
 
-import  org.codehaus.groovy.grails.commons.test.*
-import  org.codehaus.groovy.grails.commons.metaclass.*
-import org.springframework.validation.BindException;
+import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.springframework.validation.BindException
 
 class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
 
-    public void testCascadingValidation() {
+    void testCascadingValidation() {
         def bookClass = ga.getDomainClass("Book")
         def authorClass = ga.getDomainClass("Author")
         def addressClass = ga.getDomainClass("Address")
@@ -20,9 +23,6 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         authorMetaClass.setErrors = setter
         bookMetaClass.initialize()
         authorMetaClass.initialize()        
-
-
-
 
         def book = bookClass.newInstance()
         book.metaClass = bookMetaClass
@@ -86,10 +86,12 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         errors = new BindException(author, author.class.name)
         authorValidator.validate(author, errors, true)
         assert !errors.hasErrors()
-
     }
 
-    public void onSetUp() {
+    protected void onSetUp() {
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
         gcl.parseClass('''
 class Book {
     Long id
@@ -125,5 +127,9 @@ class Address {
     }
 }
         ''')
+    }
+
+    protected void onTearDown() {
+        PluginManagerHolder.pluginManager = null
     }
 }

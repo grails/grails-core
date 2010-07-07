@@ -55,6 +55,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -376,8 +377,10 @@ public class GrailsDomainConfigurationUtil {
 
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
         if (properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
+            boolean hasHibernate = PluginManagerHolder.getPluginManager().hasGrailsPlugin("hibernate");
             for (GrailsDomainClassProperty p : properties) {
-                PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
+                // assume no formula issues if Hibernate isn't available to avoid CNFE
+                PropertyConfig propertyConfig = hasHibernate ? GrailsDomainBinder.getPropertyConfig(p) : null;
                 if (propertyConfig != null && propertyConfig.getFormula() != null) {
                     if (constrainedProperties.remove(p.getName()) != null) {
                         // constraint is registered but cannot be applied to a derived property

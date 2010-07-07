@@ -1,6 +1,9 @@
 package org.codehaus.groovy.grails.validation;
 
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 
 /**
@@ -11,6 +14,10 @@ class NullableConstraintTests extends GroovyTestCase {
     def gcl
 
     protected void setUp() {
+        super.setUp()
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
         gcl = new GroovyClassLoader()
         gcl.parseClass("""
 class Project {
@@ -50,6 +57,11 @@ class ProjectVersion {
     Double number
 }
         """)
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        PluginManagerHolder.pluginManager = null
     }
 
     void testNullableConstraint() {

@@ -26,6 +26,9 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGeneratorTests;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.NullableConstraint;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -42,12 +45,16 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         ExpandoMetaClass.enableGlobally();
+        MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
+        PluginManagerHolder.setPluginManager(pluginManager);
+        pluginManager.registerMockPlugin(DefaultGrailsTemplateGeneratorTests.fakeHibernatePlugin);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
+        PluginManagerHolder.setPluginManager(null);
     }
 
     public void testIsBasicType() {

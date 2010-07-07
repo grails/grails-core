@@ -2,6 +2,9 @@ package org.codehaus.groovy.grails.web.taglib
 
 import java.beans.PropertyEditorSupport
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.beans.factory.config.ConstructorArgumentValues
@@ -14,6 +17,9 @@ import org.springframework.beans.factory.support.RootBeanDefinition
 class PropertyEditorTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
         gcl = new GroovyClassLoader(getClass().classLoader)
         gcl.parseClass '''
 import grails.persistence.*
@@ -44,6 +50,10 @@ class OneToManyPropertyEditorDomain {
     static hasMany = [tags: Tag]
 }
 '''
+    }
+
+    protected void onTearDown() {
+        PluginManagerHolder.pluginManager = null
     }
 
     void testUseCustomPropertyEditor() {
