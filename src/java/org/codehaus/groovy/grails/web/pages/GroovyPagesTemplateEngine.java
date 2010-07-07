@@ -93,6 +93,18 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     private Map<String, String> precompiledGspMap;
     private Map<String, GroovyPageMetaInfo> precompiledCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
 
+    private static File dumpLineNumbersTo;
+
+    static {
+        String dirPath = System.getProperty("grails.dump.gsp.line.numbers.to.dir");
+        if (dirPath != null) {
+            File dir = new File(dirPath);
+            if (dir.exists() || dir.mkdirs()) {
+                dumpLineNumbersTo = dir;
+            }
+        }
+    }
+
     public GroovyPagesTemplateEngine() {
         // default
     }
@@ -654,6 +666,19 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         // just return groovy and don't compile if asked
         if (isReloadEnabled() || GrailsUtil.isDevelopmentEnv()) {
             pageMeta.setGroovySource(in);
+        }
+
+        if (dumpLineNumbersTo != null) {
+            String fileName = parse.getClassName() + GroovyPageMetaInfo.LINENUMBERS_DATA_POSTFIX;
+            File file = new File(dumpLineNumbersTo, fileName);
+            try {
+                parse.writeLineNumbers(file);
+            }
+            catch (IOException ignored) {
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
         }
 
         return pageMeta;
