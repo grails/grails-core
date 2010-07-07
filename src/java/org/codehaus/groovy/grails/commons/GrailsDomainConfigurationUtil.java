@@ -20,6 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 
@@ -352,8 +354,9 @@ public class GrailsDomainConfigurationUtil {
         		// Make sure all fields are required by default, unless
         		// specified otherwise by the constraints
         		// If the field is a Java entity annotated with @Entity skip this
+        		PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
         		applyDefaultConstraints(propertyName, p, cp,
-						defaultConstraints, delegate.getSharedConstraint(propertyName));
+						defaultConstraints, delegate.getSharedConstraint(propertyName), propertyConfig);
 
             }
         }
@@ -385,7 +388,7 @@ public class GrailsDomainConfigurationUtil {
         return evaluateConstraints(instance, null,null);
     }
 
-    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference) {
+    private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference, PropertyConfig propertyConfig) {
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
 
             if (defaultConstraints.containsKey("*")) {
@@ -415,6 +418,16 @@ public class GrailsDomainConfigurationUtil {
                     Collection.class.isAssignableFrom(p.getType()) ||
                     Map.class.isAssignableFrom(p.getType())
             );
+
+            if (propertyConfig!=null && !propertyConfig.getInsertable()) {
+                cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,true);
+            } else {
+                cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
+                        Collection.class.isAssignableFrom(p.getType()) ||
+                        Map.class.isAssignableFrom(p.getType())
+                );
+            }
+
         }
     }
 
