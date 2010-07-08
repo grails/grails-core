@@ -219,7 +219,7 @@ Plugins available in the $name repository are listed below:
         println ""
     }
     else {
-        println "No plugins found in repository: ${pluginSVN}"
+        println "No plugins found in repository: ${name}. This may be because the repository is behind an HTTP proxy."
     }
 }
 
