@@ -20,6 +20,9 @@ import grails.converters.XML
 import junit.framework.AssertionFailedError
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 
 /**
@@ -149,6 +152,17 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
 }
 
 class TestUnitTestCase extends GrailsUnitTestCase {
+
+    protected void setUp() {
+        super.setUp()
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        PluginManagerHolder.pluginManager = null
+    }
 
     void testMockInstances1() {
         mockDomain(GrailsUnitTestClass)

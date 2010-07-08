@@ -2,6 +2,9 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 import org.hibernate.FetchMode
 import org.hibernate.engine.CascadeStyle
@@ -35,6 +38,9 @@ class BidirectionalListMappingTests extends GroovyTestCase {
     protected void setUp() {
         ExpandoMetaClass.enableGlobally()
 
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
         def gcl = new GroovyClassLoader()
         gcl.parseClass '''
 class TestFaqSection {
@@ -61,6 +67,11 @@ class TestFaqElement {
         config.grailsApplication = application
 
         config.buildMappings()
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        PluginManagerHolder.pluginManager = null
     }
 
     void testIndexBackrefMapping() {

@@ -14,6 +14,9 @@
  */
 package grails.test
 
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -37,14 +40,19 @@ class MockUtilsTests extends GroovyTestCase {
 
     private Map errorsMap
 
-    void setUp() {
+    protected void setUp() {
+        super.setUp()
         metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
     }
 
-    void tearDown() {
+    protected void tearDown() {
+        super.tearDown()
         metaTestHelper.tearDown()
         MockUtils.resetIds()
+        PluginManagerHolder.pluginManager = null
     }
 
     /**

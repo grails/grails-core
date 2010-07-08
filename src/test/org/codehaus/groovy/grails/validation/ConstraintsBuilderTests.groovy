@@ -2,6 +2,9 @@ package org.codehaus.groovy.grails.validation
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors;
 
@@ -94,6 +97,10 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
     }
 
     protected void onSetUp() {
+		 
+        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+
         gcl.parseClass('''
 class Book {
     Long id
@@ -117,5 +124,9 @@ class Site {
     }
 }
         ''')
+    }
+
+    protected void onTearDown() {
+        PluginManagerHolder.pluginManager = null
     }
 }

@@ -1,18 +1,37 @@
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 
 import java.util.Collection;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGeneratorTests;
+
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
+        PluginManagerHolder.setPluginManager(pluginManager);
+        pluginManager.registerMockPlugin(DefaultGrailsTemplateGeneratorTests.fakeHibernatePlugin);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        PluginManagerHolder.setPluginManager(null);
+    }
+
     /*
-      * Test method for 'org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty.get(Object)'
-      */
+     * Test method for 'org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty.get(Object)'
+     */
     @SuppressWarnings("unchecked")
     public void testGet() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
