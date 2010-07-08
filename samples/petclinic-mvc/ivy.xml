@@ -8,16 +8,16 @@
         <conf name="runtime" extends="compile"/>
     </configurations>
     <dependencies>
-        <dependency org="org.grails" name="grails-bootstrap" rev="1.3.3.BUILD-SNAPSHOT" conf="runtime">
+        <dependency org="org.grails" name="grails-bootstrap" rev="1.3.3" conf="runtime">
 	            <exclude org="org.springframework" module="spring-instrument-classloading" name="*" type="*" ext="*" conf="" matcher="exact"/>
 	            <exclude org="javax.validation" module="com.springsource.javax.validation" name="*" type="*" ext="*" conf="" matcher="exact"/>
 	
 		</dependency>
-        <dependency org="org.grails" name="grails-gorm" rev="1.3.3.BUILD-SNAPSHOT" conf="runtime">
+        <dependency org="org.grails" name="grails-gorm" rev="1.3.3" conf="runtime">
 	            <exclude org="org.springframework" module="spring-instrument-classloading" name="*" type="*" ext="*" conf="" matcher="exact"/>
 	            <exclude org="javax.validation" module="com.springsource.javax.validation" name="*" type="*" ext="*" conf="" matcher="exact"/>	
 		</dependency>
-        <dependency org="org.grails" name="grails-web" rev="1.3.3.BUILD-SNAPSHOT" conf="runtime">
+        <dependency org="org.grails" name="grails-web" rev="1.3.3" conf="runtime">
 	            <exclude org="org.springframework" module="spring-instrument-classloading" name="*" type="*" ext="*" conf="" matcher="exact"/>
 	            <exclude org="javax.validation" module="com.springsource.javax.validation" name="*" type="*" ext="*" conf="" matcher="exact"/>
 	
