@@ -171,6 +171,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)
+        configureAliases()
 
 
         publisher.publish()
@@ -206,6 +207,11 @@ def readDocProperties(DocPublisher publisher) {
     readIfSet(publisher,"footer")
 
 }
+
+def configureAliases() {
+    DocEngine.ALIAS.putAll(config.grails.doc.alias)
+}
+
 private readIfSet(DocPublisher publisher,String prop) {
     if(config.grails.doc."$prop") { 
         publisher[prop] = config.grails.doc."$prop"
