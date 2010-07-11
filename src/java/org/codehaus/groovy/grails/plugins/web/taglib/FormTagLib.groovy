@@ -113,7 +113,9 @@ class FormTagLib {
         // default to a value of "true", otherwise we use Groovy Truth
         // to determine whether the HTML attribute should be displayed or not.
         def checked = true
+		def checkedAttributeWasSpecified = false
         if (attrs.containsKey('checked')) {
+			checkedAttributeWasSpecified = true
             checked = attrs.remove('checked')
         }
 
@@ -123,9 +125,14 @@ class FormTagLib {
 
         out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
 
-        if (value && checked) {
-            out << 'checked="checked" '
-        }
+		if(checkedAttributeWasSpecified) {
+			if(checked) {
+				out << 'checked="checked" '
+			}
+		} else if(value){
+			out << 'checked="checked" '
+		}
+
         def outputValue = !(value instanceof Boolean || value?.class == boolean.class)
         if (outputValue) {
             out << "value=\"${value}\" "
