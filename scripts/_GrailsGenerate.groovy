@@ -50,6 +50,7 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     }
     else {
         event("StatusFinal", ["No domain class found for name ${name}. Please try again and enter a valid domain class name"])
+		exit(1)
     }
 }
 
