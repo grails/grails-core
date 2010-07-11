@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.util.Assert
 import org.springframework.webflow.action.ExternalRedirectAction
 import org.springframework.webflow.action.ViewFactoryActionAdapter
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.webflow.core.collection.LocalAttributeMap
 import org.springframework.webflow.definition.registry.FlowDefinitionLocator
 import org.springframework.webflow.engine.*
@@ -471,12 +472,16 @@ class FlowInfoCapturer {
         if (args.url) redirectUrl = "externalRedirect:${args.url}"
         else if (args.uri) redirectUrl = "externalRedirect:${args.uri}"
         else {
-            if (args.controller) {
+            if (args.controller || args.action) {
                 def urlMapper =  applicationContext?.getBean(UrlMappingsHolder.BEAN_ID)
                 def params = args.params ?: [:]
                 if (args.id) params.id = args.id
-
-                redirectUrl = new RuntimeRedirectAction(controller:args.controller,
+				def controllerName = args.controller
+				if(!controllerName) {
+				    def webRequest = RequestContextHolder.currentRequestAttributes()
+				    controllerName = webRequest?.controllerName
+				}
+                redirectUrl = new RuntimeRedirectAction(controller:controllerName,
                     action:args.action,
                     params:params,
                     urlMapper:urlMapper)
