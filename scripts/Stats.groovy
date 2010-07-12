@@ -42,8 +42,8 @@ target (default: "Generates basic stats for a Grails project") {
             int close = line.indexOf("*/")
             if (open != -1 && (close-open) <= 1) comment++
             else if (close != -1 && comment) comment--
+            if (!comment) loc++
         }
-        if (!comment) loc++
         loc
     }
 
