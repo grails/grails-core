@@ -487,6 +487,20 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 //        assertFalse "dependency resolve should have no errors!",report.hasError()
     }
 
+    void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
+    	Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
+    	def manager = new IvyDependencyManager("test", "0.1")
+    	def grailsVersion = getCurrentGrailsVersion()
+		manager.defaultDependenciesProvided = true
+    	manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
+
+    	assertEquals 0, manager.listDependencies('runtime').size()
+    	assertEquals 3, manager.listDependencies('test').size()
+    	assertEquals 19, manager.listDependencies('build').size()
+    	assertEquals 54, manager.listDependencies('provided').size()
+    	assertEquals 22, manager.listDependencies('docs').size()
+    }
+
     def getCurrentGrailsVersion() {
         def props = new Properties()
         new File("./build.properties").withInputStream {
