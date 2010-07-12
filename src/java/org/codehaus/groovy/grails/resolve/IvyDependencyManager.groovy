@@ -215,8 +215,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 //mavenRepo "http://repository.jboss.com/maven2/
             }
             dependencies {
-				def compileMethodName = defaultDependenciesProvided ? 'provided' : 'compile'
-				def runtimeMethodName = defaultDependenciesProvided ? 'provided' : 'runtime'
+				def compileTimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'compile'
+				def runtimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'runtime'
 
                 // dependencies needed by the Grails build system
                 build "org.codehaus.gpars:gpars:0.9",
@@ -248,15 +248,15 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                          "javax.servlet:jsp-api:2.1"
 
                 // dependencies needed for compilation
-                "${compileMethodName}"("org.codehaus.groovy:groovy-all:1.7.3") {
+                "${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.7.3") {
                     excludes 'jline'
                 }
 
-                "${compileMethodName}"("commons-beanutils:commons-beanutils:1.8.0", "commons-el:commons-el:1.0", "commons-validator:commons-validator:1.3.1") {
+                "${compileTimeDependenciesMethod}"("commons-beanutils:commons-beanutils:1.8.0", "commons-el:commons-el:1.0", "commons-validator:commons-validator:1.3.1") {
                     excludes "commons-logging", "xml-apis"
                 }
 
-                "${compileMethodName}"("aopalliance:aopalliance:1.0",
+                "${compileTimeDependenciesMethod}"("aopalliance:aopalliance:1.0",
                         "commons-codec:commons-codec:1.3",
                         "commons-collections:commons-collections:3.2.1",
                         "commons-io:commons-io:1.4",
@@ -297,7 +297,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                          "org.springframework:org.springframework.test:3.0.3.RELEASE"
 
                     // dependencies needed at runtime only
-                    "${runtimeMethodName}" "org.aspectj:aspectjweaver:1.6.8",
+                    "${runtimeDependenciesMethod}" "org.aspectj:aspectjweaver:1.6.8",
                             "org.aspectj:aspectjrt:1.6.8",
                             "cglib:cglib-nodep:2.1_3",
                             "commons-fileupload:commons-fileupload:1.2.1",
@@ -305,17 +305,17 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                             "javax.servlet:jstl:1.1.2"
 
                     // data source
-                    "${runtimeMethodName}" "commons-dbcp:commons-dbcp:1.2.2",
+                    "${runtimeDependenciesMethod}" "commons-dbcp:commons-dbcp:1.2.2",
                             "commons-pool:commons-pool:1.5.3",
                             "hsqldb:hsqldb:1.8.0.10"
 
                     // caching
-                    "${runtimeMethodName}" ("net.sf.ehcache:ehcache-core:1.7.1") {
+                    "${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:1.7.1") {
                         excludes 'jms', 'commons-logging', 'servlet-api'
                     }
 
                     // logging
-                    "${runtimeMethodName}"("log4j:log4j:1.2.15",
+                    "${runtimeDependenciesMethod}"("log4j:log4j:1.2.15",
                             "org.slf4j:jcl-over-slf4j:1.5.8",
                             "org.slf4j:jul-to-slf4j:1.5.8",
                             "org.slf4j:slf4j-log4j12:1.5.8" ) {
@@ -323,7 +323,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                     }
 
                     // JSP support
-                    "${runtimeMethodName}" "apache-taglibs:standard:1.1.2",
+                    "${runtimeDependenciesMethod}" "apache-taglibs:standard:1.1.2",
                             "xpp3:xpp3_min:1.1.3.4.O"
             }
         }
