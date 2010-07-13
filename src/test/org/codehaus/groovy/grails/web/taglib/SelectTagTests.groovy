@@ -2,6 +2,8 @@ package org.codehaus.groovy.grails.web.taglib
 
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.w3c.dom.Document
+import org.springframework.context.MessageSourceResolvable
+import org.apache.commons.lang.WordUtils
 
 /**
  * @author Graeme Rocher
@@ -277,6 +279,33 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertEquals("expecting selected options", selected.size(), actualSelected)
     }
 
+    void testSelectFromListOfMessageSourceResolvableObjectsUsesDefaultMessage() {
+        def list = Title.values()
+
+        def template = '<g:select name="foo" from="${list}" value="MRS" />'
+        assertOutputContains '<option value="MR" >Mr</option>', template, [list: list]
+        assertOutputContains '<option value="MRS" selected="selected" >Mrs</option>', template, [list: list]
+        assertOutputContains '<option value="MS" >Ms</option>', template, [list: list]
+        assertOutputContains '<option value="DR" >Dr</option>', template, [list: list]
+    }
+
+    void testSelectFromListOfMessageSourceResolvableObjectsUsesI18nProperty() {
+        def list = Title.values()
+
+        def locale = new Locale("af", "ZA")
+        messageSource.addMessage("org.codehaus.groovy.grails.web.taglib.Title.MR", locale, "Mnr")
+        messageSource.addMessage("org.codehaus.groovy.grails.web.taglib.Title.MRS", locale, "Mev")
+        messageSource.addMessage("org.codehaus.groovy.grails.web.taglib.Title.MS", locale, "Mej")
+
+        webRequest.currentRequest.addPreferredLocale(locale)
+
+        def template = '<g:select name="foo" from="${list}" value="MRS" />'
+        assertOutputContains '<option value="MR" >Mnr</option>', template, [list: list]
+        assertOutputContains '<option value="MRS" selected="selected" >Mev</option>', template, [list: list]
+        assertOutputContains '<option value="MS" >Mej</option>', template, [list: list]
+        assertOutputContains '<option value="DR" >Dr</option>', template, [list: list]
+    }
+
     private void assertSelectFieldPresentWithSelectedValue(Document document, String fieldName, String value) {
         assertXPathExists(
                 document,
@@ -311,4 +340,22 @@ class SelectTagTests extends AbstractGrailsTagTests {
 class SelectTestObject {
     Long id
     String name
+}
+
+enum Title implements MessageSourceResolvable {
+    MR, MRS, MS, DR
+
+    String[] getCodes() {
+        ["${getClass().name}.${name()}"] as String[]
+    }
+
+    Object[] getArguments() {
+        [] as Object[]
+    }
+
+    String getDefaultMessage() {
+        use(WordUtils) {
+            name().toLowerCase().replaceAll(/_+/, " ").capitalizeFully()
+        }
+    }
 }

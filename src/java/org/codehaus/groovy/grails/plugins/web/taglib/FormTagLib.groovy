@@ -24,6 +24,7 @@ import org.springframework.beans.SimpleTypeConverter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.http.HttpMethod
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
+import org.springframework.context.MessageSourceResolvable
 
 /**
  * Tags for working with form controls.
@@ -653,6 +654,9 @@ class FormTagLib {
                     else {
                         writer << el[optionValue].toString().encodeAsHTML()
                     }
+                }
+                else if (el instanceof MessageSourceResolvable) {
+                    writer << messageSource.getMessage(el, locale)
                 }
                 else if (valueMessagePrefix) {
                     def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
