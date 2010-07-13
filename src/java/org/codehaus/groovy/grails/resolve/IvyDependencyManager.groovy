@@ -736,6 +736,10 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
+    void defaultDependenciesProvided(boolean b) {
+        delegate.defaultDependenciesProvided = b
+    }
+
     void inherits(String name, Closure configurer) {
         // plugins can't configure inheritance
         if (currentPluginBeingConfigured) return

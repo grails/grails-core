@@ -488,17 +488,37 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     }
 
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
-    	Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
-    	def manager = new IvyDependencyManager("test", "0.1")
-    	def grailsVersion = getCurrentGrailsVersion()
-		manager.defaultDependenciesProvided = true
-    	manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
+        
+        def settings = new BuildSettings()
+        def grailsVersion = getCurrentGrailsVersion()
 
-    	assertEquals 0, manager.listDependencies('runtime').size()
-    	assertEquals 3, manager.listDependencies('test').size()
-    	assertEquals 19, manager.listDependencies('build').size()
-    	assertEquals 54, manager.listDependencies('provided').size()
-    	assertEquals 22, manager.listDependencies('docs').size()
+        def manager = new IvyDependencyManager("project", "0.1",settings)
+        def defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+        manager.parseDependencies {
+            defaultDependenciesProvided true
+            defaultDependencyClosure.delegate = delegate
+            defaultDependencyClosure()
+        }
+        
+        assertEquals 0, manager.listDependencies('runtime').size()
+        assertEquals 3, manager.listDependencies('test').size()
+        assertEquals 19, manager.listDependencies('build').size()
+        assertEquals 54, manager.listDependencies('provided').size()
+        assertEquals 22, manager.listDependencies('docs').size()
+        
+        manager = new IvyDependencyManager("project", "0.1",settings)
+        defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+        manager.parseDependencies {
+            defaultDependenciesProvided false
+            defaultDependencyClosure.delegate = delegate
+            defaultDependencyClosure()
+        }
+        
+        assertEquals 52, manager.listDependencies('runtime').size()
+        assertEquals 55, manager.listDependencies('test').size()
+        assertEquals 19, manager.listDependencies('build').size()
+        assertEquals 2, manager.listDependencies('provided').size()
+        assertEquals 22, manager.listDependencies('docs').size()
     }
 
     def getCurrentGrailsVersion() {
