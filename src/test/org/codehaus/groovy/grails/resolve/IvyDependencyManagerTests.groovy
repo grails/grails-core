@@ -415,16 +415,35 @@ public class IvyDependencyManagerTests extends GroovyTestCase{
     }
 
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
-    	Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
-    	def manager = new IvyDependencyManager("test", "0.1")
-    	def grailsVersion = getCurrentGrailsVersion()
-		manager.defaultDependenciesProvided = true
-    	manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
+        
+        def settings = new BuildSettings()
+        def grailsVersion = getCurrentGrailsVersion()
 
+        def manager = new IvyDependencyManager("project", "0.1",settings)
+        def defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+        manager.parseDependencies {
+            defaultDependenciesProvided true
+            defaultDependencyClosure.delegate = delegate
+            defaultDependencyClosure()
+        }
+        
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
         assertEquals 18, manager.listDependencies('build').size()
         assertEquals 55, manager.listDependencies('provided').size()
+        
+        manager = new IvyDependencyManager("project", "0.1",settings)
+        defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+        manager.parseDependencies {
+            defaultDependenciesProvided false
+            defaultDependencyClosure.delegate = delegate
+            defaultDependencyClosure()
+        }
+        
+        assertEquals 53, manager.listDependencies('runtime').size()
+        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 18, manager.listDependencies('build').size()
+        assertEquals 2, manager.listDependencies('provided').size()
     }
 
     def getCurrentGrailsVersion() {
