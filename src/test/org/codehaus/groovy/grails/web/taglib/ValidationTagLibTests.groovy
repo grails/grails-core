@@ -34,6 +34,33 @@ class Article {
     String title
 }
 '''
+
+        gcl.parseClass '''
+class Person {
+    Long id
+    Long version
+    Title title
+    String name
+}
+
+enum Title implements org.springframework.context.MessageSourceResolvable {
+    MR, MRS, MS, DR
+
+	String[] getCodes() {
+		["${getClass().name}.${name()}"] as String[]
+	}
+
+	Object[] getArguments() {
+		[] as Object[]
+	}
+
+	String getDefaultMessage() {
+		use(org.apache.commons.lang.WordUtils) {
+			name().toLowerCase().replaceAll(/_+/, " ").capitalizeFully()
+		}
+	}
+}
+'''
     }
 
     protected void onTearDown() {
@@ -348,5 +375,29 @@ class Article {
         def template = '<g:message message="${message}" />'
 
         assertOutputEquals("The Default Message", template, [message: resolvable])
+    }
+
+    void testFieldValueTagWithMessageSourceResolvablePropertyUsesDefaultMessage() {
+        def Title = ga.getClassForName("Title")
+        def person = ga.getDomainClass("Person").newInstance()
+        person.properties = [title: Title.MR, name: "Al Coholic"]
+
+        def template = '<g:fieldValue bean="${person}" field="title" />'
+
+        assertOutputEquals "Mr", template, [person: person]
+    }
+
+    void testFieldValueTagWithMessageSourceResolvablePropertyUsesI18nBundle() {
+        def Title = ga.getClassForName("Title")
+        def person = ga.getDomainClass("Person").newInstance()
+        person.properties = [title: Title.MR, name: "Al Coholic"]
+
+        def locale = new Locale("af", "ZA")
+        messageSource.addMessage("Title.MR", locale, "Mnr")
+
+        webRequest.currentRequest.addPreferredLocale(locale)
+        def template = '<g:fieldValue bean="${person}" field="title" />'
+
+        assertOutputEquals "Mnr", template, [person: person]
     }
 }

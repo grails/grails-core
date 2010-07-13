@@ -398,6 +398,10 @@ class ValidationTagLib {
             value = decimalFormat.format(value)
         }
 
+        if (value instanceof MessageSourceResolvable) {
+            value = message(message: value)
+        }
+
         return HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
     }
 }
