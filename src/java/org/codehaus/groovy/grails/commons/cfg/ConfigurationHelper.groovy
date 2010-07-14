@@ -130,8 +130,8 @@ class ConfigurationHelper {
                           stream?.close()
                        }
 
-                } catch (Exception e) {
-                        System.err << "Unable to load specified config location $location : ${e.message}"
+                    } catch (Exception e) {
+                        System.err.println "Unable to load specified config location $location : ${e.message}"
                     }
                 }
             }
