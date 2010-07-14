@@ -140,7 +140,7 @@ class ConfigurationHelper {
                 }
             }
             catch (Exception e) {
-                System.err << "Unable to load specified config location $location : ${e.message}"
+                System.err.println "Unable to load specified config location $location : ${e.message}"
             }
         }
     }
