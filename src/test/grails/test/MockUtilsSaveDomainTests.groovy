@@ -59,7 +59,24 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
         /* Save again and lastUpdated should be set. */
         domain.save()
         assertTrue domain.lastUpdated > updated
+    }
 
+    void testSaveAssignsIdToObjectWithStringIdProperty() {
+        MockUtils.mockDomain(TestDomainWithUUID, errorsMap)
+
+        def domain = new TestDomainWithUUID(name: "Alice Doe", country: "US", age: 35)
+        assertEquals domain, domain.save()
+        assertEquals "automatically assigned id", "1", domain.id
+		assertNotNull "object looked up by String id", TestDomainWithUUID.get(domain.id)
+    }
+
+    void testSaveAssignsStringIdsSequentially() {
+        MockUtils.mockDomain(TestDomainWithUUID, errorsMap)
+
+        def domain1 = new TestDomainWithUUID(name: "Alice Doe", country: "US", age: 35).save()
+        def domain2 = new TestDomainWithUUID(name: "John Doe", country: "US", age: 35).save()
+
+        assertEquals "automatically assigned id", "2", domain2.id
     }
 
     /**

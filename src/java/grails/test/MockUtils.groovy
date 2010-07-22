@@ -1245,10 +1245,14 @@ class MockUtils {
 
     private static void setId(instance, clazz) {
         def prop = instance.metaClass.hasProperty(instance, "id")
-        if (prop && !instance.id && Number.isAssignableFrom(prop.type)) {
-            Long id = (IDS[clazz] ?: 0) + 1
+        if (prop && !instance.id) { 
+			def id = (IDS[clazz] ?: 0) + 1
             IDS[clazz] = id
-            instance.id = id
+			if (Number.isAssignableFrom(prop.type)) {
+	            instance.id = id
+			} else if (String.isAssignableFrom(prop.type)) {
+	            instance.id = id.toString()
+			}
         }
     }
 
