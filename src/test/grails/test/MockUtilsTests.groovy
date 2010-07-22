@@ -1583,7 +1583,7 @@ class TestDomainWithUUID {
         age(min: 8, max: 65)
     }
 
-    boolean equals(Object obj) {
+ 	boolean equals(Object obj) {
         if (!(obj instanceof TestDomainWithUUID)) return null
 
         return this.name == obj.name &&
@@ -1593,6 +1593,37 @@ class TestDomainWithUUID {
 
     String toString() {
         "TestDomainWithUUID(${this.id}, ${this.name}, ${this.country}, ${this.age})"
+    }
+}
+
+/**
+ * Test domain class to check that MockUtils works with string IDs.
+ */
+class TestDomainWithAssignedId {
+    String id
+    Long   version
+    String name
+
+    static constraints = {
+		id nullable: false
+        name nullable: false, blank: false
+    }
+
+	static mapping = {
+		id generator: "assigned"
+	}
+
+ 	boolean equals(Object obj) {
+        if (!(obj instanceof TestDomainWithAssignedId)) return null
+        return this.name == obj.name
+    }
+
+	int hashCode() {
+		name.hashCode()
+	}
+
+    String toString() {
+        "TestDomainWithAssignedId(${this.id}, ${this.name})"
     }
 }
 

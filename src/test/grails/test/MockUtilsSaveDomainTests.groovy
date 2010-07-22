@@ -79,6 +79,14 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
         assertEquals "automatically assigned id", "2", domain2.id
     }
 
+    void testSaveDoesNotAutoAssignIdWhenGeneratorIsAssigned() {
+        MockUtils.mockDomain(TestDomainWithAssignedId, errorsMap)
+
+        def domain = new TestDomainWithAssignedId(name: "Alice Doe")
+        assertNull domain.save()
+		assertEquals "nullable", domain.errors.id
+    }
+
     /**
      * Tests the dynamically added <code>save()</code> method.
      */
