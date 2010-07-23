@@ -21,6 +21,19 @@ class WithSessionMethodTests extends AbstractGrailsHibernateTests {
         assertNotNull testSession
     }
 
+    void testWithNewSessionMethod() {
+
+        def testClass = ga.getDomainClass("WithSessionMethod").clazz
+
+        Session testSession
+        testClass.withNewSession { Session session ->
+            testSession = session
+        }
+
+        assertNotNull testSession
+
+    }
+
     protected void onSetUp() {
         gcl.parseClass '''
 class WithSessionMethod {

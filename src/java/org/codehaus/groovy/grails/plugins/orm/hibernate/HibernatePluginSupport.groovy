@@ -518,14 +518,20 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             try {
                 template.alwaysUseNewSession = true
                 template.execute({ Session session ->
-                    sessionHolder.addSession(session)
+                    if(sessionHolder == null) {
+                        sessionHolder = new SessionHolder(session)
+                        TransactionSynchronizationManager.bindResource(sessionFactory, sessionHolder)
+                    }
+                    else {
+                        sessionHolder.addSession(session)
+                    }
 
                     callable(session)
                 } as HibernateCallback)
             }
             finally {
                 if (previousSession) {
-                    sessionHolder.addSession(previousSession)
+                    sessionHolder?.addSession(previousSession)
                 }
             }
         }
