@@ -404,8 +404,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
         if (dependencyDescriptor.getModuleConfigurations().length == 0){
             def mappings = configurationMappings[scope]
-            mappings?.each {
-                dependencyDescriptor.addDependencyConfiguration scope, it
+            if(mappings) {
+                for(m in mappings) {
+                    dependencyDescriptor.addDependencyConfiguration scope, m
+                }
             }
         }
         if (!dependencyDescriptor.inherited) {
@@ -1059,8 +1061,6 @@ class IvyDomainSpecificLanguageEvaluator {
                         def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
 
                         if (!pluginMode) {
-                            def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "jar", "jar", null, null )
-                            dependencyDescriptor.addDependencyArtifact(scope, artifact)
                             addDependency mrid
                         }
                         else {
