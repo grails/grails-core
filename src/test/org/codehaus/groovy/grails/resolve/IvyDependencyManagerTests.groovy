@@ -206,9 +206,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         DependencyDescriptor dep = manager.dependencyDescriptors.iterator().next()
 
         def configs = dep.getDependencyConfigurations("runtime")
-        assertEquals 2, configs.length
-        assertEquals "runtime(*)", configs[0]
-        assertEquals "master(*)", configs[1]
+        assertEquals 1, configs.length
+        assertEquals "default", configs[0]
     }
 
     void testExportedDependenciesAndResolvers() {

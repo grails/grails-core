@@ -96,12 +96,12 @@ public abstract class AbstractIvyDependencyManager {
             DOCS_CONFIGURATION);
 
     Map<String, List<String>> configurationMappings = new HashMap<String, List<String>>() {{
-       put("runtime", Arrays.asList("runtime(*)", "master(*)"));
+       put("runtime", Arrays.asList("default"));
        put("build", Arrays.asList("default"));
-       put("compile", Arrays.asList("'compile(*)", "master(*)"));
-       put("provided", Arrays.asList("'compile(*)", "master(*)"));
-       put("docs", Arrays.asList("'compile(*)", "master(*)"));
-       put("test", Arrays.asList("''runtime(*)'(*)", "master(*)"));
+       put("compile", Arrays.asList("default"));
+       put("provided", Arrays.asList("default"));
+       put("docs", Arrays.asList("default"));
+       put("test", Arrays.asList("default"));
     }};
 
     protected String[] configurationNames = configurationMappings.keySet().toArray(
