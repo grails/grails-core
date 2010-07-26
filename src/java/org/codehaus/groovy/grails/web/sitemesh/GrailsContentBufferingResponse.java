@@ -34,6 +34,7 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     private final GrailsPageResponseWrapper pageResponseWrapper;
     private final ContentProcessor contentProcessor;
     private final SiteMeshWebAppContext webAppContext;
+    private boolean redirectCalled;
 
     public GrailsContentBufferingResponse(HttpServletResponse response, final ContentProcessor contentProcessor, final SiteMeshWebAppContext webAppContext) {
         super(new GrailsPageResponseWrapper(webAppContext.getRequest(), response, new PageParserSelector() {
@@ -83,8 +84,10 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     @Override
     public void sendError(int sc) throws IOException {
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+
         try {
-            super.sendError(sc);
+            if(!redirectCalled && !isCommitted())
+                super.sendError(sc);
         }
         finally {
             WebUtils.storeGrailsWebRequest(webRequest);
@@ -95,10 +98,17 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     public void sendError(int sc, String msg) throws IOException {
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
         try {
-            super.sendError(sc, msg);
+            if(!redirectCalled && !isCommitted())
+                super.sendError(sc, msg);
         }
         finally {
             WebUtils.storeGrailsWebRequest(webRequest);
         }
+    }
+
+    @Override
+    public void sendRedirect(String location) throws IOException {
+        this.redirectCalled = true;
+        super.sendRedirect(location);
     }
 }
