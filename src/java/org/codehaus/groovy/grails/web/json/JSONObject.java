@@ -1162,11 +1162,11 @@ public class JSONObject implements JSONElement,Map {
     }
 
     public boolean containsKey(Object o) {
-        return false;
+        return myHashMap.containsKey(o);
     }
 
     public boolean containsValue(Object o) {
-        return this.myHashMap.containsKey(o);
+        return this.myHashMap.containsValue(o);
     }
 
     public Object get(Object o) {
