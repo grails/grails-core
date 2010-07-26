@@ -97,6 +97,13 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
 
+    /**
+     * Whether the web request is still active
+     * @return True if it is
+     */
+    public boolean isActive() {
+        return super.isRequestActive();
+    }
 
     /**
      * @param out the out to set

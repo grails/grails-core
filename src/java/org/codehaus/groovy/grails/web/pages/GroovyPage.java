@@ -497,28 +497,35 @@ public abstract class GroovyPage extends Script {
 
         final GroovyPageTagWriter out = new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
-            GroovyPageOutputStack.currentStack().push(out);
+            GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(webRequest, false);
+            if(outputStack == null) {
+                outputStack = GroovyPageOutputStack.currentStack(webRequest, true, out, true, true);
+            }
+            outputStack.push(out);
             Object tagLibProp = tagLib.getProperty(tagName); // retrieve tag lib and create wrapper writer
             if (tagLibProp instanceof Closure) {
                 Closure tag = (Closure) ((Closure)tagLibProp).clone();
-                Object bodyResult = null;
+                Object bodyResult;
 
-                if (tag.getParameterTypes().length == 1) {
-                    bodyResult = tag.call( new Object[]{ attrs });
-                    if (actualBody != null && actualBody != EMPTY_BODY_CLOSURE) {
-                        Object bodyResult2=actualBody.call();
-                        if (bodyResult2 != null) {
-                            out.print(bodyResult2);
+                switch(tag.getParameterTypes().length) {
+                    case 1:
+                        bodyResult = tag.call( new Object[]{ attrs });
+                        if (actualBody != null && actualBody != EMPTY_BODY_CLOSURE) {
+                            Object bodyResult2=actualBody.call();
+                            if (bodyResult2 != null) {
+                                out.print(bodyResult2);
+                            }
                         }
-                    }
-                }
-                else if (tag.getParameterTypes().length == 2) {
-                    bodyResult = tag.call( new Object[] { attrs, actualBody });
-                }
-                else {
-                    throw new GrailsTagException("Tag [" + tagName +
-                            "] does not specify expected number of params in tag library [" +
-                            tagLib.getClass().getName() + "]");
+
+                    break;
+                    case 2:
+                        bodyResult = tag.call( new Object[] { attrs, actualBody });
+                    break;
+                    default:
+                        throw new GrailsTagException("Tag [" + tagName +
+                                "] does not specify expected number of params in tag library [" +
+                                tagLib.getClass().getName() + "]");
+
                 }
 
                 boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(namespace, tagName);
@@ -535,7 +542,7 @@ public abstract class GroovyPage extends Script {
                     tagLib.getClass().getName() + "]");
         }
         finally {
-            GroovyPageOutputStack.currentStack().pop();
+            GroovyPageOutputStack.currentStack(webRequest).pop();
         }
     }
 

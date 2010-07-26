@@ -41,6 +41,7 @@ public class GroovyPageTagBody extends Closure {
     private Closure bodyClosure;
     private Binding binding;
     private boolean preferSubChunkWhenWritingToOtherBuffer;
+    private GrailsWebRequest webRequest;
 
     public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
         this(owner, webRequest, bodyClosure, false);
@@ -53,6 +54,7 @@ public class GroovyPageTagBody extends Closure {
         Assert.notNull(webRequest, "Argument [webRequest] cannot be null!");
 
         this.bodyClosure = bodyClosure;
+        this.webRequest = webRequest;
         binding = findPageScopeBinding(owner, webRequest);
         this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
     }
@@ -81,7 +83,7 @@ public class GroovyPageTagBody extends Closure {
     private Object captureClosureOutput(Object args) {
         final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
-            GroovyPageOutputStack.currentStack().push(capturedOut);
+            pushCapturedOut(capturedOut);
 
             Object bodyResult;
 
@@ -143,7 +145,25 @@ public class GroovyPageTagBody extends Closure {
             return capturedOut.getBuffer();
         }
         finally {
+            popCapturedOut();
+        }
+    }
+
+    private void popCapturedOut() {
+        if(webRequest != null && webRequest.isActive()) {
+            GroovyPageOutputStack.currentStack(webRequest).pop();
+        }
+        else {
             GroovyPageOutputStack.currentStack().pop();
+        }
+    }
+
+    private void pushCapturedOut(GroovyPageTagWriter capturedOut) {
+        if(webRequest != null && webRequest.isActive()) {
+            GroovyPageOutputStack.currentStack(webRequest).push(capturedOut);
+        }
+        else {
+            GroovyPageOutputStack.currentStack().push(capturedOut);
         }
     }
 

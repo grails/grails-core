@@ -132,7 +132,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
         try {
             Content content = obtainContent(contentProcessor, webAppContext, request, response, chain);
-            if (content == null) {
+            if (content == null || response.isCommitted()) {
                 return;
             }
 

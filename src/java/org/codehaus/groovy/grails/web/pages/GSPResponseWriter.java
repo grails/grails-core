@@ -80,7 +80,11 @@ public class GSPResponseWriter extends GrailsPrintWriter {
                 bytesCounter = new BoundedCharsAsEncodedBytesCounter(max * 2, response.getCharacterEncoding());
                 streamBuffer.connectTo(bytesCounter.getCountingWriter(), AUTOFLUSH_ENABLED);
             }
-            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() { public Writer getWriter() throws IOException { return response.getWriter(); }}, AUTOFLUSH_ENABLED);
+            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() {
+                public Writer getWriter() throws IOException {
+                    return response.getWriter(); 
+                }
+            }, AUTOFLUSH_ENABLED);
         }
         else {
             try {

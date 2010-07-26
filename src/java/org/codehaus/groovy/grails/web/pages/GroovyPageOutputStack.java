@@ -6,6 +6,7 @@ import java.util.Stack;
 import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.web.context.request.RequestAttributes;
@@ -17,16 +18,29 @@ public final class GroovyPageOutputStack {
 
     private static final String ATTRIBUTE_NAME_OUTPUT_STACK="org.codehaus.groovy.grails.GSP_OUTPUT_STACK";
 
-    public static final GroovyPageOutputStack currentStack() {
+    public static GroovyPageOutputStack currentStack() {
         return currentStack(true);
     }
 
-    public static final GroovyPageOutputStack currentStack(boolean allowCreate) {
+    public static GroovyPageOutputStack currentStack(RequestAttributes request) {
+        return currentStack(request, true);
+    }
+
+    public static GroovyPageOutputStack currentStack(boolean allowCreate) {
         return currentStack(allowCreate, null, allowCreate, false);
     }
 
-    public static final GroovyPageOutputStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
-        GroovyPageOutputStack outputStack = (GroovyPageOutputStack)RequestContextHolder.currentRequestAttributes().getAttribute(
+    public static GroovyPageOutputStack currentStack(RequestAttributes request,boolean allowCreate) {
+        return currentStack(request, allowCreate, null, allowCreate, false);
+    }
+
+    public static GroovyPageOutputStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
+        RequestAttributes request = RequestContextHolder.currentRequestAttributes();
+        return currentStack(request, allowCreate, topWriter, autoSync, pushTop);
+    }
+
+    public static GroovyPageOutputStack currentStack(RequestAttributes request, boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
+        GroovyPageOutputStack outputStack = (GroovyPageOutputStack) request.getAttribute(
                 ATTRIBUTE_NAME_OUTPUT_STACK, RequestAttributes.SCOPE_REQUEST);
         if (outputStack != null) {
             if (pushTop && topWriter != null) {
@@ -37,7 +51,9 @@ public final class GroovyPageOutputStack {
 
         if (allowCreate) {
             if (topWriter == null) {
-                topWriter = defaultRequest();
+                if (request instanceof GrailsWebRequest) {
+                    topWriter = defaultRequest((GrailsWebRequest) request);
+                }
             }
             return createNew(topWriter, autoSync);
         }
@@ -56,6 +72,10 @@ public final class GroovyPageOutputStack {
 
     private static Writer defaultRequest() {
         GrailsWebRequest webRequest=getGrailsWebRequest();
+        return defaultRequest(webRequest);
+    }
+
+    private static Writer defaultRequest(GrailsWebRequest webRequest) {
         if (webRequest != null) {
             return webRequest.getOut();
         }
@@ -69,8 +89,10 @@ public final class GroovyPageOutputStack {
 
     private static final GroovyPageOutputStack createNew(Writer topWriter, boolean autoSync) {
         GroovyPageOutputStack instance = new GroovyPageOutputStack(topWriter, autoSync);
-        RequestContextHolder.currentRequestAttributes().setAttribute(
+        RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
+        requestAttributes.setAttribute(
                 ATTRIBUTE_NAME_OUTPUT_STACK, instance, RequestAttributes.SCOPE_REQUEST);
+        requestAttributes.setAttribute(GrailsApplicationAttributes.OUT, topWriter, RequestAttributes.SCOPE_REQUEST);
         return instance;
     }
 
@@ -197,7 +219,7 @@ public final class GroovyPageOutputStack {
         applyWriterThreadLocals(originalTopWriter);
     }
 
-    private void applyWriterThreadLocals(Writer writer) {
+    private void    applyWriterThreadLocals(Writer writer) {
         GrailsWebRequest webRequest = getGrailsWebRequest();
         if (webRequest != null) {
             webRequest.setOut(writer);
