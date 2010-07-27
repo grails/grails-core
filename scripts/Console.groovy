@@ -33,11 +33,7 @@ target ('default': "Load the Grails interactive Swing console") {
 }
 
 target(console:"The console implementation target") {
-
-//    classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader)
-//    Thread.currentThread().setContextClassLoader(classLoader)
-    loadApp()
-    configureApp()
+    depends(loadApp, configureApp)
 
     try {
         def console = createConsole()
@@ -56,7 +52,7 @@ target(console:"The console implementation target") {
             println "Exiting console"
             console.exit()
             String scriptText = console.inputArea.text
-            createConsole()
+            console = createConsole()
             println "Restarting console"
             console.run()
             console.inputArea.addFocusListener(new ConsoleFocusListener(text:scriptText))
