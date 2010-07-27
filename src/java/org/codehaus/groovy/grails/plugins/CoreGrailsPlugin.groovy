@@ -36,6 +36,7 @@ import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 
 /**
  * A plugin that configures the core shared beans within the Grails application context.
@@ -56,19 +57,26 @@ class CoreGrailsPlugin {
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
         // replace AutoProxy advisor with Groovy aware one
-        "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+        def grailsConfig = application.config.grails
+        def springConfig = grailsConfig.spring
+        if(springConfig.disable.aspectj.autoweaving) {
+            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+        }
+        else {
+            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
+        }
 
         // Allow the use of Spring annotated components
         context.'annotation-config'()
 
         def packagesToScan = []
 
-        def beanPackages = application.config.grails.spring.bean.packages
+        def beanPackages = springConfig.bean.packages
         if (beanPackages instanceof List) {
             packagesToScan += beanPackages
         }
 
-        def validateablePackages = application.config.grails.validateable.packages
+        def validateablePackages = grailsConfig.validateable.packages
         if (validateablePackages instanceof List) {
             packagesToScan += validateablePackages
         }

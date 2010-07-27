@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.plugins
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 
 class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -20,6 +22,25 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
         assert appCtx.containsBean("classLoader")
         assert appCtx.containsBean("customEditors")
+        assert appCtx.getBean("org.springframework.aop.config.internalAutoProxyCreator") instanceof GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+    }
+
+    void testDisableAspectj() {
+        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+
+        def plugin = new DefaultGrailsPlugin(pluginClass, ga)
+
+        def springConfig = new WebRuntimeSpringConfiguration(ctx)
+        springConfig.servletContext = createMockServletContext()
+        ga.config.grails.spring.disable.aspectj.autoweaving=true
+        plugin.doWithRuntimeConfiguration(springConfig)
+
+        def appCtx = springConfig.getApplicationContext()
+
+        assert appCtx.containsBean("classLoader")
+        assert appCtx.containsBean("customEditors")
+        assert appCtx.getBean("org.springframework.aop.config.internalAutoProxyCreator") instanceof GroovyAwareInfrastructureAdvisorAutoProxyCreator
+
     }
 
     protected void onSetUp() {

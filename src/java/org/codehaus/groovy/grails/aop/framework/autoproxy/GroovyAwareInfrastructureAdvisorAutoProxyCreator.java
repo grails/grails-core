@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.aop.framework.autoproxy;
 
 import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
 import groovy.lang.GroovyObject;
+import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProxyCreator;
 
 /**
  * Tells Spring always to proxy Groovy classes
@@ -23,7 +24,7 @@ import groovy.lang.GroovyObject;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class GroovyAwareInfrastructureAdvisorAutoProxyCreator extends AnnotationAwareAspectJAutoProxyCreator {
+public class GroovyAwareInfrastructureAdvisorAutoProxyCreator extends InfrastructureAdvisorAutoProxyCreator {
 
 	private static final long serialVersionUID = 5545896123964533688L;
 
