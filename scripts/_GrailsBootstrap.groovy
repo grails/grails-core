@@ -26,6 +26,8 @@ import org.springframework.core.io.FileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.mock.jndi.SimpleNamingContextBuilder
+import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
+import org.springframework.core.io.FileSystemResource
 
 
 /**
@@ -51,6 +53,12 @@ target(loadApp:"Loads the Grails application object") {
 				grailsResourceHolder = resourceHolder
 			}
 			grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
+			
+			// There is a pluginManager variable in the binding
+			delegate."pluginManager"(GrailsPluginManagerFactoryBean) {
+				application = grailsApplication
+				grailsDescriptor = new FileSystemResource("web-app/WEB-INF/grails.xml")
+			}
 		}
 	}
 
