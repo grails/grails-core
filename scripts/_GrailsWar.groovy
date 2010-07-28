@@ -61,8 +61,12 @@ defaultWarDependencies = { antBuilder ->
         }
     }
     else {
-        grailsSettings.runtimeDependencies?.each { File f ->
-            fileset(dir: f.parent, includes: f.name)
+        def dependencies = grailsSettings.runtimeDependencies
+        if(dependencies) {
+            println dependencies.join("\n")
+            for(File f in dependencies) {
+                fileset(dir: f.parent, includes: f.name)
+            }
         }
     }
 }
@@ -192,8 +196,11 @@ target (war: "The implementation target") {
         IvyDependencyManager dm = grailsSettings.dependencyManager
         pluginInfos = pluginInfos.findAll { GrailsPluginInfo info ->
             def pluginName = info.name
-            def i = dm.getPluginDependencyDescriptor(pluginName)?.isSupportedInConfiguration("runtime")
-            i != null ? i : true
+            def descriptor = dm.getPluginDependencyDescriptor(pluginName)
+            if(descriptor) {
+                def i = descriptor.isSupportedInConfiguration("runtime") || descriptor.isSupportedInConfiguration("compile")
+                i != null ? i : true
+            }
         }
 
         if (includeJars) {
