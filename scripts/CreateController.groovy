@@ -32,6 +32,7 @@ target ('default': "Creates a new controller") {
     promptForName(type: type)
 
     def name = argsMap["params"][0]
+    name = purgeRedundantArtifactSuffix(name, type)
     createArtifact(name: name, suffix: type, type: type, path: "grails-app/controllers")
 
     def viewsDir = "${basedir}/grails-app/views/${propertyName}"

@@ -31,5 +31,6 @@ target ('default': "Creates a new Grails unit test. A unit test requires that yo
     promptForName(type: "Unit test")
 
     def name = argsMap["params"][0]
+    name = purgeRedundantArtifactSuffix(name, type)
     createUnitTest(name: name, suffix: "")
 }
