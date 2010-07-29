@@ -58,12 +58,13 @@ class RuntimeRedirectAction extends AbstractAction {
         if (!urlMapper) throw new IllegalStateException("Cannot redirect without an instance of [org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder] within the ApplicationContext")
 
         def delegate = new ExpressionDelegate(context)
-        controller = resolveExpression(delegate, controller)
-        action = resolveExpression(delegate, action)
+        def controller = resolveExpression(delegate, controller)
+        def action = resolveExpression(delegate, action)
+        Map params = this.params.clone() 
         resolveExpressionsInParams(delegate, params)
 
         UrlCreator creator = urlMapper.getReverseMapping(controller, action, params)
-        def url = creator.createRelativeURL(controller, action, params, 'utf-8')
+         def url = creator.createRelativeURL(controller, action, params, 'utf-8')
 
         context.getExternalContext().requestExternalRedirect("contextRelative:$url")
         return success()

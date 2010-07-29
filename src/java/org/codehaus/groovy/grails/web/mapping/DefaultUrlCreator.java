@@ -74,7 +74,9 @@ public class DefaultUrlCreator implements UrlCreator {
 
         String id = null;
         if    (parameterValues.containsKey(ARGUMENT_ID)) {
-            id = parameterValues.get(ARGUMENT_ID).toString();
+            Object o = parameterValues.get(ARGUMENT_ID);
+            if(o != null)
+                id = o.toString();
         }
 
         FastStringWriter actualUriBuf = new FastStringWriter();

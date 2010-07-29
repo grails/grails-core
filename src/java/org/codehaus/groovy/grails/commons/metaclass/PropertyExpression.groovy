@@ -23,7 +23,7 @@ package org.codehaus.groovy.grails.commons.metaclass
  * @author Graeme Rocher
  * @since 1.1
  */
-class PropertyExpression {
+class PropertyExpression implements Cloneable {
 
     private StringBuffer propertyExpression
 
