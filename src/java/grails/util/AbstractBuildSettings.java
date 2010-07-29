@@ -85,9 +85,11 @@ public class AbstractBuildSettings {
     public void addPluginDirectory(File location, boolean isInline) {
         if(location != null) {
             Collection<File> directories = getPluginDirectories();
-            directories.add(location);
-            if(isInline) {
-                getInlinePluginDirectories().add(location);
+            if(!directories.contains(location)) {
+                directories.add(location);
+                if(isInline) {
+                    getInlinePluginDirectories().add(location);
+                }
             }
         }
     }

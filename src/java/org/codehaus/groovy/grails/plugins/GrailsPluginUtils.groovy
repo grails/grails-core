@@ -133,7 +133,7 @@ class GrailsPluginUtils {
      * Returns a cached PluginBuildSettings instance.
      */
     static synchronized PluginBuildSettings getPluginBuildSettings() {
-        if (!INSTANCE) {
+        if (INSTANCE == null) {
             INSTANCE = newPluginBuildSettings()
         }
         return INSTANCE

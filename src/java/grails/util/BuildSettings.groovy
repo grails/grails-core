@@ -901,11 +901,11 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!projectPluginsDirSet) {
-            projectPluginsDir = new File(getPropertyValue(PLUGINS_DIR, props, "$projectWorkDir/plugins"))
+            this.@projectPluginsDir = new File(getPropertyValue(PLUGINS_DIR, props, "$projectWorkDir/plugins"))
         }
 
         if (!globalPluginsDirSet) {
-            globalPluginsDir = new File(getPropertyValue(GLOBAL_PLUGINS_DIR, props, "$grailsWorkDir/global-plugins"))
+            this.@globalPluginsDir = new File(getPropertyValue(GLOBAL_PLUGINS_DIR, props, "$grailsWorkDir/global-plugins"))
         }
 
         if (!testReportsDirSet) {
