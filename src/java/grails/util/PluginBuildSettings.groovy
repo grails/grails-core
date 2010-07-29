@@ -137,7 +137,7 @@ class PluginBuildSettings {
      * Returns true if the specified plugin location is an inline location.
      */
     boolean isInlinePluginLocation(Resource pluginLocation) {
-        buildSettings.isInlinePluginLocation(pluginLocation?.getFile())
+        buildSettings?.isInlinePluginLocation(pluginLocation?.getFile())
     }
 
     /**
@@ -147,7 +147,11 @@ class PluginBuildSettings {
         def locations = cache['inlinePluginLocations']
         if(locations == null) {
 
-            locations = buildSettings.getInlinePluginDirectories().collect { new FileSystemResource(it) }
+            if(buildSettings)
+                locations = buildSettings.getInlinePluginDirectories().collect { new FileSystemResource(it) }
+            else
+                locations = [] as Resource[]
+
             cache['inlinePluginLocations'] = locations
         }
         return locations
@@ -334,7 +338,10 @@ class PluginBuildSettings {
     Resource[] getPluginDirectories() {
         def pluginDirectoryResources = cache['pluginDirectoryResources']
         if (!pluginDirectoryResources) {
-            pluginDirectoryResources = buildSettings.getPluginDirectories().collect { new FileSystemResource(it) } as Resource[]
+            if(buildSettings)
+                pluginDirectoryResources = buildSettings.getPluginDirectories().collect { new FileSystemResource(it) } as Resource[]
+            else
+                pluginDirectoryResources = [] as Resource[]
             cache['pluginDirectoryResources'] = pluginDirectoryResources
         }
         return pluginDirectoryResources
@@ -363,7 +370,10 @@ class PluginBuildSettings {
     List<Resource> getImplicitPluginDirectories() {
         def implicitPluginDirectories = cache['implicitPluginDirectories']
         if(implicitPluginDirectories == null) {
-            implicitPluginDirectories = buildSettings.getImplicitPluginDirectories().collect { new FileSystemResource(it) }
+            if(buildSettings)
+                implicitPluginDirectories = buildSettings.getImplicitPluginDirectories().collect { new FileSystemResource(it) }
+            else
+                implicitPluginDirectories = [] as Resource[]
             cache['implicitPluginDirectories'] = implicitPluginDirectories
         }
         return implicitPluginDirectories
@@ -373,7 +383,7 @@ class PluginBuildSettings {
      * Gets a list of all the known plugin base directories (directories where plugins are installed to).
      */
     List<String> getPluginBaseDirectories() {
-        return buildSettings.getPluginBaseDirectories()
+        return buildSettings?.getPluginBaseDirectories() ?: []
     }
 
     /**
