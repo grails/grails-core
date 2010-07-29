@@ -133,9 +133,15 @@ public class AbstractBuildSettings {
     }
 
     private Map lookupPluginLocationConfig(Map config) {
-        Object result = Eval.x(config, "x."+CONFIG_GRAILS_PLUGIN_LOCATION);
-        if(result instanceof Map) {
-            return (Map) result;
+        return getIfMap(getIfMap(getIfMap(config, "grails"), "plugin"), "location");
+    }
+
+    private Map getIfMap(Map config, String name) {
+        if(config != null) {
+            Object o = config.get(name);
+            if(o instanceof Map) {
+                return ((Map) o);
+            }
         }
         return Collections.emptyMap();
     }
