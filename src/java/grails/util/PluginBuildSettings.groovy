@@ -99,6 +99,7 @@ class PluginBuildSettings {
      */
     void clearCache() {
         cache.clear()
+        buildSettings?.clearCache()
         pluginToDirNameMap.clear()
         pluginMetaDataMap.clear()
         pluginInfosMap.clear()
@@ -136,17 +137,20 @@ class PluginBuildSettings {
      * Returns true if the specified plugin location is an inline location.
      */
     boolean isInlinePluginLocation(Resource pluginLocation) {
-        getPluginDirectories() // initialize the cache
-        return cache['inlinePluginLocations']?.contains(pluginLocation)
+        buildSettings.isInlinePluginLocation(pluginLocation?.getFile())
     }
 
     /**
      * Returns an array of the inplace plugin locations.
      */
     Resource[] getInlinePluginDirectories() {
-        getPluginDirectories() // initailize the cache
-        def locations = cache['inlinePluginLocations'] ?: []
-        return locations as Resource[]
+        def locations = cache['inlinePluginLocations']
+        if(locations == null) {
+
+            locations = buildSettings.getInlinePluginDirectories().collect { new FileSystemResource(it) }
+            cache['inlinePluginLocations'] = locations
+        }
+        return locations
     }
 
     /**
@@ -330,21 +334,7 @@ class PluginBuildSettings {
     Resource[] getPluginDirectories() {
         def pluginDirectoryResources = cache['pluginDirectoryResources']
         if (!pluginDirectoryResources) {
-            cache['inlinePluginLocations'] = []
-            def dirList = getImplicitPluginDirectories()
-
-            // Also add any explicit plugin locations specified by the
-            // BuildConfig setting "grails.plugin.location.<name>"
-            def pluginLocations = buildSettings?.config?.grails?.plugin?.location?.findAll { it.value }
-            if (pluginLocations) {
-                dirList.addAll(pluginLocations.collect { key, value ->
-                    FileSystemResource resource = new FileSystemResource(value)
-                    cache['inlinePluginLocations'] << resource
-                    return resource
-                })
-            }
-
-            pluginDirectoryResources = dirList as Resource[]
+            pluginDirectoryResources = buildSettings.getPluginDirectories().collect { new FileSystemResource(it) } as Resource[]
             cache['pluginDirectoryResources'] = pluginDirectoryResources
         }
         return pluginDirectoryResources
@@ -371,28 +361,19 @@ class PluginBuildSettings {
      * and the global "plugins" directory together.
      */
     List<Resource> getImplicitPluginDirectories() {
-        def dirList = []
-        def directoryNamePredicate = {
-            it.isDirectory() && (!it.name.startsWith(".") && it.name.indexOf('-') >- 1)
+        def implicitPluginDirectories = cache['implicitPluginDirectories']
+        if(implicitPluginDirectories == null) {
+            implicitPluginDirectories = buildSettings.getImplicitPluginDirectories().collect { new FileSystemResource(it) }
+            cache['implicitPluginDirectories'] = implicitPluginDirectories
         }
-
-        for (pluginBase in getPluginBaseDirectories()) {
-            List pluginDirs = new File(pluginBase).listFiles().findAll(directoryNamePredicate).collect { new FileSystemResource(it) }
-            dirList.addAll pluginDirs
-        }
-
-        return dirList
+        return implicitPluginDirectories
     }
 
     /**
      * Gets a list of all the known plugin base directories (directories where plugins are installed to).
      */
     List<String> getPluginBaseDirectories() {
-        def list = []
-        if (pluginDirPath) list << pluginDirPath
-        String globalPluginPath = buildSettings?.globalPluginsDir?.path
-        if (globalPluginPath) list << globalPluginPath
-        return list
+        return buildSettings.getPluginBaseDirectories()
     }
 
     /**

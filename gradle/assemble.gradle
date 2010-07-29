@@ -129,7 +129,7 @@ task springJar(type: Jar, description: 'Package up the Spring related Grails cla
 task bootstrapJar(type: Jar, description: 'Package up the classes used to bootstrap Grails') {
     appendix = "bootstrap"
     metaInf handlersAndSchemasMetaInf
-    from mainClassesIncludeSpec("grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*", "grails/util/Metadata*",
+    from mainClassesIncludeSpec("grails/util/AbstractBuildSettings*","grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*", "grails/util/Metadata*",
             "grails/util/BuildScope*", "grails/util/GrailsMain*", "grails/ant/**/*", "**/groovy/grails/cli/**/*", "**/groovy/grails/resolve/**/*",
             "grails/build/**")
     from "build.properties"

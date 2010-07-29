@@ -27,6 +27,7 @@ import org.apache.ivy.util.Message
 
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * <p>Represents the project paths and other build settings
@@ -39,7 +40,7 @@ import org.codehaus.groovy.runtime.StackTraceUtils
  * but not others. If you set one of them explicitly, set all of them
  * to ensure consistent behaviour.</p>
  */
-class BuildSettings {
+class BuildSettings extends AbstractBuildSettings {
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
     /**
      * The base directory of the application
@@ -139,6 +140,9 @@ class BuildSettings {
      */
     public static final String VERBOSE_COMPILE = "grails.project.compile.verbose"
 
+
+
+
     /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
@@ -209,12 +213,6 @@ class BuildSettings {
     /** The location of the plain source. */
     File sourceDir
 
-    /** The location where project-specific plugins are installed to. */
-    File projectPluginsDir
-
-    /** The location where global plugins are installed to. */
-    File globalPluginsDir
-
     /** The location of the test reports. */
     File testReportsDir
 
@@ -226,9 +224,6 @@ class BuildSettings {
 
     /** The root loader for the build. This has the required libraries on the classpath. */
     URLClassLoader rootLoader
-
-    /** The settings stored in the project's BuildConfig.groovy file if there is one. */
-    ConfigObject config = new ConfigObject()
 
     /**
      * The settings used to establish the HTTP proxy to use for dependency resolution etc. 
@@ -413,8 +408,6 @@ class BuildSettings {
     private boolean resourcesDirSet
     private boolean sourceDirSet
     private boolean webXmlFileSet
-    private boolean projectPluginsDirSet
-    private boolean globalPluginsDirSet
     private boolean testReportsDirSet
     private boolean docsOutputDirSet
     private boolean testSourceDirSet
@@ -595,20 +588,6 @@ class BuildSettings {
         sourceDirSet = true
     }
 
-    File getProjectPluginsDir() { projectPluginsDir }
-
-    void setProjectPluginsDir(File dir) {
-        projectPluginsDir = dir
-        projectPluginsDirSet = true
-    }
-
-    File getGlobalPluginsDir() { globalPluginsDir }
-
-    void setGlobalPluginsDir(File dir) {
-        globalPluginsDir = dir
-        globalPluginsDirSet = true
-    }
-
     File getTestReportsDir() { testReportsDir }
 
     void setTestReportsDir(File dir) {
@@ -692,6 +671,7 @@ class BuildSettings {
         if (config.grails.default.plugin.set instanceof List) {
             defaultPluginSet = config.grails.default.plugin.set
         }
+        flatConfig = config.flatten()
         configureDependencyManager(config)
     }
 
@@ -793,22 +773,7 @@ class BuildSettings {
         def handlePluginDirectory = pluginDependencyHandler()
 
         Asynchronizer.doParallel(5) {
-            Closure predicate = { it.directory && !it.hidden }
-
-            def pluginDirs = []
-            if (projectPluginsDir.exists()) {
-                pluginDirs.addAll(projectPluginsDir.listFiles().findAllParallel(predicate))
-            }
-
-            if (globalPluginsDir.exists()) {
-                pluginDirs.addAll(globalPluginsDir.listFiles().findAllParallel(predicate))
-            }
-
-            def pluginLocations = config?.grails?.plugin?.location
-            pluginLocations?.values().eachParallel {location ->
-                pluginDirs << new File(location).canonicalFile
-            }
-
+            def pluginDirs = getPluginDirectories()
             pluginDirs.eachParallel(handlePluginDirectory)
         }
     }
@@ -839,6 +804,17 @@ class BuildSettings {
                     def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
                     if (pluginDependencyConfig instanceof Closure) {
                         dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
+                    }
+
+                    def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig)
+                    if(inlinePlugins) {
+
+                        for(File inlinePlugin in inlinePlugins) {
+                            addPluginDirectory inlinePlugin, true
+                            // recurse
+                            def handleInlinePlugin = pluginDependencyHandler()
+                            handleInlinePlugin(inlinePlugin)
+                        }
                     }
                 }
                 catch (e) {
