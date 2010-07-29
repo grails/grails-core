@@ -26,7 +26,7 @@ package org.codehaus.groovy.grails.commons.metaclass
  * 
  * Created: Jul 22, 2008
  */
-class PropertyExpression {
+class PropertyExpression implements Cloneable {
 
     private StringBuffer propertyExpression
 

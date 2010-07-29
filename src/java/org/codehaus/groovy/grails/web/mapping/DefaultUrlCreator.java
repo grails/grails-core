@@ -67,8 +67,10 @@ public class DefaultUrlCreator implements UrlCreator {
         HttpServletRequest request = webRequest.getCurrentRequest();
 
         String id = null;
-        if(parameterValues.containsKey(ARGUMENT_ID)) {
-            id = parameterValues.get(ARGUMENT_ID).toString();
+        if    (parameterValues.containsKey(ARGUMENT_ID)) {
+            Object o = parameterValues.get(ARGUMENT_ID);
+            if(o != null)
+                id = o.toString();
         }
 
 
