@@ -48,36 +48,40 @@ class SuiteRunListener extends RunListener {
     }
 
     void testStarted(Description description) {
-        if (perTestListener?.name != description.className) {
+        getPerTestRunListener(description).testStarted(description)
+    }
+
+    void testFailure(Failure failure) {
+        getPerTestRunListener(failure.description).testFailure(failure)
+    }
+
+    void testAssumptionFailure(Failure failure) {
+        // assumptions (and AssumptionViolatedException) are specific to JUnit,
+        // and are treated as ordinary failures
+        getPerTestRunListener(description).testFailure(failure)
+    }
+
+    void testFinished(Description description) {
+        getPerTestRunListener(description).testFinished(description)
+    }
+
+    void testRunFinished(Result result) {
+        getPerTestRunListener().finish()
+    }
+
+    void testIgnored(Description description) {
+        // nothing to do
+    }
+    
+    private getPerTestRunListener(description = null) {
+        if (description && perTestListener?.name != description.className) {
             perTestListener?.finish()
 
             def testName = description.className
             perTestListener = new PerTestRunListener(testName, eventPublisher, reportsFactory.createReports(testName), outAndErrSwapper)
             perTestListener.start()
         }
-
-        perTestListener.testStarted(description)
+        perTestListener
     }
-
-    void testFailure(Failure failure) {
-        perTestListener.testFailure(failure)
-    }
-
-    void testAssumptionFailure(Failure failure) {
-        // assumptions (and AssumptionViolatedException) are specific to JUnit,
-        // and are treated as ordinary failures
-        perTestListener.testFailure(failure)
-    }
-
-    void testFinished(Description description) {
-        perTestListener.testFinished(description)
-    }
-
-    void testRunFinished(Result result) {
-        perTestListener.finish()
-    }
-
-    void testIgnored(Description description) {
-        // nothing to do
-    }
+    
 }
