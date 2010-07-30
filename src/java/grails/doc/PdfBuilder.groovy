@@ -26,16 +26,38 @@ class PdfBuilder {
 
     static void build(String baseDir, String grailsHome) {
         baseDir = new File(baseDir).canonicalPath
-
-        File htmlFile = new File("${baseDir}/manual/guide/single.html")
-        File outputFile = new File("${baseDir}/manual/guide/single.pdf")
-        String urlBase = "file://${grailsHome}/src/grails/docs/style"
-
-        String xml = createXml(htmlFile)
-        createPdf(xml, outputFile, urlBase)
+        build basedir: baseDir, home: grailsHome
     }
 
-    private static String createXml(File htmlFile) {
+    /**
+     * Builds a PDF file from the manual's single.html file.<p>
+     * The following directories are assumed to exist:<ul>
+     * <li> $basedir/manual/guide/single.html</li>
+     * <li> $basedir/manual/css/</li>
+     * <li> $basedir/manual/img/</li>
+     * <li> $home/src/$tool/docs/style</li>
+     * </ul>
+     *
+     * The {@code options} map should have the following key/value pairs<ul>
+     * <li>basedir = points to the root directory that contains the generated manual <b>required</b></li>
+     * <li>home = points to the tool home, e.g, $grailsHome <b>required</b></li>
+     * <li>tool = name of the tool. default <tt>grails</tt></li>
+     * </ul>
+     */
+    static void build(Map options) {
+        String baseDir = new File(options.basedir).canonicalPath
+        String home = options.home
+        String tool = options.tool ?: 'grails'
+ 
+        File htmlFile = new File("${baseDir}/manual/guide/single.html")
+        File outputFile = new File("${baseDir}/manual/guide/single.pdf")
+        String urlBase = "file://${home}/src/${tool}/docs/style"
+
+        String xml = createXml(htmlFile, "${baseDir}/manual")
+        createPdf xml, outputFile, urlBase
+    }
+
+    private static String createXml(File htmlFile, String base) {
         String xml = htmlFile.text
 
         // tweak main css so it doesn't get ignored
@@ -43,6 +65,8 @@ class PdfBuilder {
 
         // fix inner anchors
         xml = xml.replaceAll('<a href="../guide/single.html', '<a href="')
+        // fix image refs to absolute paths
+        xml = xml.replaceAll('src="../img/', "src=\"file://${base}/img/")
 
         // convert tabs to spaces otherwise they only take up one space
         xml = xml.replaceAll('\t', '    ')
