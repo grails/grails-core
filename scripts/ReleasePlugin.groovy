@@ -402,7 +402,22 @@ def publishZipOnlyRelease() {
 
     tagPluginRelease()
     modifyOrCreatePluginList()
+	deleteZipFromTrunk()
     println "Successfully published zip-only plugin release."
+}
+
+def deleteZipFromTrunk() {
+    def commitClient = new SVNCommitClient((ISVNAuthenticationManager) authManager, null)
+
+    if (!commitMessage) askForMessage()
+	if(pluginZip) {
+		def pluginZipFile = new File(pluginZip)
+		def zipLocation = SVNURL.parseURIDecoded("${remoteLocation}/trunk/${pluginZipFile.name}")
+	    try { commitClient.doDelete([zipLocation] as SVNURL[], commitMessage) }
+	    catch (SVNException e) {
+	        // ok - the zip doesn't exist yet
+	    }			
+	}
 }
 
 def updateLocalZipAndXml(File localWorkingCopy) {
@@ -456,7 +471,7 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
             }
         }
 
-        def publisher = new DefaultPluginPublisher(remoteRevision, pluginSVN)
+        def publisher = new DefaultPluginPublisher(remoteRevision, pluginDistURL)
         def updatedList = publisher.publishRelease(pluginName, new FileSystemResource(pluginsListFile), !skipLatest)
         pluginsListFile.withWriter("UTF-8") { w ->
             publisher.writePluginList(updatedList, w)
