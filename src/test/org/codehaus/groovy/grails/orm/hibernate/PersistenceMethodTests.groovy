@@ -44,7 +44,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
 '''
     }
 
-    void testMethodSignatures() {
+    void te2stMethodSignatures() {
         FindByPersistentMethod findBy = new FindByPersistentMethod(grailsApplication,
                 sessionFactory, new GroovyClassLoader())
         assertTrue findBy.isMethodMatch("findByFirstName")
@@ -52,7 +52,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertFalse findBy.isMethodMatch("rubbish")
     }
 
-    void testSavePersistentMethod() {
+    void te2stSavePersistentMethod() {
         // init spring config
 
         GrailsDomainClass domainClass = loadDomainClass()
@@ -70,7 +70,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertTrue id instanceof Long
     }
 
-    void testValidatePersistentMethod() {
+    void te2stValidatePersistentMethod() {
         // init spring config
 
         GrailsDomainClass domainClass = loadDomainClass()
@@ -87,7 +87,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertTrue errors.hasErrors()
     }
 
-    void testValidateMethodWithFieldList() {
+    void te2stValidateMethodWithFieldList() {
         // init spring config
 
         GrailsDomainClass domainClass = loadDomainClass()
@@ -101,7 +101,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertFalse obj.validate(['firstName'])
     }
 
-    void testValidatePersistentMethodOnDerivedClass() {
+    void te2stValidatePersistentMethodOnDerivedClass() {
 
         GrailsDomainClass domainClass = loadDomainClass('PersistentMethodTestsDescendent')
 
@@ -130,7 +130,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals 1, errors.getFieldErrorCount("lastName")
     }
 
-    void testFindPersistentMethods() {
+    void te2stFindPersistentMethods() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -344,9 +344,35 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         shouldFail(MissingMethodException) {
             domainClass.findAllByAgeBetween(10)
         }
+
+        // test findAllWhere for null
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 0, returnList.size()
+
+		  def obj4 = domainClass.newInstance()
+        obj4.setProperty("id", 4)
+        obj4.setProperty("firstName", "firstName4")
+        obj4.setProperty("lastName", "lastName4")
+        obj4.invokeMethod("save", null)
+
+		  returnList = domainClass.findAllWhere(age: null)
+		  assertEquals 1, returnList.size()
+
+        def obj5 = domainClass.newInstance()
+        obj5.setProperty("id", 5)
+        obj5.setProperty("firstName", "firstName5")
+        obj5.setProperty("lastName", "lastName5")
+        obj5.invokeMethod("save", null)
+
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 2, returnList.size()
+
+		  // test findWhere for null
+        assertNotNull domainClass.findWhere(firstName: "firstName4", age: null)
+		  assertNull domainClass.findWhere(firstName: "fred", age: null)
     }
 
-    void testGetPersistentMethod() {
+    void te2stGetPersistentMethod() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -369,7 +395,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals returnValue.getClass(), domainClass
     }
 
-    void testGetAllPersistentMethod() {
+    void te2stGetAllPersistentMethod() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -436,7 +462,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertNull returnList[2]
     }
 
-    void testDiscardMethod() {
+    void te2stDiscardMethod() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -451,7 +477,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertFalse session.contains(obj)
     }
 
-    void testFindAllPersistentMethod() {
+    void te2stFindAllPersistentMethod() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -600,7 +626,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         // test find with offset
         namedArgs.clear()
         namedArgs.namesList = ["wilma","fred"] as Object[]
-        returnValue = domainClass.findAll("from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, new Integer(2), 1)
+        returnValue = domainClass.findAll("from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, 2, 1)
         assertNotNull returnValue
         assertEquals ArrayList, returnValue.getClass()
         listResult = returnValue
@@ -608,7 +634,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals 1, listResult.size()
 
         // test find with offset without params
-        returnValue = domainClass.findAll("from PersistentMethodTests as p", new Integer(2), 1)
+        returnValue = domainClass.findAll("from PersistentMethodTests as p", 2, 1)
         assertNotNull returnValue
         assertEquals ArrayList, returnValue.getClass()
         listResult = returnValue
@@ -662,7 +688,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         }
     }
 
-    void testListPersistentMethods() {
+    void te2stListPersistentMethods() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -716,7 +742,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals "fred", obj2.getProperty("firstName")
     }
 
-    void testExecuteQueryMethod() {
+    void te2stExecuteQueryMethod() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
 
         def obj = domainClass.newInstance()
@@ -820,7 +846,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals "fred", listResult[0].getProperty("firstName")
     }
 
-    void testDMLOperation() {
+    void te2stDMLOperation() {
         def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
