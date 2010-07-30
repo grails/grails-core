@@ -626,8 +626,12 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             if(!query) return null
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
-                def criteria = session.createCriteria(domainClassType)
+                List<String> nullNames = removeNullNames(queryArgs)
+                Criteria criteria = session.createCriteria(domainClassType)
                 criteria.add(Restrictions.allEq(queryArgs))
+                for (name in nullNames) {
+                    criteria.add Restrictions.isNull(name)
+                }
                 criteria.setMaxResults(1)
                 GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult())
             } as HibernateCallback)
@@ -636,8 +640,12 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             if(!query) return null
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
-                def criteria = session.createCriteria(domainClassType)
+                List<String> nullNames = removeNullNames(queryArgs)
+                Criteria criteria = session.createCriteria(domainClassType)
                 criteria.add(Restrictions.allEq(queryArgs))
+                for (name in nullNames) {
+                    criteria.add Restrictions.isNull(name)
+                }
                 criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
                 criteria.list()
             } as HibernateCallback)
@@ -772,6 +780,18 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
             }
         }
         return queryArgs
+    }
+
+    private static List<String> removeNullNames(Map query) {
+        List<String> nullNames = []
+        Set<String> allNames = new HashSet(query.keySet())
+        for (String name in allNames) {
+            if (query[name] == null) {
+                query.remove name
+                nullNames << name
+            }
+        }
+        nullNames
     }
 
     /**

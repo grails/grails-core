@@ -260,6 +260,33 @@ public class PersistentMethodTestsDescendent extends PersistentMethodTests {
         catch(Exception e) {
             //expected
         }
+
+        // test findAllWhere for null
+
+        def returnList = domainClass.findAllWhere(age: null)
+        assertEquals 0, returnList.size()
+
+        def obj4 = domainClass.newInstance()
+        obj4.setProperty("id", 4)
+        obj4.setProperty("firstName", "firstName4")
+        obj4.setProperty("lastName", "lastName4")
+        obj4.invokeMethod("save", null)
+
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 1, returnList.size()
+
+        def obj5 = domainClass.newInstance()
+        obj5.setProperty("id", 5)
+        obj5.setProperty("firstName", "firstName5")
+        obj5.setProperty("lastName", "lastName5")
+        obj5.invokeMethod("save", null)
+
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 2, returnList.size()
+
+        // test findWhere for null
+        assertNotNull domainClass.findWhere(firstName: "firstName4", age: null)
+        assertNull domainClass.findWhere(firstName: "fred", age: null)
     }
 
     public void testFindByPersistentMethods() {
