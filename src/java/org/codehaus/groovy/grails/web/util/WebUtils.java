@@ -281,6 +281,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         //populateParamsForMapping(info);
         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
 
+        // Clear the request attributes that affect view rendering. Otherwise
+        // whatever we forward to may render the wrong thing! Note that we
+        // don't care about the return value because we're delegating
+        // responsibility for rendering the response.
+        saveAndResetWebRequest(request, info);
+
         exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
         dispatcher.forward(request, response);
@@ -303,42 +309,82 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         String includeUrl = buildDispatchUrlForMapping(info, true);
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-
-        String currentController = null;
-        String currentAction = null;
-        String currentId = null;
-        ModelAndView currentMv = null;
-        Map currentParams = null;
-        if (webRequest != null) {
-            currentController = webRequest.getControllerName();
-            currentAction = webRequest.getActionName();
-            currentId = webRequest.getId();
-            currentParams = new HashMap();
-            currentParams.putAll(webRequest.getParameterMap());
-            currentMv = (ModelAndView)webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-        }
+        InternalSavedRequest savedRequest = null;
+        
         try {
-            if (webRequest!=null) {
-                webRequest.getParameterMap().clear();
-                info.configure(webRequest);
-                webRequest.getParameterMap().putAll(info.getParameters());
-                webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-            }
+            savedRequest = saveAndResetWebRequest(request, info);
             return includeForUrl(includeUrl, request, response, model);
         }
         finally {
-            if (webRequest!=null) {
-                webRequest.getParameterMap().clear();
-                webRequest.getParameterMap().putAll(currentParams);
-                webRequest.setId(currentId);
-                webRequest.setControllerName(currentController);
-                webRequest.setActionName(currentAction);
-                if (currentMv != null) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, currentMv, 0);
+            if (savedRequest != null) {
+            	webRequest.getParameterMap().clear();
+            	webRequest.getParameterMap().putAll(savedRequest.getParameterMap());
+                webRequest.setId(savedRequest.getId());
+                webRequest.setControllerName(savedRequest.getController());
+                webRequest.setActionName(savedRequest.getAction());
+                if (savedRequest.getModelAndView() != null) {
+                    webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, savedRequest.getModelAndView(), 0);
                 }
             }
         }
     }
+    
+    /**
+     * Saves the details of the current web request in an {@link InternalSavedRequest}
+     * instance, clears information related to view rendering from the request
+     * attributes, and returns the saved request.
+     * @param request The underlying HTTP request to process.
+     * @param info The URL mapping that should be applied to the request after
+     * the attributes have been cleared.
+     * @return The saved web request details.
+     */
+    public static InternalSavedRequest saveAndResetWebRequest(HttpServletRequest request, UrlMappingInfo info) {
+        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+        InternalSavedRequest savedRequest = null;
+        if (webRequest != null) {
+            savedRequest = new InternalSavedRequest(
+                    webRequest.getControllerName(),
+                    webRequest.getActionName(),
+                    webRequest.getId(),
+                    webRequest.getParameterMap(),
+                    (ModelAndView) webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0));
+            webRequest.getParameterMap().clear();
+            info.configure(webRequest);
+            webRequest.getParameterMap().putAll(info.getParameters());
+            webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        }
+        
+        return savedRequest;
+    }
+    
+    /**
+     * Simple class that stores a subset of information about a request, including
+     * the target controller and action, and the request parameters. Also stores
+     * information about any current ModelAndView that will be used to render the
+     * response.
+     */
+    private static class InternalSavedRequest {
+        private String controller;
+        private String action;
+        private String id;
+        private HashMap parameters;
+        private ModelAndView modelAndView;
+
+        public InternalSavedRequest(String controllerName, String actionName, String id, Map parameterMap, ModelAndView mv) {
+            this.controller = controllerName;
+            this.action = actionName;
+            this.id = id;
+            this.parameters = new HashMap(parameterMap);
+            this.modelAndView = mv;
+        }
+
+        public String getController() { return controller; }
+        public String getAction() { return action; }
+        public String getId() { return id; }
+        public Map getParameterMap() { return parameters; }
+        public ModelAndView getModelAndView() { return modelAndView; }
+    }
+
 
     /**
      * Includes the given URL returning the resulting content as a String
