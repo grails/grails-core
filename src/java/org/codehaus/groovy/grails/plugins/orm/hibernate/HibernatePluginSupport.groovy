@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTransactionManager
+import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
@@ -185,6 +186,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             }
             proxyHandler(HibernateProxyHandler)
             eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
+            hibernateEventListeners(HibernateEventListeners)
             entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
@@ -219,6 +221,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                                   'post-update':eventTriggeringInterceptor,
                                   'pre-delete':eventTriggeringInterceptor,
                                   'post-delete':eventTriggeringInterceptor]
+                hibernateEventListeners = hibernateEventListeners
             }
 
             transactionManager(GrailsHibernateTransactionManager) {

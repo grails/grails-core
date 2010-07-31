@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
@@ -25,12 +26,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
+import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
+import org.hibernate.event.*;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -53,6 +56,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     private GrailsApplication grailsApplication;
     private Class<?> configClass;
     private Class<?> currentSessionContextClass;
+    private HibernateEventListeners hibernateEventListeners;
 
     /**
      * Sets class to be used for the Hibernate CurrentSessionContext
@@ -149,10 +153,6 @@ public class ConfigurableLocalSessionFactoryBean extends
         return cause != null && (cause instanceof CacheException);
     }
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        // not used
-    }
-
     @Override
     public void destroy() throws HibernateException {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
@@ -164,5 +164,112 @@ public class ConfigurableLocalSessionFactoryBean extends
         }
         super.destroy();
     }
-}
 
+	/**
+	 * Merge HibernateEventListeners with the default ones
+	 */
+	@Override
+	protected void postProcessConfiguration(final Configuration config) throws HibernateException {
+		super.postProcessConfiguration(config);
+		if (hibernateEventListeners == null || hibernateEventListeners.getListenerMap() == null) {
+			return;
+		}
+
+		EventListeners listeners = config.getEventListeners();
+		Map<String,Object> listenerMap = hibernateEventListeners.getListenerMap();			
+		addNewListenerToConfiguration(config, "auto-flush", AutoFlushEventListener.class, 
+				listeners.getAutoFlushEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "merge", MergeEventListener.class, 
+				listeners.getMergeEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "create", PersistEventListener.class, 
+				listeners.getPersistEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "create-onflush", PersistEventListener.class, 
+				listeners.getPersistOnFlushEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "delete", DeleteEventListener.class, 
+				listeners.getDeleteEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "dirty-check", DirtyCheckEventListener.class, 
+				listeners.getDirtyCheckEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "evict", EvictEventListener.class, 
+				listeners.getEvictEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "flush", FlushEventListener.class, 
+				listeners.getFlushEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "flush-entity", FlushEntityEventListener.class, 
+				listeners.getFlushEntityEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "load", LoadEventListener.class, 
+				listeners.getLoadEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "load-collection", InitializeCollectionEventListener.class, 
+				listeners.getInitializeCollectionEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "lock", LockEventListener.class, 
+				listeners.getLockEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "refresh", RefreshEventListener.class, 
+				listeners.getRefreshEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "replicate", ReplicateEventListener.class, 
+				listeners.getReplicateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "save-update", SaveOrUpdateEventListener.class, 
+				listeners.getSaveOrUpdateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "save", SaveOrUpdateEventListener.class, 
+				listeners.getSaveEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "update", SaveOrUpdateEventListener.class, 
+				listeners.getUpdateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-load", PreLoadEventListener.class, 
+				listeners.getPreLoadEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-update", PreUpdateEventListener.class, 
+				listeners.getPreUpdateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-delete", PreDeleteEventListener.class, 
+				listeners.getPreDeleteEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-insert", PreInsertEventListener.class, 
+				listeners.getPreInsertEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-collection-recreate", PreCollectionRecreateEventListener.class, 
+				listeners.getPreCollectionRecreateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-collection-remove", PreCollectionRemoveEventListener.class, 
+				listeners.getPreCollectionRemoveEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "pre-collection-update", PreCollectionUpdateEventListener.class, 
+				listeners.getPreCollectionUpdateEventListeners(), listenerMap);
+		addNewListenerToConfiguration(config, "post-load", PostLoadEventListener.class, 
+				listeners.getPostLoadEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-update", PostUpdateEventListener.class, 
+				listeners.getPostUpdateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-delete", PostDeleteEventListener.class, 
+				listeners.getPostDeleteEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-insert", PostInsertEventListener.class, 
+				listeners.getPostInsertEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-commit-update", PostUpdateEventListener.class, 
+				listeners.getPostCommitUpdateEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-commit-delete", PostDeleteEventListener.class, 
+				listeners.getPostCommitDeleteEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-commit-insert", PostInsertEventListener.class, 
+				listeners.getPostCommitInsertEventListeners(), listenerMap);			
+		addNewListenerToConfiguration(config, "post-collection-recreate", PostCollectionRecreateEventListener.class, 
+				listeners.getPostCollectionRecreateEventListeners(), listenerMap);		
+		addNewListenerToConfiguration(config, "post-collection-remove", PostCollectionRemoveEventListener.class, 
+				listeners.getPostCollectionRemoveEventListeners(), listenerMap);		
+		addNewListenerToConfiguration(config, "post-collection-update", PostCollectionUpdateEventListener.class, 
+				listeners.getPostCollectionUpdateEventListeners(), listenerMap);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void addNewListenerToConfiguration(final Configuration config, final String listenerType,
+			final Class<? extends T> klass, final T[] currentListeners, final Map<String,Object> newlistenerMap) {
+
+		Object newListener = newlistenerMap.get(listenerType);
+		if (newListener == null) return;
+
+		if (currentListeners != null && currentListeners.length > 0) {
+			T[] newListeners = (T[])Array.newInstance(klass, currentListeners.length + 1);
+			System.arraycopy(currentListeners, 0, newListeners, 0, currentListeners.length);
+			newListeners[currentListeners.length] = (T)newListener;
+			config.setListeners(listenerType, newListeners);
+		}
+		else {
+			config.setListener(listenerType, newListener);
+		}
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        // not used
+    }
+
+    public void setHibernateEventListeners(final HibernateEventListeners listeners) {
+        hibernateEventListeners = listeners;
+    }
+}
