@@ -66,8 +66,13 @@ class PluginBuildSettingsTests extends GroovyTestCase {
     void testGetAvailableScripts() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
         def scripts = pluginSettings.getAvailableScripts()
-
-        assertEquals 48, scripts.size()
+        def nonUserScripts = []
+        for (script in scripts) {
+            if (!script.path.startsWith("${System.getProperty('user.home')}/.grails/scripts")) {
+                nonUserScripts << script
+            }
+        }
+        assertEquals 48, nonUserScripts.size()
     }
 
     void testGetPluginScripts() {
