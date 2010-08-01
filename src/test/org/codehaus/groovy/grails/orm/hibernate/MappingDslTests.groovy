@@ -303,6 +303,24 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         authorClass.executeQuery 'select distinct a from CompositeIdAssignedAuthor as a inner join fetch a.books'
     }
 
+	void testEnumIndex() {
+		DataSource ds = applicationContext.dataSource
+		List<String> indexNames = []
+		def connection
+		try {
+			connection = ds.getConnection()
+			def rs = connection.metaData.getIndexInfo(null, null, 'ENUM_INDEXED', false, false)
+			while (rs.next()) { indexNames << rs.getString('INDEX_NAME') }
+			rs.close()
+		}
+		finally {
+			connection.close()
+		}
+
+		assertTrue indexNames.contains('NAME_INDEX')
+		assertTrue indexNames.contains('TRUTH_INDEX')
+	}
+
     protected void onSetUp() {
         gcl.parseClass '''
 class MappedPerson {
@@ -428,6 +446,24 @@ class Relative {
             firstName type:'text', index:'name_index'
             lastName index:'name_index,other_index'
         }
+    }
+}
+
+enum Truth {
+    TRUE,
+    FALSE
+}
+
+class EnumIndexed {
+    Long id
+    Long version
+
+    String name
+    Truth truth
+
+    static mapping = {
+        name index: 'name_index'
+        truth index: 'truth_index'
     }
 }
 

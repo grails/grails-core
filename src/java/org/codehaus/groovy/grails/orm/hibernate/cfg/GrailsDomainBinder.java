@@ -612,7 +612,6 @@ public final class GrailsDomainBinder {
                 }
                 if (typeName == null) throw new MappingException("Type ["+typeName+"] is not a basic type or a domain class and cannot be mapped. Either specify a type within the [mapping] block or use a basic type (String, Integer etc.)");
 
-
                 bindSimpleValue(typeName, element,true, columnName, mappings);
                 if (hasJoinColumnMapping) {
                     bindColumnConfigToColumn(getColumnForSimpleValue(element), config.getJoinTable().getColumn());
@@ -1635,8 +1634,7 @@ public final class GrailsDomainBinder {
     }
 
     private static void bindEnumType(GrailsDomainClassProperty property, SimpleValue simpleValue, String path) {
-        final Class<?> propertyType = property.getType();
-        bindEnumType(property, propertyType, simpleValue, getColumnNameForPropertyAndPath(property, path, null));
+        bindEnumType(property, property.getType(), simpleValue, getColumnNameForPropertyAndPath(property, path, null));
     }
 
     private static void bindEnumType(GrailsDomainClassProperty property, Class<?> propertyType, SimpleValue simpleValue, String columnName) {
@@ -1665,7 +1663,7 @@ public final class GrailsDomainBinder {
             column.setNullable(property.isOptional());
         } else {
             Mapping mapping = getMapping(property.getDomainClass());
-            if(mapping == null || mapping.getTablePerHierarchy()) {
+            if (mapping == null || mapping.getTablePerHierarchy()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
                 column.setNullable(true);
@@ -1678,6 +1676,11 @@ public final class GrailsDomainBinder {
         if (t != null) t.addColumn(column);
 
         simpleValue.addColumn(column);
+
+        PropertyConfig propertyConfig = getPropertyConfig(property);
+        if (propertyConfig != null && !propertyConfig.getColumns().isEmpty()) {
+            bindIndex(column, propertyConfig.getColumns().get(0), t);
+        }
     }
 
     private static Class<?> getUserType(GrailsDomainClassProperty currentGrailsProp) {
@@ -2252,8 +2255,7 @@ public final class GrailsDomainBinder {
     private static void bindSimpleValue(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty,
             SimpleValue simpleValue, String path, @SuppressWarnings("unused") Mappings mappings) {
         // set type
-        PropertyConfig propertyConfig = getPropertyConfig(property);
-        bindSimpleValue(property,parentProperty, simpleValue, path, propertyConfig);
+        bindSimpleValue(property,parentProperty, simpleValue, path, getPropertyConfig(property));
     }
 
     private static void bindSimpleValue(GrailsDomainClassProperty grailsProp, SimpleValue simpleValue, String path, PropertyConfig propertyConfig) {
@@ -2423,7 +2425,7 @@ public final class GrailsDomainBinder {
 
         if (!property.getDomainClass().isRoot()) {
             Mapping mapping = getMapping(property.getDomainClass());
-            if(mapping == null || mapping.getTablePerHierarchy()) {
+            if (mapping == null || mapping.getTablePerHierarchy()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
                 column.setNullable(true);
@@ -2459,15 +2461,19 @@ public final class GrailsDomainBinder {
     }
 
     private static void bindIndex(Column column, ColumnConfig cc, Table table) {
-        if (cc != null) {
-            String indexDefinition = cc.getIndex();
-            if (indexDefinition != null) {
-                String[] tokens = indexDefinition.split(",");
-                for (int i = 0; i < tokens.length; i++) {
-                    String index = tokens[i];
-                    table.getOrCreateIndex(index).addColumn(column);
-                }
-            }
+        if (cc == null) {
+            return;
+        }
+
+        String indexDefinition = cc.getIndex();
+        if (indexDefinition == null) {
+            return;
+        }
+
+        String[] tokens = indexDefinition.split(",");
+        for (int i = 0; i < tokens.length; i++) {
+            String index = tokens[i];
+            table.getOrCreateIndex(index).addColumn(column);
         }
     }
 
