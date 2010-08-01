@@ -25,9 +25,9 @@ import java.util.Set;
  *
  * @author Phil Zoio
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class IncludingPluginFilter extends BasePluginFilter {
 
-    @SuppressWarnings("unchecked")
     public IncludingPluginFilter(Set included) {
         super(included);
     }
@@ -37,7 +37,6 @@ public class IncludingPluginFilter extends BasePluginFilter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected List getPluginList(List original, List pluginList) {
         List newList = new ArrayList();
         newList.addAll(pluginList);
@@ -45,7 +44,6 @@ public class IncludingPluginFilter extends BasePluginFilter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void addPluginDependencies(List additionalList, GrailsPlugin plugin) {
         String[] dependencyNames = plugin.getDependencyNames();
         for (String name : dependencyNames) {

@@ -87,7 +87,7 @@ public class GrailsHibernateUtil {
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
         ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
@@ -107,7 +107,7 @@ public class GrailsHibernateUtil {
         configureInheritanceMappings(hibernateDomainClassMap);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void configureInheritanceMappings(Map hibernateDomainClassMap) {
         // now get through all domainclasses, and add all subclasses to root class
         for (Object o : hibernateDomainClassMap.values()) {
@@ -129,7 +129,7 @@ public class GrailsHibernateUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application,
             ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap,
             Map defaultContraints) {
@@ -150,7 +150,7 @@ public class GrailsHibernateUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Class<?> targetClass, Criteria c, Map argMap) {
         Integer maxParam = null;
         Integer offsetParam = null;
@@ -230,7 +230,7 @@ public class GrailsHibernateUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Criteria c, Map argMap) {
         populateArgumentsForCriteria(null, c, argMap);
     }

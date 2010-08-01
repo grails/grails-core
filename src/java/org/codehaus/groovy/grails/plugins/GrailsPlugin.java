@@ -46,7 +46,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @since 0.2
  * @see BeanDefinitionRegistry
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo {
 
     int EVENT_ON_CHANGE = 0;

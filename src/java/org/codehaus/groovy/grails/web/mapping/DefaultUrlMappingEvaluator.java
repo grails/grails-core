@@ -85,7 +85,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         this.servletContext = servletContext;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List evaluateMappings(Resource resource) {
         InputStream inputStream = null;
         try {
@@ -100,7 +100,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public List evaluateMappings(Class theClass) {
         GroovyObject obj = (GroovyObject) BeanUtils.instantiateClass(theClass);
 
@@ -130,7 +130,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 "]. A URL mapping must be an instance of groovy.lang.Script.");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List evaluateMappings(Closure closure) {
         UrlMappingBuilder builder = new UrlMappingBuilder(null, servletContext);
         closure.setDelegate(builder);
@@ -196,6 +196,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
      * <p/>
      * <p>invokeMethod(methodName, args) is also overriden for the creation of each UrlMapping instance
      */
+    @SuppressWarnings("rawtypes")
     class UrlMappingBuilder extends GroovyObjectSupport {
         private static final String CAPTURING_WILD_CARD = "(*)";
         private static final String SLASH = "/";
@@ -302,7 +303,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return parameterValues.get(name);
         }
 
-        @SuppressWarnings("unchecked")
         private Object _invoke(String methodName, Object arg, Object delegate) {
             Object[] args = (Object[]) arg;
             final boolean isResponseCode = isResponseCode(methodName);
@@ -454,7 +454,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return true;
         }
 
-        @SuppressWarnings("unchecked")
         private UrlMapping getURLMappingForNamedArgs(Map namedArguments,
                 UrlMappingData urlData, String mapping, boolean isResponseCode) {
             @SuppressWarnings("hiding")
@@ -533,7 +532,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return urlMapping;
         }
 
-        @SuppressWarnings("unchecked")
         private Object getVariableFromNamedArgsOrBinding(Map namedArguments, Map bindingVariables, String variableName, Object defaultValue) {
             Object returnValue;
             returnValue = namedArguments.get(variableName);
@@ -543,32 +541,26 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return returnValue;
         }
 
-        @SuppressWarnings("unchecked")
         private Object getActionName(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,GrailsControllerClass.ACTION, actionName);
         }
 
-        @SuppressWarnings("unchecked")
         private Object getParseRequest(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,PARSE_REQUEST, parseRequest);
         }
 
-        @SuppressWarnings("unchecked")
         private Object getControllerName(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,GrailsControllerClass.CONTROLLER, controllerName);
         }
 
-        @SuppressWarnings("unchecked")
         private Object getViewName(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,GrailsControllerClass.VIEW, viewName);
         }
 
-        @SuppressWarnings("unchecked")
         private Object getURI(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,"uri", uri);
         }
 
-        @SuppressWarnings("unchecked")
         private Object getException(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,EXCEPTION, exception);
         }

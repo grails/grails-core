@@ -45,9 +45,8 @@ import org.springframework.validation.Validator;
  *
  * @author Graeme Rocher
  * @since 0.1
- *        <p/>
- *        Created - 18-Feb-2006
  */
+@SuppressWarnings("rawtypes")
 public class GrailsHibernateDomainClass extends AbstractGrailsClass implements ExternalGrailsDomainClass {
 
     private static final String HIBERNATE = "hibernate";
@@ -61,9 +60,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     private Validator validator;
 
-    @SuppressWarnings("unchecked")
     private Set subClasses = new HashSet();
-    @SuppressWarnings("unchecked")
     private Map constraints = Collections.emptyMap();
     private Map<String, Object> defaultConstraints = Collections.emptyMap();
 
@@ -151,7 +148,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
      * Evaluates the constraints closure to build the list of constraints
      * @param defaultContraints The default global constraints definition
      */
-    @SuppressWarnings("unchecked")
     private void evaluateConstraints() {
         Map existing = (Map) getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.CONSTRAINTS, Map.class);
         if (existing == null) {
@@ -163,7 +159,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         }
     }
 
-    @SuppressWarnings("unchecked")
     public boolean isOwningClass(Class domainClass) {
         return false;
     }
@@ -208,7 +203,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public Map getMappedBy() {
         return Collections.emptyMap();
     }
@@ -247,7 +241,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return prop.getReferencedPropertyType();
     }
 
-    @SuppressWarnings("unchecked")
     public Map getConstrainedProperties() {
         return constraints;
     }
@@ -282,7 +275,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return getClazz().getSuperclass().equals(Object.class);
     }
 
-    @SuppressWarnings("unchecked")
     public Map getAssociationMap() {
         return Collections.emptyMap();
     }

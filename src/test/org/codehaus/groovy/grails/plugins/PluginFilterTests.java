@@ -12,7 +12,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class PluginFilterTests extends AbstractGrailsMockTests {
 
     public void testIncluding() {

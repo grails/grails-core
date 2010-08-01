@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
  */
 public class PluginFilterRetriever {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public PluginFilter getPluginFilter(Map properties) {
 
         Assert.notNull(properties);
@@ -33,7 +33,7 @@ public class PluginFilterRetriever {
         return getPluginFilter(includes, excludes);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     PluginFilter getPluginFilter(Object includes, Object excludes) {
         PluginFilter pluginFilter = null;
 

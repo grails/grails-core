@@ -50,7 +50,7 @@ public interface UrlMappingEvaluator {
      *
      * @return A list of UrlMapping instances
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     List evaluateMappings(Resource resource);
 
     /**
@@ -59,7 +59,7 @@ public interface UrlMappingEvaluator {
      * @param theClass The class to evaluate mapping from
      * @return A list of UrlMapping instances
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     List evaluateMappings(Class theClass);
 
     /**
@@ -68,6 +68,6 @@ public interface UrlMappingEvaluator {
      * @param closure The closure to evaluate mapping from
      * @return A list of UrlMapping instances
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     List evaluateMappings(Closure closure);
 }

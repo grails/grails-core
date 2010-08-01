@@ -35,9 +35,9 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @author Graeme Rocher
  * @since 1.2
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
 
-    @SuppressWarnings("unchecked")
     protected Map params = Collections.EMPTY_MAP;
 
     public void configure(GrailsWebRequest webRequest) {
@@ -108,7 +108,6 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
         return evaluateNameForValue(value, webRequest);
     }
 
-    @SuppressWarnings("unchecked")
     protected String evaluateNameForValue(Object value, GrailsWebRequest webRequest) {
         if (value == null) {
             return null;

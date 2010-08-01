@@ -70,7 +70,7 @@ public interface UrlMappingInfo {
      *
      * @return A Map of parameters
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getParameters();
 
     /**

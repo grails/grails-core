@@ -110,7 +110,7 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
                 "The class [MockGrailsPluginManager] doesn't support the method getPluginObservers");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void informObservers(String pluginName, Map event) {
         // do nothing
     }

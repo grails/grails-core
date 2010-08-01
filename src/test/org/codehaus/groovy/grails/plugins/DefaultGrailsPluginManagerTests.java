@@ -17,7 +17,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
     private Class<?> third;
     private Class<?> fourth;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testLoadPlugins() {
 
         GroovyClassLoader gcl = new GroovyClassLoader();
@@ -71,7 +71,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
      *
      * ...and emailconfirmation is NOT loaded first.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testDependenciesWithDelayedLoadingWithVersionRangeStrings() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 

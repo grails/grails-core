@@ -28,9 +28,9 @@ import java.util.Set;
  *
  * @author Phil Zoio
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ExcludingPluginFilter extends BasePluginFilter {
 
-    @SuppressWarnings("unchecked")
     public ExcludingPluginFilter(Set excluded) {
         super(excluded);
     }
@@ -40,7 +40,6 @@ public class ExcludingPluginFilter extends BasePluginFilter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected List getPluginList(List original, List pluginList) {
 
         // go through and remove ones that don't apply
@@ -56,7 +55,6 @@ public class ExcludingPluginFilter extends BasePluginFilter {
         return newList;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void addPluginDependencies(List additionalList, GrailsPlugin plugin) {
         // find the plugins which depend on the one we've excluded

@@ -67,10 +67,10 @@ public interface GrailsPluginInfo {
      */
     Resource getPluginDir();
 
-    @SuppressWarnings("unchecked")
     /**
      * Gets the properties of the plugin as a map
      * @return A map of the properties
      */
+    @SuppressWarnings("rawtypes")
     Map getProperties();
 }

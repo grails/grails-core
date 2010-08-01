@@ -36,7 +36,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Object viewName;
     protected Object forwardURI;
     protected ServletContext servletContext;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Map parameterValues = Collections.EMPTY_MAP;
     protected boolean parseRequest;
     protected String mappingName;
@@ -99,7 +99,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         return viewName;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public void setParameterValues(Map parameterValues) {
         this.parameterValues = Collections.unmodifiableMap(parameterValues);
     }

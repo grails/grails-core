@@ -74,14 +74,14 @@ public abstract class BasePluginFilter implements PluginFilter {
     /**
      * Defines operation for adding dependencies for a plugin to the list
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected abstract void addPluginDependencies(List additionalList, GrailsPlugin plugin);
 
     /**
      * Defines an operation getting the final list to return from the original
      * and derived lists
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected abstract List<GrailsPlugin> getPluginList(List original, List pluginList);
 
     /**
@@ -183,7 +183,7 @@ public abstract class BasePluginFilter implements PluginFilter {
     /**
      * Adds a plugin to the additional if this hasn't happened already
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected void registerDependency(List additionalList, GrailsPlugin plugin) {
         if (!addedNames.contains(plugin.getName())) {
             addedNames.add(plugin.getName());
@@ -192,7 +192,7 @@ public abstract class BasePluginFilter implements PluginFilter {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Collection getAllPlugins() {
         return Collections.unmodifiableCollection(nameMap.values());
     }

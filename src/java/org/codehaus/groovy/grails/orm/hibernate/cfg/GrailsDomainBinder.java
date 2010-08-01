@@ -209,7 +209,7 @@ public final class GrailsDomainBinder {
             return columns.toString();
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public void doSecondPass(Map persistentClasses) throws MappingException {
             bindCollectionSecondPass(this.property, mappings, persistentClasses, collection);
             createCollectionKeys();
@@ -228,7 +228,7 @@ public final class GrailsDomainBinder {
             bindListSecondPass(this.property, mappings, persistentClasses, (org.hibernate.mapping.List) collection);
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         public void doSecondPass(Map persistentClasses) throws MappingException {
             bindListSecondPass(this.property, mappings, persistentClasses, (org.hibernate.mapping.List) collection);
@@ -247,7 +247,7 @@ public final class GrailsDomainBinder {
             bindMapSecondPass(this.property, mappings, persistentClasses, (org.hibernate.mapping.Map)collection);
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         public void doSecondPass(Map persistentClasses) throws MappingException {
             bindMapSecondPass(this.property, mappings, persistentClasses, (org.hibernate.mapping.Map) collection);

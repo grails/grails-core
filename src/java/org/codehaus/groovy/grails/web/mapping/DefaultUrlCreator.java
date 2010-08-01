@@ -41,6 +41,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @author Graeme Rocher
  * @since 0.5.5
  */
+@SuppressWarnings("rawtypes")
 public class DefaultUrlCreator implements UrlCreator {
 
     private static final char SLASH = '/';
@@ -54,14 +55,12 @@ public class DefaultUrlCreator implements UrlCreator {
         actionName = action;
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(Map parameterValues, String encoding) {
         if (parameterValues == null) parameterValues = Collections.EMPTY_MAP;
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         return createURLWithWebRequest(parameterValues, webRequest, true);
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(Map parameterValues, String encoding, String fragment) {
         String url = createURL(parameterValues, encoding);
         return createUrlWithFragment(encoding, fragment, url);
@@ -148,7 +147,6 @@ public class DefaultUrlCreator implements UrlCreator {
         return  createUrlWithFragment(encoding, fragment, url);
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         String url = createURL(controller, action, parameterValues, encoding);
         return createUrlWithFragment(encoding, fragment, url);
@@ -171,7 +169,6 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends all the request parameters to the URI buffer
      */
-    @SuppressWarnings("unchecked")
     private void appendRequestParams(FastStringWriter actualUriBuf, Map<Object, Object> params,
             HttpServletRequest request) {
 
