@@ -27,7 +27,7 @@ public class CodecArtefactHandler extends ArtefactHandlerAdapter {
     }
 
     @Override
-    public boolean isArtefactClass(@SuppressWarnings("unchecked") Class clazz) {
+    public boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
         if (clazz == null) return false;
 
         return clazz.getName().endsWith(DefaultGrailsCodecClass.CODEC);

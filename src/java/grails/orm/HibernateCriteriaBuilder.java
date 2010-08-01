@@ -155,14 +155,14 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private boolean paginationEnabledList = false;
     private List<Order> orderEntries;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
         this.targetClass = targetClass;
         targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
         this.sessionFactory = sessionFactory;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory, boolean uniqueResult) {
         this.targetClass = targetClass;
         this.sessionFactory = sessionFactory;
@@ -241,7 +241,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      * @param propertyNames The list of distince property names
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void distinct(Collection propertyNames) {
         distinct(propertyNames, null);
     }
@@ -252,7 +252,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyNames The list of distince property names
      * @param alias The alias to use
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void distinct(Collection propertyNames, String alias) {
         ProjectionList list = Projections.projectionList();
         for (Object o : propertyNames) {
@@ -717,7 +717,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      * @param propertyValue
      * @return A Criterion instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object eq(Map params, String propertyName, Object propertyValue) {
         return eq(propertyName, propertyValue, params);
     }
@@ -732,7 +732,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      * @return A Criterion instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object eq(String propertyName, Object propertyValue, Map params) {
         if (!validateSimpleExpression()) {
             throwRuntimeException(new IllegalArgumentException("Call to [eq] with propertyName [" +
@@ -831,7 +831,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      *
      * @return A Criterion instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object in(String propertyName, Collection values) {
         if (!validateSimpleExpression()) {
             throwRuntimeException(new IllegalArgumentException("Call to [in] with propertyName [" +
@@ -845,7 +845,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     /**
      * Delegates to in as in is a Groovy keyword
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object inList(String propertyName, Collection values) {
         return in(propertyName, values);
     }
@@ -1076,7 +1076,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         return criteria != null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public Object invokeMethod(String name, Object obj) {
         Object[] args = obj.getClass().isArray() ? (Object[])obj : new Object[]{obj};
@@ -1328,7 +1328,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         return associationPath;
     }
 
-    @SuppressWarnings("unchecked")
     private boolean isCriteriaConstructionMethod(String name, Object[] args) {
         return (name.equals(LIST_CALL) && args.length == 2 && args[0] instanceof Map && args[1] instanceof Closure) ||
                   (name.equals(ROOT_CALL) ||

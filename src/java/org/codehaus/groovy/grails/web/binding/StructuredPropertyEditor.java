@@ -24,7 +24,7 @@ import java.util.Map;
  * @since 1.0.4
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface StructuredPropertyEditor {
 
     /**

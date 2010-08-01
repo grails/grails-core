@@ -59,7 +59,7 @@ public class FindAllByPersistentMethod extends AbstractClausedStaticPersistentMe
         super(application, sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), OPERATORS);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName,
             final Object[] arguments, final List expressions, String operatorInUse,

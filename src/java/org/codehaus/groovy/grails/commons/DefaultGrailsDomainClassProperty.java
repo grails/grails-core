@@ -69,7 +69,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @param domainClass
      * @param descriptor
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor) {
         this.domainClass = domainClass;
         name = descriptor.getName();
@@ -93,7 +93,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     /**
      * Evaluates the fetchmode.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void establishFetchMode() {
         Map fetchMap = domainClass.getPropertyValue(GrailsDomainClassProperty.FETCH_MODE, Map.class);
         if (fetchMap != null && fetchMap.containsKey(name)) {
@@ -108,7 +108,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      *
      * @param transientProps The transient properties
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void checkIfTransient(List transientProps) {
         if (transientProps == null) {
             return;
@@ -133,7 +133,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      *
      * @return A list of transient properties
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private List getTransients() {
         List allTransientProps = new ArrayList();
         List<GrailsDomainClass> allClasses = resolveAllDomainClassesInHierarchy();
@@ -185,7 +185,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#getType()
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Class getType() {
         return type;
     }
@@ -322,7 +322,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getReferencedPropertyType()
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Class getReferencedPropertyType() {
         if (isDomainAssociation()) {
             return referencedPropertyType;
@@ -525,14 +525,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         return basicCollectionType;
     }
 
+    @SuppressWarnings("rawtypes")
     private class ComponentDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
         private GrailsDomainClassProperty[] properties;
-        @SuppressWarnings("unchecked")
         private Map constraints = Collections.emptyMap();
-        @SuppressWarnings("unchecked")
         private List transients = Collections.emptyList();
 
-        @SuppressWarnings("unchecked")
         public ComponentDomainClass(Class<?> type) {
             super(type, "");
 
@@ -577,7 +575,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             return GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) && !transients.contains(propertyName);
         }
 
-        @SuppressWarnings("unchecked")
         public boolean isOwningClass(Class dc) {
             return dc != null && dc.equals(getDomainClass().getClazz());
         }
@@ -606,7 +603,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             return null;  // no version for embedded component
         }
 
-        @SuppressWarnings("unchecked")
         public Map getAssociationMap() {
             return Collections.emptyMap();
         }
@@ -639,7 +635,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             return getPropertyByName(propertyName).getReferencedPropertyType();
         }
 
-        @SuppressWarnings("unchecked")
         public Map getConstrainedProperties() {
             return constraints;
         }
@@ -676,7 +671,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             return false;
         }
 
-        @SuppressWarnings("unchecked")
         public Map getMappedBy() {
             return Collections.emptyMap();
         }

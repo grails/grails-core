@@ -341,7 +341,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                         IN_LIST,
                         1,
                         isNegation(queryParameter, IN_LIST)) {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings("rawtypes")
                     @Override
                     Criterion createCriterion() {
                         Collection collection = (Collection)arguments[0];
@@ -438,7 +438,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected Object doInvokeInternal(final Class clazz, String methodName,
                                       Closure additionalCriteria, Object[] arguments) {
@@ -562,6 +562,6 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse, additionalCriteria);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse, Closure additionalCriteria);
 }

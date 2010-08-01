@@ -47,7 +47,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Object doInvokeInternal(final Class clazz, String methodName, Closure additionalCriteria, final Object[] arguments) {
         // and list up to the max
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {

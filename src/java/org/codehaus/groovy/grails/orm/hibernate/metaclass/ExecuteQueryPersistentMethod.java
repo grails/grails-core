@@ -56,7 +56,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         super(sessionFactory, classLoader, METHOD_PATTERN);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         checkMethodSignature(clazz, arguments);
@@ -112,7 +112,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void checkMethodSignature(Class clazz, Object[] arguments) {
         boolean valid = true;
         if (arguments.length < 1) valid = false;
@@ -122,7 +122,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         if (!valid) throw new MissingMethodException(METHOD_SIGNATURE, clazz, arguments);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Map extractPaginateParams(Object[] arguments) {
         Map result = new HashMap();
         int paginateParamsIndex = 0;
@@ -137,7 +137,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private List extractPositionalParams(Object[] arguments) {
         List result = new ArrayList();
         if (arguments.length < 2 || arguments[1] instanceof Map) return result;
@@ -153,7 +153,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Map extractNamedParams(Object[] arguments) {
         Map result = new HashMap();
         if (arguments.length < 2 || !(arguments[1] instanceof Map)) return result;

@@ -37,7 +37,7 @@ public class CreateDynamicMethod extends AbstractStaticMethodInvocation  {
         setPattern(METHOD_PATTERN);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public Object invoke(Class clazz, String methodName, Object[] arguments) {
         try {

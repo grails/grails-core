@@ -36,7 +36,7 @@ public class DataBindingLazyMetaPropertyMap extends LazyMetaPropertyMap {
         super(o);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public Object put(Object propertyName, Object propertyValue) {
         if (propertyName instanceof List) {

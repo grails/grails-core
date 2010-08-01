@@ -267,7 +267,7 @@ public class Metadata extends Properties {
      * Overrides, called by the store method.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public synchronized Enumeration keys() {
         Enumeration keysEnum = super.keys();
         Vector keyList = new Vector();

@@ -39,6 +39,6 @@ public interface DynamicConstructor {
      *
      * @return The returned instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Object invoke(Class clazz, Object[] args);
 }

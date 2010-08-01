@@ -145,13 +145,13 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     /**
      * @return A Set of names of actions with command objects presented in this controller
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Set getCommandObjectActions();
 
     /**
      * @return command object classes used by this controller
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Set getCommandObjectClasses();
 
     /**
@@ -162,7 +162,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      *
      * @return A Map of flows for this controller
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getFlows();
 
     /**

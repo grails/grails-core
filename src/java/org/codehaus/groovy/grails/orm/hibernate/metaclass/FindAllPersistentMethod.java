@@ -102,7 +102,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
         super(sessionFactory, classLoader, Pattern.compile("^findAll$"));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected Object doInvokeInternal(final Class clazz, String methodName, Closure additionalCriteria, final Object[] arguments) {
         if (arguments.length == 0) {

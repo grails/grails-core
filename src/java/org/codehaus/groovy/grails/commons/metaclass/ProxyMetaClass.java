@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  * @author Dierk Koenig
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
 
     protected MetaClass adaptee;

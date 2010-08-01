@@ -34,7 +34,7 @@ public class DefaultArtefactInfo implements ArtefactInfo {
     private Map<String, GrailsClass> grailsClassesByName = new LinkedHashMap<String, GrailsClass>();
     private Map<String, Class<?>> classesByName = new LinkedHashMap<String, Class<?>>();
     private Map<String, GrailsClass> logicalPropertyNameToClassMap = new HashMap<String, GrailsClass>();
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map handlerData = new HashMap();
     private GrailsClass[] grailsClassesArray;
 

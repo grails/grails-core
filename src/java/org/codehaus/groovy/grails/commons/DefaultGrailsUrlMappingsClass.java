@@ -38,7 +38,7 @@ public class DefaultGrailsUrlMappingsClass extends AbstractGrailsClass implement
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List getExcludePatterns() {
         return getStaticPropertyValue(EXCLUDE_PATTERNS, ArrayList.class);
     }

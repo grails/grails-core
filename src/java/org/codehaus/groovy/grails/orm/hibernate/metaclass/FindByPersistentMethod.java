@@ -60,7 +60,7 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
         super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;

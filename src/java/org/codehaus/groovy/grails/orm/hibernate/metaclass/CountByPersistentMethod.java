@@ -49,7 +49,7 @@ public class CountByPersistentMethod extends AbstractClausedStaticPersistentMeth
         super(application, sessionFactory, classLoader, METHOD_PATTERN, OPERATORS);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, Object[] arguments,
             final List expressions, String operatorInUse, final Closure additionalCriteria) {
@@ -66,7 +66,7 @@ public class CountByPersistentMethod extends AbstractClausedStaticPersistentMeth
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void populateCriteriaWithExpressions(Criteria crit, String operator, List expressions) {
         if (operator.equals(OPERATOR_OR)) {
             Disjunction dis = Restrictions.disjunction();

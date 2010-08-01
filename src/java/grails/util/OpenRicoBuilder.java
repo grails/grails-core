@@ -109,7 +109,7 @@ public class OpenRicoBuilder extends MarkupBuilder {
         return super.createNode(name);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object createNode(Object name, Map attributes, Object value) {
         if (checkElementName((String)name, attributes)) {
@@ -134,7 +134,7 @@ public class OpenRicoBuilder extends MarkupBuilder {
         super.nodeCompleted(parent, node);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private boolean checkElementName(String elementName, Map attributes) {
         if (ajaxOnly) {
             throw new IllegalArgumentException(OPENRICO + "only call to [ajax {}] allowed without arguments, not [" + elementName + " { }]!");

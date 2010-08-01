@@ -42,6 +42,7 @@ import org.springframework.util.AntPathMatcher;
  *
  * @since 0.1
  */
+@SuppressWarnings("rawtypes")
 public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass implements GrailsControllerClass {
 
     public static final String CONTROLLER = "Controller";
@@ -63,9 +64,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    @SuppressWarnings("unchecked")
     private final Set commandObjectActions = new HashSet();
-    @SuppressWarnings("unchecked")
     private final Set commandObjectClasses = new HashSet();
     private Map<String, PropertyDescriptor> flows = new HashMap<String, PropertyDescriptor>();
 
@@ -172,7 +171,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             isIntercepted(controller.getProperty(BEFORE_INTERCEPTOR), action);
     }
 
-    @SuppressWarnings("unchecked")
     private boolean isIntercepted(Object bip, String action) {
         if (bip instanceof Map) {
             Map bipMap = (Map)bip;
@@ -212,7 +210,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName) {
         boolean isAllowed = true;
         Object methodRestrictionsProperty = null;
@@ -253,7 +250,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     private Closure getInterceptor(Object ip) {
         if (ip instanceof Map) {
             Map ipMap = (Map)ip;
@@ -270,7 +266,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     /**
      * @deprecated This method is deprecated and will be removed in a future version of Grails
      */
-    @SuppressWarnings("unchecked")
     @Deprecated
     public Set getCommandObjectActions() {
         return commandObjectActions;

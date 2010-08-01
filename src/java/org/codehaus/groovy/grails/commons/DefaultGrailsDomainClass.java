@@ -29,6 +29,7 @@ import java.util.*;
 /**
  * @author Graeme Rocher
  */
+@SuppressWarnings("rawtypes")
 public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
 
     private GrailsDomainClassProperty identifier;
@@ -36,20 +37,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private GrailsDomainClassProperty[] properties;
     private GrailsDomainClassProperty[] persistentProperties;
     private Map<String, GrailsDomainClassProperty> propertyMap;
-    @SuppressWarnings("unchecked")
     private Map relationshipMap;
-    @SuppressWarnings("unchecked")
     private Map hasOneMap;
 
-    @SuppressWarnings("unchecked")
     private Map constraints;
-    @SuppressWarnings("unchecked")
     private Map mappedBy;
     private Validator validator;
     private String mappingStrategy = GrailsDomainClass.GORM;
     private List<Class<?>> owners = new ArrayList<Class<?>>();
     private boolean root = true;
-    @SuppressWarnings("unchecked")
     private Set subClasses = new HashSet();
     private Collection<String> embedded;
     private Map<String, Object> defaultConstraints;
@@ -264,7 +260,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      *
      * @param property The collection property
      */
-    @SuppressWarnings("unchecked")
     private void establishRelationshipForCollection(DefaultGrailsDomainClassProperty property) {
         // is it a relationship
         Class<?> relatedClassType = getRelatedClassType(property.getName());
@@ -396,7 +391,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @param relatedClassRelationships The related types relationships
      * @return <code>true</code> if the relationship is a many-to-many
      */
-    @SuppressWarnings("unchecked")
     private boolean isRelationshipManyToMany(DefaultGrailsDomainClassProperty property,
             Class<?> relatedClassType, Map relatedClassRelationships) {
         return relatedClassRelationships != null &&
@@ -481,7 +475,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      *
      * @param property Establishes a relationship between this class and the domain class property
      */
-    @SuppressWarnings("unchecked")
     private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
         Class<?> propType = property.getType();
         if (embedded.contains(property.getName())) {
@@ -548,7 +541,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         establishDomainClassRelationshipToType(property, relatedClassPropertyType);
     }
 
-    @SuppressWarnings("unchecked")
     private boolean isNotMappedToDifferentProperty(GrailsDomainClassProperty property,
             String relatedClassPropertyName, @SuppressWarnings("hiding") Map mappedBy) {
 
@@ -558,7 +550,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     private String findOneToManyThatMatchesType(DefaultGrailsDomainClassProperty property, Map relatedClassRelationships) {
         String relatedClassPropertyName = null;
 
@@ -602,7 +593,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         }
     }
 
-    @SuppressWarnings("unchecked")
     public boolean isOwningClass(Class domainClass) {
         return owners.contains(domainClass);
     }
@@ -770,7 +760,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Map getMappedBy() {
         return mappedBy;
     }

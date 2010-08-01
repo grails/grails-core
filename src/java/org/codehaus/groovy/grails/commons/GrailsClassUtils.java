@@ -108,7 +108,7 @@ public class GrailsClassUtils {
      *
      * @return The value of the property or null if none exists
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, @SuppressWarnings("unused") Class<?> propertyType) {
         // validate
         if (clazz == null || StringUtils.isBlank(propertyName)) {
@@ -293,7 +293,7 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getShortName(Class)} instead.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Deprecated
     public static String getShortName(Class targetClass) {
         return getShortName(targetClass.getName());
@@ -324,7 +324,7 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getPropertyNameRepresentation(Class)} instead.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Deprecated
     public static String getPropertyNameRepresentation(Class targetClass) {
         return getPropertyNameRepresentation(getShortName(targetClass));
@@ -399,7 +399,7 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getPropertyName(Class)} instead.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Deprecated
     public static String getPropertyName(Class clazz) {
         return getPropertyNameRepresentation(clazz);
@@ -414,7 +414,7 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getScriptName(Class)} instead.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Deprecated
     public static String getScriptName(Class clazz) {
         return getScriptName(clazz.getName());
@@ -542,7 +542,7 @@ public class GrailsClassUtils {
      * @param c The collection
      * @return  An object array
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Object[] collectionToObjectArray(Collection c) {
         if (c == null) return new Object[0];
         return c.toArray(new Object[c.size()]);
@@ -559,7 +559,7 @@ public class GrailsClassUtils {
      * @return true if one of the classes is a native type and the other the object representation
      * of the same native type
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean isMatchBetweenPrimativeAndWrapperTypes(Class leftType, Class rightType) {
         if (leftType == null) {
             throw new NullPointerException("Left type is null!");
@@ -626,7 +626,7 @@ public class GrailsClassUtils {
      * @param propertyName The property name
      * @return true if the property with name propertyName has a static getter method
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean isStaticProperty(Class clazz, String propertyName) {
         Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(propertyName), null);
         if (getter != null) {
@@ -773,7 +773,7 @@ public class GrailsClassUtils {
      * @param propertyName The property name
      * @return True if the property is inherited
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean isPropertyInherited(Class clz, String propertyName) {
         if (clz == null) return false;
         if (StringUtils.isBlank(propertyName)) {
@@ -794,7 +794,7 @@ public class GrailsClassUtils {
      * @param interfaceType The interface
      * @return ArrayList for List, TreeSet for SortedSet, HashSet for Set etc.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static Collection createConcreteCollection(Class interfaceType) {
         Collection elements;
         if (interfaceType.equals(List.class)) {
@@ -819,7 +819,7 @@ public class GrailsClassUtils {
      *
      * @deprecated Use {@link grails.util.GrailsNameUtils#getLogicalName(Class, String)} instead.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Deprecated
     public static String getLogicalName(Class clazz, String trailingName) {
         return getLogicalName(clazz.getName(), trailingName);
@@ -929,7 +929,7 @@ public class GrailsClassUtils {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean isSetter(String name, Class[] args) {
         if (StringUtils.isBlank(name) || args == null)return false;
 
@@ -942,7 +942,7 @@ public class GrailsClassUtils {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static MetaClass getExpandoMetaClass(Class clazz) {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         Assert.isTrue(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle,

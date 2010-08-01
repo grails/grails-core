@@ -34,6 +34,6 @@ public interface GrailsUrlMappingsClass extends GrailsClass {
      * Returns a List of URI patterns to exclude.
      * @return  the patterns (Strings)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     List getExcludePatterns();
 }

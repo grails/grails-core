@@ -59,7 +59,7 @@ public interface GrailsDomainClassProperty {
      * Returns the type for the domain class
      * @return  The property type
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class getType();
 
     /**
@@ -69,7 +69,7 @@ public interface GrailsDomainClassProperty {
      *
      * @return The referenced type
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class getReferencedPropertyType();
 
     /**

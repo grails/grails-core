@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 1.2
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class ClosureToMapPopulator extends GroovyObjectSupport {
 
     private Map map;

@@ -46,6 +46,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @author Graeme Rocher
  * @since 1.0
  */
+@SuppressWarnings("rawtypes")
 public class DataBindingUtils {
 
     private static final String BLANK = "";
@@ -57,7 +58,6 @@ public class DataBindingUtils {
      * @param source The source map
      * @param domainClass The DomainClass for the object
      */
-    @SuppressWarnings("unchecked")
     public static void assignBidirectionalAssociations(Object object, Map source, GrailsDomainClass domainClass) {
         if (source == null) {
             return;
@@ -124,7 +124,6 @@ public class DataBindingUtils {
      *
      * @return A BindingResult or null if it wasn't successful
      */
-    @SuppressWarnings("unchecked")
     public static BindingResult bindObjectToInstance(Object object, Object source, List include, List exclude, String filter) {
         GrailsApplication application = ApplicationHolder.getApplication();
         GrailsDomainClass domain = null;
@@ -231,7 +230,6 @@ public class DataBindingUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static GrailsDataBinder createDataBinder(Object object, List include, List exclude, HttpServletRequest request) {
         GrailsDataBinder binder;
         if (request != null) {
@@ -260,7 +258,6 @@ public class DataBindingUtils {
         return value;
     }
 
-    @SuppressWarnings("unchecked")
     private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
         updateAllowed(dataBinder, allowed);
         updateDisallowed(dataBinder, disallowed);

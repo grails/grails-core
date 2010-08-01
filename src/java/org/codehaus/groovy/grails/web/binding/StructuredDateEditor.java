@@ -50,7 +50,7 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
         return Arrays.asList("month", "day", "hour", "minute");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object assemble(Class type, Map fieldValues) throws IllegalArgumentException {
         if (!fieldValues.containsKey("year")) {
             throw new IllegalArgumentException("Can't populate a date without a year");
@@ -84,7 +84,7 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private int getIntegerValue(Map values, String name, int defaultValue) throws NumberFormatException {
         if (values.get(name) != null) {
             return Integer.parseInt((String) values.get(name));

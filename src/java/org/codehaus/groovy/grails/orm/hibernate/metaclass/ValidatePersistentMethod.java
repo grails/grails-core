@@ -63,7 +63,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
         Errors errors = setupErrorsProperty(target);
 
@@ -140,7 +140,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
         return valid;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Errors filterErrors(Errors errors, Set validatedFields, Object target) {
         if (validatedFields == null) return errors;
 

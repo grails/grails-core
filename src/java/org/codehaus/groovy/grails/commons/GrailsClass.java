@@ -105,7 +105,7 @@ public interface GrailsClass {
      *
      * @return the class
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class getClazz();
 
     /**

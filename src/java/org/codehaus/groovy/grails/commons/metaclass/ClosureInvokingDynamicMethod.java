@@ -56,7 +56,7 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation, St
         return pattern.matcher(methodName).find();
     }
 
-    public Object invoke(@SuppressWarnings("unchecked") Class clazz, String methodName, Object[] arguments) {
+    public Object invoke(@SuppressWarnings("rawtypes") Class clazz, String methodName, Object[] arguments) {
         Closure c = (Closure)callable.clone();
         c.setDelegate(clazz);
         return invokeMethod(methodName,arguments, c);

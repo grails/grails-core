@@ -518,7 +518,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
             return retVal;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         protected Object createNode(Object key, Map valueMap) {
             try {
@@ -537,13 +537,13 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         protected Object createNode(Object arg0, Map arg1, Object arg2) {
             throw new IllegalArgumentException("not implemented");
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         protected Object createNode(Object key, Object value) {
             if (getCurrent() == null && stack.peek()== BuilderMode.OBJECT) {
@@ -572,7 +572,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         private void handleCollectionRecurse(Collection c) throws JSONException {
             writer.array();
             for (Object element : c) {

@@ -28,7 +28,7 @@ import java.util.Map;
 public class ConfigurationHolder {
 
     private static ConfigObject config;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static Map flatConfig;
 
     /**
@@ -59,7 +59,7 @@ public class ConfigurationHolder {
      *
      * @return The flattened ConfigObject
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static Map getFlatConfig() {
         return flatConfig != null ? flatConfig : Collections.EMPTY_MAP;
     }

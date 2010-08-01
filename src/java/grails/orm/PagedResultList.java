@@ -28,7 +28,7 @@ import java.util.ListIterator;
  * @author Siegfried Puchbauer
  * @since 1.0
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class PagedResultList implements List, Serializable {
 
     private static final long serialVersionUID = -5820655628956173929L;
