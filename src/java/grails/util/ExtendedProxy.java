@@ -31,7 +31,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  */
 public class ExtendedProxy extends Proxy {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map propertyMap;
 
     public ExtendedProxy() {

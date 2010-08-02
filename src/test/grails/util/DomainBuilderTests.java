@@ -29,7 +29,7 @@ public class DomainBuilderTests extends GroovyTestCase {
     private Employer employer;
 
     @Override
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         ApplicationHolder.setApplication(new DefaultGrailsApplication());
 
         builder = new DomainBuilder();
@@ -39,7 +39,7 @@ public class DomainBuilderTests extends GroovyTestCase {
         employer.setName("Spacely Space Sprockets");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testChildIsCollection() throws Exception {
         Employee one = new Employee();
         one.setName("Cosmo");
@@ -72,7 +72,7 @@ public class DomainBuilderTests extends GroovyTestCase {
         assertEquals(0, employer.getEmployees().size());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static class Employer {
         private String name = null;
         private Address address = null;

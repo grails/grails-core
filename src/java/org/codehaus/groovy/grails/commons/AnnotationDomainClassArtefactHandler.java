@@ -36,7 +36,7 @@ public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHan
     }
 
     @Override
-    public boolean isArtefactClass(@SuppressWarnings("unchecked") Class clazz) {
+    public boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
         final boolean isJpaDomainClass = isJPADomainClass(clazz);
         if (isJpaDomainClass) {
             jpaClassNames.add(clazz.getName());
@@ -49,7 +49,7 @@ public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHan
     }
 
     @Override
-    public GrailsClass newArtefactClass(@SuppressWarnings("unchecked") Class artefactClass) {
+    public GrailsClass newArtefactClass(@SuppressWarnings("rawtypes") Class artefactClass) {
         GrailsDomainClass grailsClass = (GrailsDomainClass) super.newArtefactClass(artefactClass);
         if (isJPADomainClass(artefactClass)) {
             grailsClass.setMappingStrategy(JPA_MAPPING_STRATEGY);

@@ -206,7 +206,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param plugin The plugin to retrieve observers for
      * @return A collection of observers
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Collection getPluginObservers(GrailsPlugin plugin);
 
     /**
@@ -215,7 +215,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @param pluginName The name of the plugin
      * @param event The event
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void informObservers(String pluginName, Map event);
 
     /**

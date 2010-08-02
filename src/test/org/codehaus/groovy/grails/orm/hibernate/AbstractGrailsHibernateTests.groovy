@@ -111,8 +111,7 @@ hibernate {
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
-        dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-        dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
+		  doWithRuntimeConfiguration dependentPlugins, springConfig
 
         appCtx = springConfig.getApplicationContext()
         applicationContext = appCtx
@@ -128,6 +127,11 @@ hibernate {
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
     }
+
+    protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
+        dependentPlugins*.doWithRuntimeConfiguration(springConfig)
+        dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
+	 }
 
     protected void tearDown() {
 

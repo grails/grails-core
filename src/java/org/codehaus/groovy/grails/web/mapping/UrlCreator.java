@@ -24,7 +24,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 0.5.5
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface UrlCreator {
 
     /**

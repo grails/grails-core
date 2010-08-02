@@ -50,7 +50,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected Object doInvokeInternal(final Class clazz, String methodName, final Closure additionalCriteria, final Object[] arguments) {
 

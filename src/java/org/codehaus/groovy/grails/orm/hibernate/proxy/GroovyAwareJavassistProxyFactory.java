@@ -43,7 +43,7 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
     private AbstractComponentType componentIdType;
     private Class<?> factory;
 
-    @SuppressWarnings({"unchecked", "hiding"})
+    @SuppressWarnings({"unchecked", "hiding", "rawtypes"})
     public void postInstantiate(
             final String entityName,
             final Class persistentClass,

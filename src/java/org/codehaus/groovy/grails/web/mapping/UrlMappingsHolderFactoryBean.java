@@ -57,7 +57,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         return true;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void afterPropertiesSet() throws Exception {
         Assert.state(grailsApplication != null, "Property [grailsApplication] must be set!");
 

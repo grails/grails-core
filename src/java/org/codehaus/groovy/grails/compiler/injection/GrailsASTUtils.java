@@ -85,7 +85,7 @@ public class GrailsASTUtils {
         return method != null && (method.isPublic() || method.isProtected()) && !method.isAbstract();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean implementsOrInheritsZeroArgMethod(ClassNode classNode, String methodName, List ignoreClasses) {
         if (implementsZeroArgMethod(classNode, methodName)) {
             return true;

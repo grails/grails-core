@@ -95,7 +95,7 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map getProperties() {
         Map props = new HashMap();
         props.putAll(attributes);

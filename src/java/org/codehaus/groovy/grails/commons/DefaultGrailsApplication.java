@@ -99,7 +99,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private List<Class<?>> allArtefactClasses = new ArrayList<Class<?>>();
     private Map<String, ArtefactInfo> artefactInfo = new HashMap<String, ArtefactInfo>();
     private Class<?>[] allArtefactClassesArray;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map applicationMeta;
     private Resource[] resources;
     private boolean initialised = false;
@@ -148,7 +148,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void loadGrailsApplicationFromResources(@SuppressWarnings("hiding") Resource[] resources) throws IOException {
         GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
         cl = configureClassLoader();
@@ -397,7 +397,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return c;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getFlatConfig() {
         return ConfigurationHolder.getFlatConfig();
     }
@@ -518,7 +518,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param theClazz The class
      * @return Either a Spring Resource or null if no Resource was found for the given class
      */
-    public Resource getResourceForClass(@SuppressWarnings("unchecked") Class theClazz) {
+    public Resource getResourceForClass(@SuppressWarnings("rawtypes") Class theClazz) {
         if (resourceLoader == null) {
             return null;
         }
@@ -532,7 +532,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param theClazz The class to check
      * @return True if it is an artefact
      */
-    public boolean isArtefact(@SuppressWarnings("unchecked") Class theClazz) {
+    public boolean isArtefact(@SuppressWarnings("rawtypes") Class theClazz) {
         String className = theClazz.getName();
         for (Class<?> artefactClass : allArtefactClasses) {
             if (className.equals(artefactClass.getName())) {
@@ -550,7 +550,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return True if it is of the specified artefactType
      * @see org.codehaus.groovy.grails.commons.ArtefactHandler
      */
-    public boolean isArtefactOfType(String artefactType, @SuppressWarnings("unchecked") Class theClazz) {
+    public boolean isArtefactOfType(String artefactType, @SuppressWarnings("rawtypes") Class theClazz) {
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler == null) {
             throw new GrailsConfigurationException(
@@ -584,7 +584,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return info == null ? null : info.getGrailsClass(name);
     }
 
-    public ArtefactHandler getArtefactType(@SuppressWarnings("unchecked") Class theClass) {
+    public ArtefactHandler getArtefactType(@SuppressWarnings("rawtypes") Class theClass) {
         for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(theClass)) {
                 return artefactHandler;
@@ -629,7 +629,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @throws GrailsConfigurationException If the specified Class is not the same as the type defined by the ArtefactHandler
      * @see org.codehaus.groovy.grails.commons.ArtefactHandler
      */
-    public GrailsClass addArtefact(String artefactType, @SuppressWarnings("unchecked") Class artefactClass) {
+    public GrailsClass addArtefact(String artefactType, @SuppressWarnings("rawtypes") Class artefactClass) {
         // @todo should we filter abstracts here?
         if (Modifier.isAbstract(artefactClass.getModifiers())) {
             return null;
@@ -862,7 +862,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return initialised;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getMetadata() {
         return applicationMeta;
     }
@@ -872,7 +872,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return info == null ? null : info.getGrailsClassByLogicalPropertyName(logicalName);
     }
 
-    public void addArtefact(@SuppressWarnings("unchecked") Class artefact) {
+    public void addArtefact(@SuppressWarnings("rawtypes") Class artefact) {
         for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(artefact)) {
                 addArtefact(artefactHandler.getType(), artefact);
@@ -889,7 +889,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         // do nothing
     }
 
-    public void addOverridableArtefact(@SuppressWarnings("unchecked") Class artefact) {
+    public void addOverridableArtefact(@SuppressWarnings("rawtypes") Class artefact) {
         for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(artefact)) {
                 addOverridableArtefact(artefactHandler.getType(), artefact);
@@ -916,7 +916,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @throws GrailsConfigurationException If the specified Class is not the same as the type defined by the ArtefactHandler
      * @see org.codehaus.groovy.grails.commons.ArtefactHandler
      */
-    public GrailsClass addOverridableArtefact(String artefactType, @SuppressWarnings("unchecked") Class artefactClass) {
+    public GrailsClass addOverridableArtefact(String artefactType, @SuppressWarnings("rawtypes") Class artefactClass) {
         // @todo should we filter abstracts here?
         if (Modifier.isAbstract(artefactClass.getModifiers())) {
             return null;

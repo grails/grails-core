@@ -43,6 +43,7 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils;
  *
  * @author Burt Beckwith
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMethod {
 
     private static final String METHOD_SIGNATURE = "executeUpdate";
@@ -52,7 +53,6 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
         super(sessionFactory, classLoader, METHOD_PATTERN);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Object doInvokeInternal(final Class clazz, final String methodName, Closure additionalCriteria, final Object[] arguments) {
 
@@ -95,7 +95,6 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
         });
     }
 
-    @SuppressWarnings("unchecked")
     private void checkMethodSignature(Class clazz, Object[] arguments) {
         boolean valid = true;
         if (arguments.length == 0 || arguments.length > 2) {
@@ -110,7 +109,6 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
         }
     }
 
-    @SuppressWarnings("unchecked")
     private List extractPositionalParams(Object[] arguments) {
         if (arguments.length == 1 || arguments[1] instanceof Map) {
             return Collections.EMPTY_LIST;
@@ -130,7 +128,6 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     private Map extractNamedParams(Object[] arguments) {
         if (arguments.length == 1 || !(arguments[1] instanceof Map)) {
             return Collections.EMPTY_MAP;

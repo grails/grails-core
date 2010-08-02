@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
  * @author Graeme Rocher
  * @since 0.5
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface UrlMapping extends Comparable, UrlCreator {
 
     String CONTROLLER = "controller";

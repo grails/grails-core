@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTransactionManager
+import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
@@ -185,6 +186,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             }
             proxyHandler(HibernateProxyHandler)
             eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
+            hibernateEventListeners(HibernateEventListeners)
             entityInterceptor(EmptyInterceptor)
             sessionFactory(ConfigurableLocalSessionFactoryBean) {
                 dataSource = dataSource
@@ -219,6 +221,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                                   'post-update':eventTriggeringInterceptor,
                                   'pre-delete':eventTriggeringInterceptor,
                                   'post-delete':eventTriggeringInterceptor]
+                hibernateEventListeners = hibernateEventListeners
             }
 
             transactionManager(GrailsHibernateTransactionManager) {
@@ -625,8 +628,12 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             if (!query) return null
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
-                def criteria = session.createCriteria(domainClassType)
+                List<String> nullNames = removeNullNames(queryArgs)
+                Criteria criteria = session.createCriteria(domainClassType)
                 criteria.add(Restrictions.allEq(queryArgs))
+                for (name in nullNames) {
+                    criteria.add Restrictions.isNull(name)
+                }
                 criteria.setMaxResults(1)
                 GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult())
             } as HibernateCallback)
@@ -635,8 +642,12 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             if (!query) return null
             template.execute({Session session ->
                 Map queryArgs = filterQueryArgumentMap(query)
-                def criteria = session.createCriteria(domainClassType)
+                List<String> nullNames = removeNullNames(queryArgs)
+                Criteria criteria = session.createCriteria(domainClassType)
                 criteria.add(Restrictions.allEq(queryArgs))
+                for (name in nullNames) {
+                    criteria.add Restrictions.isNull(name)
+                }
                 criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
                 criteria.list()
             } as HibernateCallback)
@@ -769,6 +780,18 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             }
         }
         return queryArgs
+    }
+
+    private static List<String> removeNullNames(Map query) {
+        List<String> nullNames = []
+        Set<String> allNames = new HashSet(query.keySet())
+        for (String name in allNames) {
+            if (query[name] == null) {
+                query.remove name
+                nullNames << name
+            }
+        }
+        nullNames
     }
 
     /**

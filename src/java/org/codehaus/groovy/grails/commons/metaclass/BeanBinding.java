@@ -57,7 +57,7 @@ public class BeanBinding extends Binding {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getVariables() {
         return DefaultGroovyMethods.getProperties(bean);
     }

@@ -136,13 +136,13 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         Assert.notNull(context);
     }
 
-    public BeanConfiguration addSingletonBean(String name, @SuppressWarnings("unchecked") Class clazz) {
+    public BeanConfiguration addSingletonBean(String name, @SuppressWarnings("rawtypes") Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz);
         registerBeanConfiguration(name, bc);
         return bc;
     }
 
-    public BeanConfiguration addPrototypeBean(String name, @SuppressWarnings("unchecked") Class clazz) {
+    public BeanConfiguration addPrototypeBean(String name, @SuppressWarnings("rawtypes") Class clazz) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,true);
         registerBeanConfiguration(name, bc);
         return bc;
@@ -166,11 +166,11 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         return bc;
     }
 
-    public BeanConfiguration createSingletonBean(@SuppressWarnings("unchecked") Class clazz) {
+    public BeanConfiguration createSingletonBean(@SuppressWarnings("rawtypes") Class clazz) {
         return new DefaultBeanConfiguration(clazz);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public BeanConfiguration addSingletonBean(String name, Class clazz, Collection args) {
         BeanConfiguration bc = new DefaultBeanConfiguration(name,clazz,args);
         registerBeanConfiguration(name, bc);
@@ -188,7 +188,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         beanNames.add(name);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments) {
         return new DefaultBeanConfiguration(clazz, constructorArguments);
     }

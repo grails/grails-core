@@ -74,6 +74,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Graeme Rocher
  * @since 0.4
  */
+@SuppressWarnings("rawtypes")
 public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentApplicationContextAware {
 
     private static final String PLUGIN_CHANGE_EVENT_CTX = "ctx";
@@ -107,9 +108,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private Closure onConfigChangeListener;
     private Closure onShutdownListener;
     private Class<?>[] providedArtefacts = new Class[0];
-    @SuppressWarnings("unchecked")
     private Map pluginScopes;
-    @SuppressWarnings("unchecked")
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
     private Collection<? extends TypeFilter> typeFilters = new ArrayList<TypeFilter>();
@@ -206,7 +205,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         });
     }
 
-    @SuppressWarnings("unchecked")
     private Map evaluateIncludeExcludeProperty(String name, Closure converter) {
         Map resultMap = new HashMap();
         Object propertyValue = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, name);
@@ -225,7 +223,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return resultMap;
     }
 
-    @SuppressWarnings("unchecked")
     private void evaluateAndAddIncludeExcludeObject(Map targetMap, Object includeExcludeObject, boolean include, Closure converter) {
         if (includeExcludeObject instanceof String) {
             final String includeExcludeString = (String) includeExcludeObject;
@@ -237,7 +234,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void evaluateAndAddListOfValues(Map targetMap, List includeExcludeList, boolean include, Closure converter) {
         for (Object scope : includeExcludeList) {
             if (scope instanceof String) {
@@ -277,7 +273,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         this(pluginClass, null, application);
     }
 
-    @SuppressWarnings("unchecked")
     private void evaluateObservedPlugins() {
         if (pluginBean.isReadableProperty(PLUGIN_OBSERVE)) {
             Object observeProperty = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PLUGIN_OBSERVE);
@@ -468,7 +463,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void evaluatePluginEvictionPolicy() {
         if (pluginBean.isReadableProperty(EVICT)) {
             List pluginsToEvict = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, EVICT);
@@ -643,7 +637,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return supportsEnvironment(e) && supportsScope(bs);
     }
 
-    @SuppressWarnings("unchecked")
     private boolean supportsValueInIncludeExcludeMap(Map includeExcludeMap, Object value) {
         if (includeExcludeMap.isEmpty()) {
             return true;
@@ -885,7 +878,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void fireModifiedEvent(final Resource resource,
             @SuppressWarnings("unused") final GrailsPlugin grailsPlugin) {
 
@@ -1016,14 +1008,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return observedPlugins;
     }
 
-    @SuppressWarnings("unchecked")
     public void notifyOfEvent(Map event) {
         if (onChangeListener != null) {
             invokeOnChangeListener(event);
         }
     }
 
-    @SuppressWarnings({ "serial", "unchecked" })
+    @SuppressWarnings("serial")
     public Map notifyOfEvent(int eventKind, final Object source) {
         Map<String, Object> event = new HashMap<String, Object>() {{
             put(PLUGIN_CHANGE_EVENT_SOURCE, source);
@@ -1051,17 +1042,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return event;
     }
 
-    @SuppressWarnings("unchecked")
     private void invokeOnShutdownEventListener(Map event) {
         callEvent(onShutdownListener,event);
     }
 
-    @SuppressWarnings("unchecked")
     private void invokeOnConfigChangeListener(Map event) {
         callEvent(onConfigChangeListener,event);
     }
 
-    @SuppressWarnings("unchecked")
     private void callEvent(Closure closureHook, Map event) {
         if (closureHook != null) {
             closureHook.setDelegate(this);
@@ -1069,13 +1057,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void invokeOnChangeListener(Map event) {
         onChangeListener.setDelegate(this);
         onChangeListener.call(new Object[]{event});
     }
 
-    @SuppressWarnings("unchecked")
     public void doArtefactConfiguration() {
         if (!pluginBean.isReadableProperty(ARTEFACTS)) {
             return;
@@ -1140,7 +1126,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Map getProperties() {
         return DefaultGroovyMethods.getProperties(plugin);
     }

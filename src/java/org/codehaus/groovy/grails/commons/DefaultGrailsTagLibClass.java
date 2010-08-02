@@ -41,7 +41,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
      *
      * @param clazz        the tag library class
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public DefaultGrailsTagLibClass(Class<?> clazz) {
         super(clazz, TAG_LIB);
         Class<?> supportedControllerClass = getStaticPropertyValue(SUPPORTS_CONTROLLER, Class.class);

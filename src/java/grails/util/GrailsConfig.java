@@ -32,27 +32,24 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("rawtypes")
 public class GrailsConfig extends GroovyObjectSupport {
 
     private static final Log LOG = LogFactory.getLog(GrailsConfig.class);
 
-    @SuppressWarnings("unchecked")
     private transient volatile static Map flatConfig;
-    @SuppressWarnings("unchecked")
     private transient volatile static Map config;
 
     private GrailsConfig() {
         // static methods only
     }
 
-    @SuppressWarnings("unchecked")
     private static Map getFlatConfig() {
         synchronized (GrailsConfig.class) {
             return flatConfig != null ? flatConfig : (flatConfig = ConfigurationHolder.getFlatConfig());
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static Map getConfig() {
         synchronized (GrailsConfig.class) {
             return config != null ? config : (config = ConfigurationHolder.getConfig());

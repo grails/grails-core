@@ -38,7 +38,7 @@ public interface GrailsDomainClass extends GrailsClass {
      * @param domainClass
      * @return True if the specifying domain class is on the owning side of a relationship
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     boolean isOwningClass(Class domainClass);
 
     /**
@@ -77,7 +77,7 @@ public interface GrailsDomainClass extends GrailsClass {
      * Returns this classes association map
      * @return The association map
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getAssociationMap();
 
     /**
@@ -132,7 +132,7 @@ public interface GrailsDomainClass extends GrailsClass {
      * @param propertyName The name of the property
      * @return The type of the class or null if no relationship exists for the specified property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class getRelatedClassType(String propertyName);
 
     /**
@@ -141,7 +141,7 @@ public interface GrailsDomainClass extends GrailsClass {
      *
      * @return A map of constraints
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getConstrainedProperties();
 
     /**
@@ -191,7 +191,7 @@ public interface GrailsDomainClass extends GrailsClass {
     /**
      * @return The map that defines association mappings
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getMappedBy();
 
     /**

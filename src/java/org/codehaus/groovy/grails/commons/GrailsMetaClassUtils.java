@@ -56,7 +56,7 @@ public class GrailsMetaClassUtils {
      * @param toClass  The destination class
      * @param removeSource Whether to remove the source class after completion. True if yes
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void copyExpandoMetaClass(Class<?> fromClass, Class<?> toClass, boolean removeSource) {
 
         MetaClassRegistry registry = getRegistry();

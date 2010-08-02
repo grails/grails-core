@@ -45,7 +45,7 @@ public interface RuntimeSpringConfiguration {
      * @param clazz The class of the bean
      * @return A BeanConfiguration instance
      */
-    BeanConfiguration addSingletonBean(String name, @SuppressWarnings("unchecked") Class clazz);
+    BeanConfiguration addSingletonBean(String name, @SuppressWarnings("rawtypes") Class clazz);
 
     ApplicationContext getUnrefreshedApplicationContext();
 
@@ -56,7 +56,7 @@ public interface RuntimeSpringConfiguration {
      * @param clazz The class of the bean
      * @return A BeanConfiguration instance
      */
-    BeanConfiguration addPrototypeBean(String name, @SuppressWarnings("unchecked") Class clazz);
+    BeanConfiguration addPrototypeBean(String name, @SuppressWarnings("rawtypes") Class clazz);
 
     /**
      * Retrieves the application context from the current state.
@@ -88,7 +88,7 @@ public interface RuntimeSpringConfiguration {
      * @param clazz
      * @return A BeanConfiguration instance
      */
-    BeanConfiguration createSingletonBean(@SuppressWarnings("unchecked") Class clazz);
+    BeanConfiguration createSingletonBean(@SuppressWarnings("rawtypes") Class clazz);
 
     /**
      * Creates a new singleton bean and adds it to the list of bean references.
@@ -98,7 +98,7 @@ public interface RuntimeSpringConfiguration {
      * @param args The constructor arguments of the bean
      * @return A BeanConfiguration instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     BeanConfiguration addSingletonBean(String name, Class clazz, Collection args);
 
     /**
@@ -110,7 +110,7 @@ public interface RuntimeSpringConfiguration {
      * @param constructorArguments The constructor arguments
      * @return A BeanConfiguration instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     BeanConfiguration createSingletonBean(Class clazz, Collection constructorArguments);
 
     /**

@@ -452,7 +452,7 @@ public class GrailsDomainConfigurationUtil {
         return evaluateConstraints(theClass, properties, null);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
             ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference, PropertyConfig propertyConfig) {
 
@@ -470,7 +470,7 @@ public class GrailsDomainConfigurationUtil {
                     applyMapOfConstraints((Map) o,propertyName, p, cp);
                 }
                 else {
-                    throw new GrailsConfigurationException("Domain class property ["+p.getDomainClass().getFullName()+'.'+p.getName()+"] references shared constraint ["+sharedConstraintReference+":"+o+"], which doesn't exist!");
+                    throw new GrailsConfigurationException("Domain class property [" +p.getDomainClass().getFullName()+'.'+p.getName()+ "] references shared constraint [" +sharedConstraintReference+ ":" +o+ "], which doesn't exist!");
                 }
             }
         }
@@ -549,23 +549,23 @@ public class GrailsDomainConfigurationUtil {
                 if (binding.getVariables().containsKey(PROPERTY_NAME)) {
                     return (Closure)binding.getVariable(PROPERTY_NAME);
                 }
-                LOG.warn("Unable to evaluate constraints from ["+constraintsScript+"], constraints closure not found!");
+                LOG.warn("Unable to evaluate constraints from [" + constraintsScript + "], constraints closure not found!");
                 return null;
             }
             catch (CompilationFailedException e) {
-                LOG.error("Compilation error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
+                LOG.error("Compilation error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
                 return null;
             }
             catch (InstantiationException e) {
-                LOG.error("Instantiation error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
+                LOG.error("Instantiation error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
                 return null;
             }
             catch (IllegalAccessException e) {
-                LOG.error("Illegal access error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
+                LOG.error("Illegal access error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
                 return null;
             }
             catch (IOException e) {
-                LOG.error("IO error evaluating constraints for class ["+theClass+"]: " + e.getMessage(),e );
+                LOG.error("IO error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
             }
         }
         return null;

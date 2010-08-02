@@ -174,7 +174,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Returns the flatten ConfigObject for use from Java classes.
      * @return The flattened config
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getFlatConfig();
 
     /**
@@ -188,14 +188,14 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Retrieves all java.lang.Class instances loaded by the Grails class loader
      * @return An array of classes
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class[] getAllClasses();
 
     /**
      * Retrieves all java.lang.Class instances considered Artefacts loaded by the Grails class loader
      * @return An array of classes
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class[] getAllArtefacts();
 
     /**
@@ -224,7 +224,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param className The name of the class
      * @return The class or null
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class getClassForName(String className);
 
     /**
@@ -251,7 +251,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param theClazz The Grails class
      * @return A Resource or null
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Resource getResourceForClass(Class theClazz);
 
     /**
@@ -260,7 +260,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if and only if the class was loaded from grails-app/
      * @since 0.5
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     boolean isArtefact(Class theClazz);
 
     /**
@@ -271,7 +271,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return True if Grails considers the class to be managed as an artefact of the type specified.
      * @since 0.5
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     boolean isArtefactOfType(String artefactType, Class theClazz);
 
     /**
@@ -298,7 +298,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @param theClass The class
      * @return The ArtefactHandler
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     ArtefactHandler getArtefactType(Class theClass);
 
     /**
@@ -335,7 +335,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The new grails class for the artefact class
      * @since 0.5
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     GrailsClass addArtefact(String artefactType, Class artefactClass);
 
     /**
@@ -383,7 +383,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * but <b>NOT</b> general application settings.</p>
      * @return A read-only Map of data about the application, not environment specific
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getMetadata();
 
     /**
@@ -399,7 +399,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Adds the given artefact, attempting to determine type from
      * @param artefact The artefact to add
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void addArtefact(Class artefact);
 
     /**
@@ -413,7 +413,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Adds an artefact that can be overriden by user defined classes
      * @param artefact An overridable artefact
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void addOverridableArtefact(Class artefact);
 
     /**

@@ -27,12 +27,13 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
  * @author mike
  * @since 1.0-RC1
  */
+@SuppressWarnings("rawtypes")
 public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
     private final ResponseCodeMappingData urlData;
     @SuppressWarnings("hiding")
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    @SuppressWarnings({ "hiding", "unchecked" })
+    @SuppressWarnings("hiding")
     private Map parameterValues = Collections.EMPTY_MAP;
     private Class<?> exceptionType;
 
@@ -73,7 +74,6 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
         return this.viewName;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void setParameterValues(Map parameterValues) {
         this.parameterValues = parameterValues;
@@ -83,32 +83,26 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
         return 0;
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(Map values, String encoding) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(String controller, String action, Map values, String encoding) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
-    @SuppressWarnings("unchecked")
     public String createRelativeURL(String controller, String action, Map values, String encoding) {
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
-    @SuppressWarnings("unchecked")
     public String createRelativeURL(String controller, String action, Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(String controller, String action, Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }

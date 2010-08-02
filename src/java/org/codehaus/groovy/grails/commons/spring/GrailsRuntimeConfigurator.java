@@ -184,7 +184,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         return new WebRuntimeSpringConfiguration(parentCtx, classLoader);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void registerParentBeanFactoryPostProcessors(WebRuntimeSpringConfiguration springConfig) {
         if (parent == null) {
             return;

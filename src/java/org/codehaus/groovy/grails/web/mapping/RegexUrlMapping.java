@@ -62,6 +62,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @see org.springframework.util.AntPathMatcher
  * @since 0.5
  */
+@SuppressWarnings("rawtypes")
 public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
 
     private Pattern[] patterns;
@@ -200,12 +201,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     /**
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
      */
-    @SuppressWarnings("unchecked")
     public String createURL(Map paramValues, String encoding) {
         return createURLInternal(paramValues, encoding, true);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked"})
     private String createURLInternal(Map paramValues, String encoding, boolean includeContextPath) {
 
         if (encoding == null) encoding = "utf-8";
@@ -289,13 +289,11 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         return uri.toString();
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(Map paramValues, String encoding, String fragment) {
         String url = createURL(paramValues, encoding);
         return createUrlWithFragment(url, fragment, encoding);
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(String controller, String action, Map paramValues, String encoding) {
         return createURLInternal(controller, action, paramValues, encoding, true);
     }
@@ -329,19 +327,16 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public String createRelativeURL(String controller, String action, Map paramValues, String encoding) {
         return createURLInternal(controller, action, paramValues, encoding, false);
     }
 
-    @SuppressWarnings("unchecked")
     public String createRelativeURL(String controller, String action, Map paramValues,
             String encoding, String fragment) {
         final String url = createURLInternal(controller, action, paramValues, encoding, false);
         return createUrlWithFragment(url, fragment, encoding);
     }
 
-    @SuppressWarnings("unchecked")
     public String createURL(String controller, String action, Map paramValues,
             String encoding, String fragment) {
         String url = createURL(controller, action, paramValues, encoding);

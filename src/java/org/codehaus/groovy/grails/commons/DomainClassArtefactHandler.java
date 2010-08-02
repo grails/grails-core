@@ -36,7 +36,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
 
     public static final String TYPE = "Domain";
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map defaultConstraints;
 
     public DomainClassArtefactHandler() {
@@ -44,7 +44,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public GrailsClass newArtefactClass(Class artefactClass) {
         if (defaultConstraints != null) {
             return new DefaultGrailsDomainClass(artefactClass,defaultConstraints);
@@ -52,7 +52,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         return new DefaultGrailsDomainClass(artefactClass);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getDefaultConstraints() {
         return defaultConstraints;
     }
@@ -70,12 +70,12 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean isArtefactClass(Class clazz) {
         return isDomainClass(clazz);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static boolean isDomainClass(Class clazz) {
         // it's not a closure
         if (clazz == null) return false;

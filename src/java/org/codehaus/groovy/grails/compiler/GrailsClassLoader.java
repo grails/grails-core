@@ -101,7 +101,7 @@ public class GrailsClassLoader extends GroovyClassLoader {
         return new UrlResource(resourceURL);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
         GroovyClassLoader innerLoader = innerClassLoaderMap.get(name);

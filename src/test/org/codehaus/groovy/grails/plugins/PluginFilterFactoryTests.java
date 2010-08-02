@@ -4,7 +4,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class PluginFilterFactoryTests extends TestCase {
 
     public void testIncludeFilterOne() throws Exception {

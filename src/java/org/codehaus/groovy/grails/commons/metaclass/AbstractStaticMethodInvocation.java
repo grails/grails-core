@@ -38,7 +38,7 @@ public abstract class AbstractStaticMethodInvocation implements StaticMethodInvo
         return this.pattern.matcher(methodName.subSequence(0, methodName.length())).find();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public abstract Object invoke(Class clazz, String methodName, Object[] arguments);
 
     /* (non-Javadoc)

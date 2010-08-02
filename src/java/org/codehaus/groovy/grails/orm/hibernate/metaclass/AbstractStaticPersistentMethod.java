@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Steven Devijver
  * @author Graeme Rocher
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation {
 
     private ClassLoader classLoader;
@@ -51,13 +52,11 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         return hibernateTemplate;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object invoke(Class clazz, String methodName, Object[] arguments) {
         return invoke(clazz, methodName, null, arguments);
     }
 
-    @SuppressWarnings("unchecked")
     public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
@@ -78,6 +77,5 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         return session.createCriteria(clazz);
     }
 
-    @SuppressWarnings("unchecked")
     protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
 }

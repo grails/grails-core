@@ -96,7 +96,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
     }
 
     @Override
-    public void setProperty(@SuppressWarnings("unchecked") Class aClass, Object object,
+    public void setProperty(@SuppressWarnings("rawtypes") Class aClass, Object object,
             String property, Object newValue, boolean b, boolean b1) {
         InvocationCallback callback = new InvocationCallback();
         dynamicMethods.setProperty(object,property,newValue,callback);
@@ -106,7 +106,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
     }
 
     @Override
-    public Object getProperty(@SuppressWarnings("unchecked") Class aClass, Object object,
+    public Object getProperty(@SuppressWarnings("rawtypes") Class aClass, Object object,
             String property, boolean b, boolean b1) {
         InvocationCallback callback = new InvocationCallback();
         Object returnValue = dynamicMethods.getProperty(object,property,callback);
@@ -131,7 +131,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
     }
 
     @Override
-    public Object invokeMethod(@SuppressWarnings("unchecked") Class aClass, Object target,
+    public Object invokeMethod(@SuppressWarnings("rawtypes") Class aClass, Object target,
             String methodName, Object[] arguments, boolean b, boolean b1) {
         InvocationCallback callback = new InvocationCallback();
         Object returnValue = dynamicMethods.invokeMethod(target, methodName, arguments, callback);

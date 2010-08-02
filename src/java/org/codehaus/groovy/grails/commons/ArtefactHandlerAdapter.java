@@ -61,7 +61,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
         return type;
     }
 
-    public final boolean isArtefact(@SuppressWarnings("unchecked") Class aClass) {
+    public final boolean isArtefact(@SuppressWarnings("rawtypes") Class aClass) {
         if (isArtefactClass(aClass)) {
             if (log.isDebugEnabled()) {
                 log.debug("[" + aClass.getName() + "] is a " + type + " class.");
@@ -81,7 +81,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
      * @param clazz The class to check
      * @return True if it is an artefact of this type
      */
-    public boolean isArtefactClass(@SuppressWarnings("unchecked") Class clazz) {
+    public boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
         if(clazz == null) return false;
 
         boolean ok = clazz.getName().endsWith(artefactSuffix) && !Closure.class.isAssignableFrom(clazz);
@@ -97,7 +97,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
      * @param artefactClass Creates a new artefact for the given class
      * @return An instance of the GrailsClass interface representing the artefact
      */
-    public GrailsClass newArtefactClass(@SuppressWarnings("unchecked") Class artefactClass) {
+    public GrailsClass newArtefactClass(@SuppressWarnings("rawtypes") Class artefactClass) {
         try {
             Constructor<?> c = grailsClassImpl.getDeclaredConstructor(new Class[] { Class.class } );
             // TODO GRAILS-720 plugin class instance created here first

@@ -83,7 +83,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
     }
 
     @SuppressWarnings("unchecked")
-    public static boolean supports(Class enumClass) {
+    public static boolean supports(@SuppressWarnings("rawtypes") Class enumClass) {
         if (!isEnabled()) return false;
         if (GrailsClassUtils.isJdk5Enum(enumClass)) {
             try {
@@ -174,7 +174,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
         return orig;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static class BidiEnumMap implements Serializable {
 
         private static final long serialVersionUID = 3325751131102095834L;

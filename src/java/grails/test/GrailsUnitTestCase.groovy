@@ -19,6 +19,8 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultArtefactInfo
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -59,6 +61,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
         [ List, Set, Map, Errors ].each { addConverters(it) }
 
         previousConfig = ConfigurationHolder.config
+
+        PluginManagerHolder.pluginManager = [hasGrailsPlugin: { String name -> true }] as GrailsPluginManager
     }
 
     protected void tearDown() {
@@ -73,6 +77,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
         ConfigurationHolder.config = previousConfig
 
         MockUtils.resetIds()
+
+        PluginManagerHolder.pluginManager = null
     }
 
     /**

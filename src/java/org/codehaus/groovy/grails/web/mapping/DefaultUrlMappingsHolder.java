@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +44,7 @@ import org.springframework.core.style.ToStringCreator;
  * @author Graeme Rocher
  * @since 0.4
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({"serial","rawtypes"})
 public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
@@ -53,7 +54,6 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
     private UrlMapping[] mappings;
-    @SuppressWarnings("unchecked")
     private List excludePatterns;
     private Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<UrlMappingKey, UrlMapping>();
     private Map<String, UrlMapping> namedMappings = new HashMap<String, UrlMapping>();
@@ -71,17 +71,14 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         initialize();
     }
 
-    @SuppressWarnings("unchecked")
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns) {
         urlMappings = mappings;
         this.excludePatterns = excludePatterns;
         initialize();
     }
 
-    @SuppressWarnings("unchecked")
     private void initialize() {
-        Collections.sort(urlMappings);
-        Collections.reverse(urlMappings);
+        sortMappings();
 
         mappings = urlMappings.toArray(new UrlMapping[urlMappings.size()]);
 
@@ -134,11 +131,27 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
     }
 
-    public UrlMapping[] getUrlMappings() {
+	@SuppressWarnings("unchecked")
+	private void sortMappings() {
+		List<ResponseCodeUrlMapping> responseCodeUrlMappings = new ArrayList<ResponseCodeUrlMapping>();
+		Iterator<UrlMapping> iter = urlMappings.iterator();
+		while (iter.hasNext()) {
+			UrlMapping mapping = iter.next();
+			if (mapping instanceof ResponseCodeUrlMapping) {
+				responseCodeUrlMappings.add((ResponseCodeUrlMapping)mapping);
+				iter.remove();
+			}
+		}
+
+		Collections.sort(urlMappings);
+		urlMappings.addAll(responseCodeUrlMappings);
+		Collections.reverse(urlMappings);
+	}
+
+	public UrlMapping[] getUrlMappings() {
         return mappings;
     }
 
-    @SuppressWarnings("unchecked")
     public List getExcludePatterns() {
         return excludePatterns;
     }
@@ -333,7 +346,6 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     /**
      * A class used as a key to lookup a UrlMapping based on controller, action and parameter names
      */
-    @SuppressWarnings("unchecked")
     class UrlMappingKey implements Comparable {
         String controller;
         String action;

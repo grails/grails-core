@@ -41,7 +41,7 @@ public interface UrlMappingsHolder {
      *
      * @return An list of String
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     List getExcludePatterns();
 
     /**
@@ -52,7 +52,7 @@ public interface UrlMappingsHolder {
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     UrlCreator getReverseMapping(String controller, String action, Map params);
 
     /**

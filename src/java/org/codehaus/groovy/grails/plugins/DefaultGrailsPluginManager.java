@@ -257,7 +257,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         return Collections.emptySet();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void informObservers(String pluginName, Map event) {
         GrailsPlugin plugin = getGrailsPlugin(pluginName);
         if (plugin == null) {

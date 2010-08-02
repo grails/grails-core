@@ -451,13 +451,13 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             return createNode(name, null, value);
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         protected Object createNode(Object name, Map attributes) {
             return createNode(name, attributes, null);
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         @Override
         protected Object createNode(Object name, Map attributes, Object value) {
             xml.startNode(name.toString());

@@ -55,7 +55,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     private boolean parsingRequest;
     private Object uri;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
         this.params = Collections.unmodifiableMap(params);
         this.id = params.get(ID_PARAM);
@@ -63,7 +63,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         this.servletContext = servletContext;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
@@ -76,7 +76,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         this.viewName = viewName;
@@ -94,7 +94,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         return urlData.getUrlPattern();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getParameters() {
         return params;
     }

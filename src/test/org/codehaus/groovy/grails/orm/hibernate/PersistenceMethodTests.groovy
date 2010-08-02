@@ -344,6 +344,32 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         shouldFail(MissingMethodException) {
             domainClass.findAllByAgeBetween(10)
         }
+
+        // test findAllWhere for null
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 0, returnList.size()
+
+        def obj4 = domainClass.newInstance()
+        obj4.setProperty("id", 4)
+        obj4.setProperty("firstName", "firstName4")
+        obj4.setProperty("lastName", "lastName4")
+        obj4.invokeMethod("save", null)
+
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 1, returnList.size()
+
+        def obj5 = domainClass.newInstance()
+        obj5.setProperty("id", 5)
+        obj5.setProperty("firstName", "firstName5")
+        obj5.setProperty("lastName", "lastName5")
+        obj5.invokeMethod("save", null)
+
+        returnList = domainClass.findAllWhere(age: null)
+        assertEquals 2, returnList.size()
+
+        // test findWhere for null
+        assertNotNull domainClass.findWhere(firstName: "firstName4", age: null)
+        assertNull domainClass.findWhere(firstName: "fred", age: null)
     }
 
     void testGetPersistentMethod() {
@@ -600,7 +626,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         // test find with offset
         namedArgs.clear()
         namedArgs.namesList = ["wilma","fred"] as Object[]
-        returnValue = domainClass.findAll("from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, new Integer(2), 1)
+        returnValue = domainClass.findAll("from PersistentMethodTests as p where p.firstName in (:namesList)", namedArgs, 2, 1)
         assertNotNull returnValue
         assertEquals ArrayList, returnValue.getClass()
         listResult = returnValue
@@ -608,7 +634,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals 1, listResult.size()
 
         // test find with offset without params
-        returnValue = domainClass.findAll("from PersistentMethodTests as p", new Integer(2), 1)
+        returnValue = domainClass.findAll("from PersistentMethodTests as p", 2, 1)
         assertNotNull returnValue
         assertEquals ArrayList, returnValue.getClass()
         listResult = returnValue

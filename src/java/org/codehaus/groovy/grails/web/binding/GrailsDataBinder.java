@@ -114,6 +114,7 @@ import org.springframework.web.servlet.support.RequestContextUtils;
  *
  * @author Graeme Rocher
  */
+@SuppressWarnings("rawtypes")
 public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
@@ -279,7 +280,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         bind(params,null);
     }
 
-    @SuppressWarnings("unchecked")
     public void bind(GrailsParameterMap params, String prefix) {
         Map paramsMap = params;
         if (prefix != null) {
@@ -348,7 +348,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         super.doBind(mpvs);
     }
 
-    @SuppressWarnings("unchecked")
     private void filterBlankValuesWhenTargetIsNullable(MutablePropertyValues mpvs) {
         Object target = getTarget();
         Map constrainedProperties = resolveConstrainedProperties(target, domainClass);
@@ -367,7 +366,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private ConstrainedProperty getConstrainedPropertyForPropertyValue(Map constrainedProperties, PropertyValue propertyValue) {
         final String propertyName = propertyValue.getName();
         if (propertyName.indexOf(PATH_SEPARATOR) > -1) {
@@ -387,13 +385,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     private Map resolveConstrainedProperties(Object object) {
         GrailsApplication grailsApplication = ApplicationHolder.getApplication();
         return resolveConstrainedProperties(object, (grailsApplication != null)?((GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, object.getClass().getName())):null);
     }
 
-    @SuppressWarnings("unchecked")
     private Map resolveConstrainedProperties(Object object, GrailsDomainClass dc) {
         Map constrainedProperties = null;
         if (dc != null) {
@@ -617,18 +613,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz);
     }
 
-    @SuppressWarnings("unchecked")
     private boolean isEmbedded(BeanWrapper wrapper, String propertyName) {
         Object embedded = GrailsClassUtils.getStaticPropertyValue(wrapper.getWrappedClass(), GrailsDomainClassProperty.EMBEDDED);
         return embedded instanceof List && ((List)embedded).contains(propertyName);
     }
 
-    @SuppressWarnings("unchecked")
     private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
         return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
     }
 
-    @SuppressWarnings("unchecked")
     private Collection decorateCollectionForDomainAssociation(Collection c, final Class referencedType) {
         if (canDecorateWithListOrderedSet(c, referencedType)) {
             c = ListOrderedSet.decorate((Set) c);
@@ -636,12 +629,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return c;
     }
 
-    @SuppressWarnings("unchecked")
     private boolean canDecorateWithListOrderedSet(Collection c, Class referencedType) {
         return (c instanceof Set) && !(c instanceof ListOrderedSet) && !(c instanceof SortedSet) && isDomainClass(referencedType);
     }
 
-    @SuppressWarnings("unchecked")
     private Object findIndexedValue(Collection c, int index) {
         if (index < c.size()) {
             if (c instanceof List) {

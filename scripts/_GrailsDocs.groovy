@@ -271,7 +271,13 @@ def readDocProperties(DocPublisher publisher) {
 }
 
 def configureAliases() {
-    DocEngine.ALIAS.putAll(config.grails.doc.alias)
+    // See http://jira.codehaus.org/browse/GRAILS-6484 for why this is soft loaded
+    def docEngineClassName = "grails.doc.DocEngine"
+    def docEngineClass = classLoader.loadClass(docEngineClassName)
+    if (!docEngineClass) {
+        throw new IllegalStateException("Failed to load $docEngineClassName to configure documentation aliases")
+    }
+    docEngineClass.ALIAS.putAll(config.grails.doc.alias)
 }
 
 private readIfSet(DocPublisher publisher,String prop) {

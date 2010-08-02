@@ -1,12 +1,16 @@
 package grails.util;
 
 import groovy.util.ConfigObject;
-import groovy.util.Eval;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,11 +21,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class AbstractBuildSettings {
 
-
     private static final String KEY_PLUGIN_DIRECTORY_RESOURCES = "pluginDirectoryResources";
     private static final String KEY_INLINE_PLUGIN_LOCATIONS = "inlinePluginLocations";
     private static final String KEY_PLUGIN_BASE_DIRECTORIES = "pluginBaseDirectories";
-    private static final String CONFIG_GRAILS_PLUGIN_LOCATION = "grails.plugin.location";
 
     /**
      * Used to cache results of certain expensive operations
@@ -35,15 +37,14 @@ public class AbstractBuildSettings {
     /** The location where global plugins are installed to. */
     protected File globalPluginsDir;
 
-
     protected boolean projectPluginsDirSet;
     protected boolean globalPluginsDirSet;
 
     /**
      * Flattened version of the ConfigObject for easy access from Java
      */
+    @SuppressWarnings("rawtypes")
     protected Map flatConfig = Collections.emptyMap();
-
 
     /**
      * Clears any locally cached values
@@ -83,42 +84,45 @@ public class AbstractBuildSettings {
      * @param location The plugin's locatino
      */
     public void addPluginDirectory(File location, boolean isInline) {
-        if(location != null) {
+        if (location != null) {
             Collection<File> directories = getPluginDirectories();
-            if(!directories.contains(location)) {
+            if (!directories.contains(location)) {
                 directories.add(location);
-                if(isInline) {
+                if (isInline) {
                     getInlinePluginDirectories().add(location);
                 }
             }
         }
     }
+
     /**
-      * Obtains a list of plugin directories for the application
-      */
+     * Obtains a list of plugin directories for the application
+     */
+    @SuppressWarnings("unchecked")
     public Collection<File> getPluginDirectories() {
-         Collection<File> pluginDirectoryResources = (Collection<File>)cache.get(KEY_PLUGIN_DIRECTORY_RESOURCES);
-         if (pluginDirectoryResources == null) {
-             pluginDirectoryResources = getImplicitPluginDirectories();
+        Collection<File> pluginDirectoryResources = (Collection<File>)cache.get(KEY_PLUGIN_DIRECTORY_RESOURCES);
+        if (pluginDirectoryResources == null) {
+            pluginDirectoryResources = getImplicitPluginDirectories();
 
-             // Also add any explicit plugin locations specified by the
-             // BuildConfig setting "grails.plugin.location.<name>"
-             Collection<File> inlinePlugins = getInlinePluginsFromConfiguration(config);
-             cache.put(KEY_INLINE_PLUGIN_LOCATIONS, inlinePlugins);
-             pluginDirectoryResources.addAll(inlinePlugins);
+            // Also add any explicit plugin locations specified by the
+            // BuildConfig setting "grails.plugin.location.<name>"
+            Collection<File> inlinePlugins = getInlinePluginsFromConfiguration(config);
+            cache.put(KEY_INLINE_PLUGIN_LOCATIONS, inlinePlugins);
+            pluginDirectoryResources.addAll(inlinePlugins);
 
-             cache.put(KEY_PLUGIN_DIRECTORY_RESOURCES, pluginDirectoryResources);
-         }
-         return pluginDirectoryResources;
-     }
+            cache.put(KEY_PLUGIN_DIRECTORY_RESOURCES, pluginDirectoryResources);
+        }
+        return pluginDirectoryResources;
+    }
 
+    @SuppressWarnings({ "rawtypes", "hiding" })
     protected Collection<File> getInlinePluginsFromConfiguration(Map config) {
         Collection<File> inlinePlugins = new ConcurrentLinkedQueue<File>();
-        if(config != null) {
+        if (config != null) {
             Map pluginLocations = lookupPluginLocationConfig(config);
             if (pluginLocations != null) {
                 for (Object value : pluginLocations.values()) {
-                    if(value != null) {
+                    if (value != null) {
                         File resource;
                         try {
                             resource = new File(value.toString()).getCanonicalFile();
@@ -134,14 +138,16 @@ public class AbstractBuildSettings {
         return inlinePlugins;
     }
 
+    @SuppressWarnings({ "rawtypes", "hiding" })
     private Map lookupPluginLocationConfig(Map config) {
         return getIfMap(getIfMap(getIfMap(config, "grails"), "plugin"), "location");
     }
 
+    @SuppressWarnings({ "rawtypes", "hiding" })
     private Map getIfMap(Map config, String name) {
-        if(config != null) {
+        if (config != null) {
             Object o = config.get(name);
-            if(o instanceof Map) {
+            if (o instanceof Map) {
                 return ((Map) o);
             }
         }
@@ -164,7 +170,7 @@ public class AbstractBuildSettings {
                     return pathname.isDirectory() && (!fileName.startsWith(".") && fileName.indexOf('-') >- 1);
                 }
             });
-            if(pluginDirs != null) {
+            if (pluginDirs != null) {
                 dirList.addAll(Arrays.asList(pluginDirs));
             }
         }
@@ -176,9 +182,10 @@ public class AbstractBuildSettings {
      * Gets a list of all the known plugin base directories (directories where plugins are installed to).
      * @return Returns the base location where plugins are kept
      */
+    @SuppressWarnings("unchecked")
     public Collection<String> getPluginBaseDirectories() {
         List<String> dirs = (List<String>) cache.get(KEY_PLUGIN_BASE_DIRECTORIES);
-        if(dirs == null) {
+        if (dirs == null) {
             dirs = new ArrayList<String>();
             if (projectPluginsDir != null) try {
                 dirs.add(projectPluginsDir.getCanonicalPath());
@@ -201,8 +208,9 @@ public class AbstractBuildSettings {
     /**
      * Returns true if the specified plugin location is an inline location.
      */
+    @SuppressWarnings("unchecked")
     public boolean isInlinePluginLocation(File pluginLocation) {
-        if(pluginLocation == null) return false;
+        if (pluginLocation == null) return false;
         getPluginDirectories(); // initialize the cache
         ConcurrentLinkedQueue<File> locations = (ConcurrentLinkedQueue<File>) cache.get(KEY_INLINE_PLUGIN_LOCATIONS);
         return locations != null && locations.contains(pluginLocation);
@@ -211,10 +219,11 @@ public class AbstractBuildSettings {
     /**
      * Returns an array of the inplace plugin locations.
      */
+    @SuppressWarnings("unchecked")
     public Collection<File> getInlinePluginDirectories() {
         getPluginDirectories(); // initailize the cache
         Collection<File> locations = (ConcurrentLinkedQueue<File>) cache.get(KEY_INLINE_PLUGIN_LOCATIONS);
-        if(locations == null){
+        if (locations == null){
             locations = new ConcurrentLinkedQueue<File>();
             cache.put(KEY_INLINE_PLUGIN_LOCATIONS, locations);
         }

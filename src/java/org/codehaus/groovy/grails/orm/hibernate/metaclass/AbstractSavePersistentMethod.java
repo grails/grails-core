@@ -73,8 +73,9 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     private boolean shouldFail;
 
-    @SuppressWarnings("unchecked")
-    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
+    @SuppressWarnings("rawtypes")
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
+              ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
         super(pattern, sessionFactory, classLoader);
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
 
@@ -103,7 +104,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod#doInvokeInternal(java.lang.Object, java.lang.Object[])
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
@@ -176,13 +177,13 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private boolean shouldInsert(Object[] arguments) {
         return arguments.length > 0 && arguments[0] instanceof Map &&
             GrailsClassUtils.getBooleanFromMap(ARGUMENT_INSERT, (Map) arguments[0]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private boolean shouldFlush(Object[] arguments) {
         final boolean shouldFlush;
         if (arguments.length > 0 && arguments[0] instanceof Boolean) {
@@ -279,7 +280,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * @param arguments  The arguments to the validate method
      * @param domainClass The domain class
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private boolean shouldValidate(Object[] arguments, GrailsDomainClass domainClass) {
         if (domainClass == null) {
             return false;

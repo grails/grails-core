@@ -36,7 +36,7 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
     /* (non-Javadoc)
      * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected MetaClass createNormalMetaClass(Class theClass, MetaClassRegistry registry) {
         if (!isExcludedClass(theClass)) {

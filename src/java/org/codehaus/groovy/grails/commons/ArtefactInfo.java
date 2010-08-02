@@ -29,7 +29,7 @@ public interface ArtefactInfo {
      * that represent the artefacts.
      * @return The array, which may be empty but never null.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Class[] getClasses();
 
     /**
@@ -44,7 +44,7 @@ public interface ArtefactInfo {
      * <p>The Map is keyed by class name, i.e. "BookController"</p>
      * @return The Map, which may be empty but never null.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getClassesByName();
 
     /**
@@ -53,7 +53,7 @@ public interface ArtefactInfo {
      * <p>The Map is keyed by class name, i.e. "BookController"</p>
      * @return The Map, which may be empty but never null.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getGrailsClassesByName();
 
     /**

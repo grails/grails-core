@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  *
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class LazyMetaPropertyMap implements Map {
 
     private MetaClass metaClass;
