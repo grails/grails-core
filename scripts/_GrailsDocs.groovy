@@ -40,6 +40,9 @@ links = ['http://java.sun.com/j2se/1.5.0/docs/api/']
 docsDisabled = { argsMap.nodoc == true }
 pdfEnabled = { argsMap.pdf == true }
 
+createdManual = false
+createdPdf = false
+
 target(docs: "Produces documentation for a Grails project") {
     parseArguments()
     if (argsMap.init) {
@@ -89,7 +92,7 @@ And provide a detailed description
 }
 
 target(docsInternal:"Actual documentation task") {
-    depends(compile, javadoc, groovydoc, refdocs, pdf)
+    depends(compile, javadoc, groovydoc, refdocs, pdf, createIndex)
 }
 
 target(setupDoc:"Sets up the doc directories") {
@@ -221,6 +224,8 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
         publisher.publish()
 
+        createdManual = true
+
         println "Built user manual at ${refDocsDir}/index.html"
     }
 }
@@ -239,9 +244,46 @@ target(pdf: "Produces PDF documentation") {
     event("DocStart", ['pdf'])
 
     PdfBuilder.build(grailsSettings.docsOutputDir.canonicalPath, grailsHome)
+
+    createdPdf = true
+
     println "Built user manual PDF at ${refDocsDir}/guide/single.pdf"
 
     event("DocEnd", ['pdf'])
+}
+
+target(createIndex: "Produces an index.html page in the root directory") {
+	if (docsDisabled()) {
+		 return
+	}
+
+	new File("${grailsSettings.docsOutputDir}/index.html").withWriter { writer ->
+		writer.write """\
+<html>
+
+	<head>
+		<title>$grailsAppName Documentation</title>
+	</head>
+    
+	<body>
+		<a href="api/index.html">Java API docs</a><br />
+		<a href="gapi/index.html">Groovy API docs</a><br />
+"""
+
+		if (createdManual) {
+			writer.write '\t\t<a href="manual/index.html">Manual (Frames)</a><br />\n'
+			writer.write '\t\t<a href="manual/guide/single.html">Manual (Single)</a><br />\n'
+		}
+
+		if (createdPdf) {
+			writer.write '\t\t<a href="manual/guide/single.pdf">Manual (PDF)</a><br />\n'
+		}
+
+		writer.write """\
+	</body>
+</html>
+"""
+	}
 }
 
 def readPluginMetadataForDocs(DocPublisher publisher) {
