@@ -404,17 +404,17 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     /**
      * Writer interface for adding/writing data to the buffer.
      *
-     * @return
+     * @return the Writer
      */
     public Writer getWriter() {
         return writer;
     }
 
     /**
-     * Creates a new java.io.Reader instance for reading/consuming data from the buffer.
+     * Creates a new Reader instance for reading/consuming data from the buffer.
      * Each call creates a new instance that will keep it's reading state. There can be several readers on the buffer. (single thread only supported)
      *
-     * @return
+     * @return the Reader
      */
     public Reader getReader() {
         return getReader(false);
@@ -424,7 +424,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      * Like getReader(), but when removeAfterReading is true, the read data will be removed from the buffer.
      *
      * @param removeAfterReading
-     * @return
+     * @return the Reader
      */
     public Reader getReader(boolean removeAfterReading) {
         readerCount++;
@@ -491,9 +491,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     /**
-     * reads the buffer to a char[]
+     * Reads the buffer to a char[].
      *
-     * @return
+     * @return the chars
      */
     public char[] readAsCharArray() {
         int currentSize = size();
@@ -512,9 +512,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     /**
-     * reads the buffer to a String
+     * Reads the buffer to a String.
      *
-     * @return
+     * @return the String
      */
     public String readAsString() {
         char[] buf = readAsCharArray();
@@ -526,9 +526,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     /**
-     * reads (and empties) the buffer to a String, but caches the return value for subsequent calls.
+     * Reads (and empties) the buffer to a String, but caches the return value for subsequent calls.
      *
-     * if more content has been added between 2 calls, the returned value will be joined from the previously cached value and the data read from the buffer.
+     * If more content has been added between 2 calls, the returned value will be joined from the previously cached value and the data read from the buffer.
      *
      * @see java.lang.Object#toString()
      */
@@ -584,11 +584,11 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     /**
-     * reads the buffer to a char[]
+     * Reads the buffer to a char[].
      *
-     * caches the result if there aren't any readers
+     * Caches the result if there aren't any readers.
      *
-     * @return
+     * @return the chars
      */
     public char[] toCharArray() {
         // check if there is a cached single charbuffer
@@ -1186,9 +1186,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
 
         /**
-         * creates a new chunk from the content written to the buffer (used before adding StringChunk or StreamCharBufferChunk)
+         * Creates a new chunk from the content written to the buffer (used before adding StringChunk or StreamCharBufferChunk).
          *
-         * @return
+         * @return the chunk
          */
         public CharBufferChunk createChunk() {
             CharBufferChunk chunk=new CharBufferChunk(id, buffer, chunkStart, used-chunkStart);
