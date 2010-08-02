@@ -276,9 +276,10 @@ task pluginsFromSvn {
     doFirst {
         ant {
             mkdir(dir: dir)
-            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/trunk/grails-hibernate-${version}.zip",
+			def versionTag = version.replaceAll(/\./, '_').toUpperCase()
+            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${version}.zip",
                     dest: grailsHibernateDest, verbose: true, usetimestamp: true)
-            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/trunk/grails-tomcat-${version}.zip",
+            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${version}.zip",
                     dest: grailsTomcatDest, verbose: true, usetimestamp: true)
 
         }
