@@ -27,21 +27,59 @@
 includeTargets << grailsScript("_GrailsEvents")
 
 target ('default': "Sets the current application version") {
+    
     if (isPluginProject) {
-        println "The set-version command cannot update the version of a plugin project. Change the value of the 'version' property in ${pluginSettings.basePluginDescriptor.filename} instead." 
-        exit(1)
-    }
+        if (!pluginSettings.basePluginDescriptor.filename) {
+            println "PluginDescripter not found to set version"
+            exit 1
+        }
 
-    if (args != null) {
-        ant.property(name:"app.version.new", value: args)
+        File file = new File(pluginSettings.basePluginDescriptor.filename)
+        String descriptorContent = file.text
+
+        def pattern = ~/def\s*version\s*=\s*"(.*)"/
+        def matcher = (descriptorContent =~ pattern)
+
+        String oldVersion = ''
+        if (matcher.size() > 0) {
+            oldVersion = matcher[0][0]
+        }
+
+        String newVersion
+        if (!args) {
+            ant.input addProperty: "app.version.new", message: "Enter the new version",
+                defaultvalue: oldVersion - 'def version = '
+            newVersion = ant.antProject.properties.'app.version.new'
+        }
+        else {
+            newVersion = args
+        }
+        newVersion = newVersion?.trim()
+
+        String newVersionString = "def version = \"${newVersion}\""
+
+        if (matcher.size() > 0) {
+            descriptorContent = descriptorContent.replaceAll(/def\s*version\s*=\s*".*"/, newVersionString)
+        }
+        else {
+            descriptorContent = descriptorContent.replaceFirst(/\{/,"{\n\t$newVersionString // added by set-version")
+        }
+
+        file.withWriter { it.write descriptorContent }
+        event("StatusFinal", [ "Plugin version updated to $newVersion"])
     }
     else {
-        def oldVersion = metadata.'app.version'
-        ant.input(addProperty:"app.version.new", message:"Enter the new version", defaultvalue:oldVersion)
-    }
+        if (args) {
+            ant.property(name:"app.version.new", value: args)
+        }
+        else {
+            def oldVersion = metadata.'app.version'
+            ant.input addProperty: "app.version.new", message: "Enter the new version", defaultvalue: oldVersion
+        }
 
-    def newVersion = ant.antProject.properties.'app.version.new'
-    metadata.'app.version' = newVersion
-    metadata.persist()
-    event("StatusFinal", [ "Application version updated to $newVersion"])
+        def newVersion = ant.antProject.properties.'app.version.new'
+        metadata.'app.version' = newVersion
+        metadata.persist()
+        event("StatusFinal", [ "Application version updated to $newVersion"])
+    }
 }
