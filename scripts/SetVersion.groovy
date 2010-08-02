@@ -59,7 +59,7 @@ target ('default': "Sets the current application version") {
         String newVersionString = "def version = \"${newVersion}\""
 
         if (matcher.size() > 0) {
-            descriptorContent = descriptorContent.replaceAll(/def\s*version\s*=\s*".*"/, newVersionString)
+            descriptorContent = descriptorContent.replaceFirst(/def\s*version\s*=\s*".*"/, newVersionString)
         }
         else {
             descriptorContent = descriptorContent.replaceFirst(/\{/,"{\n\t$newVersionString // added by set-version")
