@@ -163,59 +163,61 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
 
     pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     def pluginProps = compilePlugin ? plugin.properties : pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
-    if (pluginProps["grailsVersion"]) {
-        pluginGrailsVersion = pluginProps["grailsVersion"]
-    }
+    if(pluginProps != null) {
+        if (pluginProps["grailsVersion"]) {
+            pluginGrailsVersion = pluginProps["grailsVersion"]
+        }
 
-    xml.plugin(name:"${pluginName}",version:"${pluginProps.version}", grailsVersion:pluginGrailsVersion) {
-        for (p in props) {
-            if (pluginProps[p]) "${p}"(pluginProps[p])
-        }
-        xml.resources {
-            for (r in resourceList) {
-                def matcher = r.URL.toString() =~ artefactPattern
-                def name = matcher[0][1].replaceAll('/', /\./)
-                xml.resource(name)
+        xml.plugin(name:"${pluginName}",version:"${pluginProps.version}", grailsVersion:pluginGrailsVersion) {
+            for (p in props) {
+                if (pluginProps[p]) "${p}"(pluginProps[p])
             }
-        }
-        dependencies {
-            if (pluginProps["dependsOn"]) {
-                for (d in pluginProps.dependsOn) {
-                    delegate.plugin(name:d.key, version:d.value)
+            xml.resources {
+                for (r in resourceList) {
+                    def matcher = r.URL.toString() =~ artefactPattern
+                    def name = matcher[0][1].replaceAll('/', /\./)
+                    xml.resource(name)
                 }
             }
-        }
+            dependencies {
+                if (pluginProps["dependsOn"]) {
+                    for (d in pluginProps.dependsOn) {
+                        delegate.plugin(name:d.key, version:d.value)
+                    }
+                }
+            }
 
-        def docContext = DocumentationContext.instance
-        if (docContext) {
-            behavior {
-                for (DocumentedMethod m in docContext.methods) {
-                    method(name:m.name, artefact:m.artefact, type:m.type?.name) {
-                        description m.text
-                        if (m.arguments) {
-                            for (arg in m.arguments) {
-                                argument type:arg.name
+            def docContext = DocumentationContext.instance
+            if (docContext) {
+                behavior {
+                    for (DocumentedMethod m in docContext.methods) {
+                        method(name:m.name, artefact:m.artefact, type:m.type?.name) {
+                            description m.text
+                            if (m.arguments) {
+                                for (arg in m.arguments) {
+                                    argument type:arg.name
+                                }
                             }
                         }
                     }
-                }
-                for (DocumentedMethod m in docContext.staticMethods) {
-                    'static-method'(name:m.name, artefact:m.artefact, type:m.type?.name) {
-                        description m.text
-                        if (m.arguments) {
-                            for (arg in m.arguments) {
-                                argument type:arg.name
+                    for (DocumentedMethod m in docContext.staticMethods) {
+                        'static-method'(name:m.name, artefact:m.artefact, type:m.type?.name) {
+                            description m.text
+                            if (m.arguments) {
+                                for (arg in m.arguments) {
+                                    argument type:arg.name
+                                }
                             }
                         }
                     }
-                }
-                for (DocumentedProperty p in docContext.properties) {
-                    property(name:p.name, type:p?.type?.name, artefact:p.artefact) {
-                        description p.text
+                    for (DocumentedProperty p in docContext.properties) {
+                        property(name:p.name, type:p?.type?.name, artefact:p.artefact) {
+                            description p.text
+                        }
                     }
                 }
             }
-        }
+        }        
     }
 
     return plugin
