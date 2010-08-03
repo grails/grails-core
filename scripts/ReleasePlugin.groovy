@@ -32,6 +32,7 @@ import javax.xml.transform.OutputKeys
 import javax.xml.transform.Transformer
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 /**
  * Gant script that handles releasing plugins to a plugin repository.
@@ -301,6 +302,7 @@ target(releasePlugin: "The implementation target") {
         println "Generating plugin project behavior metadata..."
         try {
             MetadataGeneratingMetaClassCreationHandle.enable()
+            packageApp()
             loadApp()
             configureApp()
             MetadataGeneratingMetaClassCreationHandle.disable()
