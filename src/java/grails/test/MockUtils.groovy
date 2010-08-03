@@ -738,7 +738,13 @@ class MockUtils {
                 def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
                 def mapping = evaluateMapping(clazz)
 
-                boolean isInsert = !delegate.id
+                boolean isInsert
+                if (mapping?.id?.generator == "assigned") {
+                    isInsert = !testInstances.contains(delegate)
+                } else {
+                    isInsert = !delegate.id
+                }
+
                 if(isInsert) {
                     triggerEvent delegate, 'beforeInsert'
                     if (!testInstances.contains(delegate)) {
