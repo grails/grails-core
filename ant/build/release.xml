@@ -179,11 +179,21 @@
         </antcall>
 
         <mkdir dir="${grails.release.dir}/plugins" />
-        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/trunk/grails-hibernate-${grails.version}.zip"
+		<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy">
+			<classpath refid="classpath" />
+		</taskdef>
+		
+		<groovy>
+			def proj = ant.antProject
+			def version = proj.properties['grails.version']
+			proj.setNewProperty('grails.tag.version', version.replaceAll(/\./, '_'))
+		</groovy>
+
+        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/tags/RELEASE_${grails.tag.version}/grails-hibernate-${grails.version}.zip"
              dest="${grails.release.dir}/plugins/grails-hibernate-${grails.version}.zip"
              verbose="true"
              usetimestamp="true" />
-        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/trunk/grails-tomcat-${grails.version}.zip"
+        <get src="http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/tags/RELEASE_${grails.tag.version}/grails-tomcat-${grails.version}.zip"
              dest="${grails.release.dir}/plugins/grails-tomcat-${grails.version}.zip"
              verbose="true"
              usetimestamp="true" />
