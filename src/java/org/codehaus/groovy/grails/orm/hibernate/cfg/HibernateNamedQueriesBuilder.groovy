@@ -124,6 +124,15 @@ class NamedCriteriaProxy {
         if (params && params[-1] instanceof Closure) {
             def additionalCriteriaClosure = params[-1]
             params = params.length > 1 ? params[0..-2] : [:]
+            if(params) {
+                if(params[-1] instanceof Map) {
+                    if(params.length > 1) {
+                        namedCriteriaParams = params[0..-2] as Object[]
+                    }
+                } else {
+                    namedCriteriaParams = params
+                }
+            }
             list(params, additionalCriteriaClosure)
         }
         else {

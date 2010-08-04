@@ -256,6 +256,68 @@ class Publication {
         assertNotNull publicationClass.publishedAfter(now - 5).publicationsWithBookInTitle().get(newPaperBackWithBookInTitleId)
     }
 
+    void testPassingParamsAndAdditionalCriteria() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+        def now = new Date()
+
+        6.times { cnt ->
+            assert publicationClass.newInstance(title: "Some Old Book #${cnt}",
+                      datePublished: now - 1000, paperback: true).save(failOnError: true).id
+            assert publicationClass.newInstance(title: "Some New Book #${cnt}",
+                      datePublished: now, paperback: true).save(failOnError: true).id
+        }
+
+        def results = publicationClass.publishedAfter(now - 5) {
+            eq 'paperback', true
+        }
+        assertEquals 6, results?.size()
+
+        results = publicationClass.publishedAfter(now - 5, [max: 2, offset: 1]) {
+            eq 'paperback', true
+        }
+        assertEquals 2, results?.size()
+
+        results = publicationClass.publishedBetween(now - 5, now + 1) {
+            eq 'paperback', true
+        }
+        assertEquals 6, results?.size()
+
+        results = publicationClass.publishedBetween(now - 5, now + 1, [max: 2, offset: 1]) {
+            eq 'paperback', true
+        }
+        assertEquals 2, results?.size()
+
+        results = publicationClass.publishedAfter(now - 1005) {
+            eq 'paperback', true
+        }
+        assertEquals 12, results?.size()
+
+        results = publicationClass.publishedAfter(now - 5) {
+            eq 'paperback', false
+        }
+        assertEquals 0, results?.size()
+
+        results = publicationClass.publishedAfter(now - 5, [max: 2, offset: 1]) {
+            eq 'paperback', false
+        }
+        assertEquals 0, results?.size()
+
+        results = publicationClass.publishedBetween(now - 5, now + 1) {
+            eq 'paperback', false
+        }
+        assertEquals 0, results?.size()
+
+        results = publicationClass.publishedBetween(now - 5, now + 1, [max: 2, offset: 1]) {
+            eq 'paperback', false
+        }
+        assertEquals 0, results?.size()
+
+        results = publicationClass.publishedAfter(now - 1005) {
+            eq 'paperback', false
+        }
+        assertEquals 0, results?.size()
+    }
+
     void testChainingNamedQueries() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
