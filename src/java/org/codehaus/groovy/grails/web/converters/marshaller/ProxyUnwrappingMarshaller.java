@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
  *
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ProxyUnwrappingMarshaller<C extends Converter> implements ObjectMarshaller<C>, NameAwareMarshaller {
 
     private static final String HIBERNATE_LAZY_INITIALIZER_PROP = "hibernateLazyInitializer";

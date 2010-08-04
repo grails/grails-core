@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class ClosureOjectMarshaller<T extends Converter> implements ObjectMarshaller<T> {
 
     private Class<?> clazz;

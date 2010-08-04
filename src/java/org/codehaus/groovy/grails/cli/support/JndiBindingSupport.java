@@ -62,7 +62,7 @@ public class JndiBindingSupport {
      *
      * @return The bound JNDI context
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     Object bind() {
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
 
@@ -116,7 +116,7 @@ public class JndiBindingSupport {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static void bindProperties(Object obj, Map entryProperties) {
         BeanWrapper dsBean = new BeanWrapperImpl(obj);
         for (Object o : entryProperties.entrySet()) {
@@ -134,7 +134,7 @@ public class JndiBindingSupport {
             return DATA_SOURCE;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public void handleBinding(SimpleNamingContextBuilder builder,
                 String entryName, Map entryProperties) {
             try {

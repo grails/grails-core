@@ -64,7 +64,7 @@ class GroovyPageWritable implements Writable {
     private GrailsWebRequest webRequest;
 
     private ServletContext context;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map additionalBinding = new HashMap();
     private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
     private GrailsPluginManager pluginManager;
@@ -94,7 +94,7 @@ class GroovyPageWritable implements Writable {
      *
      * @param binding The additional variables
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setBinding(Map binding) {
         if (binding != null) {
             additionalBinding = binding;
@@ -311,7 +311,7 @@ class GroovyPageWritable implements Writable {
         populateViewModel(req, binding);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected void populateViewModel(HttpServletRequest req, Binding binding) {
         // Go through request attributes and add them to the binding as the model
         final Map variables = binding.getVariables();

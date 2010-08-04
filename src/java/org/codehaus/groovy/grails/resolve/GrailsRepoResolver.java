@@ -82,7 +82,7 @@ public class GrailsRepoResolver extends URLResolver{
      * @param localFile The local file to save to XML too
      * @return The GPathResult reperesenting the XML
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public GPathResult getPluginList(File localFile) {
         installIvyAuth();
         try {

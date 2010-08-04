@@ -145,7 +145,7 @@ public class ConverterUtil {
         // static only
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static Object invokeOriginalAsTypeMethod(Object delegate, Class<?> clazz) {
         if (clazz.isInstance(delegate)) {
             return delegate;

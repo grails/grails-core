@@ -136,7 +136,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
         return doStartTagInternal();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private GroovyObject getTagLib(String name) {
         if (application == null) {
             initPageState();
@@ -169,7 +169,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected int doStartTagInternal() {
         GroovyObject tagLib = getTagLib(getTagName());
         if (tagLib == null) {

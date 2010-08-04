@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class ConvertersConfigurationHolder {
 
     public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";

@@ -32,7 +32,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Graeme Rocher
  * @since 0.3
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class UrlMappingFactoryBean extends AbstractFactoryBean<Map> implements ApplicationContextAware {
 
     private static final Log LOG = LogFactory.getLog(UrlMappingFactoryBean.class);

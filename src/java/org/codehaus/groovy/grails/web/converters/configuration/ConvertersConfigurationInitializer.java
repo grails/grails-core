@@ -173,7 +173,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
                 GrailsConfig.get("grails.converters.domain.include.version", false));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private <C extends Converter> void registerObjectMarshallersFromApplicationContext(
             DefaultConverterConfiguration<C> cfg, Class<C> converterClass) {
 

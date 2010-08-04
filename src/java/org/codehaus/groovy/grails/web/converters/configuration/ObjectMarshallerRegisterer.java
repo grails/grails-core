@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class ObjectMarshallerRegisterer {
 
     private ObjectMarshaller marshaller;

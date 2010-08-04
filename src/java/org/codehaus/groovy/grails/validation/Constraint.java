@@ -31,7 +31,7 @@ public interface Constraint extends MessageSourceAware {
      * @param type The type to support
      * @return True if the constraint can be applied against the specified type
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     boolean supports(Class type);
 
     /**
@@ -56,7 +56,7 @@ public interface Constraint extends MessageSourceAware {
      *
      * @param owningClass
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void setOwningClass(Class owningClass);
 
     /**

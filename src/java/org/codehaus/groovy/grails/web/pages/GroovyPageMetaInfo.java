@@ -53,7 +53,7 @@ class GroovyPageMetaInfo {
     private String contentType;
     private int[] lineNumbers;
     private String[] htmlParts;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map jspTags = Collections.EMPTY_MAP;
     private GroovyPagesException compilationException;
     private String codecName;
@@ -66,7 +66,7 @@ class GroovyPageMetaInfo {
         // default
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public GroovyPageMetaInfo(Class<?> pageClass) {
         precompiledMode=true;
         this.pageClass = pageClass;
@@ -84,7 +84,7 @@ class GroovyPageMetaInfo {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void initCodec() {
         if (codecName == null) {
             Map config = ConfigurationHolder.getFlatConfig();
@@ -249,12 +249,12 @@ class GroovyPageMetaInfo {
         this.lineNumbers = lineNumbers;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setJspTags(Map jspTags) {
         this.jspTags = jspTags != null ? jspTags : Collections.EMPTY_MAP;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getJspTags() {
         return jspTags;
     }

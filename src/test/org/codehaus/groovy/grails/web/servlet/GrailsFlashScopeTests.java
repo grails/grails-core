@@ -26,7 +26,7 @@ import junit.framework.TestCase;
 /**
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class GrailsFlashScopeTests extends TestCase {
 
     private static final String ERRORS_PROPERTY = "errors";

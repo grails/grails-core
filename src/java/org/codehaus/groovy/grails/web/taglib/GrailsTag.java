@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public interface GrailsTag {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void init(Map tagContext);
 
     /**
@@ -38,7 +38,7 @@ public interface GrailsTag {
      * Sets the attributes of the tag
      * @param attributes
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void setAttributes(Map attributes);
 
     /**

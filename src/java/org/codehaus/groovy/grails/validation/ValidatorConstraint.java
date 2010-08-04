@@ -162,7 +162,7 @@ public class ValidatorConstraint extends AbstractConstraint {
         return ConstrainedProperty.VALIDATOR_CONSTRAINT;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class type) {
         return type != null;
     }

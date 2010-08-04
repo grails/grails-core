@@ -90,7 +90,7 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         return new HandlerExecutionChain(handler, lookupInterceptors(getWebApplicationContext()));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected void extendInterceptors(List interceptors) {
         setInterceptors(establishInterceptors(getWebApplicationContext()));

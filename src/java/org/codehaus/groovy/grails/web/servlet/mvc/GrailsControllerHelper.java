@@ -92,7 +92,7 @@ public interface GrailsControllerHelper {
      *
      * @return The action response
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Object handleAction(GroovyObject controller, Closure action, HttpServletRequest request,
             HttpServletResponse response, Map params);
 
@@ -109,7 +109,6 @@ public interface GrailsControllerHelper {
     ModelAndView handleActionResponse(GroovyObject controller, Object returnValue,
             String closurePropertyName, String viewName);
 
-    @SuppressWarnings("unchecked")
     /**
      * Handles a Grails URI
      * @param uri The URI to processs
@@ -117,6 +116,7 @@ public interface GrailsControllerHelper {
      * @param params A map of controller parameters
      * @return A ModelAndView instance
      */
+    @SuppressWarnings("rawtypes")
     ModelAndView handleURI(String uri, GrailsWebRequest webRequest, Map params);
 
     /**

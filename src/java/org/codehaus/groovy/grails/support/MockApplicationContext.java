@@ -141,7 +141,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return beans.keySet().toArray(new String[beans.keySet().size()]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public String[] getBeanNamesForType(Class type) {
         List<String> beanNames = new ArrayList<String>();
         for (String beanName : beans.keySet()) {
@@ -152,7 +152,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return beanNames.toArray(new String[beanNames.size()]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public String[] getBeanNamesForType(Class type, boolean includePrototypes, boolean includeFactoryBeans) {
         return getBeanNamesForType(type);
     }
@@ -244,12 +244,12 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         throw new UnsupportedOperationException("Method not supported by implementation");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean isTypeMatch(String s, Class aClass) {
         throw new UnsupportedOperationException("Method not supported by implementation");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Class getType(String name) throws NoSuchBeanDefinitionException {
         if (!beans.containsKey(name)) {
             throw new NoSuchBeanDefinitionException(name);

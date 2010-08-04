@@ -66,7 +66,7 @@ public class WebRequestDelegatingRequestContext implements GrailsRequestContext 
         return webRequest.getServletContext();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getParams() {
         return webRequest.getParams();
     }

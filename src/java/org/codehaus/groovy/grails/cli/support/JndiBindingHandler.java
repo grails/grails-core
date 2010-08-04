@@ -40,6 +40,6 @@ public interface JndiBindingHandler {
      * @param entryName The entry name
      * @param entryProperties The entry properties
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void handleBinding(SimpleNamingContextBuilder builder, String entryName, Map entryProperties);
 }

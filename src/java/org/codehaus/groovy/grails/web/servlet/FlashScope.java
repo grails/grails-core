@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface FlashScope extends Map, Serializable {
 
     /**

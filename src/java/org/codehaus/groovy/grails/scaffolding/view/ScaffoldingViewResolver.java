@@ -147,12 +147,12 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         this.templateGenerator = templateGenerator;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setScaffoldedActionMap(Map scaffoldedActionMap) {
         this.scaffoldedActionMap = scaffoldedActionMap;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setScaffoldedDomains(Map scaffoldedDomains) {
         this.scaffoldedDomains = scaffoldedDomains;
     }

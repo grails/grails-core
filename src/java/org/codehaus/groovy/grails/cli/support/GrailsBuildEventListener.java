@@ -233,7 +233,7 @@ public class GrailsBuildEventListener implements BuildListener{
         addGrailsBuildListener(listenerClass);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected void addGrailsBuildListener(Class listenerClass) {
         if (!GrailsBuildListener.class.isAssignableFrom(listenerClass)) {
             throw new RuntimeException("Intended grails build listener class of " + listenerClass.getName() + " does not implement " + GrailsBuildListener.class.getName());

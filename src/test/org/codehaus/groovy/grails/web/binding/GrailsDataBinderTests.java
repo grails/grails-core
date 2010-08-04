@@ -35,7 +35,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class GrailsDataBinderTests extends TestCase {
 
     public static final String DATE_TIME_FORMAT = "MM/dd/yyyy hh:mm a";

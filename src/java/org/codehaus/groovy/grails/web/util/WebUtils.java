@@ -209,7 +209,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return buildDispatchUrlForMapping(info, false);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static String buildDispatchUrlForMapping(UrlMappingInfo info, boolean includeParams) {
         if (info.getURI() != null) {
             return info.getURI();
@@ -254,7 +254,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     /**
      * @see #forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.codehaus.groovy.grails.web.mapping.UrlMappingInfo, java.util.Map, boolean)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model) throws ServletException, IOException {
         return forwardRequestForUrlMappingInfo(request, response, info, model, false);
@@ -273,7 +273,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws ServletException Thrown when an error occurs executing the forward
      * @throws IOException Thrown when an error occurs executing the forward
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
@@ -303,7 +303,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return The included content
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model) {
         String includeUrl = buildDispatchUrlForMapping(info, true);
@@ -338,6 +338,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * the attributes have been cleared.
      * @return The saved web request details.
      */
+    @SuppressWarnings("unchecked")
     public static InternalSavedRequest saveAndResetWebRequest(HttpServletRequest request, UrlMappingInfo info) {
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
         InternalSavedRequest savedRequest = null;
@@ -363,6 +364,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * information about any current ModelAndView that will be used to render the
      * response.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static class InternalSavedRequest {
         private String controller;
         private String action;
@@ -395,7 +397,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @param model The model
      * @return The content
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static IncludedContent includeForUrl(String includeUrl, HttpServletRequest request,
             HttpServletResponse response, Map model) {
         RequestDispatcher dispatcher = request.getRequestDispatcher(includeUrl);
@@ -432,7 +434,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The query string
      * @throws UnsupportedEncodingException If the given encoding is not supported
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static String toQueryString(Map params, String encoding) throws UnsupportedEncodingException {
         if (encoding == null) encoding = "UTF-8";
         StringBuilder queryString = new StringBuilder("?");
@@ -452,12 +454,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The query string
      * @throws UnsupportedEncodingException If UTF-8 encoding is not supported
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static String toQueryString(Map parameters) throws UnsupportedEncodingException {
         return toQueryString(parameters, "UTF-8");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static boolean appendEntry(Map.Entry entry, StringBuilder queryString, String encoding, String path) throws UnsupportedEncodingException {
         String name = entry.getKey().toString();
         if (name.indexOf(".") > -1) return false; // multi-d params handled by recursion
@@ -512,7 +514,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return True if file extensions are enabled
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean areFileExtensionsEnabled() {
         Map config = ConfigurationHolder.getFlatConfig();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);

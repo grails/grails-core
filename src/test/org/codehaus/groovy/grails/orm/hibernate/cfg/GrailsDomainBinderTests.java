@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -280,7 +279,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertColumnNullable("table_per_subclass_superclass", "some_optional_product_status", config);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
         assertEquals("Tables created", 1, getTableCount(config));
@@ -328,9 +327,6 @@ public class GrailsDomainBinderTests extends TestCase {
         Field privateDomainClasses = DefaultGrailsDomainConfiguration.class.
             getDeclaredField("domainClasses");
         privateDomainClasses.setAccessible(true);
-        Set domainClasses = (Set) privateDomainClasses.get(config);
-
-        GrailsDomainClass domainClassObj = (GrailsDomainClass)domainClasses.iterator().next();
 
         PersistentClass persistentClass = config.getClassMapping("TestInsertableDomain");
 
@@ -578,7 +574,7 @@ public class GrailsDomainBinderTests extends TestCase {
     /**
      * @see GrailsDomainBinder#bindStringColumnConstraints(Column, ConstrainedProperty)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testBindStringColumnConstraints() {
         // Verify that the correct length is set when a maxSize constraint is applied
         ConstrainedProperty constrainedProperty = getConstrainedStringProperty();

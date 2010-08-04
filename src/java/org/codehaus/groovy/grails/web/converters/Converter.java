@@ -58,7 +58,7 @@ public interface Converter<W> {
 
     void build(Closure c) throws ConverterException;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     ObjectMarshaller<? extends Converter> lookupObjectMarshaller(Object target);
 
     enum CircularReferenceBehaviour {

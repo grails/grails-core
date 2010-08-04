@@ -66,7 +66,7 @@ public class RenderInputTag extends RequestContextTag {
     private Object bean;
     private String property;
     private BeanWrapper beanWrapper;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map constrainedProperties = Collections.EMPTY_MAP;
     private Map<Class<?>, String> cachedUris = new ConcurrentHashMap<Class<?>, String>();
 

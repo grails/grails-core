@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  *
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class DomainClassPropertyComparator implements Comparator {
 
     private Map constrainedProperties;

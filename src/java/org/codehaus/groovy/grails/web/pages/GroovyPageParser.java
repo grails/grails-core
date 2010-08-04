@@ -189,7 +189,7 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
         Map config = ConfigurationHolder.getFlatConfig();
         GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
@@ -248,7 +248,7 @@ public class GroovyPageParser implements Tokens {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private boolean isSitemeshPreprocessingEnabled(Map config, String gspFilePreprocessDirective) {
         Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
         if (gspFilePreprocessDirective != null) {
@@ -1000,7 +1000,7 @@ public class GroovyPageParser implements Tokens {
         tagIndex--;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void startTag() {
         if (!finalPass) return;
 

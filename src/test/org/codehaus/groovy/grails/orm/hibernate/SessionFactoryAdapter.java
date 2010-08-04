@@ -22,7 +22,7 @@ import org.hibernate.stat.Statistics;
  * @author Dmitriy Kopylenko
  * @since 0.5
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class SessionFactoryAdapter implements SessionFactory {
 
     private static final long serialVersionUID = -3905807871358255210L;

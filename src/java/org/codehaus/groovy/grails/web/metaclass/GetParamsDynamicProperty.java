@@ -53,7 +53,7 @@ public class GetParamsDynamicProperty extends AbstractDynamicControllerProperty 
         paramsMap.put(paramName, paramValue);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void addParams(Map params) {
         paramsMap.putAll(params);
     }

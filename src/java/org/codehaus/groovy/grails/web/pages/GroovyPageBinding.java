@@ -27,7 +27,7 @@ public class GroovyPageBinding extends Binding {
         super();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public GroovyPageBinding(Map variables) {
         super(variables);
     }

@@ -407,7 +407,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return response;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void copyParamsFromPreviousRequest(GrailsWebRequest previousRequestAttributes, GrailsWebRequest requestAttributes) {
         Map previousParams = previousRequestAttributes.getParams();
         Map params =  requestAttributes.getParams();

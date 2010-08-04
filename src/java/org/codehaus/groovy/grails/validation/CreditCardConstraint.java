@@ -59,7 +59,7 @@ public class CreditCardConstraint extends AbstractConstraint {
         return ConstrainedProperty.CREDIT_CARD_CONSTRAINT;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class type) {
         return type != null && String.class.isAssignableFrom(type);
     }

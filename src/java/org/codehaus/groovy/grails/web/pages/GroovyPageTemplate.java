@@ -37,7 +37,7 @@ public class GroovyPageTemplate implements Template {
         return new GroovyPageWritable(metaInfo);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Writable make(Map binding) {
         GroovyPageWritable gptw = new GroovyPageWritable(metaInfo);
         gptw.setBinding(binding);

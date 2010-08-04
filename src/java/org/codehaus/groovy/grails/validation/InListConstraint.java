@@ -38,7 +38,7 @@ public class InListConstraint extends AbstractConstraint {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class type) {
         return type != null;
     }

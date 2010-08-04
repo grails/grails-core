@@ -16,7 +16,7 @@ public class MinSizeConstraintTests extends AbstractConstraintTests{
         return MinSizeConstraint.class;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public void testValidation() {
         // 9 characters but 10 is minimum
         testConstraintMessageCodes(

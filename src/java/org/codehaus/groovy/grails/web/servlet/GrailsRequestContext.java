@@ -60,7 +60,7 @@ public interface GrailsRequestContext {
      * The params object.
      * @return The params object
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     Map getParams();
 
     /**

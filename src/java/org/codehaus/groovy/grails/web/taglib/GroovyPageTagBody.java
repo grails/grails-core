@@ -59,7 +59,7 @@ public class GroovyPageTagBody extends Closure {
         this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
     }
 
-    private Binding findPageScopeBinding(Object owner, GrailsWebRequest webRequest) {
+    private Binding findPageScopeBinding(Object owner, @SuppressWarnings("hiding") GrailsWebRequest webRequest) {
         if (owner instanceof GroovyPage) {
             return ((GroovyPage) owner).getBinding();
         }
@@ -79,7 +79,7 @@ public class GroovyPageTagBody extends Closure {
         this.preferSubChunkWhenWritingToOtherBuffer = prefer;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Object captureClosureOutput(Object args) {
         final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
