@@ -436,6 +436,8 @@ boolean isPluginNotInRepository() {
     // Now check whether the plugin is in the repository.
     // If not, we ask the user whether they want to import it.
     SVNRepository repos = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(pluginSVN))
+    if(authManager != null)
+        repos.authenticationManager = authManager
     boolean notInRepository = true
     try {
         notInRepository = !repos.info("grails-$pluginName", -1)
