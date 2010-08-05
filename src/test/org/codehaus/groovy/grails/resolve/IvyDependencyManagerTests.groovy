@@ -702,7 +702,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                   "radeox:radeox:1.0-b2",
                   "hsqldb:hsqldb:1.8.0.10",
                   "apache-tomcat:jasper-compiler:5.5.15",
-                  "jline:jline:0.9.91",
+                  "jline:jline:0.9.94",
                   "javax.servlet:servlet-api:2.5",
                   "javax.servlet:jsp-api:2.1",
                   "javax.servlet:jstl:1.1.2",

@@ -107,8 +107,8 @@ The following libraries are included in Grails because they are required either 
 - Javassist 3.8 (http://www.jboss.org/javassist/) MPL or LGPL License
 - required for running Grails applications 
 
-* jline-0.9.91.jar
-- JLine 0.9.91 (http://jline.sourceforge.net/)
+* jline-0.9.94.jar
+- JLine 0.9.94 (http://jline.sourceforge.net/)
 - required for the Grails shell
 
 * jsp-api-2.1.jar
