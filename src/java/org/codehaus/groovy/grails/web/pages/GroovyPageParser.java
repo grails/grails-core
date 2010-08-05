@@ -91,6 +91,7 @@ public class GroovyPageParser implements Tokens {
     private GSPWriter out;
     private String className;
     private String packageName;
+    private String sourceName; // last segment of the file name (eg- index.gsp)
     private boolean finalPass = false;
     private int tagIndex;
     private Map<Object, Object> tagContext;
@@ -227,6 +228,7 @@ public class GroovyPageParser implements Tokens {
         pageName = uri;
         environment = Environment.getCurrent();
         makeName(name);
+        makeSourceName(filename);
     }
 
     private Map<String, String> parseDirectives(String gspSource) {
@@ -683,6 +685,22 @@ public class GroovyPageParser implements Tokens {
         className = buf.toString();
     }
 
+    /**
+     * find the simple name of this gsp
+     * @param filename the fully qualified file name
+     */
+    private void makeSourceName(String filename) {
+        if (filename != null) {
+            int lastSegmentStart = filename.lastIndexOf('/');
+            if (lastSegmentStart == -1) {
+                lastSegmentStart = filename.lastIndexOf('\\');
+            }
+            sourceName = filename.substring(lastSegmentStart + 1);
+        } else {
+            sourceName = className;
+        }
+    }
+
     private static boolean match(CharSequence pat, CharSequence text, int start) {
         int ix = start, ixz = text.length(), ixy = start + pat.length();
         if (ixz > ixy) {
@@ -831,6 +849,10 @@ public class GroovyPageParser implements Tokens {
                 out.println("null");
             }
             out.println("}");
+            
+            if (shouldAddLineNumbers()) {
+                addLineNumbers();
+            }
         }
         else {
             for (int i = 0; i < DEFAULT_IMPORTS.length; i++) {
@@ -838,6 +860,64 @@ public class GroovyPageParser implements Tokens {
                 out.println(DEFAULT_IMPORTS[i]);
             }
         }
+    }
+    
+    /**
+     * Determines if the line numbers array should be added to the generated Groovy class.
+     * @return true if they should
+     */
+    private boolean shouldAddLineNumbers() {
+        try {
+            // for now, we support this through a system property.
+            String prop = System.getenv("GROOVY_PAGE_ADD_LINE_NUMBERS");
+            return Boolean.valueOf(prop).booleanValue();
+        } catch (Exception e) {
+            // something wild happened
+            return false;
+        }
+    }
+
+    /**
+     * Adds the line numbers array to the end of the generated Groovy ModuleNode
+     * in a way suitable for the LineNumberTransform AST transform to operate on it
+     */
+    private void addLineNumbers() {
+        out.println();
+        out.println("@org.codehaus.groovy.grails.web.transform.LineNumber(");
+        out.print("\tlines = [");
+        // get the line numbers here.  this will mean that the last 2 lines will not be captured in the
+        // line number information, but that's OK since a user cannot set a breakpoint there anyway.
+        int[] lineNumbers = filterTrailing0s(out.getLineNumbers());
+
+        for (int i = 0; i < lineNumbers.length; i++) {
+            out.print(lineNumbers[i]);
+            if (i < lineNumbers.length - 1) {
+                out.print(", ");
+            }
+        }
+        out.println("],");
+        out.println("\tsourceName = \"" + sourceName + "\"");
+        out.println(")");
+        out.println("class ___LineNumberPlaceholder { }");
+    }
+
+    /**
+     * Filters trailing 0s from the line number array
+     * @param lineNumbers the line number array
+     * @return a new array that removes all 0s from the end of it
+     */
+    private int[] filterTrailing0s(int[] lineNumbers) {
+        int startLocation = lineNumbers.length - 1;
+        for (int i = lineNumbers.length -1; i >= 0; i--) {
+            if (lineNumbers[i] > 0) {
+                startLocation = i + 1;
+                break;
+            }
+        }
+        
+        int[] newLineNumbers = new int[startLocation];
+        System.arraycopy(lineNumbers, 0, newLineNumbers, 0, startLocation);
+        return newLineNumbers;
     }
 
     private void endTag() {
