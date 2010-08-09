@@ -52,8 +52,7 @@ javadoc {
     verbose = false
 }
 
-task gdoc << {
-    dependsOn javadoc
+task gdoc(dependsOn: 'javadoc') << {
     ant {
         mkdir dir: buildDir
         get src:"http://github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
