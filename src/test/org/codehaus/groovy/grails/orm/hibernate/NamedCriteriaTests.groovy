@@ -46,7 +46,7 @@ class PublicationSubclassWithoutNamedQueries extends Publication {
 class PublicationSubclassWithNamedQueries extends Publication {
     static namedQueries = {
         oldPaperbacks {
-            eq 'paperback', true
+            paperbacks()
             lt 'datePublished', new Date() - 365
         }
     }
@@ -144,6 +144,10 @@ class Publication {
 
         assertEquals 1, publications?.size()
         assertEquals 'Some New Book', publications[0].title
+
+		publications = publicationClass.oldPaperbacks.list()
+		assertEquals 1, publications?.size()
+		assertEquals 'Some Old Book', publications[0].title
 	}
 
     void testNamedQueryWithRelationshipInCriteria() {
