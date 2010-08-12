@@ -40,6 +40,18 @@ class Plant {
     String name
 }
 
+class PublicationSubclassWithoutNamedQueries extends Publication {
+}
+
+class PublicationSubclassWithNamedQueries extends Publication {
+    static namedQueries = {
+        oldPaperbacks {
+            eq 'paperback', true
+            lt 'datePublished', new Date() - 365
+        }
+    }
+}
+
 class Publication {
    Long id
    Long version
@@ -101,6 +113,38 @@ class Publication {
 }
 ''')
     }
+
+	void testInheritedNamedQueries() {
+        def publicationClass = ga.getDomainClass("PublicationSubclassWithoutNamedQueries").clazz
+
+        def now = new Date()
+        assert publicationClass.newInstance(title: "Some New Book",
+                datePublished: now - 10).save()
+        assert publicationClass.newInstance(title: "Some Old Book",
+                datePublished: now - 900).save()
+
+        session.clear()
+
+        def publications = publicationClass.recentPublications.list()
+
+        assertEquals 1, publications?.size()
+        assertEquals 'Some New Book', publications[0].title
+
+		publicationClass = ga.getDomainClass("PublicationSubclassWithNamedQueries").clazz
+
+        now = new Date()
+        assert publicationClass.newInstance(title: "Some New Book",
+                datePublished: now - 10).save()
+        assert publicationClass.newInstance(title: "Some Old Book",
+                datePublished: now - 900).save()
+
+        session.clear()
+
+        publications = publicationClass.recentPublications.list()
+
+        assertEquals 1, publications?.size()
+        assertEquals 'Some New Book', publications[0].title
+	}
 
     void testNamedQueryWithRelationshipInCriteria() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
