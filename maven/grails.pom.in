@@ -343,9 +343,10 @@
             </dependency>
 
             <dependency>
-                <groupId>aopalliance</groupId>
-                <artifactId>aopalliance</artifactId>
-                <version>1.0</version>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>1.6.6</version>
+                <scope>runtime</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
