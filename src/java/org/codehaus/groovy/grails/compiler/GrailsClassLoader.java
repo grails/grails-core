@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.compiler;
 
 import groovy.lang.GroovyClassLoader;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -72,10 +73,19 @@ public class GrailsClassLoader extends GroovyClassLoader {
             InputStream inputStream = null;
             clearCache();
 
+            String path;
+            try {
+                path = new File(resourceURL.getURI()).getPath();
+            }
+            catch (IOException e) {
+                // not a file-based source, so punt and use the name
+                path = name;
+            }
+
             try {
                 inputStream = resourceURL.getInputStream();
                 Class<?> reloadedClass = innerLoader.parseClass(
-                        DefaultGroovyMethods.getText(inputStream), name);
+                        DefaultGroovyMethods.getText(inputStream), path);
                 compilationErrors.remove(name);
                 innerClassLoaderMap.put(name, innerLoader);
                 return reloadedClass;
