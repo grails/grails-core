@@ -361,7 +361,7 @@ public final class GrailsDomainBinder {
             if (!isCompositeIdProperty(m,property.getOtherSide())) {
                 Backref prop = new Backref();
                 prop.setEntityName(property.getDomainClass().getFullName());
-                prop.setName(UNDERSCORE + property.getDomainClass().getShortName() + UNDERSCORE + property.getName() + "Backref");
+                prop.setName(UNDERSCORE + addUnderscore(property.getDomainClass().getShortName(), property.getName()) + "Backref");
                 prop.setSelectable(false);
                 prop.setUpdateable(false);
                 if (isManyToMany) {
@@ -594,8 +594,8 @@ public final class GrailsDomainBinder {
             }
             else {
                 columnName = isEnum ? namingStrategy.propertyToColumnName(className) :
-                    namingStrategy.propertyToColumnName(property.getName()) + UNDERSCORE +
-                    namingStrategy.propertyToColumnName(className);
+                    addUnderscore(namingStrategy.propertyToColumnName(property.getName()),
+                                  namingStrategy.propertyToColumnName(className));
             }
 
             if (isEnum) {
@@ -642,7 +642,15 @@ public final class GrailsDomainBinder {
         bindCollectionForPropertyConfig(collection, config);
     }
 
-    private static Column getColumnForSimpleValue(SimpleValue element) {
+    private static String addUnderscore(String s1, String s2) {
+        return removeBackticks(s1) + UNDERSCORE + removeBackticks(s2);
+    }
+
+    private static String removeBackticks(String s) {
+        return s.startsWith("`") && s.endsWith("`") ? s.substring(1, s.length() - 1) : s;
+    }
+
+	private static Column getColumnForSimpleValue(SimpleValue element) {
         return (Column)element.getColumnIterator().next();
     }
 
@@ -803,7 +811,7 @@ public final class GrailsDomainBinder {
         PersistentClass referenced = mappings.getClass(entityName);
         Backref prop = new Backref();
         prop.setEntityName(property.getDomainClass().getFullName());
-        prop.setName(UNDERSCORE + property.getDomainClass().getShortName() + UNDERSCORE + property.getName() + "Backref");
+        prop.setName(UNDERSCORE + addUnderscore(property.getDomainClass().getShortName(), property.getName()) + "Backref");
         prop.setUpdateable(false);
         prop.setInsertable(true);
         prop.setCollectionRole(collection.getRole());
@@ -990,14 +998,14 @@ public final class GrailsDomainBinder {
             if (hasJoinTableMapping) {
                 return jt.getName();
             }
-            return left + UNDERSCORE + propertyColumnName;
+            return addUnderscore(left, propertyColumnName);
         }
 
         if (property.isBasicCollectionType()) {
             if (hasJoinTableMapping) {
                 return jt.getName();
             }
-            return left + UNDERSCORE + propertyColumnName;
+            return addUnderscore(left, propertyColumnName);
         }
 
         String right = getTableName(property.getReferencedDomainClass());
@@ -1007,9 +1015,9 @@ public final class GrailsDomainBinder {
                 return jt.getName();
             }
             if (property.isOwningSide()) {
-                return left + UNDERSCORE + propertyColumnName;
+                return addUnderscore(left, propertyColumnName);
             }
-            return right + UNDERSCORE + namingStrategy.propertyToColumnName(property.getOtherSide().getName());
+            return addUnderscore(right, namingStrategy.propertyToColumnName(property.getOtherSide().getName()));
         }
 
         if (shouldCollectionBindWithJoinColumn(property)) {
@@ -1018,13 +1026,13 @@ public final class GrailsDomainBinder {
             }
             left = trimBackTigs(left);
             right = trimBackTigs(right);
-            return left + UNDERSCORE + right;
+            return addUnderscore(left, right);
         }
 
         if (property.isOwningSide()) {
-            return left + UNDERSCORE + right;
+            return addUnderscore(left, right);
         }
-        return right + UNDERSCORE + left;
+        return addUnderscore(right, left);
     }
 
     private static String trimBackTigs(String tableName) {
@@ -1961,8 +1969,8 @@ public final class GrailsDomainBinder {
 
         for (String propertyName : propertyNames) {
             final ColumnConfig cc = new ColumnConfig();
-            cc.setName(namingStrategy.classToTableName(refDomainClass.getShortName()) + UNDERSCORE +
-                       getDefaultColumnName(refDomainClass.getPropertyByName(propertyName)));
+            cc.setName(addUnderscore(namingStrategy.classToTableName(refDomainClass.getShortName()),
+                       getDefaultColumnName(refDomainClass.getPropertyByName(propertyName))));
             config.getColumns().add(cc);
         }
         bindSimpleValue(property, value, path, config);
@@ -2515,9 +2523,8 @@ public final class GrailsDomainBinder {
 
         if (columnName == null) {
             if (StringHelper.isNotEmpty(path)) {
-                columnName = namingStrategy.propertyToColumnName(path) +
-                        UNDERSCORE +
-                        getDefaultColumnName(grailsProp);
+                columnName = addUnderscore(namingStrategy.propertyToColumnName(path),
+                        getDefaultColumnName(grailsProp));
             } else {
                 columnName = getDefaultColumnName(grailsProp);
             }
@@ -2544,7 +2551,7 @@ public final class GrailsDomainBinder {
 
             if (!property.isBidirectional() && property.isOneToMany()) {
                 String prefix = namingStrategy.classToTableName(property.getDomainClass().getName());
-                return prefix + UNDERSCORE + columnName + FOREIGN_KEY_SUFFIX;
+                return addUnderscore(prefix, columnName) + FOREIGN_KEY_SUFFIX;
             }
 
             if (property.isInherited() && isBidirectionalManyToOne(property)) {
