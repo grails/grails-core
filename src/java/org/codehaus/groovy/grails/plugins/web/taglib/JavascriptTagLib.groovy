@@ -202,7 +202,7 @@ class JavascriptTagLib  {
         // handle elementId like link
         def elementId = attrs.remove('elementId')
         if (elementId) {
-            writer << " id=\"${elementId}\""
+            out << " id=\"${elementId}\""
         }
         
         // process remaining attributes
