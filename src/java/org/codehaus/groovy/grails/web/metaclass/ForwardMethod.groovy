@@ -52,6 +52,8 @@ class ForwardMethod {
         def urlInfo = new ForwardUrlMappingInfo()
 
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
+		webRequest.parameterMap?.clear()
+
         if (params.controller) {
             webRequest?.controllerName = params.controller
         }
