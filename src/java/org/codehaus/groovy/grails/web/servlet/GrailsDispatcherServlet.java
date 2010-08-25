@@ -338,7 +338,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         
                         mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
                         handlerException = e;
-                        if (mv != null) render(mv, processedRequest, response);
+                        render(mv, processedRequest, response);
                     }
                     else {
                         request.removeAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE);
