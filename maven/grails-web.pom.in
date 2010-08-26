@@ -108,6 +108,12 @@
 
 <!-- Runtime Dependencies -->
 
+        <!-- ConcurrentLinkedHashmap used by DefaultUrlMappingsHolder -->
+        <dependency>
+            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+            <artifactId>concurrentlinkedhashmap-lru</artifactId>
+            <version>1.0</version>
+        </dependency>
 
         
 <!-- Test Dependencies -->

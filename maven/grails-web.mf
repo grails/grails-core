@@ -38,6 +38,8 @@ Import-Template:
   org.w3c.dom.*;version="0",
   org.xml.sax.*;version="0",
   org.xmlpull.v1.*;version="${xpp.version:[=.=.=, +1.0.0)}",
-  org.springframework.*;version="${spring.version:[=.=.=, +1.0.0)}"
+  org.springframework.*;version="${spring.version:[=.=.=, +1.0.0)}",
+  com.googlecode.concurrentlinkedhashmap.*;version="${concurrentlinkedhashmap.version:[=.=.=, +1.0)}"
+
 
 
