@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,9 +33,11 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.style.ToStringCreator;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 /**
  * Default implementation of the UrlMappingsHolder interface that takes a list of mappings and
- * then sorts them according to their precdence rules as defined in the implementation of Comparable.
+ * then sorts them according to their precedence rules as defined in the implementation of Comparable.
  *
  * @see org.codehaus.groovy.grails.web.mapping.UrlMapping
  * @see Comparable
@@ -48,9 +49,11 @@ import org.springframework.core.style.ToStringCreator;
 public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
+    private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
 
-    private Map<String, UrlMappingInfo> cachedMatches = new ConcurrentHashMap<String, UrlMappingInfo>();
-    private Map<String, List<UrlMappingInfo>> cachedListMatches = new ConcurrentHashMap<String, List<UrlMappingInfo>>();
+    private int maxWeightedCacheCapacity;
+    private Map<String, UrlMappingInfo> cachedMatches;
+    private Map<String, List<UrlMappingInfo>> cachedListMatches;
 
     private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
     private UrlMapping[] mappings;
@@ -68,18 +71,34 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings) {
         urlMappings = mappings;
+        this.maxWeightedCacheCapacity = DEFAULT_MAX_WEIGHTED_CAPACITY;
         initialize();
     }
 
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns) {
         urlMappings = mappings;
         this.excludePatterns = excludePatterns;
+        this.maxWeightedCacheCapacity = DEFAULT_MAX_WEIGHTED_CAPACITY;
         initialize();
     }
-
+    
+    public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns, int maxWeightedUrlCacheSize){
+        urlMappings = mappings;
+        this.excludePatterns = excludePatterns;
+        this.maxWeightedCacheCapacity = maxWeightedUrlCacheSize;
+        initialize();
+    }
+    
     private void initialize() {
         sortMappings();
 
+        cachedMatches = new ConcurrentLinkedHashMap.Builder<String, UrlMappingInfo>()
+            .maximumWeightedCapacity(maxWeightedCacheCapacity)
+            .build();
+        cachedListMatches = new ConcurrentLinkedHashMap.Builder<String, List<UrlMappingInfo>>()
+            .maximumWeightedCapacity(maxWeightedCacheCapacity)
+            .build();
+        
         mappings = urlMappings.toArray(new UrlMapping[urlMappings.size()]);
 
         for (UrlMapping mapping : mappings) {
@@ -346,12 +365,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     /**
      * A class used as a key to lookup a UrlMapping based on controller, action and parameter names
      */
+    @SuppressWarnings("unchecked")
     class UrlMappingKey implements Comparable {
         String controller;
         String action;
-        Set paramNames = Collections.EMPTY_SET;
+        Set<String> paramNames = Collections.EMPTY_SET;
 
-        public UrlMappingKey(String controller, String action, Set paramNames) {
+        public UrlMappingKey(String controller, String action, Set<String> paramNames) {
             this.controller = controller;
             this.action = action;
             this.paramNames = paramNames;

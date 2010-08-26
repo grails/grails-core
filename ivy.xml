@@ -34,6 +34,7 @@
 		<dependency org="antlr" name="antlr" rev="2.7.6"/>
 		<dependency org="jaxen" name="jaxen" rev="1.1-beta-11"/>				 							
 		<dependency org="bsf" name="bsf" rev="2.3.0"/>				 									
-		<dependency org="hibernate" name="hibernate" rev="3.2"/>	   
+		<dependency org="hibernate" name="hibernate" rev="3.2"/>	
+		<dependency org="com.googlecode.concurrentlinkedhashmap" name="concurrentlinkedhashmap-lru" rev="1.0"/>   
     </dependencies>
 </ivy-module>

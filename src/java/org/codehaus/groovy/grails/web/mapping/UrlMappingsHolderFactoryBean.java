@@ -18,6 +18,7 @@ import groovy.lang.Script;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
@@ -39,7 +40,7 @@ import org.springframework.web.context.ServletContextAware;
  * @since 0.5
  */
 public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware {
-
+    private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
     private UrlMappingEvaluator mappingEvaluator;
@@ -83,8 +84,16 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
                 excludePatterns.addAll(mappingClass.getExcludePatterns());
             }
         }
-
-        urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns);
+        
+        Properties props = grailsApplication.getConfig().toProperties();
+        String maxUrlCacheSize = props.getProperty(URL_MAPPING_CACHE_MAX_SIZE);
+        if(maxUrlCacheSize == null){
+            urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns);
+        
+        } else {
+            int cacheSize = Integer.valueOf(maxUrlCacheSize);
+            urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns, cacheSize);
+        }
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
