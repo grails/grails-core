@@ -65,31 +65,35 @@ public class GrailsClassLoader extends GroovyClassLoader {
         return null;
     }
 
-    public Class<?> reloadClass(String name) {
+    public Class<?> reloadClass(String name)  {
         try {
             Resource resourceURL = loadGroovySource(name);
-            GroovyClassLoader innerLoader = new GrailsAwareClassLoader(this);
-            InputStream inputStream = null;
-            clearCache();
+            if(resourceURL != null) {
 
-            try {
-                inputStream = resourceURL.getInputStream();
-                Class<?> reloadedClass = innerLoader.parseClass(
-                        DefaultGroovyMethods.getText(inputStream), name);
-                compilationErrors.remove(name);
-                innerClassLoaderMap.put(name, innerLoader);
-                return reloadedClass;
+                GroovyClassLoader innerLoader = new GrailsAwareClassLoader(this);
+                InputStream inputStream = null;
+                clearCache();
+
+                try {
+                    inputStream = resourceURL.getInputStream();
+                    Class<?> reloadedClass = innerLoader.parseClass(
+                            DefaultGroovyMethods.getText(inputStream), name);
+                    compilationErrors.remove(name);
+                    innerClassLoaderMap.put(name, innerLoader);
+                    return reloadedClass;
+                }
+                catch (MultipleCompilationErrorsException e) {
+                    compilationErrors.put(name, e);
+                    throw e;
+                }
+                catch (IOException e) {
+                    throw new CompilationFailedException("Error opening stream to class " + name + " with URL " + resourceURL, e);
+                }
+                finally {
+                    IOUtils.closeQuietly(inputStream);
+                }
             }
-            catch (MultipleCompilationErrorsException e) {
-                compilationErrors.put(name, e);
-                throw e;
-            }
-            catch (IOException e) {
-                throw new CompilationFailedException("Error opening stream to class " + name + " with URL " + resourceURL, e);
-            }
-            finally {
-                IOUtils.closeQuietly(inputStream);
-            }
+            return null;
         }
         catch (MalformedURLException e) {
             throw new CompilationFailedException("Error opening stream to class " + name + ":" + e.getMessage(), e);
@@ -98,7 +102,10 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
     protected Resource loadGroovySource(String name) throws MalformedURLException {
         URL resourceURL = grailsResourceLoader.loadGroovySource(name);
-        return new UrlResource(resourceURL);
+        if(resourceURL != null) {
+            return new UrlResource(resourceURL);
+        }
+        return null;
     }
 
     @SuppressWarnings("rawtypes")
