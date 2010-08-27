@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface ObjectMarshaller<T extends Converter> {
 
     /**

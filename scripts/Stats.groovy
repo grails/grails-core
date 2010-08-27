@@ -49,23 +49,25 @@ target (default: "Generates basic stats for a Grails project") {
 
     // maps file path to
     def pathToInfo = [
-        [name: "Controllers",        path: "controllers",      filetype: [".groovy"]],
-        [name: "Domain Classes",     path: "domain",           filetype: [".groovy"]],
-        [name: "Jobs",               path: "job",              filetype: [".groovy"]],
-        [name: "Services",           path: "services",         filetype: [".groovy"]],
-        [name: "Tag Libraries",      path: "taglib",           filetype: [".groovy"]],
-        [name: "Groovy Helpers",     path: "src.groovy",       filetype: [".groovy"]],
-        [name: "Java Helpers",       path: "src.java",         filetype: [".java"]],
-        [name: "Unit Tests",         path: "test.unit",        filetype: [".groovy"]],
-        [name: "Integration Tests",  path: "test.integration", filetype: [".groovy"]],
-        [name: "Scripts",            path: "scripts",          filetype: [".groovy"]],
+        [name: "Controllers",        path: "^grails-app.controllers",      filetype: ["Controller.groovy"]],
+        [name: "Domain Classes",     path: "^grails-app.domain",           filetype: [".groovy"]],
+        [name: "Jobs",               path: "^grails-app.job",              filetype: [".groovy"]],
+        [name: "Services",           path: "^grails-app.services",         filetype: ["Service.groovy"]],
+        [name: "Tag Libraries",      path: "^grails-app.taglib",           filetype: ["TagLib.groovy"]],
+        [name: "Groovy Helpers",     path: "^src.groovy",                  filetype: [".groovy"]],
+        [name: "Java Helpers",       path: "^src.java",                    filetype: [".java"]],
+        [name: "Unit Tests",         path: "^test.unit",                   filetype: [".groovy"]],
+        [name: "Integration Tests",  path: "^test.integration",            filetype: [".groovy"]],
+        [name: "Scripts",            path: "^scripts",                     filetype: [".groovy"]],
     ]
 
     event("StatsStart", [pathToInfo])
 
-    new File(basedir).eachFileRecurse { file ->
+    def baseDirFile = new File(basedir)
+    def baseDirPathLength = baseDirFile.path.size()+1
+    baseDirFile.eachFileRecurse { file ->
         def match = pathToInfo.find { info ->
-            file.path =~ info.path &&
+            file.path.substring(baseDirPathLength) =~ info.path &&
             info.filetype.any{ s -> file.path.endsWith(s) }
         }
         if (match && file.isFile()) {

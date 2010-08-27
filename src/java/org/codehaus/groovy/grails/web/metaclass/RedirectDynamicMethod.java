@@ -93,7 +93,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         this.applicationContext = applicationContext;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     @Override
     public Object invoke(Object target, String methodName, Object[] arguments) {
         if (arguments.length == 0) {
@@ -182,7 +182,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         return redirectResponse(actualUri, request,response);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private String getControllerName(Object target, Map argMap) {
         return argMap.containsKey(ARGUMENT_CONTROLLER) ?
                 argMap.get(ARGUMENT_CONTROLLER).toString() :

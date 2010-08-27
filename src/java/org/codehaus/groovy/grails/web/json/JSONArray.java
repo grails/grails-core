@@ -80,7 +80,7 @@ import java.util.*;
  * @author JSON.org
  * @version 2
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class JSONArray implements JSONElement, List {
 
 

@@ -38,7 +38,7 @@ import org.springframework.web.util.UrlPathHelper;
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.module.sitemesh.HTMLPage;
-import com.opensymphony.module.sitemesh.factory.DefaultFactory;
+//import com.opensymphony.module.sitemesh.factory.DefaultFactory;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.Decorator;
@@ -76,7 +76,8 @@ public class GrailsPageFilter extends SiteMeshFilter {
         this.filterConfig = fc;
         containerTweaks = new ContainerTweaks();
         Config config = new Config(fc);
-        DefaultFactory defaultFactory = new DefaultFactory(config);
+        //DefaultFactory defaultFactory = new DefaultFactory(config);
+        Grails5535Factory defaultFactory = new Grails5535Factory(config);//TODO revert once Sitemesh bug is fixed
         config.getServletContext().setAttribute("sitemesh.factory", defaultFactory);
         defaultFactory.refresh();
         FactoryHolder.setFactory(defaultFactory);

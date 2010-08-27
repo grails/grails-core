@@ -43,7 +43,7 @@ public class GroovyCollectTagTests extends TestCase {
     /**
      * Test method for {@link org.codehaus.groovy.grails.web.taglib.GroovyCollectTag#doStartTag()}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testDoStartTag() {
         Map attrs = new HashMap();
 

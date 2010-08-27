@@ -69,7 +69,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @param response The HttpServletResponse
      * @throws Exception When an error occurs rendering the view
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected final void renderMergedOutputModel(Map model, HttpServletRequest request, HttpServletResponse response) throws Exception {
         // templateEngine is always same instance in context, can use cached; removed static cache in GrailsViewResolver
@@ -134,7 +134,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      *
      * @throws java.io.IOException Thrown when an error occurs writing the response
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
 

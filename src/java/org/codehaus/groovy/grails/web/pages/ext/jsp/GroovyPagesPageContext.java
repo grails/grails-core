@@ -67,7 +67,7 @@ public class GroovyPagesPageContext extends PageContext {
     private GrailsWebRequest webRequest;
     private JspWriter jspOut;
     private ArrayStack outStack = new ArrayStack();
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private List tags = new ArrayList();
     private HttpSession session;
 
@@ -354,7 +354,7 @@ public class GroovyPagesPageContext extends PageContext {
         return 0;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public Enumeration getAttributeNamesInScope(int scope) {
         switch (scope) {
@@ -386,15 +386,14 @@ public class GroovyPagesPageContext extends PageContext {
         return (JspWriter)out;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public ExpressionEvaluator getExpressionEvaluator() {
         try {
-            Class<?> type = ((ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
+            Class<?> type = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
                     return Thread.currentThread().getContextClassLoader();
                 }
-            })).loadClass("org.apache.commons.el.ExpressionEvaluatorImpl");
+            }).loadClass("org.apache.commons.el.ExpressionEvaluatorImpl");
             return (ExpressionEvaluator) type.newInstance();
         }
         catch (Exception e) {

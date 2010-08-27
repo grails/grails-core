@@ -42,13 +42,13 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     protected static final String ATTRIBUTE_IN = "in";
     protected static final String ATTRIBUTE_VAR = "var";
     protected static final String ATTRIBUTES_STATUS = "status";
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Map tagContext;
     protected PrintWriter out;
     protected Map<String, String> attributes = new HashMap<String, String>();
     protected GroovyPageParser parser;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void init(Map context) {
         tagContext = context;
         parser = (GroovyPageParser) context.get(GroovyPageParser.class);
@@ -65,7 +65,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out = (PrintWriter)w;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setAttributes(Map attributes) {
         for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
             String attrName = (String) i.next();

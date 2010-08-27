@@ -52,7 +52,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
         return sharedConstraints.get(propertyName);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object createNode(Object name, Map attributes) {
         // we do this so that missing property exception is throw if it doesn't exist
@@ -109,7 +109,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object createNode(Object name, Map attributes, Object value) {
         throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes,value});

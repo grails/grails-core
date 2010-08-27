@@ -31,7 +31,7 @@ public interface JspTag {
      * @param targetWriter The writer the tag should write to
      * @param attributes The tag attributes
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void doTag(Writer targetWriter, Map attributes);
 
     /**
@@ -40,7 +40,7 @@ public interface JspTag {
      * @param attributes The tag attributes
      * @param body The body of the tag
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     void doTag(Writer targetWriter, Map attributes, Closure body);
 
     /**

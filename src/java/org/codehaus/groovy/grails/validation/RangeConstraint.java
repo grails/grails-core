@@ -24,7 +24,7 @@ import org.springframework.validation.Errors;
  *
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class RangeConstraint extends AbstractConstraint {
 
     Range range;

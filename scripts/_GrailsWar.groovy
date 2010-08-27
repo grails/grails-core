@@ -199,7 +199,9 @@ target (war: "The implementation target") {
             if(descriptor) {
                 def i = descriptor.isSupportedInConfiguration("runtime") || descriptor.isSupportedInConfiguration("compile")
                 i != null ? i : true
-            }
+            }else{
+		true
+	    }
         }
 
         if (includeJars) {

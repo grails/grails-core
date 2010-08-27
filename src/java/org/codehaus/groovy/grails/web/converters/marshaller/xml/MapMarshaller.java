@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  */
 public class MapMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller {
 
-    @SuppressWarnings("unchecked")
     public boolean supports(Object object) {
         return object instanceof Map;
     }

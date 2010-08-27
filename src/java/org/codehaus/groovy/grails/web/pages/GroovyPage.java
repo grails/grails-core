@@ -95,7 +95,7 @@ public abstract class GroovyPage extends Script {
 
     private static final String BINDING = "binding";
     private static final String BLANK_STRING = "";
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map jspTags = Collections.EMPTY_MAP;
     private TagLibraryResolver jspTagLibraryResolver;
     private TagLibraryLookup gspTagLibraryLookup;
@@ -152,7 +152,7 @@ public abstract class GroovyPage extends Script {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest) {
         outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         out = outputStack.getProxyWriter();
@@ -275,7 +275,7 @@ public abstract class GroovyPage extends Script {
      * @param attrs The tags attributes
      * @param body  The body of the tag as a closure
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void invokeTag(String tagName, Map attrs, Closure body) {
         invokeTag(tagName, GroovyPage.DEFAULT_NAMESPACE, attrs, body);
     }
@@ -288,12 +288,12 @@ public abstract class GroovyPage extends Script {
      * @param attrs The tags attributes
      * @param body  The body of the tag as a closure
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void invokeTag(String tagName, String tagNamespace, Map attrs, Closure body) {
         invokeTag(tagName, tagNamespace,-1, attrs, body);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void invokeTag(String tagName, String tagNamespace, int lineNumber, Map attrs, Closure body) {
         // TODO custom namespace stuff needs to be generalized and pluggable
         if (tagNamespace.equals(TEMPLATE_NAMESPACE)) {
@@ -450,7 +450,7 @@ public abstract class GroovyPage extends Script {
      *
      * @return The result of the invocation
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public Object invokeMethod(final String methodName, Object args) {
         if (methodName.equals("invokeTag")) return super.invokeMethod(methodName, args);
@@ -483,7 +483,7 @@ public abstract class GroovyPage extends Script {
         return super.invokeMethod(methodName, args);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace,
             String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
 
@@ -615,7 +615,7 @@ public abstract class GroovyPage extends Script {
      *
      * @param jspTags The JSP tags used
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setJspTags(Map jspTags) {
         this.jspTags = jspTags;
     }

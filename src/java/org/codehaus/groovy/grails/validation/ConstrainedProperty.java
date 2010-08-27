@@ -178,7 +178,7 @@ public class ConstrainedProperty   {
     private String format; // the format of the property (for example a date pattern)
     private String widget; // the widget to use to render the property
     private boolean password; // whether the property is a password
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map attributes = Collections.EMPTY_MAP; // a map of attributes of property
     protected MessageSource messageSource;
     private Map<String, Object> metaConstraints = new HashMap<String, Object>();
@@ -251,7 +251,7 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the max.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Comparable getMax() {
         Comparable maxValue = null;
 
@@ -279,7 +279,7 @@ public class ConstrainedProperty   {
     /**
      * @param max The max to set.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setMax(Comparable max) {
         if (max == null) {
             appliedConstraints.remove(MAX_CONSTRAINT);
@@ -312,7 +312,7 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the min.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Comparable getMin() {
         Comparable minValue = null;
 
@@ -340,7 +340,7 @@ public class ConstrainedProperty   {
     /**
      * @param min The min to set.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setMin(Comparable min) {
         if (min == null) {
             appliedConstraints.remove(MIN_CONSTRAINT);
@@ -373,7 +373,7 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the inList.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List getInList() {
         InListConstraint c = (InListConstraint)appliedConstraints.get(IN_LIST_CONSTRAINT);
         return c == null ? null : c.getList();
@@ -382,7 +382,7 @@ public class ConstrainedProperty   {
     /**
      * @param inList The inList to set.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setInList(List inList) {
         Constraint c = appliedConstraints.get(IN_LIST_CONSTRAINT);
         if (inList == null) {
@@ -405,7 +405,7 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the range.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Range getRange() {
         RangeConstraint c = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
         return c == null ? null : c.getRange();
@@ -414,7 +414,7 @@ public class ConstrainedProperty   {
     /**
      * @param range The range to set.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setRange(Range range) {
         if (appliedConstraints.containsKey(MAX_CONSTRAINT)) {
             LOG.warn("Setting range constraint on property ["+propertyName+"] of class ["+owningClass+"] forced removal of max constraint");
@@ -458,7 +458,7 @@ public class ConstrainedProperty   {
     /**
      * @return Returns the size.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Range getSize() {
         SizeConstraint c = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
         return c == null ? null : c.getRange();
@@ -467,7 +467,7 @@ public class ConstrainedProperty   {
     /**
      * @param size The size to set.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setSize(Range size) {
         Constraint c = appliedConstraints.get(SIZE_CONSTRAINT);
         if (size == null) {
@@ -880,11 +880,11 @@ public class ConstrainedProperty   {
         this.password = password;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Map getAttributes() {
         return attributes;
     }
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setAttributes(Map attributes) {
         this.attributes = attributes;
     }

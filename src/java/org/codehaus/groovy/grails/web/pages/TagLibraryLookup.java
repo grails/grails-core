@@ -65,7 +65,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         }
 
         namespaceDispatchers.put(GroovyPage.TEMPLATE_NAMESPACE, new NamespacedTagDispatcher(GroovyPage.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this) {
-            @SuppressWarnings({ "serial", "unchecked" })
+            @SuppressWarnings("serial")
             @Override
             public Object invokeMethod(final String name, Object args) {
 

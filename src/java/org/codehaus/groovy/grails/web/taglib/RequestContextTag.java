@@ -38,7 +38,7 @@ import org.springframework.web.util.UrlPathHelper;
 public abstract class RequestContextTag implements GrailsTag {
 
     protected Writer out;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Map attributes = new HashMap();
     protected ServletRequest request;
     protected String contextPath;
@@ -61,7 +61,7 @@ public abstract class RequestContextTag implements GrailsTag {
         return name;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void init(Map context) {
         Assert.notNull(context, "Argument 'context' cannot be null");
         out = (Writer)context.get(GroovyPage.OUT);
@@ -98,7 +98,7 @@ public abstract class RequestContextTag implements GrailsTag {
         out = w;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setAttributes(Map attributes) {
         this.attributes = attributes;
     }

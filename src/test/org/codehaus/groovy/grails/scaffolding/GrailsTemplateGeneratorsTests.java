@@ -35,7 +35,7 @@ import org.springframework.beans.BeanWrapperImpl;
 /**
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class GrailsTemplateGeneratorsTests extends TestCase {
 
     @Override

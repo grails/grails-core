@@ -18,7 +18,7 @@ public class SizeConstraintTests extends AbstractConstraintTests{
         return SizeConstraint.class;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint("testString", new IntRange(2, 5)),

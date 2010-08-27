@@ -15,7 +15,7 @@ import org.springframework.mock.web.MockServletContext;
 
 public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testNamedMappings() throws Exception {
         GroovyShell shell = new GroovyShell();
         Binding binding = new Binding();
@@ -35,7 +35,8 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         List mappings = evaluator.evaluateMappings(closure);
         assertEquals(3, mappings.size());
     }
-    @SuppressWarnings("unchecked")
+
+    @SuppressWarnings("rawtypes")
     public void testNewMethod () throws Exception {
         GroovyShell shell = new GroovyShell ();
         Binding binding = new Binding();
@@ -84,7 +85,7 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals("234", mapping.match("/blog/test/234").getId());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testOldMethod () throws Exception {
         GroovyShell shell = new GroovyShell ();
         Script script = shell.parse (

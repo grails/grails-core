@@ -338,7 +338,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         
                         mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
                         handlerException = e;
-                        if (mv != null) render(mv, processedRequest, response);
+                        render(mv, processedRequest, response);
                     }
                     else {
                         request.removeAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE);
@@ -407,7 +407,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return response;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void copyParamsFromPreviousRequest(GrailsWebRequest previousRequestAttributes, GrailsWebRequest requestAttributes) {
         Map previousParams = previousRequestAttributes.getParams();
         Map params =  requestAttributes.getParams();

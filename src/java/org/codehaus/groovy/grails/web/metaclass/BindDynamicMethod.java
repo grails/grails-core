@@ -47,7 +47,7 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object invoke(Object target, String methodName, Object[] arguments) {
 
         if (arguments.length < 2 || arguments.length > 4) {
@@ -103,7 +103,7 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
         return targetObject;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private List convertToListIfString(Object o) {
         if (o instanceof String) {
             List list = new ArrayList();

@@ -398,7 +398,7 @@ public class GrailsScriptRunner {
     private final Map<String, CachedScript> scriptCache = new HashMap<String, CachedScript>();
     private final List<File> scriptsAllowedOutsideOfProject = new ArrayList<File>();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private int callPluginOrGrailsScript(String scriptName) {
         // The directory where scripts are cached.
         File scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");

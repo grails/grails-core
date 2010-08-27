@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.compiler;
 
 import groovy.lang.GroovyClassLoader;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -92,6 +93,7 @@ public class GrailsClassLoader extends GroovyClassLoader {
                 finally {
                     IOUtils.closeQuietly(inputStream);
                 }
+
             }
             return null;
         }

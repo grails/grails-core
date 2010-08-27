@@ -209,7 +209,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return buildDispatchUrlForMapping(info, false);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static String buildDispatchUrlForMapping(UrlMappingInfo info, boolean includeParams) {
         if (info.getURI() != null) {
             return info.getURI();
@@ -254,7 +254,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     /**
      * @see #forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.codehaus.groovy.grails.web.mapping.UrlMappingInfo, java.util.Map, boolean)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model) throws ServletException, IOException {
         return forwardRequestForUrlMappingInfo(request, response, info, model, false);
@@ -273,19 +273,13 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws ServletException Thrown when an error occurs executing the forward
      * @throws IOException Thrown when an error occurs executing the forward
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
 
         //populateParamsForMapping(info);
         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-
-        // Clear the request attributes that affect view rendering. Otherwise
-        // whatever we forward to may render the wrong thing! Note that we
-        // don't care about the return value because we're delegating
-        // responsibility for rendering the response.
-        saveAndResetWebRequest(request, info);
 
         exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
@@ -303,88 +297,48 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return The included content
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model) {
         String includeUrl = buildDispatchUrlForMapping(info, true);
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-        InternalSavedRequest savedRequest = null;
-        
+
+        String currentController = null;
+        String currentAction = null;
+        String currentId = null;
+        ModelAndView currentMv = null;
+        Map currentParams = null;
+        if (webRequest != null) {
+            currentController = webRequest.getControllerName();
+            currentAction = webRequest.getActionName();
+            currentId = webRequest.getId();
+            currentParams = new HashMap();
+            currentParams.putAll(webRequest.getParameterMap());
+            currentMv = (ModelAndView)webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        }
         try {
-            savedRequest = saveAndResetWebRequest(request, info);
+            if (webRequest!=null) {
+                webRequest.getParameterMap().clear();
+                info.configure(webRequest);
+                webRequest.getParameterMap().putAll(info.getParameters());
+                webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+            }
             return includeForUrl(includeUrl, request, response, model);
         }
         finally {
-            if (savedRequest != null) {
-            	webRequest.getParameterMap().clear();
-            	webRequest.getParameterMap().putAll(savedRequest.getParameterMap());
-                webRequest.setId(savedRequest.getId());
-                webRequest.setControllerName(savedRequest.getController());
-                webRequest.setActionName(savedRequest.getAction());
-                if (savedRequest.getModelAndView() != null) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, savedRequest.getModelAndView(), 0);
+            if (webRequest!=null) {
+                webRequest.getParameterMap().clear();
+                webRequest.getParameterMap().putAll(currentParams);
+                webRequest.setId(currentId);
+                webRequest.setControllerName(currentController);
+                webRequest.setActionName(currentAction);
+                if (currentMv != null) {
+                    webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, currentMv, 0);
                 }
             }
         }
     }
-    
-    /**
-     * Saves the details of the current web request in an {@link InternalSavedRequest}
-     * instance, clears information related to view rendering from the request
-     * attributes, and returns the saved request.
-     * @param request The underlying HTTP request to process.
-     * @param info The URL mapping that should be applied to the request after
-     * the attributes have been cleared.
-     * @return The saved web request details.
-     */
-    public static InternalSavedRequest saveAndResetWebRequest(HttpServletRequest request, UrlMappingInfo info) {
-        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-        InternalSavedRequest savedRequest = null;
-        if (webRequest != null) {
-            savedRequest = new InternalSavedRequest(
-                    webRequest.getControllerName(),
-                    webRequest.getActionName(),
-                    webRequest.getId(),
-                    webRequest.getParameterMap(),
-                    (ModelAndView) webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0));
-            webRequest.getParameterMap().clear();
-            info.configure(webRequest);
-            webRequest.getParameterMap().putAll(info.getParameters());
-            webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-        }
-        
-        return savedRequest;
-    }
-    
-    /**
-     * Simple class that stores a subset of information about a request, including
-     * the target controller and action, and the request parameters. Also stores
-     * information about any current ModelAndView that will be used to render the
-     * response.
-     */
-    private static class InternalSavedRequest {
-        private String controller;
-        private String action;
-        private String id;
-        private HashMap parameters;
-        private ModelAndView modelAndView;
-
-        public InternalSavedRequest(String controllerName, String actionName, String id, Map parameterMap, ModelAndView mv) {
-            this.controller = controllerName;
-            this.action = actionName;
-            this.id = id;
-            this.parameters = new HashMap(parameterMap);
-            this.modelAndView = mv;
-        }
-
-        public String getController() { return controller; }
-        public String getAction() { return action; }
-        public String getId() { return id; }
-        public Map getParameterMap() { return parameters; }
-        public ModelAndView getModelAndView() { return modelAndView; }
-    }
-
 
     /**
      * Includes the given URL returning the resulting content as a String
@@ -395,7 +349,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @param model The model
      * @return The content
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static IncludedContent includeForUrl(String includeUrl, HttpServletRequest request,
             HttpServletResponse response, Map model) {
         RequestDispatcher dispatcher = request.getRequestDispatcher(includeUrl);
@@ -432,7 +386,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The query string
      * @throws UnsupportedEncodingException If the given encoding is not supported
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static String toQueryString(Map params, String encoding) throws UnsupportedEncodingException {
         if (encoding == null) encoding = "UTF-8";
         StringBuilder queryString = new StringBuilder("?");
@@ -452,12 +406,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The query string
      * @throws UnsupportedEncodingException If UTF-8 encoding is not supported
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static String toQueryString(Map parameters) throws UnsupportedEncodingException {
         return toQueryString(parameters, "UTF-8");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private static boolean appendEntry(Map.Entry entry, StringBuilder queryString, String encoding, String path) throws UnsupportedEncodingException {
         String name = entry.getKey().toString();
         if (name.indexOf(".") > -1) return false; // multi-d params handled by recursion
@@ -512,7 +466,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      *
      * @return True if file extensions are enabled
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static boolean areFileExtensionsEnabled() {
         Map config = ConfigurationHolder.getFlatConfig();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);

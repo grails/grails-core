@@ -59,7 +59,7 @@ public abstract class AbstractConstraint implements Constraint {
      * {@inheritDoc}
      * @see org.codehaus.groovy.grails.validation.Constraint#setOwningClass(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setOwningClass(Class constraintOwningClass) {
         this.constraintOwningClass = constraintOwningClass;
         classShortName = GrailsNameUtils.getPropertyNameRepresentation(constraintOwningClass);

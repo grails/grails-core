@@ -51,7 +51,7 @@ public class ScaleConstraint extends AbstractConstraint {
      * {@inheritDoc}
      * @see org.codehaus.groovy.grails.validation.Constraint#supports(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class type) {
         return type != null && (
                 BigDecimal.class.isAssignableFrom(type) ||

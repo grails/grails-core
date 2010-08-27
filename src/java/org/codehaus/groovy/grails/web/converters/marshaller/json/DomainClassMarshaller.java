@@ -70,7 +70,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
         return ConverterUtil.isDomainClass(object.getClass());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void marshalObject(Object value, JSON json) throws ConverterException {
         JSONWriter writer = json.getWriter();
         value = proxyHandler.unwrapIfProxy(value);

@@ -195,12 +195,12 @@ public class GrailsBuildHelper {
         invokeMethod(settings, "setTestReportsDir", new Object[] { dir });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List getCompileDependencies() {
         return (List) invokeMethod(settings, "getCompileDependencies", new Object[0]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setCompileDependencies(List dependencies) {
         invokeMethod(settings, "setCompileDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }
@@ -209,22 +209,22 @@ public class GrailsBuildHelper {
         invokeMethod(settings, "setDependenciesExternallyConfigured", new Class[] { boolean.class }, new Object[] { b });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List getTestDependencies() {
         return (List) invokeMethod(settings, "getTestDependencies", new Object[0]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setTestDependencies(List dependencies) {
         invokeMethod(settings, "setTestDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public List getRuntimeDependencies() {
         return (List) invokeMethod(settings, "getRuntimeDependencies", new Object[0]);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void setRuntimeDependencies(List dependencies) {
         invokeMethod(settings, "setRuntimeDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }

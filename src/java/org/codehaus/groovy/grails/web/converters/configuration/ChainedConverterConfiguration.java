@@ -34,7 +34,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  *
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class ChainedConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
 
     private List<ObjectMarshaller<C>> marshallerList;

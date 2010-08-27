@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @see org.codehaus.groovy.grails.web.converters.configuration.ChainedConverterConfiguration
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class ImmutableConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
 
     protected final List<ObjectMarshaller<C>> marshallers;

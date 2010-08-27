@@ -157,7 +157,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         return parent != null ? super.getDecorator(request, page) : null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
         String defaultDecoratorName = null;
         Map conf = ConfigurationHolder.getFlatConfig();

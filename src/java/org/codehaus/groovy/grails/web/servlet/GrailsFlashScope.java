@@ -35,7 +35,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  *
  * @author Graeme Rocher
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class GrailsFlashScope implements FlashScope {
 
     private static final long serialVersionUID = 1457772347769500476L;

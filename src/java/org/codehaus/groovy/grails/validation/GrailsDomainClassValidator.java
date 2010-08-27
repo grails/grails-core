@@ -56,7 +56,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
     protected GrailsApplication grailsApplication;
     private static final String ERRORS_PROPERTY = "errors";
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz) {
         return targetClass.equals( clazz );
     }
@@ -64,7 +64,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
     /**
      * @see org.codehaus.groovy.grails.validation.CascadingValidator#validate(Object, org.springframework.validation.Errors, boolean)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void validate(Object obj, Errors errors, boolean cascade) {
         if (!domainClass.getClazz().isInstance(obj)) {
             throw new IllegalArgumentException("Argument [" + obj + "] is not an instance of [" +
@@ -155,7 +155,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      * @param persistentProperty An association whose isOneToMeny() method returns true
      * @param propertyName The name of the property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected void cascadeValidationToMany(Errors errors, BeanWrapper bean,
             GrailsDomainClassProperty persistentProperty, String propertyName) {
 
@@ -172,7 +172,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void validatePropertyWithConstraint(String propertyName, Object obj, Errors errors,
             BeanWrapper bean, Map constrainedProperties) {
 
@@ -201,7 +201,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      * @param persistentProperty The GrailsDomainClassProperty instance
      * @param propertyName The name of the property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject,
             GrailsDomainClassProperty persistentProperty, String propertyName) {
 

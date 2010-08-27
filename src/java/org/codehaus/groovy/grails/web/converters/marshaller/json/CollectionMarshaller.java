@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.web.json.JSONWriter;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class CollectionMarshaller implements ObjectMarshaller<JSON> {
 
     public boolean supports(Object object) {

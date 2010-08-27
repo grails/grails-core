@@ -23,7 +23,7 @@ import org.springframework.validation.Errors;
  * @author Graeme Rocher
  * @since 0.4
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class MinConstraint extends AbstractConstraint {
 
     private Comparable minValue;

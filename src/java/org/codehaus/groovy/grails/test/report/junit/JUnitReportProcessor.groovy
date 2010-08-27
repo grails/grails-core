@@ -30,7 +30,8 @@ class JUnitReportProcessor implements GrailsBuildListener {
                 fileset(dir: testReportsDir) {
                     include(name: "TEST-*.xml")
                 }
-                report(format: "frames", todir: "${testReportsDir}/html")
+                def junitReportStyleDir = variables.containsKey('junitReportStyleDir') ? junitReportStyleDir : null
+                report(format: "frames", todir: "${testReportsDir}/html", *:(junitReportStyleDir ? [styledir: junitReportStyleDir] : [:]))
             }
         }
     }

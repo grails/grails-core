@@ -77,7 +77,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         this.viewResolver = WebUtils.lookupViewResolver(servletContext);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         UrlMappingsHolder holder = WebUtils.lookupUrlMappings(getServletContext());

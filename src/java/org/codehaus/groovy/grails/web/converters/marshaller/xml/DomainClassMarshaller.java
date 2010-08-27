@@ -64,7 +64,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
         return ConverterUtil.isDomainClass(object.getClass());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void marshalObject(Object value, XML xml) throws ConverterException {
         Class clazz = value.getClass();
         GrailsDomainClass domainClass = ConverterUtil.getDomainClass(clazz.getName());

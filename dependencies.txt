@@ -125,8 +125,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for the command line tools (Gant)
 
-* log4j-1.2.15.jar
-- Log4J 1.2.15 (http://logging.apache.org/log4j/) Apache 2.0 License
+* log4j-1.2.16.jar
+- Log4J 1.2.16 (http://logging.apache.org/log4j/) Apache 2.0 License
 - required for running Grails applications
 
 * ognl-2.7.3.jar

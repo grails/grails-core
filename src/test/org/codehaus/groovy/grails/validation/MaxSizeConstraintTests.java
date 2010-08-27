@@ -16,7 +16,7 @@ public class MaxSizeConstraintTests extends AbstractConstraintTests {
         return MaxSizeConstraint.class;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint( "testString", new Integer( 10 )),

@@ -74,7 +74,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @return An instance of GrailsParameterMap
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map getParameterMap() {
         if (params == null) {
             params = new GrailsParameterMap(getCurrentRequest());

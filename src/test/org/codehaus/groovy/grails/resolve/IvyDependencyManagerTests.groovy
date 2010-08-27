@@ -722,7 +722,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                     "commons-io:commons-io:1.4",
                     "commons-lang:commons-lang:2.4",
                     "javax.transaction:jta:1.1",
-                    "log4j:log4j:1.2.15",
+                    "log4j:log4j:1.2.16",
                     "net.sf.ehcache:ehcache:1.6.1",
                     "opensymphony:oscache:2.4.1",
                     "opensymphony:sitemesh:2.4",

@@ -11,7 +11,7 @@ public class DynamicMethodsTests extends TestCase {
      */
     public void testIsArgumentsMatch() {
         DynamicConstructor dc = new AbstractDynamicConstructor(new Class[]{String.class, Integer.class}) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("rawtypes")
             public Object invoke(Class clazz, Object[] args) {
                 return null;
             }
@@ -26,7 +26,7 @@ public class DynamicMethodsTests extends TestCase {
     public void testInvokeConstructor() {
         DynamicMethods dm = new AbstractDynamicMethods(){/*empty*/};
         dm.addDynamicConstructor(new AbstractDynamicConstructor(new Class[]{String.class, Integer.class}) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("rawtypes")
             public Object invoke(Class clazz, Object[] args) {
                 return args[0]+""+args[1];
             }

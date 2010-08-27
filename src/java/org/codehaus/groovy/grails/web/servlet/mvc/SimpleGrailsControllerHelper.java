@@ -65,7 +65,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     private GrailsApplication application;
     private ApplicationContext applicationContext;
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map chainModel = Collections.EMPTY_MAP;
     private ServletContext servletContext;
     private GrailsApplicationAttributes grailsAttributes;
@@ -132,7 +132,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public ModelAndView handleURI(String uri, GrailsWebRequest grailsWebRequest, Map params) {
         Assert.notNull(uri, "Controller URI [" + uri + "] cannot be null!");
 
@@ -204,7 +204,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
      * @param params A map of parameters
      * @return A Spring ModelAndView instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected ModelAndView executeAction(GroovyObject controller,
             @SuppressWarnings("unused") GrailsControllerClass controllerClass,
             String viewName, HttpServletRequest request, HttpServletResponse response, Map params) {
@@ -322,7 +322,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private boolean invokeAfterInterceptor(GrailsControllerClass controllerClass,
             GroovyObject controller, ModelAndView mv) {
         // Step 9: Check if there is after interceptor
@@ -361,7 +361,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return handleAction(controller,action,request,response,Collections.EMPTY_MAP);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request,
             HttpServletResponse response, Map params) {
         GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
@@ -380,18 +380,18 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleActionResponse(org.codehaus.groovy.grails.commons.GrailsControllerClass, java.lang.Object, java.lang.String, java.lang.String)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public ModelAndView handleActionResponse( GroovyObject controller,Object returnValue,String closurePropertyName, String viewName) {
         boolean viewNameBlank = (viewName == null || viewName.length() == 0);
         // reset the metaclass
-        ModelAndView explicitModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
+        ModelAndView explicityModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
 
         if (!webRequest.isRenderView()) {
             return null;
         }
 
-        if (explicitModelAndView != null) {
-            return explicitModelAndView;
+        if (explicityModelAndView != null) {
+            return explicityModelAndView;
         }
 
         if (returnValue == null) {
@@ -453,7 +453,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return new ModelAndView(viewName, model);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void initChainModel(GroovyObject controller) {
         FlashScope fs = grailsAttributes.getFlashScope((HttpServletRequest)controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY));
         if (fs.containsKey(PROPERTY_CHAIN_MODEL)) {

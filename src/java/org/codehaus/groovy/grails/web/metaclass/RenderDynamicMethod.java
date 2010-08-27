@@ -58,7 +58,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @author Graeme Rocher
  * @since 0.2
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked","rawtypes"})
 public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "render";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^' + METHOD_SIGNATURE + '$');

@@ -166,7 +166,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         return execute(uri,controllerName, actionName, parameters, "GET");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private ModelAndView execute(String uri,String controllerName, String actionName, Properties parameters, String requestMethod) throws Exception {
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest((GrailsWebApplicationContext)this.appCtx);
         webRequest.setControllerName(controllerName);
@@ -197,7 +197,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertNotNull(modelAndView);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testCommandObjectDateStruct() throws Exception {
         Properties props = new Properties();
         props.put("birthday", "struct");
@@ -221,7 +221,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong date", expectedDate, birthDate);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testUnconstrainedCommandObject() throws Exception {
         Properties props = new Properties();
         props.put("firstName", "James");
@@ -233,7 +233,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testSingleCommandObjectValidationSuccess() throws Exception {
         Properties props = new Properties();
         props.put("firstName", "James");
@@ -248,7 +248,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testMultipleCommandObjectValidationSuccess() throws Exception {
 
         Properties props = new Properties();
@@ -268,7 +268,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of aco errors", 0, acoErrors.getErrorCount());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testSingleCommandObjectValidationFailure() throws Exception {
         Properties props = new Properties();
         props.put("firstName", "ThisFirstNameIsTooLong");
@@ -283,7 +283,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertEquals("wrong number of mcoErrors", 2, validationErrors.getErrorCount());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void testMultipleCommandObjectValidationFailure() throws Exception {
         Properties props = new Properties();
         props.put("firstName", "ThisFirstNameIsTooLong");

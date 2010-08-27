@@ -69,7 +69,7 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
      *
      * @throws IOException Thrown if there was an IO error rendering the view
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {

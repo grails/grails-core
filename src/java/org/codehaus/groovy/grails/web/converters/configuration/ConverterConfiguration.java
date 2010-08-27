@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  *
  * @since 1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public interface ConverterConfiguration<C extends Converter> {
 
     /**

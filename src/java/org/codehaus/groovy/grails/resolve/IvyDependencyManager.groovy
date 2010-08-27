@@ -315,7 +315,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                     }
 
                     // logging
-                    "${runtimeDependenciesMethod}"("log4j:log4j:1.2.15",
+                    "${runtimeDependenciesMethod}"("log4j:log4j:1.2.16",
                             "org.slf4j:jcl-over-slf4j:1.5.8",
                             "org.slf4j:jul-to-slf4j:1.5.8",
                             "org.slf4j:slf4j-log4j12:1.5.8" ) {

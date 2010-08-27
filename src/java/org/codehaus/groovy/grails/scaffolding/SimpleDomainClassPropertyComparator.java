@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
  *
  * @author Burt Beckwith
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class SimpleDomainClassPropertyComparator implements Comparator {
 
     private GrailsDomainClass domainClass;

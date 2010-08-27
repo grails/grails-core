@@ -35,7 +35,7 @@ import org.xml.sax.SAXException;
 public class GrailsUtilTests extends TestCase {
 
     public void testGrailsVersion() {
-        assertEquals("1.3.4", GrailsUtil.getGrailsVersion());
+        assertEquals("1.3.5.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
     }
 
     @Override

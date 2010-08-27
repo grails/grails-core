@@ -62,11 +62,20 @@ class HibernateNamedQueriesBuilder {
 
     private handleMethodMissing = {String name, args ->
         def propertyName = name[0].toUpperCase() + name[1..-1]
-        domainClass.metaClass.static."get${propertyName}" = {->
-            // creating a new proxy each time because the proxy class has
-            // some state that cannot be shared across requests (namedCriteriaParams)
-            new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: domainClass, dynamicMethods: dynamicMethods)
-        }
+
+		def classesToAugment = [domainClass]
+
+		def subClasses = domainClass.subClasses
+		if(subClasses) {
+			classesToAugment += subClasses
+		}
+		classesToAugment.each { clz ->
+		    clz.metaClass.static."get${propertyName}" = {->
+				// creating a new proxy each time because the proxy class has
+				// some state that cannot be shared across requests (namedCriteriaParams)
+				new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: clz, dynamicMethods: dynamicMethods)
+			}
+		}
     }
 
     def methodMissing(String name, args) {

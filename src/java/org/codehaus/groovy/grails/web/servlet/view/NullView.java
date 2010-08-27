@@ -39,7 +39,7 @@ public class NullView implements View {
         return contentType;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void render(Map model, HttpServletRequest request, HttpServletResponse response) {
         // do nothing
     }

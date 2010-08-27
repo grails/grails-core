@@ -8,13 +8,13 @@ import java.util.List;
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */
+@SuppressWarnings({"unchecked","rawtypes"})
 public class UrlConstraintTests extends AbstractConstraintTests {
     @Override
     protected Class<?> getConstraintClass() {
         return UrlConstraint.class;
     }
 
-    @SuppressWarnings("unchecked")
     public void testValidation() {
         testConstraintMessageCodes(
                 getConstraint("testURL", Boolean.TRUE),
@@ -109,7 +109,6 @@ public class UrlConstraintTests extends AbstractConstraintTests {
         );
     }
 
-    @SuppressWarnings("unchecked")
     public void testCreation() {
         UrlConstraint constraint = (UrlConstraint) getConstraint("testString", Boolean.FALSE);
         assertEquals(ConstrainedProperty.URL_CONSTRAINT, constraint.getName());
