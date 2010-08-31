@@ -55,10 +55,12 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.util.ClassUtils;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration.
@@ -377,34 +379,51 @@ public class GrailsDomainConfigurationUtil {
 
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
         if (properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
-            boolean hasHibernate = PluginManagerHolder.getPluginManager().hasGrailsPlugin("hibernate");
+            boolean hasHibernate = isHibernatePresent();
+            boolean isNotInsertable = false;
             for (GrailsDomainClassProperty p : properties) {
                 // assume no formula issues if Hibernate isn't available to avoid CNFE
-                PropertyConfig propertyConfig = hasHibernate ? GrailsDomainBinder.getPropertyConfig(p) : null;
-                if (propertyConfig != null && propertyConfig.getFormula() != null) {
-                    if (constrainedProperties.remove(p.getName()) != null) {
-                        // constraint is registered but cannot be applied to a derived property
-                        LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
-                    }
+                if(hasHibernate) {
+                    isNotInsertable = HibernateHelper.checkInsertabilityAndDrivedHibernateProperties(theClass, constrainedProperties, isNotInsertable, p);
+
                 }
-                else {
-                    final String propertyName = p.getName();
-                    ConstrainedProperty cp = constrainedProperties.get(propertyName);
-                    if (cp == null) {
-                        cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
-                        cp.setOrder(constrainedProperties.size() + 1);
-                        constrainedProperties.put(propertyName, cp);
-                    }
-                    // Make sure all fields are required by default, unless
-                    // specified otherwise by the constraints
-                    // If the field is a Java entity annotated with @Entity skip this
-                    applyDefaultConstraints(propertyName, p, cp,
-                            defaultConstraints, delegate.getSharedConstraint(propertyName), propertyConfig);
+                final String propertyName = p.getName();
+                ConstrainedProperty cp = constrainedProperties.get(propertyName);
+                if (cp == null) {
+                    cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
+                    cp.setOrder(constrainedProperties.size() + 1);
+                    constrainedProperties.put(propertyName, cp);
                 }
+                // Make sure all fields are required by default, unless
+                // specified otherwise by the constraints
+                // If the field is a Java entity annotated with @Entity skip this
+                applyDefaultConstraints(propertyName, p, cp,
+                        defaultConstraints, delegate.getSharedConstraint(propertyName), isNotInsertable);
             }
         }
 
         return constrainedProperties;
+    }
+
+    private static boolean isHibernatePresent() {
+        final GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+        boolean hasHibernate = pluginManager != null && pluginManager.hasGrailsPlugin("hibernate") && ClassUtils.isPresent("org.hibernate.mapping.Value", GrailsDomainConfigurationUtil.class.getClassLoader());
+        return hasHibernate;
+    }
+
+    static class HibernateHelper {
+        static boolean checkInsertabilityAndDrivedHibernateProperties(Class<?> theClass, Map<String, ConstrainedProperty> constrainedProperties, boolean notInsertable, GrailsDomainClassProperty p) {
+            PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
+            if (propertyConfig != null && propertyConfig.getFormula() != null) {
+                if (constrainedProperties.remove(p.getName()) != null) {
+                    // constraint is registered but cannot be applied to a derived property
+                    LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
+                }
+                notInsertable = !propertyConfig.getInsertable();
+            }
+            return notInsertable;
+        }
+
     }
 
     /**
@@ -454,7 +473,7 @@ public class GrailsDomainConfigurationUtil {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
-            ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference, PropertyConfig propertyConfig) {
+            ConstrainedProperty cp, Map<String, Object> defaultConstraints, String sharedConstraintReference, boolean isNotInsertable) {
 
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
             if (defaultConstraints.containsKey("*")) {
@@ -476,7 +495,8 @@ public class GrailsDomainConfigurationUtil {
         }
 
         if (canApplyNullableConstraint(propertyName, p, cp)) {
-            if (propertyConfig!=null && !propertyConfig.getInsertable()) {
+
+            if (isNotInsertable) {
                 cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,true);
             } else {
                 cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
