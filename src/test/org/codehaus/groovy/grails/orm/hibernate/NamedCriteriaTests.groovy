@@ -109,6 +109,11 @@ class Publication {
            def today = new Date()
            publishedBetween(today - 7, today)
        }
+
+       queryThatNestsMultipleLevels {
+           // this nested query will call other nested queries
+           thisWeeksPaperbacks()
+       }
    }
 }
 ''')
@@ -285,6 +290,10 @@ class Publication {
         session.clear()
 
         def results = publicationClass.thisWeeksPaperbacks().list()
+
+        assertEquals 2, results?.size()
+
+		results = publicationClass.queryThatNestsMultipleLevels().list()
 
         assertEquals 2, results?.size()
     }

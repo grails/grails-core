@@ -221,7 +221,7 @@ class NamedCriteriaProxy {
             def staticProperty = metaProperty.getProperty(domainClass)
             if (staticProperty instanceof NamedCriteriaProxy) {
                 def nestedCriteria = staticProperty.criteriaClosure.clone()
-                nestedCriteria.delegate = queryBuilder
+                nestedCriteria.delegate = this
                 return nestedCriteria(*args)
             }
         }
