@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.style.ToStringCreator;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weigher;
 
 /**
  * Default implementation of the UrlMappingsHolder interface that takes a list of mappings and
@@ -54,6 +55,12 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private int maxWeightedCacheCapacity;
     private Map<String, UrlMappingInfo> cachedMatches;
     private Map<String, List<UrlMappingInfo>> cachedListMatches;
+    private enum CustomListWeigher implements Weigher<List<UrlMappingInfo>> {
+    	INSTANCE;
+    	public int weightOf(List<UrlMappingInfo> values) {
+    		return values.size() + 1;
+    	}
+    }
 
     private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
     private UrlMapping[] mappings;
@@ -97,6 +104,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             .build();
         cachedListMatches = new ConcurrentLinkedHashMap.Builder<String, List<UrlMappingInfo>>()
             .maximumWeightedCapacity(maxWeightedCacheCapacity)
+            .weigher(CustomListWeigher.INSTANCE)
             .build();
         
         mappings = urlMappings.toArray(new UrlMapping[urlMappings.size()]);
