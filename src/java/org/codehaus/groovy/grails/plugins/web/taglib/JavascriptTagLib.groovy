@@ -198,6 +198,13 @@ class JavascriptTagLib  {
         out << remoteFunction(attrs)
         attrs.remove('url')
         out << "return false;\""
+
+        // handle elementId like link
+        def elementId = attrs.remove('elementId')
+        if (elementId) {
+            writer << " id=\"${elementId}\""
+        }
+        
         // process remaining attributes
         attrs.each { k,v ->
             out << ' ' << k << "=\"" << v << "\""
