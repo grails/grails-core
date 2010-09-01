@@ -103,7 +103,7 @@ target (war: "The implementation target") {
 
         event("StatusUpdate", ["Building WAR file"])
 
-        ant.copy(todir:stagingDir, overwrite:true) {
+        ant.copy(todir:stagingDir, overwrite:true, preservelastmodified:true) {
             // Allow the application to override the step that copies
             // 'web-app' to the staging directory.
             if (buildConfig.grails.war.copyToWebApp instanceof Closure) {
@@ -119,7 +119,7 @@ target (war: "The implementation target") {
         // package plugin js/etc.
         packagePluginsForWar(stagingDir)
 
-        ant.copy(todir: "${stagingDir}/WEB-INF/grails-app", overwrite: true) {
+        ant.copy(todir: "${stagingDir}/WEB-INF/grails-app", overwrite: true, preservelastmodified:true) {
             fileset(dir: "${basedir}/grails-app", includes: "views/**")
             fileset(dir: "${resourcesDirPath}/grails-app", includes: "i18n/**")
         }
@@ -131,21 +131,21 @@ target (war: "The implementation target") {
             exclude(name:"spring/*")
         }
 
-        ant.copy(todir:"${stagingDir}/WEB-INF/classes") {
+        ant.copy(todir:"${stagingDir}/WEB-INF/classes", preservelastmodified:true) {
             fileset(dir:pluginClassesDirPath, classesDirExcludes)
         }
 
-        ant.copy(todir:"${stagingDir}/WEB-INF/classes", overwrite:true) {
+        ant.copy(todir:"${stagingDir}/WEB-INF/classes", overwrite:true, preservelastmodified:true) {
             fileset(dir:classesDirPath, classesDirExcludes)
         }
 
         ant.mkdir(dir:"${stagingDir}/WEB-INF/spring")
 
-        ant.copy(todir:"${stagingDir}/WEB-INF/spring") {
+        ant.copy(todir:"${stagingDir}/WEB-INF/spring", preservelastmodified:true) {
             fileset(dir:"${basedir}/grails-app/conf/spring", includes:"**/*.xml")
         }
 
-        ant.copy(todir:"${stagingDir}/WEB-INF/classes", failonerror:false) {
+        ant.copy(todir:"${stagingDir}/WEB-INF/classes", failonerror:false, preservelastmodified:true) {
             fileset(dir:"${basedir}/grails-app/conf") {
                 exclude(name:"*.groovy")
                 exclude(name:"log4j.*")
@@ -165,7 +165,7 @@ target (war: "The implementation target") {
 
         // Copy the project's dependencies (JARs mainly) to the staging area.
         if (includeJars) {
-            ant.copy(todir:"${stagingDir}/WEB-INF/lib") {
+            ant.copy(todir:"${stagingDir}/WEB-INF/lib", preservelastmodified:true) {
                 if (buildConfig.grails.war.dependencies instanceof Closure) {
                     def deps = buildConfig.grails.war.dependencies
                     deps.delegate = ant
@@ -178,7 +178,7 @@ target (war: "The implementation target") {
             }
         }
 
-        ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml", overwrite:true)
+        ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml", overwrite:true, preservelastmodified:true)
 
         def webXML = new File("${stagingDir}/WEB-INF/web.xml")
         def xmlInput = new XmlParser().parse(webXML)
@@ -206,7 +206,7 @@ target (war: "The implementation target") {
 
         if (includeJars) {
             if (pluginInfos) {
-                ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false) {
+                ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false, preservelastmodified:true) {
                     for (GrailsPluginInfo info in pluginInfos) {
                         fileset(dir: info.pluginDir.file.path) {
                             include(name:"lib/*.jar")
@@ -419,7 +419,7 @@ private def warPluginForPluginInfo(GrailsPluginInfo info) {
         // copy views and i18n to /WEB-INF/plugins/...
         def targetPluginDir = "${stagingDir}/WEB-INF/plugins/${info.name}-${info.version}"
         mkdir(dir: targetPluginDir)
-        copy(todir: targetPluginDir, failonerror: true) {
+        copy(todir: targetPluginDir, failonerror: true, preservelastmodified:true) {
             fileset(dir: pluginBase.absolutePath) {
                 include(name: "plugin.xml")
                 include(name: "grails-app/views/**")
@@ -438,7 +438,7 @@ private def warPluginForPluginInfo(GrailsPluginInfo info) {
     // copy spring configs to /WEB-INF/spring/...
     def springDir = new File("${pluginBase.absolutePath}/grails-app/conf/spring")
     if (springDir.exists()) {
-        ant.copy(todir: "${stagingDir}/WEB-INF/spring", failonerror: false) {
+        ant.copy(todir: "${stagingDir}/WEB-INF/spring", failonerror: false, preservelastmodified:true) {
             fileset(dir: springDir, includes: "**/*.xml")
         }
     }
@@ -449,7 +449,7 @@ private def warPluginForPluginInfo(GrailsPluginInfo info) {
     def hibDir = new File("${pluginBase.absolutePath}/grails-app/conf/hibernate")
     def javaDir = new File("${pluginBase.absolutePath}/src/java")
     if (confDir.exists() || hibDir.exists() || javaDir.exists()) {
-        ant.copy(todir: targetClassesDir, failonerror: false) {
+        ant.copy(todir: targetClassesDir, failonerror: false, preservelastmodified:true) {
             if (confDir.exists()) {
                 fileset(dir: confDir) {
                     exclude(name: "*.groovy")
