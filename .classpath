@@ -78,6 +78,5 @@
 	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.3.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.3.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.webflow-2.0.8.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/clhm-release-1.0-lru.jar" sourcepath="/home/marco/git/concurrentlinkedhashmap-read-only/src"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>
