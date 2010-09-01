@@ -383,5 +383,9 @@ class GroovyPageMetaInfo {
 		}
 		return false;
 	}
+
+	public boolean isPrecompiledMode() {
+		return precompiledMode;
+	}
     
 }

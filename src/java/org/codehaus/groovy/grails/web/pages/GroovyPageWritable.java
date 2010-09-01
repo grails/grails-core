@@ -25,9 +25,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -56,11 +59,13 @@ import org.springframework.web.context.request.RequestContextHolder;
 class GroovyPageWritable implements Writable {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
-
+    private static final String ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER = "org.codehaus.groovy.grails.web.pages.DEBUG_TEMPLATES_COUNTER";
     private HttpServletResponse response;
     private HttpServletRequest request;
     private GroovyPageMetaInfo metaInfo;
     private boolean showSource;
+    private boolean debugTemplates;
+    private AtomicInteger debugTemplatesIdCounter;
     private GrailsWebRequest webRequest;
 
     private ServletContext context;
@@ -81,7 +86,19 @@ class GroovyPageWritable implements Writable {
         context = webRequest.getServletContext();
         this.metaInfo = metaInfo;
         showSource = shouldShowGroovySource();
+        debugTemplates = shouldDebugTemplates();
+        if(debugTemplates) {
+        	debugTemplatesIdCounter=(AtomicInteger)request.getAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER);
+        	if(debugTemplatesIdCounter==null) {
+        		debugTemplatesIdCounter=new AtomicInteger(0);
+        		request.setAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER, debugTemplatesIdCounter);
+        	}
+        }
     }
+
+	private boolean shouldDebugTemplates() {
+		return request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
+	}
 
     private boolean shouldShowGroovySource() {
         return request.getParameter("showSource") != null &&
@@ -167,11 +184,35 @@ class GroovyPageWritable implements Writable {
             page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
             page.setHtmlParts(metaInfo.getHtmlParts());
             page.initRun(out, webRequest);
+            int debugId=0;
+            long debugStartTimeMs=0;
+            if(debugTemplates) {
+            	debugId=debugTemplatesIdCounter.incrementAndGet();
+            	out.write("<!-- GSP #");
+            	out.write(String.valueOf(debugId));
+            	out.write(" START template: ");
+            	out.write(page.getGroovyPageFileName());
+            	out.write(" precompiled: ");
+            	out.write(String.valueOf(metaInfo.isPrecompiledMode()));
+            	out.write(" lastmodified: ");
+            	out.write(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(metaInfo.getLastModified())));
+            	out.write(" -->");
+            	debugStartTimeMs=System.currentTimeMillis();
+            }
             try {
                 page.run();
             }
             finally {
                 page.cleanup();
+            }
+            if(debugTemplates) {
+            	out.write("<!-- GSP #");
+            	out.write(String.valueOf(debugId));
+            	out.write(" END template: ");
+            	out.write(page.getGroovyPageFileName());
+            	out.write(" rendering time: ");
+            	out.write(String.valueOf(System.currentTimeMillis() - debugStartTimeMs));
+            	out.write(" ms -->");
             }
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);
         }
