@@ -108,12 +108,9 @@ class NamedCriteriaProxy {
             if (params && params[-1] instanceof Map) {
                 paramsMap = params[-1]
             }
-            if (paramsMap?.max) {
-                maxResults paramsMap.max instanceof Integer ? paramsMap.max : paramsMap.max.toInteger() 
-            }
-            if (paramsMap?.offset) {
-                firstResult paramsMap.offset instanceof Integer ? paramsMap.offset : paramsMap.offset.toInteger()
-            }
+			if(paramsMap) {
+				GrailsHibernateUtil.populateArgumentsForCriteria domainClass.clazz, queryBuilder.instance, paramsMap
+			}
             if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }

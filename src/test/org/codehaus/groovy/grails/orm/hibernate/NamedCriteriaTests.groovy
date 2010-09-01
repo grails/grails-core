@@ -119,6 +119,91 @@ class Publication {
 ''')
     }
 
+	void testSorting() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        assert publicationClass.newInstance(title: "ZZZ New Paperback",
+                datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: "AAA New Paperback",
+                datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: "CCC New Paperback",
+                datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: "BBB New Paperback",
+                datePublished: now - 10, paperback: true).save()
+
+        assert publicationClass.newInstance(title: "ZZZ Old Paperback",
+                datePublished: now - 900, paperback: true).save()
+        assert publicationClass.newInstance(title: "AAA Old Paperback",
+                datePublished: now - 900, paperback: true).save()
+
+		session.clear()
+
+		// verify the sort works...
+		def results = publicationClass.paperbackAndRecent.list(sort: 'title')
+
+		assertEquals 'wrong number of results', 4, results?.size()
+		assertEquals 'wrong title', 'AAA New Paperback', results[0].title
+		assertEquals 'wrong title', 'BBB New Paperback', results[1].title
+		assertEquals 'wrong title', 'CCC New Paperback', results[2].title
+		assertEquals 'wrong title', 'ZZZ New Paperback', results[3].title
+
+		// verify the sort works along with additional criteria...
+		results = publicationClass.paperbackAndRecent(sort: 'title') {
+			ne 'title', 'CCC New Paperback'
+		}
+
+		assertEquals 'wrong number of results', 3, results?.size()
+		assertEquals 'wrong title', 'AAA New Paperback', results[0].title
+		assertEquals 'wrong title', 'BBB New Paperback', results[1].title
+		assertEquals 'wrong title', 'ZZZ New Paperback', results[2].title
+
+		// verify the order works...
+		results = publicationClass.paperbackAndRecent.list(sort: 'title', order: 'desc')
+
+		assertEquals 'wrong number of results', 4, results?.size()
+		assertEquals 'wrong title', 'ZZZ New Paperback', results[0].title
+		assertEquals 'wrong title', 'CCC New Paperback', results[1].title
+		assertEquals 'wrong title', 'BBB New Paperback', results[2].title
+		assertEquals 'wrong title', 'AAA New Paperback', results[3].title
+
+        assert publicationClass.newInstance(title: "zzz New Paperback",
+                datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: "aaa New Paperback",
+                datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: "ccc New Paperback",
+                datePublished: now - 10, paperback: true).save()
+        assert publicationClass.newInstance(title: "bbb New Paperback",
+                datePublished: now - 10, paperback: true).save()
+
+		// verify the ignoreCase works
+		results = publicationClass.paperbackAndRecent.list(sort: 'title', ignoreCase: false)
+
+        assertEquals 'wrong number of results', 8, results?.size()
+        assertEquals 'wrong title', 'AAA New Paperback', results[0].title
+        assertEquals 'wrong title', 'BBB New Paperback', results[1].title
+        assertEquals 'wrong title', 'CCC New Paperback', results[2].title
+        assertEquals 'wrong title', 'ZZZ New Paperback', results[3].title
+        assertEquals 'wrong title', 'aaa New Paperback', results[4].title
+        assertEquals 'wrong title', 'bbb New Paperback', results[5].title
+        assertEquals 'wrong title', 'ccc New Paperback', results[6].title
+        assertEquals 'wrong title', 'zzz New Paperback', results[7].title
+        results = publicationClass.paperbackAndRecent.list(sort: 'title', ignoreCase: true)
+
+        assertEquals 'wrong number of results', 8, results?.size()
+
+		// AAA and aaa should be the first 2, BBB and bbb should be the second 2 etc...
+		// but we don't know if AAA or aaa comes first
+		assertTrue 'AAA New Paperback was not where it should have been in the results', results.title[0..1].contains('AAA New Paperback')
+		assertTrue 'aaa New Paperback was not where it should have been in the results', results.title[0..1].contains('aaa New Paperback')
+		assertTrue 'BBB New Paperback was not where it should have been in the results', results.title[2..3].contains('BBB New Paperback')
+		assertTrue 'bbb New Paperback was not where it should have been in the results', results.title[2..3].contains('bbb New Paperback')
+		assertTrue 'CCC New Paperback was not where it should have been in the results', results.title[4..5].contains('CCC New Paperback')
+		assertTrue 'ccc New Paperback was not where it should have been in the results', results.title[4..5].contains('ccc New Paperback')
+		assertTrue 'ZZZ New Paperback was not where it should have been in the results', results.title[6..7].contains('ZZZ New Paperback')
+		assertTrue 'zzz New Paperback was not where it should have been in the results', results.title[6..7].contains('zzz New Paperback')
+	}
+
 	void testInheritedNamedQueries() {
         def publicationClass = ga.getDomainClass("PublicationSubclassWithoutNamedQueries").clazz
 
