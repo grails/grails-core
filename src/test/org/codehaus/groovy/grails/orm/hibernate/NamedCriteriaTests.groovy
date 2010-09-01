@@ -1,5 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import org.hibernate.FetchMode;
+import org.hibernate.Hibernate
+
 /**
  * @author Jeff Brown
  */
@@ -238,6 +241,29 @@ class Publication {
 		publications = publicationClass.oldPaperbacks.list()
 		assertEquals 1, publications?.size()
 		assertEquals 'Some Old Book', publications[0].title
+	}
+
+	void testFetch() {
+        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+
+        assert plantCategoryClass.newInstance(name:"leafy")
+                                 .addToPlants(goesInPatch:true, name:"Lettuce")
+                                 .save(flush:true)
+
+        session.clear()
+
+		// the code below relies on some implementation details which is a little brittle but should work...
+
+		def query = plantCategoryClass.withPlantsInPatch
+		query.list(fetch: [plants: 'lazy'])
+		def crit = query.queryBuilder.instance
+		def plantFetchMode = crit.getFetchMode('plants')
+		assertEquals 'wrong fetch mode for plants', FetchMode.SELECT, plantFetchMode
+
+		query.list(fetch: [plants: 'eager'])
+		crit = query.queryBuilder.instance
+		plantFetchMode = crit.getFetchMode('plants')
+		assertEquals 'wrong fetch mode fro plants', FetchMode.JOIN, plantFetchMode
 	}
 
     void testNamedQueryWithRelationshipInCriteria() {
