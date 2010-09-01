@@ -311,6 +311,9 @@ class RenderTagLib implements RequestConstants {
         if (attrs.id!=null) {
             linkTagAttrs.id = attrs.id
         }
+        if (attrs.fragment!=null) {
+            linkTagAttrs.fragment = attrs.fragment
+        }
         linkTagAttrs.params = linkParams
 
         // determine paging variables
