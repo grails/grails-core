@@ -18,6 +18,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.Factory
 import com.opensymphony.module.sitemesh.RequestConstants
+import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.text.Template
 import java.util.concurrent.ConcurrentHashMap
@@ -26,6 +27,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
@@ -489,37 +491,48 @@ class RenderTagLib implements RequestConstants {
         def engine = groovyPagesTemplateEngine
         def uri = grailsAttributes.getTemplateUri(attrs.template,request)
         def var = attrs['var']
+		
+		Template t = null
 
-        Template t = TEMPLATE_CACHE[uri]
-        if (t == null) {
-            def contextPath = attrs.contextPath ? attrs.contextPath : null
-            def pluginName = attrs.plugin
-            if (pluginName) {
-                contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
-            }
-            else if (contextPath == null) {
-                if (uri.startsWith("/plugins/")) contextPath = ""
-                else {
-                    contextPath = pageScope.pluginContextPath ?: ""
-                }
-            }
-            def templatePath = "${contextPath}${uri}"
-            def templateResolveOrder
-            if (pluginName) {
-                templateResolveOrder = [templatePath, "${contextPath}/grails-app/views/${uri}"]
-            }
-            else {
-                templateResolveOrder = [uri, templatePath, "${contextPath}/grails-app/views/${uri}"]
-            }
+		def contextPath = attrs.contextPath ? attrs.contextPath : null
+		def pluginName = attrs.plugin
+		if (pluginName) {
+			contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
+		} else if (contextPath == null) {
+			if (uri.startsWith('/plugins/')) contextPath = ''
+			else {
+				contextPath = pageScope.pluginContextPath ?: ''
+			}
+		}
 
-            t = engine.createTemplateForUri(templateResolveOrder as String[])
-            if (!engine.isReloadEnabled() && t != null) {
-                def prevt = TEMPLATE_CACHE.putIfAbsent(uri, t)
-                if (prevt != null) {
-                    t = prevt
-                }
-            }
-        }
+		def templatePath = "${contextPath}${uri}".toString()
+		
+        def cached = TEMPLATE_CACHE[templatePath]
+		if (cached instanceof Template) {
+			t = cached
+		} else {
+			if(cached != null && System.currentTimeMillis() - cached.timestamp < GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL) {
+				t = cached.template
+			} else {
+	            def templateResolveOrder
+	            if (pluginName) {
+	                templateResolveOrder = [templatePath, "${contextPath}/grails-app/views/${uri}"]
+	            } else {
+	                templateResolveOrder = [uri, templatePath, "${contextPath}/grails-app/views/${uri}"]
+	            }
+	            t = engine.createTemplateForUri(templateResolveOrder as String[])
+				if(t != null) {
+		            if (!engine.isReloadEnabled()) {
+		                def prevt = TEMPLATE_CACHE.putIfAbsent(templatePath, t)
+		                if (prevt != null) {
+		                    t = prevt
+		                }
+		            } else if (!Environment.isDevelopmentMode()) {
+						TEMPLATE_CACHE.put(templatePath, [timestamp: System.currentTimeMillis(), template: t])
+					}
+				}
+			}
+		}
 
         if (!t) {
             throwTagError("Template not found for name [$attrs.template] and path [$uri]")

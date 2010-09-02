@@ -72,7 +72,7 @@ class GroovyPageMetaInfo {
     public static final String LINENUMBERS_DATA_POSTFIX = "_linenumbers.data";
     
     private long latestLastModifiedCheck=0L;
-    private static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
+    public static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
     private static final long LASTMODIFIED_CHECK_GRANULARITY =  Long.getLong("grails.gsp.reload.granularity", 1000).longValue();
 
     public GroovyPageMetaInfo() {
