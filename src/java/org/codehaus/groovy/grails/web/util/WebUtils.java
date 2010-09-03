@@ -281,6 +281,13 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         //populateParamsForMapping(info);
         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
 
+        // Clear the request attributes that affect view rendering. Otherwise
+        // whatever we forward to may render the wrong thing! Note that we
+        // don't care about the return value because we're delegating
+        // responsibility for rendering the response.
+        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+        webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+
         exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
         dispatcher.forward(request, response);
