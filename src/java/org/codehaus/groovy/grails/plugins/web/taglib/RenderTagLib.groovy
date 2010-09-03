@@ -496,18 +496,21 @@ class RenderTagLib implements RequestConstants {
 
 		def contextPath = attrs.contextPath ? attrs.contextPath : null
 		def pluginName = attrs.plugin
+		def pluginContextFromPagescope = false
 		if (pluginName) {
 			contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
 		} else if (contextPath == null) {
 			if (uri.startsWith('/plugins/')) contextPath = ''
 			else {
 				contextPath = pageScope.pluginContextPath ?: ''
+				pluginContextFromPagescope = true
 			}
 		}
 
 		def templatePath = "${contextPath}${uri}".toString()
+		def cacheKey = "${templatePath}:${pluginContextFromPagescope}".toString()
 		
-        def cached = TEMPLATE_CACHE[templatePath]
+        def cached = TEMPLATE_CACHE[cacheKey]
 		if (cached instanceof Template) {
 			t = cached
 		} else {
@@ -528,7 +531,7 @@ class RenderTagLib implements RequestConstants {
 		                    t = prevt
 		                }
 		            } else if (!Environment.isDevelopmentMode()) {
-						TEMPLATE_CACHE.put(templatePath, [timestamp: System.currentTimeMillis(), template: t])
+						TEMPLATE_CACHE.put(cacheKey, [timestamp: System.currentTimeMillis(), template: t])
 					}
 				}
 			}
