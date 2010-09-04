@@ -954,7 +954,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     public Object sizeGt(String propertyName, int size) {
         if (!validateSimpleExpression()) {
-            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeGt] with propertyName [" +
                     propertyName + "] and size [" + size + "] not allowed here."));
         }
 
@@ -972,7 +972,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     public Object sizeGe(String propertyName, int size) {
         if (!validateSimpleExpression()) {
-            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeGe] with propertyName [" +
                     propertyName + "] and size [" + size + "] not allowed here."));
         }
 
@@ -990,7 +990,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     public Object sizeLe(String propertyName, int size) {
         if (!validateSimpleExpression()) {
-            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeLe] with propertyName [" +
                     propertyName + "] and size [" + size + "] not allowed here."));
         }
 
@@ -1008,7 +1008,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     public Object sizeLt(String propertyName, int size) {
         if (!validateSimpleExpression()) {
-            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeLt] with propertyName [" +
                     propertyName + "] and size [" + size + "] not allowed here."));
         }
 
@@ -1026,7 +1026,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
      */
     public Object sizeNe(String propertyName, int size) {
         if (!validateSimpleExpression()) {
-            throwRuntimeException(new IllegalArgumentException("Call to [sizeEq] with propertyName [" +
+            throwRuntimeException(new IllegalArgumentException("Call to [sizeNe] with propertyName [" +
                     propertyName + "] and size [" + size + "] not allowed here."));
         }
 
