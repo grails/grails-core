@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventConsoleReporter
 
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
+includeTargets << grailsScript("_GrailsWar")
 includeTargets << grailsScript("_GrailsSettings")
 includeTargets << grailsScript("_GrailsClean")
 
@@ -130,11 +131,11 @@ target(allTests: "Runs the project's tests.") {
             convertedPhases[phaseName] = types.collect { rawType ->
                 if (rawType instanceof CharSequence) {
                     def rawTypeString = rawType.toString()
-                    if (phaseName in ['integration', 'functional']) {
+                    if (phaseName == 'integration') {
                         def mode = new JUnit3GrailsTestTypeMode(
                             autowire: true,
-                            wrapInTransaction: phaseName == "integration",
-                            wrapInRequestEnvironment: phaseName == "integration"
+                            wrapInTransaction: true, 
+                            wrapInRequestEnvironment: true
                         )
                         new JUnit3GrailsTestType(rawTypeString, rawTypeString, mode)
                     } else {
@@ -334,25 +335,51 @@ integrationTestPhaseCleanUp = {
  * Starts up the test server.
  */
 functionalTestPhasePreparation = {
-    packageApp()
-    testOptions.https ? runAppHttps() : runApp()
+    runningFunctionalTestsInline = !testOptions.containsKey('baseUrl') || testOptions.inline
+    runningFunctionalTestsAgainstWar = testOptions.war
+
+    if (runningFunctionalTestsAgainstWar) {
+        // need to swap out the args map so any test phase/targetting patterns
+        // aren't intepreted as the war name.
+        def realArgsMap = argsMap
+        argsMap = [:]
+        war()
+        argsMap = realArgsMap
+        
+        testOptions.https ? runWarHttps() : runWar()
+    } else if (runningFunctionalTestsInline) {
+        packageApp()
+        testOptions.https ? runAppHttps() : runApp()
+        prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
+        appCtx = ApplicationHolder.application.mainContext
+        initPersistenceContext()
+    }
     
-    prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
-    appCtx = ApplicationHolder.application.mainContext
+    if (testOptions.containsKey('baseUrl')) {
+        functionalBaseUrl = testOptions.baseUrl
+    } else {
+        functionalBaseUrl = (testOptions.httpsBaseUrl ? 'https' : 'http') + "://localhost:$serverPort$serverContextPath/" 
+    }
     
-    initPersistenceContext()
+    System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
 }
 
 /**
  * Shuts down the test server.
  */
 functionalTestPhaseCleanUp = {
-    destroyPersistenceContext()
-
-    appCtx?.close()
-    appCtx = prevAppCtx
+    if (runningFunctionalTestsInline) {
+        destroyPersistenceContext()
+        appCtx?.close()
+        appCtx = prevAppCtx
+    }
     
-    stopServer()
+    if (runningFunctionalTestsInline || runningFunctionalTestsAgainstWar) {
+        stopServer()
+    }
+    
+    functionalBaseUrl = null
+    System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
 }
 
 otherTestPhasePreparation = {}

@@ -126,6 +126,13 @@ class BuildSettings {
     public static final String VERBOSE_COMPILE = "grails.project.compile.verbose"
 
     /**
+     * A system property with this name is populated in the preparation phase of functional testing
+     * with the base URL that tests should be run against.
+     */
+    public static final String FUNCTIONAL_BASE_URL_PROPERTY = 'grails.testing.functional.baseUrl'
+
+
+    /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
      * of a project, then this will be the current working directory
@@ -1032,4 +1039,8 @@ class BuildSettings {
 		this.webXmlLocation = location
 		this.webXmlFileSet=true
 	}
+    
+    String getFunctionalTestBaseUrl() {
+        System.getProperty(FUNCTIONAL_BASE_URL_PROPERTY)
+    }
 }
