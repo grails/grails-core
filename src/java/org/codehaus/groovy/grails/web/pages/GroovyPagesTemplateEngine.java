@@ -21,12 +21,12 @@ import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -206,7 +206,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
             if (isGroovyPageReloadable(resource, meta)) {
                 try {
-                    return createTemplateWithResource(resource);
+                    return createTemplateWithResource(resource, name);
                 }
                 catch (IOException e) {
                     throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
@@ -215,7 +215,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             return new GroovyPageTemplate(meta);
         }
         try {
-            return createTemplateWithResource(resource);
+            return createTemplateWithResource(resource, name);
         }
         catch (IOException e) {
             throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
@@ -237,75 +237,100 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         }
         return t;
     }
+    
+    private boolean isPrecompiledAvailable() {
+    	return precompiledGspMap != null && precompiledGspMap.size() > 0;
+    }
 
     private GroovyPageTemplate createTemplateFromPrecompiled(String uri) {
-        if (isReloadEnabled()) {
-            return null;
-        }
-
-        GroovyPageTemplate t=createTemplateFromPrecompiled(uri, uri);
-        if (t == null) {
-            t = createTemplateFromPrecompiled(uri, "/WEB-INF" + uri);
-        }
-        if (t == null) {
-            t = createTemplateFromPrecompiled(uri, getUriWithinGrailsViews(uri));
-        }
-        return t;
+    	if(isPrecompiledAvailable()) {
+	        GroovyPageTemplate t=createTemplateFromPrecompiled(uri, uri);
+	        if (t == null) {
+	            t = createTemplateFromPrecompiled(uri, "/WEB-INF" + uri);
+	        }
+	        if (t == null) {
+	            t = createTemplateFromPrecompiled(uri, getUriWithinGrailsViews(uri));
+	        }
+	        return t;
+    	} else {
+    		return null;
+    	}
     }
 
     @SuppressWarnings("unchecked")
-    private GroovyPageTemplate createTemplateFromPrecompiled(String originalUri, String uri) {
-        if (precompiledGspMap != null) {
-            GroovyPageMetaInfo meta = precompiledCache.get(uri);
-            if (meta != null) {
-                return new GroovyPageTemplate(meta);
-            }
+    private GroovyPageTemplate createTemplateFromPrecompiled(final String originalUri, final String uri) {
+        GroovyPageMetaInfo meta = precompiledCache.get(uri);
+        if(meta==null) {
+        	meta=loadPrecompiledGsp(uri);        	
+        	if(meta != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Adding GSP class GroovyPageMetaInfo in cache for uri " + uri + " classname is " + meta.getPageClass().getName());
+                }
+                precompiledCache.put(uri, meta);
+                precompiledCache.put(originalUri, meta);
+        	}
+        }
+        if (meta != null) {
+        	if(isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
+				public Resource run() {
+					return getResourceForUri(originalUri);
+				}
+			})) {
+        		if (LOG.isInfoEnabled()) {
+                    LOG.info("Precompiled GSP for uri " + originalUri + " is newer in reload location. Ignoring the precompiled GSP.");
+                }
 
-            String gspClassName = precompiledGspMap.get(uri);
-            if (gspClassName != null) {
-                Class<GroovyPage> gspClass = null;
-                try {
-                    gspClass = (Class<GroovyPage>)Class.forName(gspClassName, true, Thread.currentThread().getContextClassLoader());
+        		// remove the precompiled version from caches & mapping
+                for(Iterator<Map.Entry<String, GroovyPageMetaInfo>> it=precompiledCache.entrySet().iterator(); it.hasNext();) {
+                	Map.Entry<String, GroovyPageMetaInfo> entry=it.next();
+                	if(entry.getValue()==meta) {
+                		precompiledGspMap.remove(entry.getKey());
+                		it.remove();
+                	}
                 }
-                catch (ClassNotFoundException e) {
-                    LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
-                }
-                if (gspClass != null) {
-                    meta = new GroovyPageMetaInfo(gspClass);
-                    meta.setJspTagLibraryResolver(jspTagLibraryResolver);
-                    meta.setTagLibraryLookup(tagLibraryLookup);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Adding GSP class GroovyPageMetaInfo in cache for uri " + uri + " classname is " + gspClassName);
-                    }
-                    precompiledCache.put(uri, meta);
-                    precompiledCache.put(originalUri, meta);
-                    return new GroovyPageTemplate(meta);
-                }
-            }
-            if (precompiledGspMap.size() > 0) {
-                // ???
-            }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No precompiled template found for uri '" + uri + "'");
-            }
+        		
+        		return null;
+        	}
+            return new GroovyPageTemplate(meta);
         }
         return null;
     }
+    
+    private GroovyPageMetaInfo loadPrecompiledGsp(String uri) {
+    	GroovyPageMetaInfo meta=null;
+        String gspClassName = precompiledGspMap.get(uri);
+        if (gspClassName != null) {
+            Class<GroovyPage> gspClass = null;
+            try {
+                gspClass = (Class<GroovyPage>)Class.forName(gspClassName, true, Thread.currentThread().getContextClassLoader());
+            }
+            catch (ClassNotFoundException e) {
+                LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
+            }
+            if (gspClass != null) {
+                meta = new GroovyPageMetaInfo(gspClass);
+                meta.setJspTagLibraryResolver(jspTagLibraryResolver);
+                meta.setTagLibraryLookup(tagLibraryLookup);
+            }
+        }
+        return meta;
+    }
+    
 
     public Template createTemplateForUri(String uri) {
         return createTemplateForUri(new String[]{uri});
     }
 
     public Template createTemplateForUri(String[] uri)  {
-        if (!isReloadEnabled()) {
-            Template t;
-            for (String anUri : uri) {
-                t = createTemplateFromPrecompiled(anUri);
-                if (t != null) {
-                    return t;
-                }
-            }
-        }
+    	if(isPrecompiledAvailable()) {
+	        Template t;
+	        for (String anUri : uri) {
+	            t = createTemplateFromPrecompiled(anUri);
+	            if (t != null) {
+	                return t;
+	            }
+	        }
+    	}
 
         Resource resource = null;
         for (String anUri : uri) {
@@ -316,7 +341,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             }
         }
         if (resource != null) {
-            if (precompiledGspMap != null && precompiledGspMap.size() > 0) {
+            if (isPrecompiledAvailable() && !isReloadEnabled()) {
                 if (LOG.isWarnEnabled()) {
                     LOG.warn("Precompiled GSP not found for uri: " + Arrays.asList(uri) + ". Using resource " + resource);
                 }
@@ -415,10 +440,10 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return A Groovy Template
      * @throws java.io.IOException Thrown when an error occurs reading the template
      */
-    private Template createTemplateWithResource(Resource resource) throws IOException {
+    private Template createTemplateWithResource(Resource resource, String pageName) throws IOException {
         InputStream in = resource.getInputStream();
         try {
-            return createTemplate(in, resource, null);
+            return createTemplate(in, resource, pageName);
         }
         finally {
             in.close();
@@ -445,8 +470,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @param meta The current GroovyPageMetaInfo instance
      * @return True if it is reloadable
      */
-    private boolean isGroovyPageReloadable(Resource resource, GroovyPageMetaInfo meta) {
-        return isReloadEnabled() && (establishLastModified(resource) > meta.getLastModified());
+    private boolean isGroovyPageReloadable(final Resource resource, GroovyPageMetaInfo meta) {
+        return isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
+			public Resource run() {
+				return resource;
+			}
+		});
     }
 
     /**
@@ -498,48 +527,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         return resourceLoader.getResource(uri);
     }
 
-    /**
-     * Attempts to establish what the last modified date of the given resource is. If the last modified date cannot
-     * be etablished -1 is returned
-     *
-     * @param resource The Resource to evaluate
-     * @return The last modified date or -1
-     */
-    private long establishLastModified(Resource resource) {
-        if (resource == null) return -1;
-
-        long lastModified;
-        URLConnection urlc = null;
-
-        try {
-            urlc = resource.getURL().openConnection();
-
-            urlc.setDoInput(false);
-            urlc.setDoOutput(false);
-            lastModified = urlc.getLastModified();
-        }
-        catch (FileNotFoundException fnfe) {
-            lastModified = -1;
-        }
-        catch (IOException e) {
-            lastModified = -1;
-        }
-        finally {
-            if (urlc != null) {
-                try {
-                    InputStream is = urlc.getInputStream();
-                    if (is != null) {
-                        is.close();
-                    }
-                }
-                catch (IOException e) {
-                    // ignore
-                }
-            }
-        }
-
-        return lastModified;
-    }
 
     /**
      * Constructs a GroovyPageMetaInfo instance which holds the script class, modified date and so on
@@ -551,8 +538,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     protected GroovyPageMetaInfo buildPageMetaInfo(InputStream inputStream, Resource res, String pageName) {
         String name = establishPageName(res, pageName);
-
-        long lastModified = establishLastModified(res);
 
         GroovyPageParser parser;
         String path = getPathForResource(res);
@@ -566,7 +551,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         InputStream in = parser.parse();
 
         // Make a new metaInfo
-        GroovyPageMetaInfo metaInfo = createPageMetaInfo(parser, lastModified, in);
+        GroovyPageMetaInfo metaInfo = createPageMetaInfo(parser, in);
+        metaInfo.applyLastModifiedFromResource(res);
         try {
             metaInfo.setPageClass( compileGroovyPage(in, name, path, metaInfo) );
             metaInfo.setHtmlParts(parser.getHtmlPartsArray());
@@ -653,13 +639,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @param in The InputStream instance
      * @return A GroovyPageMetaInfo instance
      */
-    private GroovyPageMetaInfo createPageMetaInfo(GroovyPageParser parse, long lastModified, InputStream in) {
+    private GroovyPageMetaInfo createPageMetaInfo(GroovyPageParser parse, InputStream in) {
         GroovyPageMetaInfo pageMeta = new GroovyPageMetaInfo();
         pageMeta.setJspTagLibraryResolver(jspTagLibraryResolver);
         pageMeta.setTagLibraryLookup(tagLibraryLookup);
         pageMeta.setContentType(parse.getContentType());
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
-        pageMeta.setLastModified(lastModified);
         pageMeta.setJspTags(parse.getJspTags());
         pageMeta.setCodecName(parse.getDefaultCodecDirectiveValue());
         pageMeta.initCodec();
@@ -721,7 +706,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      *
      * @return The template name
      */
-    private String generateTemplateName() {
+    private synchronized String generateTemplateName() {
         return GENERATED_GSP_NAME_PREFIX + ++scriptNameCount;
     }
 
@@ -743,12 +728,11 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return The page id
      */
     protected String getCurrentRequestUri(HttpServletRequest request) {
-        // Get the name of the Groovy script (intern the name so that we can lock on it)
         Object includePath = request.getAttribute("javax.servlet.include.servlet_path");
         if (includePath != null) {
-            return ((String) includePath).intern();
+            return (String)includePath;
         }
-        return request.getServletPath().intern();
+        return request.getServletPath();
     }
 
     /**
