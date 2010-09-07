@@ -18,6 +18,7 @@ import groovy.lang.Script;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
@@ -85,13 +86,12 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
             }
         }
         
-        Properties props = grailsApplication.getConfig().toProperties();
-        String maxUrlCacheSize = props.getProperty(URL_MAPPING_CACHE_MAX_SIZE);
+        Map flatConfig = grailsApplication.getFlatConfig();
+        Object maxUrlCacheSize = flatConfig.get(URL_MAPPING_CACHE_MAX_SIZE);
         if(maxUrlCacheSize == null){
             urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns);
-        
         } else {
-            int cacheSize = Integer.valueOf(maxUrlCacheSize);
+            int cacheSize = (maxUrlCacheSize instanceof Number) ? ((Number)maxUrlCacheSize).intValue() : Integer.valueOf(String.valueOf(maxUrlCacheSize));
             urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns, cacheSize);
         }
     }
