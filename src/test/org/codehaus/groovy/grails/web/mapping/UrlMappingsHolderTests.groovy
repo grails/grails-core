@@ -113,6 +113,10 @@ mappings {
         assert m
 
         assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1, "utf-8")
+		
+		// make sure caching works as expected
+		assertEquals "/admin/test/list/1", m.createURL("test", "list", [id:1], "utf-8")
+		assertEquals "/admin/test/list/1", m.createURL("test", "list", [id:1], "utf-8")
 
         assertEquals "/admin/test/list/1?foo=bar", m.createURL(controller:"test", action:"list",id:1, foo:"bar", "utf-8")
 
@@ -128,7 +132,10 @@ mappings {
             def evaluator = new DefaultUrlMappingEvaluator()
             def mappings = evaluator.evaluateMappings(res)
 
-            def holder = new DefaultUrlMappingsHolder(mappings)
+			// use un-cached holder for testing
+            def holder = new DefaultUrlMappingsHolder(mappings,null,true)
+			holder.setUrlCreatorMaxWeightedCacheCapacity(0)
+			holder.initialize()
 
             // test with fewer arguments
             def m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007])
@@ -146,7 +153,10 @@ mappings {
             def evaluator = new DefaultUrlMappingEvaluator()
             def mappings = evaluator.evaluateMappings(res)
 
-            def holder = new DefaultUrlMappingsHolder(mappings)
+			// use un-cached holder for testing
+            def holder = new DefaultUrlMappingsHolder(mappings,null,true)
+			holder.setUrlCreatorMaxWeightedCacheCapacity(0)
+			holder.initialize()
 
             // test with exact argument match
             def m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007, month:3, day:17])

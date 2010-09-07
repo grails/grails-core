@@ -28,7 +28,10 @@ mappings {
 
         def mappings = evaluator.evaluateMappings(res)
 
-        holder = new DefaultUrlMappingsHolder(mappings)
+		// use un-cached holder for testing
+        holder = new DefaultUrlMappingsHolder(mappings,null,true)
+		holder.setUrlCreatorMaxWeightedCacheCapacity(0)
+		holder.initialize()
     }
 
 

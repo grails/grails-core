@@ -19,7 +19,6 @@ import groovy.lang.Script;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
@@ -42,6 +41,7 @@ import org.springframework.web.context.ServletContextAware;
  */
 public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
+    private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
     private UrlMappingEvaluator mappingEvaluator;
@@ -85,15 +85,34 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
                 excludePatterns.addAll(mappingClass.getExcludePatterns());
             }
         }
-        
+
+        DefaultUrlMappingsHolder defaultUrlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns, true);
+
         Map flatConfig = grailsApplication.getFlatConfig();
-        Object maxUrlCacheSize = flatConfig.get(URL_MAPPING_CACHE_MAX_SIZE);
-        if(maxUrlCacheSize == null){
-            urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns);
-        } else {
-            int cacheSize = (maxUrlCacheSize instanceof Number) ? ((Number)maxUrlCacheSize).intValue() : Integer.valueOf(String.valueOf(maxUrlCacheSize));
-            urlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns, cacheSize);
+        Integer cacheSize = mapGetInteger(flatConfig, URL_MAPPING_CACHE_MAX_SIZE);
+        if(cacheSize != null){
+            defaultUrlMappingsHolder.setMaxWeightedCacheCapacity(cacheSize);
         }
+        Integer urlCreatorCacheSize = mapGetInteger(flatConfig, URL_CREATOR_CACHE_MAX_SIZE);
+        if(urlCreatorCacheSize != null) {
+        	defaultUrlMappingsHolder.setUrlCreatorMaxWeightedCacheCapacity(urlCreatorCacheSize);
+        }
+        // call initialize() after settings are in place
+        defaultUrlMappingsHolder.initialize();
+        urlMappingsHolder=defaultUrlMappingsHolder;
+    }
+    
+    // this should possibly be somewhere in utility classes , MapUtils.getInteger doesn't handle GStrings/CharSequence
+    private static Integer mapGetInteger(Map map, String key) {
+    	Object value=map.get(key);
+    	if(value==null) {
+    		return null;
+    	}
+    	if(value instanceof Integer) {
+    		return (Integer)value;
+    	} else {
+    		return (value instanceof Number) ? Integer.valueOf(((Number)value).intValue()) : Integer.valueOf(String.valueOf(value));
+    	}
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
