@@ -25,6 +25,8 @@ import java.io.ObjectOutput;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +34,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.util.HtmlUtils;
 
 /**
  * <p>
@@ -1758,5 +1763,57 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     public void writeExternal(ObjectOutput out) throws IOException {
         String str=toString();
         out.writeUTF(str);
+    }
+    
+    public StreamCharBuffer encodeAsHTML() {
+    	StreamCharBuffer coded=new StreamCharBuffer(Math.min(Math.max(totalChunkSize, chunkSize) * 12 / 10, maxChunkSize));
+    	Writer writer=coded.getWriter();
+    	if(StreamingHTMLEncoderHelper.disabled) {
+    		try {
+    			writer.write(HtmlUtils.htmlEscape(this.toString()));
+			} catch (IOException e) {
+				// Should not ever happen
+				e.printStackTrace();
+			}
+    	} else {
+	    	Reader reader=this.getReader();
+	    	char[] buf=new char[1];
+	    	try {
+				while(reader.read(buf) != -1) {
+					String reference=StreamingHTMLEncoderHelper.convertToReference(buf[0]);
+					if(reference != null) {
+						writer.write(reference);
+					} else {
+						writer.write(buf);
+					}
+				}
+			} catch (IOException e) {
+				// Should not ever happen
+				e.printStackTrace();
+			}
+    	}
+    	return coded;
+    }
+    
+    private static class StreamingHTMLEncoderHelper {
+    	private static Object instance;
+    	private static Method mapMethod;
+    	private static boolean disabled=false;
+    	static {
+    		try {
+        		Field instanceField=ReflectionUtils.findField(HtmlUtils.class, "characterEntityReferences");
+        		ReflectionUtils.makeAccessible(instanceField);
+        		instance=instanceField.get(null);
+				mapMethod=ReflectionUtils.findMethod(instance.getClass(), "convertToReference", char.class);
+				ReflectionUtils.makeAccessible(mapMethod);
+			} catch (Exception e) {
+				e.printStackTrace(System.err);
+				disabled=true;
+			}
+    	}
+    	
+    	public static String convertToReference(char c) {
+    		return (String)ReflectionUtils.invokeMethod(mapMethod, instance, c);
+    	}
     }
 }

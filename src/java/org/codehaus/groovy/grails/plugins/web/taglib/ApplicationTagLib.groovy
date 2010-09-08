@@ -163,11 +163,15 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             }
         }
         if (dir) {
-            writer << (dir.startsWith("/") ?  dir : "/${dir}")
+			if(!dir.startsWith('/'))
+				writer << '/'
+            writer << dir
         }
         def file = attrs['file']
         if (file) {
-            writer << (file.startsWith("/") || dir?.endsWith('/') ?  file : "/${file}")
+			if(!(file.startsWith('/') || dir?.endsWith('/')))
+				writer << '/'
+            writer << file
         }
     }
 
@@ -181,13 +185,25 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
         def writer = getOut()
         def elementId = attrs.remove('elementId')
-        writer <<  "<a href=\"${createLink(attrs).encodeAsHTML()}\""
+        writer <<  '<a href=\"'
+		writer << createLink(attrs).encodeAsHTML()
+		writer << '"'
         if (elementId) {
-            writer << " id=\"${elementId}\""
+            writer << " id=\""
+            writer << elementId
+			writer << "\""
         }
-
-        writer << "${attrs.collect {k, v -> " $k=\"$v\"" }.join('')}>"
-        writer << "${body()}</a>"
+		attrs.each { k, v ->
+			writer << ' '
+			writer << k
+			writer << '='
+			writer << '"'
+			writer << v?.encodeAsHTML()
+			writer << '"'
+		}
+		writer << '>'
+        writer << body()
+        writer << '</a>'
     }
 
     /**
@@ -261,7 +277,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
                 }
                 else {
                     url = mapping.createRelativeURL(controller, action, params, request.characterEncoding, frag)
-                    out << handleAbsolute(attrs)
+                    writer << handleAbsolute(attrs)
                     writer << url
                 }
             }
