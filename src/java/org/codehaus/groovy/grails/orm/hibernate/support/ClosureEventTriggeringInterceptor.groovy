@@ -16,6 +16,8 @@
 package org.codehaus.groovy.grails.orm.hibernate.support
 
 import grails.validation.ValidationException
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
@@ -52,7 +54,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
                                                                                      PostUpdateEventListener,
                                                                                      PostDeleteEventListener,
                                                                                      PreDeleteEventListener,
-                                                                                     PreUpdateEventListener {
+																					 PreUpdateEventListener {
 
     private static final List IGNORED = ['version', 'id']
 
@@ -102,11 +104,21 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
         super.onSaveOrUpdate event
     }
 
+	private ConcurrentMap cachedShouldTrigger = new ConcurrentHashMap()
+	
     private boolean shouldTrigger(entity) {
-        Class clazz = entity?.class
-        return entity && entity?.metaClass != null &&
-                (DomainClassArtefactHandler.isDomainClass(clazz) ||
-                 AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz))
+		if(entity==null) return false
+		
+		def key = new SoftKey(entity.class)
+		boolean cached = cachedShouldTrigger.get(key)
+		if(cached == null) {
+			Class clazz = entity.class
+			cached = (entity && entity.metaClass != null &&
+					(DomainClassArtefactHandler.isDomainClass(clazz) ||
+					 AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)))
+			cachedShouldTrigger.put(key, cached)
+		}
+		return cached
     }
 
     static final String ONLOAD_EVENT = 'onLoad'
