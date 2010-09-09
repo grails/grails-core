@@ -1,4 +1,4 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
-public abstract class AbstractJavaClass {
+public class AbstractJavaClass {
 }
