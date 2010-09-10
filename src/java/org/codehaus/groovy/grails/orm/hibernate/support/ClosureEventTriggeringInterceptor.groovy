@@ -110,7 +110,7 @@ class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implem
 		if(entity==null) return false
 		
 		def key = new SoftKey(entity.class)
-		boolean cached = cachedShouldTrigger.get(key)
+		Boolean cached = cachedShouldTrigger.get(key)
 		if(cached == null) {
 			Class clazz = entity.class
 			cached = (entity && entity.metaClass != null &&

@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.util.HtmlUtils;
 
@@ -221,6 +223,7 @@ import org.springframework.web.util.HtmlUtils;
  * @author Lari Hotari, Sagire Software Oy
  */
 public class StreamCharBuffer implements Writable, CharSequence, Externalizable {
+	private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
     private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
     private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
@@ -1773,7 +1776,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     			writer.write(HtmlUtils.htmlEscape(this.toString()));
 			} catch (IOException e) {
 				// Should not ever happen
-				e.printStackTrace();
+				log.error("IOException in StreamCharBuffer.encodeAsHTML", e);
 			}
     	} else {
 	    	Reader reader=this.getReader();
@@ -1789,7 +1792,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 				}
 			} catch (IOException e) {
 				// Should not ever happen
-				e.printStackTrace();
+				log.error("IOException in StreamCharBuffer.encodeAsHTML", e);
 			}
     	}
     	return coded;
@@ -1807,7 +1810,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 				mapMethod=ReflectionUtils.findMethod(instance.getClass(), "convertToReference", char.class);
 				ReflectionUtils.makeAccessible(mapMethod);
 			} catch (Exception e) {
-				e.printStackTrace(System.err);
+				log.warn("Couldn't use reflection for resolving characterEntityReferences in HtmlUtils class", e);
 				disabled=true;
 			}
     	}
