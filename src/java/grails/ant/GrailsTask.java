@@ -35,16 +35,21 @@ import org.codehaus.groovy.grails.cli.support.GrailsRootLoader;
  * <p>Ant task for executing Grails scripts. To use it, first create a
  * task definition for it:
  * <pre>
- *   &lt;path id="grails.classpath"&gt;
- *        &lt;fileset dir="${grails.home}/dist" includes="grails-bootstrap-1.1.jar"/&gt;
- *        &lt;fileset dir="${grails.home}/lib" includes="groovy-all-1.6.jar"/&gt;
+ *    &lt;path id="grails.classpath"&gt;
+ *       &lt;fileset dir="${grails.home}/dist" includes="grails-bootstrap-*.jar"/&gt;
+ *       &lt;fileset dir="${grails.home}/lib"&gt;
+ *          &lt;include name="groovy-all*.jar"/&gt;
+ *          &lt;include name="ivy*.jar"/&gt;
+ *          &lt;include name="gpars*.jar"/&gt;
+ *          &lt;include name="gant_groovy*.jar"/&gt;
+ *       &lt;/fileset&gt;
  *    &lt;/path&gt;
  *
  *    &lt;taskdef name="grails"
  *             classname="grails.ant.GrailsTask"
  *             classpathref="grails.classpath"/&gt;
  * </pre>
- * You must have both the "grails-bootstrap" and "groovy-all" JARs on
+ * You must have the "grails-bootstrap", "groovy-all", Ivy, and GPars JARs on
  * the <code>taskdef<code>'s classpath, otherwise the task won't load.
  * </p>
  * <p>Once the task is defined, you can use it like this:
@@ -109,7 +114,6 @@ public class GrailsTask extends Task {
             GrailsRootLoader rootLoader = new GrailsRootLoader(loaderUrls, getClass().getClassLoader());
 
             GrailsBuildHelper helper;
-
             if (getProject().getBaseDir() != null) {
                 helper = new GrailsBuildHelper(rootLoader, home == null ? null :
                     home.getCanonicalPath(), getProject().getBaseDir().getCanonicalPath());
@@ -139,10 +143,11 @@ public class GrailsTask extends Task {
         List<URL> urls = new ArrayList<URL>();
 
         try {
-            // Make sure Groovy and Gant are on the classpath if we are using "grailsHome".
+            // Make sure Groovy, Gant, Ivy and GPars are on the classpath if we are using "grailsHome".
             File[] files = new File(home, "lib").listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
-                    return name.startsWith("gant_") || name.startsWith("groovy-all");
+                    return name.startsWith("gant_") || name.startsWith("groovy-all") ||
+                           name.startsWith("ivy") || name.startsWith("gpars");
                 }
             });
 
