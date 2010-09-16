@@ -543,11 +543,11 @@ class FormTagLib {
      */
     def localeSelect = {attrs ->
         attrs['from'] = Locale.getAvailableLocales()
-        attrs['value'] = (attrs['value'] ? attrs['value'] : RCU.getLocale(request))
+        attrs['value'] = (attrs['value'] ?: RCU.getLocale(request))?.toString()
         // set the key as a closure that formats the locale
-        attrs['optionKey'] = {"${it.language}_${it.country}"}
+        attrs['optionKey'] = { it.country ? "${it.language}_${it.country}" : it.language }
         // set the option value as a closure that formats the locale for display
-        attrs['optionValue'] = {"${it.language}, ${it.country},  ${it.displayName}"}
+        attrs['optionValue'] = {it.country ? "${it.language}, ${it.country},  ${it.displayName}" : "${it.language}, ${it.displayName}" }
 
         // use generic select
         out << select(attrs)
