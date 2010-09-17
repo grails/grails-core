@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.plugins.services
 
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
-import grails.spring.BeanBuilder
+import grails.spring.WebBeanBuilder
 import org.springframework.web.context.support.WebApplicationContextUtils
 import grails.util.GrailsWebUtil
 import org.springframework.web.context.request.RequestContextHolder
@@ -11,14 +11,11 @@ class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
 
     // test for http://jira.codehaus.org/browse/GRAILS-6278
     void testScopedProxy() {
-        if(notYetImplemented()) return
-
-        def bb = new BeanBuilder()
+        def bb = new WebBeanBuilder()
 
         GrailsWebUtil.bindMockWebRequest()
 
         bb.beans {
-            WebApplicationContextUtils.registerWebApplicationScopes(springConfig.beanFactory);
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
             testService(TestService) { bean ->
                 bean.scope = "session"
@@ -56,6 +53,8 @@ class TestService {
         serviceMethod()
     }
 
+// - This was the workaround for the bug -
+// 
 //    private MetaClass metaClass
 //
 //    TestService() {
