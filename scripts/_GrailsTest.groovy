@@ -334,8 +334,8 @@ integrationTestPhaseCleanUp = {
  * Starts up the test server.
  */
 functionalTestPhasePreparation = {
-    runningFunctionalTestsInline = !testOptions.containsKey('baseUrl') || testOptions.inline
     runningFunctionalTestsAgainstWar = testOptions.war
+    runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
     if (runningFunctionalTestsAgainstWar) {
         // need to swap out the args map so any test phase/targetting patterns
