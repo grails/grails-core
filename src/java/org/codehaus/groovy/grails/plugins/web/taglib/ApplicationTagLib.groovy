@@ -163,14 +163,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             }
         }
         if (dir) {
-			if(!dir.startsWith('/'))
-				writer << '/'
+            if(!dir.startsWith('/'))
+                writer << '/'
             writer << dir
         }
         def file = attrs['file']
         if (file) {
-			if(!(file.startsWith('/') || dir?.endsWith('/')))
-				writer << '/'
+            if(!(file.startsWith('/') || dir?.endsWith('/')))
+                writer << '/'
             writer << file
         }
     }
@@ -186,22 +186,22 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
         def writer = getOut()
         def elementId = attrs.remove('elementId')
         writer <<  '<a href=\"'
-		writer << createLink(attrs).encodeAsHTML()
-		writer << '"'
+        writer << createLink(attrs).encodeAsHTML()
+        writer << '"'
         if (elementId) {
             writer << " id=\""
             writer << elementId
-			writer << "\""
+            writer << "\""
         }
-		attrs.each { k, v ->
-			writer << ' '
-			writer << k
-			writer << '='
-			writer << '"'
-			writer << v?.encodeAsHTML()
-			writer << '"'
-		}
-		writer << '>'
+        attrs.each { k, v ->
+            writer << ' '
+            writer << k
+            writer << '='
+            writer << '"'
+            writer << v?.encodeAsHTML()
+            writer << '"'
+        }
+        writer << '>'
         writer << body()
         writer << '</a>'
     }
@@ -253,9 +253,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
                 def frag = urlAttrs.remove('fragment')?.toString()
                 def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
                 def mappingName = urlAttrs.remove('mapping')
-				if(mappingName != null) {
-					params.mappingName = mappingName
-				}
+                if(mappingName != null) {
+                    params.mappingName = mappingName
+                }
                 if (request['flowExecutionKey']) {
                     params."execution" = request['flowExecutionKey']
                 }
