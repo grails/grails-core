@@ -593,7 +593,19 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                 return 1;
             }
         }
+
+        int constraintDiff = getAppliedConstraintsCount(this) - getAppliedConstraintsCount(other);
+        if (constraintDiff != 0) return constraintDiff;
+
         return 0;
+    }
+
+    private int getAppliedConstraintsCount(UrlMapping mapping) {
+        int count = 0;
+        for (ConstrainedProperty prop : mapping.getConstraints()) {
+            count += prop.getAppliedConstraints().size();
+        }
+        return count;
     }
 
     private int getSingleWildcardCount(UrlMapping mapping) {
