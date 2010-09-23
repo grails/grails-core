@@ -143,12 +143,13 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.7.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.7.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="ConcurrentLinkedHashMap" level="project" />
   </component>
 </module>
 

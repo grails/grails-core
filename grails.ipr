@@ -632,6 +632,13 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="ConcurrentLinkedHashMap">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/concurrentlinkedhashmap-lru-1.0.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
 </project>
 
