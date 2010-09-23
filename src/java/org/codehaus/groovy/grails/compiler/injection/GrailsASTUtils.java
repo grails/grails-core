@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.GrailsNameUtils;
 
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -122,7 +123,8 @@ public class GrailsASTUtils {
 
     public static ClassNode getFurthestUnresolvedParent(ClassNode classNode) {
         ClassNode parent = classNode.getSuperClass();
-        while (parent != null && !getFullName(parent).equals("java.lang.Object") && !parent.isResolved()) {
+
+            while (parent != null && !getFullName(parent).equals("java.lang.Object") && !parent.isResolved() && !Modifier.isAbstract(parent.getModifiers())) {
             classNode = parent;
             parent = parent.getSuperClass();
         }
