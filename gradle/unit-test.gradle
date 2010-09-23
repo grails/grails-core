@@ -61,8 +61,8 @@ task coverageReport {
 }
 
 test {
-    options.systemProperties = ['grails.cli.testing': "true"]
-    options.forkOptions.jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+    systemProperties = ['grails.cli.testing': "true"]
+    jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
 }
 
 createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
@@ -86,16 +86,19 @@ def createTestTask(name, includes, excludes) {
 }
 
 def createTestTaskWithoutSuffix(String name, includes, excludes) {
-    task = tasks.add(name: name, type: AntTest) {
-        options.systemProperties = ['grails.cli.testing': "true"]
-        options.forkOptions.jvmArgs = ["-server", "-Xmx1500m", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
-        options.systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
+    task = tasks.add(name: name, type: Test) {
+        systemProperties = ['grails.cli.testing': "true"]
+        jvmArgs = ["-server", "-Xmx1500m", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+        systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
         include includes as String[]
         exclude excludes as String[]
         testReport = true
         ignoreFailures = false
         coverageHtmlReport = false
-        classpath = classpath + project.rootProject.configurations.coverage
+/*        classpath = classpath + project.rootProject.configurations.coverage*/
+        classpath = sourceSets.test.runtimeClasspath + project.rootProject.configurations.coverage
+        testClassesDir = sourceSets.test.classesDir
+        
     }
     test.dependsOn task
     task.dependsOn coreJar
@@ -107,7 +110,7 @@ tasks.addRule("Pattern: <testTaskName>Coverage will execute the corresponding te
         def testTaskName = taskName.substring(0, taskName.length() - coverageName.length())
         def testTask = tasks.findByName(testTaskName)
         if (testTask) {
-            def testTasks = testTask == tasks.test ? tasks.withType(AntTest) : testTask
+            def testTasks = testTask == tasks.test ? tasks.withType(Test) : testTask
             applyCoveragetToTestTasks(testTasks)
             tasks.add(name: taskName).dependsOn testTask, coverageReport
         }
