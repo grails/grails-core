@@ -74,7 +74,7 @@ createTestTask("cli", ["org/codehaus/groovy/grails/cli/**/*Tests.class"], ["org/
 createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
         "**/orm/hibernate/binding/*Tests.class",
         "**/orm/hibernate/cfg/*Tests.class",
-        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", "**/UniqueConstraint*"])
+        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", "**/UniqueConstraint*", '**/ExecuteUpdate*', '**/CascadingDelete*', '**/CustomValidator*', '**/DiscriminatorColumnMapping*', '**/TreeListAssociation*' ])
 createTestTask("uniqueConstraints", ["**/UniqueConstraintTests.class"], [])
 createTestTask("webflow", ["**/webflow/**/*Tests.class"], ["**/Abstract*"])
 createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
