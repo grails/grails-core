@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -35,6 +37,7 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
 
     private GrailsApplication grailsApplication;
     private Closure commandObjectBindingAction;
+    private Collection processedControllerNames = new ConcurrentLinkedQueue();
 
     public CommandObjectEnablingPostProcessor(ApplicationContext applicationContext) {
         setApplicationContext(applicationContext);
@@ -56,13 +59,14 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
                         }
                     }
                 }
+                processedControllerNames.add(beanName);
             }
         }
         return super.postProcessBeforeInitialization(bean, beanName);
     }
 
     private boolean shouldPostProcessController(Object bean, String beanName) {
-        return grailsApplication!=null && bean != null && (bean instanceof GroovyObject) && beanName.endsWith(ControllerArtefactHandler.TYPE);
+        return !processedControllerNames.contains(beanName) && grailsApplication != null && bean != null && (bean instanceof GroovyObject) && beanName.endsWith(ControllerArtefactHandler.TYPE);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

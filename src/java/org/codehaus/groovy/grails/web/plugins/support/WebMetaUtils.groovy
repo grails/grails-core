@@ -60,7 +60,7 @@ class WebMetaUtils {
     static Closure prepareCommandObjectBindingAction(Closure action, Closure originalAction,
             String actionName, Object controller) {
         def commandObjectAction = action.curry(originalAction, actionName)
-        controller.metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { ->
+        controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { ->
             def actionDelegate = commandObjectAction.clone()
             actionDelegate.delegate = delegate
             actionDelegate
@@ -85,6 +85,7 @@ class WebMetaUtils {
                 commandObjects << v
             }
             def counter = 0
+            def params = RCH.currentRequestAttributes().params
             for (paramType in paramTypes) {
                 if (GroovyObject.isAssignableFrom(paramType)) {
                     try {
@@ -102,7 +103,7 @@ class WebMetaUtils {
                                 commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                             commandObjects << commandObject
                         }
-                        def params = RCH.currentRequestAttributes().params
+
                         bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
                         def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
                         def constrainedProperties = commandObject.constraints?.values()
@@ -173,7 +174,7 @@ class WebMetaUtils {
                     validationClosure()
                 }
             }
-            commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
+            commandObjectMetaClass.getConstraints = {-> constrainedPropertyBuilder.constrainedProperties }
 
             commandObjectMetaClass.clearErrors = { ->
                 delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
