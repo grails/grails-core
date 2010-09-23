@@ -113,7 +113,16 @@ public class GrailsASTUtils {
 
     public static ClassNode getFurthestParent(ClassNode classNode) {
         ClassNode parent = classNode.getSuperClass();
-        while (parent != null && !getFullName(parent).equals("java.lang.Object")) {
+        while (parent != null && !getFullName(parent).equals("java.lang.Object") ) {
+            classNode = parent;
+            parent = parent.getSuperClass();
+        }
+        return classNode;
+    }
+
+    public static ClassNode getFurthestUnresolvedParent(ClassNode classNode) {
+        ClassNode parent = classNode.getSuperClass();
+        while (parent != null && !getFullName(parent).equals("java.lang.Object") && !parent.isResolved()) {
             classNode = parent;
             parent = parent.getSuperClass();
         }

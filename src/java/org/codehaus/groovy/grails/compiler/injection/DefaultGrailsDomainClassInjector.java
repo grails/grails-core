@@ -196,7 +196,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
         final boolean hasVersion = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.VERSION);
 
         if (!hasVersion) {
-            ClassNode parent = GrailsASTUtils.getFurthestParent(classNode);
+            ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
             parent.addProperty(GrailsDomainClassProperty.VERSION, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
@@ -206,7 +206,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
         if (!hasId) {
             // inject into furthest relative
-            ClassNode parent = GrailsASTUtils.getFurthestParent(classNode);
+            ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
 
             parent.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
