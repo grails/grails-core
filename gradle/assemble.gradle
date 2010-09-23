@@ -104,7 +104,7 @@ handlersAndSchemasMetaInf = {
 task testJar(type: Jar, description: 'Package up the Grails testing jar') {
     appendix = "test"
     metaInf handlersAndSchemasMetaInf
-    from mainClassesIncludeSpec("grails/test/**", "**/groovy/grails/test/**")
+    with mainClassesIncludeSpec("grails/test/**", "**/groovy/grails/test/**")
     osgify = true
     mavenArtifact = true
 }
@@ -112,7 +112,7 @@ task testJar(type: Jar, description: 'Package up the Grails testing jar') {
 task docsJar(type: Jar, dependsOn: docGeneratingFilesJar, description: 'Package up files used for generating documentation.') {
     appendix = "docs"
     metaInf handlersAndSchemasMetaInf
-    from mainClassesIncludeSpec("grails/doc/**", "**/groovy/grails/documentation/**")
+    with mainClassesIncludeSpec("grails/doc/**", "**/groovy/grails/documentation/**")
     from docGeneratingFilesJar.archivePath
     osgify = true
     mavenArtifact = true
@@ -121,7 +121,7 @@ task docsJar(type: Jar, dependsOn: docGeneratingFilesJar, description: 'Package 
 task springJar(type: Jar, description: 'Package up the Spring related Grails classes') {
     appendix = "spring"
     metaInf handlersAndSchemasMetaInf
-    from mainClassesIncludeSpec("grails/spring/**", "**/groovy/grails/commons/spring/**")
+    with mainClassesIncludeSpec("grails/spring/**", "**/groovy/grails/commons/spring/**")
     osgify = true
     mavenArtifact = true
 }
@@ -129,7 +129,7 @@ task springJar(type: Jar, description: 'Package up the Spring related Grails cla
 task bootstrapJar(type: Jar, description: 'Package up the classes used to bootstrap Grails') {
     appendix = "bootstrap"
     metaInf handlersAndSchemasMetaInf
-    from mainClassesIncludeSpec("grails/util/AbstractBuildSettings*","grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*", "grails/util/Metadata*",
+    with mainClassesIncludeSpec("grails/util/AbstractBuildSettings*","grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*", "grails/util/Metadata*",
             "grails/util/BuildScope*", "grails/util/GrailsMain*", "grails/ant/**/*", "**/groovy/grails/cli/**/*", "**/groovy/grails/resolve/**/*",
             "grails/build/**")
     from "build.properties"
@@ -147,7 +147,7 @@ task scriptsJar(type: Jar, description: 'Package up files used for generating do
 task gormJar(type: Jar, description: 'Package up GORM related classes.') {
     appendix = "gorm"
     metaInf handlersAndSchemasMetaInf
-    from mainClassesIncludeSpec("grails/orm/**", "**/groovy/grails/orm/hibernate/**", "**/groovy/grails/plugins/orm/hibernate/**",
+    with mainClassesIncludeSpec("grails/orm/**", "**/groovy/grails/orm/hibernate/**", "**/groovy/grails/plugins/orm/hibernate/**",
             "**/groovy/grails/validation/Hibernate**")
     osgify = true
     mavenArtifact = true
@@ -167,14 +167,14 @@ task webJar(type: Jar, description: 'Package up web related classes.') {
 
 task webflowJar(type: Jar, description: 'Package up Web Flow integration classes.') {
     appendix = "webflow"
-    from mainClassesIncludeSpec("**/groovy/grails/webflow/**", "**/groovy/grails/plugins/webflow/**")
+    with mainClassesIncludeSpec("**/groovy/grails/webflow/**", "**/groovy/grails/plugins/webflow/**")
     osgify = true
     mavenArtifact = true
 }
 
 task crudJar(type: Jar, description: 'Package up scaffolding related classes.') {
     appendix = "crud"
-    from mainClassesIncludeSpec("**/groovy/grails/scaffolding/**", "**/groovy/grails/plugins/scaffolding/**")
+    with mainClassesIncludeSpec("**/groovy/grails/scaffolding/**", "**/groovy/grails/plugins/scaffolding/**")
     osgify = true
     mavenArtifact = true
 }
