@@ -78,8 +78,8 @@ createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
 createTestTask("uniqueConstraints", ["**/UniqueConstraintTests.class"], [])
 createTestTask("webflow", ["**/webflow/**/*Tests.class"], ["**/Abstract*"])
 createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
-createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
-        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class"])
+//createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
+//        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class"])
 
 def createTestTask(name, includes, excludes) {
     createTestTaskWithoutSuffix("${name}Test", includes, excludes)
