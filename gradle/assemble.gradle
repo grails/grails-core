@@ -220,6 +220,10 @@ task osgiJar(type: Jar, dependsOn: [bootstrapJar, coreJar], description: 'Create
     from bootstrapJar.archivePath, coreJar.archivePath
     osgify = true
 }
+ 
+tasks.withType(Jar).allTasks { jarTask ->
+    jarTask.manifest.from project.manifest
+}
 
 task initBundlor(type: Copy) {
     dir = "$buildDir/bundlor"
