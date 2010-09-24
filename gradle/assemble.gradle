@@ -133,6 +133,7 @@ task bootstrapJar(type: Jar, description: 'Package up the classes used to bootst
             "grails/util/BuildScope*", "grails/util/GrailsMain*", "grails/ant/**/*", "**/groovy/grails/cli/**/*", "**/groovy/grails/resolve/**/*",
             "grails/build/**")
     from "build.properties"
+    rename "build.properties", "grails.build.properties"
     mavenArtifact = true
 }
 

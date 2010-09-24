@@ -21,7 +21,7 @@ if (!grailsHome) {
 
 // Load the build properties so that we can read the Grails version.
 def props = new Properties()
-props.load(getClass().getClassLoader().getResourceAsStream("build.properties"))
+props.load(getClass().getClassLoader().getResourceAsStream("grails.build.properties"))
 
 // We need JAVA_HOME so that we can get hold of the "tools.jar" file.
 def javaHome = new File(System.getenv("JAVA_HOME"))
