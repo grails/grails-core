@@ -140,8 +140,10 @@
         </antcall>
 
 
+		<copy file="${basedir}/build.properties" tofile="${grails.build}/grails.build.properties" />
         <jar destfile="${grails.dist}/grails-bootstrap-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.build}">
+			    <include name="grails.build.properties" />
                 <include name="META-INF/**" />
                 <include name="grails/util/BuildSettings*"/>
                 <include name="grails/util/GrailsNameUtils*"/>
@@ -154,8 +156,9 @@
                 <include name="**/groovy/grails/cli/**/*" />
                 <include name="**/groovy/grails/resolve/**/*" />
             </fileset>
-            <file file="${basedir}/build.properties"/>
         </jar>
+		<delete file="${grails.build}/grails.build.properties" />
+		
         <jar destfile="${grails.dist}/grails-scripts-${grails.version}.jar" manifest="${grails.build}/META-INF/MANIFEST.MF">
             <fileset dir="${grails.target}/compiled-scripts"/>
             <file file="${basedir}/scripts/log4j.properties"/>            
