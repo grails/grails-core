@@ -14,17 +14,17 @@ class BidirectionalOneToManyAndOneToOneTests extends AbstractGrailsHibernateTest
 import grails.persistence.*
 
 @Entity
-class Membership{
+class BidirectionalOneToManyAndOneToOneMembership{
 	String a = 'b'
-    static hasMany = [ referrals : User ]
-    static belongsTo = [ user: User ]
+    static hasMany = [ referrals : BidirectionalOneToManyAndOneToOneUser ]
+    static belongsTo = [ user: BidirectionalOneToManyAndOneToOneUser ]
 
 }
 
 @Entity
-class User{
+class BidirectionalOneToManyAndOneToOneUser{
     String name
-    Membership membership
+    BidirectionalOneToManyAndOneToOneMembership membership
 
     static mappedBy = [membership:"user"]
 }
@@ -35,8 +35,8 @@ class User{
     void testSaveAndLoad() {
         session.enableFilter("dynamicFilterEnabler")
         
-        def User = ga.getDomainClass("User").clazz
-        def Membership = ga.getDomainClass("Membership").clazz
+        def User = ga.getDomainClass("BidirectionalOneToManyAndOneToOneUser").clazz
+        def Membership = ga.getDomainClass("BidirectionalOneToManyAndOneToOneMembership").clazz
         def user = User.newInstance()
         user.name = 'Pete'
         user.membership = Membership.newInstance( user: user, dateCreated: new Date() )
