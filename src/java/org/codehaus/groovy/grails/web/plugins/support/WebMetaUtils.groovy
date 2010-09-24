@@ -58,12 +58,15 @@ class WebMetaUtils {
      * @return The new binding action
      */
     static Closure prepareCommandObjectBindingAction(Closure action, Closure originalAction,
-            String actionName, Object controller) {
+            String actionName, Object controller, ApplicationContext ctx) {
         def commandObjectAction = action.curry(originalAction, actionName)
         controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { ->
             def actionDelegate = commandObjectAction.clone()
             actionDelegate.delegate = delegate
             actionDelegate
+        }
+        for(type in originalAction.parameterTypes) {
+            enhanceCommandObject ctx, type
         }
         commandObjectAction.delegate = controller
         return commandObjectAction
@@ -89,7 +92,6 @@ class WebMetaUtils {
             for (paramType in paramTypes) {
                 if (GroovyObject.isAssignableFrom(paramType)) {
                     try {
-                        WebMetaUtils.enhanceCommandObject(ctx, paramType)
                         def commandObject
                         if (counter < commandObjects.size()) {
                             if (paramType.isInstance(commandObjects[counter])) {
