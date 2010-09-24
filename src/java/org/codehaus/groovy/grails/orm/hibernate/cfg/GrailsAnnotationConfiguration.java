@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Mappings;
+import org.hibernate.engine.FilterDefinition;
 
 /**
  * Allows configuring Grails' hibernate support to work in conjuntion with Hibernate's annotation
@@ -105,6 +107,9 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
             }
             Thread.currentThread().setContextClassLoader(grailsApplication.getClassLoader());
         }
+
+        // work around for HHH-2624
+        addFilterDefinition(new FilterDefinition("dynamicFilterEnabler","1=1", Collections.emptyMap()));
 
         SessionFactory sessionFactory = super.buildSessionFactory();
 
