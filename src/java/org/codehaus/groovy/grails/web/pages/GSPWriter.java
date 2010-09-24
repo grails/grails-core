@@ -45,12 +45,17 @@ public class GSPWriter extends PrintWriter {
     }
 
     public void printlnToResponse(String s) {
+    	printlnToResponse(GroovyPage.OUT, s);
+    }
+    
+    public void printlnToResponse(String outVarName, String s) {
         if (StringUtils.isEmpty(s)) {
             return;
         }
 
         parse.flushTagBuffering();
-        super.print("out.print(");
+        super.print(outVarName);
+        super.print(".print(");
         super.print(s);
         super.print(")");
         println();

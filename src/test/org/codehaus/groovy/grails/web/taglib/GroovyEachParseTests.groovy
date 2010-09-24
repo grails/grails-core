@@ -19,6 +19,7 @@ def request = binding.request
 def flash = binding.flash
 def response = binding.response
 def out = binding.out
+def codecOut = binding.codecOut
 registerSitemeshPreprocessMode(request)
 
 printHtmlPart(0)
@@ -44,6 +45,7 @@ def request = binding.request
 def flash = binding.flash
 def response = binding.response
 def out = binding.out
+def codecOut = binding.codecOut
 registerSitemeshPreprocessMode(request)
 
 printHtmlPart(0)
@@ -69,6 +71,7 @@ def request = binding.request
 def flash = binding.flash
 def response = binding.response
 def out = binding.out
+def codecOut = binding.codecOut
 registerSitemeshPreprocessMode(request)
 
 printHtmlPart(0)
