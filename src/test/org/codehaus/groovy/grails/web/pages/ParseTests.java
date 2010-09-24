@@ -72,6 +72,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -91,6 +92,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
 
             "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,null)\n" +
@@ -104,7 +106,7 @@ public class ParseTests extends TestCase {
             parseCode("myTest3", "<g:message value=\"${boom\">");
         }
         catch (GrailsTagException e) {
-            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'? at myTest3:17", e.getMessage());
+            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'? at myTest3:18", e.getMessage());
             return;
         }
         fail("Expected parse exception not thrown");
@@ -137,6 +139,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -171,6 +174,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -230,9 +234,10 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
             "printHtmlPart(0)\n" +
-            "out.print(Codec.encode(evaluate('uri', 3, it) { return uri }))\n" +
+            "codecOut.print(evaluate('uri', 3, it) { return uri })\n" +
             "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
 
@@ -261,6 +266,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
             "body1 = createClosureForHtmlPart(0)\n" +
             "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }] as GroovyPageAttributes,body1)\n" +
@@ -281,6 +287,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
@@ -299,6 +306,7 @@ public class ParseTests extends TestCase {
             "def flash = binding.flash\n" +
             "def response = binding.response\n" +
             "def out = binding.out\n" +
+            "def codecOut = binding.codecOut\n" +
             "registerSitemeshPreprocessMode(request)\n" +
             "printHtmlPart(0)\n" +
             "body1 = new GroovyPageTagBody(this,binding.webRequest, {\n" +

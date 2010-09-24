@@ -183,7 +183,7 @@ class GroovyPageWritable implements Writable {
             page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
             page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
             page.setHtmlParts(metaInfo.getHtmlParts());
-            page.initRun(out, webRequest);
+            page.initRun(out, webRequest, metaInfo.getCodecClass());
             int debugId=0;
             long debugStartTimeMs=0;
             if(debugTemplates) {

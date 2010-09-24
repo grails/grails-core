@@ -512,11 +512,10 @@ public class GroovyPageParser implements Tokens {
 
         String text = scan.getToken().trim();
         text = getExpressionText(text);
-        if (text.startsWith("(") && text.endsWith(")")) {
-            out.printlnToResponse("Codec.encode" + text);
-        }
-        else {
-            out.printlnToResponse("Codec.encode(" + text + ")");
+        if (text != null && text.length() > 2 && text.startsWith("(") && text.endsWith(")")) {
+            out.printlnToResponse(GroovyPage.CODEC_OUT, text.substring(1,text.length()-1));
+        } else {
+            out.printlnToResponse(GroovyPage.CODEC_OUT, text);
         }
     }
 
@@ -747,6 +746,7 @@ public class GroovyPageParser implements Tokens {
             out.println("def flash = binding.flash");
             out.println("def response = binding.response");
             out.println("def out = binding.out");
+            out.println("def codecOut = binding.codecOut");
             if (sitemeshPreprocessMode) {
                 out.println("registerSitemeshPreprocessMode(request)");
             }

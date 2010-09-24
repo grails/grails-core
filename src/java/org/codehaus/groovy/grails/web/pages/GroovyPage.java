@@ -42,6 +42,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.context.ApplicationContext;
 
@@ -64,6 +65,7 @@ public abstract class GroovyPage extends Script {
     public static final String SERVLET_CONTEXT = "application";
     public static final String RESPONSE = "response";
     public static final String OUT = "out";
+    public static final String CODEC_OUT = "codecOut";
     public static final String ATTRIBUTES = "attributes";
     public static final String APPLICATION_CONTEXT = "applicationContext";
     public static final String SESSION = "session";
@@ -153,7 +155,7 @@ public abstract class GroovyPage extends Script {
     }
 
     @SuppressWarnings("rawtypes")
-    public void initRun(Writer target, GrailsWebRequest grailsWebRequest) {
+    public void initRun(Writer target, GrailsWebRequest grailsWebRequest, Class codecClass) {
         outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         out = outputStack.getProxyWriter();
         this.webRequest = grailsWebRequest;
@@ -169,6 +171,13 @@ public abstract class GroovyPage extends Script {
             grailsWebRequest.setOut(out);
         }
         getBinding().setVariable(OUT, out);
+        Writer codecWriter;
+        if(codecClass != null) {
+        	codecWriter=new CodecPrintWriter(out, codecClass);
+        } else {
+        	codecWriter=out;
+        }
+        getBinding().setVariable(CODEC_OUT, codecWriter); 
     }
 
     public String getPluginContextPath() {
