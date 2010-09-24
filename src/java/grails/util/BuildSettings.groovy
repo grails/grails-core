@@ -465,6 +465,9 @@ class BuildSettings {
 
     private def loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
+        if(stream == null) {
+            stream = getClass().classLoader.getResourceAsStream("build.properties")
+        }
         if (stream) {
             buildProps.load(stream)
         }
