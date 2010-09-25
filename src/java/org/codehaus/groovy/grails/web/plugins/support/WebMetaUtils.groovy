@@ -45,7 +45,7 @@ class WebMetaUtils {
     static Closure createAndPrepareCommandObjectAction(GroovyObject controller, Closure originalAction,
             String actionName, ApplicationContext ctx) {
         def bindingAction = createCommandObjectBindingAction(ctx)
-        prepareCommandObjectBindingAction bindingAction, originalAction, actionName, controller
+        prepareCommandObjectBindingAction bindingAction, originalAction, actionName, controller, ctx
     }
 
     /**
