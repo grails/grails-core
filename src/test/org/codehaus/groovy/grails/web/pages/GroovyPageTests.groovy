@@ -74,7 +74,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
             GroovyPage gspScript = parseGroovyPage(pageCode)
             gspScript.binding = getBinding(pw)
-            gspScript.initRun(pw, webRequest)
+            gspScript.initRun(pw, webRequest, null)
             gspScript.run()
             result =  sw.toString()
         }

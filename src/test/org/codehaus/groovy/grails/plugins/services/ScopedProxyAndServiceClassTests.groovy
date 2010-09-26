@@ -1,36 +1,30 @@
 package org.codehaus.groovy.grails.plugins.services
 
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
-import grails.spring.BeanBuilder
+import grails.spring.WebBeanBuilder
 import org.springframework.web.context.support.WebApplicationContextUtils
 import grails.util.GrailsWebUtil
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 
-/**
- */
 class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
-
 
     // test for http://jira.codehaus.org/browse/GRAILS-6278
     void testScopedProxy() {
-        if(notYetImplemented()) return
-        
-        def bb = new BeanBuilder()
+        def bb = new WebBeanBuilder()
 
         GrailsWebUtil.bindMockWebRequest()
 
         bb.beans {
-            WebApplicationContextUtils.registerWebApplicationScopes(springConfig.beanFactory);
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
             testService(TestService) { bean ->
                 bean.scope = "session"
 
             }
-        	testScopeProxy(org.springframework.aop.scope.ScopedProxyFactoryBean){
-        		targetBeanName="testService"
-        		proxyTargetClass=true
-        	}
+            testScopeProxy(org.springframework.aop.scope.ScopedProxyFactoryBean){
+                targetBeanName="testService"
+                proxyTargetClass=true
+            }
 
         }
 
@@ -46,18 +40,21 @@ class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
         RequestContextHolder.setRequestAttributes null
     }
 }
+
 class TestService {
 
+    def myProperty = "foo"
 
-	def myProperty = "foo"
     def serviceMethod() {
-	    'bar'
+        'bar'
     }
 
     def indirectServiceMethod() {
-		serviceMethod()
-	}
+        serviceMethod()
+    }
 
+// - This was the workaround for the bug -
+// 
 //    private MetaClass metaClass
 //
 //    TestService() {

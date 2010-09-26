@@ -45,7 +45,7 @@ class WebMetaUtils {
     static Closure createAndPrepareCommandObjectAction(GroovyObject controller, Closure originalAction,
             String actionName, ApplicationContext ctx) {
         def bindingAction = createCommandObjectBindingAction(ctx)
-        prepareCommandObjectBindingAction bindingAction, originalAction, actionName, controller
+        prepareCommandObjectBindingAction bindingAction, originalAction, actionName, controller, ctx
     }
 
     /**
@@ -58,12 +58,15 @@ class WebMetaUtils {
      * @return The new binding action
      */
     static Closure prepareCommandObjectBindingAction(Closure action, Closure originalAction,
-            String actionName, Object controller) {
+            String actionName, Object controller, ApplicationContext ctx) {
         def commandObjectAction = action.curry(originalAction, actionName)
-        controller.metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { ->
+        controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { ->
             def actionDelegate = commandObjectAction.clone()
             actionDelegate.delegate = delegate
             actionDelegate
+        }
+        for(type in originalAction.parameterTypes) {
+            enhanceCommandObject ctx, type
         }
         commandObjectAction.delegate = controller
         return commandObjectAction
@@ -85,10 +88,10 @@ class WebMetaUtils {
                 commandObjects << v
             }
             def counter = 0
+            def params = RCH.currentRequestAttributes().params
             for (paramType in paramTypes) {
                 if (GroovyObject.isAssignableFrom(paramType)) {
                     try {
-                        WebMetaUtils.enhanceCommandObject(ctx, paramType)
                         def commandObject
                         if (counter < commandObjects.size()) {
                             if (paramType.isInstance(commandObjects[counter])) {
@@ -102,7 +105,7 @@ class WebMetaUtils {
                                 commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                             commandObjects << commandObject
                         }
-                        def params = RCH.currentRequestAttributes().params
+
                         bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
                         def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
                         def constrainedProperties = commandObject.constraints?.values()
@@ -173,7 +176,7 @@ class WebMetaUtils {
                     validationClosure()
                 }
             }
-            commandObjectMetaClass.constraints = constrainedPropertyBuilder.constrainedProperties
+            commandObjectMetaClass.getConstraints = {-> constrainedPropertyBuilder.constrainedProperties }
 
             commandObjectMetaClass.clearErrors = { ->
                 delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))

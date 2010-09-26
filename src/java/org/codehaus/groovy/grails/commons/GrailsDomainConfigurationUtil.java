@@ -55,10 +55,12 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.PropertyConfig;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.util.ClassUtils;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration.
@@ -377,7 +379,7 @@ public class GrailsDomainConfigurationUtil {
 
         Map<String, ConstrainedProperty> constrainedProperties = delegate.getConstrainedProperties();
         if (properties != null && !(constrainedProperties.isEmpty() && javaEntity)) {
-            boolean hasHibernate = PluginManagerHolder.getPluginManager().hasGrailsPlugin("hibernate");
+            boolean hasHibernate = isHibernatePresent();
             for (GrailsDomainClassProperty p : properties) {
                 // assume no formula issues if Hibernate isn't available to avoid CNFE
                 PropertyConfig propertyConfig = hasHibernate ? GrailsDomainBinder.getPropertyConfig(p) : null;
@@ -405,6 +407,12 @@ public class GrailsDomainConfigurationUtil {
         }
 
         return constrainedProperties;
+    }
+
+    private static boolean isHibernatePresent() {
+        final GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+        boolean hasHibernate = pluginManager != null && pluginManager.hasGrailsPlugin("hibernate") && ClassUtils.isPresent("org.hibernate.mapping.Value", GrailsDomainConfigurationUtil.class.getClassLoader());
+        return hasHibernate;
     }
 
     /**

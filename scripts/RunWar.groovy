@@ -31,7 +31,7 @@ includeTargets << grailsScript("_GrailsRun")
 
 shouldPackageTemplates = true
 
-target ('default': "Run's a Grails application's WAR in Jetty") {
+target ('default': "Runs a Grails application's WAR in an embedded web server") {
     depends(checkVersion, configureProxy, parseArguments)
 
     if (argsMap.restart) {

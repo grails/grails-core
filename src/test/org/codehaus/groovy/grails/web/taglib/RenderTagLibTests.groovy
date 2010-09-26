@@ -21,6 +21,7 @@ import com.opensymphony.module.sitemesh.RequestConstants
 import com.opensymphony.module.sitemesh.html.util.CharArray
 import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 
+import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib;
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -34,7 +35,6 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
  * @author Marcel Overdijk
  */
 class RenderTagLibTests extends AbstractGrailsTagTests {
-
     // test for GRAILS-5376
     void testPaginateTag() {
          def template = '<g:paginate controller="book" total="" offset="" />'
@@ -126,7 +126,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testRenderTagCollectionAndModel() {
-
+		RenderTagLib.TEMPLATE_CACHE.clear()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', '[book = ${string} it=${it} foo=${foo}]')
         appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader

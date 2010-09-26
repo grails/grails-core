@@ -23,6 +23,10 @@ class TestChainController {
             chain(action:'create',model:[book:book])
         }
     }
+
+    def testId = {
+        chain action: 'show', id: 5, model: [str: "Test param"]
+    }
 }
 class TestChainBook {
     Long id
@@ -50,5 +54,13 @@ class TestChainBook {
         org.springframework.mock.web.MockHttpServletResponse response = controller.response
 
         assertEquals '/testChain/create', response.redirectedUrl
+    }
+
+    void testChainMethodWithId() {
+        def controller = ga.getControllerClass("TestChainController").newInstance()
+        controller.testId()
+
+        assertEquals "Test param", controller.flash.chainModel.str 
+        assertEquals "/testChain/show/5", response.redirectedUrl 
     }
 }

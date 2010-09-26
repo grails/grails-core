@@ -180,6 +180,7 @@ class DocPublisher {
         def chapterContents = new StringBuffer()
         def chapterTitle = null
         def vars = [
+            encoding: encoding,
             title: title,
             subtitle: subtitle,
             footer: footer, // TODO - add a way to specify footer

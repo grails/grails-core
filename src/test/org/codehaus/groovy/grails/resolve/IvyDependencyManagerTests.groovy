@@ -473,11 +473,11 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-        assertEquals 52, manager.listDependencies('runtime').size()
-        assertEquals 55, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
+        assertEquals 53, manager.listDependencies('runtime').size()
+        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
-        assertEquals 22, manager.listDependencies('docs').size()
+        assertEquals 23, manager.listDependencies('docs').size()
 
     // This should be a functional test since it relies on the Grails
     // JAR files being built. It also runs Ivy, which isn't ideal
@@ -501,9 +501,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
-        assertEquals 54, manager.listDependencies('provided').size()
-        assertEquals 22, manager.listDependencies('docs').size()
+        assertEquals 20, manager.listDependencies('build').size()
+        assertEquals 55, manager.listDependencies('provided').size()
+        assertEquals 23, manager.listDependencies('docs').size()
         
         manager = new IvyDependencyManager("project", "0.1",settings)
         defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
@@ -513,11 +513,11 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
         
-        assertEquals 52, manager.listDependencies('runtime').size()
-        assertEquals 55, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
+        assertEquals 53, manager.listDependencies('runtime').size()
+        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
-        assertEquals 22, manager.listDependencies('docs').size()
+        assertEquals 23, manager.listDependencies('docs').size()
     }
 
     def getCurrentGrailsVersion() {

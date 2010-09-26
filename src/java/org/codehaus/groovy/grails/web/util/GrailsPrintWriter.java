@@ -35,13 +35,13 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  */
 public class GrailsPrintWriter extends PrintWriter {
 
-    private static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
-    private static final char CRLF[] = { '\r', '\n' };
+	protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
+    protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble=false;
     protected Writer out;
     protected boolean allowUnwrappingOut=true;
     private boolean finalTargetHere=false;
-    private boolean usageFlag=false;
+    protected boolean usageFlag=false;
 
     public GrailsPrintWriter(Writer out) {
         super(out);
@@ -429,21 +429,25 @@ public class GrailsPrintWriter extends PrintWriter {
         }
     }
 
-    private Writer findStreamCharBufferTarget(boolean markUsed) {
+    protected Writer findStreamCharBufferTarget(boolean markUsed) {
         Writer target = getOut();
         while (target instanceof GrailsPrintWriter) {
             GrailsPrintWriter gpr=((GrailsPrintWriter)target);
-            if (markUsed) {
-                gpr.setUsed(true);
+            if(gpr.isAllowUnwrappingOut()) {
+	            if (markUsed) {
+	                gpr.setUsed(true);
+	            }
+	            target = gpr.getOut();
+            } else {
+            	break;
             }
-            target = gpr.getOut();
         }
 
         if (target instanceof StreamCharBufferWriter) {
             return target;
+        } else {
+        	return getOut();
         }
-
-        return getOut();
     }
 
     public void print(final StreamCharBuffer otherBuffer) {

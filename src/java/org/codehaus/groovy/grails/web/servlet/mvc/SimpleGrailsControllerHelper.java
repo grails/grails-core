@@ -384,14 +384,14 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     public ModelAndView handleActionResponse( GroovyObject controller,Object returnValue,String closurePropertyName, String viewName) {
         boolean viewNameBlank = (viewName == null || viewName.length() == 0);
         // reset the metaclass
-        ModelAndView explicityModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
+        ModelAndView explicitModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
 
         if (!webRequest.isRenderView()) {
             return null;
         }
 
-        if (explicityModelAndView != null) {
-            return explicityModelAndView;
+        if (explicitModelAndView != null) {
+            return explicitModelAndView;
         }
 
         if (returnValue == null) {

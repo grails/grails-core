@@ -44,7 +44,7 @@
                             <td valign="top" class="value"><g:formatBoolean boolean="\${${propertyName}?.${p.name}}" /></td>
                             <%  } else if (p.type == Date.class || p.type == java.sql.Date.class || p.type == java.sql.Time.class || p.type == Calendar.class) { %>
                             <td valign="top" class="value"><g:formatDate date="\${${propertyName}?.${p.name}}" /></td>
-                            <%  } else { %>
+                            <%  } else if(!p.type.isArray()) { %>
                             <td valign="top" class="value">\${fieldValue(bean: ${propertyName}, field: "${p.name}")}</td>
                             <%  } %>
                         </tr>

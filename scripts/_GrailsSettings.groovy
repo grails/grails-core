@@ -45,7 +45,7 @@ if (grailsSettings.grailsHome) {
     ant.property(file: "${grailsHome}/build.properties")
 }
 else {
-    ant.property(resource: "build.properties")
+    ant.property(resource: "grails.build.properties")
 }
 
 /**

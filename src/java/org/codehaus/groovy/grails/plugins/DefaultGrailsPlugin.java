@@ -62,7 +62,10 @@ import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
@@ -1060,6 +1063,16 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private void invokeOnChangeListener(Map event) {
         onChangeListener.setDelegate(this);
         onChangeListener.call(new Object[]{event});
+        
+        // Apply any factory post processors in case the change listener has changed any
+        // bean definitions (GRAILS-5763)
+        if (applicationContext instanceof GenericApplicationContext) {
+            GenericApplicationContext ctx = (GenericApplicationContext) applicationContext;
+            ConfigurableListableBeanFactory beanFactory = ctx.getBeanFactory();
+            for (BeanFactoryPostProcessor postProcessor : ctx.getBeanFactoryPostProcessors()) {
+                postProcessor.postProcessBeanFactory(beanFactory);
+            }
+        }
     }
 
     public void doArtefactConfiguration() {

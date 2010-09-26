@@ -166,7 +166,7 @@
         -->
         <dependency>
             <groupId>net.sf.ehcache</groupId>
-            <artifactId>echache</artifactId>
+            <artifactId>ehcache</artifactId>
             <version>1.7.1</version>
             <optional>true</optional>
         </dependency>

@@ -63,7 +63,8 @@ class MockUtils {
             "NotEqual",
             "Like",
             "Ilike",
-            "Between"].asImmutable()
+            "Between",
+            "InList"].asImmutable()
     static final COMPARATORS_RE = COMPARATORS.join("|")
     static final DYNAMIC_FINDER_RE = /(\w+?)(${COMPARATORS_RE})?((And|Or)(\w+?)(${COMPARATORS_RE})?)?/
 
@@ -561,15 +562,15 @@ class MockUtils {
     private static void addDynamicFinders(Class clazz, List testInstances) {
         // Implement the dynamic class methods for domain classes.
 
-        clazz.metaClass.'static'.findAll = { -> TEST_INSTANCES[clazz] }
+        clazz.metaClass.static.findAll = { -> TEST_INSTANCES[clazz] }
 
-        clazz.metaClass.'static'.findAllWhere = { args = [:] ->
+        clazz.metaClass.static.findAllWhere = { args = [:] ->
             TEST_INSTANCES[clazz].findAll { instance ->
                 args.every { k,v -> instance[k] == v }
             }
         }
 
-        clazz.metaClass.'static'.methodMissing = { method, args ->
+        clazz.metaClass.static.methodMissing = { method, args ->
             def m = method =~ /^find(All)?By${DYNAMIC_FINDER_RE}$/
             if (m) {
                 def field = Introspector.decapitalize(m[0][2])
@@ -651,27 +652,28 @@ class MockUtils {
     }
 
     private static void addGetMethods(Class clazz, GrailsDomainClass dc, List testInstances) {
-        // We need to know the type of the "id" field for some of these
-        // methods.
+        // We need to know the type of the "id" field for some of these methods.
         Class idType = dc.identifier.type
 
         // First get()...
-        clazz.metaClass.'static'.get = { id ->
+        clazz.metaClass.static.get = { id ->
             id = convertToType(id, idType)
             return testInstances.find { it?.id == id }
         }
 
         // ..then read()...
-        clazz.metaClass.'static'.read = { id ->
+        clazz.metaClass.static.read = { id ->
             // We don't do anything different to get(). We certainly
             // don't enforce the "read-only" aspect, which would over-
             // complicate the implementation without any real benefit.
-            id = convertToType(id, idType)
-            return testInstances.find { it?.id == id }
+            delegate.get id
         }
 
+        // ..then load()...
+        clazz.metaClass.static.load = { id -> delegate.get id }
+
         // ...then getAll()...
-        clazz.metaClass.'static'.getAll = { Object[] args ->
+        clazz.metaClass.static.getAll = { Object[] args ->
             def idList = args
             if (args.length == 1 && (args[0] instanceof List || args[0].getClass().array)) {
                 idList = args[0]
@@ -681,7 +683,7 @@ class MockUtils {
             return idList?.collect {id -> testInstances.find { it.id == id }}?.findAll { it != null }
         }
 
-        clazz.metaClass.'static'.getAll = { List idList ->
+        clazz.metaClass.static.getAll = { List idList ->
             idList = idList?.collect { convertToType(it, idType) }
             return idList?.collect {id -> testInstances.find { it.id == id }}?.findAll { it != null }
         }
@@ -690,7 +692,7 @@ class MockUtils {
         clazz.metaClass.ident = {-> delegate.id }
 
         // ...and finally exists().
-        clazz.metaClass.'static'.exists = {id ->
+        clazz.metaClass.static.exists = {id ->
             id = convertToType(id, idType)
             return testInstances.find { it?.id == id } != null
         }
@@ -698,7 +700,7 @@ class MockUtils {
 
     private static void addListMethod(Class clazz, List testInstances) {
         // Implement the dynamic class methods for domain classes.
-        clazz.metaClass.'static'.list = { args = [:] ->
+        clazz.metaClass.static.list = { args = [:] ->
             if (args) {
                 return applyQueryOptions(testInstances, args)
             }
@@ -711,7 +713,7 @@ class MockUtils {
      * domain classes.
      */
     private static void addOtherStaticMethods(Class clazz, List testInstances) {
-        clazz.metaClass.'static'.create = {-> clazz.newInstance()}
+        clazz.metaClass.static.create = {-> clazz.newInstance()}
     }
 
     private static void triggerEvent(Object delegate, String eventName) {
@@ -1095,6 +1097,10 @@ class MockUtils {
             case "Between":
                 if (propValue >= args[0] && propValue <= args[1]) result << record
                 break
+                
+            case "InList":
+                 if (propValue in args[0]) result << record
+                 break;
 
             default:
                 throw new RuntimeException("Unrecognised comparator: ${comparator}")

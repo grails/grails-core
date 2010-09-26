@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -35,6 +37,8 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
 
     private GrailsApplication grailsApplication;
     private Closure commandObjectBindingAction;
+    private Collection processedControllerNames = new ConcurrentLinkedQueue();
+    private ApplicationContext applicationContext;
 
     public CommandObjectEnablingPostProcessor(ApplicationContext applicationContext) {
         setApplicationContext(applicationContext);
@@ -52,21 +56,25 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
                     if (value instanceof Closure) {
                         final Closure callable = (Closure) value;
                         if (WebMetaUtils.isCommandObjectAction(callable)) {
-                            WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, propName, controller);
+                            WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, propName, controller, applicationContext);
                         }
                     }
                 }
+                processedControllerNames.add(beanName);
             }
         }
         return super.postProcessBeforeInitialization(bean, beanName);
     }
 
     private boolean shouldPostProcessController(Object bean, String beanName) {
-        return grailsApplication!=null && bean != null && (bean instanceof GroovyObject) && beanName.endsWith(ControllerArtefactHandler.TYPE);
+        return beanName.endsWith(ControllerArtefactHandler.TYPE) &&
+               !processedControllerNames.contains(beanName) &&
+               grailsApplication != null && bean != null && (bean instanceof GroovyObject);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         grailsApplication = applicationContext.getBean(GrailsApplication.class);
         commandObjectBindingAction = WebMetaUtils.createCommandObjectBindingAction(applicationContext);
+        this.applicationContext = applicationContext;
     }
 }

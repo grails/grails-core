@@ -34,6 +34,18 @@ mappings {
   "/foo"(controller:"foo", parseRequest:true)
 
   "/bar"(uri:"/x/y")
+
+  "/surveys/view/$id" {
+      controller = "survey"
+      action = "viewById"
+      constraints {
+         id(matches:/\\d+/)
+      }
+  }
+  "/surveys/view/$name" {
+      controller = "survey"
+      action = "viewByName"
+  }
 }
 '''
     void testMaptoURI() {
@@ -305,6 +317,20 @@ mappings {
         assertNull info
     }
 
+	void testConstraintAsTiebreaker() {
+		// test that two similar rules that only differ by # of constraints are evaluated correctly
+		def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
+
+		def info = holder.match("/surveys/view/123")
+		assertNotNull info
+		assertEquals 'survey', info.controllerName
+		assertEquals 'viewById', info.actionName
+
+		info = holder.match("/surveys/view/foo")
+		assertNotNull info
+		assertEquals 'survey', info.controllerName
+		assertEquals 'viewByName', info.actionName
+	}
 
     void testInit() {
         def parser = new DefaultUrlMappingParser()

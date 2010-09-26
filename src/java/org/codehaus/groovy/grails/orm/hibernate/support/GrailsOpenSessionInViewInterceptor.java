@@ -52,6 +52,10 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
         }
         else {
             super.preHandle(request);
+            SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.getResource(getSessionFactory());
+            Session session = sessionHolder.getSession();
+            
+            session.enableFilter("dynamicFilterEnabler"); // work around for HHH-2624
         }
     }
 

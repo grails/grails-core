@@ -103,5 +103,16 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
         assertEquals(1, appCtx.getBean('someTransactionalService').i)
         assertEquals(2, appCtx.getBean('nonTransactionalService').i)
+
+        // test that the overrides are applied on a reload - GRAILS-5763
+        plugin.manager = [informObservers: { String pluginName, Map event -> }] as GrailsPluginManager
+        plugin.applicationContext = appCtx
+        
+        ["SomeTransactionalService", "NonTransactionalService"].each {
+            plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, gcl.loadClass(it))
+        }
+        
+        assertEquals(1, appCtx.getBean('someTransactionalService').i)
+        assertEquals(2, appCtx.getBean('nonTransactionalService').i)
     }
 }

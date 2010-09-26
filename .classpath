@@ -78,5 +78,6 @@
 	<classpathentry kind="lib" path="lib/org.springframework.web-3.0.3.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.3.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.webflow-2.0.8.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.0.jar"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>

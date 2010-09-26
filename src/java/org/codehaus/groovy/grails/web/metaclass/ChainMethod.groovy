@@ -70,6 +70,10 @@ class ChainMethod {
 
         UrlMappingsHolder mappings = appCtx.getBean(UrlMappingsHolder.BEAN_ID)
 
+        // Make sure that if an ID was given, it is used to evaluate
+        // the reverse URL mapping.
+        if (id) params.id = id
+
         UrlCreator creator = mappings.getReverseMapping(controller, action, params)
         def response = webRequest.getCurrentResponse()
 

@@ -129,6 +129,9 @@ td.errors select {
 td.errors input {
     border: 1px solid red;
 }
+td.errors textarea {
+    border: 1px solid red;
+}
 
 /* TABLES */
 

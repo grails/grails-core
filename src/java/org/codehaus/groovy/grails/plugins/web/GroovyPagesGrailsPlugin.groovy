@@ -92,6 +92,7 @@ class GroovyPagesGrailsPlugin {
         Environment env = Environment.current
         boolean enableReload = env.isReloadEnabled() ||
             application.config.grails.gsp.enable.reload == true ||
+			Boolean.getBoolean('grails.gsp.reload.enable') ||
             (developmentMode && env == Environment.DEVELOPMENT)
         boolean warDeployedWithReload = application.warDeployed && enableReload
 

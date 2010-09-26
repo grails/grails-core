@@ -48,7 +48,7 @@ public class PluginFilterRetriever {
         }
         else if (excludes != null) {
             if (excludes instanceof Collection) {
-                pluginFilter = new ExcludingPluginFilter(new HashSet((Collection)includes));
+                pluginFilter = new ExcludingPluginFilter(new HashSet((Collection)excludes));
             }
             else {
                 String[] excludesArray = StringUtils.commaDelimitedListToStringArray(excludes.toString());

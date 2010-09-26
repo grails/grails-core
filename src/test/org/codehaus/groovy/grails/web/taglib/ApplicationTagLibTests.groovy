@@ -96,6 +96,8 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     void testLinkWithMultipleParameters() {
         def template = '<g:link controller="foo" action="action" params="[test: \'test\', test2: \'test2\']">test</g:link>'
         assertOutputEquals('<a href="/foo/action?test=test&amp;test2=test2">test</a>', template)
+		// test caching too
+		assertOutputEquals('<a href="/foo/action?test=test&amp;test2=test2">test</a>', template)
     }
 
     void testLikeWithElementId() {

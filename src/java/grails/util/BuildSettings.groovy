@@ -140,7 +140,11 @@ class BuildSettings extends AbstractBuildSettings {
      */
     public static final String VERBOSE_COMPILE = "grails.project.compile.verbose"
 
-
+    /**
+     * A system property with this name is populated in the preparation phase of functional testing
+     * with the base URL that tests should be run against.
+     */
+    public static final String FUNCTIONAL_BASE_URL_PROPERTY = 'grails.testing.functional.baseUrl'
 
 
     /**
@@ -469,7 +473,10 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     private def loadBuildPropertiesFromClasspath(Properties buildProps) {
-        InputStream stream = getClass().classLoader.getResourceAsStream("build.properties")
+        InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
+        if(stream == null) {
+            stream = getClass().classLoader.getResourceAsStream("build.properties")
+        }
         if (stream) {
             buildProps.load(stream)
         }
@@ -998,5 +1005,9 @@ class BuildSettings extends AbstractBuildSettings {
     void setWebXmlLocation(File location) {
         webXmlLocation = location
         webXmlFileSet = true
+    }
+    
+    String getFunctionalTestBaseUrl() {
+        System.getProperty(FUNCTIONAL_BASE_URL_PROPERTY)
     }
 }
