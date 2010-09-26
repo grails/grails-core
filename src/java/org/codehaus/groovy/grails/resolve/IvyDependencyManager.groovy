@@ -238,7 +238,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                       "org.slf4j:slf4j-api:1.5.8",
                       "org.slf4j:slf4j-log4j12:1.5.8",
                       "org.springframework:org.springframework.test:3.0.3.RELEASE",
-                      "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0"
+                      "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5"
 
                 docs   "org.xhtmlrenderer:core-renderer:R8",
                        "com.lowagie:itext:2.0.8",
@@ -258,7 +258,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 }
 
                 "${compileTimeDependenciesMethod}"("aopalliance:aopalliance:1.0",
-                        "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0",
+                        "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5",
                         "commons-codec:commons-codec:1.3",
                         "commons-collections:commons-collections:3.2.1",
                         "commons-io:commons-io:1.4",
