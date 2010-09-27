@@ -172,10 +172,10 @@ class GroovyPageWritable implements Writable {
 
             if (metaInfo.getCodecClass() != null) {
                 request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
-                binding.setVariable("Codec", metaInfo.getCodecClass());
+                binding.setVariable(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             }
             else {
-                binding.setVariable("Codec", gspNoneCodeInstance);
+                binding.setVariable(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
             }
 
             GroovyPage page = (GroovyPage) InvokerHelper.createScript(metaInfo.getPageClass(), binding);
