@@ -200,18 +200,32 @@ target (war: "The implementation target") {
                 def i = descriptor.isSupportedInConfiguration("runtime") || descriptor.isSupportedInConfiguration("compile")
                 i != null ? i : true
             }else{
-		true
-	    }
+		        true
+	        }
         }
 
         if (includeJars) {
             if (pluginInfos) {
-                ant.copy(todir:"${stagingDir}/WEB-INF/lib", flatten:true, failonerror:false, preservelastmodified:true) {
+                def libDir = "${stagingDir}/WEB-INF/lib"
+                ant.copy(todir:libDir, flatten:true, failonerror:false, preservelastmodified:true) {
                     for (GrailsPluginInfo info in pluginInfos) {
                         fileset(dir: info.pluginDir.file.path) {
                             include(name:"lib/*.jar")
                         }
                     }
+                }
+
+                for(GrailsPluginInfo info in pluginInfos) {
+                    IvyDependencyManager freshManager = new IvyDependencyManager(info.name, info.version)
+                    freshManager.parseDependencies {}
+                    freshManager.chainResolver = grailsSettings.dependencyManager.chainResolver
+                    grailsSettings.pluginDependencyHandler(freshManager).call(info.pluginDir.file.canonicalFile)
+                    for(File file in freshManager.resolveDependencies("runtime").allArtifactsReports.localFile) {
+                        if(file) {
+                            ant.copy(file:file, todir:libDir)
+                        }
+                    }
+                    
                 }
             }
         }
