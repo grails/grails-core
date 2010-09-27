@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
@@ -35,6 +36,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.AnyType;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
+import org.springframework.context.MessageSource;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.validation.Validator;
 
@@ -60,6 +62,8 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     private Validator validator;
 
+    private GrailsApplication application;
+
     private Set subClasses = new HashSet();
     private Map constraints = Collections.emptyMap();
     private Map<String, Object> defaultConstraints = Collections.emptyMap();
@@ -73,9 +77,10 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
      * @param metaData       The ClassMetaData for this class retrieved from the SF
      * @param defaultConstraints The default global constraints definition
      */
-    public GrailsHibernateDomainClass(Class<?> clazz, SessionFactory sessionFactory,
+    public GrailsHibernateDomainClass(Class<?> clazz, SessionFactory sessionFactory, GrailsApplication application,
             ClassMetadata metaData, Map<String, Object> defaultConstraints) {
         super(clazz, "");
+        this.application = application;
 
         new StandardAnnotationMetadata(clazz);
         String ident = metaData.getIdentifierPropertyName();
@@ -249,6 +254,8 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         if (validator == null) {
             GrailsDomainClassValidator gdcv = new GrailsDomainClassValidator();
             gdcv.setDomainClass(this);
+            MessageSource messageSource = (MessageSource) application.getMainContext().getBean("messageSource");
+            gdcv.setMessageSource(messageSource);
             validator = gdcv;
         }
         return validator;
