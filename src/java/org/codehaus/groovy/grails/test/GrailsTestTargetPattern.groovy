@@ -78,12 +78,7 @@ class GrailsTestTargetPattern {
     }
 
     boolean matchesClass(String className, String[] suffixes) {
-        if (suffixes) {
-            def suffixesAsPattern = suffixes.collect { Pattern.quote(it) }.join('|')
-            className = className.replaceAll("(${suffixesAsPattern})\$", "")
-        }
-        def classNameAsPath = className.replace('.', '/')
-        new AntPathMatcher().match(filePattern, classNameAsPath)
+        matchesClassWithExtension(className) || matchesClassWithoutExtension(className, suffixes)
     }
     
     boolean matchesMethod(String methodName) {
@@ -94,6 +89,19 @@ class GrailsTestTargetPattern {
         this.methodName != null
     }
 
+    protected boolean matchesClassWithExtension(String className) {
+        new AntPathMatcher().match(filePattern, className.replace('.', '/'))
+    }
+
+    protected boolean matchesClassWithoutExtension(String className, String[] suffixes) {
+        if (suffixes) {
+            def suffixesAsPattern = suffixes.collect { Pattern.quote(it) }.join('|')
+            className = className.replaceAll("(${suffixesAsPattern})\$", "")
+        }
+        def classNameAsPath = className.replace('.', '/')
+        new AntPathMatcher().match(filePattern, classNameAsPath)
+    }
+    
     protected boolean containsMethodName(pattern) {
         pattern.contains('.') && Character.isLowerCase(pattern.charAt(pattern.lastIndexOf('.') + 1))
     }

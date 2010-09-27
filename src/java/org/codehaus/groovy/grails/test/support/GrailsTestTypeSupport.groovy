@@ -167,7 +167,8 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     protected List<File> findSourceFiles(GrailsTestTargetPattern targetPattern) {
         def sourceFiles = []
         def resolveResources = buildBinding['resolveResources']
-        testSuffixes.each { suffix ->
+        def suffixes = testSuffixes + [""] // support the target pattern containing the suffix
+        suffixes.each { suffix ->
             testExtensions.each { extension ->
                 def resources = resolveResources("file:${sourceDir.absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
                 sourceFiles.addAll(resources*.file.findAll { it.exists() }.toList())
