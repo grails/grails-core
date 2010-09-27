@@ -143,7 +143,7 @@ public class GrailsHibernateUtil {
         if (dc == null) {
             // a patch to add inheritance to this system
             GrailsHibernateDomainClass ghdc = new GrailsHibernateDomainClass(
-                    persistentClass, sessionFactory, cmd, defaultContraints);
+                    persistentClass, sessionFactory, application, cmd, defaultContraints);
 
             hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
             dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
