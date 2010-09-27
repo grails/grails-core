@@ -42,7 +42,7 @@ class SynchronizerToken implements Serializable {
     }
 
     static SynchronizerToken store(HttpSession session) {
-        SynchronizerToken token = new SynchronizerToken()
+        SynchronizerToken token = session.getAttribute(KEY) ?: new SynchronizerToken()
         session.setAttribute(KEY, token)
         return token
     }
