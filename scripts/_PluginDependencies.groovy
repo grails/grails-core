@@ -36,6 +36,8 @@ import org.codehaus.groovy.grails.resolve.PluginInstallEngine
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -277,7 +279,15 @@ target(loadPlugins:"Loads Grails' plugins") {
                 if (pluginManager.failedLoadPlugins) {
                     event("StatusError", ["Error: The following plugins failed to load due to missing dependencies: ${pluginManager.failedLoadPlugins*.name}"])
                     for (p in pluginManager.failedLoadPlugins) {
-                        println "- Plugin: $p.name, Dependencies: $p.dependencyNames"
+                        println "- Plugin: $p.name"
+                        println "   - Dependencies:"
+                        for(depName in p.dependencyNames) {
+                            GrailsPlugin depInfo = pluginManager.getGrailsPlugin(depName)
+                            def specifiedVersion = p.getDependentVersion(depName)
+                            def invalid = depInfo && GrailsPluginUtils.isValidVersion(depInfo.version, specifiedVersion ) ? '' : '[INVALID]'
+                            println "       ${invalid ? '!' :'-' } ${depName} (Required: ${specifiedVersion}, Found: ${depInfo?.version ?: 'Not Installed'}) ${invalid}"
+                        }
+
                     }
                     exit(1)
                 }
@@ -433,6 +443,12 @@ private PluginInstallEngine createPluginInstallEngine() {
         File pluginEvents = new File("${pluginInstallPath}/scripts/_Events.groovy")
         if (pluginEvents.exists()) {
             eventListener.loadEventsScript(pluginEvents)
+        }
+        try {
+            clean()
+        }
+        catch (e) {
+            // ignore
         }
         resetClasspath()
     }
