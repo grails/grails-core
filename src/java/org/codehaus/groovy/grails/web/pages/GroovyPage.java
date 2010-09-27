@@ -66,6 +66,7 @@ public abstract class GroovyPage extends Script {
     public static final String RESPONSE = "response";
     public static final String OUT = "out";
     public static final String CODEC_OUT = "codecOut";
+    public static final String CODEC_VARNAME = "Codec";
     public static final String ATTRIBUTES = "attributes";
     public static final String APPLICATION_CONTEXT = "applicationContext";
     public static final String SESSION = "session";
@@ -87,6 +88,8 @@ public abstract class GroovyPage extends Script {
             SERVLET_CONTEXT,
             RESPONSE,
             OUT,
+            CODEC_OUT,
+            CODEC_VARNAME,
             ATTRIBUTES,
             APPLICATION_CONTEXT,
             SESSION,
