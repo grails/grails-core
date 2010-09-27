@@ -14,21 +14,23 @@
  */
 package org.codehaus.groovy.grails.webflow.engine.builder
 
+import grails.util.GrailsNameUtils
+import java.beans.PropertyDescriptor
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.metaclass.PropertyExpression
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.beans.BeanUtils
 import org.springframework.binding.expression.support.StaticExpression
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.util.Assert
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.webflow.action.ExternalRedirectAction
 import org.springframework.webflow.action.ViewFactoryActionAdapter
-import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.webflow.core.collection.LocalAttributeMap
 import org.springframework.webflow.definition.registry.FlowDefinitionLocator
-import org.springframework.webflow.engine.*
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.springframework.webflow.engine.builder.FlowArtifactFactory
 import org.springframework.webflow.engine.builder.FlowBuilderContext
 import org.springframework.webflow.engine.builder.FlowBuilderException
@@ -42,11 +44,7 @@ import org.springframework.webflow.engine.support.TransitionExecutingFlowExecuti
 import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.ViewFactory
-import org.springframework.beans.BeanUtils
-
-import grails.util.GrailsNameUtils
-
-import java.beans.PropertyDescriptor
+import org.springframework.webflow.engine.*
 
 /**
 * <p>A builder implementation used to construct Spring Webflows. This is a DSL specifically
@@ -91,11 +89,13 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
     String viewPath = "/"
 
     protected FlowBuilderServices flowBuilderServices
+    protected FlowDefinitionLocator definitionLocator
 
     FlowBuilder(String flowId, FlowBuilderServices flowBuilderServices, FlowDefinitionLocator definitionLocator) {
         this.flowId = flowId
         Assert.notNull flowBuilderServices, "Argument [flowBuilderServices] is required!"
         this.flowBuilderServices = flowBuilderServices
+        this.definitionLocator = definitionLocator
         this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(FlowBuilder.class)
 
         def context = new FlowBuilderContextImpl(flowId,null, definitionLocator, flowBuilderServices)
@@ -185,16 +185,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                         // add action state
                         state = createActionState(name, action, trans, flowFactory, flowInfo.entryAction, flowInfo.exitAction)
                     }
-                    else if (flowInfo.subflow) {
-                        def i = flowId.indexOf('/')
-                        def subflowClass = flowInfo.subflow.getThisObject().getClass()
-                        def controllerName = GrailsNameUtils.getLogicalPropertyName(subflowClass.name, "Controller")
-                        def subflowId = "${controllerName}/$name"
-                        FlowBuilder subFlowBuilder = new FlowBuilder(subflowId, flowBuilderServices,
-                                        getContext().getFlowDefinitionLocator())
-                        subFlowBuilder.viewPath = this.viewPath
-                        Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
-                        state = createSubFlow(name, subflow, trans, flowFactory)
+                    else if (flowInfo.subflow || flowInfo.subflowAction) {
+                        state = createSubFlow(flowInfo, flowFactory, name)
                     }
                     else {
                         String view = createViewPath(flowInfo, name)
@@ -298,9 +290,31 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
     }
 
-    private State createSubFlow(String stateId, Flow subflow, Transition[] trans, FlowArtifactFactory flowFactory) {
+    private State createSubFlow(flowInfo, flowFactory, stateId) {
+        def subflowId
+        if (flowInfo.subflow) {
+            //backwards compatibility: only subflow closure is supplied and the containing state must have the same name as the called subflow
+            def controllerClass = flowInfo.subflow.getThisObject().getClass()
+            def controllerName = GrailsNameUtils.getLogicalPropertyName(controllerClass.name, "Controller")
+            subflowId = "${controllerName}/$stateId"
+        }
+        else {
+            //preferred way: subflow action and optional controller name are supplied
+            def controllerName
+            if (flowInfo.subflowController) {
+                controllerName = flowInfo.subflowController
+            }
+            else {
+                //assume that the subflow is defined in the same controller as the calling flow
+                Class controllerClass = flowClosure.getThisObject().getClass()
+                controllerName = GrailsNameUtils.getLogicalPropertyName(controllerClass.name, "Controller")
+            }
+            subflowId = "${controllerName}/$flowInfo.subflowAction"
+        }
+        Flow subflow = definitionLocator.getFlowDefinition(subflowId)
+
         return flowFactory.createSubflowState(stateId, getFlow(), null, new StaticExpression(subflow),
-            null, trans, null, null, null)
+                null, flowInfo.transitions, null, null, null)
     }
 
     private State createActionState(String stateId, Closure action, Transition[] transitions,
@@ -403,6 +417,8 @@ class FlowInfoCapturer {
     private Closure entryAction
     private Closure exitAction
     private Closure subflow
+    private String subflowController
+    private String subflowAction
     private String viewName
     private applicationContext
     private redirectUrl
@@ -460,6 +476,14 @@ class FlowInfoCapturer {
 
     void subflow(Closure callable) {
         this.subflow = callable
+    }
+
+    void subflow(Map args) {
+        if (!args.action) {
+            throw new FlowDefinitionException("subflow action is mandatory")
+        }
+        this.subflowController = args.controller
+        this.subflowAction = args.action
     }
 
     void render(Map args) {

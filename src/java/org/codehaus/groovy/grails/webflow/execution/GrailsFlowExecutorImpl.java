@@ -38,6 +38,7 @@ import org.springframework.webflow.executor.FlowExecutorImpl;
  */
 public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
 
+    public static final String ACTIVE_FLOW_ID_ATTRIBUTE = "org.codehaus.groovy.grails.ACTIVE_FLOW_ID_ATTRIBUTE";
     private static final Log LOG = LogFactory.getLog(GrailsFlowExecutorImpl.class);
 
     /**
@@ -64,6 +65,7 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
             FlowExecutionKey key = executionRepository.parseFlowExecutionKey(flowExecutionKey);
             FlowExecution flowExecution = executionRepository.getFlowExecution(key);
             GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+            webRequest.getCurrentRequest().setAttribute(ACTIVE_FLOW_ID_ATTRIBUTE, flowExecution.getActiveSession().getDefinition().getId());
 
             if (isNotValidFlowDefinitionId(flowExecution, webRequest)) {
                 return super.launchExecution(webRequest.getControllerName() + "/" +

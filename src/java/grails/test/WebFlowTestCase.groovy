@@ -35,6 +35,9 @@ import org.springframework.webflow.expression.DefaultExpressionParserFactory
 import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
 import org.springframework.webflow.test.MockExternalContext
 import org.springframework.webflow.test.execution.AbstractFlowExecutionTests
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
+import org.springframework.webflow.engine.builder.FlowAssembler
+import org.springframework.webflow.engine.builder.DefaultFlowHolder
 
 /**
  * A test harness for testing Grails flows.
@@ -44,6 +47,10 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
     protected MockHttpServletRequest mockRequest
     protected MockHttpServletResponse mockResponse
     protected MockServletContext mockServletContext
+    protected FlowDefinitionRegistry flowDefinitionRegistry
+    protected ApplicationContext applicationContext
+    protected FlowBuilderServices flowBuilderServices
+    protected MvcViewFactoryCreator viewCreator
 
     /**
      * Subclasses should return the flow closure that within the controller. For example:
@@ -63,12 +70,25 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
             mockRequest = webRequest.currentRequest
             mockResponse = webRequest.currentResponse
             mockServletContext = webRequest.getServletContext()
+            applicationContext = WebApplicationContextUtils.getWebApplicationContext(webRequest.getServletContext())
         }
         else {
             mockRequest = new MockHttpServletRequest()
             mockResponse = new MockHttpServletResponse()
             mockServletContext = new MockServletContext()
         }
+        if (!applicationContext) applicationContext = new GrailsWebApplicationContext()
+        flowDefinitionRegistry = new FlowDefinitionRegistryImpl()
+        flowBuilderServices = new FlowBuilderServices()
+        viewCreator = new MvcViewFactoryCreator()
+        viewCreator.applicationContext = applicationContext
+        def viewResolvers = applicationContext?.getBeansOfType(ViewResolver)
+        if (viewResolvers) {
+            viewCreator.viewResolvers = viewResolvers.values().toList()
+        }
+        flowBuilderServices.viewFactoryCreator = viewCreator
+        flowBuilderServices.conversionService = new DefaultConversionService()
+        flowBuilderServices.expressionParser = DefaultExpressionParserFactory.getExpressionParser()
     }
 
     protected void tearDown() {
@@ -78,28 +98,17 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         mockServletContext = null
     }
 
-    FlowDefinition getFlowDefinition() {
-        GrailsWebRequest webRequest = RequestContextHolder.getRequestAttributes()
-        ApplicationContext applicationContext
-        if (webRequest) {
-            applicationContext = WebApplicationContextUtils.getWebApplicationContext(webRequest.getServletContext())
-        }
-        if (!applicationContext) applicationContext = new GrailsWebApplicationContext()
-
-        def flowBuilderServices = new FlowBuilderServices()
-        MvcViewFactoryCreator viewCreator = new MvcViewFactoryCreator()
-        viewCreator.applicationContext = applicationContext
-        def viewResolvers = applicationContext?.getBeansOfType(ViewResolver)
-        if (viewResolvers) {
-            viewCreator.viewResolvers = viewResolvers.values().toList()
-        }
-        flowBuilderServices.viewFactoryCreator = viewCreator
-        flowBuilderServices.conversionService = new DefaultConversionService()
-        flowBuilderServices.expressionParser = DefaultExpressionParserFactory.getExpressionParser()
-
-        FlowBuilder builder = new FlowBuilder(getFlowId(), flowBuilderServices, new FlowDefinitionRegistryImpl())
+    FlowDefinition registerFlow(String flowId, Closure flowClosure) {
+        FlowBuilder builder = new FlowBuilder(flowId, flowClosure, flowBuilderServices, flowDefinitionRegistry)
+        builder.viewPath = "/"
         builder.applicationContext = applicationContext
-        builder.flow(getFlow())
+        FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
+        flowDefinitionRegistry.registerFlowDefinition(new DefaultFlowHolder(assembler))
+        return flowDefinitionRegistry.getFlowDefinition(flowId)
+    }
+
+    FlowDefinition getFlowDefinition() {
+        return registerFlow(getFlowId(), getFlow())
     }
 
     /**
