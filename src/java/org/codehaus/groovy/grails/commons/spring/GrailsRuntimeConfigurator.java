@@ -19,9 +19,11 @@ import grails.spring.BeanBuilder;
 import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.Script;
+import groovy.lang.Binding;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import javax.servlet.ServletContext;
 
@@ -302,7 +304,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                 LOG.debug("[RuntimeConfiguration] " + GrailsRuntimeConfigurator.SPRING_RESOURCES_XML + " not found. Skipping configuration.");
             }
 
-            GrailsRuntimeConfigurator.loadSpringGroovyResources(springConfig, classLoader);
+            GrailsRuntimeConfigurator.loadSpringGroovyResources(springConfig, app);
         }
         catch (Exception ex) {
             LOG.warn("[RuntimeConfiguration] Unable to perform post initialization config: " + SPRING_RESOURCES_XML, ex);
@@ -318,10 +320,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * @param classLoader
      * @param context
      */
-    private static void doLoadSpringGroovyResources(RuntimeSpringConfiguration config, ClassLoader classLoader,
+    private static void doLoadSpringGroovyResources(RuntimeSpringConfiguration config, GrailsApplication application,
             GenericApplicationContext context) {
 
-        loadExternalSpringConfig(config, classLoader);
+        loadExternalSpringConfig(config, application);
         if (context != null) {
             springGroovyResourcesBeanBuilder.registerBeans(context);
         }
@@ -332,19 +334,20 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * @param config The config instance
      * @param classLoader The class loader
      */
-    public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, ClassLoader classLoader) {
+    public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, final GrailsApplication application) {
         if (springGroovyResourcesBeanBuilder == null) {
             try {
                 Class<?> groovySpringResourcesClass = null;
                 try {
                     groovySpringResourcesClass = ClassUtils.forName(GrailsRuntimeConfigurator.SPRING_RESOURCES_CLASS,
-                            classLoader);
+                            application.getClassLoader());
                 }
                 catch (ClassNotFoundException e) {
                     // ignore
                 }
                 if (groovySpringResourcesClass != null) {
                     springGroovyResourcesBeanBuilder = new BeanBuilder(null, config,Thread.currentThread().getContextClassLoader());
+                    springGroovyResourcesBeanBuilder.setBinding(new Binding(new HashMap() {{ put("application", application); }}));
                     Script script = (Script) groovySpringResourcesClass.newInstance();
                     script.run();
                     Object beans = script.getProperty("beans");
@@ -363,14 +366,14 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
     }
 
-    public static void loadSpringGroovyResources(RuntimeSpringConfiguration config, ClassLoader classLoader) {
-        loadExternalSpringConfig(config, classLoader);
+    public static void loadSpringGroovyResources(RuntimeSpringConfiguration config, GrailsApplication application) {
+        loadExternalSpringConfig(config, application);
     }
 
-    public static void loadSpringGroovyResourcesIntoContext(RuntimeSpringConfiguration config, ClassLoader classLoader,
+    public static void loadSpringGroovyResourcesIntoContext(RuntimeSpringConfiguration config, GrailsApplication application,
             GenericApplicationContext context) {
-        loadExternalSpringConfig(config, classLoader);
-        doLoadSpringGroovyResources(config, classLoader, context);
+        loadExternalSpringConfig(config, application);
+        doLoadSpringGroovyResources(config, application, context);
     }
 
     public void setLoadExternalPersistenceConfig(@SuppressWarnings("unused") boolean b) {
