@@ -68,7 +68,7 @@ packageFiles = { String from ->
 target(packagePlugins : "Packages any Grails plugins that are installed for this project") {
     depends(classpath, resolveDependencies)
 
-    def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
+    def pluginInfos = pluginSettings.getSupportedPluginInfos()
     for (GrailsPluginInfo info in pluginInfos) {
         try {
             def pluginDir = info.pluginDir
@@ -85,7 +85,7 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
 }
 
 packagePluginsForWar = { targetDir ->
-    def pluginInfos = pluginSettings.getPluginInfos(pluginsHome)
+    def pluginInfos = pluginSettings.getSupportedPluginInfos()
     for (GrailsPluginInfo info in pluginInfos) {
         try {
             def pluginBase = info.pluginDir.file
