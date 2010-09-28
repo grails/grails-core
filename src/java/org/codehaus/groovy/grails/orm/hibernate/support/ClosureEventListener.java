@@ -24,6 +24,7 @@ import groovy.lang.MetaProperty;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,9 +155,6 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
 		}
 
 		MetaMethod metaMethod = domainMetaClass.getMetaMethod(event, EMPTY_OBJECT_ARRAY);
-		if (metaMethod == null) {
-			metaMethod = domainMetaClass.getStaticMetaMethod(event, EMPTY_OBJECT_ARRAY);
-		}
 		if (metaMethod != null) {
 			return new MetaMethodCaller(metaMethod);
 		}
@@ -320,7 +318,12 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
 	}
 
 	private static abstract class ClosureCaller extends EventTriggerCaller {
+		boolean cloneFirst=false;
+		
 		Object callClosure(Object entity, Closure callable) {
+			if(cloneFirst) {
+				callable=(Closure)callable.clone();
+			}
 			callable.setResolveStrategy(Closure.DELEGATE_FIRST);
 			callable.setDelegate(entity);
 			Object retval = callable.call();
@@ -333,6 +336,9 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
 
 		FieldClosureCaller(Field field) {
 			this.field = field;
+			if(Modifier.isStatic(field.getModifiers())) {
+				cloneFirst=true;
+			}
 		}
 
 		@Override
@@ -352,6 +358,9 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
 
 		MetaPropertyClosureCaller(MetaProperty metaProperty) {
 			this.metaProperty = metaProperty;
+			if(Modifier.isStatic(metaProperty.getModifiers())) {
+				cloneFirst=true;
+			}
 		}
 
 		@Override
