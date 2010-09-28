@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -36,7 +37,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * @since 0.4
  */
 public class GrailsWebRequestFilter extends OncePerRequestFilter {
-
+	Collection<ParameterCreationListener> paramListenerBeans;
+	
     /* (non-Javadoc)
      * @see org.springframework.web.filter.OncePerRequestFilter#doFilterInternal(
      *     javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
@@ -77,11 +79,15 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
     }
 
     private void configureParameterCreationListeners(GrailsWebRequest webRequest) {
-        ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        String[] paramListenerBeans = appCtx.getBeanNamesForType(ParameterCreationListener.class);
-        for (int i = 0; i < paramListenerBeans.length; i++) {
-            ParameterCreationListener creationListenerBean = (ParameterCreationListener)appCtx.getBean(paramListenerBeans[i]);
+        for (ParameterCreationListener creationListenerBean : paramListenerBeans) {
             webRequest.addParameterListener(creationListenerBean);
         }
     }
+
+	@Override
+	protected void initFilterBean() throws ServletException {
+		super.initFilterBean();
+        ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        paramListenerBeans=appCtx.getBeansOfType(ParameterCreationListener.class).values();
+	}
 }
