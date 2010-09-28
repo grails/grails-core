@@ -9,6 +9,9 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
@@ -186,6 +189,21 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
     }
 
+    public void testApplicationIsAvailableInResources() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        gcl.parseClass("class Holder { def value }");
+        Class<?> resourcesClass = gcl.parseClass("beans = { b(Holder, value: application) }", "resources.groovy");
+        
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
+        RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
+        GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, app);
+
+        assertTrue(springConfig.containsBean("b"));
+        BeanConfiguration beanConfig = springConfig.getBeanConfig("b");
+        assertTrue(beanConfig.hasProperty("value"));
+        assertEquals(app, beanConfig.getPropertyValue("value"));
+    }
+    
     @SuppressWarnings("unchecked")
     private <T> T getBean(ApplicationContext ctx, String name) {
         return (T)ctx.getBean(name);

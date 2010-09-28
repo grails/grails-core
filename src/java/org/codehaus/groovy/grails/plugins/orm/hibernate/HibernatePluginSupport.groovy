@@ -1044,7 +1044,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
 
         // Check resources.groovy
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(parent,application.classLoader)
-        GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, application.classLoader)
+        GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, application)
         if (springConfig.containsBean("dataSource")) {
             LOG.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY}")
             return springConfig.getBeanDefinition("dataSource")
