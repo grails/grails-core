@@ -109,6 +109,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         if (urlMappingInfo != null) {
             GrailsWebRequestFilter grailsWebRequestFilter = new GrailsWebRequestFilter();
             grailsWebRequestFilter.setServletContext(getServletContext());
+            grailsWebRequestFilter.initialize();
             grailsWebRequestFilter.doFilter(request, response, new FilterChain() {
 
                 @SuppressWarnings("unchecked")

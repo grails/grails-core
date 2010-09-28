@@ -79,15 +79,27 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
     }
 
     private void configureParameterCreationListeners(GrailsWebRequest webRequest) {
-        for (ParameterCreationListener creationListenerBean : paramListenerBeans) {
-            webRequest.addParameterListener(creationListenerBean);
-        }
+    	if(paramListenerBeans != null) {
+	        for (ParameterCreationListener creationListenerBean : paramListenerBeans) {
+	            webRequest.addParameterListener(creationListenerBean);
+	        }
+    	} else {
+    		logger.warn("paramListenerBeans isn't initialized.");
+    	}
     }
 
 	@Override
 	protected void initFilterBean() throws ServletException {
 		super.initFilterBean();
-        ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        paramListenerBeans=appCtx.getBeansOfType(ParameterCreationListener.class).values();
+		initialize();
+	}
+
+	public void initialize() {
+		ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+		if(appCtx != null) {
+			paramListenerBeans=appCtx.getBeansOfType(ParameterCreationListener.class).values();
+		} else {
+			logger.warn("appCtx not found in servletContext");
+		}
 	}
 }
