@@ -30,7 +30,8 @@ target ('default': "Creates a new domain class") {
 
     promptForName(type: "Domain class")
 
-    def name = argsMap["params"][0]
-    createArtifact(name: name, suffix: "", type: "DomainClass", path: "grails-app/domain")
-    createUnitTest(name: name, suffix: "")
+    for ( name in argsMap["params"] ) {
+        createArtifact(name: name, suffix: "", type: "DomainClass", path: "grails-app/domain")
+        createUnitTest(name: name, suffix: "")
+    }
 }

@@ -33,8 +33,9 @@ target ('default': "Creates a new filters class") {
     def type = "Filters"
     promptForName(type: type)
 
-    def name = argsMap["params"][0]
-    name = purgeRedundantArtifactSuffix(name, type)
-    createArtifact(name: name, suffix: type, type: type, path: "grails-app/conf")
-    createUnitTest(name: name, suffix: type)
+    for ( name in argsMap["params"] ) {
+        name = purgeRedundantArtifactSuffix(name, type)
+        createArtifact(name: name, suffix: type, type: type, path: "grails-app/conf")
+        createUnitTest(name: name, suffix: type)        
+    }
 }
