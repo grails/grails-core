@@ -19,7 +19,7 @@ class EventsTriggering {
 
     def eventData = [:]
 
-    def beforeInsert = {
+    static def beforeInsert = {
         eventData['beforeInsert'] = true
     }
 

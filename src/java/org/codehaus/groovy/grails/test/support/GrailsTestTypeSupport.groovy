@@ -174,7 +174,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
                 sourceFiles.addAll(resources*.file.findAll { it.exists() }.toList())
             }
         }
-        sourceFiles
+        sourceFiles.unique()
     }
     
     /**
