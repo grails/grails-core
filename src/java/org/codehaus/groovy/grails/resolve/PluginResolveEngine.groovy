@@ -95,7 +95,10 @@ final class PluginResolveEngine {
             return null
         }
 
-        def artifactReport = report.allArtifactsReports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
+        def artifactReport = report.allArtifactsReports.find { it.artifact.attributes.organisation == resolveArgs.group && it.artifact.name == resolveArgs.name && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
+        if(artifactReport == null) {
+            artifactReport = report.allArtifactsReports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
+        }
         if (artifactReport) {
             return artifactReport.localFile
         }
