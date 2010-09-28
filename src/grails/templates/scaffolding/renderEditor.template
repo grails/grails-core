@@ -28,7 +28,7 @@
         out << renderOneToMany(domainClass, property)
 
     private renderEnumEditor(domainClass, property) {
-        return "<g:select name=\"${property.name}\" from=\"\${${property.type.name}?.values()}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
+        return "<g:select name=\"${property.name}\" from=\"\${${property.type.name}?.values()}\" keys=\"\${${property.type.name}?.values()*.name()}\" value=\"\${${domainInstance}?.${property.name}?.name()}\" ${renderNoSelection(property)} />"
     }
 
     private renderStringEditor(domainClass, property) {
