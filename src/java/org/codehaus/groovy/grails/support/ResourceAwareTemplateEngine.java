@@ -16,12 +16,11 @@ package org.codehaus.groovy.grails.support;
 
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-
-import org.springframework.core.io.Resource;
 
 /**
  * An abstract TemplateEngine that extends the default Groovy TemplateEngine (@see groovy.text.TemplateEngine) and
@@ -29,29 +28,44 @@ import org.springframework.core.io.Resource;
  *
  * @author Graeme Rocher
  * @since 0.4
+ *        <p/>
+ *        Created: Feb 22, 2007
+ *        Time: 6:37:08 PM
  */
 abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
 
+
     /**
-     * Creates the specified Template using the given Spring Resource.
+     * Creates the specified Template using the given Spring Resource
      *
      * @param resource The Spring Resource to create the template for
      * @return A Template instance
      * @throws IOException Thrown when there was an error reading the Template
      * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
      */
-    public Template createTemplate(Resource resource) throws IOException {
+    public Template createTemplate(Resource resource) throws IOException, ClassNotFoundException {
         return createTemplate(resource.getInputStream());
     }
 
-    @Override
+	/**
+     * Creates the specified Template using the given Spring Resource
+     *
+     * @param resource The Spring Resource to create the template for
+     * @param cacheable Whether the resource can be cached
+     * @return A Template instance
+     * @throws IOException Thrown when there was an error reading the Template
+     * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
+     */
+    public Template createTemplate(Resource resource, boolean cacheable) throws IOException, ClassNotFoundException {
+        return createTemplate(resource.getInputStream());
+    }
+
     public final Template createTemplate(Reader reader) throws IOException {
         return createTemplate(new ReaderInputStream(reader));
     }
-
     /**
      * Unlike groovy.text.TemplateEngine, implementors need to provide an implementation that operates
-     * with an InputStream.
+     * with an InputStream
      *
      * @param inputStream The InputStream
      * @return A Template instance
@@ -66,10 +80,9 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
         public ReaderInputStream(Reader reader) {
             this.reader = reader;
         }
-
-        @Override
         public int read() throws IOException {
             return reader.read();
         }
     }
+
 }

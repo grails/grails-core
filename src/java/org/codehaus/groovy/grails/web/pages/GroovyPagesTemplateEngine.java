@@ -184,11 +184,35 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     @Override
     public Template createTemplate(Resource resource) {
+        return createTemplate(resource, false);
+    }
+
+    /**
+     * Creates a Template for the given Spring Resource instance
+     *
+     * @param resource The Resource to create the Template for
+     * @param cacheable The resource can be cached or not
+     * @return The Template instance
+     */
+    @Override
+    public Template createTemplate(Resource resource, boolean cacheable) {
         if (resource == null) {
             GrailsWebRequest webRequest = getWebRequest();
             throw new GroovyPagesException("No Groovy page found for URI: " + getCurrentRequestUri(webRequest.getCurrentRequest()));
         }
-        String name = establishPageName(resource, null);
+        //Yags: Because, "pageName" was sent as null originally, it is never go in pageCache, but will force to compile the String again and till the time this request
+        // is getting executed, it will occupy space in PermGen space. So if there are 1000 request for the same resource at a particular instance, there will be 1000 instance
+        // class in PermGen instead of ideally being 1 as they as essentially same resource.
+        String name;
+
+		//we will cache metaInfo only is Developer wants-to. Developer will make sure that he creates unique key for every unique pages s/he wants to put in cache
+		if(cacheable) {
+			name = establishPageName(resource, getPathForResource(resource));
+
+		} else {
+			name = establishPageName(resource, null);
+		}
+
 
         if (!isReloadEnabled()) {
             // presumably war deployed mode, but precompiled gsp isn't used, log this for debugging
@@ -201,12 +225,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             }
         }
 
-        if (pageCache.containsKey(name)) {
+        if (pageCache.containsKey(name)&& cacheable) {
             GroovyPageMetaInfo meta = pageCache.get(name);
 
             if (isGroovyPageReloadable(resource, meta)) {
                 try {
-                    return createTemplateWithResource(resource, name);
+                    return createTemplateWithResource(resource, cacheable);
                 }
                 catch (IOException e) {
                     throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
@@ -215,7 +239,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             return new GroovyPageTemplate(meta);
         }
         try {
-            return createTemplateWithResource(resource, name);
+            return createTemplateWithResource(resource, cacheable);
         }
         catch (IOException e) {
             throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
@@ -440,10 +464,17 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return A Groovy Template
      * @throws java.io.IOException Thrown when an error occurs reading the template
      */
-    private Template createTemplateWithResource(Resource resource, String pageName) throws IOException {
+    private Template createTemplateWithResource(Resource resource, boolean cacheable) throws IOException {
         InputStream in = resource.getInputStream();
         try {
-            return createTemplate(in, resource, pageName);
+            // If "pageName" will be passed null, it will be determined by "establishPageName" method which will
+            // make it such that it will not allow this template to get into the pageCache.
+            if(cacheable) {
+                return createTemplate(in, resource, getPathForResource(resource));
+            } else {
+                return createTemplate(in, resource, null);
+            }
+
         }
         finally {
             in.close();
