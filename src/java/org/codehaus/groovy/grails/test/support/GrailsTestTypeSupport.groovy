@@ -171,9 +171,23 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
         suffixes.each { suffix ->
             testExtensions.each { extension ->
                 def resources = resolveResources("file:${sourceDir.absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
-                sourceFiles.addAll(resources*.file.findAll { it.exists() }.toList())
+                
+                def matches = resources*.file.findAll { file ->
+                    if(!file.exists()) {
+                        false
+                    } else if (suffix == "") {
+                        // Because we searched with an empty suffix to cater for patterns containing the suffix (or part thereof),
+                        // we need to filter out any matches that don't actually match any of the valid suffixes
+                        testSuffixes.any { realSuffix -> file.name.endsWith("${realSuffix}.${extension}") }
+                    } else {
+                        true
+                    }
+                }
+                
+                sourceFiles.addAll(matches.toList())
             }
         }
+        
         sourceFiles.unique()
     }
     
