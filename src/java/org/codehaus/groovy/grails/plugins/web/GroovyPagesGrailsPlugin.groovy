@@ -91,16 +91,19 @@ class GroovyPagesGrailsPlugin {
         boolean developmentMode = !application.warDeployed
         Environment env = Environment.current
         boolean enableReload = env.isReloadEnabled() ||
-            application.config.grails.gsp.enable.reload == true ||
-			Boolean.getBoolean('grails.gsp.reload.enable') ||
+            application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) == true ||
+			Boolean.getBoolean(GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) ||
             (developmentMode && env == Environment.DEVELOPMENT)
         boolean warDeployedWithReload = application.warDeployed && enableReload
+		boolean enableCacheResources = !(application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES) == true)
 
+		boolean customResourceLoader=false
         // If the development environment is used we need to load GSP files relative to the base directory
         // as oppose to in WAR deployment where views are loaded from /WEB-INF
         def viewsDir = application.config.grails.gsp.view.dir
         if (viewsDir) {
             log.info "Configuring GSP views directory as '${viewsDir}'"
+			customResourceLoader=true
             groovyPageResourceLoader(GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
                 pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
@@ -108,6 +111,7 @@ class GroovyPagesGrailsPlugin {
         }
         else {
             if (developmentMode) {
+				customResourceLoader=true
                 groovyPageResourceLoader(GroovyPageResourceLoader) { bean ->
                     bean.lazyInit = true
                     BuildSettings settings = BuildSettingsHolder.settings
@@ -117,15 +121,11 @@ class GroovyPagesGrailsPlugin {
                 }
             }
             else {
-                if (warDeployedWithReload) {
+                if (warDeployedWithReload && env.hasReloadLocation()) {
+					customResourceLoader=true
                     groovyPageResourceLoader(GroovyPageResourceLoader) {
-                        if (env.hasReloadLocation()) {
-                            def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)
-                            baseResource = "file:${location}"
-                        }
-                        else {
-                            baseResource = "/WEB-INF"
-                        }
+                        def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)
+                        baseResource = "file:${location}"
                         pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
                     }
                 }
@@ -135,7 +135,7 @@ class GroovyPagesGrailsPlugin {
         // Setup the main templateEngine used to render GSPs
         groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
             classLoader = ref("classLoader")
-            if (developmentMode || warDeployedWithReload) {
+            if (customResourceLoader) {
                 resourceLoader = groovyPageResourceLoader
                 bean.lazyInit = true
             }
@@ -148,6 +148,7 @@ class GroovyPagesGrailsPlugin {
                 ignoreResourceNotFound = true
                 location = "classpath:gsp/views.properties"
             }
+			cacheResources = enableCacheResources
         }
 
         // Setup the GroovyPagesUriService

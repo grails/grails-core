@@ -16,11 +16,23 @@ package org.codehaus.groovy.grails.support;
 
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
-import org.springframework.core.io.Resource;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.net.URL;
+
+import org.apache.commons.io.IOUtils;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
+import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
+import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
+import org.springframework.core.io.Resource;
 
 /**
  * An abstract TemplateEngine that extends the default Groovy TemplateEngine (@see groovy.text.TemplateEngine) and
@@ -33,8 +45,6 @@ import java.io.Reader;
  *        Time: 6:37:08 PM
  */
 abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
-
-
     /**
      * Creates the specified Template using the given Spring Resource
      *
@@ -44,7 +54,7 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
      */
     public Template createTemplate(Resource resource) throws IOException, ClassNotFoundException {
-        return createTemplate(resource.getInputStream());
+        return createTemplateAndCloseInput(resource.getInputStream());
     }
 
 	/**
@@ -56,12 +66,12 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws IOException Thrown when there was an error reading the Template
      * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
      */
-    public Template createTemplate(Resource resource, boolean cacheable) throws IOException, ClassNotFoundException {
-        return createTemplate(resource.getInputStream());
-    }
+    abstract public Template createTemplate(Resource resource, boolean cacheable);
 
     public final Template createTemplate(Reader reader) throws IOException {
-        return createTemplate(new ReaderInputStream(reader));
+    	StreamByteBuffer buf=new StreamByteBuffer();
+    	IOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING));
+        return createTemplate(buf.getInputStream());
     }
     /**
      * Unlike groovy.text.TemplateEngine, implementors need to provide an implementation that operates
@@ -72,17 +82,27 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws IOException Thrown when an IO error occurs reading the stream
      */
     abstract public Template createTemplate(InputStream inputStream) throws IOException;
-
-    // wraps a Reader in an InputStream
-    private class ReaderInputStream extends InputStream {
-        private Reader reader;
-
-        public ReaderInputStream(Reader reader) {
-            this.reader = reader;
-        }
-        public int read() throws IOException {
-            return reader.read();
-        }
+    
+    @Override
+    public Template createTemplate(String templateText) throws CompilationFailedException, ClassNotFoundException, IOException {
+        return createTemplate(new ByteArrayInputStream(templateText.getBytes(GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING)));
+    }
+    
+    @Override
+    public Template createTemplate(File file) throws CompilationFailedException, ClassNotFoundException, IOException {
+        return createTemplateAndCloseInput(new FileInputStream(file));
     }
 
+    @Override
+    public Template createTemplate(URL url) throws CompilationFailedException, ClassNotFoundException, IOException {
+        return createTemplateAndCloseInput(url.openStream());
+    }    
+
+	private Template createTemplateAndCloseInput(InputStream input) throws FileNotFoundException, IOException {
+        try {
+            return createTemplate(input);
+        } finally {
+            DefaultGroovyMethodsSupport.closeWithWarning(input);
+        }
+	}
 }

@@ -73,7 +73,7 @@ class GroovyPageMetaInfo {
     
     private long latestLastModifiedCheck=0L;
     public static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
-    private static final long LASTMODIFIED_CHECK_GRANULARITY =  Long.getLong("grails.gsp.reload.granularity", 1000).longValue();
+    private static final long LASTMODIFIED_CHECK_GRANULARITY =  Long.getLong("grails.gsp.reload.granularity", 2000).longValue();
 
     public GroovyPageMetaInfo() {
     	latestLastModifiedCheck=System.currentTimeMillis();
