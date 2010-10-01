@@ -43,17 +43,17 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * The test target patterns that should be used to filter the tests to run
      */
-    final GrailsTestTargetPattern[] testTargetPatterns
+    GrailsTestTargetPattern[] testTargetPatterns
     
     /**
      * The location where the type's source was compiled to
      */
-    final File compiledClassesDir
+    File compiledClassesDir
     
     /**
      * The binding from the build environment
      */
-    final Binding buildBinding
+    Binding buildBinding
         
     private ClassLoader testClassLoader
     private File sourceDir
