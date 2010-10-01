@@ -44,11 +44,6 @@ class ForwardMethod {
     }
 
     String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
-        def paramMap = request.parameterMap
-        if (paramMap) {
-            paramMap.clear()
-        }
-
         def urlInfo = new ForwardUrlMappingInfo()
 
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
