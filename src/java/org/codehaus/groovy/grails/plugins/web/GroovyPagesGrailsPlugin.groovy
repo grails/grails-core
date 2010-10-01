@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
@@ -91,8 +92,7 @@ class GroovyPagesGrailsPlugin {
         boolean developmentMode = !application.warDeployed
         Environment env = Environment.current
         boolean enableReload = env.isReloadEnabled() ||
-            application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) == true ||
-			Boolean.getBoolean(GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) ||
+            GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) ||
             (developmentMode && env == Environment.DEVELOPMENT)
         boolean warDeployedWithReload = application.warDeployed && enableReload
 		boolean enableCacheResources = !(application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES) == true)
