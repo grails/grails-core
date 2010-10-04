@@ -56,7 +56,6 @@
 	<classpathentry kind="lib" path="lib/ehcache-core-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/core-renderer-R8.jar"/>
 	<classpathentry kind="var" path="ASPECTJRT_LIB"/>
-	<classpathentry kind="lib" path="lib/groovy-all-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjrt-1.6.8.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjweaver-1.6.8.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.aop-3.0.3.RELEASE.jar"/>
@@ -79,5 +78,6 @@
 	<classpathentry kind="lib" path="lib/org.springframework.web.servlet-3.0.3.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.webflow-2.0.8.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-1.7.5.jar"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>
