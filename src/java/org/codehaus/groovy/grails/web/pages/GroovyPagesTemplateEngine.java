@@ -668,7 +668,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * last modifed date and InputStream
      *
      * @param parse The Parse object
-     * @param lastModified The last modified date
      * @param in The InputStream instance
      * @return A GroovyPageMetaInfo instance
      */
