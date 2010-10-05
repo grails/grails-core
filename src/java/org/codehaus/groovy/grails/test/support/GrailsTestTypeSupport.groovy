@@ -41,6 +41,12 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     final String relativeSourcePath
 
     /**
+     * Whether to sort the files that make up this test type; boolean,
+     * or a closure to indicate how they should be sorted
+     */
+    final sortFiles
+
+    /**
      * The test target patterns that should be used to filter the tests to run
      */
     final GrailsTestTargetPattern[] testTargetPatterns
@@ -61,13 +67,14 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Sets the name and relativeSourcePath
      */    
-    GrailsTestTypeSupport(String name, String relativeSourcePath) {
+    GrailsTestTypeSupport(String name, String relativeSourcePath, sortFiles) {
         [name: name, relativeSourcePath: relativeSourcePath].each {
             if (!it.value) throw new IllegalArgumentException("$it.key cannot be empty or null")
         }
         
         this.name = name
         this.relativeSourcePath = relativeSourcePath
+        this.sortFiles = sortFiles
     }
 
     /**
@@ -188,6 +195,11 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
             }
         }
         
+        if (sortFiles instanceof Closure) {
+	    sourceFiles.sort(sortFiles)
+        } else if (sortFiles) {
+	    sourceFiles.sort()
+        }
         sourceFiles.unique()
     }
     

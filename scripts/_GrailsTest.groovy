@@ -134,10 +134,10 @@ target(allTests: "Runs the project's tests.") {
                     def rawTypeString = rawType.toString()
                     if (phaseName == 'integration') {
                         def mode = new GrailsTestMode(autowire: true, wrapInTransaction: true, wrapInRequestEnvironment: true)
-                        new JUnit4GrailsTestType(rawTypeString, rawTypeString, mode)
+                        new JUnit4GrailsTestType(rawTypeString, rawTypeString, buildConfig.grails.testing.sortFiles, mode)
                     }
                     else {
-                        new JUnit4GrailsTestType(rawTypeString, rawTypeString)
+                        new JUnit4GrailsTestType(rawTypeString, rawTypeString, buildConfig.grails.testing.sortFiles)
                     }
                 }
                 else {

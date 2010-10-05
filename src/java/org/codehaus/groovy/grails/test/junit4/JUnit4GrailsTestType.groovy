@@ -42,12 +42,12 @@ class JUnit4GrailsTestType extends GrailsTestTypeSupport {
     protected suite
     protected mode
 
-    JUnit4GrailsTestType(String name, String sourceDirectory) {
-        this(name, sourceDirectory, null)
+    JUnit4GrailsTestType(String name, String sourceDirectory, sortFiles) {
+        this(name, sourceDirectory, sortFiles, null)
     }
 
-    JUnit4GrailsTestType(String name, String sourceDirectory, GrailsTestMode mode) {
-        super(name, sourceDirectory)
+    JUnit4GrailsTestType(String name, String sourceDirectory, sortFiles, GrailsTestMode mode) {
+        super(name, sourceDirectory, sortFiles)
         this.mode = mode
     }
 
