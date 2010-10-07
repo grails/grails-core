@@ -254,7 +254,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         if (validator == null) {
             GrailsDomainClassValidator gdcv = new GrailsDomainClassValidator();
             gdcv.setDomainClass(this);
-            MessageSource messageSource = (MessageSource) application.getMainContext().getBean("messageSource");
+            MessageSource messageSource = application.getMainContext().getBean(MessageSource.class);
             gdcv.setMessageSource(messageSource);
             validator = gdcv;
         }
