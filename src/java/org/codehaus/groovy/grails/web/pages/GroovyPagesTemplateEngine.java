@@ -76,7 +76,8 @@ import org.springframework.web.context.support.ServletContextResourceLoader;
  * @since 0.1
  */
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
-
+	public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
+	public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
     private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
@@ -92,6 +93,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     private TagLibraryResolver jspTagLibraryResolver;
     private Map<String, String> precompiledGspMap;
     private Map<String, GroovyPageMetaInfo> precompiledCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
+    private boolean cacheResources=true;
+    private boolean resourceLoaderDefined=false;
 
     private static File dumpLineNumbersTo;
 
@@ -149,6 +152,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @param resourceLoader The ResourceLoader instance
      */
     public void setResourceLoader(ResourceLoader resourceLoader) {
+    	this.resourceLoaderDefined=(resourceLoader != null);
         this.resourceLoader = resourceLoader;
     }
 
@@ -184,11 +188,35 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     @Override
     public Template createTemplate(Resource resource) {
+        return createTemplate(resource, cacheResources);
+    }
+
+    /**
+     * Creates a Template for the given Spring Resource instance
+     *
+     * @param resource The Resource to create the Template for
+     * @param cacheable The resource can be cached or not
+     * @return The Template instance
+     */
+    @Override
+    public Template createTemplate(Resource resource, boolean cacheable) {
         if (resource == null) {
             GrailsWebRequest webRequest = getWebRequest();
             throw new GroovyPagesException("No Groovy page found for URI: " + getCurrentRequestUri(webRequest.getCurrentRequest()));
         }
-        String name = establishPageName(resource, null);
+        //Yags: Because, "pageName" was sent as null originally, it is never go in pageCache, but will force to compile the String again and till the time this request
+        // is getting executed, it will occupy space in PermGen space. So if there are 1000 request for the same resource at a particular instance, there will be 1000 instance
+        // class in PermGen instead of ideally being 1 as they as essentially same resource.
+        String name;
+
+		//we will cache metaInfo only is Developer wants-to. Developer will make sure that he creates unique key for every unique pages s/he wants to put in cache
+		if(cacheable) {
+			name = establishPageName(resource, getPathForResource(resource));
+
+		} else {
+			name = establishPageName(resource, null);
+		}
+
 
         if (!isReloadEnabled()) {
             // presumably war deployed mode, but precompiled gsp isn't used, log this for debugging
@@ -201,12 +229,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             }
         }
 
-        if (pageCache.containsKey(name)) {
+        if (cacheable && pageCache.containsKey(name)) {
             GroovyPageMetaInfo meta = pageCache.get(name);
 
             if (isGroovyPageReloadable(resource, meta)) {
                 try {
-                    return createTemplateWithResource(resource, name);
+                    return createTemplateWithResource(resource, cacheable);
                 }
                 catch (IOException e) {
                     throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
@@ -215,7 +243,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             return new GroovyPageTemplate(meta);
         }
         try {
-            return createTemplateWithResource(resource, name);
+            return createTemplateWithResource(resource, cacheable);
         }
         catch (IOException e) {
             throw new GroovyPagesException("I/O error reading stream for resource ["+resource+"]: " + e.getMessage(),e);
@@ -231,15 +259,11 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     @Override
     public Template createTemplate(String uri)  {
-        Template t = createTemplateFromPrecompiled(uri);
-        if (t == null) {
-            t = createTemplate(getResourceForUri(uri));
-        }
-        return t;
+        return createTemplateForUri(uri);
     }
     
     private boolean isPrecompiledAvailable() {
-    	return precompiledGspMap != null && precompiledGspMap.size() > 0;
+    	return precompiledGspMap != null && precompiledGspMap.size() > 0 && !GrailsUtil.isDevelopmentEnv();
     }
 
     private GroovyPageTemplate createTemplateFromPrecompiled(String uri) {
@@ -346,7 +370,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                     LOG.warn("Precompiled GSP not found for uri: " + Arrays.asList(uri) + ". Using resource " + resource);
                 }
             }
-            return createTemplate(resource);
+            return createTemplate(resource,true);
         }
         return null;
     }
@@ -440,10 +464,17 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @return A Groovy Template
      * @throws java.io.IOException Thrown when an error occurs reading the template
      */
-    private Template createTemplateWithResource(Resource resource, String pageName) throws IOException {
+    private Template createTemplateWithResource(Resource resource, boolean cacheable) throws IOException {
         InputStream in = resource.getInputStream();
         try {
-            return createTemplate(in, resource, pageName);
+            // If "pageName" will be passed null, it will be determined by "establishPageName" method which will
+            // make it such that it will not allow this template to get into the pageCache.
+            if(cacheable) {
+                return createTemplate(in, resource, getPathForResource(resource));
+            } else {
+                return createTemplate(in, resource, null);
+            }
+
         }
         finally {
             in.close();
@@ -518,13 +549,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
     private Resource getResourceWithinContext(String uri) {
         Assert.state(resourceLoader != null, "TemplateEngine not initialised correctly, no [resourceLoader] specified!");
-        if (Environment.getCurrent().isReloadEnabled() && Metadata.getCurrent().isWarDeployed()) {
+        if (resourceLoaderDefined) {
             return resourceLoader.getResource(uri);
         }
-
         Resource r = servletContextLoader.getResource(uri);
-        if (r.exists()) return r;
-        return resourceLoader.getResource(uri);
+        if (r.exists()) {
+        	return r;
+        } else {
+        	return resourceLoader.getResource(uri);
+        }
     }
 
 
@@ -604,7 +637,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         // Compile the script into an object
         Class<?> scriptClass;
         try {
-            scriptClass = groovyClassLoader.parseClass(DefaultGroovyMethods.getText(in), name);
+            scriptClass = groovyClassLoader.parseClass(DefaultGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING), name);
         }
         catch (CompilationFailedException e) {
             LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
@@ -635,7 +668,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * last modifed date and InputStream
      *
      * @param parse The Parse object
-     * @param lastModified The last modified date
      * @param in The InputStream instance
      * @return A GroovyPageMetaInfo instance
      */
@@ -649,7 +681,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         pageMeta.setCodecName(parse.getDefaultCodecDirectiveValue());
         pageMeta.initCodec();
         // just return groovy and don't compile if asked
-        if (isReloadEnabled() || GrailsUtil.isDevelopmentEnv()) {
+        if (GrailsUtil.isDevelopmentEnv()) {
             pageMeta.setGroovySource(in);
         }
 
@@ -787,4 +819,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public void setPrecompiledGspMap(Map<String, String> precompiledGspMap) {
         this.precompiledGspMap = precompiledGspMap;
     }
+
+	public boolean isCacheResources() {
+		return cacheResources;
+	}
+
+	public void setCacheResources(boolean cacheResources) {
+		this.cacheResources = cacheResources;
+	}
 }

@@ -573,7 +573,7 @@
     </library>
     <library name="Groovy">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.7.4.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/groovy-all-1.7.5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -634,7 +634,7 @@
     </library>
     <library name="ConcurrentLinkedHashMap">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/concurrentlinkedhashmap-lru-1.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/concurrentlinkedhashmap-lru-1.0_jdk5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

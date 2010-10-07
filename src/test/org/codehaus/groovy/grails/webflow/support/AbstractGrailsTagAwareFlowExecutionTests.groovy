@@ -4,17 +4,17 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
+
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.context.support.StaticMessageSource
-import org.springframework.core.io.Resource
+
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.webflow.test.execution.AbstractFlowExecutionTests
@@ -28,13 +28,15 @@ import org.springframework.webflow.engine.builder.support.FlowBuilderServices
 import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
 import org.springframework.binding.convert.service.DefaultConversionService
 import org.springframework.webflow.expression.DefaultExpressionParserFactory
-import org.springframework.webflow.definition.registry.FlowDefinitionLocator
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistryImpl
 import org.springframework.webflow.context.ExternalContext
 import org.springframework.webflow.context.servlet.ServletExternalContext
 import org.springframework.webflow.test.MockExternalContext
 import org.springframework.webflow.definition.FlowDefinition
 import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
+import org.springframework.webflow.engine.builder.FlowAssembler
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
+import org.springframework.webflow.engine.builder.DefaultFlowHolder
 
 /**
  * @author Graeme Rocher
@@ -45,7 +47,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
     ServletContext servletContext
     GrailsWebRequest webRequest
     FlowBuilderServices flowBuilderServices
-    FlowDefinitionLocator definitionLocator = new FlowDefinitionRegistryImpl()
+    FlowDefinitionRegistry flowDefinitionRegistry = new FlowDefinitionRegistryImpl()
     MockHttpServletRequest request
     MockHttpServletResponse response
     def ctx
@@ -151,10 +153,17 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
         return context
     }
 
-    FlowDefinition getFlowDefinition() {
-        FlowBuilder builder = new FlowBuilder(getFlowId(), getFlowBuilderServices(), getDefinitionLocator())
+    FlowDefinition registerFlow(String flowId, Closure flowClosure) {
+        FlowBuilder builder = new FlowBuilder(flowId, flowClosure, flowBuilderServices, getFlowDefinitionRegistry())
+        builder.viewPath = "/"
         builder.applicationContext = appCtx
-        builder.flow(getFlowClosure())
+        FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
+        getFlowDefinitionRegistry().registerFlowDefinition(new DefaultFlowHolder(assembler))
+        return getFlowDefinitionRegistry().getFlowDefinition(flowId)
+    }
+
+    FlowDefinition getFlowDefinition() {
+        return registerFlow(getFlowId(), getFlowClosure())
     }
 
     protected void onInit() {}

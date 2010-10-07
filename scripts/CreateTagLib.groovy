@@ -31,8 +31,11 @@ target ('default': "Creates a new tag library") {
     def type = "TagLib"
     promptForName(type: type)
 
-    def name = argsMap["params"][0]
-    name = purgeRedundantArtifactSuffix(name, type)
-    createArtifact(name: name, suffix: type, type: type, path: "grails-app/taglib")
-    createUnitTest(name: name, suffix: type, superClass: "TagLibUnitTestCase")
+    for ( name in argsMap["params"] ) {
+        name = purgeRedundantArtifactSuffix(name, type)
+        createArtifact(name: name, suffix: type, type: type, path: "grails-app/taglib")
+        createUnitTest(name: name, suffix: type, superClass: "TagLibUnitTestCase")
+    }
+
+
 }

@@ -1030,7 +1030,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         switch (eventKind) {
             case EVENT_ON_CHANGE:
                 notifyOfEvent(event);
-                getManager().informObservers(getName(), event);
                 break;
             case EVENT_ON_SHUTDOWN:
                 invokeOnShutdownEventListener(event);

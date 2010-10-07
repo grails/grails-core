@@ -786,6 +786,10 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     Closure pluginDependencyHandler() {
+        return pluginDependencyHandler(dependencyManager)
+    }
+
+    Closure pluginDependencyHandler(IvyDependencyManager dependencyManager) {
         def pluginSlurper = createConfigSlurper()
 
         def handlePluginDirectory = {File dir ->

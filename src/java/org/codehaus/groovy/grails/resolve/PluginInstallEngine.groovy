@@ -314,7 +314,7 @@ class PluginInstallEngine {
                 ant.delete(dir: currentInstall.file)
             }
             else {
-                errorHandler("Plugin $name-$version install aborted");
+                eventHandler("StatusUpdate", "Plugin $name-$version install aborted");
                 return true
             }
         }
@@ -586,19 +586,24 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             def name = p.name
             def version = p.revision
             def fullName = "$name-$version"
-            def pluginLoc = pluginSettings.getPluginDirForName(name)
+            def pluginInfo = pluginSettings.getPluginInfoForName(name)
+            def pluginLoc = pluginInfo?.pluginDir
+
             if (!pluginLoc?.exists()) {
                 eventHandler "StatusUpdate", "Plugin [${fullName}] not installed."
                 pluginsToInstall << p
             }
             else if (pluginLoc) {
+                
+
                 def dirName = pluginLoc.file.canonicalFile.name
                 PluginBuildSettings settings = pluginSettings
-                if (!dirName.endsWith(version) && !settings.isInlinePluginLocation(pluginLoc)) {
+                if (GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version) && !settings.isInlinePluginLocation(pluginLoc) && !pluginsToInstall.contains()) {
                     // only print message if the version doesn't start with "latest." since we have
                     // to do a check for a new version when there version is specified as "latest.integration" etc.
                     if (!version.startsWith("latest."))
-                    eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
+                        eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
+                    
                     pluginsToInstall << p
                 }
             }

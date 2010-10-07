@@ -88,6 +88,10 @@ public class StreamCharBufferTests extends TestCase {
 
         assertEquals("ABCDE", charBuffer.toString());
         assertEquals(5, charBuffer.size());
+        
+        charBuffer.getWriter().write("12345");
+        assertEquals("ABCDE12345", charBuffer.toString());
+        assertEquals(10, charBuffer.size());
     }
 
     public void testBufferedConnectedStringWriting() throws IOException {

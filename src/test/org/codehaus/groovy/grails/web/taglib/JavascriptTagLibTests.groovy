@@ -147,9 +147,9 @@ class TestUrlMappings {
     }
 
     void testPrototypeLinkWithExtraParams() {
-        def template = '<g:remoteLink controller="person" action="show" params="[var1:\'one\', var2:\'two\']" >hello</g:remoteLink>'
+        def template = '<g:remoteLink controller="person" action="show" params="[var1:\'one\', var2:\'two\']" elementId="myid">hello</g:remoteLink>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<a href="/people/details/one?var2=two" onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:\'var2=two\'});return false;">hello</a>', template)
+        assertOutputEquals('<a href="/people/details/one?var2=two" onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:\'var2=two\'});return false;" id="myid">hello</a>', template)
     }
 
     void testRemoteLinkWithSpaceBeforeGStringVariable() {

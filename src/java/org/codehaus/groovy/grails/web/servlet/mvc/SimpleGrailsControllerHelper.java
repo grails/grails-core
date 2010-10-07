@@ -215,10 +215,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure action;
             try {
                 action = (Closure)controller.getProperty(actionName);
-                if (WebMetaUtils.isCommandObjectAction(action)) {
-                    action = WebMetaUtils.createAndPrepareCommandObjectAction(
-                            controller, action, actionName, applicationContext);
-                }
             }
             catch(MissingPropertyException mpe) {
                 try {

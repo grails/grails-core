@@ -47,7 +47,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     public static final String METHOD_SIGNATURE = "validate";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     private GrailsApplication application;
-    private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
+    public static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
     private Validator validator;
 

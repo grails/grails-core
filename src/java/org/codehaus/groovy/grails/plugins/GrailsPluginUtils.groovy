@@ -86,6 +86,18 @@ class GrailsPluginUtils {
     }
 
     /**
+     * Returns true if rightVersion is greater than leftVersion
+     * @param leftVersion 
+     * @param rightVersion
+     * @return
+     */
+    static boolean isVersionGreaterThan(String leftVersion, String rightVersion) {
+        if(leftVersion == rightVersion) return false
+        def versions = [leftVersion, rightVersion]
+        versions = versions.sort(new VersionComparator())
+        return versions[1] == rightVersion
+    }
+    /**
      * Returns the upper version of a Grails version number expression in a plugin
      */
     static String getUpperVersion(String pluginVersion) {
@@ -113,12 +125,14 @@ class GrailsPluginUtils {
         return pluginVersion.trim()
     }
 
-    private static trimTag(pluginVersion) {
+    private static trimTag(String pluginVersion) {
         def i = pluginVersion.indexOf('-')
         if (i >- 1) {
             pluginVersion = pluginVersion[0..i-1]
         }
-        pluginVersion
+        def tokens = pluginVersion.split(/\./)
+
+        return tokens.findAll { it ==~ /\d+/ || it =='*'}.join(".")
     }
 
     /**
@@ -358,12 +372,22 @@ class VersionComparator implements Comparator {
             catch (NumberFormatException e) {
                 throw new InvalidVersionException("Cannot compare versions, right side [$o2] is invalid: ${e.message}")
             }
+            boolean bigRight = nums2.size() > nums1.size()
+            boolean bigLeft = nums1.size() > nums2.size()
             for (i in 0..<nums1.size()) {
                 if (nums2.size() > i) {
                     result = nums1[i].compareTo(nums2[i])
                     if (result != 0) {
                         break
                     }
+                    if(i == (nums1.size()-1) && bigRight) {
+                       if(nums2[i+1] != 0)
+                           result = -1; break
+                    }
+                }
+                else if(bigLeft){
+                   if(nums1[i] != 0)
+                        result = 1; break
                 }
             }
         }

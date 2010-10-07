@@ -145,7 +145,7 @@ class CoreGrailsPlugin {
         else if (event.source instanceof Class) {
             println "Change event was class... reloading spring resources.groovy beans"
             RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application.classLoader, event.ctx)
+            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application, event.ctx)
         }
     }
 }
