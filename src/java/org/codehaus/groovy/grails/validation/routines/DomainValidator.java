@@ -209,7 +209,7 @@ public class DomainValidator implements Serializable {
         "at",                 // Austria
         "au",                 // Australia (includes Ashmore and Cartier Islands and Coral Sea Islands)
         "aw",                 // Aruba
-        "ax",                 // Åland
+        "ax",                 // Aland
         "az",                 // Azerbaijan
         "ba",                 // Bosnia and Herzegovina
         "bb",                 // Barbados
@@ -236,7 +236,7 @@ public class DomainValidator implements Serializable {
         "cf",                 // Central African Republic
         "cg",                 // Republic of the Congo
         "ch",                 // Switzerland
-        "ci",                 // Côte d'Ivoire
+        "ci",                 // Cote d'Ivoire
         "ck",                 // Cook Islands
         "cl",                 // Chile
         "cm",                 // Cameroon
@@ -293,7 +293,7 @@ public class DomainValidator implements Serializable {
         "ht",                 // Haiti
         "hu",                 // Hungary
         "id",                 // Indonesia
-        "ie",                 // Ireland (Éire)
+        "ie",                 // Ireland
         "il",                 // Israel
         "im",                 // Isle of Man
         "in",                 // India
@@ -378,7 +378,7 @@ public class DomainValidator implements Serializable {
         "pw",                 // Palau
         "py",                 // Paraguay
         "qa",                 // Qatar
-        "re",                 // Réunion
+        "re",                 // Reunion
         "ro",                 // Romania
         "rs",                 // Serbia
         "ru",                 // Russia
@@ -398,7 +398,7 @@ public class DomainValidator implements Serializable {
         "sn",                 // Senegal
         "so",                 // Somalia
         "sr",                 // Suriname
-        "st",                 // São Tomé and Príncipe
+        "st",                 // Sao Tome and Principe
         "su",                 // Soviet Union (deprecated)
         "sv",                 // El Salvador
         "sy",                 // Syria

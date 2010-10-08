@@ -47,7 +47,7 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
  * <p>will produce output as follows:</p>
  * <pre>{"message":"Hello World"}</pre>
  *
- * @author Michał Kłujszo
+ * @author Michal Klujszo
  * @author Graeme Rocher
  * @since 0.2
  *
