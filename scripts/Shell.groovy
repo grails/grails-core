@@ -48,4 +48,8 @@ target(shell:"The shell implementation target") {
     }
     def shell = new Groovysh(classLoader,b, new IO(System.in, System.out, System.err))
     shell.run([] as String[])
+    listeners?.each { key, listener ->
+        listener.flush()
+        listener.destroy()
+    }
 }
