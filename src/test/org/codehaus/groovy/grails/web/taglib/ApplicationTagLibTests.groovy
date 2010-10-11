@@ -100,6 +100,34 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 		assertOutputEquals('<a href="/foo/action?test=test&amp;test2=test2">test</a>', template)
     }
 
+	void testLinkWithMultipleCollectionParameters() {
+		def template = '<g:link controller="foo" action="action" params="[test: [\'test-a\',\'test-b\'], test2: [\'test2-a\',\'test2-b\'] as String[]]">test</g:link>'
+		assertOutputEquals('<a href="/foo/action?test=test-a&amp;test=test-b&amp;test2=test2-a&amp;test2=test2-b">test</a>', template)
+		// test caching too
+		assertOutputEquals('<a href="/foo/action?test=test-a&amp;test=test-b&amp;test2=test2-a&amp;test2=test2-b">test</a>', template)
+	}
+
+	void testLinkWithCollectionParameter() {
+		def template = '<g:link controller="foo" action="action" params="[test: [\'test-a\']]">test</g:link>'
+		assertOutputEquals('<a href="/foo/action?test=test-a">test</a>', template)
+		// test caching too
+		assertOutputEquals('<a href="/foo/action?test=test-a">test</a>', template)
+	}
+
+	void testLinkWithCharCollectionParameter() {
+		def template = '<g:link controller="foo" action="action" params="[letter: [\'a\' as char]]">test</g:link>'
+		assertOutputEquals('<a href="/foo/action?letter=a">test</a>', template)
+		// test caching too
+		assertOutputEquals('<a href="/foo/action?letter=a">test</a>', template)
+	}
+
+	void testCreateLinkWithCollectionParameter() {
+		def template = '<% l=\'a\' %>${g.createLink(controller:"foo", action:"action", params:[letter:[l]])} ${g.createLink(controller:"foo", action:"action", params:[letter:[l]])}'
+		assertOutputEquals('/foo/action?letter=a /foo/action?letter=a', template)
+		// test caching too
+		assertOutputEquals('/foo/action?letter=a /foo/action?letter=a', template)
+	}
+	
     void testLikeWithElementId() {
         def template = '<g:link elementId="myId" controller="foo" action="list">bar</g:link>'
         assertOutputEquals('<a href="/foo/list" id="myId">bar</a>', template)
