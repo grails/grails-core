@@ -95,4 +95,3 @@ task wrapper(type: Wrapper) {
     gradleVersion = '0.9-20100118091626+0100'
     jarPath = 'gradle/wrapper'
 }
-
