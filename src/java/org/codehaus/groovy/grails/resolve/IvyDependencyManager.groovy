@@ -998,18 +998,36 @@ class IvyDomainSpecificLanguageEvaluator {
         }
     }
 
-    void mavenLocal(String repoPath = "${System.getProperty('user.home')}/.m2/repository") {
+    void mavenLocal(String repoPath) {
         if (isResolverNotAlreadyDefined('mavenLocal')) {
             repositoryData << ['type':'mavenLocal']
             FileSystemResolver localMavenResolver = new FileSystemResolver(name:'localMavenResolver')
             localMavenResolver.local = true
             localMavenResolver.m2compatible = true
             localMavenResolver.changingPattern = ".*SNAPSHOT"
+
+            String m2UserDir = "${System.getProperty('user.home')}/.m2"
+            String repositoryPath = repoPath
+
+            if (!repositoryPath) {
+                repositoryPath = m2UserDir + "/repository"
+
+                File mavenSettingsFile = new File("${m2UserDir}/settings.xml")
+                if (mavenSettingsFile.exists()) {
+                    def settingsXml = new XmlSlurper().parse(mavenSettingsFile)
+                    String localRepository = settingsXml.localRepository.text()
+                    
+                    if (localRepository.trim()) {
+                        repositoryPath = localRepository
+                    }
+                }
+            }
+
             localMavenResolver.addIvyPattern(
-                "${repoPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).pom")
+                "${repositoryPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).pom")
 
             localMavenResolver.addArtifactPattern(
-                "${repoPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]")
+                "${repositoryPath}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]")
 
             localMavenResolver.settings = ivySettings
             addToChainResolver(localMavenResolver)
