@@ -34,10 +34,7 @@ import org.apache.ivy.util.Message
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import grails.util.GrailsNameUtils
-import org.apache.ivy.plugins.parser.m2.PomReader
-import org.apache.ivy.plugins.repository.file.FileResource
-import org.apache.ivy.plugins.repository.file.FileRepository
-import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
+
 import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.util.url.CredentialsStore
@@ -58,6 +55,7 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 import org.apache.ivy.plugins.repository.TransferListener
 import java.util.concurrent.ConcurrentLinkedQueue
 import org.apache.ivy.plugins.resolver.RepositoryResolver
+import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -610,19 +608,23 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 List dependencies = readDependenciesFromPOM()
 
                 if (dependencies != null) {
-                    for (PomDependencyMgt dep in dependencies) {
-                        final String scope = dep.scope ?: 'runtime'
-                        Message.debug("Read dependency [$dep.groupId:$dep.artifactId:$dep.version] (scope $scope) from Maven pom.xml")
+                    for (DependencyDescriptor dependencyDescriptor in dependencies) {
+                        ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
+                        ModuleId moduleId = moduleRevisionId.getModuleId()
 
-                        def mrid = ModuleRevisionId.newInstance(dep.groupId, dep.artifactId, dep.version)
-                        def mid = mrid.getModuleId()
-                        if (!hasDependency(mid)) {
-                            def dd = new EnhancedDefaultDependencyDescriptor(mrid, false, true, scope)
-                            for (ModuleId ex in dep.excludedModules) {
-                                dd.addRuleForModuleId(ex, scope)
+                        String groupId = moduleRevisionId.getOrganisation()
+                        String artifactId = moduleRevisionId.getName()
+                        String version = moduleRevisionId.getRevision()
+                        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
+
+                        if (!hasDependency(moduleId)) {
+                            def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
+                            for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
+                                ModuleId excludedModule = excludeRule.getId().getModuleId()
+                                enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
                             }
-                            configureDependencyDescriptor(dd, scope)
-                            addDependencyDescriptor dd
+                            configureDependencyDescriptor(enhancedDependencyDescriptor, scope)
+                            addDependencyDescriptor enhancedDependencyDescriptor
                         }
                     }
                 }
@@ -648,13 +650,16 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     List readDependenciesFromPOM() {
-        def dependencies = null
-        def pom = new File("${buildSettings.baseDir.path}/pom.xml")
-        if (pom.exists()) {
-            def reader = new PomReader(pom.toURL(), new FileResource(new FileRepository(), pom))
-            dependencies = reader.getDependencies()
-        }
-        return dependencies
+      List fixedDependencies = null
+      def pom = new File("${buildSettings.baseDir.path}/pom.xml")
+      if (pom.exists()) {
+          PomModuleDescriptorParser parser = PomModuleDescriptorParser.getInstance()
+          ModuleDescriptor md = parser.parseDescriptor(ivySettings, pom.toURL(), false)
+
+          fixedDependencies = md.getDependencies()
+      }
+
+      return fixedDependencies
     }
 
     /**
