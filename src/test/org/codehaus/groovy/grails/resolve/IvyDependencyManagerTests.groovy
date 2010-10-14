@@ -746,7 +746,11 @@ class DummyMavenAwareDependencyManager extends IvyDependencyManager {
     }
 
     List readDependenciesFromPOM() {
-        [[getExcludedModules: {[]}, getGroupId: {"junit"}, getArtifactId: {"junit"},
-          getVersion: {"4.8.1"}, getScope: {"test"}] as PomDependencyMgt]
+        ModuleId moduleId = new ModuleId("junit", "junit")
+        ModuleRevisionId moduleRevisionId = new ModuleRevisionId(moduleId, "4.8.1")
+        DefaultDependencyDescriptor dependencyDescriptor = new DefaultDependencyDescriptor(moduleRevisionId, false)
+        dependencyDescriptor.addDependencyConfiguration("test", "")
+
+        [dependencyDescriptor]
     }
 }
