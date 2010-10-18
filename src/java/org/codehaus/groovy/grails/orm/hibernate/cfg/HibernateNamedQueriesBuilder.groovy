@@ -100,6 +100,10 @@ class NamedCriteriaProxy {
         crit()
     }
 
+    void setUniqueResult(boolean b) {
+        queryBuilder?.setUniqueResult(b)
+    }
+
     private listInternal(Object[] params, Closure additionalCriteriaClosure, Boolean isDistinct) {
         def listClosure = {
             queryBuilder = delegate
