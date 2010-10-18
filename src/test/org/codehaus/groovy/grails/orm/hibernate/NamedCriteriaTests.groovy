@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.hibernate.FetchMode;
-import org.hibernate.Hibernate
+import org.hibernate.NonUniqueResultException 
 
 /**
  * @author Jeff Brown
@@ -63,6 +63,11 @@ class Publication {
    Boolean paperback = true
 
    static namedQueries = {
+       lastPublishedBefore { date ->
+           uniqueResult = true
+           le 'datePublished', date
+           order 'datePublished', 'desc'
+       }
        recentPublications {
            def now = new Date()
            gt 'datePublished', now - 365
@@ -120,6 +125,30 @@ class Publication {
    }
 }
 ''')
+    }
+    
+    void testUniqueResult() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+
+        assert publicationClass.newInstance(title: "Ten Day Old Paperback",
+                                            datePublished: now - 10, 
+                                            paperback: true).save()
+        assert publicationClass.newInstance(title: "One Hundred Day Old Paperback",
+                                            datePublished: now - 100, 
+                                            paperback: true).save()
+        session.clear()
+
+        def result = publicationClass.lastPublishedBefore(now - 200).list()
+        assertNull result
+
+        result = publicationClass.lastPublishedBefore(now - 50).list()
+        assertEquals 'One Hundred Day Old Paperback', result?.title
+
+        shouldFail(NonUniqueResultException) {
+            publicationClass.lastPublishedBefore(now).list()
+        }
     }
 
 	void testSorting() {
