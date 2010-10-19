@@ -39,4 +39,29 @@ class GroovyPageAttributesTests extends GroovyTestCase {
         assertEquals 'STS', originalMap.ide
         assertEquals 'JVM', originalMap.target
     }
+    
+    void testEqualsImpl() {
+        assert toGroovyPageAttributes([:]) == toGroovyPageAttributes([:])
+        assert toGroovyPageAttributes(a: 1) == toGroovyPageAttributes(a: 1)
+        assert toGroovyPageAttributes(a: 1, b: 2) == toGroovyPageAttributes(a: 1, b: 2)
+        assert toGroovyPageAttributes(a: 1, b: 2) == toGroovyPageAttributes(b: 2, a: 1)
+        
+        assert toGroovyPageAttributes(a: 1, b: 2) != toGroovyPageAttributes(a: 1, b: "2")
+        assert toGroovyPageAttributes(a: 1) != toGroovyPageAttributes(a: 1, b: 2)
+        assert toGroovyPageAttributes(a: 1, b: 2) == toGroovyPageAttributes(b: 2, "a": 1)
+    }
+    
+    void testHashCode() {
+        assert toGroovyPageAttributes(a: 1, b: 2).hashCode() == toGroovyPageAttributes(a: 1, b: 2).hashCode()
+        assert toGroovyPageAttributes([:]).hashCode() == toGroovyPageAttributes([:]).hashCode()        
+        assert toGroovyPageAttributes(a: 1, b: 2).hashCode() == toGroovyPageAttributes(b: 2, a: 1).hashCode()
+        
+        assert toGroovyPageAttributes(a: 1, b: 2).hashCode() != [b: 2, a: 1].hashCode()
+        assert toGroovyPageAttributes(a: 1, b: 2).hashCode() != ["b": 2, a: 1].hashCode()
+    }
+    
+    protected toGroovyPageAttributes(map) {
+        new GroovyPageAttributes(map)
+    }
+    
 }
