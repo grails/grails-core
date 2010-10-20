@@ -15,9 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.util
 
+import org.apache.commons.lang.builder.HashCodeBuilder
+
 /**
  * An category for use with maps that want type conversion capabilities
  *
+ * Type converting maps have no inherent ordering. Two maps with identical entries
+ * but arranged in a different order internally are considered equal.
+ * 
  * @author Graeme Rocher
  * @since 1.2
  */
@@ -34,6 +39,38 @@ class TypeConvertingMap implements Map, Cloneable {
         wrappedMap = map
     }
 
+    boolean equals(that) {
+        if (this.is(that)) {
+            return true
+        }
+
+        if (that == null) {
+            return false
+        }
+
+        if (getClass() != that.getClass()) {
+            return false
+        }
+        
+        if (this.size() != that.size()) {
+            return false
+        }
+
+        if (this.empty && that.empty) {
+            return true
+        }
+        
+        this.entrySet() == that.entrySet()
+    }
+
+    int hashCode() {
+        def builder = new HashCodeBuilder(23, 31)
+        for (entry in this.entrySet()) {
+            builder.append(entry)
+        }
+        builder.toHashCode()
+    }
+    
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter

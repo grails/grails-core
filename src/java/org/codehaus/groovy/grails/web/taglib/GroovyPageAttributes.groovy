@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap
+import org.apache.commons.lang.builder.HashCodeBuilder
 
 /**
  * Defines attributes passed to a GSP tag. Mixes in
@@ -38,6 +39,14 @@ class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
         return new GroovyPageAttributes(this.@wrappedMap.clone())
     }
 
+    int hashCode() {
+        def builder = new HashCodeBuilder(23, 39)
+        for (entry in this.entrySet()) {
+            builder.append(entry)
+        }
+        builder.toHashCode()
+    }
+    
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
