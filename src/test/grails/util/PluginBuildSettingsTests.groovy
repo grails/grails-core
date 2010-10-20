@@ -11,9 +11,10 @@ import org.springframework.core.io.Resource
 class PluginBuildSettingsTests extends GroovyTestCase {
 
     private static final File TEST_PROJ_DIR = new File("test/test-projects/plugin-build-settings")
-
-    PluginBuildSettings createPluginBuildSettings() {
-        def settings = new BuildSettings(new File("."), TEST_PROJ_DIR)
+    private static final File NESTED_INLINE_PLUGIN_TEST_PROJ_DIR = new File("test/test-projects/nested-inline-plugins/app")
+    
+    PluginBuildSettings createPluginBuildSettings(File projectDir = TEST_PROJ_DIR) {
+        def settings = new BuildSettings(new File("."), projectDir)
         settings.loadConfig()
         return new PluginBuildSettings(settings)
     }
@@ -181,5 +182,31 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                 getFile: {
                     -> new File(pluginSettings.buildSettings.globalPluginsDir, "test/../gwt")
                 }] as Resource)
+    }
+    
+    void testNestedInlinePlugins() {
+        def pluginSettings = createPluginBuildSettings(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR)
+        def inlinePluginDirs = pluginSettings.inlinePluginDirectories*.file
+        
+        assertEquals("inline plugins found", 2, inlinePluginDirs.size())
+        
+        def pluginOneDir = inlinePluginDirs.find { it.name.endsWith("plugin-one") }
+        assertNotNull("plugin one dir", pluginOneDir)
+        assertTrue("plugin one dir exists", pluginOneDir.exists())
+        
+        def pluginTwoDir = inlinePluginDirs.find { it.name.endsWith("plugin-two") }
+        assertNotNull("plugin two dir", pluginTwoDir)
+        
+        // This is the most important test.
+        // 
+        // plugin two is a dependency of plugin one, and is defined relative to it
+        // which means the path it is defined with does not point to it if resolved
+        // relative to the "root" app that included plugin one. This would produce 
+        // a false positive if test/test-projects/nested-inline-plugins/plugin-two existed.
+        assertTrue("plugin two dir exists", pluginTwoDir.exists())
+        
+        // Make sure no one has done the wrong thing and put a dir at test/test-projects/nested-inline-plugins/plugin-two
+        def pluginTwoInSameDirAsRootApp = new File(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR.parentFile, "plugin-two")
+        assertTrue("should not be a plugin-two dir in same dir as root app", !pluginTwoInSameDirAsRootApp.exists())
     }
 }

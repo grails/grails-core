@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * @since 1.3.4
  */
-public class AbstractBuildSettings {
+abstract public class AbstractBuildSettings {
 
     private static final String KEY_PLUGIN_DIRECTORY_RESOURCES = "pluginDirectoryResources";
     private static final String KEY_INLINE_PLUGIN_LOCATIONS = "inlinePluginLocations";
@@ -46,6 +46,8 @@ public class AbstractBuildSettings {
     @SuppressWarnings("rawtypes")
     protected Map flatConfig = Collections.emptyMap();
 
+    abstract File getBaseDir();
+    
     /**
      * Clears any locally cached values
      */
@@ -115,8 +117,23 @@ public class AbstractBuildSettings {
         return pluginDirectoryResources;
     }
 
-    @SuppressWarnings({ "rawtypes", "hiding" })
+    /**
+     * Extracts the inline plugin dirs relative to the base dir of this project.
+     * 
+     * @see getInlinePluginsFromConfiguration(Map, File)
+     */
+    @SuppressWarnings({ "rawtypes" })
     protected Collection<File> getInlinePluginsFromConfiguration(Map config) {
+        return getInlinePluginsFromConfiguration(config, getBaseDir());
+    }
+    
+    /**
+     * Extracts the inline plugin dirs from the given config, relative to the given baseDir.
+     * 
+     * @todo consider trowing an error here if an plugin does not exists at the location.
+     */
+    @SuppressWarnings({ "rawtypes", "hiding" })
+    protected Collection<File> getInlinePluginsFromConfiguration(Map config, File baseDir) {
         Collection<File> inlinePlugins = new ConcurrentLinkedQueue<File>();
         if (config != null) {
             Map pluginLocations = lookupPluginLocationConfig(config);
@@ -125,7 +142,7 @@ public class AbstractBuildSettings {
                     if (value != null) {
                         File resource;
                         try {
-                            resource = new File(value.toString()).getCanonicalFile();
+                            resource = new File(baseDir, value.toString()).getCanonicalFile();
                             inlinePlugins.add(resource);
                         }
                         catch (IOException e) {

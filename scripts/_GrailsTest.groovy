@@ -317,9 +317,8 @@ integrationTestPhasePreparation = {
 
     initPersistenceContext()
 
-    def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
-    GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx)
-    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext)
+    GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
+    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
 }
 
 /**

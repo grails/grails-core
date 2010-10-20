@@ -817,7 +817,7 @@ class BuildSettings extends AbstractBuildSettings {
                         dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
                     }
 
-                    def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig)
+                    def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
                     if(inlinePlugins) {
 
                         for(File inlinePlugin in inlinePlugins) {
