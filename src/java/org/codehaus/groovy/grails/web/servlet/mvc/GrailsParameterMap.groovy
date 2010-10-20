@@ -45,6 +45,17 @@ class GrailsParameterMap extends TypeConvertingMap {
     private HttpServletRequest request
 
     /**
+     * Does not populate the GrailsParameterMap from the request but instead uses the supplied values.
+     *
+     * @param values The values to populate with
+     * @param request The request object
+     */
+    GrailsParameterMap(Map values,HttpServletRequest request) {
+        this.request = request
+        this.parameterMap = values
+    }
+    
+    /**
      * Creates a GrailsParameterMap populating from the given request object
      * @param request The request object
      */
@@ -121,17 +132,6 @@ class GrailsParameterMap extends TypeConvertingMap {
                 }
             }
         }
-    }
-
-    /**
-     * Does not populate the GrailsParameterMap from the request but instead uses the supplied values.
-     *
-     * @param values The values to populate with
-     * @param request The request object
-     */
-    GrailsParameterMap(Map values,HttpServletRequest request) {
-        this.request = request
-        this.parameterMap = values
     }
 
     /**
