@@ -41,7 +41,6 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
  */
 class GrailsParameterMap extends TypeConvertingMap {
 
-    private Map parameterMap = [:]
     private HttpServletRequest request
 
     /**
@@ -52,7 +51,7 @@ class GrailsParameterMap extends TypeConvertingMap {
      */
     GrailsParameterMap(Map values,HttpServletRequest request) {
         this.request = request
-        this.parameterMap = values
+        this.@wrappedMap.putAll(values)
     }
     
     /**
@@ -71,11 +70,15 @@ class GrailsParameterMap extends TypeConvertingMap {
         for (key in requestMap.keySet()) {
             Object paramValue = getParameterValue(requestMap, key)
 
-            parameterMap.put(key, paramValue)
-            processNestedKeys(request, requestMap, key, key, parameterMap)
+            this.@wrappedMap.put(key, paramValue)
+            processNestedKeys(request, requestMap, key, key, this.@wrappedMap)
         }
     }
-
+    
+    Object clone() {
+        new GrailsParameterMap(new HashMap(this.@wrappedMap), request)
+    }
+    
     private Object getParameterValue(Map requestMap, String key) {
         Object paramValue = requestMap.get(key)
         if (paramValue instanceof String[]) {
@@ -139,15 +142,16 @@ class GrailsParameterMap extends TypeConvertingMap {
      */
     HttpServletRequest getRequest() { request }
 
-    int size() { parameterMap.size() }
+    int size() { this.@wrappedMap.size() }
 
-    boolean isEmpty() { parameterMap.empty }
+    boolean isEmpty() { this.@wrappedMap.empty }
 
-    boolean containsKey(Object key) { parameterMap.containsKey(key) }
+    boolean containsKey(Object key) { this.@wrappedMap.containsKey(key) }
 
-    boolean containsValue(Object value) { parameterMap.containsValue(value)    }
+    boolean containsValue(Object value) { this.@wrappedMap.containsValue(value)    }
 
     private Map nestedDateMap = [:]
+
 
     Object get(Object key) {
         // removed test for String key because there
@@ -156,8 +160,8 @@ class GrailsParameterMap extends TypeConvertingMap {
         if (nestedDateMap.containsKey(key)) {
             returnValue = nestedDateMap.get(key)
         }
-        else if (parameterMap.get(key) instanceof String[]){
-            String[] valueArray = parameterMap.get(key)
+        else if (this.@wrappedMap.get(key) instanceof String[]){
+            String[] valueArray = this.@wrappedMap.get(key)
             if (valueArray == null) {
                 return null
             }
@@ -170,7 +174,7 @@ class GrailsParameterMap extends TypeConvertingMap {
             }
         }
         else {
-            returnValue = parameterMap.get(key)
+            returnValue = this.@wrappedMap.get(key)
         }
 
         if ("date.struct".equals(returnValue)) {
@@ -208,12 +212,12 @@ class GrailsParameterMap extends TypeConvertingMap {
     Object put(Object key, Object value) {
         if (value instanceof CharSequence) value = value.toString()
         if (nestedDateMap.containsKey(key)) nestedDateMap.remove(key)
-        return parameterMap.put(key, value)
+        return this.@wrappedMap.put(key, value)
     }
 
     Object remove(Object key) {
         nestedDateMap.remove(key)
-        return parameterMap.remove(key)
+        return this.@wrappedMap.remove(key)
     }
 
     void putAll(Map map) {
@@ -223,18 +227,14 @@ class GrailsParameterMap extends TypeConvertingMap {
     }
 
     void clear() {
-        parameterMap.clear()
+        this.@wrappedMap.clear()
     }
 
-    Set keySet() { parameterMap.keySet() }
+    Set keySet() { this.@wrappedMap.keySet() }
 
-    Collection values() { parameterMap.values() }
+    Collection values() { this.@wrappedMap.values() }
 
-    Set entrySet() { parameterMap.entrySet() }
-
-    protected Object clone() {
-        return new GrailsParameterMap(parameterMap.clone(), request)
-    }
+    Set entrySet() { this.@wrappedMap.entrySet() }
 
     /**
      * Converts this parameter map into a query String. Note that this will flatten nested keys separating them with the
@@ -255,7 +255,7 @@ class GrailsParameterMap extends TypeConvertingMap {
     }
 
     String toString() {
-        return DefaultGroovyMethods.inspect(this.parameterMap)
+        return DefaultGroovyMethods.inspect(this.@wrappedMap)
     }
 
     /**

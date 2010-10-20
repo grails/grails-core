@@ -180,9 +180,18 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert queryString.find { it == 'address.postCode=345435' }
     }
     
-    void testCanClone() {
+    void testCloning() {
+        mockRequest.addParameter("name", "Dierk Koenig")
+        mockRequest.addParameter("dob", "01/01/1970")
         mockRequest.addParameter("address.postCode", "345435")
-        def theClone = new GrailsParameterMap(mockRequest).clone()
+        theMap = new GrailsParameterMap(mockRequest)
         
+        def theClone = theMap.clone()
+        
+        assertEquals("clone size should be the same as original", theMap.size(), theClone.size())
+        
+        theMap.each { k, v ->
+            assertEquals("the clone should have the same value for $k as the original", theMap[k], theClone[k])
+        }
     }
 }
