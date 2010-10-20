@@ -179,4 +179,10 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert queryString.find { it == 'dob=01%2F01%2F1970' }
         assert queryString.find { it == 'address.postCode=345435' }
     }
+    
+    void testCanClone() {
+        mockRequest.addParameter("address.postCode", "345435")
+        def theClone = new GrailsParameterMap(mockRequest).clone()
+        
+    }
 }

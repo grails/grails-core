@@ -233,7 +233,7 @@ class GrailsParameterMap extends TypeConvertingMap {
     Set entrySet() { parameterMap.entrySet() }
 
     protected Object clone() {
-        return new GrailsParameterMap(this.@wrappedMap?.clone())
+        return new GrailsParameterMap(parameterMap.clone(), request)
     }
 
     /**
