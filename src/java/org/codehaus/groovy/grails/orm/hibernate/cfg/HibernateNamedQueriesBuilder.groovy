@@ -100,8 +100,8 @@ class NamedCriteriaProxy {
         crit()
     }
 
-    void setUniqueResult(boolean b) {
-        queryBuilder?.setUniqueResult(b)
+    void propertyMissing(String propName, val) {
+        queryBuilder?."${propName}" = val
     }
 
     private listInternal(Object[] params, Closure additionalCriteriaClosure, Boolean isDistinct) {
