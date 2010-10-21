@@ -14,32 +14,13 @@
  * limitations under the License.
  */
 
-import grails.util.GrailsWebUtil as GWU
-
-import java.lang.reflect.Modifier
-import junit.framework.TestCase
-import junit.framework.TestResult
-import junit.framework.TestSuite
-import org.apache.commons.logging.LogFactory
-import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.springframework.transaction.support.TransactionCallback
-import org.springframework.transaction.support.TransactionTemplate
-import org.springframework.web.context.request.RequestContextHolder
-import junit.framework.Test
-import grails.util.GrailsUtil
-import grails.util.GrailsNameUtils
-
 /**
  * Gant script that runs the Grails unit tests
  *
  * @author Graeme Rocher
- *
+ * @author Luke Daley
  * @since 0.4
  */
-
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsTest")
 
