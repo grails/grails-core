@@ -63,6 +63,10 @@ class Publication {
    Boolean paperback = true
 
    static namedQueries = {
+       aPaperback  {
+          eq 'paperback', true
+       }
+       
        lastPublishedBefore { date ->
            uniqueResult = true
            le 'datePublished', date
@@ -513,6 +517,23 @@ class Publication {
             eq 'paperback', false
         }
         assertEquals 0, results?.size()
+    }
+    
+    void testPropertyCapitalization() {
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+        [true, false].each { isPaperback ->
+            3.times {
+                assert publicationClass.newInstance(title: "Some Book",
+                        datePublished: now - 10, paperback: isPaperback).save()
+            }
+        }
+        session.clear()
+        
+        def results = publicationClass.aPaperback.list()
+        
+        assertEquals 3, results.size()
     }
 
     void testChainingNamedQueries() {
