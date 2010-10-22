@@ -43,8 +43,15 @@ public class GrailsNameUtils {
      * @return The name for the getter method for this property, if it were to exist, i.e. getConstraints
      */
     public static String getGetterName(String propertyName) {
-        return "get" + Character.toUpperCase(propertyName.charAt(0))
-            + propertyName.substring(1);
+        final String suffix;
+        if(propertyName.length() > 1 && 
+                Character.isLowerCase(propertyName.charAt(0)) && 
+                Character.isUpperCase(propertyName.charAt(1))) {
+            suffix = propertyName;
+        } else {
+            suffix = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        }
+        return "get" + suffix;
     }
 
     /**
