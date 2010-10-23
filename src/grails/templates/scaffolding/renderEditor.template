@@ -162,6 +162,9 @@
             if (property.manyToOne || property.oneToOne) {
                 return "noSelection=\"['null': '']\""
             }
+            else if (property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class || property.type == Calendar.class) {
+                return "default=\"none\" noSelection=\"['': '']\""
+            }
             else {
                 return "noSelection=\"['': '']\""
             }
