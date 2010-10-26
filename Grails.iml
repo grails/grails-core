@@ -94,9 +94,9 @@
     <orderEntry type="library" exported="" name="Ivy" level="project" />
     <orderEntry type="library" exported="" name="JUnit" level="project" />
     <orderEntry type="module-library" exported="">
-      <library name="HSQLDB">
+      <library name="H2">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/hsqldb-1.8.0.10.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/h2-1.2.144.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

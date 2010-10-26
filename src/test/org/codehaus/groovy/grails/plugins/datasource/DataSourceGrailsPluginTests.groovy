@@ -20,8 +20,8 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         def config = new ConfigSlurper().parse("""
             dataSource {
                 pooled = true
-                driverClassName = "org.hsqldb.jdbcDriver"
-                url="jdbc:hsqldb:mem:devDB"
+                driverClassName = "org.h2.Driver"
+                url="jdbc:h2:mem:devDB"
                 username = "sa"
                 password = "$encryptedPassword"
                 passwordEncryptionCodec = 'org.codehaus.groovy.grails.plugins.datasource.MockCodec'
@@ -44,12 +44,12 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         pluginManager.shutdown()
     }
 
-    void testShutdownHSqlDbDataSource() {
+    void testShutdownH2DbDataSource() {
         def config = new ConfigSlurper().parse('''
                 dataSource {
                     pooled = true
-                    driverClassName = "org.hsqldb.jdbcDriver"
-                    url="jdbc:hsqldb:mem:devDB"
+                    driverClassName = "org.h2.Driver"
+                    url="jdbc:h2:mem:devDB"
                     username = "sa"
                     password = ""
                     dbCreate = "create-drop"
@@ -138,12 +138,12 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals "jdbc:oracle::someserver", beanDef.propertyValues.getPropertyValue('url').value
     }
 
-    void testDataSourcePluginHSQLDBNoUserAndPass() {
+    void testDataSourcePluginH2DBNoUserAndPass() {
 
         def config = new ConfigSlurper("test").parse('''
                 dataSource {
                     pooled = true
-                    driverClassName = "org.hsqldb.jdbcDriver"
+                    driverClassName = "org.h2.Driver"
                 }
         ''')
 
@@ -162,10 +162,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 
-        assertEquals "org.hsqldb.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "org.h2.Driver", beanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
         assertEquals "", beanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:hsqldb:mem:grailsDB", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "jdbc:h2:mem:grailsDB", beanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginPoolingOn() {
@@ -173,7 +173,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         def config = new ConfigSlurper("test").parse('''
                 dataSource {
                     pooled = true
-                    driverClassName = "org.hsqldb.jdbcDriver"
+                    driverClassName = "org.h2.Driver"
                     username = "sa"
                     password = ""
                 }
@@ -181,19 +181,19 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                     development {
                         dataSource {
                             dbCreate = "create-drop"
-                            url = "jdbc:hsqldb:mem:devDB"
+                            url = "jdbc:h2:mem:devDB"
                         }
                     }
                     test {
                         dataSource {
                             dbCreate = "update"
-                            url = "jdbc:hsqldb:mem:testDb"
+                            url = "jdbc:h2:mem:testDb"
                         }
                     }
                     production {
                         dataSource {
                             dbCreate = "update"
-                            url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+                            url = "jdbc:h2:file:prodDb;shutdown=true"
                         }
                     }
                 }
@@ -214,10 +214,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 
-        assertEquals "org.hsqldb.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "org.h2.Driver", beanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
         assertEquals "", beanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:hsqldb:mem:testDb", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "jdbc:h2:mem:testDb", beanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginPoolingOff() {
@@ -225,7 +225,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         def config = new ConfigSlurper("test").parse('''
                 dataSource {
                     pooled = false
-                    driverClassName = "org.hsqldb.jdbcDriver"
+                    driverClassName = "org.h2.Driver"
                     username = "sa"
                     password = ""
                 }
@@ -233,19 +233,19 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                     development {
                         dataSource {
                             dbCreate = "create-drop"
-                            url = "jdbc:hsqldb:mem:devDB"
+                            url = "jdbc:h2:mem:devDB"
                         }
                     }
                     test {
                         dataSource {
                             dbCreate = "update"
-                            url = "jdbc:hsqldb:mem:testDb"
+                            url = "jdbc:h2:mem:testDb"
                         }
                     }
                     production {
                         dataSource {
                             dbCreate = "update"
-                            url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+                            url = "jdbc:h2:prodDb"
                         }
                     }
                 }
@@ -266,10 +266,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals DriverManagerDataSource.name, beanDef.beanClassName
 
-        assertEquals "org.hsqldb.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "org.h2.Driver", beanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
         assertEquals "", beanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:hsqldb:mem:testDb", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "jdbc:h2:mem:testDb", beanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testJndiDataSource() {

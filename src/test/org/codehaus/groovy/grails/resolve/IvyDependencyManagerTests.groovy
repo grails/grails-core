@@ -473,8 +473,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-        assertEquals 53, manager.listDependencies('runtime').size()
-        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 54, manager.listDependencies('runtime').size()
+        assertEquals 57, manager.listDependencies('test').size()
         assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
@@ -502,7 +502,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
         assertEquals 20, manager.listDependencies('build').size()
-        assertEquals 55, manager.listDependencies('provided').size()
+        assertEquals 56, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
         
         manager = new IvyDependencyManager("project", "0.1",settings)
@@ -513,8 +513,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
         
-        assertEquals 53, manager.listDependencies('runtime').size()
-        assertEquals 56, manager.listDependencies('test').size()
+        assertEquals 54, manager.listDependencies('runtime').size()
+        assertEquals 57, manager.listDependencies('test').size()
         assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
@@ -700,7 +700,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                   "org.apache.ant:ant-nodeps:1.7.1",
                   "org.apache.ant:ant-trax:1.7.1",
                   "radeox:radeox:1.0-b2",
-                  "hsqldb:hsqldb:1.8.0.10",
+                  "h2:h2:1.2.144",
                   "apache-tomcat:jasper-compiler:5.5.15",
                   "jline:jline:0.9.94",
                   "javax.servlet:servlet-api:2.5",

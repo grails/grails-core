@@ -17,8 +17,8 @@ class JndiBindingSupportTests extends GroovyTestCase {
                     type: "javax.sql.DataSource", //required
                     auth: "Container", // optional
                     description: "Data source for Foo", //optional
-                    driverClassName: "org.hsql.jdbcDriver",
-                    url: "jdbc:HypersonicSQL:database",
+                    driverClassName: "org.h2.Driver",
+                    url: "jdbc:H2:database",
                     username: "dbusername",
                     password: "dbpassword",
                     maxActive: "8",
