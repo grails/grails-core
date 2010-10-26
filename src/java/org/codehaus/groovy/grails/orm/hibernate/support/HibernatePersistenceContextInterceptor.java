@@ -34,12 +34,13 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
     private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
     private SessionFactory sessionFactory;
     private boolean participate;
+    private int nestingCount = 0;
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#destroy()
      */
     public void destroy() {
-        if (participate) {
+        if (--nestingCount > 0 || participate) {
             return;
         }
 
@@ -98,6 +99,9 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()
      */
     public void init() {
+        if (++nestingCount > 1) {
+            return;
+        }
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // Do not modify the Session: just set the participate flag.
             participate = true;
