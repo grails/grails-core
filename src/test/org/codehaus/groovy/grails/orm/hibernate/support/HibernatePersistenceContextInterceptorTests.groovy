@@ -56,6 +56,50 @@ class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernat
         assertEquals("interceptor open", false, interceptor.open)
     }
     
+    void testMultithreadedLifecycle() {
+        def interceptor = getInterceptor()
+        def latch = new CountDownLatch(1)
+
+        Thread.start {
+            interceptor.init()
+            latch.await()
+            interceptor.destroy()
+        }
+
+        try {
+            assertEquals("interceptor open", false, interceptor.open)
+            interceptor.init()
+            assertEquals("interceptor open", true, interceptor.open)
+            interceptor.destroy()
+            assertEquals("interceptor open", false, interceptor.open)
+        } finally {
+            latch.countDown()
+        }
+    }
+    
+    void testMultiThreadedNestedLifecycle() {
+        def interceptor = getInterceptor()
+        def latch = new CountDownLatch(1)
+
+        Thread.start {
+            interceptor.init()
+            interceptor.init()
+            latch.await()
+            interceptor.destroy()
+            interceptor.destroy()
+        }
+
+        try {
+            assertEquals("interceptor open", false, interceptor.open)
+            interceptor.init()
+            assertEquals("interceptor open", true, interceptor.open)
+            interceptor.destroy()
+            assertEquals("interceptor open", false, interceptor.open)
+        } finally {
+            latch.countDown()
+        }
+    }
+        
     protected getInterceptor() {
         appCtx.persistenceInterceptor
     }
