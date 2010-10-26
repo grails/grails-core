@@ -12,7 +12,7 @@ class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
         def config = new ConfigSlurper().parse('''
             dataSource {
                 pooled = true
-                driverClassName = "org.hsqldb.jdbcDriver"
+                driverClassName = "org.h2.Driver"
                 username = "sa"
                 password = ""
                 dbCreate = "create-drop"

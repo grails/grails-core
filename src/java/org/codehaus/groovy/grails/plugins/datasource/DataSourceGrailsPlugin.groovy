@@ -69,10 +69,10 @@ class DataSourceGrailsPlugin {
         }
 
         def properties = {
-            def driver = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
+            def driver = ds?.driverClassName ? ds.driverClassName : "org.h2.Driver"
             driverClassName = driver
-            url = ds?.url ? ds.url : "jdbc:hsqldb:mem:grailsDB"
-            boolean defaultDriver = (driver == "org.hsqldb.jdbcDriver")
+            url = ds?.url ? ds.url : "jdbc:h2:mem:grailsDB"
+            boolean defaultDriver = (driver == "org.h2.Driver")
             String theUsername = ds?.username ?: (defaultDriver ? "sa" : null)
             if (theUsername != null) {
                 username = theUsername

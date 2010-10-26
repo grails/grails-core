@@ -65,9 +65,9 @@ def populateProperties = {
 
     props.'hibernate.connection.username' = dsConfig?.dataSource?.username ?: 'sa'
     props.'hibernate.connection.password' = dsConfig?.dataSource?.password ?: ''
-    props.'hibernate.connection.url' = dsConfig?.dataSource?.url ?: 'jdbc:hsqldb:mem:testDB'
+    props.'hibernate.connection.url' = dsConfig?.dataSource?.url ?: 'jdbc:h2:mem:testDB'
     props.'hibernate.connection.driver_class' =
-            dsConfig?.dataSource?.driverClassName ?: 'org.hsqldb.jdbcDriver'
+            dsConfig?.dataSource?.driverClassName ?: 'org.h2.Driver'
 
     if (dsConfig?.dataSource?.configClass) {
         if (dsConfig.dataSource.configClass instanceof Class) {
