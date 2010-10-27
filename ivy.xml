@@ -28,7 +28,7 @@
 		<dependency org="org.springframework" name="spring" rev="2.0"/> 		            		
 		<dependency org="cglib" name="cglib-nodep" rev="2.1_3"/> 		            				
         <dependency org="hsqldb" name="hsqldb" rev="1.8.0.5"/>
-		<dependency org="h2" name="h2" rev="1.2.144"/>		
+		<dependency org="com.h2database" name="h2" rev="1.2.144"/>		
 		<dependency org="oscache" name="oscache" rev="2.4.1"/>				
 		<!--<dependency org="asm" name="asm" rev="1.3.4"/>  
 		<dependency org="asm" name="asm-util" rev="1.3.4"/>-->		 					
