@@ -310,7 +310,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                     "${runtimeDependenciesMethod}" "commons-dbcp:commons-dbcp:1.2.2",
                             "commons-pool:commons-pool:1.5.3",
                             "hsqldb:hsqldb:1.8.0.10",
-							"h2:h2:1.2.144"
+							"com.h2database:h2:1.2.144"
 
                     // caching
                     "${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:1.7.1") {
