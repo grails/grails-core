@@ -9,6 +9,7 @@ import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
+import org.springframework.beans.factory.support.RootBeanDefinition
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
@@ -61,6 +62,8 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 	}
 }
 '''
+
+        parsePhoneDomainTestClasses()
     }
 
     protected void onTearDown() {
@@ -399,5 +402,284 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def template = '<g:fieldValue bean="${person}" field="title" />'
 
         assertOutputEquals "Mnr", template, [person: person]
+    }
+
+    void testFieldValueTagForNonDomainInstance() {
+        def template = '''<g:fieldValue bean="${book}" field="myUrl" />'''
+
+        def myBook = gcl.parseClass('''
+            class MyBook {
+                Long id
+                Long version
+                String title
+                URL myUrl
+                Date releaseDate
+                BigDecimal usPrice
+            }''').newInstance()
+
+        myBook.myUrl = new URL("http://google.com")
+        assertOutputEquals("http://google.com", template, [book:myBook])
+    }
+
+    void testFieldValueTagForNonDomainInstanceWithNestedField() {
+        def template = '''<g:fieldValue bean="${book}" field="myUrl.publisherUrl" />'''
+
+        // gcl.loadClass("MyClass", true)
+        def myUrl = gcl.parseClass('''
+            class MyUrl {
+                URL publisherUrl
+            }''').newInstance()
+
+        def myBook = gcl.parseClass('''
+            class MyBook {
+                Long id
+                Long version
+                String title
+                MyUrl myUrl
+                Date releaseDate
+                BigDecimal usPrice
+            }''').newInstance()
+
+        myBook.myUrl = myUrl
+        myBook.myUrl.publisherUrl = new URL("http://google.com")
+        assertOutputEquals("http://google.com", template, [book:myBook])
+    }
+
+    private void parsePhoneDomainTestClasses() {
+        gcl.parseClass('''
+            class PhoneUsDomain {
+                Long id
+                Long version
+                String area
+                String prefix
+                String number
+            }''')
+
+        gcl.parseClass('''
+            class PhoneUsInternationalDomain {
+                Long id
+                Long version
+                String country
+                String area
+                String prefix
+                String number
+            }''')
+
+        gcl.parseClass('''
+            class PersonDomain {
+                Long id
+                Long version
+                String firstName
+                String lastName
+                PhoneUsInternationalDomain phoneUsInternational
+                PhoneUsDomain phoneUs
+                PhoneUsDomain otherPhoneUs
+            }''')
+    }
+
+    private void parsePhonePropertyEditorDomainClasses() {
+        gcl.parseClass('''
+            import java.beans.PropertyEditorSupport
+
+            class PhoneUsDomainMainEditor extends PropertyEditorSupport {
+                public String getAsText() {
+                    def phoneUsNumber = getValue()
+                    return "${phoneUsNumber.area}-${phoneUsNumber.prefix}-${phoneUsNumber.number}"
+                }
+            }''')
+
+        gcl.parseClass('''
+            import java.beans.PropertyEditorSupport
+
+            class PhoneUsDomainForPropertyPathEditor extends PropertyEditorSupport {
+                public String getAsText() {
+                    def phoneUsNumber = getValue()
+                    return "(${phoneUsNumber.area})${phoneUsNumber.prefix}-${phoneUsNumber.number}"
+                }
+            }''')
+
+        gcl.parseClass('''
+            import java.beans.PropertyEditorSupport
+
+            class PhoneUsInternationalDomainEditor extends PropertyEditorSupport {
+                public String getAsText() {
+                    def phoneUsInternationalNumber = getValue()
+                    return "${phoneUsInternationalNumber.country}(${phoneUsInternationalNumber.area})" + 
+                           "${phoneUsInternationalNumber.prefix}-${phoneUsInternationalNumber.number}"
+                }
+            }''')
+
+        gcl.parseClass('''
+            import org.springframework.beans.PropertyEditorRegistrar
+            import org.springframework.beans.PropertyEditorRegistry
+
+            class PhonePropertyEditorDomainRegistrar implements PropertyEditorRegistrar {
+                public void registerCustomEditors(PropertyEditorRegistry registry) {
+                    registry.registerCustomEditor(PhoneUsInternationalDomain, new PhoneUsInternationalDomainEditor())
+                    registry.registerCustomEditor(PhoneUsDomain, new PhoneUsDomainMainEditor())
+                    registry.registerCustomEditor(PhoneUsDomain, "phoneUs", new PhoneUsDomainForPropertyPathEditor())
+                }
+            }''')
+    }
+
+    void testFieldValueTagWithPropertyEditorForDomainClasses() {
+        parsePhonePropertyEditorDomainClasses()
+
+        def phonePropertyEditorDomainRegistrarClazz = gcl.loadClass("PhonePropertyEditorDomainRegistrar")
+        appCtx.registerBeanDefinition(
+                "phonePropertyEditorDomainRegistrar", new RootBeanDefinition(phonePropertyEditorDomainRegistrarClazz))
+
+        def phoneUsInternationalDomain = ga.getDomainClass("PhoneUsInternationalDomain").newInstance()
+        phoneUsInternationalDomain.properties = [country:"+1", area:"123", prefix:"123", number:"1234"]
+        assertFalse phoneUsInternationalDomain.hasErrors()
+
+        def personDomain = ga.getDomainClass("PersonDomain").newInstance()
+        personDomain.properties = [firstName:"firstName1", lastName:"lastName1", phoneUsInternational:phoneUsInternationalDomain]
+        assertFalse personDomain.hasErrors()
+        
+        def template = '''<g:fieldValue bean="${person}" field="phoneUsInternational" />'''
+        assertOutputEquals("+1(123)123-1234", template, [person:personDomain])
+    }
+
+    void testFieldValueTagWithPropertyEditorForDomainClassesWithPropertyPath() {
+        parsePhonePropertyEditorDomainClasses()
+
+        def phonePropertyEditorDomainRegistrarClazz = gcl.loadClass("PhonePropertyEditorDomainRegistrar")
+        appCtx.registerBeanDefinition(
+                "phonePropertyEditorDomainRegistrar", new RootBeanDefinition(phonePropertyEditorDomainRegistrarClazz))
+
+        def phoneUsDomain = ga.getDomainClass("PhoneUsDomain").newInstance()
+        phoneUsDomain.properties = [area:"123", prefix:"123", number:"1234"]
+        assertFalse phoneUsDomain.hasErrors()
+
+        def personDomain = ga.getDomainClass("PersonDomain").newInstance()
+        personDomain.properties = [firstName:"firstName1", lastName:"lastName1", phoneUs:phoneUsDomain, otherPhoneUs:phoneUsDomain]
+        assertFalse personDomain.hasErrors()
+
+        def template = '''<g:fieldValue bean="${person}" field="phoneUs" />'''
+        assertOutputEquals("(123)123-1234", template, [person:personDomain])
+
+        def otherTemplate = '''<g:fieldValue bean="${person}" field="otherPhoneUs" />'''
+        assertOutputEquals("123-123-1234", otherTemplate, [person:personDomain])
+    }
+
+    private void parsePhonePlainTestClasses() {
+        gcl.parseClass('''
+            class PhoneUs {
+                String area
+                String prefix
+                String number
+            }''')
+
+        gcl.parseClass('''
+            class PhoneUsInternational {
+                String country
+                String area
+                String prefix
+                String number
+            }''')
+
+        gcl.parseClass('''
+            class PersonPlain {
+                String firstName
+                String lastName
+                PhoneUsInternational phoneUsInternational
+                PhoneUs phoneUs
+                PhoneUs otherPhoneUs
+            }''')
+    }
+
+    private void parsePhonePropertyEditorPlainClasses() {
+        gcl.parseClass('''
+            import java.beans.PropertyEditorSupport
+
+            class PhoneUsMainEditor extends PropertyEditorSupport {
+                public String getAsText() {
+                    def phoneUsNumber = getValue()
+                    return "${phoneUsNumber.area}-${phoneUsNumber.prefix}-${phoneUsNumber.number}"
+                }
+            }''')
+
+        gcl.parseClass('''
+            import java.beans.PropertyEditorSupport
+
+            class PhoneUsForPropertyPathEditor extends PropertyEditorSupport {
+                public String getAsText() {
+                    def phoneUsNumber = getValue()
+                    return "(${phoneUsNumber.area})${phoneUsNumber.prefix}-${phoneUsNumber.number}"
+                }
+            }''')
+
+        gcl.parseClass('''
+            import java.beans.PropertyEditorSupport
+
+            class PhoneUsInternationalEditor extends PropertyEditorSupport {
+                public String getAsText() {
+                    def phoneUsInternationalNumber = getValue()
+                    return "${phoneUsInternationalNumber.country}(${phoneUsInternationalNumber.area})" +
+                           "${phoneUsInternationalNumber.prefix}-${phoneUsInternationalNumber.number}"
+                }
+            }''')
+
+        gcl.parseClass('''
+            import org.springframework.beans.PropertyEditorRegistrar
+            import org.springframework.beans.PropertyEditorRegistry
+
+            class PhonePropertyEditorRegistrar implements PropertyEditorRegistrar {
+                public void registerCustomEditors(PropertyEditorRegistry registry) {
+                    registry.registerCustomEditor(PhoneUsInternational, new PhoneUsInternationalEditor())
+                    registry.registerCustomEditor(PhoneUs, new PhoneUsMainEditor())
+                    registry.registerCustomEditor(PhoneUs, "phoneUs", new PhoneUsForPropertyPathEditor())
+                }
+            }''')
+    }
+
+    void testFieldValueTagWithPropertyEditorForNonDomainClasses() {
+        parsePhonePlainTestClasses()
+        parsePhonePropertyEditorPlainClasses()
+
+        def phonePropertyEditorRegistrarClazz = gcl.loadClass("PhonePropertyEditorRegistrar")
+        appCtx.registerBeanDefinition(
+                "phonePropertyEditorRegistrar", new RootBeanDefinition(phonePropertyEditorRegistrarClazz))
+
+        def phoneUsInternational = gcl.loadClass("PhoneUsInternational").newInstance()
+        phoneUsInternational.country = "+1"
+        phoneUsInternational.area = "123"
+        phoneUsInternational.prefix = "123"
+        phoneUsInternational.number = "1234"
+
+        def person = gcl.loadClass("PersonPlain").newInstance()
+        person.firstName = "firstName1"
+        person.lastName = "lastName1"
+        person.phoneUsInternational = phoneUsInternational
+
+        def template = '''<g:fieldValue bean="${person}" field="phoneUsInternational" />'''
+        assertOutputEquals("+1(123)123-1234", template, [person:person])
+    }
+
+    void testFieldValueTagWithPropertyEditorForNonDomainClassesWithPropertyPath() {
+        parsePhonePlainTestClasses()
+        parsePhonePropertyEditorPlainClasses()
+
+        def phonePropertyEditorRegistrarClazz = gcl.loadClass("PhonePropertyEditorRegistrar")
+        appCtx.registerBeanDefinition(
+                "phonePropertyEditorRegistrar", new RootBeanDefinition(phonePropertyEditorRegistrarClazz))
+
+        def phoneUs = gcl.loadClass("PhoneUs").newInstance()
+        phoneUs.area = "123"
+        phoneUs.prefix = "123"
+        phoneUs.number = "1234"
+
+        def person = gcl.loadClass("PersonPlain").newInstance()
+        person.firstName = "firstName1"
+        person.lastName = "lastName1"
+        person.phoneUs = phoneUs
+        person.otherPhoneUs = phoneUs
+
+        def template = '''<g:fieldValue bean="${person}" field="phoneUs" />'''
+        assertOutputEquals("(123)123-1234", template, [person:person])
+
+        def otherTemplate = '''<g:fieldValue bean="${person}" field="otherPhoneUs" />'''
+        assertOutputEquals("123-123-1234", otherTemplate, [person:person])
     }
 }
