@@ -286,13 +286,13 @@ public class GrailsDomainBinderTests extends TestCase {
     			"    Float width \n" +
     			"    Float height \n" +
     			"    static mapping = {\n" +
-    			"        width scale: 2\n" +
+    			"        width scale: 7\n" +
     			"    }\n" +
     	"}");
     	Table tableMapping = getTableMapping("widget", config);
     	Column heightColumn = tableMapping.getColumn(new Column("height"));
     	Column widthColumn = tableMapping.getColumn(new Column("width"));
-    	assertEquals(2, widthColumn.getScale());
+    	assertEquals(7, widthColumn.getScale());
     	assertEquals(Column.DEFAULT_SCALE, heightColumn.getScale());
     }
     
