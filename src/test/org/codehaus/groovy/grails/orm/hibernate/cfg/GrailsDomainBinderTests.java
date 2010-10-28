@@ -227,6 +227,75 @@ public class GrailsDomainBinderTests extends TestCase {
         PluginManagerHolder.setPluginManager(null);
     }
 
+    public void testLengthProperty() {
+    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    String name \n" +
+        "    String description \n" +
+        "    static mapping = {\n" +
+        "        name column: 's_name', sqlType: 'text', length: 42\n" +
+        "        description column: 's_description', sqlType: 'text'\n" +
+        "    }\n" +
+        "}");
+    	Table tableMapping = getTableMapping("widget", config);
+    	Column nameColumn = tableMapping.getColumn(new Column("s_name"));
+    	Column descriptionColumn = tableMapping.getColumn(new Column("s_description"));
+    	assertEquals(42, nameColumn.getLength());
+    	assertEquals(Column.DEFAULT_LENGTH, descriptionColumn.getLength());
+    }
+
+    public void testUniqueProperty() {
+    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+    			"    Long id \n" +
+    			"    Long version \n" +
+    			"    String name \n" +
+    			"    String description \n" +
+    			"    static mapping = {\n" +
+    			"        name unique: true\n" +
+    			"    }\n" +
+    	"}");
+    	Table tableMapping = getTableMapping("widget", config);
+    	Column nameColumn = tableMapping.getColumn(new Column("name"));
+    	Column descriptionColumn = tableMapping.getColumn(new Column("description"));
+    	assertEquals(true, nameColumn.isUnique());
+    	assertEquals(false, descriptionColumn.isUnique());
+    }
+    
+    public void testPrecisionProperty() {
+    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+    			"    Long id \n" +
+    			"    Long version \n" +
+    			"    Float width \n" +
+    			"    Float height \n" +
+    			"    static mapping = {\n" +
+    			"        width precision: 3\n" +
+    			"    }\n" +
+    	"}");
+    	Table tableMapping = getTableMapping("widget", config);
+    	Column heightColumn = tableMapping.getColumn(new Column("height"));
+    	Column widthColumn = tableMapping.getColumn(new Column("width"));
+    	assertEquals(3, widthColumn.getPrecision());
+    	assertEquals(Column.DEFAULT_PRECISION, heightColumn.getPrecision());
+    }
+    
+    public void testScaleProperty() {
+    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+    			"    Long id \n" +
+    			"    Long version \n" +
+    			"    Float width \n" +
+    			"    Float height \n" +
+    			"    static mapping = {\n" +
+    			"        width scale: 2\n" +
+    			"    }\n" +
+    	"}");
+    	Table tableMapping = getTableMapping("widget", config);
+    	Column heightColumn = tableMapping.getColumn(new Column("height"));
+    	Column widthColumn = tableMapping.getColumn(new Column("width"));
+    	assertEquals(2, widthColumn.getScale());
+    	assertEquals(Column.DEFAULT_SCALE, heightColumn.getScale());
+    }
+    
     public void testCachedMapProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(CACHED_MAP);
         Table table = getTableMapping("area_names", config);
