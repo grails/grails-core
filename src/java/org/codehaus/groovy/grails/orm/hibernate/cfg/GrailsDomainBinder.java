@@ -2315,6 +2315,9 @@ public final class GrailsDomainBinder {
                 	if(cc.getPrecision() != -1) {
                 		column.setPrecision(cc.getPrecision());
                 	}
+                	if(cc.getScale() != -1) {
+                		column.setScale(cc.getScale());
+                	}
                 	column.setUnique(cc.isUnique());
                 }
                 
