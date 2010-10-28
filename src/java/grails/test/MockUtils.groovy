@@ -201,8 +201,8 @@ class MockUtils {
             else if (map["view"] != null) {
                 assert map["text"] == null : "'text' cannot be used with 'view' in render"
 
-                modelAndView["viewName"] =  map["view"]
-                modelAndView["model"] = map["model"]
+                modelAndView.viewName =  map["view"]
+                modelAndView.addAllObjects(map["model"])
             }
             else if (map["text"] != null) {
                 delegate.response.outputStream << map["text"]

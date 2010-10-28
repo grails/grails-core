@@ -25,7 +25,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
 /**
- * Test case for {@link MockUtils}.
+ * Test case for  {@link MockUtils} .
  *
  * @author Peter Ledbrook
  */
@@ -45,7 +45,7 @@ class MockUtilsTests extends GroovyTestCase {
         metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
         PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+        PluginManagerHolder.pluginManager.registerMockPlugin([getName: {-> 'hibernate' }] as GrailsPlugin)
     }
 
     protected void tearDown() {
@@ -65,24 +65,24 @@ class MockUtilsTests extends GroovyTestCase {
 
         def m = "findByName" =~ regex
         assertEquals "Name", m[0][1]
-        assertNull   m[0][2]
-        assertNull   m[0][4]
-        assertNull   m[0][5]
-        assertNull   m[0][6]
+        assertNull m[0][2]
+        assertNull m[0][4]
+        assertNull m[0][5]
+        assertNull m[0][6]
 
         m = "findByNameAndTitle" =~ regex
         assertEquals "Name", m[0][1]
-        assertNull   m[0][2]
+        assertNull m[0][2]
         assertEquals "And", m[0][4]
         assertEquals "Title", m[0][5]
-        assertNull   m[0][6]
+        assertNull m[0][6]
 
         m = "findByIdGreaterThanOrTitle" =~ regex
         assertEquals "Id", m[0][1]
         assertEquals "GreaterThan", m[0][2]
         assertEquals "Or", m[0][4]
         assertEquals "Title", m[0][5]
-        assertNull   m[0][6]
+        assertNull m[0][6]
 
         m = "findByIdGreaterThanAndTitleNotEqual" =~ regex
         assertEquals "Id", m[0][1]
@@ -93,7 +93,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         m = "findByNameOrTitleNotEqual" =~ regex
         assertEquals "Name", m[0][1]
-        assertNull   m[0][2]
+        assertNull m[0][2]
         assertEquals "Or", m[0][4]
         assertEquals "Title", m[0][5]
         assertEquals "NotEqual", m[0][6]
@@ -112,7 +112,7 @@ class MockUtilsTests extends GroovyTestCase {
     }
 
     /**
-     * Tests the {@link MockUtils#mockDomain(Class, Map, List)} method.
+     * Tests the  {@link MockUtils#mockDomain(Class, Map, List)}  method.
      */
     void testDynamicFinders() {
         def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)
@@ -144,83 +144,83 @@ class MockUtilsTests extends GroovyTestCase {
         ])
 
         def result = TestDomain.findByName("Peter Pan")
-        assertEquals  peterPan, result
+        assertEquals peterPan, result
 
         result = TestDomain.findByName("Peter Parker")
-        assertNull    result
+        assertNull result
 
         result = TestDomain.findByNameAndCountry("Chris Jones", "Australia")
-        assertEquals  chrisJonesOz, result
+        assertEquals chrisJonesOz, result
 
         result = TestDomain.findByNameLikeAndCountry("%Smith", "Australia")
-        assertEquals  aliceSmithOz, result
+        assertEquals aliceSmithOz, result
 
         result = TestDomain.findByNameLikeOrCountry("%Smith", "Australia")
-        assertEquals  johnSmithUS, result
+        assertEquals johnSmithUS, result
 
         result = TestDomain.findByNameLikeOrCountry("%Jones", "UK")
-        assertEquals  janeDoeUK, result
+        assertEquals janeDoeUK, result
 
         result = TestDomain.findAll()
-        assertEquals  12, result.size()
+        assertEquals 12, result.size()
 
         result = TestDomain.findAllByName("Peter Pan")
-        assertEquals( [ peterPan ], result )
+        assertEquals([peterPan], result)
 
         result = TestDomain.findAllWhere(country: 'US')
-        assertEquals( [ johnSmithUS, johnPanUS, aliceDoeUS ], result )
+        assertEquals([johnSmithUS, johnPanUS, aliceDoeUS], result)
 
         result = TestDomain.findAllWhere(country: 'US', age: 35)
-        assertEquals( [ aliceDoeUS ], result )
+        assertEquals([aliceDoeUS], result)
 
         result = TestDomain.findAllWhere(name: 'John Smith')
-        assertEquals( [ johnSmithUS, johnSmithOz ], result )
+        assertEquals([johnSmithUS, johnSmithOz], result)
 
         result = TestDomain.findAllWhere(country: 'US', name: 99)
-        assertEquals( [], result )
+        assertEquals([], result)
 
         result = TestDomain.findAllByName("Peter Parker")
-        assertEquals( [], result )
+        assertEquals([], result)
 
         result = TestDomain.findAllByName("Chris Jones")
-        assertEquals( [ chrisJonesOz, chrisJonesCA ], result )
+        assertEquals([chrisJonesOz, chrisJonesCA], result)
 
         result = TestDomain.findAllByNameAndCountry("Chris Jones", "Australia")
-        assertEquals( [ chrisJonesOz ], result )
+        assertEquals([chrisJonesOz], result)
 
         result = TestDomain.findAllByNameLikeAndCountry("%Smith", "Australia")
-        assertEquals( [ aliceSmithOz, johnSmithOz ], result )
+        assertEquals([aliceSmithOz, johnSmithOz], result)
 
         result = TestDomain.findAllByNameIlikeOrCountry("%smith", "Australia")
-        assertEquals( [ johnSmithUS, aliceSmithOz, chrisJonesOz, chrisPanOz, johnSmithOz ], result )
+        assertEquals([johnSmithUS, aliceSmithOz, chrisJonesOz, chrisPanOz, johnSmithOz], result)
 
         result = TestDomain.findAllByAgeBetween(18, 35)
-        assertEquals( [ janeDoeUK, peterPan, aliceSmithOz, chrisJonesOz, aliceDoeUS, chrisPanNull ], result )
-        assertEquals 6, TestDomain.countByAgeBetween(18,35)
+        assertEquals([janeDoeUK, peterPan, aliceSmithOz, chrisJonesOz, aliceDoeUS, chrisPanNull], result)
+        assertEquals 6, TestDomain.countByAgeBetween(18, 35)
 
         result = TestDomain.findAllByCountryIsNull()
-        assertEquals( [ janeDoeNull, chrisPanNull ], result )
+        assertEquals([janeDoeNull, chrisPanNull], result)
         assertEquals 2, TestDomain.countByCountryIsNull()
 
         result = TestDomain.findAllByAgeLessThanAndCountryIsNotNull(22)
-        assertEquals( [ janeDoeUK, johnPanUS, chrisJonesCA ], result )
+        assertEquals([janeDoeUK, johnPanUS, chrisJonesCA], result)
 
         result = TestDomain.findAllByAgeGreaterThanEqualsOrAgeBetween(45, 17, 22)
-        assertEquals( [ johnSmithUS, janeDoeUK, chrisPanOz, johnSmithOz, chrisPanNull ], result )
+        assertEquals([johnSmithUS, janeDoeUK, chrisPanOz, johnSmithOz, chrisPanNull], result)
 
         result = TestDomain.findAllByCountryNotEqualAndNameLike("Australia", "John%")
-        assertEquals( [ johnSmithUS, johnPanUS ], result )
+        assertEquals([johnSmithUS, johnPanUS], result)
 
         // Test with a sort field specified.
-        result = TestDomain.findAllByAgeBetween(18, 35, [ sort: "name" ])
-        assertEquals( [ aliceDoeUS, aliceSmithOz, chrisJonesOz, chrisPanNull, janeDoeUK, peterPan ], result )
+        result = TestDomain.findAllByAgeBetween(18, 35, [sort: "name"])
+        assertEquals([aliceDoeUS, aliceSmithOz, chrisJonesOz, chrisPanNull, janeDoeUK, peterPan], result)
 
-        result = TestDomain.findAllByAgeBetween(18, 35, [ sort: "name", order: "desc", max: 3, offset: 1 ])
-        assertEquals( [ janeDoeUK, chrisPanNull, chrisJonesOz ], result )
-        
+        result = TestDomain.findAllByAgeBetween(18, 35, [sort: "name", order: "desc", max: 3, offset: 1])
+        assertEquals([janeDoeUK, chrisPanNull, chrisJonesOz], result)
+
         result = TestDomain.findByNameInList(["Alice Doe"])
         assertEquals result, aliceDoeUS
-        
+
         result = TestDomain.findAllByNameInList(["Chris Jones"])
         assertEquals 2, result.size()
         assertEquals 2, TestDomain.countByNameInList(["John Smith"])
@@ -237,10 +237,10 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals 0, result.size()
 
         // Test with a sort field specified.
-        result = TestDomain.findAllByAgeBetween(18, 35, [ sort: "name" ])
+        result = TestDomain.findAllByAgeBetween(18, 35, [sort: "name"])
         assertEquals 0, result.size()
 
-        result = TestDomain.findAllByAgeBetween(18, 35, [ sort: "name", order: "desc", max: 3, offset: 1 ])
+        result = TestDomain.findAllByAgeBetween(18, 35, [sort: "name", order: "desc", max: 3, offset: 1])
         assertEquals 0, result.size()
     }
 
@@ -257,14 +257,14 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ])
+                chrisJonesOz])
 
         assertEquals aliceDoeUS, TestDomain.get("1")
         assertEquals chrisJonesCA, TestDomain.get(3)
         assertEquals chrisJonesOz, TestDomain.get(4L)
-        assertNull   TestDomain.get(10)
-        assertNull   TestDomain.get(-1)
-        assertNull   TestDomain.get(null)
+        assertNull TestDomain.get(10)
+        assertNull TestDomain.get(-1)
+        assertNull TestDomain.get(null)
     }
 
     /**
@@ -281,14 +281,14 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ])
+                chrisJonesOz])
 
         assertEquals aliceDoeUS, TestDomain.get("235")
         assertEquals chrisJonesCA, TestDomain.get(9)
         assertEquals chrisJonesOz, TestDomain.get(192)
-        assertNull   TestDomain.get(1)
-        assertNull   TestDomain.get(2)
-        assertNull   TestDomain.get(null)
+        assertNull TestDomain.get(1)
+        assertNull TestDomain.get(2)
+        assertNull TestDomain.get(null)
     }
 
     /**
@@ -304,14 +304,14 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ])
+                chrisJonesOz])
 
         assertEquals aliceDoeUS, TestDomain.read("1")
         assertEquals chrisJonesCA, TestDomain.read(3)
         assertEquals chrisJonesOz, TestDomain.read(4L)
-        assertNull   TestDomain.read(10)
-        assertNull   TestDomain.read(-1)
-        assertNull   TestDomain.read(null)
+        assertNull TestDomain.read(10)
+        assertNull TestDomain.read(-1)
+        assertNull TestDomain.read(null)
     }
 
     /**
@@ -328,14 +328,14 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ])
+                chrisJonesOz])
 
         assertEquals aliceDoeUS, TestDomain.read("235")
         assertEquals chrisJonesCA, TestDomain.read(9)
         assertEquals chrisJonesOz, TestDomain.read(192)
-        assertNull   TestDomain.read(1)
-        assertNull   TestDomain.read(2)
-        assertNull   TestDomain.read(null)
+        assertNull TestDomain.read(1)
+        assertNull TestDomain.read(2)
+        assertNull TestDomain.read(null)
     }
 
     /**
@@ -351,15 +351,15 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ])
+                chrisJonesOz])
 
-        assertEquals( [ aliceDoeUS, chrisJonesCA, aliceSmithOz ], TestDomain.getAll("1", "3", "2") )
-        assertEquals( [ chrisJonesCA, aliceDoeUS ], TestDomain.getAll(3, 1) )
-        assertEquals( [ aliceSmithOz ], TestDomain.getAll(2L) )
-        assertEquals( [ aliceSmithOz, aliceDoeUS ], TestDomain.getAll([ 10, 2, 6, 1 ]) )
-        assertEquals( [], TestDomain.getAll(10, 5) )
-        assertEquals( [], TestDomain.getAll([]) )
-        assertNull   TestDomain.getAll(null)
+        assertEquals([aliceDoeUS, chrisJonesCA, aliceSmithOz], TestDomain.getAll("1", "3", "2"))
+        assertEquals([chrisJonesCA, aliceDoeUS], TestDomain.getAll(3, 1))
+        assertEquals([aliceSmithOz], TestDomain.getAll(2L))
+        assertEquals([aliceSmithOz, aliceDoeUS], TestDomain.getAll([10, 2, 6, 1]))
+        assertEquals([], TestDomain.getAll(10, 5))
+        assertEquals([], TestDomain.getAll([]))
+        assertNull TestDomain.getAll(null)
     }
 
     /**
@@ -375,11 +375,11 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ])
+                chrisJonesOz])
 
-        assertTrue  TestDomain.exists("1")
-        assertTrue  TestDomain.exists(3)
-        assertTrue  TestDomain.exists(4L)
+        assertTrue TestDomain.exists("1")
+        assertTrue TestDomain.exists(3)
+        assertTrue TestDomain.exists(4L)
         assertFalse TestDomain.exists(10)
         assertFalse TestDomain.exists(-1)
         assertFalse TestDomain.exists(null)
@@ -398,9 +398,9 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 chrisJonesCA,
                 aliceSmithOz,
-                chrisJonesOz ])
+                chrisJonesOz])
 
-        assertEquals( [ aliceDoeUS, chrisJonesCA, aliceSmithOz, chrisJonesOz ], TestDomain.list() )
+        assertEquals([aliceDoeUS, chrisJonesCA, aliceSmithOz, chrisJonesOz], TestDomain.list())
     }
 
     /**
@@ -414,45 +414,45 @@ class MockUtilsTests extends GroovyTestCase {
         def chrisJonesOz = new TestDomain(name: "Chris Jones", country: "Australia", age: 29)
         def jimBondCA = new TestDomain(name: "Jim Bond", country: "canada", age: 18)
 
-        List fullList = [ aliceDoeUS, chrisJonesCA, aliceSmithOz, chrisJonesOz, jimBondCA ]
+        List fullList = [aliceDoeUS, chrisJonesCA, aliceSmithOz, chrisJonesOz, jimBondCA]
 
         MockUtils.mockDomain(TestDomain, errorsMap, fullList)
 
-        assertEquals "max", [ aliceDoeUS, chrisJonesCA ], TestDomain.list(max:2)
-        assertEquals "max out of bounds", fullList, TestDomain.list(max:20)
-        assertEquals "max negative", fullList, TestDomain.list(max:-5)
+        assertEquals "max", [aliceDoeUS, chrisJonesCA], TestDomain.list(max: 2)
+        assertEquals "max out of bounds", fullList, TestDomain.list(max: 20)
+        assertEquals "max negative", fullList, TestDomain.list(max: -5)
 
-        assertEquals "offset", fullList[2..-1], TestDomain.list(offset:2)
-        assertEquals "offset out of bounds", [ ], TestDomain.list(offset:20)
-        assertEquals "offset negative", fullList , TestDomain.list(offset:-5)
+        assertEquals "offset", fullList[2..-1], TestDomain.list(offset: 2)
+        assertEquals "offset out of bounds", [], TestDomain.list(offset: 20)
+        assertEquals "offset negative", fullList, TestDomain.list(offset: -5)
 
-        assertEquals "max and offset", fullList[1..2], TestDomain.list(offset:1,max:2)
-        assertEquals "max (out of bounds) and offset", fullList[2..-1], TestDomain.list(offset:2,max:20)
-        assertEquals "max and offset (out of bounds)", [ ], TestDomain.list(offset:200,max:20)
-        assertEquals "max (negative) and offset", fullList[1..-1], TestDomain.list(offset:1,max:-5)
-        assertEquals "max and offset (negative)", fullList[0..1], TestDomain.list(offset:-5,max:2)
-        assertEquals "max (negative) and offset (negative)", fullList, TestDomain.list(offset:-2,max:-5)
+        assertEquals "max and offset", fullList[1..2], TestDomain.list(offset: 1, max: 2)
+        assertEquals "max (out of bounds) and offset", fullList[2..-1], TestDomain.list(offset: 2, max: 20)
+        assertEquals "max and offset (out of bounds)", [], TestDomain.list(offset: 200, max: 20)
+        assertEquals "max (negative) and offset", fullList[1..-1], TestDomain.list(offset: 1, max: -5)
+        assertEquals "max and offset (negative)", fullList[0..1], TestDomain.list(offset: -5, max: 2)
+        assertEquals "max (negative) and offset (negative)", fullList, TestDomain.list(offset: -2, max: -5)
 
-        assertEquals "sort", [ aliceSmithOz, chrisJonesOz, chrisJonesCA, jimBondCA, aliceDoeUS ], TestDomain.list(sort:"country")
-        assertEquals "sort and max", [ aliceSmithOz, chrisJonesOz ], TestDomain.list(sort:"country", max:2)
+        assertEquals "sort", [aliceSmithOz, chrisJonesOz, chrisJonesCA, jimBondCA, aliceDoeUS], TestDomain.list(sort: "country")
+        assertEquals "sort and max", [aliceSmithOz, chrisJonesOz], TestDomain.list(sort: "country", max: 2)
 
         assertEquals(
                 "sorting in descending order",
-                [ aliceDoeUS, chrisJonesCA, jimBondCA, aliceSmithOz, chrisJonesOz ],
-                TestDomain.list(sort:"country", order:"desc") )
+                [aliceDoeUS, chrisJonesCA, jimBondCA, aliceSmithOz, chrisJonesOz],
+                TestDomain.list(sort: "country", order: "desc"))
         assertEquals(
                 "sorting in ascending order",
-                [ aliceSmithOz, chrisJonesOz, chrisJonesCA, jimBondCA, aliceDoeUS ],
-                TestDomain.list(sort:"country", order:"asc") )
+                [aliceSmithOz, chrisJonesOz, chrisJonesCA, jimBondCA, aliceDoeUS],
+                TestDomain.list(sort: "country", order: "asc"))
         assertEquals(
                 "sorting (ignoring case)",
-                [ aliceSmithOz, chrisJonesOz, chrisJonesCA, aliceDoeUS, jimBondCA ],
-                TestDomain.list(sort:"country", ignoreCase: false) )
+                [aliceSmithOz, chrisJonesOz, chrisJonesCA, aliceDoeUS, jimBondCA],
+                TestDomain.list(sort: "country", ignoreCase: false))
 
         assertEquals(
                 "sorting by number",
-                [ chrisJonesCA, jimBondCA, chrisJonesOz, aliceSmithOz, aliceDoeUS ],
-                TestDomain.list(sort:"age") )
+                [chrisJonesCA, jimBondCA, chrisJonesOz, aliceSmithOz, aliceDoeUS],
+                TestDomain.list(sort: "age"))
     }
 
     /**
@@ -461,9 +461,9 @@ class MockUtilsTests extends GroovyTestCase {
      */
     void testListWithArgsAndNoResults() {
         MockUtils.mockDomain(TestDomain, errorsMap, [])
-        assertEquals "max and offset", [], TestDomain.list(max:4)
-        assertEquals "max and offset", [], TestDomain.list(offset:1, max:2)
-        assertEquals "max and offset", [], TestDomain.list(sort:"country", max:4)
+        assertEquals "max and offset", [], TestDomain.list(max: 4)
+        assertEquals "max and offset", [], TestDomain.list(offset: 1, max: 2)
+        assertEquals "max and offset", [], TestDomain.list(sort: "country", max: 4)
     }
 
     /**
@@ -502,7 +502,7 @@ class MockUtilsTests extends GroovyTestCase {
     void testAddTo() {
         def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)
 
-        MockUtils.mockDomain(TestDomain, errorsMap, [ aliceDoeUS ])
+        MockUtils.mockDomain(TestDomain, errorsMap, [aliceDoeUS])
 
         // Make sure we start with no relations.
         assertNull "Alice US's relations set should be null.", aliceDoeUS.relations
@@ -524,7 +524,7 @@ class MockUtilsTests extends GroovyTestCase {
         def c2 = new Company(name: 'c2')
         def c3 = new Company(name: 'c3')
 
-        MockUtils.mockDomain (Company, [c1, c2, c3])
+        MockUtils.mockDomain(Company, [c1, c2, c3])
         c1.addToSubsidiaries(c2)
         c2.addToSubsidiaries(c3)
         assertEquals 'c1 had wrong number of subsidiaries', 1, c1.subsidiaries?.size()
@@ -544,7 +544,7 @@ class MockUtilsTests extends GroovyTestCase {
                 age: 35,
                 relations: [new Relation(name: "Auntie Miriam"), new Relation(name: "Uncle Jack")] as Set)
 
-        MockUtils.mockDomain(TestDomain, errorsMap, [ aliceDoeUS ])
+        MockUtils.mockDomain(TestDomain, errorsMap, [aliceDoeUS])
 
         assertEquals 2, aliceDoeUS.relations?.size()
 
@@ -564,18 +564,18 @@ class MockUtilsTests extends GroovyTestCase {
         def chrisJonesCA = new TestDomainWithUUID(id: "apple", name: "Chris Jones", country: "Canada", age: 16)
         def chrisJonesOz = new TestDomainWithUUID(id: "cherry", name: "Chris Jones", country: "Australia", age: 29)
 
-        MockUtils.mockDomain(TestDomainWithUUID, errorsMap, [ aliceDoeUS, aliceSmithOz, chrisJonesCA, chrisJonesOz ])
+        MockUtils.mockDomain(TestDomainWithUUID, errorsMap, [aliceDoeUS, aliceSmithOz, chrisJonesCA, chrisJonesOz])
         def d = TestDomainWithUUID.get("apple")
         assertEquals chrisJonesCA, d
     }
 
     /**
-     * Tests the <code>validate()</code> method added by {@link
-     * MockUtils#prepareForConstraintsTests(Class, List)}.
+     * Tests the <code>validate()</code> method added by  {@link
+     * MockUtils # prepareForConstraintsTests ( Class , List )} .
      */
     void testConstraintValidation() {
         def testInstances = [
-                new TestDomain(id: 5L, name: "Test", country: "US", age: 21, other: "Complex", title: "Prof.") ]
+                new TestDomain(id: 5L, name: "Test", country: "US", age: 21, other: "Complex", title: "Prof.")]
         MockUtils.prepareForConstraintsTests(TestDomain, errorsMap, testInstances)
 
         def dc = new TestDomain()
@@ -583,11 +583,11 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "nullable", dc.errors["name"]
         assertEquals "nullable", dc.errors["title"]
         assertEquals "min", dc.errors["age"]
-        assertNull   dc.errors["id"]
-        assertNull   dc.errors["country"]
-        assertNull   dc.errors["email"]
-        assertNull   dc.errors["cardNumber"]
-        assertNull   dc.errors["item"]
+        assertNull dc.errors["id"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
 
         dc = new TestDomain(
                 id: 5,
@@ -606,8 +606,8 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals "matches", dc.errors["email"]
         assertEquals "size", dc.errors["other"]
         assertEquals "range", dc.errors["number"]
-        assertNull   dc.errors["age"]
-        assertNull   dc.errors["title"]
+        assertNull dc.errors["age"]
+        assertNull dc.errors["title"]
 
         dc = new TestDomain(
                 name: "A long name",
@@ -669,14 +669,14 @@ class MockUtilsTests extends GroovyTestCase {
         // Test that class hierarchies with multiple "constraints" blocks work ok.
         MockUtils.prepareForConstraintsTests(B, errorsMap)
         dc = new B(name: "Bee", country: "US", age: 5, b: "supercallifragilistic")
-        assertFalse  dc.validate()
+        assertFalse dc.validate()
         assertEquals "nullable", dc.errors["title"]
         assertEquals "min", dc.errors["age"]
         assertEquals "maxSize", dc.errors["b"]
-        assertNull   dc.errors["country"]
-        assertNull   dc.errors["email"]
-        assertNull   dc.errors["cardNumber"]
-        assertNull   dc.errors["item"]
+        assertNull dc.errors["country"]
+        assertNull dc.errors["email"]
+        assertNull dc.errors["cardNumber"]
+        assertNull dc.errors["item"]
 
         dc = new B(name: "Bee", country: "US", age: 21, b: "simple", title: "Mr.")
         assertTrue dc.validate()
@@ -684,7 +684,7 @@ class MockUtilsTests extends GroovyTestCase {
 
     /**
      * Tests that the dynamic methods can be called on the test instances
-     * passed into the {@link MockUtils#mockDomain(Class, Map, List)} method.
+     * passed into the  {@link MockUtils#mockDomain(Class, Map, List)}  method.
      */
     void testDynamicMethodsOnTestInstances() {
         def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)
@@ -696,7 +696,7 @@ class MockUtilsTests extends GroovyTestCase {
                 aliceDoeUS,
                 aliceSmithOz,
                 chrisJonesCA,
-                chrisJonesOz ]
+                chrisJonesOz]
         MockUtils.mockDomain(TestDomain, errorsMap, testInstances)
 
         def domain = TestDomain.get(1)
@@ -735,13 +735,27 @@ class MockUtilsTests extends GroovyTestCase {
         controller.render(view: "list", model: [count: 101])
 
         assertEquals "list", controller.renderArgs["view"]
-        assertEquals( [count: 101], controller.renderArgs["model"] )
+        assertEquals([count: 101], controller.renderArgs["model"])
         assertEquals 'list', controller.modelAndView.viewName
 
         // "view" and "text" arguments are mutually exclusive.
         shouldFail(AssertionError) {
             controller.render(view: "list", text: "This should fail!")
         }
+    }
+
+    /**
+     * Test for GRAILS-6533
+     */
+    void testMockControllerRenderWithCorrectModelAndView() {
+        MockUtils.mockController(TestController)
+
+        def controller = new TestController()
+
+        // Test simple view and model.
+        controller.render(view: "list", model: [count: 101])
+
+        assertEquals(101, controller.modelAndView.model.count)
     }
 
     /**
@@ -757,9 +771,9 @@ class MockUtilsTests extends GroovyTestCase {
         controller.render(template: "fragment")
 
         assertEquals "fragment", controller.renderArgs["template"]
-        assertNull   "'bean' should not be in render args.", controller.renderArgs["bean"]
-        assertNull   "'model' should not be in render args.", controller.renderArgs["model"]
-        assertNull   "'collection' should not be in render args.", controller.renderArgs["collection"]
+        assertNull "'bean' should not be in render args.", controller.renderArgs["bean"]
+        assertNull "'model' should not be in render args.", controller.renderArgs["model"]
+        assertNull "'collection' should not be in render args.", controller.renderArgs["collection"]
 
         // Test simple template and model.
         controller.renderArgs.clear()
@@ -767,8 +781,8 @@ class MockUtilsTests extends GroovyTestCase {
 
         assertEquals "fragment", controller.renderArgs["template"]
         assertEquals 101, controller.renderArgs["model"]["count"]
-        assertNull   "'bean' should not be in render args.", controller.renderArgs["bean"]
-        assertNull   "'collection' should not be in render args.", controller.renderArgs["collection"]
+        assertNull "'bean' should not be in render args.", controller.renderArgs["bean"]
+        assertNull "'collection' should not be in render args.", controller.renderArgs["collection"]
 
         // Test template with bean.
         def testBean = new Expando(name: "My Bean")
@@ -777,18 +791,18 @@ class MockUtilsTests extends GroovyTestCase {
 
         assertEquals "fragment", controller.renderArgs["template"]
         assertEquals testBean, controller.renderArgs["bean"]
-        assertNull   "'model' should not be in render args.", controller.renderArgs["model"]
-        assertNull   "'collection' should not be in render args.", controller.renderArgs["collection"]
+        assertNull "'model' should not be in render args.", controller.renderArgs["model"]
+        assertNull "'collection' should not be in render args.", controller.renderArgs["collection"]
 
         // Test template with collection.
-        def testCollection = [ "item" ]
+        def testCollection = ["item"]
         controller.renderArgs.clear()
         controller.render(template: "fragment", collection: testCollection)
 
         assertEquals "fragment", controller.renderArgs["template"]
         assertEquals testCollection, controller.renderArgs["collection"]
-        assertNull   "'model' should not be in render args.", controller.renderArgs["model"]
-        assertNull   "'bean' should not be in render args.", controller.renderArgs["bean"]
+        assertNull "'model' should not be in render args.", controller.renderArgs["model"]
+        assertNull "'bean' should not be in render args.", controller.renderArgs["bean"]
 
         // "template" and "text" arguments are mutually exclusive.
         shouldFail(AssertionError) {
@@ -859,7 +873,7 @@ class MockUtilsTests extends GroovyTestCase {
         MockUtils.mockController(TestController)
 
         def controller = new TestController()
-        controller.params.intparam='123456'
+        controller.params.intparam = '123456'
         controller.testIntParams()
 
         assertEquals "123456", controller.response.contentAsString
@@ -1123,11 +1137,11 @@ class MockUtilsTests extends GroovyTestCase {
 
     /**
      * Tests that the data-binding added by the
-     * {@link MockUtils#addValidateMethod(Class, List)} works as expected.
+     * {@link MockUtils#addValidateMethod(Class, List)}  works as expected.
      */
     void testDataBinding() {
         MockUtils.prepareForConstraintsTests(TestDomain, errorsMap, [
-                new TestDomain(id: 5L, name: "Test", country: "US", age: 21, other: "Complex") ])
+                new TestDomain(id: 5L, name: "Test", country: "US", age: 21, other: "Complex")])
 
         // First check that binding errors appear.
         def dc = new TestDomain(name: "Bad data", age: "Not a number")
@@ -1138,7 +1152,7 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals 0, dc.age
 
         // Clear the errors and try binding using ".properties".
-        def params = [ name: "Properties", item: "Apple", age: "21", number: "sdjhfks", notOdd: "12eee345" ]
+        def params = [name: "Properties", item: "Apple", age: "21", number: "sdjhfks", notOdd: "12eee345"]
         dc.clearErrors()
         dc.properties = params
 
@@ -1160,9 +1174,9 @@ class MockUtilsTests extends GroovyTestCase {
      */
     void testNestedDataBinding() {
         MockUtils.mockDomain(TestNestedParentDomain, errorsMap)
-        MockUtils.mockDomain(TestNestedChildDomain, errorsMap, [ new TestNestedChildDomain(id: 42L, name: 'Apple') ])
+        MockUtils.mockDomain(TestNestedChildDomain, errorsMap, [new TestNestedChildDomain(id: 42L, name: 'Apple')])
 
-        def params = [ name: 'Fruit basket', 'child.id': 42L ]
+        def params = [name: 'Fruit basket', 'child.id': 42L]
         def dc = new TestNestedParentDomain()
         dc.properties = params
 
@@ -1395,7 +1409,7 @@ class MockUtilsTests extends GroovyTestCase {
 /**
  * Simple controller implementation to test the controller mocking.
  */
-class TestController  {
+class TestController {
     def index = {
         render "hello"
     }
@@ -1436,7 +1450,7 @@ class TestController  {
 
     def testWithFormat = {
         withFormat {
-            html foo:"bar"
+            html foo: "bar"
             xml {
                 render(contentType: "application/xml") {
                     root("class": "TestDomain") {
@@ -1444,13 +1458,13 @@ class TestController  {
                     }
                 }
             }
-            json { render(template:"someTemplate")}
+            json { render(template: "someTemplate")}
         }
     }
 
     def testWithForm = {
         withForm {
-            [ foo: "bar" ]
+            [foo: "bar"]
         }.invalidToken {
             render "Double submission!"
         }
@@ -1460,13 +1474,13 @@ class TestController  {
         withForm {
             render "OK"
         }.invalidToken {
-            [ error: "Double submission!" ]
+            [error: "Double submission!"]
         }
     }
 
     def testWithForm2 = {
         withForm {
-            [ foo: "bar" ]
+            [foo: "bar"]
         }
     }
 }
@@ -1490,7 +1504,7 @@ class TestDomain {
     Long version
     String name
     String country
-    int    age
+    int age
     String email
     String homePage
     String cardNumber
@@ -1512,12 +1526,12 @@ class TestDomain {
     static constraints = {
         id(nullable: true, unique: true)
         name(nullable: false, blank: false, maxSize: 10, unique: "country")
-        country(nullable: true, blank: false, minSize: 2, unique: [ "age", "other" ])
+        country(nullable: true, blank: false, minSize: 2, unique: ["age", "other"])
         age(min: 8, max: 65)
         email(nullable: true, email: true, matches: /.+somewhere.org$/)
         homePage(nullable: true, url: true)
         cardNumber(nullable: true, creditCard: true)
-        item(nullable: true, inList: [ "one", "two", "three" ])
+        item(nullable: true, inList: ["one", "two", "three"])
         other(nullable: true, notEqual: "Test", size: 4..10)
         number(nullable: true, range: 10L..22L, validator: {val, obj -> val != obj.age})
         notOdd(nullable: true, validator: { val, obj ->
@@ -1526,12 +1540,15 @@ class TestDomain {
     }
 
     def beforeInsert() { beforeInserted++ }
+
     def afterInsert() { afterInserted++ }
 
     def beforeUpdate() { beforeUpdated++ }
+
     def afterUpdate() { afterUpdated++ }
 
     def beforeDelete() { beforeDeleted++ }
+
     def afterDelete() { afterDeleted++ }
 
     boolean equals(Object obj) {
@@ -1580,17 +1597,17 @@ class B extends TestDomain {
  */
 class TestDomainWithUUID {
     String id
-    Long   version
+    Long version
     String name
     String country
-    int    age
+    int age
 
     static constraints = {
         name(nullable: false, blank: false, maxSize: 10, unique: "country")
         age(min: 8, max: 65)
     }
 
- 	boolean equals(Object obj) {
+    boolean equals(Object obj) {
         if (!(obj instanceof TestDomainWithUUID)) return null
 
         return this.name == obj.name &&
@@ -1608,26 +1625,26 @@ class TestDomainWithUUID {
  */
 class TestDomainWithAssignedId {
     String id
-    Long   version
+    Long version
     String name
 
     static constraints = {
-		id nullable: false
+        id nullable: false
         name nullable: false, blank: false
     }
 
-	static mapping = {
-		id generator: "assigned"
-	}
+    static mapping = {
+        id generator: "assigned"
+    }
 
- 	boolean equals(Object obj) {
+    boolean equals(Object obj) {
         if (!(obj instanceof TestDomainWithAssignedId)) return null
         return this.name == obj.name
     }
 
-	int hashCode() {
-		name.hashCode()
-	}
+    int hashCode() {
+        name.hashCode()
+    }
 
     String toString() {
         "TestDomainWithAssignedId(${this.id}, ${this.name})"
