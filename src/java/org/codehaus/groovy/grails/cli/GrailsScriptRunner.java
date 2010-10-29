@@ -21,7 +21,6 @@ import grails.util.BuildSettingsHolder;
 import grails.util.CosineSimilarity;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
-import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
@@ -545,7 +544,7 @@ public class GrailsScriptRunner {
             if (enteredValue == null) return 1;
 
             int number = Integer.parseInt(enteredValue);
-            File scriptFile = (File) potentialScripts.get(number - 1);
+            File scriptFile = potentialScripts.get(number - 1);
             out.println("Running script "+ scriptFile.getAbsolutePath());
             // We can now safely set the default environment
             String scriptFileName = getScriptNameFromFile(scriptFile);

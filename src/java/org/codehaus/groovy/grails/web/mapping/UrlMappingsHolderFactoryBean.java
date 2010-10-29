@@ -33,12 +33,12 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 
 /**
- * A FactoryBean for constructing the UrlMappingsHolder from the registered UrlMappings class within a
- * GrailsApplication.
+ * Constructs the UrlMappingsHolder from the registered UrlMappings class within a GrailsApplication.
  *
  * @author Graeme Rocher
  * @since 0.5
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
@@ -59,7 +59,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         return true;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void afterPropertiesSet() throws Exception {
         Assert.state(grailsApplication != null, "Property [grailsApplication] must be set!");
 
@@ -90,12 +89,12 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
         Map flatConfig = grailsApplication.getFlatConfig();
         Integer cacheSize = mapGetInteger(flatConfig, URL_MAPPING_CACHE_MAX_SIZE);
-        if(cacheSize != null){
+        if (cacheSize != null){
             defaultUrlMappingsHolder.setMaxWeightedCacheCapacity(cacheSize);
         }
         Integer urlCreatorCacheSize = mapGetInteger(flatConfig, URL_CREATOR_CACHE_MAX_SIZE);
-        if(urlCreatorCacheSize != null) {
-        	defaultUrlMappingsHolder.setUrlCreatorMaxWeightedCacheCapacity(urlCreatorCacheSize);
+        if (urlCreatorCacheSize != null) {
+            defaultUrlMappingsHolder.setUrlCreatorMaxWeightedCacheCapacity(urlCreatorCacheSize);
         }
         // call initialize() after settings are in place
         defaultUrlMappingsHolder.initialize();
@@ -104,15 +103,14 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
     
     // this should possibly be somewhere in utility classes , MapUtils.getInteger doesn't handle GStrings/CharSequence
     private static Integer mapGetInteger(Map map, String key) {
-    	Object value=map.get(key);
-    	if(value==null) {
-    		return null;
-    	}
-    	if(value instanceof Integer) {
-    		return (Integer)value;
-    	} else {
-    		return (value instanceof Number) ? Integer.valueOf(((Number)value).intValue()) : Integer.valueOf(String.valueOf(value));
-    	}
+        Object value=map.get(key);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Integer) {
+            return (Integer)value;
+        }
+        return (value instanceof Number) ? Integer.valueOf(((Number)value).intValue()) : Integer.valueOf(String.valueOf(value));
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

@@ -56,10 +56,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private Map<String, UrlMappingInfo> cachedMatches;
     private Map<String, List<UrlMappingInfo>> cachedListMatches;
     private enum CustomListWeigher implements Weigher<List<UrlMappingInfo>> {
-    	INSTANCE;
-    	public int weightOf(List<UrlMappingInfo> values) {
-    		return values.size() + 1;
-    	}
+        INSTANCE;
+        public int weightOf(List<UrlMappingInfo> values) {
+            return values.size() + 1;
+        }
     }
 
     private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
@@ -84,14 +84,14 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     }
 
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns) {
-    	this(mappings, excludePatterns, false);
+        this(mappings, excludePatterns, false);
     }
     
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns, boolean doNotCallInit) {
         urlMappings = mappings;
         this.excludePatterns = excludePatterns;
         if(!doNotCallInit) {
-        	initialize();
+            initialize();
         }
     }
     
@@ -106,7 +106,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             .weigher(CustomListWeigher.INSTANCE)
             .build();
         if(urlCreatorMaxWeightedCacheCapacity > 0) {
-        	urlCreatorCache = new UrlCreatorCache(urlCreatorMaxWeightedCacheCapacity);
+            urlCreatorCache = new UrlCreatorCache(urlCreatorMaxWeightedCacheCapacity);
         }
         
         mappings = urlMappings.toArray(new UrlMapping[urlMappings.size()]);
@@ -160,24 +160,24 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
     }
 
-	@SuppressWarnings("unchecked")
-	private void sortMappings() {
-		List<ResponseCodeUrlMapping> responseCodeUrlMappings = new ArrayList<ResponseCodeUrlMapping>();
-		Iterator<UrlMapping> iter = urlMappings.iterator();
-		while (iter.hasNext()) {
-			UrlMapping mapping = iter.next();
-			if (mapping instanceof ResponseCodeUrlMapping) {
-				responseCodeUrlMappings.add((ResponseCodeUrlMapping)mapping);
-				iter.remove();
-			}
-		}
+    @SuppressWarnings("unchecked")
+    private void sortMappings() {
+        List<ResponseCodeUrlMapping> responseCodeUrlMappings = new ArrayList<ResponseCodeUrlMapping>();
+        Iterator<UrlMapping> iter = urlMappings.iterator();
+        while (iter.hasNext()) {
+            UrlMapping mapping = iter.next();
+            if (mapping instanceof ResponseCodeUrlMapping) {
+                responseCodeUrlMappings.add((ResponseCodeUrlMapping)mapping);
+                iter.remove();
+            }
+        }
 
-		Collections.sort(urlMappings);
-		urlMappings.addAll(responseCodeUrlMappings);
-		Collections.reverse(urlMappings);
-	}
+        Collections.sort(urlMappings);
+        urlMappings.addAll(responseCodeUrlMappings);
+        Collections.reverse(urlMappings);
+    }
 
-	public UrlMapping[] getUrlMappings() {
+    public UrlMapping[] getUrlMappings() {
         return mappings;
     }
 
@@ -188,29 +188,28 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     /**
      * @see UrlMappingsHolder#getReverseMapping(String, String, java.util.Map)
      */
-    @SuppressWarnings("unchecked")
     public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         if (params == null) params = Collections.EMPTY_MAP;
         
         if(urlCreatorCache != null) {
-	        UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, params);
-	        UrlCreator creator=urlCreatorCache.lookup(key);
-	        if(creator==null) {
-	        	creator=resolveUrlCreator(controller, action, params);
-	        	creator=urlCreatorCache.putAndDecorate(key, creator);
-	        }
-	        // preserve previous side-effect, remove mappingName from params
-	        params.remove("mappingName");
-	        return creator;
-        } else {
-        	// cache is disabled
-        	return resolveUrlCreator(controller, action, params);
+            UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, params);
+            UrlCreator creator=urlCreatorCache.lookup(key);
+            if(creator==null) {
+                creator=resolveUrlCreator(controller, action, params);
+                creator=urlCreatorCache.putAndDecorate(key, creator);
+            }
+            // preserve previous side-effect, remove mappingName from params
+            params.remove("mappingName");
+            return creator;
         }
+        // cache is disabled
+        return resolveUrlCreator(controller, action, params);
     }
 
-	private UrlCreator resolveUrlCreator(final String controller,
-			final String action, Map params) {
-		UrlMapping mapping = null;
+    @SuppressWarnings("unchecked")
+    private UrlCreator resolveUrlCreator(final String controller,
+            final String action, Map params) {
+        UrlMapping mapping = null;
 
         mapping = namedMappings.get(params.remove("mappingName"));
         if (mapping == null) {
@@ -244,12 +243,12 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
         UrlCreator creator;
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-        	creator=new DefaultUrlCreator(controller, action);
+            creator=new DefaultUrlCreator(controller, action);
         } else {
-        	creator=mapping;
+            creator=mapping;
         }
         return creator;
-	}
+    }
 
     /**
      * Performs a match uses reverse mappings to looks up a mapping from the
@@ -521,12 +520,11 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
     }
 
-	public void setMaxWeightedCacheCapacity(int maxWeightedCacheCapacity) {
-		this.maxWeightedCacheCapacity = maxWeightedCacheCapacity;
-	}
+    public void setMaxWeightedCacheCapacity(int maxWeightedCacheCapacity) {
+        this.maxWeightedCacheCapacity = maxWeightedCacheCapacity;
+    }
 
-	public void setUrlCreatorMaxWeightedCacheCapacity(
-			int urlCreatorMaxWeightedCacheCapacity) {
-		this.urlCreatorMaxWeightedCacheCapacity = urlCreatorMaxWeightedCacheCapacity;
-	}
+    public void setUrlCreatorMaxWeightedCacheCapacity(int urlCreatorMaxWeightedCacheCapacity) {
+        this.urlCreatorMaxWeightedCacheCapacity = urlCreatorMaxWeightedCacheCapacity;
+    }
 }

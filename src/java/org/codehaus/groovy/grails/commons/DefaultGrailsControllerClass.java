@@ -225,7 +225,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             if (value instanceof List) {
                 List listOfMethods = (List)value;
                 isAllowed = CollectionUtils.exists(listOfMethods, new Predicate() {
-                    public boolean evaluate(Object value) {
+                    public boolean evaluate(@SuppressWarnings("hiding") Object value) {
                         return httpMethod.equalsIgnoreCase(value.toString());
                     }
                 });
