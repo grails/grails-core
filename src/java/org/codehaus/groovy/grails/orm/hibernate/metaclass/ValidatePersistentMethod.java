@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -44,7 +46,8 @@ import org.springframework.validation.Validator;
  */
 public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
-    public static final String METHOD_SIGNATURE = "validate";
+    public static final String BEFORE_VALIDATE = "beforeValidate";
+	public static final String METHOD_SIGNATURE = "validate";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     private GrailsApplication application;
     public static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
@@ -78,6 +81,12 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
             return true;
         }
 
+        Method method = ReflectionUtils.findMethod(domainClass.getClazz(), BEFORE_VALIDATE);
+		if (method != null) {
+			ReflectionUtils.makeAccessible(method);
+			ReflectionUtils.invokeMethod(method, target);
+		}
+		
         Boolean valid = Boolean.TRUE;
         // should evict?
         boolean evict = false;
