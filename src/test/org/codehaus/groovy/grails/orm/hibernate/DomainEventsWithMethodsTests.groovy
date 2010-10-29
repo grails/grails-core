@@ -205,7 +205,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
         p.save(flush:true)
         session.flush()
 		assertEquals 'wrong number of events', 2, p.eventList?.size()
-		assertEquals 'before-validate-with-list-arg: []', p.eventList[0]
+		assertEquals 'before-validate-with-list-arg: null', p.eventList[0]
 		assertEquals 'name-validated', p.eventList[1]
 	}
 
@@ -217,7 +217,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
 		p.validate()
 
 		assertEquals 'wrong number of events', 2, p.eventList?.size()
-		assertEquals 'before-validate-with-list-arg: []', p.eventList[0]
+		assertEquals 'before-validate-with-list-arg: null', p.eventList[0]
 		assertEquals 'name-validated', p.eventList[1]
 
 		p = personClass.newInstance()
