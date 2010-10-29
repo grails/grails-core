@@ -22,6 +22,7 @@ import groovy.lang.MetaClass;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -59,6 +60,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
     private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.failOnError";
     private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.autoFlush";
+    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
 
     /**
      * When a domain instance is saved without validation, we put it
@@ -119,11 +121,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
             Errors errors = setupErrorsProperty(target);
 
             if (validator != null) {
-                Method method = ReflectionUtils.findMethod(domainClass.getClazz(), ValidatePersistentMethod.BEFORE_VALIDATE);
-        		if (method != null) {
-        			ReflectionUtils.makeAccessible(method);
-        			ReflectionUtils.invokeMethod(method, target);
-        		}
+            	beforeValidateHelper.invokeBeforeValidate(target, null);
         		
                 boolean deepValidate = true;
                 Map argsMap = null;
