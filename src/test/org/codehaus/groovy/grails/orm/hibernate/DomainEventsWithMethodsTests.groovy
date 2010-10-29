@@ -158,7 +158,32 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
 
         assertEquals "Fred", p.name
     }
+	
+	void testBeforeValidateWhenCallingSave() {
+        def personClass = ga.getDomainClass("PersonEvent").clazz
+        def p = personClass.newInstance()
 
+        p.name = "Fred"
+        p.save(flush:true)
+        session.flush()
+		
+		assertTrue "before-validate event should have fired",p.eventList.contains("before-validate")
+		assertTrue "name-validated event should have fired",p.eventList.contains("name-validated")
+		assertTrue 'before-validate should have fired before name-validated', p.eventList.indexOf('name-validated') > p.eventList.indexOf('before-validate')
+	}
+
+	void testBeforeValidateWhenCallingValidate() {
+		def personClass = ga.getDomainClass("PersonEvent").clazz
+		def p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate()
+			
+		assertTrue "before-validate event should have fired",p.eventList.contains("before-validate")
+		assertTrue "name-validated event should have fired",p.eventList.contains("name-validated")
+		assertTrue 'before-validate should have fired before name-validated', p.eventList.indexOf('name-validated') > p.eventList.indexOf('before-validate')
+	}
+	
     void onSetUp() {
         gcl.parseClass '''
 import grails.persistence.*
@@ -180,6 +205,13 @@ class PersonEvent {
     def beforeDelete() { eventList << "before-delete" }
     def beforeUpdate() { eventList << "before-update" }
     def beforeInsert() { name = "Bob" }
+    def beforeValidate() { eventList << "before-validate" }
+    static constraints = {
+        name validator: { val, per ->
+            per.eventList << 'name-validated'
+            true
+        }
+    }
 
     static hasMany = [addresses:Address]
 }
