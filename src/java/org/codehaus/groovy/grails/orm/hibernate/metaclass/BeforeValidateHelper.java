@@ -29,7 +29,7 @@ public class BeforeValidateHelper {
 			ReflectionUtils.makeAccessible(method);
 			Class<?>[] parameterTypes = method.getParameterTypes();
 			if(parameterTypes.length == 1) {
-    			ReflectionUtils.invokeMethod(method, target, validatedFieldsList == null ? Collections.EMPTY_LIST : validatedFieldsList);
+    			ReflectionUtils.invokeMethod(method, target, validatedFieldsList);
 			} else {
     			ReflectionUtils.invokeMethod(method, target);
 			}
