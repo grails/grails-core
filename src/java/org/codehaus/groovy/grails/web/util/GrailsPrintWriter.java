@@ -445,9 +445,8 @@ public class GrailsPrintWriter extends PrintWriter {
 
         if (target instanceof StreamCharBufferWriter) {
             return target;
-        } else {
-        	return getOut();
         }
+        return getOut();
     }
 
     public void print(final StreamCharBuffer otherBuffer) {

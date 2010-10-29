@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.util.Environment
 import grails.util.GrailsUtil
 
 import java.lang.reflect.Modifier
@@ -106,10 +107,10 @@ class ControllersGrailsPlugin {
         }
     }
 
-    def doWithWebDescriptor = {webXml ->
+    def doWithWebDescriptor = { webXml ->
 
         def basedir = System.getProperty("base.dir")
-        def grailsEnv = GrailsUtil.getEnvironment()
+        def grailsEnv = Environment.current.name
 
         def mappingElement = webXml.'servlet-mapping'
         mappingElement = mappingElement[mappingElement.size() - 1]

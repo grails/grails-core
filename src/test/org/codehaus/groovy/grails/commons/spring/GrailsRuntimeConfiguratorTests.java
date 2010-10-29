@@ -192,7 +192,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     public void testApplicationIsAvailableInResources() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass("class Holder { def value }");
-        Class<?> resourcesClass = gcl.parseClass("beans = { b(Holder, value: application) }", "resources.groovy");
+        /*Class<?> resourcesClass =*/ gcl.parseClass("beans = { b(Holder, value: application) }", "resources.groovy");
         
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();

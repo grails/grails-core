@@ -177,12 +177,12 @@ public class GrailsConfigUtils {
      * @return
      */
     public static boolean isConfigTrue(GrailsApplication application, String propertyName) {
-    	return ((application != null && application.getFlatConfig() != null && DefaultTypeTransformation.castToBoolean(application.getFlatConfig().get(propertyName))) ||
-    			Boolean.getBoolean(propertyName));
-	}
+        return ((application != null && application.getFlatConfig() != null && DefaultTypeTransformation.castToBoolean(application.getFlatConfig().get(propertyName))) ||
+                Boolean.getBoolean(propertyName));
+    }
     
     // support GrailsApplication mocking, see ControllersGrailsPluginTests
-    public static boolean isConfigTrue(Object application, String propertyName) {
-    	return false;
+    public static boolean isConfigTrue(@SuppressWarnings("unused")Object application, @SuppressWarnings("unused")String propertyName) {
+        return false;
     }
 }

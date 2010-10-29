@@ -258,6 +258,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         return this;
     }
 
+    @Override
     public GrailsPrintWriter append(final Object obj) {
         print(obj);
         return this;
@@ -268,23 +269,28 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         throw new CloneNotSupportedException();
     }
 
+    @Override
     public void write(final StreamCharBuffer otherBuffer) {
     	encodeAndPrint(otherBuffer);
     }
 
+    @Override
     public void print(final StreamCharBuffer otherBuffer) {
     	encodeAndPrint(otherBuffer);
     }
 
+    @Override
     public void append(final StreamCharBuffer otherBuffer) {
     	encodeAndPrint(otherBuffer);
     }
 
+    @Override
     public void println(final StreamCharBuffer otherBuffer) {
     	encodeAndPrint(otherBuffer);
         println();
     }
 
+    @Override
     public GrailsPrintWriter leftShift(final StreamCharBuffer otherBuffer) {
         if (otherBuffer != null) {
         	encodeAndPrint(otherBuffer);
@@ -292,6 +298,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         return this;
     }
 
+    @Override
     public void write(final Writable writable) {
         usageFlag = true;
         if (trouble) return;
@@ -304,10 +311,12 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         }
     }
 
+    @Override
     public void print(final Writable writable) {
         write(writable);
     }
 
+    @Override
     public GrailsPrintWriter leftShift(final Writable writable) {
         write(writable);
         return this;
