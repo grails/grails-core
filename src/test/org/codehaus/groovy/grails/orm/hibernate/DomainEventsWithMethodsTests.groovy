@@ -159,35 +159,164 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
         assertEquals "Fred", p.name
     }
 	
-	void testBeforeValidateWhenCallingSave() {
-        def personClass = ga.getDomainClass("PersonEvent").clazz
+	void testNoArgBeforeValidateWhenCallingSave() {
+        def personClass = ga.getDomainClass("PersonWithNoArgBeforeValidate").clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
         p.save(flush:true)
         session.flush()
 		
-		assertTrue "before-validate event should have fired",p.eventList.contains("before-validate")
-		assertTrue "name-validated event should have fired",p.eventList.contains("name-validated")
-		assertTrue 'before-validate should have fired before name-validated', p.eventList.indexOf('name-validated') > p.eventList.indexOf('before-validate')
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-no-arg', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
 	}
 
-	void testBeforeValidateWhenCallingValidate() {
-		def personClass = ga.getDomainClass("PersonEvent").clazz
+	void testOverloadedBeforeValidateWhenCallingSave() {
+        def personClass = ga.getDomainClass("PersonWithOverloadedBeforeValidate").clazz
+        def p = personClass.newInstance()
+
+        p.name = "Fred"
+        p.save(flush:true)
+        session.flush()
+		
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-no-arg', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+	}
+
+	void testNoArgBeforeValidateWhenCallingValidate() {
+		def personClass = ga.getDomainClass("PersonWithNoArgBeforeValidate").clazz
 		def p = personClass.newInstance()
 		
 		p.name = "Fred"
 		p.validate()
-			
-		assertTrue "before-validate event should have fired",p.eventList.contains("before-validate")
-		assertTrue "name-validated event should have fired",p.eventList.contains("name-validated")
-		assertTrue 'before-validate should have fired before name-validated', p.eventList.indexOf('name-validated') > p.eventList.indexOf('before-validate')
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-no-arg', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+	}
+	
+	void testListArgBeforeValidateWhenCallingSave() {
+        def personClass = ga.getDomainClass("PersonWithListArgBeforeValidate").clazz
+        def p = personClass.newInstance()
+
+        p.name = "Fred"
+        p.save(flush:true)
+        session.flush()
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-list-arg: []', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+	}
+
+	void testListArgBeforeValidateWhenCallingValidate() {
+		def personClass = ga.getDomainClass("PersonWithListArgBeforeValidate").clazz
+		def p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate()
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-list-arg: []', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+
+		p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate(['name'])
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-list-arg: [name]', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+		
+		p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate(['name', 'age'])
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-list-arg: [name, age]', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+	}
+	
+	void testOverloadedBeforeValidateWhenCallingValidate() {
+		def personClass = ga.getDomainClass("PersonWithOverloadedBeforeValidate").clazz
+		def p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate()
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-no-arg', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+
+		p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate(['name'])
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-list-arg: [name]', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
+
+		p = personClass.newInstance()
+		
+		p.name = "Fred"
+		p.validate(['name', 'age'])
+
+		assertEquals 'wrong number of events', 2, p.eventList?.size()
+		assertEquals 'before-validate-with-list-arg: [name, age]', p.eventList[0]
+		assertEquals 'name-validated', p.eventList[1]
 	}
 	
     void onSetUp() {
         gcl.parseClass '''
 import grails.persistence.*
 
+@Entity
+class PersonWithNoArgBeforeValidate {
+    String name
+    Integer age
+    def eventList = []
+    def beforeValidate() { eventList << "before-validate-with-no-arg" }
+    static constraints = {
+        name validator: { val, per ->
+            per.eventList << 'name-validated'
+            true
+        }
+    }
+}
+@Entity
+class PersonWithListArgBeforeValidate {
+    String name
+    Integer age
+    def eventList = []
+    def beforeValidate(List propertiesToValidate) { 
+        eventList << "before-validate-with-list-arg: ${propertiesToValidate}".toString() 
+    }
+    static constraints = {
+        name validator: { val, per ->
+            per.eventList << 'name-validated'
+            true
+        }
+    }
+}
+@Entity
+class PersonWithOverloadedBeforeValidate {
+    String name
+    Integer age
+    def eventList = []
+    def beforeValidate() { eventList << "before-validate-with-no-arg" }
+    def beforeValidate(List propertiesToValidate) { 
+        eventList << "before-validate-with-list-arg: ${propertiesToValidate}".toString() 
+    }
+    static constraints = {
+        name validator: { val, per ->
+            per.eventList << 'name-validated'
+            true
+        }
+    }
+}        
 @Entity
 class PersonEvent {
     Long id
@@ -205,13 +334,6 @@ class PersonEvent {
     def beforeDelete() { eventList << "before-delete" }
     def beforeUpdate() { eventList << "before-update" }
     def beforeInsert() { name = "Bob" }
-    def beforeValidate() { eventList << "before-validate" }
-    static constraints = {
-        name validator: { val, per ->
-            per.eventList << 'name-validated'
-            true
-        }
-    }
 
     static hasMany = [addresses:Address]
 }
