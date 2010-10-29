@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.util.ReflectionUtils;
