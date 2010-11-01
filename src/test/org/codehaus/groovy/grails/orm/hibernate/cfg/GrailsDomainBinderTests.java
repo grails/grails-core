@@ -227,6 +227,29 @@ public class GrailsDomainBinderTests extends TestCase {
         PluginManagerHolder.setPluginManager(null);
     }
 
+    /**
+     * Test for GRAILS-4200
+     */
+    public void testEmbeddedComponentMapping() {
+    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+        "    Long id \n" +
+        "    Long version \n" +
+        "    EmbeddedWidget ew \n" +
+        "    static embedded = ['ew']\n" +
+        "}\n" +
+        "    class EmbeddedWidget {\n" +
+        "       String ew\n" +
+        "       static mapping = {\n" +
+        "           ew column: 'widget_name'\n" +
+        "       }\n" +
+        "    }");
+
+    	Table tableMapping = getTableMapping("widget", config);
+        Column embeddedComponentMappedColumn = tableMapping.getColumn(new Column("widget_name"));
+        assertNotNull(embeddedComponentMappedColumn);
+        assertEquals("widget_name", embeddedComponentMappedColumn.getName());
+    }
+
     public void testLengthProperty() {
     	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
         "    Long id \n" +
