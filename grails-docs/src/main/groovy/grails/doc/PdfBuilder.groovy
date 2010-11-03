@@ -54,7 +54,7 @@ class PdfBuilder {
         File homeFile = new File(home).canonicalFile
         String urlBase = "file://${homeFile.absolutePath}/src/${tool}/docs/style"
 
-        String xml = createXml(htmlFile, "${baseDir}")
+        String xml = createXml(htmlFile, baseDir)
         createPdf xml, outputFile, urlBase
     }
 

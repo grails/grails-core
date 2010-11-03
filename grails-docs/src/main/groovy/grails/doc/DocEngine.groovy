@@ -17,6 +17,9 @@ package grails.doc
 import grails.doc.filters.HeaderFilter
 import grails.doc.filters.LinkTestFilter
 import grails.doc.filters.ListFilter
+
+import java.util.regex.Pattern
+
 import org.radeox.api.engine.WikiRenderEngine
 import org.radeox.api.engine.context.InitialRenderContext
 import org.radeox.engine.BaseRenderEngine
@@ -24,10 +27,13 @@ import org.radeox.filter.context.FilterContext
 import org.radeox.filter.regex.RegexFilter
 import org.radeox.filter.regex.RegexTokenFilter
 import org.radeox.macro.BaseMacro
+import org.radeox.macro.CodeMacro
 import org.radeox.macro.MacroLoader
+import org.radeox.macro.parameter.BaseMacroParameter
 import org.radeox.macro.parameter.MacroParameter
 import org.radeox.regex.MatchResult
 import org.radeox.filter.*
+import org.radeox.util.Encoder
 
 /**
  * A Radeox Wiki engine for generating documentation using a confluence style syntax.
@@ -46,8 +52,9 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static ALIAS = [:]
 
     private basedir
+    private customMacros = []
 
-    Properties engineProperties
+    Properties engineProperties = new Properties()
 
     DocEngine(InitialRenderContext context) {
         super(context)
@@ -118,31 +125,15 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     boolean showCreate() { false }
 
-    static private Properties defaultPropsInternal
-    static Properties getDefaultProps() {
-       if (!defaultPropsInternal) {
-           defaultPropsInternal = new Properties()
-           try {
-               defaultPropsInternal.load(DocEngine.classLoader.getResourceAsStream("grails/doc/doc.properties"))
-           }
-           catch (e) {
-               // ignore
-           }
-
-       }
-       return defaultPropsInternal
+    void addMacro(macro) {
+        customMacros << macro
     }
 
     protected void init() {
-        def props = DocEngine.getDefaultProps()
-        if (engineProperties) {
-            props.putAll engineProperties
-        }
-
-        props.findAll { it.key.startsWith("api.")}.each {
+        engineProperties.findAll { it.key.startsWith("api.")}.each {
             EXTERNAL_DOCS[it.key[4..-1]] = it.value
         }
-        props.findAll { it.key.startsWith("alias.")}.each {
+        engineProperties.findAll { it.key.startsWith("alias.")}.each {
             ALIAS[it.key[6..-1]] = it.value
         }
 
@@ -179,6 +170,10 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
                     loader.add(repository, new WarningMacro())
                     loader.add(repository, new NoteMacro())
+
+                    for (m in customMacros) {
+                        loader.add(repository, m)
+                    }
                 }
             }
             fp.init()

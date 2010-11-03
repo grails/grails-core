@@ -67,22 +67,38 @@ class DocPublisher {
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
-    DocPublisher() {}
+    private customMacros = []
+
+    DocPublisher() {
+        this(null, null)
+    }
 
     DocPublisher(File src, File target) {
         this.src = src
         this.target = target
+
+        try {
+            engineProperties.load(getClass().classLoader.getResourceAsStream("grails/doc/doc.properties"))
+        }
+        catch (e) {
+            // ignore
+        }
     }
 
     /** Returns the engine properties. */
     Properties getEngineProperties() { engineProperties }
-    /** Sets the engine properties. */
+
+    /** Sets the engine properties. Allows clients to override the defaults. */
     void setEngineProperties(Properties p) {
-        def props = DocEngine.getDefaultProps()
-        if (p) {
-            props.putAll p
-        }
-        engineProperties = props
+        engineProperties = p
+    }
+    
+    /**
+     * Registers a custom Radeox macro. If the macro has an 'initialContext'
+     * property, it is set to the render context before first use.
+     */
+    void registerMacro(macro) {
+        customMacros << macro
     }
 
     void publish() {
@@ -169,29 +185,36 @@ class DocPublisher {
         def templateEngine = new groovy.text.SimpleTemplateEngine()
         context.renderEngine = engine
 
+        // Add any custom macros registered with this publisher to the engine.
+        for (m in customMacros) {
+            if (m.metaClass.hasProperty(m, "initialContext")) {
+                m.initialContext = context
+            }
+            engine.addMacro(m)
+        }
+
         def book = [:]
         for (f in files) {
+            // Chapter is filename - '.gdoc' suffix.
             def chapter = f.name[0..-6]
             book[chapter] = f
         }
 
-        def toc = new StringBuffer()
-        def soloToc = new StringBuffer()
-        def fullContents = new StringBuffer()
-        def chapterContents = new StringBuffer()
-        def chapterTitle = null
+        def chaptersOnlyToc = new StringBuilder()
+        def fullToc = new StringBuilder()
+        def fullContents = new StringBuilder()
+        
         def vars = [
             encoding: encoding,
-            title: title,
+            title: "",
             subtitle: subtitle,
             footer: footer, // TODO - add a way to specify footer
             authors: authors,
             version: version,
             copyright: copyright,
-            toc: toc.toString(),
-            body: fullContents.toString(),
             logo: logo,
-            sponsorLogo: sponsorLogo
+            sponsorLogo: sponsorLogo,
+            path: ".."
         ]
 
         new File("${docResources}/style/guideItem.html").withReader(encoding) {reader ->
@@ -206,50 +229,65 @@ class DocPublisher {
                 }
                 def margin = level * 10
 
-                if (level == 0) {
-                    if (chapterTitle) { // initially null, to collect sections
-                        writeChapter(template,refGuideDir, chapterTitle, chapterContents, vars)
-                    }
-
-                    chapterTitle = title // after previous used to write prev chapter
-
-                    soloToc << "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"${chapterTitle}.html\">${chapterTitle}</a></div>"
-                }
-                else {
-                    soloToc << "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"${chapterTitle}.html#${entry.key}\">${entry.key}</a></div>"
-                } // level 0=h1, (1..n)=h2
+                // level 0=h1, (1..n)=h2
 
                 def hLevel = level == 0 ? 1 : 2
                 def header = "<h$hLevel><a name=\"${title}\">${title}</a></h$hLevel>"
 
+                def tocEntry = "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"#${title}\">${title}</a></div>"
+
+                if (level == 0) {
+                    if (vars.title) { // initially null, to collect sections
+                        writeChapter(template, refGuideDir, vars)
+                    }
+
+                    vars.title = title // after previous used to write prev chapter
+                    vars.header = header
+                    vars.toc = new StringBuilder()
+                    vars.content = new StringBuilder()
+
+                    // links to page, not anchor
+                    chaptersOnlyToc << "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"${vars.title}.html\">${vars.title}</a></div>"
+                }
+                else {
+                    vars.toc << tocEntry
+                    vars.content << header
+                }
+                
                 context.set(DocEngine.SOURCE_FILE, entry.value)
                 context.set(DocEngine.CONTEXT_PATH, "..")
                 def body = engine.render(entry.value.text, context)
 
-                toc << "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"#${title}\">${title}</a></div>"
+                fullToc << tocEntry
                 fullContents << header << body
-                chapterContents << header << body
+                vars.content <<  body
 
                 new File("${refPagesDir}/${title}.html").withWriter(encoding) {
-                    Map args = [content: body] + vars
-                    args.title = title
-                    template.make(args).writeTo(it)
+                    template.make(
+                            title:title,
+                            header:header, 
+                            toc:"",
+                            content:body,
+                            path:"../..").writeTo(it)
+                
                 }
             }
-            if (chapterTitle) {// write final chapter collected (if any seen)
-                writeChapter(template,refGuideDir ,chapterTitle, chapterContents, vars)
+            if (vars.title) {// write final chapter collected (if any seen)
+                writeChapter(template, refGuideDir, vars)
             }
         }
 
+        vars.title = title
+        vars.toc = fullToc.toString()
+        vars.content = fullContents.toString()
+
         new File("${docResources}/style/layout.html").withReader(encoding) {reader ->
             def template = templateEngine.createTemplate(reader)
-            vars.toc = toc
-            vars.body = fullContents.toString()
             new File("${refGuideDir}/single.html").withWriter(encoding) {out ->
                 template.make(vars).writeTo(out)
             }
-            vars.toc = soloToc
-            vars.body = ""
+            vars.toc = chaptersOnlyToc.toString()
+            vars.content = ""
             new File("${refGuideDir}/index.html").withWriter(encoding) {out ->
                 template.make(vars).writeTo(out)
             }
@@ -274,16 +312,18 @@ class DocPublisher {
                     menu << "<h1 class=\"menuTitle\">${f.name}</h1>"
                     new File("${refDocsDir}/ref/${f.name}").mkdirs()
                     def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
-                    def usageFile = new File("${src}/src/ref/${f.name}.gdoc")
+                    def usageFile = new File("${src}/ref/${f.name}.gdoc")
                     if (usageFile.exists()) {
                         def data = usageFile.text
                         reference."${section}".usage = data
-                        context.set(DocEngine.SOURCE_FILE, usageFile.name)
+                        context.set(DocEngine.SOURCE_FILE, usageFile)
                         context.set(DocEngine.CONTEXT_PATH, "../..")
-                        def contents = engine.render(data, context)
+                        vars.content = engine.render(data, context)
+
                         new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
-                            template.make([content: contents] + vars).writeTo(out)
+                            template.make(vars).writeTo(out)
                         }
+
                         menu << "<div class=\"menuUsageItem\"><a href=\"${f.name}/Usage.html\" target=\"mainFrame\">Usage</a></div>"
                     }
                     for (txt in textiles) {
@@ -293,10 +333,10 @@ class DocPublisher {
                         reference."${section}".put(name,data)
                         context.set(DocEngine.SOURCE_FILE, txt.name)
                         context.set(DocEngine.CONTEXT_PATH, "../..")
-                        def contents = engine.render(data, context)
+                        vars.content = engine.render(data, context)
                         //println "Generating reference item: ${name}"
                         new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
-                            template.make([content: contents] + vars).writeTo(out)
+                            template.make(vars).writeTo(out)
                         }
                     }
                 }
@@ -313,13 +353,10 @@ class DocPublisher {
         ant.echo "Built user manual at ${refDocsDir}/index.html"
     }
 
-    void writeChapter(Template template, String targetDir, String title, StringBuffer content, Map vars) {
-        new File("${targetDir}/${title}.html").withWriter(encoding) {
-            Map args = [content: content.toString()] + vars
-            args.title = title
-            template.make(args).writeTo(it)
+    void writeChapter(Template template, String targetDir, Map vars) {
+        new File("${targetDir}/${vars.title}.html").withWriter(encoding) {
+            template.make(vars).writeTo(it)
         }
-        content.delete(0, content.size()) // clear buffer
     }
 
     protected void initialize() {
