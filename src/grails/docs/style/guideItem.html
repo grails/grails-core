@@ -2,9 +2,20 @@
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
         <title>${title}</title>
-        <link rel="stylesheet" href="../css/main.css" type="text/css" media="screen" title="Ref" charset="utf-8"/>
+        <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Ref" charset="utf-8"/>
+        <link rel="icon" href="${path}/img/favicon.ico" type="image/x-icon"/>
+        <link rel="shortcut icon" href="${path}/img/favicon.ico" type="image/x-icon"/>
+        
     </head>
     <body class="body">
-    ${content}
+        <div id="header">
+            ${header}
+        </div>
+        <div id="toc">
+            ${toc}
+        </div>
+        <div id="content">
+            ${content}
+        </div>
     </body>
 </html>

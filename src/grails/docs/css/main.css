@@ -3,6 +3,9 @@
 	font-family: Tahoma, Verdana, Arial;
 	font-size:95%;
 }  
+#toc {
+  margin-bottom: 1em;
+}
 #header .images {         
 	padding-bottom:40px;
 } 
