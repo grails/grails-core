@@ -200,10 +200,37 @@ class DocPublisher {
             book[chapter] = f
         }
 
-        def chaptersOnlyToc = new StringBuilder()
         def fullToc = new StringBuilder()
         def fullContents = new StringBuilder()
-        
+
+        // Build the menu of reference guide items.
+        def menu = new StringBuilder()
+        files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
+        for (f in files) {
+            if (f.directory && !f.name.startsWith(".")) {
+                menu << "<div class='menu-block''<h1 class=\"menu-title\">${f.name}</h1>"
+                def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
+                def usageFile = new File("${src}/ref/${f.name}.gdoc")
+                if (usageFile.exists()) {
+                    menu << "<div class=\"menu-usage-item\"><a href=\"../ref/${f.name}/Usage.html\" >Usage</a></div>"
+                }
+                for (txt in textiles) {
+                    def name = txt.name[0..-6]
+                    menu << "<div class=\"menu-item\"><a href=\"../ref/${f.name}/${name}.html\" >${name}</a></div>"
+                }
+                menu << "</div>"
+            }
+        }
+
+        // Gather the top level chapters
+        def chaptersOnlyToc = new StringBuilder()
+        for (entry in book) {
+            def title = entry.key
+            if (title ==~ /\d+\.\s.*/) {
+                chaptersOnlyToc << "<div class=\"toc-item\" style=\"margin-left:0\"><a href=\"../guide/${title}.html\">${title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>"
+            }
+        }
+
         def vars = [
             encoding: encoding,
             title: "",
@@ -211,6 +238,8 @@ class DocPublisher {
             footer: footer, // TODO - add a way to specify footer
             authors: authors,
             version: version,
+            menu: menu.toString(),
+            soloToc: chaptersOnlyToc.toString(),
             copyright: copyright,
             logo: logo,
             sponsorLogo: sponsorLogo,
@@ -245,9 +274,6 @@ class DocPublisher {
                     vars.header = header
                     vars.toc = new StringBuilder()
                     vars.content = new StringBuilder()
-
-                    // links to page, not anchor
-                    chaptersOnlyToc << "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"${vars.title}.html\">${vars.title}</a></div>"
                 }
                 else {
                     vars.toc << tocEntry
@@ -263,12 +289,13 @@ class DocPublisher {
                 vars.content <<  body
 
                 new File("${refPagesDir}/${title}.html").withWriter(encoding) {
-                    template.make(
-                            title:title,
-                            header:header, 
-                            toc:"",
-                            content:body,
-                            path:"../..").writeTo(it)
+                    def varsCopy = [*:vars]
+                    varsCopy.title = title
+                    varsCopy.header = header
+                    varsCopy.toc = ""
+                    varsCopy.content = body
+                    varsCopy.path = "../.."
+                    template.make(varsCopy).writeTo(it)
                 
                 }
             }
@@ -277,9 +304,66 @@ class DocPublisher {
             }
         }
 
+//        def menu = new StringBuilder()
+        files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
+        def reference = [:]
+        new File("${docResources}/style/referenceItem.html").withReader(encoding) {reader ->
+            def template = templateEngine.createTemplate(reader)
+            vars.path = "../.."
+
+            for (f in files) {
+                if (f.directory && !f.name.startsWith(".")) {
+                    def section = f.name
+                    reference."${section}" = [:]
+ //                   menu << "<h1 class=\"menuTitle\">${f.name}</h1>"
+                    new File("${refDocsDir}/ref/${f.name}").mkdirs()
+                    def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
+                    def usageFile = new File("${src}/ref/${f.name}.gdoc")
+                    if (usageFile.exists()) {
+                        def data = usageFile.text
+                        reference."${section}".usage = data
+                        context.set(DocEngine.SOURCE_FILE, usageFile)
+                        context.set(DocEngine.CONTEXT_PATH, "../..")
+                        vars.content = engine.render(data, context)
+
+                        new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
+                            template.make(vars).writeTo(out)
+                        }
+
+//                        menu << "<div class=\"menuUsageItem\"><a href=\"${f.name}/Usage.html\" target=\"mainFrame\">Usage</a></div>"
+                    }
+                    for (txt in textiles) {
+                        def name = txt.name[0..-6]
+//                        menu << "<div class=\"menuItem\"><a href=\"${f.name}/${name}.html\" target=\"mainFrame\">${name}</a></div>"
+                        def data = txt.text
+                        reference."${section}".put(name,data)
+                        context.set(DocEngine.SOURCE_FILE, txt.name)
+                        context.set(DocEngine.CONTEXT_PATH, "../..")
+                        vars.content = engine.render(data, context)
+                        //println "Generating reference item: ${name}"
+                        new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
+                            template.make(vars).writeTo(out)
+                        }
+                    }
+                }
+            }
+        }
+
+        /*
+        vars.menu = menu
+        new File("${docResources}/style/menu.html").withReader(encoding) {reader ->
+            def template = templateEngine.createTemplate(reader)
+            new File("${refDocsDir}/ref/menu.html").withWriter(encoding) {out ->
+                template.make(vars).writeTo(out)
+            }
+        }
+        */
+
         vars.title = title
+        vars.menu = menu.toString()
         vars.toc = fullToc.toString()
         vars.content = fullContents.toString()
+        vars.path = ".."
 
         new File("${docResources}/style/layout.html").withReader(encoding) {reader ->
             def template = templateEngine.createTemplate(reader)
@@ -296,56 +380,6 @@ class DocPublisher {
         new File("${docResources}/style/index.html").withReader(encoding) {reader ->
             def template = templateEngine.createTemplate(reader)
             new File("${refDocsDir}/index.html").withWriter(encoding) {out ->
-                template.make(vars).writeTo(out)
-            }
-        }
-
-        def menu = new StringBuilder()
-        files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
-        def reference = [:]
-        new File("${docResources}/style/referenceItem.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
-            for (f in files) {
-                if (f.directory && !f.name.startsWith(".")) {
-                    def section = f.name
-                    reference."${section}" = [:]
-                    menu << "<h1 class=\"menuTitle\">${f.name}</h1>"
-                    new File("${refDocsDir}/ref/${f.name}").mkdirs()
-                    def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
-                    def usageFile = new File("${src}/ref/${f.name}.gdoc")
-                    if (usageFile.exists()) {
-                        def data = usageFile.text
-                        reference."${section}".usage = data
-                        context.set(DocEngine.SOURCE_FILE, usageFile)
-                        context.set(DocEngine.CONTEXT_PATH, "../..")
-                        vars.content = engine.render(data, context)
-
-                        new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
-                            template.make(vars).writeTo(out)
-                        }
-
-                        menu << "<div class=\"menuUsageItem\"><a href=\"${f.name}/Usage.html\" target=\"mainFrame\">Usage</a></div>"
-                    }
-                    for (txt in textiles) {
-                        def name = txt.name[0..-6]
-                        menu << "<div class=\"menuItem\"><a href=\"${f.name}/${name}.html\" target=\"mainFrame\">${name}</a></div>"
-                        def data = txt.text
-                        reference."${section}".put(name,data)
-                        context.set(DocEngine.SOURCE_FILE, txt.name)
-                        context.set(DocEngine.CONTEXT_PATH, "../..")
-                        vars.content = engine.render(data, context)
-                        //println "Generating reference item: ${name}"
-                        new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
-                            template.make(vars).writeTo(out)
-                        }
-                    }
-                }
-            }
-        }
-        vars.menu = menu
-        new File("${docResources}/style/menu.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
-            new File("${refDocsDir}/ref/menu.html").withWriter(encoding) {out ->
                 template.make(vars).writeTo(out)
             }
         }
