@@ -18,12 +18,20 @@ import grails.util.GrailsUtil;
 import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
 
-import java.util.Collections;
-import java.util.HashMap;
+import java.beans.PropertyDescriptor;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.InvalidPropertyException;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances .
@@ -38,6 +46,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
     private Class<?> targetClass;
     private ClassPropertyFetcher classPropertyFetcher;
     private static final String SHARED_CONSTRAINT = "shared";
+    private static final String IMPORT_FROM_CONSTRAINT = "importFrom";
 
     public ConstrainedPropertyBuilder(Object target) {
         this(target.getClass());
@@ -70,8 +79,10 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
             }
 
             if (cp.getPropertyType() == null) {
-                GrailsUtil.warn("Property [" + cp.getPropertyName() + "] not found in domain class " +
-                    targetClass.getName() + "; cannot apply constraints: " + attributes);
+                if (!IMPORT_FROM_CONSTRAINT.equals(name)) {
+                    GrailsUtil.warn("Property [" + cp.getPropertyName() + "] not found in domain class " +
+                        targetClass.getName() + "; cannot apply constraints: " + attributes);
+                }
                 return cp;
             }
 
@@ -102,6 +113,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                     }
                 }
             }
+
             return cp;
         }
         catch(InvalidPropertyException ipe) {
@@ -112,7 +124,96 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
     @SuppressWarnings("rawtypes")
     @Override
     protected Object createNode(Object name, Map attributes, Object value) {
-        throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes,value});
+        if (IMPORT_FROM_CONSTRAINT.equals(name) && (value instanceof Class)) {
+            return handleImportFrom(attributes, (Class) value);
+        }
+        else {
+            throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes,value});   
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object handleImportFrom(Map attributes, Class importFromClazz) {
+        GrailsWebRequest grailsWebRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        if (grailsWebRequest == null) {
+            String message =
+                    "Web request can't be found. Importing constraints is only allowed FROM domain classes TO " +
+                    "command classes in running Grails application.";
+            throw new IllegalArgumentException(message);
+        }
+
+        GrailsApplication grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
+        GrailsDomainClass importFromGrailsDomainClazz =
+                (GrailsDomainClass) grailsApplication.getArtefact(
+                        DomainClassArtefactHandler.TYPE, importFromClazz.getName());
+
+        if (importFromGrailsDomainClazz == null) {
+            String message =
+                    "Class '" + importFromClazz.getName() + "' is not a domain class. Importing constraints is only " +
+                    "allowed FROM domain classes TO command classes.";
+            throw new IllegalArgumentException(message);
+        }
+
+        Map importFromConstrainedProperties = importFromGrailsDomainClazz.getConstrainedProperties();
+
+        PropertyDescriptor[] targetPropertyDescriptorArray = classPropertyFetcher.getPropertyDescriptors();
+
+        List toBeIncludedPropertyNamesParam = (List) attributes.get("include");
+        List toBeExcludedPropertyNamesParam = (List) attributes.get("exclude");
+
+        List<String> resultingPropertyNames = new ArrayList<String>();
+        for (PropertyDescriptor targetPropertyDescriptor : targetPropertyDescriptorArray) {
+            String targetPropertyName = targetPropertyDescriptor.getName();
+
+            if (toBeIncludedPropertyNamesParam == null) {
+                resultingPropertyNames.add(targetPropertyName);
+            }
+            else if (isListOfRegexpsContainsString(toBeIncludedPropertyNamesParam, targetPropertyName)) {
+                resultingPropertyNames.add(targetPropertyName);
+            }
+
+            if (toBeExcludedPropertyNamesParam != null
+                    && isListOfRegexpsContainsString(toBeExcludedPropertyNamesParam, targetPropertyName)) {
+                resultingPropertyNames.remove(targetPropertyName);
+            }
+        }
+        
+        resultingPropertyNames.remove("class");
+        resultingPropertyNames.remove("metaClass");        
+
+        for (String targetPropertyName : resultingPropertyNames) {
+            ConstrainedProperty importFromConstrainedProperty =
+                    (ConstrainedProperty) importFromConstrainedProperties.get(targetPropertyName);
+
+            if (importFromConstrainedProperty != null) {
+                // Map importFromConstrainedPropertyAttributes = importFromConstrainedProperty.getAttributes();
+                // createNode(targetPropertyName, importFromConstrainedPropertyAttributes);
+                Map importFromConstrainedPropertyAttributes = new HashMap();
+                for (Constraint importFromAppliedConstraint : importFromConstrainedProperty.getAppliedConstraints()) {
+                    String importFromAppliedConstraintName = importFromAppliedConstraint.getName();
+                    Object importFromAppliedConstraintParameter = importFromAppliedConstraint.getParameter();
+                    importFromConstrainedPropertyAttributes.put(
+                            importFromAppliedConstraintName, importFromAppliedConstraintParameter);
+                }
+
+                createNode(targetPropertyName, importFromConstrainedPropertyAttributes);
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isListOfRegexpsContainsString(List<String> listOfStrings, String stringToMatch) {
+        boolean result = false;
+
+        for (String listElement:listOfStrings) {
+            if (stringToMatch.matches(listElement)) {
+                result = true;
+                break;
+            }
+        }
+
+        return result;
     }
 
     @Override
