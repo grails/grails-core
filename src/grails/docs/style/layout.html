@@ -1,8 +1,9 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
         <title>${title} ${version}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Style" charset="utf-8"/>
+        <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Style" charset="utf-8" />
         <link rel="stylesheet" href="${path}/css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8" />
     </head>
 
@@ -13,7 +14,20 @@
                     <div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)">
                         <a href="${path}/guide/index.html" class="button">Table of contents</a>
                         <div id="nav-summary-childs" style="display:none;">
-                            ${soloToc}
+                            <%
+                            for (ch in toc) {
+                                if (single) {
+                            %>
+                            <div class="toc-item" style="margin-left:0"><a href="#${ ch.title }">${ch.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                            <%
+                                }
+                                else {
+                            %>
+                            <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title}.html">${ch.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                            <%
+                                }
+                            }
+                            %>
                         </div>
                     </div>
                 </li>
@@ -24,8 +38,12 @@
         </div>
         <div id="header">
             <div class="images clearfix">
+                <% if (logo) { %>
                 <span id="logo">${logo}</span>
+                <% } %>
+                <% if (sponsorLogo) { %>
                 <span id="sponsor">${sponsorLogo}</span>
+                <% } %>
             </div>
             <div class="message">${subtitle}</div>
         </div>
@@ -44,7 +62,29 @@
                         <% if(toc){ %>
                         <div id="table-of-content">
                             <h2>Table of Contents</h2>
-                            ${toc}
+                            <%
+                            sectionWriter = { lvl, section, topSection ->
+                                if (single) {
+                            %>
+                            <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.title }">${section.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                            <%
+                                }
+                                else {
+                            %>
+                            <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="${topSection.title}.html${ lvl == 0 ? '' : '#' + section.title }">${section.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                            <%
+                                }
+
+                                lvl++
+                                for (s in section.subSections) {
+                                    sectionWriter.call(lvl, s, topSection)
+                                }
+                            }
+
+                            for (topSection in toc) {
+                                sectionWriter.call(0, topSection, topSection)
+                            }
+                            %>
                         </div>
                         <% } %>
                         ${content}
@@ -53,11 +93,20 @@
                 <td id="col2">
                     <div class="local clearfix">
                         <div class="local-title">
-                            <a href="../guide/index.html" target="mainFrame">Quick References</a>
+                            <a href="${path}/guide/index.html" target="mainFrame">Quick References</a>
                             <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
                         </div>
                         <div class="menu">
-                            ${menu}
+                            <% for (cat in refMenu) { %>
+                            <div class="menu-block"><h1 class="menu-title">${cat.name}</h1>
+                            <% if (cat.usage.exists()) { %>
+                            <div class="menu-usage-item"><a href="${path}/ref/${cat.name}/Usage.html" >Usage</a></div>
+                            <% } %>
+                            <% for (txt in cat.sections) { %>
+                            <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html" >${txt.name[0..-6]}</a></div>
+                            <% } %>
+                            </div>
+                            <% } %>
                         </div>
                     </div>
                 </td>

@@ -67,6 +67,8 @@ class DocPublisher {
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
+    private context
+    private engine
     private customMacros = []
 
     DocPublisher() {
@@ -175,15 +177,7 @@ class DocPublisher {
         equals: { false }] as Comparator
 
         def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
-        def context = new BaseInitialRenderContext()
-        context.set(DocEngine.CONTEXT_PATH, "..")
-        context.set(DocEngine.BASE_DIR, src.absolutePath)
-        context.set(DocEngine.API_BASE_PATH, target.absolutePath)
-
-        def engine = new DocEngine(context)
-        engine.engineProperties = engineProperties
         def templateEngine = new groovy.text.SimpleTemplateEngine()
-        context.renderEngine = engine
 
         // Add any custom macros registered with this publisher to the engine.
         for (m in customMacros) {
@@ -193,43 +187,37 @@ class DocPublisher {
             engine.addMacro(m)
         }
 
-        def book = [:]
+        // A tree of book sections, where 'book' is a list of the top-level
+        // sections and each of those has a list of sub-sections and so on.
+        def book = []
         for (f in files) {
             // Chapter is filename - '.gdoc' suffix.
             def chapter = f.name[0..-6]
-            book[chapter] = f
+            def section = new Expando(title: chapter, file: f, subSections: [])
+
+            def level = 0
+            def matcher = (chapter =~ /^(\S+?)\.?\s/) // drops last '.' of "xx.yy. "
+            if (matcher) {
+                level = matcher.group(1).split(/\./).size() - 1
+            }
+            
+            // This cryptic line finds the appropriate parent section list based
+            // on the current section's level. If the level is 0, then it's 'book'.
+            def parent = (0..<level).inject(book) { sectionList, n -> sectionList[-1].subSections }
+            parent << section
+        }
+
+        // Reference menu items.
+        def sectionFilter = { it.directory && !it.name.startsWith('.') } as FileFilter
+        files = new File("${src}/ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
+        def refCategories = files.collect { f ->
+            new Expando(
+                    name: f.name,
+                    usage: new File("${src}/ref/${f.name}.gdoc"),
+                    sections: f.listFiles().findAll { it.name.endsWith(".gdoc") }.sort())
         }
 
         def fullToc = new StringBuilder()
-        def fullContents = new StringBuilder()
-
-        // Build the menu of reference guide items.
-        def menu = new StringBuilder()
-        files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
-        for (f in files) {
-            if (f.directory && !f.name.startsWith(".")) {
-                menu << "<div class='menu-block''<h1 class=\"menu-title\">${f.name}</h1>"
-                def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
-                def usageFile = new File("${src}/ref/${f.name}.gdoc")
-                if (usageFile.exists()) {
-                    menu << "<div class=\"menu-usage-item\"><a href=\"../ref/${f.name}/Usage.html\" >Usage</a></div>"
-                }
-                for (txt in textiles) {
-                    def name = txt.name[0..-6]
-                    menu << "<div class=\"menu-item\"><a href=\"../ref/${f.name}/${name}.html\" >${name}</a></div>"
-                }
-                menu << "</div>"
-            }
-        }
-
-        // Gather the top level chapters
-        def chaptersOnlyToc = new StringBuilder()
-        for (entry in book) {
-            def title = entry.key
-            if (title ==~ /\d+\.\s.*/) {
-                chaptersOnlyToc << "<div class=\"toc-item\" style=\"margin-left:0\"><a href=\"../guide/${title}.html\">${title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>"
-            }
-        }
 
         def vars = [
             encoding: encoding,
@@ -238,159 +226,125 @@ class DocPublisher {
             footer: footer, // TODO - add a way to specify footer
             authors: authors,
             version: version,
-            menu: menu.toString(),
-            soloToc: chaptersOnlyToc.toString(),
+            refMenu: refCategories,
+            toc: book,
             copyright: copyright,
             logo: logo,
             sponsorLogo: sponsorLogo,
+            single: false,
             path: ".."
         ]
 
-        new File("${docResources}/style/guideItem.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
+        // Build the user guide sections first.
+        def template = templateEngine.createTemplate(new File("${docResources}/style/guideItem.html").newReader(encoding))
+        def sectionTemplate = templateEngine.createTemplate(new File("${docResources}/style/section.html").newReader(encoding))
+        def fullContents = new StringBuilder()
 
-            for (entry in book) {
-                def title = entry.key
-                def level = 0
-                def matcher = (title =~ /^(\S+?)\.? /) // drops last '.' of "xx.yy. "
-                if (matcher.find()) {
-                    level = matcher.group(1).split(/\./).size() - 1
-                }
-                def margin = level * 10
-
-                // level 0=h1, (1..n)=h2
-
-                def hLevel = level == 0 ? 1 : 2
-                def header = "<h$hLevel><a name=\"${title}\">${title}</a></h$hLevel>"
-
-                def tocEntry = "<div class=\"tocItem\" style=\"margin-left:${margin}px\"><a href=\"#${title}\">${title}</a></div>"
-
-                if (level == 0) {
-                    if (vars.title) { // initially null, to collect sections
-                        writeChapter(template, refGuideDir, vars)
-                    }
-
-                    vars.title = title // after previous used to write prev chapter
-                    vars.header = header
-                    vars.toc = new StringBuilder()
-                    vars.content = new StringBuilder()
-                }
-                else {
-                    vars.toc << tocEntry
-                    vars.content << header
-                }
-                
-                context.set(DocEngine.SOURCE_FILE, entry.value)
-                context.set(DocEngine.CONTEXT_PATH, "..")
-                def body = engine.render(entry.value.text, context)
-
-                fullToc << tocEntry
-                fullContents << header << body
-                vars.content <<  body
-
-                new File("${refPagesDir}/${title}.html").withWriter(encoding) {
-                    def varsCopy = [*:vars]
-                    varsCopy.title = title
-                    varsCopy.header = header
-                    varsCopy.toc = ""
-                    varsCopy.content = body
-                    varsCopy.path = "../.."
-                    template.make(varsCopy).writeTo(it)
-                
-                }
-            }
-            if (vars.title) {// write final chapter collected (if any seen)
-                writeChapter(template, refGuideDir, vars)
-            }
+        for (chapter in book) {
+            writeChapter(chapter, template, sectionTemplate, refGuideDir, fullContents, vars)
         }
 
-//        def menu = new StringBuilder()
         files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
         def reference = [:]
-        new File("${docResources}/style/referenceItem.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
-            vars.path = "../.."
+        template = templateEngine.createTemplate(new File("${docResources}/style/referenceItem.html").newReader(encoding))
 
-            for (f in files) {
-                if (f.directory && !f.name.startsWith(".")) {
-                    def section = f.name
-                    reference."${section}" = [:]
- //                   menu << "<h1 class=\"menuTitle\">${f.name}</h1>"
-                    new File("${refDocsDir}/ref/${f.name}").mkdirs()
-                    def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
-                    def usageFile = new File("${src}/ref/${f.name}.gdoc")
-                    if (usageFile.exists()) {
-                        def data = usageFile.text
-                        reference."${section}".usage = data
-                        context.set(DocEngine.SOURCE_FILE, usageFile)
-                        context.set(DocEngine.CONTEXT_PATH, "../..")
-                        vars.content = engine.render(data, context)
+        vars.path = "../.."
 
-                        new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
-                            template.make(vars).writeTo(out)
-                        }
+        for (f in files) {
+            if (f.directory && !f.name.startsWith(".")) {
+                def section = f.name
+                reference."${section}" = [:]
+                new File("${refDocsDir}/ref/${f.name}").mkdirs()
+                def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
+                def usageFile = new File("${src}/ref/${f.name}.gdoc")
+                if (usageFile.exists()) {
+                    def data = usageFile.text
+                    reference."${section}".usage = data
+                    context.set(DocEngine.SOURCE_FILE, usageFile)
+                    context.set(DocEngine.CONTEXT_PATH, "../..")
+                    vars.content = engine.render(data, context)
 
-//                        menu << "<div class=\"menuUsageItem\"><a href=\"${f.name}/Usage.html\" target=\"mainFrame\">Usage</a></div>"
+                    new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
+                        template.make(vars).writeTo(out)
                     }
-                    for (txt in textiles) {
-                        def name = txt.name[0..-6]
-//                        menu << "<div class=\"menuItem\"><a href=\"${f.name}/${name}.html\" target=\"mainFrame\">${name}</a></div>"
-                        def data = txt.text
-                        reference."${section}".put(name,data)
-                        context.set(DocEngine.SOURCE_FILE, txt.name)
-                        context.set(DocEngine.CONTEXT_PATH, "../..")
-                        vars.content = engine.render(data, context)
-                        //println "Generating reference item: ${name}"
-                        new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
-                            template.make(vars).writeTo(out)
-                        }
+                }
+                for (txt in textiles) {
+                    def name = txt.name[0..-6]
+                    def data = txt.text
+                    reference."${section}".put(name,data)
+                    context.set(DocEngine.SOURCE_FILE, txt.name)
+                    context.set(DocEngine.CONTEXT_PATH, "../..")
+                    vars.content = engine.render(data, context)
+
+                    new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
+                        template.make(vars).writeTo(out)
                     }
                 }
             }
         }
 
-        /*
-        vars.menu = menu
-        new File("${docResources}/style/menu.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
-            new File("${refDocsDir}/ref/menu.html").withWriter(encoding) {out ->
-                template.make(vars).writeTo(out)
-            }
-        }
-        */
-
         vars.title = title
-        vars.menu = menu.toString()
-        vars.toc = fullToc.toString()
         vars.content = fullContents.toString()
+        vars.single = true
         vars.path = ".."
 
-        new File("${docResources}/style/layout.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
-            new File("${refGuideDir}/single.html").withWriter(encoding) {out ->
-                template.make(vars).writeTo(out)
-            }
-            vars.toc = chaptersOnlyToc.toString()
-            vars.content = ""
-            new File("${refGuideDir}/index.html").withWriter(encoding) {out ->
-                template.make(vars).writeTo(out)
-            }
+        template = templateEngine.createTemplate(new File("${docResources}/style/layout.html").newReader(encoding))
+        new File("${refGuideDir}/single.html").withWriter(encoding) {out ->
+            template.make(vars).writeTo(out)
         }
 
-        new File("${docResources}/style/index.html").withReader(encoding) {reader ->
-            def template = templateEngine.createTemplate(reader)
-            new File("${refDocsDir}/index.html").withWriter(encoding) {out ->
-                template.make(vars).writeTo(out)
-            }
+        vars.content = ""
+        vars.single = false
+        new File("${refGuideDir}/index.html").withWriter(encoding) {out ->
+            template.make(vars).writeTo(out)
+        }
+
+        template = templateEngine.createTemplate(new File("${docResources}/style/index.html").newReader(encoding))
+        new File("${refDocsDir}/index.html").withWriter(encoding) {out ->
+            template.make(vars).writeTo(out)
         }
 
         ant.echo "Built user manual at ${refDocsDir}/index.html"
     }
 
-    void writeChapter(Template template, String targetDir, Map vars) {
-        new File("${targetDir}/${vars.title}.html").withWriter(encoding) {
-            template.make(vars).writeTo(it)
+    void writeChapter(section, Template layoutTemplate, Template sectionTemplate, String targetDir, fullContents, vars) {
+        fullContents << writePage(section, layoutTemplate, sectionTemplate, targetDir, "..", 0, vars)
+    }
+
+    String writePage(section, Template layoutTemplate, Template sectionTemplate, String targetDir, path, level, vars) {
+        context.set(DocEngine.SOURCE_FILE, section.file)
+        context.set(DocEngine.CONTEXT_PATH, path)
+
+        def varsCopy = [*:vars]
+        varsCopy.title = section.title
+        varsCopy.content = engine.render(section.file.text, context)
+        varsCopy.path = path
+        varsCopy.level = level
+        varsCopy.sectionToc = section.subSections
+
+        // First create the section content, which usually consists of a header
+        // and the translated gdoc content.
+        def sectionContent = new StringWriter()
+        sectionTemplate.make(varsCopy).writeTo(sectionContent)
+
+        // Aggregate the section content and sub-sections.
+        def accumulatedContent = new StringBuilder()
+        accumulatedContent << sectionContent.toString()
+
+        // Create the sub-section pages.
+        level++
+        for (s in section.subSections) {
+            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, "$targetDir/pages", "../..", level, vars)
         }
+
+        // Create the HTML page for this section, which includes the content
+        // from all the sub-sections too.
+        new File("${targetDir}/${section.title}.html").withWriter(encoding) { writer ->
+            varsCopy.content = accumulatedContent.toString()
+            layoutTemplate.make(varsCopy).writeTo(writer)
+        }
+
+        return varsCopy.content
     }
 
     protected void initialize() {
@@ -410,6 +364,15 @@ class DocPublisher {
                 }
             }
         }
+
+        context = new BaseInitialRenderContext()
+        context.set(DocEngine.CONTEXT_PATH, "..")
+        context.set(DocEngine.BASE_DIR, src.absolutePath)
+
+        engine = new DocEngine(context)
+        engine.engineProperties = engineProperties
+        context.renderEngine = engine
+
     }
 
     private unpack(Map args) {
