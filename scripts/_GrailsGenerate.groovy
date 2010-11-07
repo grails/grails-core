@@ -35,6 +35,7 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     depends(loadApp)
 
     def name = generateForName
+    def controllerShortName = generateForControllerName
     name = name.indexOf('.') > -1 ? name : GrailsNameUtils.getClassNameRepresentation(name)
     def domainClass = grailsApp.getDomainClass(name)
 
@@ -45,7 +46,7 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     }
 
     if (domainClass) {
-        generateForDomainClass(domainClass)
+        generateForDomainClass(domainClass, controllerShortName)
         event("StatusFinal", ["Finished generation for domain class ${domainClass.fullName}"])
     }
     else {
@@ -74,20 +75,28 @@ target(uberGenerate: "Generates controllers and views for all domain classes.") 
     }
 }
 
-def generateForDomainClass(domainClass) {
+def generateForDomainClass(domainClass, controllerShortName) {
     def templateGenerator = new DefaultGrailsTemplateGenerator(classLoader)
 
     if (generateViews) {
         event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])
-        templateGenerator.generateViews(domainClass, basedir)
+        templateGenerator.generateViews(domainClass, basedir, controllerShortName)
         event("GenerateViewsEnd", [domainClass.fullName])
     }
 
     if (generateController) {
         event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])
-        templateGenerator.generateController(domainClass, basedir)
-        createUnitTest(name: domainClass.fullName, suffix: "Controller",
-                       superClass: "ControllerUnitTestCase")
+        templateGenerator.generateController(domainClass, basedir, controllerShortName)
+
+        if (controllerShortName) {
+            createUnitTest(
+                    name: "${domainClass.packageName}.${controllerShortName}", suffix: "Controller",
+                    superClass: "ControllerUnitTestCase")
+        }
+        else {
+            createUnitTest(name: domainClass.fullName, suffix: "Controller", superClass: "ControllerUnitTestCase")
+        }
+        
         event("GenerateControllerEnd", [domainClass.fullName])
     }
 }

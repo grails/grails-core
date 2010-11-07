@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.scaffolding
 
 import grails.util.BuildSettingsHolder
+import grails.util.GrailsNameUtils
 import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
 import org.apache.commons.logging.Log
@@ -92,9 +93,21 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     }
 
     void generateViews(GrailsDomainClass domainClass, String destdir) {
+        generateViews(domainClass, destdir, null)
+    }
+
+    void generateViews(GrailsDomainClass domainClass, String destdir, String controllerShortNameParam) {
         Assert.hasText destdir, "Argument [destdir] not specified"
 
-        def viewsDir = new File("${destdir}/grails-app/views/${domainClass.propertyName}")
+        String controllerShortName
+        if (controllerShortNameParam) {
+            controllerShortName = GrailsNameUtils.getPropertyNameRepresentation(controllerShortNameParam)
+        }
+        else {
+            controllerShortName = domainClass.propertyName
+        }
+
+        def viewsDir = new File("${destdir}/grails-app/views/${controllerShortName}")
         if (!viewsDir.exists()) {
             viewsDir.mkdirs()
         }
@@ -106,6 +119,10 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     }
 
     void generateController(GrailsDomainClass domainClass, String destdir) {
+        generateController(domainClass, destdir, null)
+    }
+
+    void generateController(GrailsDomainClass domainClass, String destdir, String controllerShortNameParam) {
         Assert.hasText destdir, "Argument [destdir] not specified"
 
         if (domainClass) {
@@ -117,12 +134,20 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 pkg = fullName[0..pos]
             }
 
-            def destFile = new File("${destdir}/grails-app/controllers/${pkg.replace('.' as char, '/' as char)}${domainClass.shortName}Controller.groovy")
+            String controllerShortName
+            if (controllerShortNameParam) {
+                controllerShortName = controllerShortNameParam
+            }
+            else {
+                controllerShortName = domainClass.shortName
+            }
+
+            def destFile = new File("${destdir}/grails-app/controllers/${pkg.replace('.' as char, '/' as char)}${controllerShortName}Controller.groovy")
             if (canWrite(destFile)) {
                 destFile.parentFile.mkdirs()
 
                 destFile.withWriter { w ->
-                    generateController(domainClass, w)
+                    generateController(domainClass, w, controllerShortName)
                 }
 
                 LOG.info("Controller generated at ${destFile}")
@@ -199,11 +224,16 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     }
 
     void generateController(GrailsDomainClass domainClass, Writer out) {
+        generateController(domainClass, out, domainClass.shortName)
+    }
+
+    void generateController(GrailsDomainClass domainClass, Writer out, String controllerShortName) {
         def templateText = getTemplateText("Controller.groovy")
 
         boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
         def binding = [packageName: domainClass.packageName,
                        domainClass: domainClass,
+                       controllerName: controllerShortName,
                        className: domainClass.shortName,
                        propertyName: getPropertyName(domainClass),
                        comparator: hasHibernate ? DomainClassPropertyComparator : SimpleDomainClassPropertyComparator]
@@ -278,7 +308,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         }
 
         def grailsHome = BuildSettingsHolder.settings?.grailsHome
-        if (grailsHome) {
+        if (grailsHome && !resources) {
             try {
                 def grailsHomeTemplates = resolver.getResources("file:${grailsHome}/src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
                 resources.addAll(grailsHomeTemplates)
@@ -288,7 +318,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 LOG.debug("Error locating templates from GRAILS_HOME: ${e.message}", e)
             }
         }
-        else {
+        else if (!resources) {
             try {
                 def templates = resolver.getResources("classpath:src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
                 resources.addAll(templates)
