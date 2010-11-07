@@ -308,10 +308,10 @@ class DocPublisher {
     }
 
     void writeChapter(section, Template layoutTemplate, Template sectionTemplate, String targetDir, fullContents, vars) {
-        fullContents << writePage(section, layoutTemplate, sectionTemplate, targetDir, "..", 0, vars)
+        fullContents << writePage(section, layoutTemplate, sectionTemplate, targetDir, "", "..", 0, vars)
     }
 
-    String writePage(section, Template layoutTemplate, Template sectionTemplate, String targetDir, path, level, vars) {
+    String writePage(section, Template layoutTemplate, Template sectionTemplate, String targetDir, String subDir, path, level, vars) {
         context.set(DocEngine.SOURCE_FILE, section.file)
         context.set(DocEngine.CONTEXT_PATH, path)
 
@@ -334,11 +334,16 @@ class DocPublisher {
         // Create the sub-section pages.
         level++
         for (s in section.subSections) {
-            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, "$targetDir/pages", "../..", level, vars)
+            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, targetDir, "pages", "../..", level, vars)
         }
 
         // Create the HTML page for this section, which includes the content
         // from all the sub-sections too.
+        if (subDir) {
+            if (subDir.endsWith('/')) subDir = subDir[0..-2]
+            targetDir = "$targetDir/$subDir"
+        }
+
         new File("${targetDir}/${section.title}.html").withWriter(encoding) { writer ->
             varsCopy.content = accumulatedContent.toString()
             layoutTemplate.make(varsCopy).writeTo(writer)
@@ -368,6 +373,7 @@ class DocPublisher {
         context = new BaseInitialRenderContext()
         context.set(DocEngine.CONTEXT_PATH, "..")
         context.set(DocEngine.BASE_DIR, src.absolutePath)
+        context.set(DocEngine.API_BASE_PATH, target.absolutePath)
 
         engine = new DocEngine(context)
         engine.engineProperties = engineProperties
