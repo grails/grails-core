@@ -9,12 +9,14 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+            import grails.persistence.*
+            @Entity
             class Book {
-                Long id
-                Long version
                 String title
                 Author author
+                Address address
                 String publisher = 'Manning'
+                static embedded = ["address"]
                 static namedQueries = {
                     manningBooks {
                         eq('publisher', 'Manning')
@@ -22,19 +24,22 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
                 }
             }
             
+            @Entity
             class Author {
-                Long id
-                Long version
                 String name
                 Person person
             }
             
+            @Entity
             class Person {
-                Long id
-                Long version
                 String name
             }
-        '''
+            
+            class Address {
+                String street
+                String city
+            }
+            '''
     }
 
     protected void setUp() {
@@ -43,10 +48,12 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
         def personClass = ga.getDomainClass('Person').clazz
         def authorClass = ga.getDomainClass('Author').clazz
         bookClass = ga.getDomainClass('Book').clazz
+        def addressClass = ga.classLoader.loadClass("Address")
         ['C','A','b','a','c','B'].eachWithIndex { name, i ->
             def person = personClass.newInstance(id:i, version:1, name:name).save(flush:true)
             def author = authorClass.newInstance(id:i, version:1, name:name, person:person).save(flush:true)
-            bookClass.newInstance(id:i, version:1, title:'foo', author:author).save(flush:true)
+            def address = addressClass.newInstance(street:name, city:'Oslo')
+            bookClass.newInstance(id:i, version:1, title:'foo', author:author, address:address).save(flush:true)
         }
     }
     
@@ -82,5 +89,9 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
         assertEquals( ['b','B','C'], bookClass.findAll([max:3, offset:2, sort:'author.name']).author.name )
         assertEquals( ['b','B','C'], bookClass.findAllByPublisher('Manning', [max:3, offset:2, sort:'author.name']).author.name )
         assertEquals( ['b','B','C'], bookClass.list(max:3, offset:2, sort:'author.person.name').author.person.name )
+    }
+    
+    void testSortByEmbeddedProperty() {
+        assertEquals( ['A','a','b','B','C','c'], bookClass.list(sort:'address.street').address.street)
     }
 }
