@@ -55,7 +55,7 @@ javadoc {
 task gdoc(dependsOn: 'javadoc') << {
     ant {
         mkdir dir: buildDir
-        get src:"http://github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
+        get src:"http://nodeload.github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
         unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
             mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
         }
