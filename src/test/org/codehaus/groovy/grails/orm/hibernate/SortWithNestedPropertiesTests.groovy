@@ -21,9 +21,9 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
                     manningBooks {
                         eq('publisher', 'Manning')
                     }
-                    static mapping = {
-                        sort 'author.name'
-                    }
+                }
+                static mapping = {
+                    sort 'author.name'
                 }
             }
             
