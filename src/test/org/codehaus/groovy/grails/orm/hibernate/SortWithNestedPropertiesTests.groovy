@@ -75,4 +75,12 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
         assertEquals( ['A','a','b','B','C','c'], bookClass.list(sort:'author.person.name').author.person.name )
     }
 
+    void testPreserveOtherParameters() {
+        assertEquals( ['b','B','C'], bookClass.list(max:3, offset:2, sort:'author.name').author.name )
+        assertEquals( ['C','a','b'], bookClass.list(max:3, offset:2, sort:'author.name', ignoreCase:false).author.name )
+        assertEquals( ['b','B','C'], bookClass.manningBooks().list(max:3, offset:2, sort:'author.name').author.name )
+        assertEquals( ['b','B','C'], bookClass.findAll([max:3, offset:2, sort:'author.name']).author.name )
+        assertEquals( ['b','B','C'], bookClass.findAllByPublisher('Manning', [max:3, offset:2, sort:'author.name']).author.name )
+        assertEquals( ['b','B','C'], bookClass.list(max:3, offset:2, sort:'author.person.name').author.person.name )
+    }
 }
