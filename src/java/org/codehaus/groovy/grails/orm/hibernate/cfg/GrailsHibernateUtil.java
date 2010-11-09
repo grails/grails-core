@@ -29,10 +29,12 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -209,7 +211,7 @@ public class GrailsHibernateUtil {
             if (caseArg instanceof Boolean) {
                 ignoreCase = (Boolean) caseArg;
             }
-            addOrder(c, sort, order, ignoreCase);
+            addOrderPossiblyNested(c, targetClass, sort, order, ignoreCase);
         }
         else {
             Mapping m = GrailsDomainBinder.getMapping(targetClass);
@@ -224,23 +226,51 @@ public class GrailsHibernateUtil {
         }
     }
     
-    /*
+    /**
      * Add order to criteria, creating necessary subCriteria if nested sort property (ie. sort:'nested.property').
      */
+    private static void addOrderPossiblyNested(Criteria c, Class<?> targetClass, String sort, String order, boolean ignoreCase) {
+        int firstDotPos = sort.indexOf(".");
+        if (firstDotPos == -1) {
+            addOrder(c, sort, order, ignoreCase);
+        } else { // nested property
+            String sortHead = sort.substring(0,firstDotPos);
+            String sortTail = sort.substring(firstDotPos+1);
+            GrailsDomainClassProperty property = getGrailsDomainClassProperty(targetClass, sortHead);
+            if (property.isEmbedded()) {
+                // embedded objects cannot reference entities (at time of writing), so no more recursion needed  
+                addOrder(c, sort, order, ignoreCase);
+            } else {
+                Criteria subCriteria = c.createCriteria(sortHead);
+                Class<?> propertyTargetClass = property.getReferencedDomainClass().getClazz(); 
+                addOrderPossiblyNested(subCriteria, propertyTargetClass, sortTail, order, ignoreCase); // Recurse on nested sort
+            }
+        }
+    }
+
+    /**
+     * Add order directly to criteria.
+     */
     private static void addOrder(Criteria c, String sort, String order, boolean ignoreCase) {
-    	int firstDotPos = sort.indexOf(".");
-    	if (firstDotPos == -1) {
-            if (ORDER_DESC.equals(order)) {
-                c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
-            }
-            else {
-                c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
-            }
-    	} else {
-    		Criteria subCriteria = c.createCriteria(sort.substring(0,firstDotPos));
-    		String remainingSort = sort.substring(firstDotPos+1);
-    		addOrder(subCriteria, remainingSort, order, ignoreCase); // Recurse on nested sort
-    	}
+        if (ORDER_DESC.equals(order)) {
+            c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
+        }
+        else {
+            c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
+        }
+    }
+    
+    /**
+     * Get hold of the GrailsDomainClassProperty represented by the targetClass' propertyName, 
+     * assuming targetClass corresponds to a GrailsDomainClass.
+     */
+    private static GrailsDomainClassProperty getGrailsDomainClassProperty(Class<?> targetClass, String propertyName) {
+        GrailsClass grailsClass = ApplicationHolder.getApplication().getArtefact(DomainClassArtefactHandler.TYPE, targetClass.getName());
+        if (!(grailsClass instanceof GrailsDomainClass)) {
+            throw new IllegalArgumentException("Unexpected: class is not a domain class:"+targetClass.getName());
+        }
+        GrailsDomainClass domainClass = (GrailsDomainClass) grailsClass;
+        return domainClass.getPropertyByName(propertyName);
     }
     
     /**
