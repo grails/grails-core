@@ -51,6 +51,8 @@ public interface Constraint extends MessageSourceAware {
      */
     void setParameter(Object parameter);
 
+    Object getParameter();
+
     /**
      * The class the constraint applies to
      *
