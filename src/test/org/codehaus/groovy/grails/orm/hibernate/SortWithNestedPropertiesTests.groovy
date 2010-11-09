@@ -21,6 +21,9 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
                     manningBooks {
                         eq('publisher', 'Manning')
                     }
+                    static mapping = {
+                        sort 'author.name'
+                    }
                 }
             }
             
@@ -93,5 +96,9 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
     
     void testSortByEmbeddedProperty() {
         assertEquals( ['A','a','b','B','C','c'], bookClass.list(sort:'address.street').address.street)
+    }
+
+    void testDefaultSort() {
+        assertEquals( ['A','a','b','B','C','c'], bookClass.list().address.street)
     }
 }
