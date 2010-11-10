@@ -197,12 +197,7 @@ public class GrailsHibernateUtil {
             if (caseArg instanceof Boolean) {
                 ignoreCase = (Boolean) caseArg;
             }
-            if (ORDER_DESC.equals(order)) {
-                c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
-            }
-            else {
-                c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
-            }
+            addOrder(c, sort, order, ignoreCase);
         }
         else {
             Mapping m = GrailsDomainBinder.getMapping(targetClass);
@@ -216,7 +211,26 @@ public class GrailsHibernateUtil {
             }
         }
     }
-
+    
+    /*
+     * Add order to criteria, creating necessary subCriteria if nested sort property (ie. sort:'nested.property').
+     */
+    private static void addOrder(Criteria c, String sort, String order, boolean ignoreCase) {
+    	int firstDotPos = sort.indexOf(".");
+    	if (firstDotPos == -1) {
+            if (ORDER_DESC.equals(order)) {
+                c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
+            }
+            else {
+                c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
+            }
+    	} else {
+    		Criteria subCriteria = c.createCriteria(sort.substring(0,firstDotPos));
+    		String remainingSort = sort.substring(firstDotPos+1);
+    		addOrder(subCriteria, remainingSort, order, ignoreCase); // Recurse on nested sort
+    	}
+    }
+    
     /**
      * Configures the criteria instance to cache based on the configured mapping.
      *
