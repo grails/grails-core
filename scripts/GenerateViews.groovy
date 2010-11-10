@@ -26,7 +26,7 @@ includeTargets << grailsScript("_GrailsCreateArtifacts")
 includeTargets << grailsScript("_GrailsGenerate")
 
 target ('default': "Generates the CRUD views for a specified domain class") {
-    depends(checkVersion, parseArguments, packageApp)
+    depends(checkVersion, parseArguments, packageApp, determineControllerNameParam)
     promptForName(type: "Domain Class")
     generateController = false
     generateForName = argsMap["params"][0]
