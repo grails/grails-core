@@ -309,7 +309,7 @@ public class GrailsScriptRunner {
 
     private void setRunningEnvironment(String scriptName, String env) {
         // Get the default environment if one hasn't been set.
-        boolean useDefaultEnv = env == null || Environment.DEVELOPMENT.getName().equals(env);
+        boolean useDefaultEnv = env == null;
         if (useDefaultEnv) {
             env = DEFAULT_ENVS.get(scriptName);
             env = env != null ? env : Environment.DEVELOPMENT.getName();
@@ -562,6 +562,9 @@ public class GrailsScriptRunner {
 
         out.println("Running pre-compiled script");
 
+        // Must be called before the binding is initialised.
+        setRunningEnvironment(scriptName, env);
+
         // Get Gant to load the class by name using our class loader.
         Gant gant = new Gant(initBinding(binding), classLoader);
 
@@ -581,7 +584,6 @@ public class GrailsScriptRunner {
             }
         }
 
-        setRunningEnvironment(scriptName, env);
         return executeWithGantInstance(gant, doNothingClosure);
     }
 
