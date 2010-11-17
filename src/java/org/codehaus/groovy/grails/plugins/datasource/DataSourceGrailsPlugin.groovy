@@ -22,6 +22,7 @@ import grails.util.Metadata
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
+import java.sql.SQLException
 import javax.sql.DataSource
 
 import org.apache.commons.dbcp.BasicDataSource
@@ -33,7 +34,7 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
 
 /**
- * Handles the configuration of a DataSource within Grails.
+ * A plugin that handles the configuration of a DataSource within Grails.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -68,10 +69,10 @@ class DataSourceGrailsPlugin {
         }
 
         def properties = {
-            def driver = ds?.driverClassName ? ds.driverClassName : "org.h2.Driver"
+            def driver = ds?.driverClassName ? ds.driverClassName : "org.hsqldb.jdbcDriver"
             driverClassName = driver
-            url = ds?.url ? ds.url : "jdbc:h2:mem:grailsDB"
-            boolean defaultDriver = (driver == "org.h2.Driver")
+            url = ds?.url ? ds.url : "jdbc:hsqldb:mem:grailsDB"
+            boolean defaultDriver = (driver == "org.hsqldb.jdbcDriver")
             String theUsername = ds?.username ?: (defaultDriver ? "sa" : null)
             if (theUsername != null) {
                 username = theUsername
@@ -158,39 +159,6 @@ class DataSourceGrailsPlugin {
         dataSource(TransactionAwareDataSourceProxy, dataSourceUnproxied)
     }
 
-    def doWithWebDescriptor = { xml ->
-
-        // only configure if explicitly enabled or in dev mode if not disabled
-        def enabled = application.config.grails.dbconsole.enabled
-        if (!(enabled instanceof Boolean)) {
-            enabled = Environment.current == Environment.DEVELOPMENT
-        }
-        if (!enabled) {
-            return
-        }
-
-        String urlPattern = (application.config.grails.dbconsole.urlRoot ?: '/dbconsole') + '/*'
-
-        def listeners = xml.'listener'
-
-        listeners[listeners.size() - 1] + {
-            'servlet' {
-                'servlet-name'('H2Console')
-                'servlet-class'('org.h2.server.web.WebServlet')
-                'init-param' {
-                    'param-name'('-webAllowOthers')
-                    'param-value'('true')
-                }
-                'load-on-startup'('2')
-            }
-
-            'servlet-mapping' {
-                'servlet-name'('H2Console')
-                'url-pattern'(urlPattern)
-            }
-        }
-    }
-
     def onChange = {
         restartContainer()
     }
@@ -204,27 +172,28 @@ class DataSourceGrailsPlugin {
             Connection connection
             try {
                 connection = dataSource.getConnection()
-                def dbName = connection.metaData.databaseProductName
-                if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
+                def dbName =connection.metaData.databaseProductName
+                if (dbName == 'HSQL Database Engine') {
                     connection.createStatement().executeUpdate('SHUTDOWN')
                 }
-            }
-            finally {
-                try { connection?.close() } catch (ignored) {}
+            } finally {
+                connection?.close()
             }
         }
 
-        if (Metadata.current.isWarDeployed()) {
+        if (Metadata.current.warDeployed) {
             deregisterJDBCDrivers()
         }
     }
 
     private void deregisterJDBCDrivers() {
-        DriverManager.drivers.each { Driver driver ->
+        Enumeration<Driver> drivers = DriverManager.getDrivers()
+        while (drivers.hasMoreElements()) {
+            Driver driver = drivers.nextElement()
             try {
                 DriverManager.deregisterDriver(driver)
-            } catch (e) {
-                log.error "Error deregistering JDBC driver [$driver]: $e.message", e
+            } catch (SQLException e) {
+                log.error("Error deregistering JDBC driver ["+driver+"]: " + e.getMessage(), e)
             }
         }
     }

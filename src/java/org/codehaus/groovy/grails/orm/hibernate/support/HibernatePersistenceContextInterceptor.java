@@ -35,14 +35,12 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
     private SessionFactory sessionFactory;
     
     private ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
-        @Override
         protected Boolean initialValue() {
-            return Boolean.FALSE;
+            return Boolean.valueOf(false);
         }
     };
 
     private ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>() {
-        @Override
         protected Integer initialValue() {
             return Integer.valueOf(0);
         }

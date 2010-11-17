@@ -61,8 +61,8 @@ dataSource {
     pooling = true
     logSql = true
     dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-    url = "jdbc:h2:mem:testDB"
-    driverClassName = "org.h2.Driver"
+    url = "jdbc:hsqldb:mem:testDB"
+    driverClassName = "org.hsqldb.jdbcDriver"
     username = "sa"
     password = ""
 }

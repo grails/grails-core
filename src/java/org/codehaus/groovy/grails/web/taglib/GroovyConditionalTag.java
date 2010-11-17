@@ -52,7 +52,7 @@ abstract class GroovyConditionalTag extends GroovySyntaxTag {
     private String environmentExpressionOrTrue(String envAttributeValue) {
         String expression = "true";
         if (envAttributeValue != null) {
-            expression = "(grails.util.Environment.current.name == '" + calculateExpression(envAttributeValue) + "')";
+            expression = "(GrailsUtil.environment == '" + calculateExpression(envAttributeValue) + "')";
         }
         return expression;
     }

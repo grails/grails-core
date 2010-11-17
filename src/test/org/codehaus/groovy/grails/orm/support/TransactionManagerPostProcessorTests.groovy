@@ -21,8 +21,8 @@ class TransactionManagerPostProcessorTests extends GroovyTestCase{
                 bean.lazyInit = true                
             }
             dataSource(DriverManagerDataSource) {
-                url = "jdbc:h2:mem:tmpptDB"
-                driverClassName = "org.h2.Driver"
+                url = "jdbc:hsqldb:mem:tmpptDB"
+                driverClassName = "org.hsqldb.jdbcDriver"
                 username = "sa"
                 password = ""
             }

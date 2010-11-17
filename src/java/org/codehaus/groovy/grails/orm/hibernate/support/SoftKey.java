@@ -3,16 +3,17 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 import java.lang.ref.SoftReference;
 
 /**
- * SoftReference key to be used with ConcurrentHashMap. 
- *
+ * 
+ * SoftReference key to be used with ConcurrentHashMap 
+ * 
  * @author Lari Hotari
  */
-class SoftKey<T> extends SoftReference<T> {
-	final int hash;
-
+class SoftKey<T> extends SoftReference<T>{
+	int hash;
+	
 	public SoftKey(T referent) {
 		super(referent);
-		hash = referent.hashCode();
+		this.hash=referent.hashCode();
 	}
 
 	@Override
@@ -22,30 +23,22 @@ class SoftKey<T> extends SoftReference<T> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
-		@SuppressWarnings("unchecked")
-		SoftKey<T> other = (SoftKey<T>)obj;
-		if (hash != other.hash) {
+		SoftKey<T> other = (SoftKey<T>) obj;
+		if (hash != other.hash)
 			return false;
-		}
-		T referent = get();
-		T otherReferent = other.get();
+		T referent=this.get();
+		T otherReferent=other.get();
 		if (referent == null) {
-			if (otherReferent != null) {
+			if (otherReferent != null)
 				return false;
-			}
-		}
-		else if (!referent.equals(otherReferent)) {
+		} else if (!referent.equals(otherReferent))
 			return false;
-		}
 		return true;
 	}
 }

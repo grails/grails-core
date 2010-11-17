@@ -15,11 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Methods optimized to Java for the BuildSettings class.
+ * Methods optimized to Java for the BuildSettings class
  *
  * @since 1.3.4
  */
-public abstract class AbstractBuildSettings {
+abstract public class AbstractBuildSettings {
 
     private static final String KEY_PLUGIN_DIRECTORY_RESOURCES = "pluginDirectoryResources";
     private static final String KEY_INLINE_PLUGIN_LOCATIONS = "inlinePluginLocations";
@@ -123,7 +123,7 @@ public abstract class AbstractBuildSettings {
      * @see getInlinePluginsFromConfiguration(Map, File)
      */
     @SuppressWarnings({ "rawtypes" })
-    protected Collection<File> getInlinePluginsFromConfiguration(@SuppressWarnings("hiding") Map config) {
+    protected Collection<File> getInlinePluginsFromConfiguration(Map config) {
         return getInlinePluginsFromConfiguration(config, getBaseDir());
     }
     

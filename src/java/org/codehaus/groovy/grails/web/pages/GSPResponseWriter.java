@@ -20,6 +20,8 @@ import java.io.Writer;
 
 import javax.servlet.ServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
@@ -47,6 +49,7 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWrit
  */
 public class GSPResponseWriter extends GrailsPrintWriter {
 
+    private static final Log LOG = LogFactory.getLog(GSPResponseWriter.class);
     private ServletResponse response;
     private BoundedCharsAsEncodedBytesCounter bytesCounter;
     private static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");

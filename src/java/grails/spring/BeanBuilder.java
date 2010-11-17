@@ -55,8 +55,8 @@ import java.util.*;
  * BeanBuilder builder = new BeanBuilder()
  * builder.beans {
  *   dataSource(BasicDataSource) {                  // <--- invokeMethod
- *      driverClassName = "org.h2.Driver"
- *      url = "jdbc:h2:mem:grailsDB"
+ *      driverClassName = "org.hsqldb.jdbcDriver"
+ *      url = "jdbc:hsqldb:mem:grailsDB"
  *      username = "sa"                            // <-- setProperty
  *      password = ""
  *      settings = [mynew:"setting"]
