@@ -14,14 +14,18 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import java.util.Set;
+
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
@@ -39,8 +43,7 @@ import org.springframework.web.context.request.WebRequest;
  * @since 0.5
  */
 public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterceptor {
-
-    private static final String IS_FLOW_REQUEST_ATTRIBUTE = "org.codehaus.groovy.grails.webflow.flow_request";
+	private static final String IS_FLOW_REQUEST_ATTRIBUTE = "org.codehaus.groovy.grails.webflow.flow_request";
 
     @Override
     public void preHandle(WebRequest request) throws DataAccessException {
@@ -52,10 +55,10 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
         }
         else {
             super.preHandle(request);
-            SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.getResource(getSessionFactory());
+            SessionFactory sessionFactory = getSessionFactory();
+			SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory);
             Session session = sessionHolder.getSession();
-            
-            session.enableFilter("dynamicFilterEnabler"); // work around for HHH-2624
+            GrailsHibernateUtil.enableDynamicFilterEnablerIfPresent(sessionFactory, session);
         }
     }
 

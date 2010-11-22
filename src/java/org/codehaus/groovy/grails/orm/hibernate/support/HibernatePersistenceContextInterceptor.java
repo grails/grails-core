@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -122,7 +123,7 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
             setParticipate(false);
             LOG.debug("Opening single Hibernate session in HibernatePersistenceContextInterceptor");
             Session session = getSession();
-            session.enableFilter("dynamicFilterEnabler"); // work around for HHH-2624
+            GrailsHibernateUtil.enableDynamicFilterEnablerIfPresent(sessionFactory, session);
             session.setFlushMode(FlushMode.AUTO);
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
         }
