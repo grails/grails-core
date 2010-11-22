@@ -61,7 +61,7 @@ public class GrailsRepoResolver extends URLResolver{
     }
 
     private void installIvyAuth() {
-        java.net.Authenticator.setDefault(IvyAuthenticator.INSTANCE);
+        IvyAuthenticator.install();
     }
 
     public String transformGrailsRepositoryPattern(ModuleRevisionId mrid, String pattern) {
