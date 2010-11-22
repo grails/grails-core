@@ -71,6 +71,9 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  */
 public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
+
+    private static final String DYNAMIC_FILTER_ENABLER = "dynamicFilterEnabler";
+    
     public static SimpleTypeConverter converter = new SimpleTypeConverter();
     public static final String ARGUMENT_MAX = "max";
     public static final String ARGUMENT_OFFSET = "offset";
@@ -87,6 +90,15 @@ public class GrailsHibernateUtil {
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
+    public static void enableDynamicFilterEnablerIfPresent(SessionFactory sessionFactory, Session session) {
+    	if(sessionFactory != null && session != null) {
+            final Set definedFilterNames = sessionFactory.getDefinedFilterNames();
+    		if(definedFilterNames != null && definedFilterNames.contains(DYNAMIC_FILTER_ENABLER))
+            		session.enableFilter(DYNAMIC_FILTER_ENABLER); // work around for HHH-2624
+    		
+    	}
+    }
+    
     @SuppressWarnings("rawtypes")
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
