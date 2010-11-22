@@ -96,7 +96,7 @@ class DocPublisher {
         ant.mkdir(dir: docResources)
         unpack(dest: docResources, src: "grails-doc-files.jar")
 
-        def refDocsDir = target?.absolutePath ?: "./docs/manual"
+        def refDocsDir = target?.absolutePath ?: "./docs"
         def refGuideDir = "$refDocsDir/guide"
         def refPagesDir = "$refGuideDir/pages"
 
@@ -162,6 +162,7 @@ class DocPublisher {
         def context = new BaseInitialRenderContext()
         context.set(DocEngine.CONTEXT_PATH, "..")
         context.set(DocEngine.BASE_DIR, src.absolutePath)
+        context.set(DocEngine.API_BASE_PATH, target.absolutePath)
 
         def engine = new DocEngine(context)
         engine.engineProperties = engineProperties

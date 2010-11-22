@@ -14,7 +14,7 @@ environments {
     development {
         dataSource {
             dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-            url = "jdbc:h2:mem:devDB"
+            url = "jdbc:h2:mem:devDb"
         }
     }
     test {
