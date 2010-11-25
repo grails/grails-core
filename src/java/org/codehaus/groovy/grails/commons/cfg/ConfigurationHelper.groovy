@@ -134,6 +134,11 @@ class ConfigurationHelper {
                         def newConfig = configSlurper.parse(props)
                         config.merge(newConfig)
                     }
+                    else if (resource.filename.endsWith('.class')) {
+                        def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(null, stream.bytes)
+                        def newConfig = configSlurper.parse(configClass)
+                        config.merge(newConfig)
+                    }
                 }
                 finally {
                     stream?.close()
