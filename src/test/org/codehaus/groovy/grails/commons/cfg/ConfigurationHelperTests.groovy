@@ -25,8 +25,9 @@ class ConfigurationHelperTests extends GroovyTestCase {
 		def config = new ConfigObject()
 		config.grails.config.locations = [
 			"classpath:${PACKAGE_PATH}/ExampleConfigScript.groovy", // a = 1
-			"classpath:${PACKAGE_PATH}/ExampleConfigClass.class", // b = 1
-			"classpath:${PACKAGE_PATH}/ExampleConfig.properties" // c = 1
+			"classpath:${PACKAGE_PATH}/ExampleConfigCompiledClass.class", // b = 1
+			"classpath:${PACKAGE_PATH}/ExampleConfig.properties", // c = 1
+			ExampleConfigClassObject // d = 1
 		]
 
 		def classLoader = Thread.currentThread().contextClassLoader
@@ -34,7 +35,7 @@ class ConfigurationHelperTests extends GroovyTestCase {
 		
 		ConfigurationHelper.initConfig(config, resourceLoader, classLoader)
 			
-		["a", "b", "c"].each {
+		["a", "b", "c", "d"].each {
 			assertEquals("merged config should contain value for key '$it'", "1", config."$it".toString())
 		}
 	}

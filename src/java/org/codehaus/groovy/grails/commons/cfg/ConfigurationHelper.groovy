@@ -110,38 +110,45 @@ class ConfigurationHelper {
             }
 
             try {
-                def resource = resolver.getResource(location)
-                def stream
-                try {
-                    stream = resource.getInputStream()
-                    ConfigSlurper configSlurper = new ConfigSlurper(Environment.current.name)
-                    configSlurper.setBinding(config)
-                    if (classLoader) {
-                        if (classLoader instanceof GroovyClassLoader) {
-                            configSlurper.classLoader = classLoader
-                        }
-                        else {
-                            configSlurper.classLoader = new GroovyClassLoader(classLoader)
-                        }
+                ConfigSlurper configSlurper = new ConfigSlurper(Environment.current.name)
+                configSlurper.setBinding(config)
+                if (classLoader) {
+                    if (classLoader instanceof GroovyClassLoader) {
+                        configSlurper.classLoader = classLoader
                     }
-                    if (resource.filename.endsWith('.groovy')) {
-                        def newConfig = configSlurper.parse(stream.text)
-                        config.merge(newConfig)
-                    }
-                    else if (resource.filename.endsWith('.properties')) {
-                        def props = new Properties()
-                        props.load(stream)
-                        def newConfig = configSlurper.parse(props)
-                        config.merge(newConfig)
-                    }
-                    else if (resource.filename.endsWith('.class')) {
-                        def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(null, stream.bytes)
-                        def newConfig = configSlurper.parse(configClass)
-                        config.merge(newConfig)
+                    else {
+                        configSlurper.classLoader = new GroovyClassLoader(classLoader)
                     }
                 }
-                finally {
-                    stream?.close()
+                
+                if (location instanceof Class) {
+                    def newConfig = configSlurper.parse(location)
+                    config.merge(newConfig)
+                } 
+                else {
+                    def resource = resolver.getResource(location.toString())
+                    def stream
+                    try {
+                        stream = resource.getInputStream()
+                        if (resource.filename.endsWith('.groovy')) {
+                            def newConfig = configSlurper.parse(stream.text)
+                            config.merge(newConfig)
+                        }
+                        else if (resource.filename.endsWith('.properties')) {
+                            def props = new Properties()
+                            props.load(stream)
+                            def newConfig = configSlurper.parse(props)
+                            config.merge(newConfig)
+                        }
+                        else if (resource.filename.endsWith('.class')) {
+                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(null, stream.bytes)
+                            def newConfig = configSlurper.parse(configClass)
+                            config.merge(newConfig)
+                        }
+                    }
+                    finally {
+                        stream?.close()
+                    }
                 }
             }
             catch (Exception e) {
