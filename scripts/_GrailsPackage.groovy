@@ -119,7 +119,7 @@ target(packageApp : "Implementation of package target") {
 								 dest:i18nDir,
 								 includes:"**/*.properties",
 								 encoding:"UTF-8")
-
+	
 				PluginBuildSettings settings = pluginSettings
 				def i18nPluginDirs = settings.pluginI18nDirectories
 				if (i18nPluginDirs) {
@@ -129,7 +129,7 @@ target(packageApp : "Implementation of package target") {
 								def file = srcDir.file
 								def pluginDir = file.parentFile.parentFile
 								def info = settings.getPluginInfo(pluginDir.absolutePath)
-
+	
 								if (info) {
 									def pluginDirName = pluginDir.name
 									def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
@@ -167,8 +167,14 @@ target(packageApp : "Implementation of package target") {
 
     startLogging()
 
-    loadPlugins()
-    generateWebXml()
+	
+	if(grailsSettings.modified || !webXmlFile.exists()) {
+		loadPlugins()
+		generateWebXml()	
+	}
+	else {
+		loadPluginsAsync()
+	}
     event("PackagingEnd",[])
 }
 
