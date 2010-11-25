@@ -18,10 +18,13 @@ package grails.util
 import grails.util.Metadata
 import groovyx.gpars.Asynchronizer
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.regex.Pattern
 
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.repository.TransferEvent
+import org.apache.ivy.util.ChecksumHelper;
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 
@@ -268,9 +271,17 @@ class BuildSettings extends AbstractBuildSettings {
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
      */
     boolean verboseCompile = false
+	
+	/**
+	 * Return whether the BuildConfig has been modified
+	 */
+	boolean modified = false
+	
 
     private List<File> compileDependencies = []
     private boolean defaultCompileDepsAdded = false
+	
+	
 
     /** List containing the compile-time dependencies of the app as File instances. */
     List<File> getCompileDependencies() {
@@ -295,6 +306,8 @@ class BuildSettings extends AbstractBuildSettings {
                             .allArtifactsReports
                             .localFile + applicationJars
         Message.debug("Resolved jars for [compile]: ${{->jarFiles.join('\n')}}")
+		resolveCache['compile'] = jarFiles
+		storeCache()
         return jarFiles
     }()
 
@@ -324,6 +337,8 @@ class BuildSettings extends AbstractBuildSettings {
                             .allArtifactsReports
                             .localFile + applicationJars
         Message.debug("Resolved jars for [test]: ${{->jarFiles.join('\n')}}")
+		resolveCache['test'] = jarFiles
+		storeCache()
         return jarFiles
     }()
 
@@ -353,11 +368,32 @@ class BuildSettings extends AbstractBuildSettings {
                    .allArtifactsReports
                    .localFile + applicationJars
         Message.debug("Resolved jars for [runtime]: ${{->jarFiles.join('\n')}}")
+		resolveCache['runtime'] = jarFiles
+		storeCache()
         return jarFiles
     }()
 
+	private List<File> providedDependencies = []
+	private boolean defaultProvidedDepsAdded = false
+
+	/** List containing the runtime dependencies of the app as File instances. */
+	List<File> getProvidedDependencies() {
+		if (!defaultProvidedDepsAdded) {
+			providedDependencies += defaultProvidedDependencies
+			defaultProvidedDepsAdded = true
+		}
+		return providedDependencies
+	}
+
+	/**
+	 * Sets the runtime dependencies for the project
+	 */
+	void setProvidedDependencies(List<File> deps) {
+		providedDependencies = deps
+	}
+	
     /** List containing the dependencies needed at development time, but provided by the container at runtime **/
-    @Lazy List<File> providedDependencies = {
+    @Lazy List<File> defaultProvidedDependencies = {
         if (dependenciesExternallyConfigured) {
             return []
         }
@@ -367,13 +403,34 @@ class BuildSettings extends AbstractBuildSettings {
                        .localFile
 
         Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
+		resolveCache['provided'] = jarFiles
+		storeCache()
+ 
         return jarFiles
     }()
 
+	private List<File> buildDependencies = []
+	private boolean defaultBuildDepsAdded = false
+
+	/** List containing the runtime dependencies of the app as File instances. */
+	List<File> getBuildDependencies() {
+		if (!defaultBuildDepsAdded) {
+			buildDependencies += defaultDuildDependencies
+			defaultBuildDepsAdded = true
+		}
+		return buildDependencies
+	}
+
+	/**
+	 * Sets the runtime dependencies for the project
+	 */
+	void setBuildDependencies(List<File> deps) {
+		buildDependencies = deps
+	}
     /**
      * List containing the dependencies required for the build system only
      */
-    @Lazy List<File> buildDependencies = {
+    @Lazy List<File> defaultDuildDependencies = {
         if (dependenciesExternallyConfigured) {
             return []
         }
@@ -383,6 +440,9 @@ class BuildSettings extends AbstractBuildSettings {
                            .localFile + applicationJars
 
         Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
+		resolveCache['build'] = jarFiles
+		storeCache()
+ 
         return jarFiles
     }()
 
@@ -419,6 +479,8 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
+	private String resolveChecksum
+	private Map resolveCache = new ConcurrentHashMap()
 
     BuildSettings() {
         this(null)
@@ -472,6 +534,14 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
+	private storeCache() {
+		def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
+		cachedResolve.withOutputStream { output ->
+			def oos = new ObjectOutputStream(output)
+			oos.writeObject(resolveCache)
+				
+		}
+	}
     private def loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
         if(stream == null) {
@@ -679,7 +749,62 @@ class BuildSettings extends AbstractBuildSettings {
             defaultPluginSet = config.grails.default.plugin.set
         }
         flatConfig = config.flatten()
-        configureDependencyManager(config)
+		
+		def configURL = config.getConfigFile()
+		def configFile  = configURL ? new File(configURL.getFile()) : null
+
+		def metadataFile = Metadata.current.getMetadataFile()
+
+		if(configFile?.exists() && metadataFile?.exists()) {
+			this.resolveChecksum = ChecksumHelper.computeAsString(configFile, "md5") +
+			ChecksumHelper.computeAsString(metadataFile, "md5")
+		}
+							
+		def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
+		if(cachedResolve.exists()) {
+			
+
+
+			cachedResolve.withInputStream { input ->
+				def ois = new ObjectInputStream(input)
+				def dependencyMap = ois.readObject()
+				
+				def compileDeps = dependencyMap.compile
+				def runtimeDeps = dependencyMap.runtime
+				def testDeps = dependencyMap.test
+				def buildDeps = dependencyMap.build
+				def providedDeps = dependencyMap.provided
+	
+				if(compileDeps) {
+					this.@compileDependencies.addAll(compileDeps)
+					defaultCompileDepsAdded = true
+				}
+				
+				if(runtimeDeps) {
+					this.@runtimeDependencies.addAll(runtimeDeps)
+					defaultRuntimeDepsAdded = true
+				}
+				
+				if(testDeps) {
+					this.@testDependencies.addAll(testDeps)
+					defaultTestDepsAdded = true
+				}
+				
+				if(buildDeps) {
+					this.@buildDependencies.addAll(buildDeps)
+					defaultBuildDepsAdded = true
+				}
+				
+				if(providedDeps) {
+					this.@providedDependencies.addAll(providedDeps)
+					defaultProvidedDepsAdded = true
+				}
+			}
+		}
+		else {
+			this.modified = true
+		}
+		configureDependencyManager(config)
     }
 
     protected boolean settingsFileLoaded = false
@@ -750,9 +875,12 @@ class BuildSettings extends AbstractBuildSettings {
             }
         } as TransferListener
 
+		
+        def grailsConfig = config.grails
+
         if (!dependenciesExternallyConfigured) {
-            config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
-            def credentials = config.grails.project.ivy.authentication
+            grailsConfig.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+            def credentials = grailsConfig.project.ivy.authentication
             if (credentials instanceof Closure) {
                 dependencyManager.parseDependencies credentials
             }
@@ -760,29 +888,33 @@ class BuildSettings extends AbstractBuildSettings {
         else {
             // Even if the dependencies are handled externally, we still
             // to handle plugin dependencies.
-            config.grails.global.dependency.resolution = {
+            grailsConfig.global.dependency.resolution = {
                 repositories {
                     grailsPlugins()
                 }
             }
         }
-
-        def dependencyConfig = config.grails.project.dependency.resolution
+		
+        def dependencyConfig = grailsConfig.project.dependency.resolution
         if (!dependencyConfig) {
-            dependencyConfig = config.grails.global.dependency.resolution
+            dependencyConfig = grailsConfig.global.dependency.resolution
             dependencyManager.inheritsAll = true
         }
         if (dependencyConfig) {
+			if(resolveCache) {
+				dependencyManager.pluginsOnly = true
+			}
+			
             dependencyManager.parseDependencies dependencyConfig
+			
         }
-
+		
         // All projects need the plugins to be resolved.
         def handlePluginDirectory = pluginDependencyHandler()
-
-        Asynchronizer.doParallel(5) {
-            def pluginDirs = getPluginDirectories()
-            pluginDirs.eachParallel(handlePluginDirectory)
-        }
+        def pluginDirs = getPluginDirectories()
+		for(dir in pluginDirs) {
+			handlePluginDirectory(dir)
+		}
     }
 
     Closure pluginDependencyHandler() {

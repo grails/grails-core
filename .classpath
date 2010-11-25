@@ -79,5 +79,6 @@
 	<classpathentry kind="lib" path="lib/groovy-all-1.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.0_jdk5.jar"/>
 	<classpathentry kind="lib" path="lib/h2-1.2.144.jar"/>
+	<classpathentry kind="lib" path="lib/jsr166y-070108.jar"/>
 	<classpathentry kind="output" path="target/eclipse/bin-output"/>
 </classpath>

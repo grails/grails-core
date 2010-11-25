@@ -843,9 +843,6 @@ public class GrailsScriptRunner {
 
         // Add build-only dependencies to the project
         final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
-        if (!dependenciesExternallyConfigured) {
-            System.out.println("Resolving dependencies...");
-        }
         long now = System.currentTimeMillis();
         // add dependencies required by the build system
         final List<File> buildDependencies = settings.getBuildDependencies();
