@@ -22,21 +22,62 @@ class ConfigurationHelperTests extends GroovyTestCase {
 	def PACKAGE_PATH = "org/codehaus/groovy/grails/commons/cfg"
 	
 	void testLoadingExternalConfig() {
-		def config = new ConfigObject()
-		config.grails.config.locations = [
-			"classpath:${PACKAGE_PATH}/ExampleConfigScript.groovy", // a = 1
-			"classpath:${PACKAGE_PATH}/ExampleConfigCompiledClass.class", // b = 1
-			"classpath:${PACKAGE_PATH}/ExampleConfig.properties", // c = 1
-			ExampleConfigClassObject // d = 1
-		]
-
-		def classLoader = Thread.currentThread().contextClassLoader
-		def resourceLoader = new DefaultResourceLoader(classLoader)
-		
-		ConfigurationHelper.initConfig(config, resourceLoader, classLoader)
+		def config = initConfig {
+			it.grails.config.locations = [
+				"classpath:${PACKAGE_PATH}/ExampleConfigScript.groovy", // a = 1
+				"classpath:${PACKAGE_PATH}/ExampleConfigCompiledClass.class", // b = 1
+				"classpath:${PACKAGE_PATH}/ExampleConfig.properties", // c = 1
+				ExampleConfigClassObject // d = 1
+			]
+		}
 			
 		["a", "b", "c", "d"].each {
 			assertEquals("merged config should contain value for key '$it'", "1", config."$it".toString())
 		}
 	}
+	
+	void testLoadingExternalConfigWithDefaults() {
+		// load just defaults
+		def config = initConfig {
+			it.grails.config.defaults.locations = [
+				"classpath:${PACKAGE_PATH}/ExampleConfigDefaults.groovy" // a = 2
+			]
+		}
+		assertEquals("value from defaults 'a'", 2, config.a)
+		
+		
+		// load the same value in the app config, should override
+		config = initConfig {
+			it.a = 3
+			it.grails.config.defaults.locations = [
+				"classpath:${PACKAGE_PATH}/ExampleConfigDefaults.groovy" // a = 2
+			]
+		}
+		assertEquals("value from main config for 'a'", 3, config.a)
+
+
+		// load the same value in the app config and external locations, external should win
+		config = initConfig {
+			it.a = 3
+			it.grails.config.defaults.locations = [
+				"classpath:${PACKAGE_PATH}/ExampleConfigDefaults.groovy" // a = 2
+			]
+			it.grails.config.locations = [
+				"classpath:${PACKAGE_PATH}/ExampleConfigScript.groovy" // a = 1
+			]
+			
+		}
+		assertEquals("value from main config for 'a'", 1, config.a)
+	}
+	
+	protected initConfig(Closure callback) {
+		def classLoader = Thread.currentThread().contextClassLoader
+		def resourceLoader = new DefaultResourceLoader(classLoader)
+		
+		def config = new ConfigObject()
+		callback(config)
+		ConfigurationHelper.initConfig(config, resourceLoader, classLoader)
+		config
+	}
+	
 }
