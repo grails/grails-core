@@ -99,11 +99,26 @@ class ConfigurationHelper {
                 new PathMatchingResourcePatternResolver(resourceLoader) :
                 new PathMatchingResourcePatternResolver()
 
+        // Get these now before we do any merging
+        def defaultsLocations = config.grails.config.defaults.locations
         def locations = config.grails.config.locations
-        if (!locations) {
-            return
+        
+        // We load defaults in a way that allows them to be overridden by the main config
+        if (isLocations(defaultsLocations)) {
+            def newConfigObject = new ConfigObject()
+            mergeInLocations(newConfigObject, defaultsLocations, resolver, classLoader)
+            newConfigObject.merge(config)
+            config.merge(newConfigObject)
         }
+        
+        // We load non-defaults in a way that overrides the main config
+        if (isLocations(locations)) {
+            mergeInLocations(config, locations, resolver, classLoader)
+        }
+    }
 
+    
+    static private void mergeInLocations(ConfigObject config, List locations, PathMatchingResourcePatternResolver resolver, ClassLoader classLoader) {
         for (location in locations) {
             if (!location) {
                 continue
@@ -155,5 +170,9 @@ class ConfigurationHelper {
                 System.err.println "Unable to load specified config location $location : ${e.message}"
             }
         }
+    }
+    
+    static private boolean isLocations(locations) {
+        locations != null && locations instanceof List
     }
 }
