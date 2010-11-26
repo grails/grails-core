@@ -278,7 +278,7 @@ recompileCheck = { lastModified, callback ->
         ant.project.defaultInputStream = System.in
 
         def classpathId = "grails.compile.classpath"
-        ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
+        ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
         ant.path(id:classpathId,compileClasspath)
 
         ant.groovyc(destdir:classesDirPath,

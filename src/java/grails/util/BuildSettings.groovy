@@ -301,6 +301,7 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances. */
     @Lazy List<File> defaultCompileDependencies = {
+		Message.info "Resolving [compile] dependencies..."
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
                             .allArtifactsReports
@@ -332,6 +333,7 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** List containing the default test-time dependencies of the app as File instances. */
     @Lazy List<File> defaultTestDependencies = {
+		Message.info "Resolving [test] dependencies..."
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
                             .allArtifactsReports
@@ -363,6 +365,7 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** List containing the default runtime-time dependencies of the app as File instances. */
     @Lazy List<File> defaultRuntimeDependencies = {
+		Message.info "Resolving [runtime] dependencies..."
         def jarFiles = dependencyManager
                    .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
                    .allArtifactsReports
@@ -397,6 +400,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (dependenciesExternallyConfigured) {
             return []
         }
+		Message.info "Resolving [provided] dependencies..."
         def jarFiles = dependencyManager
                        .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
                        .allArtifactsReports
@@ -434,6 +438,8 @@ class BuildSettings extends AbstractBuildSettings {
         if (dependenciesExternallyConfigured) {
             return []
         }
+		
+		Message.info "Resolving [build] dependencies..."
         def jarFiles = dependencyManager
                            .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
                            .allArtifactsReports

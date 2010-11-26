@@ -669,9 +669,7 @@ public class GrailsScriptRunner {
     }
 
     private int executeWithGantInstance(Gant gant, final Closure doNothingClosure) {
-    	long now = System.currentTimeMillis();
         gant.prepareTargets();
-        System.out.println("Prepare targets took " + (System.currentTimeMillis()-now) + "ms");
         gant.setAllPerTargetPostHooks(doNothingClosure);
         gant.setAllPerTargetPreHooks(doNothingClosure);
         // Invoke the default target.
@@ -900,7 +898,6 @@ public class GrailsScriptRunner {
 
         // Add build-only dependencies to the project
         final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
-        long now = System.currentTimeMillis();
         // add dependencies required by the build system
         final List<File> buildDependencies = settings.getBuildDependencies();
         if (!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
@@ -912,9 +909,6 @@ public class GrailsScriptRunner {
         // Add the project's test dependencies (which include runtime dependencies) because most of them
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
-        if (!dependenciesExternallyConfigured) {
-            System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
-        }
 
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {

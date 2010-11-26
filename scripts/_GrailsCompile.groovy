@@ -29,7 +29,7 @@ includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_GrailsEvents")
 includeTargets << grailsScript("_GrailsArgParsing")
 
-ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
+ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
 ant.path(id: "grails.compile.classpath", compileClasspath)
 
 
