@@ -50,6 +50,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin
 if (getBinding().variables.containsKey("_plugin_dependencies_called")) return
 _plugin_dependencies_called = true
 
+
+
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << grailsScript("_GrailsProxy")
@@ -71,53 +73,6 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 
 target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
     depends(classpath)
-}
-
-/**
- * Compiles the sources for a single in-place plugin. A bit of a hack,
- * but any other solution would require too much refactoring to make it
- * into the 1.2 release.
- */
-compileInplacePlugin = { File pluginDir ->
-    def classesDirPath = grailsSettings.classesDir.path
-    ant.mkdir(dir: classesDirPath)
-
-    profile("Compiling inplace plugin sources to location [$classesDirPath]") {
-        // First compile the plugins so that we can exclude any
-        // classes that might conflict with the project's.
-        def classpathId = "grails.compile.classpath"
-        def pluginResources = pluginSettings.getPluginSourceFiles(pluginDir)
-
-        if (pluginResources) {
-            // Only perform the compilation if there are some plugins
-            // installed or otherwise referenced.
-            try {
-                ant.groovyc(
-                    destdir: classesDirPath,
-                    classpathref: classpathId,
-                    encoding:"UTF-8",
-                    verbose: grailsSettings.verboseCompile,
-                    listfiles: grailsSettings.verboseCompile) {
-                    for (File dir in pluginResources.file) {
-                        if (dir.exists() && dir.isDirectory()) {
-                            src(path: dir.absolutePath)
-                        }
-                    }
-                    exclude(name: "**/BootStrap.groovy")
-                    exclude(name: "**/BuildConfig.groovy")
-                    exclude(name: "**/Config.groovy")
-                    exclude(name: "**/*DataSource.groovy")
-                    exclude(name: "**/UrlMappings.groovy")
-                    exclude(name: "**/resources.groovy")
-                    javac(classpathref: classpathId, encoding: "UTF-8", debug: "yes")
-                }
-            }
-            catch (e) {
-                println "Failed to compile plugin at location [$pluginDir] with error: ${e.message}"
-                exit 1
-            }
-        }
-    }
 }
 
 /**
@@ -335,67 +290,6 @@ readAllPluginXmlMetadata = {->
     pluginSettings.pluginXmlMetadata.findAll { it.file.exists() }.collect { new XmlSlurper().parse(it.file) }
 }
 
-/**
- * @deprecated Use "pluginSettings.pluginXmlMetadata" instead.
- */
-getPluginXmlMetadata = {
-    pluginSettings.pluginXmlMetadata
-}
-
-/**
- * Obtains the directory for the given plugin name
- */
-getPluginDirForName = { String pluginName ->
-    pluginSettings.getPluginDirForName(pluginName)
-}
-
-/**
- * Obtains all of the plugin directories
- * @deprecated Use "pluginSettings.pluginDirectories".
- */
-getPluginDirectories = {->
-    pluginSettings.pluginDirectories
-}
-
-/**
- * Obtains an array of all plugin source files as Spring Resource objects
- * @deprecated Use "pluginSettings.pluginSourceFiles".
- */
-getPluginSourceFiles = {
-    pluginSettings.pluginSourceFiles
-}
-
-/**
- * Obtains an array of all the plugin provides Gant scripts
- * @deprecated Use "pluginSettings.pluginScripts".
- */
-getPluginScripts = {
-    pluginSettings.pluginScripts
-}
-
-/**
- * Gets a list of all scripts known to the application (excluding private scripts starting with _)
- * @deprecated Use "pluginSettings.availableScripts".
- */
-getAllScripts = {
-    pluginSettings.availableScripts
-}
-
-/**
- * Obtains a list of all Grails plugin descriptor classes
- * @deprecated Use "pluginSettings.pluginDescriptors".
- */
-getPluginDescriptors = {
-    pluginSettings.pluginDescriptors
-}
-
-/**
- * Gets the base plugin descriptor
- * @deprecated Use "pluginSettings.basePluginDescriptor".
- */
-getBasePluginDescriptor = {
-    pluginSettings.basePluginDescriptor
-}
 
 /**
  * Runs a script contained within a plugin
@@ -515,3 +409,4 @@ private withPluginInstall(Closure callable) {
         exit(1)
     }
 }
+

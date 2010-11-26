@@ -538,7 +538,9 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 existing.addAll(toAdd)
                 if (type in ['build', 'test']) {
                     toAdd.each {
-                        settings.rootLoader.addURL(it.toURL())
+						if(it) {
+							settings.rootLoader.addURL(it.toURL())
+						}                        
                     }
                 }
             }

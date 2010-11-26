@@ -32,31 +32,7 @@ includeTargets << grailsScript("_GrailsArgParsing")
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.GrailsCompiler')
 ant.path(id: "grails.compile.classpath", compileClasspath)
 
-compilerPaths = { String classpathId ->
 
-    def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
-
-    for (dir in new File("${basedir}/grails-app").listFiles()) {
-        if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
-            src(path:"${dir}")
-        }
-    }
-    // Handle conf/ separately to exclude subdirs/package misunderstandings
-    src(path: "${basedir}/grails-app/conf")
-
-    if (new File("${basedir}/grails-app/conf/spring").exists()) {
-        src(path: "${basedir}/grails-app/conf/spring")     // This stops resources.groovy becoming "spring.resources"
-    }
-
-    if (new File("${grailsSettings.sourceDir}/groovy").exists()) {
-        src(path:"${grailsSettings.sourceDir}/groovy")
-    }
-    if (new File("${grailsSettings.sourceDir}/java").exists()) {
-        src(path:"${grailsSettings.sourceDir}/java")
-    }
-
-    javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
-}
 
 target(setCompilerSettings: "Updates the compile build settings based on args") {
     depends(parseArguments)
@@ -67,6 +43,32 @@ target(setCompilerSettings: "Updates the compile build settings based on args") 
 
 target(compile : "Implementation of compilation phase") {
     depends(compilePlugins)
+	
+	compilerPaths = { String classpathId ->
+		
+		def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
+	
+		for (dir in new File("${basedir}/grails-app").listFiles()) {
+			if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
+				src(path:"${dir}")
+			}
+		}
+		// Handle conf/ separately to exclude subdirs/package misunderstandings
+		src(path: "${basedir}/grails-app/conf")
+	
+		if (new File("${basedir}/grails-app/conf/spring").exists()) {
+			src(path: "${basedir}/grails-app/conf/spring")     // This stops resources.groovy becoming "spring.resources"
+		}
+	
+		if (new File("${grailsSettings.sourceDir}/groovy").exists()) {
+			src(path:"${grailsSettings.sourceDir}/groovy")
+		}
+		if (new File("${grailsSettings.sourceDir}/java").exists()) {
+			src(path:"${grailsSettings.sourceDir}/java")
+		}
+	
+		javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
+    }
 
     def classesDirPath = new File(grailsSettings.classesDir.path)
     ant.mkdir(dir:classesDirPath)
@@ -137,8 +139,8 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
 /**
  * Compiles a given plugin descriptor file - *GrailsPlugin.groovy.
  */
-compilePluginDescriptor = { File descriptor ->
-    def className = descriptor.name - '.groovy'
+private compilePluginDescriptor(File descriptor) {
+	def className = descriptor.name - '.groovy'
     def classFile = new File(grailsSettings.classesDir, "${className}.class")
 
     if (descriptor.lastModified() > classFile.lastModified()) {
@@ -154,7 +156,7 @@ compilePluginDescriptor = { File descriptor ->
  * Returns the first plugin descriptor it can find in the given directory,
  * or <code>null</code> if there is none.
  */
-findPluginDescriptor = { File dir ->
+private findPluginDescriptor(File dir) {
     File[] files = dir.listFiles({ File d, String filename ->
         return filename.endsWith("GrailsPlugin.groovy")
     } as FilenameFilter)
@@ -165,9 +167,10 @@ target(compilepackage : "Compile & Compile GSP files") {
     depends(compile, compilegsp)
 }
 
-ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
+
 
 target(compilegsp : "Compile GSP files") {
+	ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
     // compile gsps in grails-app/views directory
     File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
     ant.gspc(destdir:classesDir,
