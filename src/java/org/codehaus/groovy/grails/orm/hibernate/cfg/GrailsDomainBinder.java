@@ -1458,6 +1458,7 @@ public final class GrailsDomainBinder {
                         throw new MappingException("Mapping specifies an identifier property name that doesn't exist ["+propertyName+"]");
                     }
                     if (!namedIdentityProp.equals(identifierProp)) {
+                        domainClass.setIdentifier(namedIdentityProp);
                         identifierProp = namedIdentityProp;
                     }
                 }

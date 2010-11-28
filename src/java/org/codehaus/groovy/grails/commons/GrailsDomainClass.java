@@ -206,4 +206,10 @@ public interface GrailsDomainClass extends GrailsClass {
      * @param strategy The mapping strategy
      */
     void setMappingStrategy(String strategy);
+
+    /**
+     * Set the identifier property.
+     * @param identifier The new identifier property 
+     */
+    public void setIdentifier(GrailsDomainClassProperty identifier);
 }

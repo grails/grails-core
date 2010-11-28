@@ -774,4 +774,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     public void setMappingStrategy(String strategy) {
         mappingStrategy = strategy;
     }
+    
+    public void setIdentifier(GrailsDomainClassProperty identifier) {
+        this.identifier = identifier;
+    }
 }
