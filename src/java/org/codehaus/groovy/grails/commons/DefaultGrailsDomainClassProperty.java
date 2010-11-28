@@ -686,5 +686,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         public void setMappingStrategy(String strategy) {
             // do nothing
         }
+        
+        public void setIdentifier(GrailsDomainClassProperty identifier) {
+            // do nothing
+        }
+
     }
 }
