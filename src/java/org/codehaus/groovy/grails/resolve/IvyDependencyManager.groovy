@@ -220,8 +220,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				
 				Parallelizer.withExistingParallelizer(forkJoinPool) {
 					// dependencies needed by the Grails build system
-					[ ModuleRevisionId.newInstance("org.codehaus.gpars", "gpars", "0.9"),
-					  ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
+					[ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
 					  ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
 					  ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
 					  ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
@@ -271,7 +270,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 						excludes "commons-logging", "xml-apis"
 					}
 	
-					[	"org.codehaus.gpars:gpars:0.9",
+					[	"org.coconut.forkjoin:jsr166y:070108",
+						"org.codehaus.gpars:gpars:0.9",
 						"aopalliance:aopalliance:1.0",
 						"com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5",
 						"commons-codec:commons-codec:1.3",
