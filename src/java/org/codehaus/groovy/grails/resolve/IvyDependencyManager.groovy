@@ -1165,12 +1165,10 @@ class IvyDomainSpecificLanguageEvaluator {
             }
         }
 
-		Parallelizer.withExistingParallelizer(IvyDependencyManager.forkJoinPool) {
-			dependencies.eachParallel { dep ->
-				if((dependencies[-1] == dep) && usedArgs) return 
-				parseDep(dep) 
-			}
+		
+		for(dep in dependencies ) {
+			if((dependencies[-1] == dep) && usedArgs) return 
+			parseDep(dep) 
 		}
-
     }
 }
