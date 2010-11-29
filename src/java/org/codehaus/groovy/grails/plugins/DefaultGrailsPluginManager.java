@@ -114,7 +114,7 @@ import org.xml.sax.SAXException;
 public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager implements GrailsPluginManager {
 
     private static final Log LOG = LogFactory.getLog(DefaultGrailsPluginManager.class);
-    private static final Class<?>[] COMMON_CLASSES = {
+    protected static final Class<?>[] COMMON_CLASSES = {
         Boolean.class, Byte.class, Character.class, Class.class, Double.class, Float.class,
         Integer.class, Long.class, Number.class, Short.class, String.class, BigInteger.class,
         BigDecimal.class, URL.class, URI.class };

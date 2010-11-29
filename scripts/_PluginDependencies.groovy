@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
 import org.codehaus.groovy.grails.resolve.PluginInstallEngine
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.ProfilingGrailsPluginManager
 
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
@@ -223,15 +224,23 @@ target(loadPlugins:"Loads Grails' plugins") {
 						grailsApp = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
 						ApplicationHolder.application = grailsApp
 					}
-					pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
+					
+					if(enableProfile) {
+						pluginManager = new ProfilingGrailsPluginManager(pluginClasses as Class[], grailsApp)
+					}
+					else {
+						pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApp)
+					}
+					
 
-					PluginManagerHolder.setPluginManager(pluginManager)
+					
 					pluginSettings.pluginManager = pluginManager
 				}
 			}
 			profile("loading plugins") {
 				event("PluginLoadStart", [pluginManager])
 				pluginManager.loadPlugins()
+				PluginManagerHolder.setPluginManager(pluginManager)
 				def baseDescriptor = pluginSettings.basePluginDescriptor
 				if (baseDescriptor) {
 					def baseName = FilenameUtils.getBaseName(baseDescriptor.filename)
