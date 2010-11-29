@@ -88,6 +88,7 @@ public class BaseSettingsApi {
 		    appClassName = GrailsNameUtils.getClassNameRepresentation(grailsAppName);
 		}
 		this.configSlurper = buildSettings.createConfigSlurper();
+		this.configSlurper.setEnvironment(buildSettings.getGrailsEnv());
 		
 	}
 	

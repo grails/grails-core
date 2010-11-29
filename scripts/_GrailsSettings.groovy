@@ -76,6 +76,7 @@ if (!System.getProperty("grails.env.set")) {
     if (grailsSettings.defaultEnv && getBinding().variables.containsKey("scriptEnv")) {
         grailsEnv = scriptEnv
         grailsSettings.grailsEnv = grailsEnv
+		configSlurper.environment = grailsEnv
         System.setProperty(Environment.KEY, grailsEnv)
         System.setProperty(Environment.DEFAULT, "")
     }
