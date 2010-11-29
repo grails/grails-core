@@ -88,7 +88,7 @@ public class GrailsConfigUtils {
         GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[GrailsContextLoader] Configurating Grails Application");
+            LOG.debug("[GrailsContextLoader] Configuring Grails Application");
         }
 
         if (application.getParentContext() == null) {
