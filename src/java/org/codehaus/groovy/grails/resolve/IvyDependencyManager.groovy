@@ -220,26 +220,26 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				
 				Parallelizer.withExistingParallelizer(forkJoinPool) {
 					// dependencies needed by the Grails build system
-					[ModuleRevisionId.newInstance("org.codehaus.gpars", "gpars", "0.9"),
-									ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
-								  ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
-								  ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
-								  ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
-								  ModuleRevisionId.newInstance("org.apache.ant","ant-nodeps","1.7.1"),
-								  ModuleRevisionId.newInstance("org.apache.ant","ant-trax","1.7.1"),
-								  ModuleRevisionId.newInstance("jline","jline","0.9.94"),
-								  ModuleRevisionId.newInstance("org.fusesource.jansi","jansi","1.2.1"),
-								  ModuleRevisionId.newInstance("xalan","serializer","2.7.1"),
-								  ModuleRevisionId.newInstance("org.grails","grails-docs",grailsVersion),
-								  ModuleRevisionId.newInstance("org.grails","grails-bootstrap", grailsVersion),
-								  ModuleRevisionId.newInstance("org.grails","grails-scripts",grailsVersion),
-								  ModuleRevisionId.newInstance("org.grails","grails-core",grailsVersion),
-								  ModuleRevisionId.newInstance("org.grails","grails-resources",grailsVersion),
-								  ModuleRevisionId.newInstance("org.grails","grails-web",grailsVersion),
-								  ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8"),
-								  ModuleRevisionId.newInstance("org.slf4j","slf4j-log4j12","1.5.8"),
-								  ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE"),
-								  ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5")].eachParallel { mrid ->
+					[ ModuleRevisionId.newInstance("org.codehaus.gpars", "gpars", "0.9"),
+					  ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
+					  ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
+					  ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
+					  ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
+					  ModuleRevisionId.newInstance("org.apache.ant","ant-nodeps","1.7.1"),
+					  ModuleRevisionId.newInstance("org.apache.ant","ant-trax","1.7.1"),
+					  ModuleRevisionId.newInstance("jline","jline","0.9.94"),
+					  ModuleRevisionId.newInstance("org.fusesource.jansi","jansi","1.2.1"),
+					  ModuleRevisionId.newInstance("xalan","serializer","2.7.1"),
+					  ModuleRevisionId.newInstance("org.grails","grails-docs",grailsVersion),
+					  ModuleRevisionId.newInstance("org.grails","grails-bootstrap", grailsVersion),
+					  ModuleRevisionId.newInstance("org.grails","grails-scripts",grailsVersion),
+					  ModuleRevisionId.newInstance("org.grails","grails-core",grailsVersion),
+					  ModuleRevisionId.newInstance("org.grails","grails-resources",grailsVersion),
+					  ModuleRevisionId.newInstance("org.grails","grails-web",grailsVersion),
+					  ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8"),
+					  ModuleRevisionId.newInstance("org.slf4j","slf4j-log4j12","1.5.8"),
+					  ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE"),
+					  ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5")].eachParallel { mrid ->
 							def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"build")
 							  addDependency mrid
 							configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
@@ -256,7 +256,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 	
 					// dependencies needed during development, but not for deployment
 					["javax.servlet:servlet-api:2.5",
-								   "javax.servlet:jsp-api:2.1"].collect(parsingClosure).eachParallel {mrid ->
+					  "javax.servlet:jsp-api:2.1"].collect(parsingClosure).eachParallel {mrid ->
 					   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"provided")
 					   addDependency mrid
 					   configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
@@ -271,39 +271,40 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 						excludes "commons-logging", "xml-apis"
 					}
 	
-					["aopalliance:aopalliance:1.0",
-							"com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5",
-							"commons-codec:commons-codec:1.3",
-							"commons-collections:commons-collections:3.2.1",
-							"commons-io:commons-io:1.4",
-							"commons-lang:commons-lang:2.4",
-							"javax.transaction:jta:1.1",
-							"org.hibernate:ejb3-persistence:1.0.2.GA",
-							"opensymphony:sitemesh:2.4",
-							"org.grails:grails-bootstrap:$grailsVersion",
-							"org.grails:grails-core:$grailsVersion",
-							"org.grails:grails-crud:$grailsVersion",
-							"org.grails:grails-gorm:$grailsVersion",
-							"org.grails:grails-resources:$grailsVersion",
-							"org.grails:grails-spring:$grailsVersion",
-							"org.grails:grails-web:$grailsVersion",
-							"org.springframework:org.springframework.core:3.0.3.RELEASE",
-							"org.springframework:org.springframework.aop:3.0.3.RELEASE",
-							"org.springframework:org.springframework.aspects:3.0.3.RELEASE",
-							"org.springframework:org.springframework.asm:3.0.3.RELEASE",
-							"org.springframework:org.springframework.beans:3.0.3.RELEASE",
-							"org.springframework:org.springframework.context:3.0.3.RELEASE",
-							"org.springframework:org.springframework.context.support:3.0.3.RELEASE",
-							"org.springframework:org.springframework.expression:3.0.3.RELEASE",
-							"org.springframework:org.springframework.instrument:3.0.3.RELEASE",
-							"org.springframework:org.springframework.jdbc:3.0.3.RELEASE",
-							"org.springframework:org.springframework.jms:3.0.3.RELEASE",
-							"org.springframework:org.springframework.orm:3.0.3.RELEASE",
-							"org.springframework:org.springframework.oxm:3.0.3.RELEASE",
-							"org.springframework:org.springframework.transaction:3.0.3.RELEASE",
-							"org.springframework:org.springframework.web:3.0.3.RELEASE",
-							"org.springframework:org.springframework.web.servlet:3.0.3.RELEASE",
-							"org.slf4j:slf4j-api:1.5.8"].collect(parsingClosure).eachParallel {mrid ->
+					[	"org.codehaus.gpars:gpars:0.9",
+						"aopalliance:aopalliance:1.0",
+						"com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5",
+						"commons-codec:commons-codec:1.3",
+						"commons-collections:commons-collections:3.2.1",
+						"commons-io:commons-io:1.4",
+						"commons-lang:commons-lang:2.4",
+						"javax.transaction:jta:1.1",
+						"org.hibernate:ejb3-persistence:1.0.2.GA",
+						"opensymphony:sitemesh:2.4",
+						"org.grails:grails-bootstrap:$grailsVersion",
+						"org.grails:grails-core:$grailsVersion",
+						"org.grails:grails-crud:$grailsVersion",
+						"org.grails:grails-gorm:$grailsVersion",
+						"org.grails:grails-resources:$grailsVersion",
+						"org.grails:grails-spring:$grailsVersion",
+						"org.grails:grails-web:$grailsVersion",
+						"org.springframework:org.springframework.core:3.0.3.RELEASE",
+						"org.springframework:org.springframework.aop:3.0.3.RELEASE",
+						"org.springframework:org.springframework.aspects:3.0.3.RELEASE",
+						"org.springframework:org.springframework.asm:3.0.3.RELEASE",
+						"org.springframework:org.springframework.beans:3.0.3.RELEASE",
+						"org.springframework:org.springframework.context:3.0.3.RELEASE",
+						"org.springframework:org.springframework.context.support:3.0.3.RELEASE",
+						"org.springframework:org.springframework.expression:3.0.3.RELEASE",
+						"org.springframework:org.springframework.instrument:3.0.3.RELEASE",
+						"org.springframework:org.springframework.jdbc:3.0.3.RELEASE",
+						"org.springframework:org.springframework.jms:3.0.3.RELEASE",
+						"org.springframework:org.springframework.orm:3.0.3.RELEASE",
+						"org.springframework:org.springframework.oxm:3.0.3.RELEASE",
+						"org.springframework:org.springframework.transaction:3.0.3.RELEASE",
+						"org.springframework:org.springframework.web:3.0.3.RELEASE",
+						"org.springframework:org.springframework.web.servlet:3.0.3.RELEASE",
+						"org.slf4j:slf4j-api:1.5.8"].collect(parsingClosure).eachParallel {mrid ->
 							   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
 							   addDependency mrid
 							   configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
@@ -320,20 +321,20 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 						}
 	
 						// dependencies needed at runtime only
-						[ "org.aspectj:aspectjweaver:1.6.8",
-										"org.aspectj:aspectjrt:1.6.8",
-										"cglib:cglib-nodep:2.1_3",
-										"commons-fileupload:commons-fileupload:1.2.1",
-										"oro:oro:2.0.8",
-										"javax.servlet:jstl:1.1.2",
-										// data source
-										"commons-dbcp:commons-dbcp:1.2.2",
-										"commons-pool:commons-pool:1.5.3",
-										"hsqldb:hsqldb:1.8.0.10",
-										"com.h2database:h2:1.2.144",
-										// JSP support
-										"apache-taglibs:standard:1.1.2",
-										"xpp3:xpp3_min:1.1.3.4.O"].collect(parsingClosure).eachParallel {mrid ->
+						[ 	"org.aspectj:aspectjweaver:1.6.8",
+							"org.aspectj:aspectjrt:1.6.8",
+							"cglib:cglib-nodep:2.1_3",
+							"commons-fileupload:commons-fileupload:1.2.1",
+							"oro:oro:2.0.8",
+							"javax.servlet:jstl:1.1.2",
+							// data source
+							"commons-dbcp:commons-dbcp:1.2.2",
+							"commons-pool:commons-pool:1.5.3",
+							"hsqldb:hsqldb:1.8.0.10",
+							"com.h2database:h2:1.2.144",
+							// JSP support
+							"apache-taglibs:standard:1.1.2",
+							"xpp3:xpp3_min:1.1.3.4.O" ].collect(parsingClosure).eachParallel {mrid ->
 							   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
 							   addDependency mrid
 							   configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
