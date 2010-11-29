@@ -77,6 +77,7 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResour
     }
 
     private void createDefaultInternal() {
+    	if(grailsResourceHolder == null) grailsResourceHolder = new GrailsResourceHolder();
         resourceLoader = new GrailsResourceLoader(grailsResourceHolder.getResources());
     }
 }

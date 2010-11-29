@@ -48,7 +48,7 @@ public class BaseSettingsApi {
 	private static final Resource[] NO_RESOURCES = new Resource[0];
 	private BuildSettings buildSettings;
 	private Properties buildProps;
-	private PathMatchingResourcePatternResolver resolver;
+	private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 	private File grailsHome;
 	private Metadata metadata;
 	private File metadataFile;
