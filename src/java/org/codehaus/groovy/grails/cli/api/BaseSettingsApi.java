@@ -254,21 +254,7 @@ public class BaseSettingsApi {
 	 * @throws IOException Thrown when an I/O error occurs updating the metadata
 	 */
 	public void updateMetadata( Map entries) throws IOException {
-	    if (!metadataFile.exists()) {
-	    	FileWriter writer = new FileWriter(metadataFile);
-	    	try {
-				new Properties()
-						.store(writer,
-								"Do not edit app.grails.* properties, they may change automatically. "
-										+ "DO NOT put application configuration in here, it is not the right place!");
-			} finally {
-				writer.close();
-			}
-			metadata = Metadata.getInstance(metadataFile);
-	    }
-
-	    // Convert GStrings to Strings.
-	    
+		Metadata metadata = Metadata.getCurrent();
 	    for (Object key : entries.keySet()) {
 	    	final Object value = entries.get(key);
 	    	if(value != null)
