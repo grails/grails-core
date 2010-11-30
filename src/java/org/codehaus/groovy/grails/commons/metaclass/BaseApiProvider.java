@@ -15,17 +15,20 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
-import groovy.lang.MetaMethod;
+import groovy.lang.Closure;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
+import org.springframework.util.ReflectionUtils;
 
 /**
  *
@@ -35,19 +38,32 @@ import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
  *
  */
 public abstract class BaseApiProvider {
-
-	protected List<MetaMethod> instanceMethods = new ArrayList<MetaMethod>();
+	private static List<String> EXCLUDED_METHODS = new ArrayList<String>() {{
+		add("setMetaClass");
+		add("getMetaClass");
+	}};
+	private static Map<String, Integer> METHOD_CLOSURES = new HashMap<String, Integer>() {{
+		put("setProperty", 2);
+		put("getProperty", 1);
+		put("invokeMethod", 2);
+		put("methodMissing", 2);
+		put("propertyMissing", 1);
+		
+	}};
+	@SuppressWarnings("rawtypes")
+	protected List instanceMethods = new ArrayList();
 	protected List<Method> staticMethods = new ArrayList<Method>();
 	
+	@SuppressWarnings("unchecked")
 	public void addApi(final Object apiInstance) {
 		if(apiInstance != null) {
 			Class<?> currentClass = apiInstance.getClass();
 			while(currentClass != Object.class) {
 				final Method[] declaredMethods = currentClass.getDeclaredMethods();
 				
-				for (Method method : declaredMethods) {
+				for (final Method method : declaredMethods) {
 					final int modifiers = method.getModifiers();
-					if(Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers)) {
+					if(isNotExcluded(method, modifiers)) {
 						if(Modifier.isStatic(modifiers)) {
 							staticMethods.add(method);
 						}
@@ -67,13 +83,26 @@ public abstract class BaseApiProvider {
 									else
 									  return paramTypes;
 								}
-							});
+							});								
+
 						}
 					}
 				}
 				currentClass = currentClass.getSuperclass();
 			}
 		}
+	}
+
+	private boolean isNotExcluded(Method method, final int modifiers) {
+		final String name = method.getName();
+		
+		if(EXCLUDED_METHODS.contains(name)) return false;
+		
+		Integer parameterCount = METHOD_CLOSURES.get(name);
+		return Modifier.isPublic(modifiers) && 
+				!Modifier.isAbstract(modifiers) && 
+					!name.contains("$") && 
+						!(parameterCount != null && (parameterCount == method.getParameterTypes().length));
 	}
 	
 

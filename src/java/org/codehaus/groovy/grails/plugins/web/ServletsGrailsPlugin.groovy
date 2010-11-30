@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer;
-import org.codehaus.groovy.grails.plugins.web.api.AttributeAccessor;
 import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi;
 import org.springframework.web.util.WebUtils
 
@@ -41,18 +40,62 @@ class ServletsGrailsPlugin {
     def dependsOn = [core:version]
 	
 	private MetaClassEnhancer requestEnhancer
-	private MetaClassEnhancer attrEnhancer
+	
 	
 	public ServletsGrailsPlugin() {
 		this.requestEnhancer = new MetaClassEnhancer()
 		requestEnhancer.addApi new ServletRequestApi()
-		this.attrEnhancer = new MetaClassEnhancer()
-		attrEnhancer.addApi new AttributeAccessor()
-
 	}
     def doWithDynamicMethods = { ctx ->
+		def getAttributeClosure = { String name ->
+			def mp = delegate.class.metaClass.getMetaProperty(name)
+			return mp ? mp.getProperty(delegate) : delegate.getAttribute(name)
+		}
+   
+		def setAttributeClosure = { String name, value ->
+			def mp = delegate.class.metaClass.getMetaProperty(name)
+			if (mp) {
+				mp.setProperty(delegate, value)
+			}
+			else {
+				delegate.setAttribute(name, value)
+			}
+		}
+   
+		def getAttributeSubscript = { String key ->
+			delegate.getAttribute(key)
+		}
+		def setAttributeSubScript = { String key, Object val ->
+			delegate.setAttribute(key, val)
+		}
+		// enables acces to servlet context with servletContext.foo syntax
+		ServletContext.metaClass.getProperty = getAttributeClosure
+		ServletContext.metaClass.setProperty = setAttributeClosure
+		ServletContext.metaClass.getAt = getAttributeSubscript
+		ServletContext.metaClass.putAt = setAttributeSubScript
+
+		// enables access to session attributes using session.foo syntax
+		HttpSession.metaClass.getProperty = getAttributeClosure
+		HttpSession.metaClass.setProperty = setAttributeClosure
+		// enables access to session attributes with session["foo"] syntax
+		HttpSession.metaClass.getAt = getAttributeSubscript
+		// enables setting of session attributes with session["foo"] = "bar" syntax
+		HttpSession.metaClass.putAt = setAttributeSubScript
+		// enables access to request attributes with request["foo"] syntax
+		HttpServletRequest.metaClass.getAt = { String key ->
+			delegate.getAttribute(key)
+		}
+		// enables setting of request attributes with request["foo"] = "bar" syntax
+		HttpServletRequest.metaClass.putAt = { String key, Object val ->
+			delegate.setAttribute(key, val)
+		}
+		// enables access to request attributes using property syntax
+		HttpServletRequest.metaClass.getProperty = getAttributeClosure
+		HttpServletRequest.metaClass.setProperty = setAttributeClosure
+ 
 		requestEnhancer.enhance HttpServletRequest.metaClass
-		attrEnhancer.enhanceAll( [ServletContext.metaClass, HttpSession.metaClass] )
+
+		
         // allows the syntax response << "foo"
         HttpServletResponse.metaClass.leftShift = { Object o ->
             delegate.writer << o

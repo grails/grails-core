@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 *
 */
 
-class ServletRequestApi extends AttributeAccessor{
+class ServletRequestApi {
 
 	/**
 	 * @return retrieve the forwardURI for the request
