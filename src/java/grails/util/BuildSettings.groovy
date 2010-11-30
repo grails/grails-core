@@ -541,7 +541,8 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
 	private storeCache() {
-		def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
+		projectWorkDir.mkdirs()
+		def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
 		cachedResolve.withOutputStream { output ->
 			def oos = new ObjectOutputStream(output)
 			oos.writeObject(resolveCache)
