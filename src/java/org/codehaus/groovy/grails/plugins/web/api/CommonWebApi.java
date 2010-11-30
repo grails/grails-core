@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * API shared by controllers, tag libraries and any other web artifact
@@ -131,8 +132,7 @@ public class CommonWebApi {
 	 * @return The ApplicationContext instance
 	 */
 	public ApplicationContext getApplicationContext(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getApplicationContext();    	    	    	    	
+		return WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext(instance));
 	}	
 
 	/**

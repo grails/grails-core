@@ -242,7 +242,7 @@ public class ControllersApi extends CommonWebApi {
     
     public String forward(Object instance, Map params) {
     	GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return forwardMethod.forward(webRequest.getRequest(), webRequest.getResponse(), params);
+        return forwardMethod.forward(webRequest.getCurrentRequest(), webRequest.getCurrentResponse(), params);
     }
 
 }
