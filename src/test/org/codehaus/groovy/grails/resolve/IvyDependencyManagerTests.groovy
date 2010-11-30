@@ -473,11 +473,11 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-        assertEquals 53, manager.listDependencies('runtime').size()
-        assertEquals 56, manager.listDependencies('test').size()
-        assertEquals 20, manager.listDependencies('build').size()
+        assertEquals 56, manager.listDependencies('runtime').size()
+        assertEquals 59, manager.listDependencies('test').size()
+        assertEquals 19, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
-        assertEquals 23, manager.listDependencies('docs').size()
+        assertEquals 22, manager.listDependencies('docs').size()
 
     // This should be a functional test since it relies on the Grails
     // JAR files being built. It also runs Ivy, which isn't ideal
@@ -501,9 +501,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
-        assertEquals 20, manager.listDependencies('build').size()
-        assertEquals 55, manager.listDependencies('provided').size()
-        assertEquals 23, manager.listDependencies('docs').size()
+        assertEquals 19, manager.listDependencies('build').size()
+        assertEquals 58, manager.listDependencies('provided').size()
+        assertEquals 22, manager.listDependencies('docs').size()
         
         manager = new IvyDependencyManager("project", "0.1",settings)
         defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
@@ -513,11 +513,11 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
         
-        assertEquals 53, manager.listDependencies('runtime').size()
-        assertEquals 56, manager.listDependencies('test').size()
-        assertEquals 20, manager.listDependencies('build').size()
+        assertEquals 56, manager.listDependencies('runtime').size()
+        assertEquals 59, manager.listDependencies('test').size()
+        assertEquals 19, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
-        assertEquals 23, manager.listDependencies('docs').size()
+        assertEquals 22, manager.listDependencies('docs').size()
     }
 
     def getCurrentGrailsVersion() {
@@ -700,7 +700,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                   "org.apache.ant:ant-nodeps:1.7.1",
                   "org.apache.ant:ant-trax:1.7.1",
                   "radeox:radeox:1.0-b2",
-                  "hsqldb:hsqldb:1.8.0.10",
+                  "com.h2database:h2:1.2.144",
                   "apache-tomcat:jasper-compiler:5.5.15",
                   "jline:jline:0.9.94",
                   "javax.servlet:servlet-api:2.5",
@@ -746,7 +746,11 @@ class DummyMavenAwareDependencyManager extends IvyDependencyManager {
     }
 
     List readDependenciesFromPOM() {
-        [[getExcludedModules: {[]}, getGroupId: {"junit"}, getArtifactId: {"junit"},
-          getVersion: {"4.8.1"}, getScope: {"test"}] as PomDependencyMgt]
+        ModuleId moduleId = new ModuleId("junit", "junit")
+        ModuleRevisionId moduleRevisionId = new ModuleRevisionId(moduleId, "4.8.1")
+        DefaultDependencyDescriptor dependencyDescriptor = new DefaultDependencyDescriptor(moduleRevisionId, false)
+        dependencyDescriptor.addDependencyConfiguration("test", "")
+
+        [dependencyDescriptor]
     }
 }

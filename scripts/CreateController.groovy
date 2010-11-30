@@ -31,13 +31,15 @@ target ('default': "Creates a new controller") {
     def type = "Controller"
     promptForName(type: type)
 
-    def name = argsMap["params"][0]
-    name = purgeRedundantArtifactSuffix(name, type)
-    createArtifact(name: name, suffix: type, type: type, path: "grails-app/controllers")
+    for ( name in argsMap["params"] ) {
+        name = purgeRedundantArtifactSuffix(name, type)
+        createArtifact(name: name, suffix: type, type: type, path: "grails-app/controllers")
 
-    def viewsDir = "${basedir}/grails-app/views/${propertyName}"
-    ant.mkdir(dir:viewsDir)
-    event("CreatedFile", [viewsDir])
+        def viewsDir = "${basedir}/grails-app/views/${propertyName}"
+        ant.mkdir(dir:viewsDir)
+        event("CreatedFile", [viewsDir])
 
-    createUnitTest(name: name, suffix: type, superClass: "ControllerUnitTestCase")
+        createUnitTest(name: name, suffix: type, superClass: "ControllerUnitTestCase")
+    }
+
 }

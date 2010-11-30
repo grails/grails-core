@@ -19,6 +19,7 @@ import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.hibernate.criterion.CriteriaSpecification
+import grails.util.GrailsNameUtils
 
 /**
  * A builder that implements the ORM named queries DSL.
@@ -61,16 +62,16 @@ class HibernateNamedQueriesBuilder {
     }
 
     private handleMethodMissing = {String name, args ->
-        def propertyName = name[0].toUpperCase() + name[1..-1]
-
 		def classesToAugment = [domainClass]
 
 		def subClasses = domainClass.subClasses
 		if(subClasses) {
 			classesToAugment += subClasses
 		}
+
+        def getterName = GrailsNameUtils.getGetterName(name)
 		classesToAugment.each { clz ->
-		    clz.metaClass.static."get${propertyName}" = {->
+		    clz.metaClass.static."${getterName}" = {->
 				// creating a new proxy each time because the proxy class has
 				// some state that cannot be shared across requests (namedCriteriaParams)
 				new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: clz, dynamicMethods: dynamicMethods)
@@ -98,6 +99,10 @@ class NamedCriteriaProxy {
     private invokeCriteriaClosure(additionalCriteriaClosure = null) {
         def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
         crit()
+    }
+
+    void propertyMissing(String propName, val) {
+        queryBuilder?."${propName}" = val
     }
 
     private listInternal(Object[] params, Closure additionalCriteriaClosure, Boolean isDistinct) {

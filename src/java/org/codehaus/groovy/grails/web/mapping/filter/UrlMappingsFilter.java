@@ -34,6 +34,8 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
+import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -82,21 +84,18 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         UrlMappingsHolder holder = WebUtils.lookupUrlMappings(getServletContext());
 
-        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-
-        List<String> excludePatterns = holder.getExcludePatterns();
-
         String uri = urlHelper.getPathWithinApplication(request);
-        checkForCompilationErrors();
-
-        GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
-        if ((controllers == null || controllers.length == 0 || holder == null) && !"/".equals(uri)) {
+        if (!"/".equals(uri) && noControllers() && noRegexMappings(holder)) {
+            // not index request, no controllers, and no URL mappings for views, so it's not a Grails request
             processFilterChain(request, response, filterChain);
             return;
         }
 
+        checkForCompilationErrors();
+
+        List<String> excludePatterns = holder.getExcludePatterns();
         if (excludePatterns != null && excludePatterns.size() > 0) {
-            for (String excludePattern:excludePatterns) {
+            for (String excludePattern : excludePatterns) {
                 if (uri.equals(excludePattern) ||
                         (excludePattern.endsWith("*") &&
                                 excludePattern.substring(0,excludePattern.length() -1 ).regionMatches(0, uri, 0, excludePattern.length() - 1))) {
@@ -126,6 +125,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             }
         }
 
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         UrlMappingInfo[] urlInfos = holder.matchAll(uri);
         WrappedResponseHolder.setWrappedResponse(response);
         boolean dispatched = false;
@@ -204,6 +204,20 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             }
             processFilterChain(request, response, filterChain);
         }
+    }
+
+    private boolean noRegexMappings(UrlMappingsHolder holder) {
+        for (UrlMapping mapping : holder.getUrlMappings()) {
+            if (mapping instanceof RegexUrlMapping) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean noControllers() {
+        GrailsClass[] controllers = application.getArtefacts(ControllerArtefactHandler.TYPE);
+       return controllers == null || controllers.length == 0;
     }
 
     private void checkForCompilationErrors() {

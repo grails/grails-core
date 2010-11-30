@@ -41,7 +41,6 @@ import org.codehaus.groovy.grails.test.event.GrailsTestEventConsoleReporter
 
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
-includeTargets << grailsScript("_GrailsWar")
 includeTargets << grailsScript("_GrailsSettings")
 includeTargets << grailsScript("_GrailsClean")
 
@@ -96,7 +95,9 @@ testReportsDir = grailsSettings.testReportsDir
 testSourceDir = grailsSettings.testSourceDir
 
 // The 'styledir' argument to the 'junitreport' ant task (null == default provided by Ant)
-junitReportStyleDir = new File(grailsSettings.grailsHome, "lib")
+if(grailsSettings.grailsHome) {
+    junitReportStyleDir = new File(grailsSettings.grailsHome, "lib")
+}
 
 // Set up an Ant path for the tests.
 ant.path(id: "grails.test.classpath", testClasspath)
@@ -317,9 +318,8 @@ integrationTestPhasePreparation = {
 
     initPersistenceContext()
 
-    def servletContext = classLoader.loadClass("org.springframework.mock.web.MockServletContext").newInstance()
-    GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx)
-    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext)
+    GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
+    GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
 }
 
 /**
@@ -338,6 +338,7 @@ functionalTestPhasePreparation = {
     runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
     if (runningFunctionalTestsAgainstWar) {
+		includeTargets << grailsScript("_GrailsWar")
         // need to swap out the args map so any test phase/targetting patterns
         // aren't intepreted as the war name.
         def realArgsMap = argsMap

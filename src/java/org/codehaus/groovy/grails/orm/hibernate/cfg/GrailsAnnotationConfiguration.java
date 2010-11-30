@@ -30,7 +30,9 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
+import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.engine.FilterDefinition;
 
 /**
@@ -73,6 +75,7 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
             return;
         }
 
+        configureNamingStrategy();
         GrailsClass[] existingDomainClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
         for (GrailsClass existingDomainClass : existingDomainClasses) {
             addDomainClass((GrailsDomainClass) existingDomainClass);
@@ -159,4 +162,41 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
         super.secondPassCompile();
         configLocked = true;
     }
+
+    /**
+     * Sets custom naming strategy specified in configuration or the default {@link ImprovedNamingStrategy}.
+     */
+    private void configureNamingStrategy() {
+        NamingStrategy strategy = null;
+        Object customStrategy = grailsApplication.getConfig().get("naming_strategy");
+        if (customStrategy != null) {
+            Class<?> namingStrategyClass = null;
+            if (customStrategy instanceof Class<?>) {
+                namingStrategyClass = (Class<?>)customStrategy;
+            } else  {
+                try {
+                    namingStrategyClass = this.grailsApplication.getClassLoader().loadClass(customStrategy.toString());
+                } catch (ClassNotFoundException e) {
+                    // ignore
+                }
+            }
+
+            if (namingStrategyClass != null) {
+                try {
+                    strategy = (NamingStrategy)namingStrategyClass.newInstance();
+                } catch (InstantiationException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
+                    // ignore
+                }
+            }
+        }
+
+        if (strategy == null) {
+            strategy = ImprovedNamingStrategy.INSTANCE;
+        }
+
+        setNamingStrategy(strategy);
+    }
+
 }

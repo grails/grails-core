@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons.cfg
 
+import org.codehaus.groovy.grails.commons.GrailsApplication
+
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.config.BeanDefinition
@@ -33,15 +35,14 @@ import org.springframework.beans.factory.BeanCreationException
  */
 class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcessor {
 
-    final Map beans
-    final ClassLoader classLoader
+    final GrailsApplication application
 
-    MapBasedSmartPropertyOverrideConfigurer(Map beans, ClassLoader classLoader) {
-        this.beans = beans
-        this.classLoader = classLoader
+    MapBasedSmartPropertyOverrideConfigurer(GrailsApplication application) {
+        this.application = application
     }
 
     void postProcessBeanFactory(ConfigurableListableBeanFactory factory) {
+        def beans = getBeansConfig()
         if (!beans) {
             return
         }
@@ -62,6 +63,14 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
         if (bd != null) {
             bd.propertyValues.addPropertyValue(property, value)
         }
+    }
+    
+    protected ConfigObject getBeansConfig() {
+        application.config.beans
+    }
+    
+    protected ClassLoader getClassLoader() {
+        application.classLoader
     }
 
     protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName) {

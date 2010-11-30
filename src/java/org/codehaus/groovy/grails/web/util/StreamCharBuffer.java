@@ -223,7 +223,8 @@ import org.springframework.web.util.HtmlUtils;
  * @author Lari Hotari, Sagire Software Oy
  */
 public class StreamCharBuffer implements Writable, CharSequence, Externalizable {
-	private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
+    static final long serialVersionUID = 5486972234419632945L;
+    private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
     private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
     private static final int DEFAULT_MAX_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.maxchunksize", 1024*1024);
@@ -337,10 +338,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
     private void initConnectedWritersWriter() {
         if (connectedWriters.size() > 1) {
-            connectedWritersWriter=new MultiOutputWriter(connectedWriters);
+            connectedWritersWriter = new MultiOutputWriter(connectedWriters);
         }
         else {
-            connectedWritersWriter=new SingleOutputWriter(connectedWriters.get(0));
+            connectedWritersWriter = new SingleOutputWriter(connectedWriters.get(0));
         }
     }
 
@@ -737,7 +738,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      *
      * @author Lari Hotari, Sagire Software Oy
      */
-    final public class StreamCharBufferWriter extends Writer {
+    public final class StreamCharBufferWriter extends Writer {
         boolean closed = false;
         int writerUsedCounter = 0;
         boolean increaseCounter = true;
@@ -910,8 +911,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
         public int resetUsed() {
             int prevUsed = writerUsedCounter;
-            writerUsedCounter=0;
-            increaseCounter=true;
+            writerUsedCounter = 0;
+            increaseCounter = true;
             return prevUsed;
         }
 
@@ -1001,10 +1002,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
                 if (lastChunkReader.isValid()) {
                     chunkReader=lastChunkReader;
                 } else {
-                    AllocatedBufferReader allocBufferReader=(AllocatedBufferReader)lastChunkReader;
+                    AllocatedBufferReader allocBufferReader = (AllocatedBufferReader)lastChunkReader;
                     // find out what is the CharBufferChunk that was read by the AllocatedBufferReader already
                     int currentPosition = allocBufferReader.position;
-                    AbstractChunk chunk=lastChunk;
+                    AbstractChunk chunk = lastChunk;
                     while (chunk != null && chunk.writerUsedCounter >= lastChunkReader.getWriterUsedCounter()) {
                         if (chunk instanceof CharBufferChunk) {
                             CharBufferChunk charBufChunk = (CharBufferChunk)chunk;
@@ -1015,7 +1016,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
                                     // skip the already chars
                                     charBufChunkReader.pointer = currentPosition;
                                     if (removeAfterReading) {
-                                        int diff=charBufChunkReader.pointer - oldpointer;
+                                        int diff = charBufChunkReader.pointer - oldpointer;
                                         totalCharsInList -= diff;
                                         charBufChunk.subtractFromTotalCount();
                                     }
@@ -1767,56 +1768,56 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         String str=toString();
         out.writeUTF(str);
     }
-    
+
     public StreamCharBuffer encodeAsHTML() {
-    	StreamCharBuffer coded=new StreamCharBuffer(Math.min(Math.max(totalChunkSize, chunkSize) * 12 / 10, maxChunkSize));
-    	Writer writer=coded.getWriter();
-    	if(StreamingHTMLEncoderHelper.disabled) {
-    		try {
-    			writer.write(HtmlUtils.htmlEscape(this.toString()));
-			} catch (IOException e) {
-				// Should not ever happen
-				log.error("IOException in StreamCharBuffer.encodeAsHTML", e);
-			}
-    	} else {
-	    	Reader reader=this.getReader();
-	    	char[] buf=new char[1];
-	    	try {
-				while(reader.read(buf) != -1) {
-					String reference=StreamingHTMLEncoderHelper.convertToReference(buf[0]);
-					if(reference != null) {
-						writer.write(reference);
-					} else {
-						writer.write(buf);
-					}
-				}
-			} catch (IOException e) {
-				// Should not ever happen
-				log.error("IOException in StreamCharBuffer.encodeAsHTML", e);
-			}
-    	}
-    	return coded;
+        StreamCharBuffer coded = new StreamCharBuffer(Math.min(Math.max(totalChunkSize, chunkSize) * 12 / 10, maxChunkSize));
+        Writer codedWriter = coded.getWriter();
+        if (StreamingHTMLEncoderHelper.disabled) {
+            try {
+                codedWriter.write(HtmlUtils.htmlEscape(toString()));
+            } catch (IOException e) {
+                // Should not ever happen
+                log.error("IOException in StreamCharBuffer.encodeAsHTML", e);
+            }
+        } else {
+            Reader reader = getReader();
+            char[] buf = new char[1];
+            try {
+                while (reader.read(buf) != -1) {
+                    String reference = StreamingHTMLEncoderHelper.convertToReference(buf[0]);
+                    if (reference != null) {
+                        codedWriter.write(reference);
+                    } else {
+                        codedWriter.write(buf);
+                    }
+                }
+            } catch (IOException e) {
+                // Should not ever happen
+                log.error("IOException in StreamCharBuffer.encodeAsHTML", e);
+            }
+        }
+        return coded;
     }
-    
+
     private static class StreamingHTMLEncoderHelper {
-    	private static Object instance;
-    	private static Method mapMethod;
-    	private static boolean disabled=false;
-    	static {
-    		try {
-        		Field instanceField=ReflectionUtils.findField(HtmlUtils.class, "characterEntityReferences");
-        		ReflectionUtils.makeAccessible(instanceField);
-        		instance=instanceField.get(null);
-				mapMethod=ReflectionUtils.findMethod(instance.getClass(), "convertToReference", char.class);
-				ReflectionUtils.makeAccessible(mapMethod);
-			} catch (Exception e) {
-				log.warn("Couldn't use reflection for resolving characterEntityReferences in HtmlUtils class", e);
-				disabled=true;
-			}
-    	}
-    	
-    	public static String convertToReference(char c) {
-    		return (String)ReflectionUtils.invokeMethod(mapMethod, instance, c);
-    	}
+        private static Object instance;
+        private static Method mapMethod;
+        private static boolean disabled=false;
+        static {
+            try {
+                Field instanceField=ReflectionUtils.findField(HtmlUtils.class, "characterEntityReferences");
+                ReflectionUtils.makeAccessible(instanceField);
+                instance = instanceField.get(null);
+                mapMethod = ReflectionUtils.findMethod(instance.getClass(), "convertToReference", char.class);
+                ReflectionUtils.makeAccessible(mapMethod);
+            } catch (Exception e) {
+                log.warn("Couldn't use reflection for resolving characterEntityReferences in HtmlUtils class", e);
+                disabled = true;
+            }
+        }
+
+        public static String convertToReference(char c) {
+            return (String)ReflectionUtils.invokeMethod(mapMethod, instance, c);
+        }
     }
 }

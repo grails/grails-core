@@ -26,12 +26,22 @@ import org.springframework.util.Assert;
 public abstract class PluginManagerHolder {
 
     private static GrailsPluginManager gpm;
+    private static Boolean inCreation = false;
+    
+    
 
-    /**
+    public static void setInCreation(boolean inCreation) {
+		PluginManagerHolder.inCreation = inCreation;
+	}
+
+	/**
      * Bind the given GrailsPluginManager instance to the current Thread
      * @param pluginManager The GrailsPluginManager to expose
      */
     public static void setPluginManager(GrailsPluginManager pluginManager) {
+    	if(pluginManager != null) {
+    		inCreation = false;
+    	}
         gpm = pluginManager;
     }
 
@@ -40,7 +50,14 @@ public abstract class PluginManagerHolder {
      * @return The GrailsPluginManager or null
      */
     public static GrailsPluginManager getPluginManager() {
-        return gpm;
+		while(inCreation) {
+			try {
+				Thread.currentThread().sleep(100);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		return gpm;
     }
 
     /**

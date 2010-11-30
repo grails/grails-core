@@ -48,77 +48,15 @@ else {
     ant.property(resource: "grails.build.properties")
 }
 
-/**
- * Resolves the value for a given property name. It first looks for a
- * system property, then in the BuildSettings configuration, and finally
- * uses the given default value if other options are exhausted.
- */
-getPropertyValue = { String propName, defaultValue ->
-    // First check whether we have a system property with the given name.
-    def value = System.getProperty(propName)
-    if (value != null) return value
-
-    // Now try the BuildSettings settings.
-    value = buildProps[propName]
-
-    // Return the BuildSettings value if there is one, otherwise use the default.
-    return value != null ? value : defaultValue
-}
 
 // Set up various build settings. System properties take precedence
 // over those defined in BuildSettings, which in turn take precedence
 // over the defaults.
-isInteractive = true
-buildProps = buildConfig.toProperties()
-enableProfile = getPropertyValue("grails.script.profile", false).toBoolean()
-pluginsHome = grailsSettings.projectPluginsDir.path
-
-// Used to find out about plugins used by this app. The plugin manager
-// is configured later when its created (see _PluginDependencies).
-pluginSettings = new PluginBuildSettings(grailsSettings)
 
 // While some code still relies on GrailsPluginUtils, make sure it
 // uses the same PluginBuildSettings instance as the scripts.
 GrailsPluginUtils.pluginBuildSettings = pluginSettings
 
-// Load the application metadata (application.properties)
-grailsAppName = null
-grailsAppVersion = null
-appGrailsVersion = null
-servletVersion = getPropertyValue("servlet.version", "2.5")
-
-// server port options
-// these are legacy settings
-serverPort = getPropertyValue("server.port", 8080).toInteger()
-serverPortHttps = getPropertyValue("server.port.https", 8443).toInteger()
-serverHost = getPropertyValue("server.host", null)
-// which are superceded by these
-serverPort = getPropertyValue("grails.server.port.http", serverPort)?.toInteger()
-serverPortHttps = getPropertyValue("grails.server.port.https", serverPortHttps)?.toInteger()
-serverHost = getPropertyValue("grails.server.host", serverHost)
-
-metadataFile = new File("${basedir}/application.properties")
-
-metadata = metadataFile.exists() ? Metadata.getInstance(metadataFile) : Metadata.current
-
-grailsAppName = metadata.getApplicationName()
-grailsAppVersion = metadata.getApplicationVersion()
-appGrailsVersion = metadata.getGrailsVersion()
-servletVersion = metadata.getServletVersion() ?: servletVersion
-
-// If no app name property (upgraded/new/edited project) default to basedir.
-if (!grailsAppName) {
-    grailsAppName = grailsSettings.baseDir.name
-}
-
-// FIXME: Fails if 'grails list-plugins is called from a directory
-// that starts w/ a '.'
-if (grailsAppName.indexOf('/') >-1) {
-    appClassName = grailsAppName[grailsAppName.lastIndexOf('/')..-1]
-}
-else {
-    appClassName = GrailsNameUtils.getClassNameRepresentation(grailsAppName)
-}
 
 // Other useful properties.
 args = System.getProperty("grails.cli.args")
@@ -138,6 +76,7 @@ if (!System.getProperty("grails.env.set")) {
     if (grailsSettings.defaultEnv && getBinding().variables.containsKey("scriptEnv")) {
         grailsEnv = scriptEnv
         grailsSettings.grailsEnv = grailsEnv
+		configSlurper.environment = grailsEnv
         System.setProperty(Environment.KEY, grailsEnv)
         System.setProperty(Environment.DEFAULT, "")
     }
@@ -154,64 +93,15 @@ else {
     buildScope.enable()
 }
 
-// Prepare a configuration file parser based on the current environment.
-configSlurper = new ConfigSlurper(grailsEnv)
-configSlurper.setBinding(grailsHome:grailsHome,
-                         appName:grailsAppName,
-                         appVersion:grailsAppVersion,
-                         userHome:userHome,
-                         basedir:basedir,
-                         servletVersion:servletVersion)
-
 // Ant path based on the class loader for the scripts. This basically
 // includes all the Grails JARs, the plugin libraries, and any JARs
 // provided by the application. Useful for task definitions.
 ant.path(id: "core.classpath") {
-    classLoader.URLs.each { URL url ->
+    for(url in classLoader.URLs) {
         pathelement(location: url.file)
     }
 }
 
-// a resolver that doesn't throw exceptions when resolving resources
-resolver = new PathMatchingResourcePatternResolver()
-
-resolveResources = {String pattern ->
-    try {
-        return resolver.getResources(pattern)
-    }
-    catch (Throwable e) {
-        return [] as Resource[]
-    }
-}
-
-// Closure that returns a Spring Resource - either from $GRAILS_HOME
-// if that is set, or from the classpath.
-grailsResource = {String path ->
-    if (grailsSettings.grailsHome) {
-        return new FileSystemResource("${grailsSettings.grailsHome}/$path")
-    }
-    return new ClassPathResource(path)
-}
-
-// Closure that copies a Spring resource to the file system.
-copyGrailsResource = { targetFile, Resource resource, boolean overwrite = true ->
-    def file = new File(targetFile.toString())
-    if (overwrite || !file.exists()) {
-        FileCopyUtils.copy(resource.inputStream, new FileOutputStream(file))
-    }
-}
-
-// Copies a set of resources to a given directory. The set is specified
-// by an Ant-style path-matching pattern.
-copyGrailsResources = { destDir, pattern, boolean overwrite = true ->
-    new File(destDir.toString()).mkdirs()
-    Resource[] resources = resolveResources("classpath:${pattern}")
-    resources.each { Resource res ->
-        if (res.readable) {
-            copyGrailsResource("${destDir}/${res.filename}", res, overwrite)
-        }
-    }
-}
 
 // Closure for unpacking a JAR file that's on the classpath.
 grailsUnpack = {Map args ->
@@ -239,47 +129,7 @@ grailsUnpack = {Map args ->
     }
 }
 
-/**
- * Modifies the application's metadata, as stored in the "application.properties"
- * file. If it doesn't exist, the file is created.
- */
-updateMetadata = { Map entries ->
-    if (!metadataFile.exists()) {
-        ant.propertyfile(
-            file: metadataFile,
-            comment: "Do not edit app.grails.* properties, they may change automatically. " +
-                     "DO NOT put application configuration in here, it is not the right place!")
-        metadata = Metadata.getInstance(metadataFile)
-    }
 
-    // Convert GStrings to Strings.
-    def stringifiedEntries = [:]
-    entries.each { key, value -> stringifiedEntries[key.toString()] = value.toString() }
-
-    metadata.putAll(stringifiedEntries)
-    metadata.persist()
-}
-
-/**
- * Times the execution of a closure, which can include a target. For
- * example,
- *
- *   profile("compile", compile)
- *
- * where 'compile' is the target.
- */
-profile = {String name, Closure callable ->
-    if (enableProfile) {
-        def now = System.currentTimeMillis()
-        println "Profiling [$name] start"
-        callable()
-        def then = System.currentTimeMillis() - now
-        println "Profiling [$name] finish. Took $then ms"
-    }
-    else {
-        callable()
-    }
-}
 
 /**
  * Exits the build immediately with a given exit code.

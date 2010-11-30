@@ -58,11 +58,11 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
         gcl.parseClass('''
 dataSource {
     pooled = true
-    driverClassName = "org.hsqldb.jdbcDriver"
+    driverClassName = "org.h2.Driver"
     username = "sa"
     password = ""
     dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-    url = "jdbc:hsqldb:mem:grailsIntTestDB"    
+    url = "jdbc:h2:mem:grailsIntTestDB"    
 }
 hibernate {
     cache.use_second_level_cache=true
@@ -114,6 +114,7 @@ hibernate {
 		  doWithRuntimeConfiguration dependentPlugins, springConfig
 
         appCtx = springConfig.getApplicationContext()
+        ga.setMainContext(appCtx)
         applicationContext = appCtx
         dependentPlugins*.doWithApplicationContext(appCtx)
 

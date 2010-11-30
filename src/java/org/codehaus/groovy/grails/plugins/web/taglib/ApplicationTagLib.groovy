@@ -185,6 +185,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
 
         def writer = getOut()
         def elementId = attrs.remove('elementId')
+        def linkAttrs
+        if(attrs.params instanceof Map && attrs.params.containsKey('attrs')) {
+            linkAttrs = attrs.params.remove('attrs').clone()
+        } else {
+            linkAttrs = [:]
+        }
         writer <<  '<a href=\"'
         writer << createLink(attrs).encodeAsHTML()
         writer << '"'
@@ -193,7 +199,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             writer << elementId
             writer << "\""
         }
-        attrs.each { k, v ->
+        linkAttrs << attrs
+        linkAttrs.each { k, v ->
             writer << ' '
             writer << k
             writer << '='
@@ -215,7 +222,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      */
     def createLink = { attrs ->
         def writer = getOut()
-
         // prefer URI attribute
         if (attrs['uri']) {
             writer << handleAbsolute(attrs)

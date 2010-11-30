@@ -133,6 +133,8 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
     }
 
     public void convertAnother(Object o) throws ConverterException {
+        o = this.config.getProxyHandler().unwrapIfProxy(o);
+
         try {
             if (o == null) {
                 // noop
@@ -148,6 +150,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
                 writer.characters(String.valueOf(o));
             }
             else {
+
                 if (referenceStack.contains(o)) {
                     handleCircularRelationship(o);
                 }

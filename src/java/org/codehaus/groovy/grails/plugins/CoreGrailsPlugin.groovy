@@ -53,7 +53,7 @@ class CoreGrailsPlugin {
         xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
 
-        addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application.config.beans, application.classLoader))
+        addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
         // replace AutoProxy advisor with Groovy aware one
@@ -145,7 +145,7 @@ class CoreGrailsPlugin {
         else if (event.source instanceof Class) {
             println "Change event was class... reloading spring resources.groovy beans"
             RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application.classLoader, event.ctx)
+            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application, event.ctx)
         }
     }
 }

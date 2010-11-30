@@ -23,15 +23,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
         <property name="pluginManager" ref="pluginManager" />
     </bean>
 
-    <bean id="grailsResourceLoader" class="org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean">
-        <property name="grailsResourceHolder" ref="grailsResourceHolder" />
-    </bean>
-
-    <bean id="grailsResourceHolder" scope="prototype" class="org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder">
-        <property name="resources">
-              <value>classpath*:**/grails-app/**/*.groovy</value>
-        </property>
-    </bean>    
+    <bean id="grailsResourceLoader" class="org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean" />
     
    <bean id="characterEncodingFilter"
       class="org.springframework.web.filter.CharacterEncodingFilter">

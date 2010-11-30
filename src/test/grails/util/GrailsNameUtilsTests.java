@@ -21,6 +21,10 @@ import junit.framework.TestCase;
  */
 public class GrailsNameUtilsTests extends TestCase {
 
+    public void testGetGetterNameForPropertyThatBeginsWithASingleLowerCaseLetter() {
+        assertEquals("getaPaperback", GrailsNameUtils.getGetterName("aPaperback"));
+    }
+    
     public void testGetClassNameRepresentation() {
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("my-class"));
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("MyClass"));

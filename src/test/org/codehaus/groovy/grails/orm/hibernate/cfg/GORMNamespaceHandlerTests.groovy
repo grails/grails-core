@@ -43,10 +43,10 @@ class GORMNamespaceHandlerTests extends GroovyTestCase {
 
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="url" value="jdbc:hsqldb:mem:grailsDB" />
+        <property name="url" value="jdbc:h2:mem:grailsDB" />
         <property name="password" value="" />
         <property name="username" value="sa" />
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="driverClassName" value="org.h2.Driver" />
 
     </bean>
 
@@ -94,8 +94,8 @@ beans {
 
 
     dataSource(BasicDataSource) {
-        driverClassName = "org.hsqldb.jdbcDriver"
-        url = "jdbc:hsqldb:mem:grailsDB"
+        driverClassName = "org.h2.Driver"
+        url = "jdbc:h2:mem:grailsDB"
         username = "sa"
         password = ""
     }
@@ -140,8 +140,8 @@ beans {
 
             messageSource(StaticMessageSource)
             dataSource(BasicDataSource) {
-                driverClassName = "org.hsqldb.jdbcDriver"
-                url = "jdbc:hsqldb:mem:grailsDB"
+                driverClassName = "org.h2.Driver"
+                url = "jdbc:h2:mem:grailsDB"
                 username = "sa"
                 password = ""
             }

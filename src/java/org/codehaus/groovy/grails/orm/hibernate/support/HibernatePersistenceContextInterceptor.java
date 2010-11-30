@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -33,13 +34,26 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
 
     private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
     private SessionFactory sessionFactory;
-    private boolean participate;
+    
+    private ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+
+    private ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>() {
+        @Override
+        protected Integer initialValue() {
+            return Integer.valueOf(0);
+        }
+    };
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#destroy()
      */
     public void destroy() {
-        if (participate) {
+        if (decNestingCount() > 0 || getParticipate()) {
             return;
         }
 
@@ -98,14 +112,18 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#init()
      */
     public void init() {
+        if (incNestingCount() > 1) {
+            return;
+        }
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // Do not modify the Session: just set the participate flag.
-            participate = true;
+            setParticipate(true);
         }
         else {
+            setParticipate(false);
             LOG.debug("Opening single Hibernate session in HibernatePersistenceContextInterceptor");
             Session session = getSession();
-            session.enableFilter("dynamicFilterEnabler"); // work around for HHH-2624
+            GrailsHibernateUtil.enableDynamicFilterEnablerIfPresent(sessionFactory, session);
             session.setFlushMode(FlushMode.AUTO);
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
         }
@@ -131,5 +149,28 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
      */
     public void setSessionFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
+    }
+    
+    private int incNestingCount() {
+        int value = nestingCount.get().intValue() + 1;
+        nestingCount.set(Integer.valueOf(value));
+        return value;
+    }
+
+    private int decNestingCount() {
+        int value = nestingCount.get().intValue() - 1;
+        if (value < 0) {
+            value = 0;
+        }
+        nestingCount.set(Integer.valueOf(value));
+        return value;
+    }
+    
+    private void setParticipate(boolean flag) {
+        participate.set(Boolean.valueOf(flag));
+    }
+    
+    private boolean getParticipate() {
+        return participate.get().booleanValue();
     }
 }

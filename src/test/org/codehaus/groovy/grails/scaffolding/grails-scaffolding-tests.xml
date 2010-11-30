@@ -4,10 +4,10 @@
 <beans>
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 	    <property name="driverClassName">
-	        <value>org.hsqldb.jdbcDriver</value>
+	        <value>org.h2.Driver</value>
 	    </property>
 	    <property name="url">
-	        <value>jdbc:hsqldb:mem:grailsDB</value>
+	        <value>jdbc:h2:mem:grailsDB</value>
 	    </property>
 	    <property name="username">
 	        <value>sa</value>

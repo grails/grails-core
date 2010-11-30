@@ -905,8 +905,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Firing onChange event listener with event object ["+event+"]");
             }
-
-            getManager().informObservers(getName(), event);
         }
     }
 

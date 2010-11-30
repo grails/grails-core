@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -87,7 +88,7 @@ public class GrailsConfigUtils {
         GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[GrailsContextLoader] Configurating Grails Application");
+            LOG.debug("[GrailsContextLoader] Configuring Grails Application");
         }
 
         if (application.getParentContext() == null) {
@@ -165,5 +166,23 @@ public class GrailsConfigUtils {
         }
 
         return configurator;
+    }
+    
+    /**
+     * Checks if a Config parameter is true or a System property with the same name is true
+     * 
+     * 
+     * @param application
+     * @param propertyName
+     * @return
+     */
+    public static boolean isConfigTrue(GrailsApplication application, String propertyName) {
+        return ((application != null && application.getFlatConfig() != null && DefaultTypeTransformation.castToBoolean(application.getFlatConfig().get(propertyName))) ||
+                Boolean.getBoolean(propertyName));
+    }
+    
+    // support GrailsApplication mocking, see ControllersGrailsPluginTests
+    public static boolean isConfigTrue(@SuppressWarnings("unused")Object application, @SuppressWarnings("unused")String propertyName) {
+        return false;
     }
 }

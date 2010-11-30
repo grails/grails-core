@@ -106,7 +106,13 @@ class WebMetaUtils {
                             commandObjects << commandObject
                         }
 
-                        bind.invoke(commandObject, "bindData", [commandObject, params] as Object[])
+                        def commandParamsKey = convertTypeNameToParamsPrefix(paramType)
+                        def commandParams = params
+                        if (params != null && commandParamsKey != null && params[commandParamsKey] instanceof Map) {
+                            commandParams = params[commandParamsKey]
+                        }
+                        
+                        bind.invoke(commandObject, "bindData", [commandObject, commandParams] as Object[])
                         def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
                         def constrainedProperties = commandObject.constraints?.values()
                         for (constrainedProperty in constrainedProperties) {
@@ -124,6 +130,16 @@ class WebMetaUtils {
             }
             def callable = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName)
             callable.call(* commandObjects)
+        }
+    }
+
+
+    private static String convertTypeNameToParamsPrefix(Class clazz) {
+        def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/,'-$1')?.toLowerCase()
+        if (result?.endsWith("-command")) {
+            return result.substring(0, result.size() - 8)
+        } else {
+            return null
         }
     }
 

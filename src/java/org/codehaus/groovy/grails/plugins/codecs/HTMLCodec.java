@@ -15,13 +15,13 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-import org.springframework.web.util.HtmlUtils;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.util.HtmlUtils;
 
 /**
- * A codec that encodes and decodes strings to and from HTML.
- *
+ * Encodes and decodes strings to and from HTML.
+ * 
  * @author Graeme Rocher
  * @since 1.1
  */
@@ -29,11 +29,10 @@ public class HTMLCodec {
 
     public static CharSequence encode(Object target) {
         if (target != null) {
-        	if(target instanceof StreamCharBuffer) {
-        		return ((StreamCharBuffer)target).encodeAsHTML();
-        	} else {
-        		return HtmlUtils.htmlEscape(target.toString());
-        	}
+            if (target instanceof StreamCharBuffer) {
+                return ((StreamCharBuffer)target).encodeAsHTML();
+            }
+            return HtmlUtils.htmlEscape(target.toString());
         }
         return null;
     }

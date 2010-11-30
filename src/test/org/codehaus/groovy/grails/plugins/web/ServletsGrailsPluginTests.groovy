@@ -1,10 +1,16 @@
 package org.codehaus.groovy.grails.plugins.web
 
+import groovy.lang.GroovySystem;
+
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.commons.spring.*
 import org.springframework.mock.web.*
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession;
+
 import org.springframework.web.util.*
 
 class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
@@ -37,7 +43,9 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
     void testServletContextObject() {
         def context = new MockServletContext()
 
-        context["foo"] = "bar"
+		println context.metaClass.getMetaMethod("getProperty")
+		println ServletContext.metaClass.getMetaMethod("getProperty")
+		context["foo"] = "bar"
         assertEquals "bar", context["foo"]
 
         context.foo = "fred"
@@ -49,7 +57,9 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
     void testHttpSessionObject() {
         def session = new MockHttpSession()
-        assert session.creationTime
+		def httpSessionMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(HttpSession)
+		def metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(session.getClass())
+        assert session.getProperty("creationTime")
 
         session["foo"] = "bar"
         assertEquals "bar", session["foo"]

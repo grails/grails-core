@@ -43,7 +43,6 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -215,10 +214,6 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             Closure action;
             try {
                 action = (Closure)controller.getProperty(actionName);
-                if (WebMetaUtils.isCommandObjectAction(action)) {
-                    action = WebMetaUtils.createAndPrepareCommandObjectAction(
-                            controller, action, actionName, applicationContext);
-                }
             }
             catch(MissingPropertyException mpe) {
                 try {

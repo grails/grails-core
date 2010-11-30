@@ -125,8 +125,8 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
             assertTrue result.next()
             def metadata = result.getMetaData()
             assertEquals "FIRST_NAME",metadata.getColumnLabel(3)
-            // hsqldb returns LONGVARCHAR for text type, if it wasn't mapped as text it would be VARCHAR so this is an ok test
-            assertEquals( Types.LONGVARCHAR, metadata.getColumnType(3) )
+            // h2 returns CLOB for text type, if it wasn't mapped as text it would be VARCHAR so this is an ok test
+            assertEquals( Types.CLOB, metadata.getColumnType(3) )
         }
         finally {
             con.close()

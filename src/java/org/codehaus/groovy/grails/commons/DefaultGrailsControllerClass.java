@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -210,7 +212,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return false;
     }
 
-    public boolean isHttpMethodAllowedForAction(GroovyObject controller, String httpMethod, String actionName) {
+    public boolean isHttpMethodAllowedForAction(GroovyObject controller, final String httpMethod, String actionName) {
         boolean isAllowed = true;
         Object methodRestrictionsProperty = null;
         MetaProperty metaProp=controller.getMetaClass().getMetaProperty(ALLOWED_HTTP_METHODS_PROPERTY);
@@ -222,10 +224,14 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             Object value = map.get(actionName);
             if (value instanceof List) {
                 List listOfMethods = (List)value;
-                isAllowed = listOfMethods.contains(httpMethod);
+                isAllowed = CollectionUtils.exists(listOfMethods, new Predicate() {
+                    public boolean evaluate(@SuppressWarnings("hiding") Object value) {
+                        return httpMethod.equalsIgnoreCase(value.toString());
+                    }
+                });
             }
             else if (value instanceof String) {
-                isAllowed = value.equals(httpMethod);
+                isAllowed = ((String) value).equalsIgnoreCase(httpMethod);
             }
         }
         return isAllowed;

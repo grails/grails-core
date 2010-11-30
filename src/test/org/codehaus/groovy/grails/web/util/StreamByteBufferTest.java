@@ -17,6 +17,8 @@ import junit.framework.TestCase;
  */
 public class StreamByteBufferTest extends TestCase {
     private static final int TESTROUNDS = 10000;
+    private static final String TEST_STRING = "Hello \u00f6\u00e4\u00e5\u00d6\u00c4\u00c5";
+
     static byte[] testbuffer = new byte[256 * TESTROUNDS];
 
     @Override
@@ -39,20 +41,20 @@ public class StreamByteBufferTest extends TestCase {
     public void testToString() throws IOException {
         StreamByteBuffer byteBuffer = new StreamByteBuffer();
         PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
-        pw.print("Hello öäåÖÄÅ");
+        pw.print(TEST_STRING);
         pw.close();
-        assertEquals("Hello öäåÖÄÅ", byteBuffer.readAsString("UTF-8"));
+        assertEquals(TEST_STRING, byteBuffer.readAsString("UTF-8"));
     }
 
     public void testToStringRetain() throws IOException {
         StreamByteBuffer byteBuffer = new StreamByteBuffer(1024, StreamByteBuffer.ReadMode.RETAIN_AFTER_READING);
         PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
-        pw.print("Hello öäåÖÄÅ");
+        pw.print(TEST_STRING);
         pw.close();
-        assertEquals("Hello öäåÖÄÅ", byteBuffer.readAsString("UTF-8"));
+        assertEquals(TEST_STRING, byteBuffer.readAsString("UTF-8"));
         byteBuffer.reset();
         // call a second time to test if the RETAIN_AFTER_READING mode works as expected
-        assertEquals("Hello öäåÖÄÅ", byteBuffer.readAsString("UTF-8"));
+        assertEquals(TEST_STRING, byteBuffer.readAsString("UTF-8"));
     }
 
     public void testToInputStream() throws IOException {

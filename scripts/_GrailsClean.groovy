@@ -48,6 +48,11 @@ target (cleanCompiledSources: "Cleans compiled Java and Groovy sources") {
     ant.delete(dir:pluginClassesDirPath, failonerror:false)
     ant.delete(dir:resourcesDirPath)
     ant.delete(dir:testDirPath)
+	ant.delete(failonerror:false, includeemptydirs: true) {
+		fileset(dir:grailsSettings.projectWorkDir) {
+			include name:"*.resolve"
+		}
+	}
 }
 
 target (cleanTestReports: "Cleans the test reports") {

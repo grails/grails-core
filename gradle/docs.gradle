@@ -34,7 +34,7 @@ task docs {
 javadoc {
     dependsOn stubs
     maxMemory = '256M'
-    destinationDir = file("$docs.destinationDir/api")
+    destinationDir = file("$docs.destinationDir/javadoc")
     source stubs.destinationDir, defaultSource
     include "org/codehaus/groovy/grails/**", "grails/**"
     project.configure(options) {
@@ -52,10 +52,21 @@ javadoc {
     verbose = false
 }
 
-task gdoc(dependsOn: 'javadoc') << {
+groovydoc {
+    destinationDir = file("$docs.destinationDir/api")
+    windowTitle = "Grails $version"
+    docTitle = "Grails $version"
+    use = true
+// Can't make these link methods to work
+//    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")
+//    link("http://download.oracle.com/javase/1.5.0/docs/api", "java." , "javax.")
+//    link("http://download.oracle.com/javaee/5/api", "javax.")
+}
+
+task gdoc(dependsOn: groovydoc) << {
     ant {
         mkdir dir: buildDir
-        get src:"http://github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
+        get src:"http://nodeload.github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
         unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
             mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
         }
@@ -74,4 +85,4 @@ task gdoc(dependsOn: 'javadoc') << {
     }
 }
 
-docs.dependsOn javadoc, gdoc
+docs.dependsOn gdoc

@@ -106,6 +106,7 @@ public abstract class GroovyPage extends Script {
     private TagLibraryLookup gspTagLibraryLookup;
     private String[] htmlParts;
     private GrailsPrintWriter out;
+    private GrailsPrintWriter codecOut;
     private GroovyPageOutputStack outputStack;
     private GrailsWebRequest webRequest;
     private String pluginContextPath;
@@ -152,6 +153,10 @@ public abstract class GroovyPage extends Script {
     public Writer getOut() {
         return out;
     }
+    
+    public Writer getCodecOut() {
+    	return codecOut;
+    }
 
     public void setOut(@SuppressWarnings("unused") Writer newWriter) {
         throw new IllegalStateException("Setting out in page isn't allowed.");
@@ -174,13 +179,12 @@ public abstract class GroovyPage extends Script {
             grailsWebRequest.setOut(out);
         }
         getBinding().setVariable(OUT, out);
-        Writer codecWriter;
         if(codecClass != null) {
-        	codecWriter=new CodecPrintWriter(out, codecClass);
+        	codecOut=new CodecPrintWriter(out, codecClass);
         } else {
-        	codecWriter=out;
+        	codecOut=out;
         }
-        getBinding().setVariable(CODEC_OUT, codecWriter); 
+        getBinding().setVariable(CODEC_OUT, codecOut); 
     }
 
     public String getPluginContextPath() {
@@ -244,6 +248,7 @@ public abstract class GroovyPage extends Script {
     @Override
     public Object getProperty(String property) {
         if (OUT.equals(property)) return out;
+        if (CODEC_OUT.equals(property)) return codecOut;
         // in GSP we assume if a property doesn't exist that
         // it is null rather than throw an error this works nicely
         // with the Groovy Truth

@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -44,13 +47,14 @@ import org.springframework.validation.Validator;
  */
 public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
-    public static final String METHOD_SIGNATURE = "validate";
+	public static final String METHOD_SIGNATURE = "validate";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     private GrailsApplication application;
-    private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
+    public static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
     private Validator validator;
-
+    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
+    
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
         this(sessionFactory, classLoader, application, null);
     }
@@ -83,6 +87,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
         boolean evict = false;
         boolean deepValidate = true;
         Set validatedFields = null;
+        List validatedFieldsList = null;
 
         if (arguments.length > 0) {
             if (arguments[0] instanceof Boolean) {
@@ -98,9 +103,12 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                 evict = GrailsClassUtils.getBooleanFromMap(ARGUMENT_EVICT, argsMap);
             }
             if (arguments[0] instanceof List) {
-                validatedFields = new HashSet((List)arguments[0]);
+                validatedFieldsList = (List)arguments[0];
+                validatedFields = new HashSet(validatedFieldsList);
             }
         }
+        
+        beforeValidateHelper.invokeBeforeValidate(target, validatedFieldsList);
 
         if (deepValidate && (validator instanceof CascadingValidator)) {
             ((CascadingValidator)validator).validate(target, errors, deepValidate);

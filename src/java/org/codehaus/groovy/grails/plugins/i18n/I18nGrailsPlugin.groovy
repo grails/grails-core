@@ -23,7 +23,9 @@ import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 
 import org.springframework.core.io.ContextResource
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
@@ -93,8 +95,13 @@ class I18nGrailsPlugin {
             basenames = baseNames.toArray()
             fallbackToSystemLocale = false
             pluginManager = manager
-            if (Environment.current.isReloadEnabled()) {
-                cacheSeconds = 5
+            if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
+				def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
+				if(cacheSecondsSetting != null) {	
+					cacheSeconds = cacheSecondsSetting as Integer
+				} else {		
+                	cacheSeconds = 5
+				}
             }
         }
 
