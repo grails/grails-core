@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
 
 import org.springframework.webflow.core.collection.MutableAttributeMap
 import org.springframework.webflow.execution.RequestContext
+import org.springframework.webflow.execution.Event
 
 /**
  * An abstract delegate that relays property look-ups onto a either the application context
@@ -52,6 +53,11 @@ abstract class AbstractDelegate extends WebRequestDelegatingRequestContext {
      * Returns the flash scope instance
      */
     MutableAttributeMap getFlash() { context.flashScope }
+
+    /**
+     * Returns the current event
+     */
+    Event getCurrentEvent(){ context.currentEvent }
 
     /**
      * Resolves properties from the currently executing controller

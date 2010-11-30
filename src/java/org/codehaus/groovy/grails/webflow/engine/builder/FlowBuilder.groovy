@@ -30,7 +30,7 @@ import org.springframework.webflow.action.ExternalRedirectAction
 import org.springframework.webflow.action.ViewFactoryActionAdapter
 import org.springframework.webflow.core.collection.LocalAttributeMap
 import org.springframework.webflow.definition.registry.FlowDefinitionLocator
-import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
+
 import org.springframework.webflow.engine.builder.FlowArtifactFactory
 import org.springframework.webflow.engine.builder.FlowBuilderContext
 import org.springframework.webflow.engine.builder.FlowBuilderException
@@ -45,6 +45,7 @@ import org.springframework.webflow.execution.Action
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.ViewFactory
 import org.springframework.webflow.engine.*
+import org.springframework.binding.mapping.Mapper
 
 /**
 * <p>A builder implementation used to construct Spring Webflows. This is a DSL specifically
@@ -68,6 +69,7 @@ import org.springframework.webflow.engine.*
 * </code></pre>
 *
 * @author Graeme Rocher
+* @author Ivo Houbrechts
 * @since 0.6
 */
 class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, ApplicationContextAware {
@@ -76,7 +78,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
     static final DO_CALL_METHOD = "doCall"
     static final FLOW_METHOD = "flow"
     static final CLOSURE_METHODS = ['setDelegate', 'setMetaClass', 'getMetaClass', 'call', 'doCall']
-    static final FLOW_INFO_METHODS = ['on', 'action', 'subflow',"render","redirect", "onRender", "onEntry", "onExit"]
+    static final FLOW_INFO_METHODS = ['on', 'action', 'subflow',"render","redirect", "onRender", "onEntry", "onExit", "output"]
 
     final String flowId
     private MetaClass metaClass
@@ -135,6 +137,9 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                 else if ("onEnd" == name) {
                     flow.endActionList.add(new ClosureInvokingAction(args[0]))
                 }
+                else if ("input" == name) {
+                    flow.inputMapper = new InputMapper(args[0])
+                }
                 else {
                     FlowInfoCapturer flowInfo = new FlowInfoCapturer(this, applicationContext)
 
@@ -178,7 +183,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                     else if (trans.length == 0 && flowInfo.subflow == null) {
                         String view = createViewPath(flowInfo, name)
 
-                        state = createEndState(name,view, flowFactory, flowInfo.entryAction)
+                        state = createEndState(name,view, flowFactory, flowInfo.outputMapper, flowInfo.entryAction)
                         state.attributes.put("commit", true)
                     }
                     else if (action) {
@@ -290,7 +295,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
     }
 
-    private State createSubFlow(flowInfo, flowFactory, stateId) {
+    private State createSubFlow(flowInfo, FlowArtifactFactory flowFactory, stateId) {
         def subflowId
         if (flowInfo.subflow) {
             //backwards compatibility: only subflow closure is supplied and the containing state must have the same name as the called subflow
@@ -314,7 +319,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
         Flow subflow = definitionLocator.getFlowDefinition(subflowId)
 
         return flowFactory.createSubflowState(stateId, getFlow(), null, new StaticExpression(subflow),
-                null, flowInfo.transitions, null, null, null)
+                new GrailsSubflowAttributeMapper(flowInfo.subflowInput), flowInfo.transitions, null, null, null)
     }
 
     private State createActionState(String stateId, Closure action, Transition[] transitions,
@@ -335,13 +340,13 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
               new ExternalRedirectAction(new StaticExpression(url)), null, null, null)
     }
 
-    protected State createEndState( String stateId, String viewId, FlowArtifactFactory flowFactory, Closure customEntryAction=null) {
+    protected State createEndState( String stateId, String viewId, FlowArtifactFactory flowFactory, Mapper outputMapper=null, Closure customEntryAction=null) {
         ViewFactory viewFactory = createViewFactory(viewId)
 
         return flowFactory.createEndState(stateId, getFlow(),
             getActionArrayOrNull(customEntryAction),
             new ViewFactoryActionAdapter(viewFactory),
-            null, null, null)
+            outputMapper, null, null)
     }
 
     private Action[] getActionArrayOrNull(Closure customAction) {
@@ -419,9 +424,11 @@ class FlowInfoCapturer {
     private Closure subflow
     private String subflowController
     private String subflowAction
+    private Map subflowInput = [:]
     private String viewName
     private applicationContext
     private redirectUrl
+    private Mapper outputMapper
     def propertyDescriptors = BeanUtils.getPropertyDescriptors(ExpressionDelegate)
 
     FlowInfoCapturer(FlowBuilder builder,ApplicationContext applicationContext) {
@@ -439,15 +446,20 @@ class FlowInfoCapturer {
     Closure getEntryAction() { this.entryAction}
     Closure getExitAction() { this.exitAction}
     Closure getSubflow() { this.subflow }
+    String getSubflowController(){ this.subflowController }
+    String getSubflowAction(){ this.subflowAction }
+    Map getSubflowInput(){ this.subflowInput }
+    Mapper getOutputMapper(){ this.outputMapper }
+
     def getRedirectUrl() { this.redirectUrl }
 
     TransitionTo on(String name) {
-        return new TransitionTo(name, builder, transitions,exceptionHandlers)
+        return new TransitionTo(name, builder, transitions, exceptionHandlers)
     }
 
     TransitionTo on(String name, Closure transitionCriteria) {
         def transitionCriteriaAction = new ClosureInvokingAction(transitionCriteria)
-        return new TransitionTo(name, builder, transitions,exceptionHandlers, transitionCriteriaAction)
+        return new TransitionTo(name, builder, transitions, exceptionHandlers, transitionCriteriaAction)
     }
 
     TransitionTo on(Class exception) {
@@ -484,6 +496,14 @@ class FlowInfoCapturer {
         }
         this.subflowController = args.controller
         this.subflowAction = args.action
+        args.input?.each {key, value ->
+            if (value instanceof Closure) {
+                this.subflowInput[key] = new ClosureExpression(value)
+            }
+            else {
+                this.subflowInput[key] = value
+            }
+        }
     }
 
     void render(Map args) {
@@ -511,6 +531,10 @@ class FlowInfoCapturer {
                     urlMapper:urlMapper)
             }
         }
+    }
+
+    void output(Closure callable){
+        this.outputMapper = new OutputMapper(callable)
     }
 
     def propertyMissing(String name) {
