@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.Closure;
+import groovy.lang.GString;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -72,7 +73,17 @@ public abstract class BaseApiProvider {
 								@Override
 								public Object invoke(Object object,
 										Object[] arguments) {
-									return super.invoke(apiInstance, ArrayUtils.add(arguments, 0, object));
+									return super.invoke(apiInstance, ArrayUtils.add(checkForGStrings(arguments), 0, object));
+								}
+
+								private Object[] checkForGStrings(
+										Object[] arguments) {
+									for (int i = 0; i < arguments.length; i++) {
+										if(arguments[i] instanceof GString) {
+											arguments[i] = arguments[i].toString();
+										}
+									}
+									return arguments;
 								}
 								
 								@Override
