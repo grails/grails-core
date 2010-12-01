@@ -250,6 +250,13 @@ public class GrailsScriptRunner {
             settings.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
         }
 
+        // The only real reason for doing this here is to make sure that *some*
+        // environment is available when the build configuration is loaded because
+        // some users depend on/want it (see GRAILS-6786). The trouble is, interactive
+        // mode may change the environment as may any script that sets the 'scriptEnv'
+        // variable. This won't work reliably until GRAILS-4260 is resolved.
+        setRunningEnvironment(scriptName, env);
+
         if (args != null) {
             // Check whether we are running in non-interactive mode
             // by looking for a "non-interactive" argument.
@@ -285,10 +292,6 @@ public class GrailsScriptRunner {
             System.setProperty("disable.grails.plugin.transform", "false");
         }
 
-        // Add some extra binding variables that are now available.
-        // settings.setGrailsEnv(env);
-        // settings.setDefaultEnv(useDefaultEnv);
-
         BuildSettingsHolder.setSettings(settings);
 
         // Either run the script or enter interactive mode.
@@ -299,7 +302,6 @@ public class GrailsScriptRunner {
                 return 1;
             }
 
-            setRunningEnvironment(scriptName, env);
             // This never exits unless an exception is thrown or
             // the process is interrupted via a signal.
             runInteractive();
@@ -341,6 +343,7 @@ public class GrailsScriptRunner {
             // Clear unhelpful system properties.
             System.clearProperty("grails.env.set");
             System.clearProperty(Environment.KEY);
+            System.clearProperty(Environment.DEFAULT);
 
             out.println("--------------------------------------------------------");
             String enteredName = helper.userInput(message);
@@ -356,8 +359,6 @@ public class GrailsScriptRunner {
                 else {
                     System.setProperty("grails.cli.args", "");
                 }
-
-                env = script.env != null ? script.env : Environment.DEVELOPMENT.getName();
             }
 
             if (script.name == null) {
@@ -370,7 +371,7 @@ public class GrailsScriptRunner {
 
             long now = System.currentTimeMillis();
             try {
-                callPluginOrGrailsScript(script.name, env);
+                callPluginOrGrailsScript(script.name, script.env);
             }
             catch (ScriptNotFoundException ex) {
                 out.println("No script found for " + script.name);
