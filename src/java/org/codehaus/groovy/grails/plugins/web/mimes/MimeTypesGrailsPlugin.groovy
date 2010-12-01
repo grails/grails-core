@@ -81,7 +81,7 @@ class MimeTypesGrailsPlugin {
             if (!result) {
 
                 def userAgent = delegate.getHeader(HttpHeaders.USER_AGENT)
-                def msie = userAgent && useAgent ==~ /msie(?i)/ ?: false
+                def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
                 def parser = new DefaultAcceptHeaderParser()
                 def header = delegate.contentType

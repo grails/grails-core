@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer;
+import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi;
 import org.springframework.web.util.WebUtils
 
 /**
@@ -36,135 +38,64 @@ class ServletsGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
-
+	
+	private MetaClassEnhancer requestEnhancer
+	
+	
+	public ServletsGrailsPlugin() {
+		this.requestEnhancer = new MetaClassEnhancer()
+		requestEnhancer.addApi new ServletRequestApi()
+	}
     def doWithDynamicMethods = { ctx ->
+		def getAttributeClosure = { String name ->
+			def mp = delegate.class.metaClass.getMetaProperty(name)
+			return mp ? mp.getProperty(delegate) : delegate.getAttribute(name)
+		}
+   
+		def setAttributeClosure = { String name, value ->
+			def mp = delegate.class.metaClass.getMetaProperty(name)
+			if (mp) {
+				mp.setProperty(delegate, value)
+			}
+			else {
+				delegate.setAttribute(name, value)
+			}
+		}
+   
+		def getAttributeSubscript = { String key ->
+			delegate.getAttribute(key)
+		}
+		def setAttributeSubScript = { String key, Object val ->
+			delegate.setAttribute(key, val)
+		}
+		// enables acces to servlet context with servletContext.foo syntax
+		ServletContext.metaClass.getProperty = getAttributeClosure
+		ServletContext.metaClass.setProperty = setAttributeClosure
+		ServletContext.metaClass.getAt = getAttributeSubscript
+		ServletContext.metaClass.putAt = setAttributeSubScript
 
-        def getAttributeClosure = { String name ->
-            def mp = delegate.class.metaClass.getMetaProperty(name)
-            return mp ? mp.getProperty(delegate) : delegate.getAttribute(name)
-        }
+		// enables access to session attributes using session.foo syntax
+		HttpSession.metaClass.getProperty = getAttributeClosure
+		HttpSession.metaClass.setProperty = setAttributeClosure
+		// enables access to session attributes with session["foo"] syntax
+		HttpSession.metaClass.getAt = getAttributeSubscript
+		// enables setting of session attributes with session["foo"] = "bar" syntax
+		HttpSession.metaClass.putAt = setAttributeSubScript
+		// enables access to request attributes with request["foo"] syntax
+		HttpServletRequest.metaClass.getAt = { String key ->
+			delegate.getAttribute(key)
+		}
+		// enables setting of request attributes with request["foo"] = "bar" syntax
+		HttpServletRequest.metaClass.putAt = { String key, Object val ->
+			delegate.setAttribute(key, val)
+		}
+		// enables access to request attributes using property syntax
+		HttpServletRequest.metaClass.getProperty = getAttributeClosure
+		HttpServletRequest.metaClass.setProperty = setAttributeClosure
+ 
+		requestEnhancer.enhance HttpServletRequest.metaClass
 
-        def setAttributeClosure = { String name, value ->
-            def mp = delegate.class.metaClass.getMetaProperty(name)
-            if (mp) {
-                mp.setProperty(delegate, value)
-            }
-            else {
-                delegate.setAttribute(name, value)
-            }
-        }
-
-        def getAttributeSubscript = { String key ->
-            delegate.getAttribute(key)
-        }
-        def setAttributeSubScript = { String key, Object val ->
-            delegate.setAttribute(key, val)
-        }
-
-        // enables acces to servlet context with servletContext.foo syntax
-        ServletContext.metaClass.getProperty = getAttributeClosure
-        ServletContext.metaClass.setProperty = setAttributeClosure
-        ServletContext.metaClass.getAt = getAttributeSubscript
-        ServletContext.metaClass.putAt = setAttributeSubScript
-
-        // enables access to session attributes using session.foo syntax
-        HttpSession.metaClass.getProperty = getAttributeClosure
-        HttpSession.metaClass.setProperty = setAttributeClosure
-        // enables access to session attributes with session["foo"] syntax
-        HttpSession.metaClass.getAt = getAttributeSubscript
-        // enables setting of session attributes with session["foo"] = "bar" syntax
-        HttpSession.metaClass.putAt = setAttributeSubScript
-
-        // retrieve the forwardURI for the request
-        HttpServletRequest.metaClass.getForwardURI = { ->
-            org.codehaus.groovy.grails.web.util.WebUtils.getForwardURI(delegate)
-        }
-
-        // test whether the current request is an XHR request
-        HttpServletRequest.metaClass.isXhr = { ->
-            delegate.getHeader('X-Requested-With') != null
-        }
-
-        // enables access to request attributes with request["foo"] syntax
-        HttpServletRequest.metaClass.getAt = { String key ->
-            delegate.getAttribute(key)
-        }
-        // enables setting of request attributes with request["foo"] = "bar" syntax
-        HttpServletRequest.metaClass.putAt = { String key, Object val ->
-            delegate.setAttribute(key, val)
-        }
-        // enables access to request attributes using property syntax
-        HttpServletRequest.metaClass.getProperty = getAttributeClosure
-        HttpServletRequest.metaClass.setProperty = setAttributeClosure
-
-        HttpServletRequest.metaClass.isGet = { ->
-            delegate.method == "GET"
-        }
-        HttpServletRequest.metaClass.isPost = { ->
-            delegate.method == "POST"
-        }
-        // enables searching of request attributes with request.find { it.key == 'foo' }
-        HttpServletRequest.metaClass.find = { Closure c ->
-            def request = delegate
-            def result = [:]
-            for (name in request.attributeNames) {
-                def match = false
-                switch (c.parameterTypes.length) {
-                    case 0:
-                        match = c.call()
-                        break
-                    case 1:
-                        match = c.call(key:name, value:request.getAttribute(name))
-                        break
-                    default:
-                        match =  c.call(name, request.getAttribute(name))
-                }
-                if (match) {
-                    result[name] = request.getAttribute(name)
-                    break
-                }
-            }
-            result
-        }
-
-        // enables searching of for a number of request attributes using request.findAll { it.key.startsWith('foo') }
-        HttpServletRequest.metaClass.findAll = { Closure c ->
-            def request = delegate
-            def results = [:]
-            for (name in request.attributeNames) {
-                def match = false
-                switch (c.parameterTypes.length) {
-                    case 0:
-                        match = c.call()
-                        break
-                    case 1:
-                        match = c.call(key:name, value:request.getAttribute(name))
-                        break
-                    default:
-                        match =  c.call(name, request.getAttribute(name))
-                }
-                if (match) { results[name] = request.getAttribute(name) }
-            }
-            results
-        }
-
-        // enables iteration over request attributes with each method request.each { name, value -> }
-        HttpServletRequest.metaClass.each = { Closure c ->
-            def request = delegate
-            for (name in request.attributeNames) {
-                switch (c.parameterTypes.length) {
-                    case 0:
-                        c.call()
-                        break
-                    case 1:
-                        c.call(key:name, value:request.getAttribute(name))
-                        break
-                    default:
-                        c.call(name, request.getAttribute(name))
-                }
-            }
-        }
-
+		
         // allows the syntax response << "foo"
         HttpServletResponse.metaClass.leftShift = { Object o ->
             delegate.writer << o

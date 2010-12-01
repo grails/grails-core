@@ -108,6 +108,11 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications (With an in-memory database)
 
+* h2-1.2.144.jar
+- H2 1.2.144 (http://www.h2database.com/) H2 License (see http://www.h2database.com/html/license.html)
+- required for building Grails core
+- required for running Grails applications (With an in-memory database)
+
 * javassist-3.8.0.GA.jar
 - Javassist 3.8 (http://www.jboss.org/javassist/) MPL or LGPL License
 - required for running Grails applications 

@@ -27,7 +27,9 @@ import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
@@ -240,41 +242,22 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
+		
+		def tagLibApi = new TagLibraryApi(pluginManager)
+		
+		def enhancer = new MetaClassEnhancer()
+		enhancer.addApi tagLibApi
+
         for (GrailsTagLibClass t in application.tagLibClasses) {
             GrailsTagLibClass taglib = t
             MetaClass mc = taglib.metaClass
             String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
 
-            WebMetaUtils.registerCommonWebProperties(mc, application)
-
             for (tag in taglib.tagNames) {
                 WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }
-
-            mc.getTagNamesThatReturnObject = {-> taglib.getTagNamesThatReturnObject() }
-
-            mc.throwTagError = {String message -> throw new GrailsTagException(message) }
-
-            mc.getPluginContextPath = {->
-                pluginManager.getPluginPathForInstance(delegate) ?: ""
-            }
-
-            mc.getPageScope = {->
-                def request = RequestContextHolder.currentRequestAttributes().currentRequest
-                def binding = request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE)
-                if (!binding) {
-                    binding = new GroovyPageBinding()
-                    request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding)
-                }
-                binding
-            }
-
-            mc.getOut = {->
-                GroovyPageOutputStack.currentWriter()
-            }
-            mc.setOut = {Writer newOut ->
-                GroovyPageOutputStack.currentStack().push(newOut,true)
-            }
+			
+			enhancer.enhance mc
 
             mc.propertyMissing = { String name ->
                 def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)

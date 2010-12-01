@@ -99,49 +99,80 @@ class ConfigurationHelper {
                 new PathMatchingResourcePatternResolver(resourceLoader) :
                 new PathMatchingResourcePatternResolver()
 
+        // Get these now before we do any merging
+        def defaultsLocations = config.grails.config.defaults.locations
         def locations = config.grails.config.locations
-        if (!locations) {
-            return
+        
+        // We load defaults in a way that allows them to be overridden by the main config
+        if (isLocations(defaultsLocations)) {
+            def newConfigObject = new ConfigObject()
+            mergeInLocations(newConfigObject, defaultsLocations, resolver, classLoader)
+            newConfigObject.merge(config)
+            config.merge(newConfigObject)
         }
+        
+        // We load non-defaults in a way that overrides the main config
+        if (isLocations(locations)) {
+            mergeInLocations(config, locations, resolver, classLoader)
+        }
+    }
 
+    
+    static private void mergeInLocations(ConfigObject config, List locations, PathMatchingResourcePatternResolver resolver, ClassLoader classLoader) {
         for (location in locations) {
             if (!location) {
                 continue
             }
 
             try {
-                def resource = resolver.getResource(location)
-                def stream
-                try {
-                    stream = resource.getInputStream()
-                    ConfigSlurper configSlurper = new ConfigSlurper(Environment.current.name)
-                    configSlurper.setBinding(config)
-                    if (classLoader) {
-                        if (classLoader instanceof GroovyClassLoader) {
-                            configSlurper.classLoader = classLoader
-                        }
-                        else {
-                            configSlurper.classLoader = new GroovyClassLoader(classLoader)
-                        }
+                ConfigSlurper configSlurper = new ConfigSlurper(Environment.current.name)
+                configSlurper.setBinding(config)
+                if (classLoader) {
+                    if (classLoader instanceof GroovyClassLoader) {
+                        configSlurper.classLoader = classLoader
                     }
-                    if (resource.filename.endsWith('.groovy')) {
-                        def newConfig = configSlurper.parse(stream.text)
-                        config.merge(newConfig)
-                    }
-                    else if (resource.filename.endsWith('.properties')) {
-                        def props = new Properties()
-                        props.load(stream)
-                        def newConfig = configSlurper.parse(props)
-                        config.merge(newConfig)
+                    else {
+                        configSlurper.classLoader = new GroovyClassLoader(classLoader)
                     }
                 }
-                finally {
-                    stream?.close()
+                
+                if (location instanceof Class) {
+                    def newConfig = configSlurper.parse(location)
+                    config.merge(newConfig)
+                } 
+                else {
+                    def resource = resolver.getResource(location.toString())
+                    def stream
+                    try {
+                        stream = resource.getInputStream()
+                        if (resource.filename.endsWith('.groovy')) {
+                            def newConfig = configSlurper.parse(stream.text)
+                            config.merge(newConfig)
+                        }
+                        else if (resource.filename.endsWith('.properties')) {
+                            def props = new Properties()
+                            props.load(stream)
+                            def newConfig = configSlurper.parse(props)
+                            config.merge(newConfig)
+                        }
+                        else if (resource.filename.endsWith('.class')) {
+                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(null, stream.bytes)
+                            def newConfig = configSlurper.parse(configClass)
+                            config.merge(newConfig)
+                        }
+                    }
+                    finally {
+                        stream?.close()
+                    }
                 }
             }
             catch (Exception e) {
                 System.err.println "Unable to load specified config location $location : ${e.message}"
             }
         }
+    }
+    
+    static private boolean isLocations(locations) {
+        locations != null && locations instanceof List
     }
 }

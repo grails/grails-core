@@ -663,6 +663,10 @@ class FormTagLib {
                     if (message != null) {
                         writer << message.encodeAsHTML()
                     }
+                    else if (keyValue && keys) {
+                        def s = el.toString()
+                        if (s) writer << s.encodeAsHTML()
+                    }                    
                     else if (keyValue) {
                         writer << keyValue.encodeAsHTML()
                     }

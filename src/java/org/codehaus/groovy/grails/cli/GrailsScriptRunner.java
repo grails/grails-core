@@ -21,11 +21,13 @@ import grails.util.BuildSettingsHolder;
 import grails.util.CosineSimilarity;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
-import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -35,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -52,8 +55,13 @@ import java.util.regex.Pattern;
 
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.MethodClosure;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -274,6 +282,7 @@ public class GrailsScriptRunner {
         // that this does not load any environment-specific settings.
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
+            
             settings.loadConfig();
         }
         catch (Exception e) {
@@ -310,7 +319,7 @@ public class GrailsScriptRunner {
 
     private void setRunningEnvironment(String scriptName, String env) {
         // Get the default environment if one hasn't been set.
-        boolean useDefaultEnv = env == null || Environment.DEVELOPMENT.getName().equals(env);
+        boolean useDefaultEnv = env == null;
         if (useDefaultEnv) {
             env = DEFAULT_ENVS.get(scriptName);
             env = env != null ? env : Environment.DEVELOPMENT.getName();
@@ -522,6 +531,7 @@ public class GrailsScriptRunner {
                 gant.setUseCache(true);
                 gant.setCacheDirectory(scriptCacheDir);
                 gant.loadScript(scriptFile);
+                
                 return executeWithGantInstance(gant, doNothingClosure);
             }
 
@@ -545,7 +555,7 @@ public class GrailsScriptRunner {
             if (enteredValue == null) return 1;
 
             int number = Integer.parseInt(enteredValue);
-            File scriptFile = (File) potentialScripts.get(number - 1);
+            File scriptFile = potentialScripts.get(number - 1);
             out.println("Running script "+ scriptFile.getAbsolutePath());
             // We can now safely set the default environment
             String scriptFileName = getScriptNameFromFile(scriptFile);
@@ -562,6 +572,9 @@ public class GrailsScriptRunner {
         }
 
         out.println("Running pre-compiled script");
+
+        // Must be called before the binding is initialised.
+        setRunningEnvironment(scriptName, env);
 
         // Get Gant to load the class by name using our class loader.
         Gant gant = new Gant(initBinding(binding), classLoader);
@@ -582,7 +595,6 @@ public class GrailsScriptRunner {
             }
         }
 
-        setRunningEnvironment(scriptName, env);
         return executeWithGantInstance(gant, doNothingClosure);
     }
 
@@ -694,7 +706,7 @@ public class GrailsScriptRunner {
      * will load the "Init" script from $GRAILS_HOME/scripts if it
      * exists there; otherwise it will load the Init class.
      */
-    private GantBinding initBinding(GantBinding binding) {
+    private GantBinding initBinding(final GantBinding binding) {
         Closure c = settings.getGrailsScriptClosure();
         c.setDelegate(binding);
         binding.setVariable("grailsScript", c);
@@ -732,6 +744,12 @@ public class GrailsScriptRunner {
         binding.setVariable("webXmlFile", settings.getWebXmlLocation());
         binding.setVariable("pluginsDirPath", settings.getProjectPluginsDir().getPath());
         binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
+        
+    	final BaseSettingsApi cla = new BaseSettingsApi(settings);
+    	makeApiAvailableToScripts(binding, cla);
+    	makeApiAvailableToScripts(binding, cla.getPluginSettings());
+
+
 
         // Hide the deprecation warnings that occur with plugins that
         // use "Ant" instead of "ant".
@@ -777,6 +795,44 @@ public class GrailsScriptRunner {
 
         return binding;
     }
+
+	protected void makeApiAvailableToScripts(final GantBinding binding,
+			final Object cla) {
+		final Method[] declaredMethods = cla.getClass().getDeclaredMethods();
+    	for (Method method : declaredMethods) {
+    		final String name = method.getName();
+			
+			final int modifiers = method.getModifiers();
+			if(Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
+				binding.setVariable(name, new MethodClosure(cla, name));
+			}					
+		}
+
+    	PropertyDescriptor[] propertyDescriptors;
+		try {
+			propertyDescriptors = Introspector.getBeanInfo(cla.getClass()).getPropertyDescriptors();
+	    	for (PropertyDescriptor pd : propertyDescriptors) {
+	    		final Method readMethod = pd.getReadMethod();
+	    		if(readMethod != null) {
+	    			if(isDeclared(cla, readMethod))
+	    				binding.setVariable(pd.getName(), ReflectionUtils.invokeMethod(readMethod, cla));
+	    		}
+				
+			}			
+		} catch (IntrospectionException e1) {
+			// ignore
+		}
+	}
+
+	protected boolean isDeclared(final Object cla,
+			final Method readMethod) {
+		try {
+			return cla.getClass().getDeclaredMethod(readMethod.getName(),
+					readMethod.getParameterTypes()) != null;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
     /**
      * Returns a list of all the executable Gant scripts available to this application.
@@ -842,10 +898,6 @@ public class GrailsScriptRunner {
 
         // Add build-only dependencies to the project
         final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
-        if (!dependenciesExternallyConfigured) {
-            System.out.println("Resolving dependencies...");
-        }
-        long now = System.currentTimeMillis();
         // add dependencies required by the build system
         final List<File> buildDependencies = settings.getBuildDependencies();
         if (!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
@@ -857,9 +909,6 @@ public class GrailsScriptRunner {
         // Add the project's test dependencies (which include runtime dependencies) because most of them
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
-        if (!dependenciesExternallyConfigured) {
-            System.out.println("Dependencies resolved in "+(System.currentTimeMillis()-now)+"ms.");
-        }
 
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
@@ -1067,7 +1116,7 @@ public class GrailsScriptRunner {
         return GrailsNameUtils.getPluginName(desc.getName());
     }
 
-    /**
+	/**
      * Contains details about a Grails command invocation such as the
      * name of the corresponding script, the environment (if specified),
      * and the arguments to the command.

@@ -37,7 +37,7 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
 
     private GrailsApplication grailsApplication;
     private Closure commandObjectBindingAction;
-    private Collection processedControllerNames = new ConcurrentLinkedQueue();
+    private Collection<String> processedControllerNames = new ConcurrentLinkedQueue<String>();
     private ApplicationContext applicationContext;
 
     public CommandObjectEnablingPostProcessor(ApplicationContext applicationContext) {

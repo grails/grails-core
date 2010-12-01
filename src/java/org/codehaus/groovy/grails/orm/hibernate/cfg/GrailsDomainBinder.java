@@ -2308,6 +2308,19 @@ public final class GrailsDomainBinder {
                 column.setValue(simpleValue);
                 bindColumn(grailsProp, parentProperty, column, cc, path, table);
 
+                if(cc != null) {
+                	if(cc.getLength() != -1) {
+                		column.setLength(cc.getLength());
+                	}
+                	if(cc.getPrecision() != -1) {
+                		column.setPrecision(cc.getPrecision());
+                	}
+                	if(cc.getScale() != -1) {
+                		column.setScale(cc.getScale());
+                	}
+                	column.setUnique(cc.isUnique());
+                }
+                
                 if (table != null)
                     table.addColumn(column);
 

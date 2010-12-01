@@ -114,7 +114,7 @@ import org.xml.sax.SAXException;
 public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager implements GrailsPluginManager {
 
     private static final Log LOG = LogFactory.getLog(DefaultGrailsPluginManager.class);
-    private static final Class<?>[] COMMON_CLASSES = {
+    protected static final Class<?>[] COMMON_CLASSES = {
         Boolean.class, Byte.class, Character.class, Class.class, Double.class, Float.class,
         Integer.class, Long.class, Number.class, Short.class, String.class, BigInteger.class,
         BigDecimal.class, URL.class, URI.class };
@@ -362,7 +362,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
         for (Class<?> pluginClass : finder.getPluginClasses()) {
             if (pluginClass != null && !Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
-                GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+                GrailsPlugin plugin = createGrailsPlugin(pluginClass);
                 plugin.setApplicationContext(applicationContext);
                 grailsCorePlugins.add(plugin);
             }
@@ -370,6 +370,15 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         return grailsCorePlugins;
     }
 
+	protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass) {
+		return new DefaultGrailsPlugin(pluginClass, application);
+	}
+
+	protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass,
+			Resource resource) {
+		return new DefaultGrailsPlugin(pluginClass, resource, application);
+	}
+	
     private List<GrailsPlugin>  findUserPlugins(ClassLoader gcl) {
         List<GrailsPlugin>  grailsUserPlugins = new ArrayList<GrailsPlugin>();
 
@@ -380,7 +389,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             Class<?> pluginClass = loadPluginClass(gcl, r);
 
             if (isGrailsPlugin(pluginClass)) {
-                GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, r, application);
+                GrailsPlugin plugin = createGrailsPlugin(pluginClass, r);
                 //attemptPluginLoad(plugin);
                 grailsUserPlugins.add(plugin);
             }
@@ -392,7 +401,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         for (int i = 0; i < pluginClasses.length; i++) {
             Class<?> pluginClass = pluginClasses[i];
             if (isGrailsPlugin(pluginClass)) {
-                GrailsPlugin plugin = new DefaultGrailsPlugin(pluginClass, application);
+                GrailsPlugin plugin = createGrailsPlugin(pluginClass);
                 //attemptPluginLoad(plugin);
                 grailsUserPlugins.add(plugin);
             }
@@ -402,6 +411,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
         return grailsUserPlugins;
     }
+
 
     private boolean isGrailsPlugin(Class<?> pluginClass) {
         return pluginClass != null && pluginClass.getName().endsWith(GRAILS_PLUGIN_SUFFIX);

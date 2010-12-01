@@ -29,10 +29,12 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -71,6 +73,9 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  */
 public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
+
+    private static final String DYNAMIC_FILTER_ENABLER = "dynamicFilterEnabler";
+    
     public static SimpleTypeConverter converter = new SimpleTypeConverter();
     public static final String ARGUMENT_MAX = "max";
     public static final String ARGUMENT_OFFSET = "offset";
@@ -87,6 +92,15 @@ public class GrailsHibernateUtil {
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
+    public static void enableDynamicFilterEnablerIfPresent(SessionFactory sessionFactory, Session session) {
+    	if(sessionFactory != null && session != null) {
+            final Set definedFilterNames = sessionFactory.getDefinedFilterNames();
+    		if(definedFilterNames != null && definedFilterNames.contains(DYNAMIC_FILTER_ENABLER))
+            		session.enableFilter(DYNAMIC_FILTER_ENABLER); // work around for HHH-2624
+    		
+    	}
+    }
+    
     @SuppressWarnings("rawtypes")
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
@@ -143,7 +157,7 @@ public class GrailsHibernateUtil {
         if (dc == null) {
             // a patch to add inheritance to this system
             GrailsHibernateDomainClass ghdc = new GrailsHibernateDomainClass(
-                    persistentClass, sessionFactory, cmd, defaultContraints);
+                    persistentClass, sessionFactory, application, cmd, defaultContraints);
 
             hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
             dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
@@ -197,26 +211,63 @@ public class GrailsHibernateUtil {
             if (caseArg instanceof Boolean) {
                 ignoreCase = (Boolean) caseArg;
             }
-            if (ORDER_DESC.equals(order)) {
-                c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
-            }
-            else {
-                c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
-            }
+            addOrderPossiblyNested(c, targetClass, sort, order, ignoreCase);
         }
         else {
             Mapping m = GrailsDomainBinder.getMapping(targetClass);
             if (m != null && !StringUtils.isBlank(m.getSort())) {
-                if (ORDER_DESC.equalsIgnoreCase(m.getOrder())) {
-                    c.addOrder(Order.desc(m.getSort()));
-                }
-                else {
-                    c.addOrder(Order.asc(m.getSort()));
-                }
+                addOrderPossiblyNested(c, targetClass, m.getSort(), m.getOrder(), true);
+            }
+        }
+    }
+    
+    /**
+     * Add order to criteria, creating necessary subCriteria if nested sort property (ie. sort:'nested.property').
+     */
+    private static void addOrderPossiblyNested(Criteria c, Class<?> targetClass, String sort, String order, boolean ignoreCase) {
+        int firstDotPos = sort.indexOf(".");
+        if (firstDotPos == -1) {
+            addOrder(c, sort, order, ignoreCase);
+        } else { // nested property
+            String sortHead = sort.substring(0,firstDotPos);
+            String sortTail = sort.substring(firstDotPos+1);
+            GrailsDomainClassProperty property = getGrailsDomainClassProperty(targetClass, sortHead);
+            if (property.isEmbedded()) {
+                // embedded objects cannot reference entities (at time of writing), so no more recursion needed  
+                addOrder(c, sort, order, ignoreCase);
+            } else {
+                Criteria subCriteria = c.createCriteria(sortHead);
+                Class<?> propertyTargetClass = property.getReferencedDomainClass().getClazz(); 
+                addOrderPossiblyNested(subCriteria, propertyTargetClass, sortTail, order, ignoreCase); // Recurse on nested sort
             }
         }
     }
 
+    /**
+     * Add order directly to criteria.
+     */
+    private static void addOrder(Criteria c, String sort, String order, boolean ignoreCase) {
+        if (ORDER_DESC.equals(order)) {
+            c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
+        }
+        else {
+            c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
+        }
+    }
+    
+    /**
+     * Get hold of the GrailsDomainClassProperty represented by the targetClass' propertyName, 
+     * assuming targetClass corresponds to a GrailsDomainClass.
+     */
+    private static GrailsDomainClassProperty getGrailsDomainClassProperty(Class<?> targetClass, String propertyName) {
+        GrailsClass grailsClass = ApplicationHolder.getApplication().getArtefact(DomainClassArtefactHandler.TYPE, targetClass.getName());
+        if (!(grailsClass instanceof GrailsDomainClass)) {
+            throw new IllegalArgumentException("Unexpected: class is not a domain class:"+targetClass.getName());
+        }
+        GrailsDomainClass domainClass = (GrailsDomainClass) grailsClass;
+        return domainClass.getPropertyByName(propertyName);
+    }
+    
     /**
      * Configures the criteria instance to cache based on the configured mapping.
      *

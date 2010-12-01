@@ -28,6 +28,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
  * An extended version of the Groovy compiler that sets up the Grails ResourceLoader upon compilation.
  *
  * @author Graeme Rocher
+ * @deprecated Use {@link Grailsc} instead
+ * 
  * @since 0.6
  */
 class GrailsCompiler extends Groovyc {

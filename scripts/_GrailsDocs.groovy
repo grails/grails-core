@@ -206,7 +206,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
     }
 
     if (srcDocs.exists()) {
-        File refDocsDir = new File("${grailsSettings.docsOutputDir}/manual")
+        File refDocsDir = grailsSettings.docsOutputDir
         def publisher = new DocPublisher(srcDocs, refDocsDir)
         publisher.ant = ant
         publisher.title = grailsAppName
@@ -233,7 +233,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 target(pdf: "Produces PDF documentation") {
     depends(parseArguments)
 
-    File refDocsDir = new File("${grailsSettings.docsOutputDir}/manual")
+    File refDocsDir = grailsSettings.docsOutputDir
     File singleHtml = new File(refDocsDir, 'guide/single.html')
 
     if (docsDisabled() || !pdfEnabled() || !singleHtml.exists()) {

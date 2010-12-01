@@ -76,7 +76,7 @@ class ValidationTagLib {
                     }
                 }
                 if (rejectedValue != null) {
-                    out << formatValue(rejectedValue)
+                    out << formatValue(rejectedValue, field)
                 }
             }
             else {
@@ -85,7 +85,7 @@ class ValidationTagLib {
                     rejectedValue = rejectedValue?."$fieldPart"
                 }
                 if (rejectedValue != null) {
-                    out << formatValue(rejectedValue)
+                    out << formatValue(rejectedValue, field)
                 }
             }
         }
@@ -379,9 +379,9 @@ class ValidationTagLib {
      * formatted according to the current user's locale during the
      * conversion to a string.
      */
-    def formatValue(value) {
+    def formatValue(value, String propertyPath = null) {
         PropertyEditorRegistry registry = RequestContextHolder.currentRequestAttributes().getPropertyEditorRegistry()
-        PropertyEditor editor = registry.getCustomEditor(value.getClass())
+        PropertyEditor editor = registry.findCustomEditor(value.getClass(), propertyPath)
         if (editor != null) {
             editor.setValue(value)
             return HTMLCodec.shouldEncode() && !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText

@@ -15,13 +15,15 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.util.Environment
 import grails.util.GrailsUtil
 
 import java.lang.reflect.Modifier
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
@@ -106,10 +108,10 @@ class ControllersGrailsPlugin {
         }
     }
 
-    def doWithWebDescriptor = {webXml ->
+    def doWithWebDescriptor = { webXml ->
 
         def basedir = System.getProperty("base.dir")
-        def grailsEnv = GrailsUtil.getEnvironment()
+        def grailsEnv = Environment.current.name
 
         def mappingElement = webXml.'servlet-mapping'
         mappingElement = mappingElement[mappingElement.size() - 1]
@@ -210,24 +212,22 @@ class ControllersGrailsPlugin {
             }
         }
 
+		def controllerApi = new ControllersApi(pluginManager, ctx)
+		
+		def enhancer = new MetaClassEnhancer()
+		enhancer.addApi controllerApi
+
         // add commons objects and dynamic methods like render and redirect to controllers
         for (GrailsClass controller in application.controllerClasses) {
             MetaClass mc = controller.metaClass
 
             Class controllerClass = controller.clazz
-            WebMetaUtils.registerCommonWebProperties(mc, application)
-            registerControllerMethods(mc, ctx)
             Class superClass = controller.clazz.superclass
-
-            mc.getPluginContextPath = { ->
-                pluginManager.getPluginPathForInstance(delegate) ?: ''
-            }
-
+			enhancer.enhance mc
             // deal with abstract super classes
             while (superClass != Object) {
                 if (Modifier.isAbstract(superClass.getModifiers())) {
-                    WebMetaUtils.registerCommonWebProperties(superClass.metaClass, application)
-                    registerControllerMethods(superClass.metaClass, ctx)
+					enhancer.enhance superClass.metaClass
                 }
                 superClass = superClass.superclass
             }
@@ -238,94 +238,7 @@ class ControllersGrailsPlugin {
         }
     }
 
-    def registerControllerMethods(MetaClass mc, ApplicationContext ctx) {
-        mc.getActionUri = { -> "/$controllerName/$actionName".toString()}
-        mc.getControllerUri = { -> "/$controllerName".toString()}
-        mc.getTemplateUri = {String name ->
-            def webRequest = RCH.currentRequestAttributes()
-            webRequest.attributes.getTemplateUri(name, webRequest.currentRequest)
-        }
-        mc.getViewUri = { String name ->
-            def webRequest = RCH.currentRequestAttributes()
-            webRequest.attributes.getViewUri(name, webRequest.currentRequest)
-        }
-        mc.setErrors = { Errors errors ->
-            RCH.currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0)
-        }
-        mc.getErrors = { ->
-            RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
-        }
-        mc.setModelAndView = { ModelAndView mav ->
-            RCH.currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
-        }
-        mc.getModelAndView = { ->
-            RCH.currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
-        }
-        mc.getChainModel = { ->
-            RCH.currentRequestAttributes().flashScope["chainModel"]
-        }
-        mc.hasErrors = { ->
-            errors?.hasErrors() ? true : false
-        }
-
-        def redirect = new RedirectDynamicMethod(ctx)
-        def render = new RenderDynamicMethod()
-        def bind = new BindDynamicMethod()
-        // the redirect dynamic method
-        mc.redirect = {Map args ->
-            redirect.invoke(delegate, "redirect", args)
-        }
-        mc.chain = {Map args ->
-            ChainMethod.invoke delegate, args
-        }
-        // the render method
-        mc.render = {Object o ->
-            render.invoke(delegate, "render", [o?.inspect()] as Object[])
-        }
-
-        mc.render = {String txt ->
-            render.invoke(delegate, "render", [txt] as Object[])
-        }
-        mc.render = {Map args ->
-            render.invoke(delegate, "render", [args] as Object[])
-        }
-        mc.render = {Closure c ->
-            render.invoke(delegate, "render", [c] as Object[])
-        }
-        mc.render = {Map args, Closure c ->
-            render.invoke(delegate, "render", [args, c] as Object[])
-        }
-        // the bindData method
-        mc.bindData = {Object target, Object args ->
-            bind.invoke(delegate, "bindData", [target, args] as Object[])
-        }
-        mc.bindData = {Object target, Object args, List disallowed ->
-            bind.invoke(delegate, "bindData", [target, args, [exclude: disallowed]] as Object[])
-        }
-        mc.bindData = {Object target, Object args, List disallowed, String filter ->
-            bind.invoke(delegate, "bindData", [target, args, [exclude: disallowed], filter] as Object[])
-        }
-        mc.bindData = {Object target, Object args, Map includeExclude ->
-            bind.invoke(delegate, "bindData", [target, args, includeExclude] as Object[])
-        }
-        mc.bindData = {Object target, Object args, Map includeExclude, String filter ->
-            bind.invoke(delegate, "bindData", [target, args, includeExclude, filter] as Object[])
-        }
-        mc.bindData = {Object target, Object args, String filter ->
-            bind.invoke(delegate, "bindData", [target, args, filter] as Object[])
-        }
-
-        // the withForm method
-        def withFormMethod = new WithFormMethod()
-        mc.withForm = { Closure callable ->
-            withFormMethod.withForm(delegate.request, callable)
-        }
-
-        def forwardMethod = new ForwardMethod(ctx.getBean("grailsUrlMappingsHolder"))
-        mc.forward = { Map params ->
-            forwardMethod.forward(delegate.request,delegate.response, params)
-        }
-    }
+  
 
     def onChange = {event ->
         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {

@@ -20,11 +20,11 @@ class GrailsPluginManagerTests extends AbstractGrailsMockTests {
         gcl.parseClass '''
 dataSource {
     pooled = false
-    driverClassName = "org.hsqldb.jdbcDriver"
+    driverClassName = "org.h2.Driver"
     username = "sa"
     password = ""
     dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-    url = "jdbc:hsqldb:mem:devDB"
+    url = "jdbc:h2:mem:devDB"
 }
 hibernate {
     cache.use_second_level_cache=true

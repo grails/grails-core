@@ -40,6 +40,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static final CONTEXT_PATH = "contextPath"
     static final SOURCE_FILE = "sourceFile"
     static final BASE_DIR = "base.dir"
+    static final API_BASE_PATH = "apiBasePath"
 
     static EXTERNAL_DOCS = [:]
     static ALIAS = [:]
@@ -83,6 +84,17 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                     return true
                 }
 
+                ref = ref.replace('.' as char, '/' as char)
+                if (ref.indexOf('#') > -1) {
+                    ref = ref[0..ref.indexOf("#")-1]
+                } 
+
+                def apiBase = initialContext.get(API_BASE_PATH)
+                if (apiBase) {
+                    def apiDocExists = [ "api", "gapi" ].any { dir -> new File("${apiBase}/${dir}/${ref}.html").exists() }
+                    if (apiDocExists) return true
+                }
+
                 emitWarning(name,ref,"class")
             }
             else {
@@ -101,7 +113,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     }
 
     private void emitWarning(String name, String ref, String type) {
-        println "WARNING: ${initialContext.get(SOURCE_FILE)}: Link '$name' refers to non-existant $type $ref!"
+        println "WARNING: ${initialContext.get(SOURCE_FILE)}: Link '$name' refers to non-existent $type $ref!"
     }
 
     boolean showCreate() { false }
@@ -188,13 +200,15 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
             def link = name[4..-1]
 
             def externalKey = EXTERNAL_DOCS.keySet().find { link.startsWith(it) }
-            link =link.replace('.' as char, '/' as char) + ".html"
+            link = link.replace('.' as char, '/' as char) + ".html"
 
             if (externalKey) {
                 buffer << "<a href=\"${EXTERNAL_DOCS[externalKey]}/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
             }
             else {
-                buffer << "<a href=\"$contextPath/api/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
+                def apiBase = initialContext.get(API_BASE_PATH)
+                def apiDir = [ "api", "gapi" ].find { dir -> new File("${apiBase}/${dir}/${link}").exists() }
+                buffer << "<a href=\"$contextPath/$apiDir/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
             }
         }
         else {

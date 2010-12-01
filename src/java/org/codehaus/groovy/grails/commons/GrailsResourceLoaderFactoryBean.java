@@ -26,7 +26,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.util.Assert;
 
 /**
  * A factory bean that constructs the Grails ResourceLoader used to load Grails classes.
@@ -39,6 +38,7 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResour
     private GrailsResourceHolder grailsResourceHolder;
     private GrailsResourceLoader resourceLoader;
 
+    @Deprecated
     public void setGrailsResourceHolder(GrailsResourceHolder grailsResourceHolder) {
         this.grailsResourceHolder = grailsResourceHolder;
     }
@@ -56,8 +56,6 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResour
     }
 
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(grailsResourceHolder, "Property [grailsResourceHolder] must be set!");
-
         resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
         if (resourceLoader == null) {
             if (Environment.getCurrent().isReloadEnabled()) {
@@ -79,6 +77,7 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResour
     }
 
     private void createDefaultInternal() {
+    	if(grailsResourceHolder == null) grailsResourceHolder = new GrailsResourceHolder();
         resourceLoader = new GrailsResourceLoader(grailsResourceHolder.getResources());
     }
 }

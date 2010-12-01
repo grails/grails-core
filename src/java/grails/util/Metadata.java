@@ -59,8 +59,14 @@ public class Metadata extends Properties {
     private Metadata(File f) {
         this.metadataFile = f;
     }
+    
+    
 
-    /**
+    public File getMetadataFile() {
+		return metadataFile;
+	}
+
+	/**
      * Resets the current state of the Metadata so it is re-read.
      */
     public static void reset() {

@@ -34,4 +34,5 @@ Import-Template:
  javax.xml.transform.*;version="0",
  org.w3c.dom.*;version="0",
  org.xml.sax.*;version="0",  
- org.springframework.*;version="${spring.version:[=.=.=, +1.0.0)}"
+ org.springframework.*;version="${spring.version:[=.=.=, +1.0.0)}",
+ jsr166y.forkjoin.*;version="070108"

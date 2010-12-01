@@ -40,11 +40,8 @@ import org.springframework.core.io.Resource;
  *
  * @author Graeme Rocher
  * @since 0.4
- *        <p/>
- *        Created: Feb 22, 2007
- *        Time: 6:37:08 PM
  */
-abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
+public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
     /**
      * Creates the specified Template using the given Spring Resource
      *
@@ -53,11 +50,12 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws IOException Thrown when there was an error reading the Template
      * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
      */
+    @SuppressWarnings("unused")
     public Template createTemplate(Resource resource) throws IOException, ClassNotFoundException {
         return createTemplateAndCloseInput(resource.getInputStream());
     }
 
-	/**
+    /**
      * Creates the specified Template using the given Spring Resource
      *
      * @param resource The Spring Resource to create the template for
@@ -66,11 +64,12 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws IOException Thrown when there was an error reading the Template
      * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
      */
-    abstract public Template createTemplate(Resource resource, boolean cacheable);
+    public abstract Template createTemplate(Resource resource, boolean cacheable);
 
+    @Override
     public final Template createTemplate(Reader reader) throws IOException {
-    	StreamByteBuffer buf=new StreamByteBuffer();
-    	IOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING));
+        StreamByteBuffer buf=new StreamByteBuffer();
+        IOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING));
         return createTemplate(buf.getInputStream());
     }
     /**
@@ -81,7 +80,7 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
      * @return A Template instance
      * @throws IOException Thrown when an IO error occurs reading the stream
      */
-    abstract public Template createTemplate(InputStream inputStream) throws IOException;
+    public abstract Template createTemplate(InputStream inputStream) throws IOException;
     
     @Override
     public Template createTemplate(String templateText) throws CompilationFailedException, ClassNotFoundException, IOException {
@@ -98,11 +97,11 @@ abstract public class ResourceAwareTemplateEngine extends TemplateEngine {
         return createTemplateAndCloseInput(url.openStream());
     }    
 
-	private Template createTemplateAndCloseInput(InputStream input) throws FileNotFoundException, IOException {
+    private Template createTemplateAndCloseInput(InputStream input) throws FileNotFoundException, IOException {
         try {
             return createTemplate(input);
         } finally {
             DefaultGroovyMethodsSupport.closeWithWarning(input);
         }
-	}
+    }
 }

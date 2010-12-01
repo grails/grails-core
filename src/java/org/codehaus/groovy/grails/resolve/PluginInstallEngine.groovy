@@ -351,12 +351,20 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             callable.call(new File("$pluginInstallPath"))
             IvyDependencyManager dependencyManager = settings.dependencyManager
             dependencyManager.resetGrailsPluginsResolver()
-            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-            if (resolveReport.hasError()) {
-                errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+            
+            def dependencyConfigurationsToAdd = [IvyDependencyManager.RUNTIME_CONFIGURATION]
+            if (settings.grailsEnv == "test") {
+                dependencyConfigurationsToAdd << IvyDependencyManager.TEST_CONFIGURATION
             }
-            else {
-                addJarsToRootLoader resolveReport.allArtifactsReports.localFile
+            
+            for (dependencyConfiguration in dependencyConfigurationsToAdd) {
+                def resolveReport = dependencyManager.resolveDependencies(dependencyConfiguration)
+                if (resolveReport.hasError()) {
+                    errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                }
+                else {
+                    addJarsToRootLoader resolveReport.allArtifactsReports.localFile
+                }
             }
         }
         def pluginJars = new File("${pluginInstallPath}/lib").listFiles().findAll { it.name.endsWith(".jar")}
@@ -538,7 +546,9 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 existing.addAll(toAdd)
                 if (type in ['build', 'test']) {
                     toAdd.each {
-                        settings.rootLoader.addURL(it.toURL())
+						if(it) {
+							settings.rootLoader.addURL(it.toURL())
+						}                        
                     }
                 }
             }

@@ -106,7 +106,7 @@ class HibernatePluginSupport {
         if (hibernateDialects) {
             def p = new Properties()
             p.load(hibernateDialects.openStream())
-            p.each {entry ->
+            for(entry in p) {
                 vendorToDialect[entry.value] = "org.hibernate.dialect.${entry.key}".toString()
             }
         }

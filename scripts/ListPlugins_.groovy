@@ -1,3 +1,6 @@
+import groovy.xml.dom.DOMCategory 
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo 
+
 /*
  * Copyright 2004-2005 the original author or authors.
  *
@@ -23,5 +26,109 @@
  */
 
 includeTargets << grailsScript("_GrailsPlugins")
+
+
+target(listPlugins: "Implementation target") {
+	depends(parseArguments,configureProxy)
+
+	def repository = argsMap.repository
+	if (repository) {
+		eachRepository { name, url ->
+			if(name == repository) {
+				printRemotePluginList(repository)
+				printInstalledPlugins()
+			}
+		}
+	}
+	else if (argsMap.installed) {
+		printInstalledPlugins()
+	}
+	else {
+		eachRepository { name, url ->
+			printRemotePluginList(name)
+			return true
+		}
+		printInstalledPlugins()
+	}
+
+	println '''
+To find more info about plugin type 'grails plugin-info [NAME]'
+
+To install type 'grails install-plugin [NAME] [VERSION]'
+
+For further info visit http://grails.org/Plugins
+'''
+}
+
+private printInstalledPlugins() {
+	println '''
+Plug-ins you currently have installed are listed below:
+-------------------------------------------------------------
+'''
+
+	def installedPlugins = []
+	def pluginInfos = pluginSettings.getPluginInfos()
+	for (GrailsPluginInfo info in pluginInfos) {
+		installedPlugins << formatPluginForPrint(info.name, info.version, info.title)
+	}
+
+	if (installedPlugins) {
+		installedPlugins.sort()
+		installedPlugins.each { println it }
+	}
+	else {
+		println "You do not have any plugins installed."
+	}
+}
+
+private printRemotePluginList(name) {
+	println """
+Plugins available in the $name repository are listed below:
+-------------------------------------------------------------
+"""
+	def plugins = []
+	use(DOMCategory) {
+		pluginsList?.'plugin'.each {plugin ->
+			def version
+			def pluginLine = plugin.'@name'
+			def versionLine = "<no releases>"
+			def title = "No description available"
+			if (plugin.'@latest-release') {
+				version = plugin.'@latest-release'
+				versionLine = "<${version}>"
+			}
+			else if (plugin.'release'.size() > 0) {
+				// determine latest release by comparing version names in lexicografic order
+				version = plugin.'release'[0].'@version'
+				plugin.'release'.each {
+					if (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version) {
+						version = "${it.'@version'}"
+					}
+				}
+				versionLine = "<${version} (?)>\t"
+			}
+			def release = plugin.'release'.find {rel -> rel.'@version' == version}
+			if (release?.'title') {
+				title = release?.'title'.text()
+			}
+			plugins << formatPluginForPrint(pluginLine, versionLine, title)
+		}
+	}
+
+	// Sort plugin descriptions
+	if (plugins) {
+		plugins.sort()
+		plugins.each {println it}
+		println ""
+	}
+	else {
+		println "No plugins found in repository: ${name}. This may be because the repository is behind an HTTP proxy."
+	}
+}
+
+formatPluginForPrint = { pluginName, pluginVersion, pluginTitle ->
+	"${pluginName.toString().padRight(20, " ")}${pluginVersion.toString().padRight(16, " ")} --  ${pluginTitle}"
+}
+
 
 setDefaultTarget("listPlugins")

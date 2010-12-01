@@ -14,9 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.Environment;
 import grails.util.GrailsUtil;
-import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 
@@ -76,8 +74,8 @@ import org.springframework.web.context.support.ServletContextResourceLoader;
  * @since 0.1
  */
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
-	public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
-	public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
+    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
+    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
     private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
@@ -152,7 +150,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @param resourceLoader The ResourceLoader instance
      */
     public void setResourceLoader(ResourceLoader resourceLoader) {
-    	this.resourceLoaderDefined=(resourceLoader != null);
+        this.resourceLoaderDefined=(resourceLoader != null);
         this.resourceLoader = resourceLoader;
     }
 
@@ -209,13 +207,13 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         // class in PermGen instead of ideally being 1 as they as essentially same resource.
         String name;
 
-		//we will cache metaInfo only is Developer wants-to. Developer will make sure that he creates unique key for every unique pages s/he wants to put in cache
-		if(cacheable) {
-			name = establishPageName(resource, getPathForResource(resource));
+        //we will cache metaInfo only is Developer wants-to. Developer will make sure that he creates unique key for every unique pages s/he wants to put in cache
+        if(cacheable) {
+            name = establishPageName(resource, getPathForResource(resource));
 
-		} else {
-			name = establishPageName(resource, null);
-		}
+        } else {
+            name = establishPageName(resource, null);
+        }
 
 
         if (!isReloadEnabled()) {
@@ -263,65 +261,64 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
     
     private boolean isPrecompiledAvailable() {
-    	return precompiledGspMap != null && precompiledGspMap.size() > 0 && !GrailsUtil.isDevelopmentEnv();
+        return precompiledGspMap != null && precompiledGspMap.size() > 0 && !GrailsUtil.isDevelopmentEnv();
     }
 
     private GroovyPageTemplate createTemplateFromPrecompiled(String uri) {
-    	if(isPrecompiledAvailable()) {
-	        GroovyPageTemplate t=createTemplateFromPrecompiled(uri, uri);
-	        if (t == null) {
-	            t = createTemplateFromPrecompiled(uri, "/WEB-INF" + uri);
-	        }
-	        if (t == null) {
-	            t = createTemplateFromPrecompiled(uri, getUriWithinGrailsViews(uri));
-	        }
-	        return t;
-    	} else {
-    		return null;
-    	}
+        if(isPrecompiledAvailable()) {
+            GroovyPageTemplate t=createTemplateFromPrecompiled(uri, uri);
+            if (t == null) {
+                t = createTemplateFromPrecompiled(uri, "/WEB-INF" + uri);
+            }
+            if (t == null) {
+                t = createTemplateFromPrecompiled(uri, getUriWithinGrailsViews(uri));
+            }
+            return t;
+        }
+        return null;
     }
 
-    @SuppressWarnings("unchecked")
     private GroovyPageTemplate createTemplateFromPrecompiled(final String originalUri, final String uri) {
         GroovyPageMetaInfo meta = precompiledCache.get(uri);
         if(meta==null) {
-        	meta=loadPrecompiledGsp(uri);        	
-        	if(meta != null) {
+            meta=loadPrecompiledGsp(uri);            
+            if(meta != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Adding GSP class GroovyPageMetaInfo in cache for uri " + uri + " classname is " + meta.getPageClass().getName());
                 }
                 precompiledCache.put(uri, meta);
                 precompiledCache.put(originalUri, meta);
-        	}
+            }
         }
         if (meta != null) {
-        	if(isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
-				public Resource run() {
-					return getResourceForUri(originalUri);
-				}
-			})) {
-        		if (LOG.isInfoEnabled()) {
+            if(isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
+                public Resource run() {
+                    return getResourceForUri(originalUri);
+                }
+            })) {
+                if (LOG.isInfoEnabled()) {
                     LOG.info("Precompiled GSP for uri " + originalUri + " is newer in reload location. Ignoring the precompiled GSP.");
                 }
 
-        		// remove the precompiled version from caches & mapping
+                // remove the precompiled version from caches & mapping
                 for(Iterator<Map.Entry<String, GroovyPageMetaInfo>> it=precompiledCache.entrySet().iterator(); it.hasNext();) {
-                	Map.Entry<String, GroovyPageMetaInfo> entry=it.next();
-                	if(entry.getValue()==meta) {
-                		precompiledGspMap.remove(entry.getKey());
-                		it.remove();
-                	}
+                    Map.Entry<String, GroovyPageMetaInfo> entry=it.next();
+                    if(entry.getValue()==meta) {
+                        precompiledGspMap.remove(entry.getKey());
+                        it.remove();
+                    }
                 }
-        		
-        		return null;
-        	}
+                
+                return null;
+            }
             return new GroovyPageTemplate(meta);
         }
         return null;
     }
     
+    @SuppressWarnings("unchecked")
     private GroovyPageMetaInfo loadPrecompiledGsp(String uri) {
-    	GroovyPageMetaInfo meta=null;
+        GroovyPageMetaInfo meta=null;
         String gspClassName = precompiledGspMap.get(uri);
         if (gspClassName != null) {
             Class<GroovyPage> gspClass = null;
@@ -346,15 +343,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     public Template createTemplateForUri(String[] uri)  {
-    	if(isPrecompiledAvailable()) {
-	        Template t;
-	        for (String anUri : uri) {
-	            t = createTemplateFromPrecompiled(anUri);
-	            if (t != null) {
-	                return t;
-	            }
-	        }
-    	}
+        if(isPrecompiledAvailable()) {
+            Template t;
+            for (String anUri : uri) {
+                t = createTemplateFromPrecompiled(anUri);
+                if (t != null) {
+                    return t;
+                }
+            }
+        }
 
         Resource resource = null;
         for (String anUri : uri) {
@@ -471,10 +468,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             // make it such that it will not allow this template to get into the pageCache.
             if(cacheable) {
                 return createTemplate(in, resource, getPathForResource(resource));
-            } else {
-                return createTemplate(in, resource, null);
             }
-
+            return createTemplate(in, resource, null);
         }
         finally {
             in.close();
@@ -503,10 +498,10 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     private boolean isGroovyPageReloadable(final Resource resource, GroovyPageMetaInfo meta) {
         return isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
-			public Resource run() {
-				return resource;
-			}
-		});
+            public Resource run() {
+                return resource;
+            }
+        });
     }
 
     /**
@@ -554,12 +549,10 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         }
         Resource r = servletContextLoader.getResource(uri);
         if (r.exists()) {
-        	return r;
-        } else {
-        	return resourceLoader.getResource(uri);
+            return r;
         }
+        return resourceLoader.getResource(uri);
     }
-
 
     /**
      * Constructs a GroovyPageMetaInfo instance which holds the script class, modified date and so on
@@ -820,11 +813,11 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         this.precompiledGspMap = precompiledGspMap;
     }
 
-	public boolean isCacheResources() {
-		return cacheResources;
-	}
+    public boolean isCacheResources() {
+        return cacheResources;
+    }
 
-	public void setCacheResources(boolean cacheResources) {
-		this.cacheResources = cacheResources;
-	}
+    public void setCacheResources(boolean cacheResources) {
+        this.cacheResources = cacheResources;
+    }
 }

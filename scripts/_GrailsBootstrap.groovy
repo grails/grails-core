@@ -28,6 +28,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.mock.jndi.SimpleNamingContextBuilder
 import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
 import org.springframework.core.io.FileSystemResource
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 /**
  * Gant script that bootstraps a running Grails instance without a
@@ -52,12 +53,6 @@ target(loadApp:"Loads the Grails application object") {
                 grailsResourceHolder = resourceHolder
             }
             grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
-
-            // There is a pluginManager variable in the binding
-            delegate."pluginManager"(GrailsPluginManagerFactoryBean) {
-                application = grailsApplication
-                grailsDescriptor = new FileSystemResource("web-app/WEB-INF/grails.xml")
-            }
         }
     }
 
@@ -78,6 +73,18 @@ target(loadApp:"Loads the Grails application object") {
     pluginManager = PluginManagerHolder.pluginManager
     pluginManager.application = grailsApp
     pluginManager.doArtefactConfiguration()
+    
+    def builder = new WebBeanBuilder(ctx)
+    newBeans = builder.beans {
+        delegate."pluginManager"(MethodInvokingFactoryBean) {
+            targetClass = PluginManagerHolder
+            targetMethod = "getPluginManager"
+        }
+    }
+    newBeans.beanDefinitions.each { name, definition ->
+        ctx.registerBeanDefinition(name, definition)
+    }
+    
     grailsApp.initialise()
     event("AppLoadEnd", ["Loading Grails Application"])
 }
