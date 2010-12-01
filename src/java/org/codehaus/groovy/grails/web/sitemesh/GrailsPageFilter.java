@@ -67,7 +67,6 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
     private FilterConfig filterConfig;
     private ContainerTweaks containerTweaks;
-    private WebApplicationContext applicationContext;
     private PersistenceContextInterceptor persistenceInterceptor = new NullPersistentContextInterceptor();
 
     @Override
@@ -82,7 +81,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         defaultFactory.refresh();
         FactoryHolder.setFactory(defaultFactory);
 
-        applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(fc.getServletContext());
+        WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(fc.getServletContext());
         Map<String, PersistenceContextInterceptor> interceptors = applicationContext.getBeansOfType(PersistenceContextInterceptor.class);
         if (!interceptors.isEmpty()) {
             persistenceInterceptor = interceptors.values().iterator().next();
