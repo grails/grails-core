@@ -32,6 +32,42 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
+	void testInheritRepositoryResolvers() {
+		def settings = new BuildSettings()
+		def manager = new IvyDependencyManager("test", "0.1",settings)
+
+		manager.parseDependencies {
+			repositories {
+				inherit true
+			}	
+   	    }
+		
+		manager.parseDependencies "myplugin", {
+			repositories {
+				mavenCentral()
+			}	
+	    }
+		
+		
+		assert 1 == manager.chainResolver.resolvers.size()
+		
+		
+		manager = new IvyDependencyManager("test", "0.1",settings)
+		
+		manager.parseDependencies {
+			repositories {
+				inherit false
+			}
+		}
+		
+		manager.parseDependencies "myplugin", {
+			repositories {
+				mavenCentral()
+			}
+		}
+		
+		assert 0 == manager.chainResolver.resolvers.size()
+	} 
     void testChanging() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

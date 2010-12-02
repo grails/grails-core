@@ -84,7 +84,9 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     boolean inheritsAll = false
     boolean resolveErrors = false
 	boolean defaultDependenciesProvided = false
-
+	boolean pluginsOnly = false
+	boolean inheritRepositories = true
+	
     /**
      * Creates a new IvyDependencyManager instance
      */
@@ -692,6 +694,8 @@ class IvyDomainSpecificLanguageEvaluator {
 
     boolean inherited = false
     boolean pluginMode = false
+	boolean repositoryMode = false
+	
     String currentPluginBeingConfigured = null
     @Delegate IvyDependencyManager delegate
 
@@ -776,6 +780,7 @@ class IvyDomainSpecificLanguageEvaluator {
     void inherits(String name) {
         inherits name, null
     }
+	
 
     void plugins(Closure callable) {
         try {
@@ -826,9 +831,22 @@ class IvyDomainSpecificLanguageEvaluator {
      * Same as #resolvers(Closure)
      */
     void repositories(Closure repos) {
-        repos?.delegate = this
-        repos?.call()
+		try {
+			repositoryMode = true
+			repos?.delegate = this
+			repos?.call()
+		}
+		finally {
+			repositoryMode = false
+		}
     }
+	
+	void inherit(boolean b) {
+		if(repositoryMode) {
+			inheritRepositories = b
+		}
+	}
+
 
     void flatDir(Map args) {
         def name = args.name?.toString()
@@ -852,13 +870,15 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     private addToChainResolver(org.apache.ivy.plugins.resolver.DependencyResolver resolver) {
-        if (transferListener !=null && (resolver instanceof RepositoryResolver)) {
-            ((RepositoryResolver)resolver).repository.addTransferListener transferListener
-        }
-        // Fix for GRAILS-5805
-        synchronized(chainResolver.resolvers) {
-            chainResolver.add resolver
-        }
+		if(inheritRepositories) {
+			if (transferListener !=null && (resolver instanceof RepositoryResolver)) {
+				((RepositoryResolver)resolver).repository.addTransferListener transferListener
+			}
+			// Fix for GRAILS-5805
+			synchronized(chainResolver.resolvers) {
+				chainResolver.add resolver
+			}
+		}
     }
 
     void grailsPlugins() {
