@@ -873,15 +873,16 @@ class IvyDomainSpecificLanguageEvaluator {
     }
 
     private addToChainResolver(org.apache.ivy.plugins.resolver.DependencyResolver resolver) {
-		if(inheritRepositories) {
-			if (transferListener !=null && (resolver instanceof RepositoryResolver)) {
-				((RepositoryResolver)resolver).repository.addTransferListener transferListener
-			}
-			// Fix for GRAILS-5805
-			synchronized(chainResolver.resolvers) {
-				chainResolver.add resolver
-			}
+		if(currentPluginBeingConfigured && !inheritRepositories) return 
+		
+		if (transferListener !=null && (resolver instanceof RepositoryResolver)) {
+			((RepositoryResolver)resolver).repository.addTransferListener transferListener
 		}
+		// Fix for GRAILS-5805
+		synchronized(chainResolver.resolvers) {
+			chainResolver.add resolver
+		}
+		
     }
 
     void grailsPlugins() {

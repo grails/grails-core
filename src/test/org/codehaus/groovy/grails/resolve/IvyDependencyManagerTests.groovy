@@ -39,6 +39,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 		manager.parseDependencies {
 			repositories {
 				inherit true
+				ebr()
 			}	
    	    }
 		
@@ -49,7 +50,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 	    }
 		
 		
-		assert 1 == manager.chainResolver.resolvers.size()
+		assert 3 == manager.chainResolver.resolvers.size()
 		
 		
 		manager = new IvyDependencyManager("test", "0.1",settings)
@@ -57,6 +58,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 		manager.parseDependencies {
 			repositories {
 				inherit false
+				ebr()
 			}
 		}
 		
@@ -66,7 +68,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 			}
 		}
 		
-		assert 0 == manager.chainResolver.resolvers.size()
+		assert 2 == manager.chainResolver.resolvers.size()
 	} 
     void testChanging() {
         def settings = new BuildSettings()
