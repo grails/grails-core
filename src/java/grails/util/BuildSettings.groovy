@@ -543,12 +543,18 @@ class BuildSettings extends AbstractBuildSettings {
 	private storeCache() {
 		projectWorkDir.mkdirs()
 		if(resolveChecksum) {
-			def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
-			cachedResolve.withOutputStream { output ->
-				def oos = new ObjectOutputStream(output)
-				oos.writeObject(resolveCache)
-					
+			try {
+				def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
+				cachedResolve.withOutputStream { output ->
+					def oos = new ObjectOutputStream(output)
+					oos.writeObject(resolveCache)
+						
+				}
 			}
+			catch(e) {
+				// failed to cache for some reason, probably I/O related. Ignore.
+			}
+
 		}
 	}
     private def loadBuildPropertiesFromClasspath(Properties buildProps) {
