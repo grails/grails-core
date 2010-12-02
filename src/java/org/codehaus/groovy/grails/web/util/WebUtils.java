@@ -287,6 +287,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         // responsibility for rendering the response.
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
         webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        webRequest.setActionName(info.getActionName());
 
         exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
