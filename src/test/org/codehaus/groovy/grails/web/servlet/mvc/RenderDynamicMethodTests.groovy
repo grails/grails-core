@@ -4,12 +4,14 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
+    private testCtrl
+
     protected void tearDown() {
         super.tearDown()
         ConfigurationHolder.config = null
     }
 
-    void onSetUp() {
+    protected void onSetUp() {
         def config = gcl.parseClass("grails.json.legacy.builder=false")
         ConfigurationHolder.config = new ConfigSlurper().parse(config)
         gcl.parseClass """
@@ -54,13 +56,22 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
             def renderXmlUtf16View = {
                 render(view:'foo', contentType:'text/xml', encoding:'utf-16')
             }
+            def renderStatusAndText = {
+                render(status: 503, text: 'five oh three')
+            }
+            def renderStatusOnly = {
+                render(status: 404)
+            }
         }
         """
     }
 
-    void testRenderView() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
+    protected void setUp() {
+        super.setUp()
+        testCtrl = ga.getControllerClass("TestController").newInstance()
+    }
 
+    void testRenderView() {
         testCtrl.renderView()
 
         assertEquals '/test/foo', testCtrl.modelAndView.viewName
@@ -68,50 +79,50 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderText() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
-
         testCtrl.renderText()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "text", response.contentAsString
     }
 
     void testRenderStreamCharBuffer() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
-
         testCtrl.renderStreamCharBuffer()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "text", response.contentAsString
     }
 
     void testRenderGString() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
-
         testCtrl.renderGString()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "text", response.contentAsString
     }
 
     void testRenderTextWithContentType() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
-
         testCtrl.renderTextWithContentType()
         assertEquals "text/xml;charset=utf-16", response.contentType
         assertEquals "<foo>bar</foo>", response.contentAsString
     }
 
     void testRenderXml() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
-
         testCtrl.renderXml()
         assertEquals "text/xml;charset=utf-8", response.contentType
         assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
     }
 
     void testRenderJSON() {
-        def testCtrl = ga.getControllerClass("TestController").newInstance()
-
         testCtrl.renderJSON()
         assertEquals "application/json;charset=UTF-8", response.contentType
         assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
+    }
+
+    void testStatusAndText() {
+        testCtrl.renderStatusAndText()
+        assertEquals 'five oh three', response.contentAsString
+        assertEquals 503, response.status
+    }
+
+    void testStatusOnly() {
+        testCtrl.renderStatusOnly()
+        assertEquals '', response.contentAsString
+        assertEquals 404, response.status
     }
 }
