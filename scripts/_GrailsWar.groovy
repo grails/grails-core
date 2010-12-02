@@ -39,6 +39,8 @@ includeJars = true
 buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
 warName = null
 
+
+
 defaultWarDependencies = { antBuilder ->
 
     if (antBuilder) {
@@ -61,7 +63,12 @@ defaultWarDependencies = { antBuilder ->
         }
     }
     else {
-        def dependencies = grailsSettings.runtimeDependencies
+		IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+        def dependencies = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
+											.allArtifactsReports
+											.localFile
+		dependencies += grailsSettings.applicationJars
+		println "RESOLVED DEPENDENCIES ${dependencies.join('\n')}"
         if(dependencies) {
             for(File f in dependencies) {
                 fileset(dir: f.parent, includes: f.name)
