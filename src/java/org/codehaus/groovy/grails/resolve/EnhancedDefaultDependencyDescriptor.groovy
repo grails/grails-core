@@ -96,12 +96,12 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
 
     private excludeForString (String dep) {
         def mid = ModuleId.newInstance(WILDCARD, dep)
-        addRuleForModuleId(mid, scope)
+        addRuleForModuleId(mid, scope, WILDCARD, WILDCARD)
     }
 
     private excludeForMap (Map args) {
         def mid = ModuleId.newInstance(args?.group ?: WILDCARD, args?.name ?: WILDCARD)
-        addRuleForModuleId(mid, scope)
+        addRuleForModuleId(mid, scope, args?.type ?: WILDCARD, args?.ext ?: WILDCARD)
     }
 
     void dependencyConfiguration(String config) {
@@ -122,8 +122,8 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         field.set(this, b)
     }
 
-    void addRuleForModuleId(ModuleId mid, String scope) {
-        def id = new ArtifactId(mid, WILDCARD, WILDCARD, WILDCARD)
+    void addRuleForModuleId(ModuleId mid, String scope, String type, String ext) {
+        def id = new ArtifactId(mid, WILDCARD, type, ext)
         def rule = new DefaultExcludeRule(id, ExactPatternMatcher.INSTANCE, null)
         addExcludeRule scope, rule
     }
