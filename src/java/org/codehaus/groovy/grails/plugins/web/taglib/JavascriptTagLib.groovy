@@ -1,5 +1,3 @@
-package org.codehaus.groovy.grails.plugins.web.taglib
-
 /* Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +12,8 @@ package org.codehaus.groovy.grails.plugins.web.taglib
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.springframework.validation.Errors
-import org.springframework.context.NoSuchMessageException
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+package org.codehaus.groovy.grails.plugins.web.taglib
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 
@@ -62,6 +58,12 @@ class JavascriptTagLib  {
      * the Grails application:
      *
      * <g:javascript src="myscript.js" /> // actually imports '/app/js/myscript.js'
+     *
+     * @attr src The name of the javascript file to import. Will look in web-app/js dir
+     * @attr library The name of the library to include. Either "prototype", "scriptaculous", "yahoo" or "dojo"
+     * @attr plugin The plugin to look for the javascript in
+     * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
+     * @attr base specifies the full base url to prepend to the library name
      */
     def javascript = { attrs, body ->
 
@@ -87,7 +89,7 @@ class JavascriptTagLib  {
             else {
                 if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
                     def newattrs = [:] + attrs
-                    newattrs.src = newattrs.remove('library')+'.js'
+                    newattrs.src = newattrs.remove('library') + '.js'
                     javascriptInclude(newattrs)
                     request[INCLUDED_LIBRARIES] << attrs.library
                     request[INCLUDED_JS] << attrs.library
@@ -141,28 +143,36 @@ class JavascriptTagLib  {
     }
 
     /**
-     *  Creates a remote function call using the prototype library
+     * Creates a remote function call using the prototype library.
+     *
+     * @attr before The javascript function to call before the remote function call
+     * @attr after The javascript function to call after the remote function call
+     * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
+     * @attr action the name of the action to use in the link, if not specified the default action will be linked
+     * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr id The id to use in the link
+     * @attr asynchronous Whether to do the call asynchronously or not (defaults to true, specified in 'options' array)
+     * @attr method The method to use the execute the call (defaults to "post")
      */
-    def remoteFunction = { attrs  ->
+    def remoteFunction = { attrs ->
         // before remote function
         def after = ''
-        if (attrs["before"]) {
+        if (attrs.before) {
             out << "${attrs.remove('before')};"
         }
-        if (attrs["after"]) {
+        if (attrs.after) {
             after = "${attrs.remove('after')};"
         }
 
-        def p = getProvider()
-        p.doRemoteFunction(owner,attrs,out)
+        getProvider().doRemoteFunction(owner, attrs, out)
         attrs.remove('update')
         // after remote function
         if (after) {
-            out <<  after
+            out << after
         }
     }
 
-    private setUpRequestAttributes(){
+    private setUpRequestAttributes() {
         if (!request[INCLUDED_JS]) request[INCLUDED_JS] = []
         if (!request[INCLUDED_LIBRARIES]) request[INCLUDED_LIBRARIES] = []
     }
@@ -173,7 +183,7 @@ class JavascriptTagLib  {
      */
     private deepClone(Map map) {
         def cloned = [:]
-        map?.each { k,v ->
+        map.each { k,v ->
             if (v instanceof Map) {
                 cloned[k] = deepClone(v)
             }
@@ -185,26 +195,43 @@ class JavascriptTagLib  {
     }
 
     /**
-     * A link to a remote uri that used the prototype library to invoke the link via ajax
+     * A link to a remote uri that used the prototype library to invoke the link via ajax.
+     *
+     * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
+     * @attr before The javascript function to call before the remote function call
+     * @attr after The javascript function to call after the remote function call
+     * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
+     * @attr method The method to use the execute the call (defaults to "post")
+     * @attr controller The name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr action The name of the action to use in the link, if not specified the default action will be linked
+     * @attr uri relative URI
+     * @attr url A map containing the action,controller,id etc.
+     * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.
+     * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:<port> if no value in Config and not running in production.
+     * @attr id The id to use in the link
+     * @attr fragment The link fragment (often called anchor tag) to use
+     * @attr params A map containing URL query parameters
+     * @attr mapping The named URL mapping to use to rewrite the link
+     * @attr elementId the DOM element id
      */
     def remoteLink = { attrs, body ->
-        out << "<a href=\""
+        out << '<a href="'
 
         def cloned = deepClone(attrs)
         out << createLink(cloned)
 
-        out << "\" onclick=\""
+        out << '" onclick="'
         // create remote function
         out << remoteFunction(attrs)
         attrs.remove('url')
-        out << "return false;\""
+        out << 'return false;"'
 
         // handle elementId like link
         def elementId = attrs.remove('elementId')
         if (elementId) {
             out << " id=\"${elementId}\""
         }
-        
+
         // process remaining attributes
         attrs.each { k,v ->
             out << ' ' << k << "=\"" << v << "\""
@@ -218,7 +245,19 @@ class JavascriptTagLib  {
     }
 
     /**
-     * A field that sends its value to a remote link
+     * A field that sends its value to a remote link.
+     * 
+     * @attr name REQUIRED the name of the field
+     * @attr value The initial value of the field
+     * @attr paramName The name of the parameter send to the server
+     * @attr action the name of the action to use in the link, if not specified the default action will be linked
+     * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr id The id to use in the link
+     * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
+     * @attr before The javascript function to call before the remote function call
+     * @attr after The javascript function to call after the remote function call
+     * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
+     * @attr method The method to use the execute the call (defaults to "post")
      */
     def remoteField = { attrs, body ->
         def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
@@ -229,7 +268,7 @@ class JavascriptTagLib  {
 
         if (attrs.params) {
             if (attrs.params instanceof Map) {
-                attrs.params.put(paramName, new JavascriptValue('this.value'))
+                attrs.params[paramName] = new JavascriptValue('this.value')
             }
             else {
                 attrs.params += "+'${paramName}='+this.value"
@@ -249,7 +288,16 @@ class JavascriptTagLib  {
     }
 
     /**
-     * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call
+     * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call.
+     * 
+     * @attr name REQUIRED The form name
+     * @attr url REQUIRED The url to submit to as either a map (containing values for the controller, action, id, and params) or a URL string
+     * @attr action The action to execute as a fallback, defaults to the url if non specified
+     * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
+     * @attr before The javascript function to call before the remote function call
+     * @attr after The javascript function to call after the remote function call
+     * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
+     * @attr method The method to use the execute the call (defaults to "post")
      */
     def formRemote = { attrs, body ->
         if (!attrs.name) {
@@ -287,7 +335,14 @@ a 'params' key to the [url] attribute instead.""")
     }
 
     /**
-     * Creates a form submit button that submits the current form to a remote ajax call
+     * Creates a form submit button that submits the current form to a remote ajax call.
+     *
+     * @attr url The url to submit to, either a map contraining keys for the action,controller and id or string value
+     * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
+     * @attr before The javascript function to call before the remote function call
+     * @attr after The javascript function to call after the remote function call
+     * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
+     * @attr method The method to use the execute the call (defaults to "post")
      */
     def submitToRemote = { attrs, body ->
         // get javascript provider
@@ -300,9 +355,9 @@ a 'params' key to the [url] attribute instead.""")
                       name: attrs.remove('name'),
                       value: attrs.remove('value'),
                       id: attrs.remove('id'),
-                      'class':attrs.remove('class')]
+                      'class': attrs.remove('class')]
 
-        out << withTag(name:'input', attrs:params) {
+        out << withTag(name: 'input', attrs: params) {
             out << body()
         }
     }
@@ -312,7 +367,7 @@ a 'params' key to the [url] attribute instead.""")
      *
      * <g:escapeJavascript>This is some "text" to be escaped</g:escapeJavascript>
      */
-    def escapeJavascript = { attrs,body ->
+    def escapeJavascript = { attrs, body ->
         def js = ''
         if (body instanceof Closure) {
             def tmp = out
@@ -344,13 +399,12 @@ a 'params' key to the [url] attribute instead.""")
 
     /**
      * Returns the provider of the necessary function calls to perform Javascript functions
-     *
      */
     private JavascriptProvider getProvider() {
         setUpRequestAttributes()
         def providerClass = PROVIDER_MAPPINGS.find { request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains(it.key) }?.value
         if (providerClass == null) {
-            providerClass = PrototypeProvider.class
+            providerClass = PrototypeProvider
         }
         return providerClass.newInstance()
     }
@@ -437,7 +491,7 @@ class PrototypeProvider implements JavascriptProvider {
 
         def i = url?.indexOf('?')
 
-        if (i >-1) {
+        if (i > -1) {
             if (attrs.params instanceof String) {
                 attrs.params += "+'&${url[i+1..-1].encodeAsJavaScript()}'"
             }
@@ -454,11 +508,6 @@ class PrototypeProvider implements JavascriptProvider {
             out << url
         }
         out << "',"
-        /* We have removed these currently and are using full URLs to prevent duplication of parameters
-            as per GRAILS-2045
-        if (pms)
-            attrs.params = pms
-        */
         // process options
         out << getAjaxOptions(attrs)
         // close
@@ -510,10 +559,10 @@ class PrototypeProvider implements JavascriptProvider {
         if (options) {
             // process callbacks
             def callbacks = options.findAll { k,v ->
-                k ==~ /on(\p{Upper}|\d){1}\w+/
+                k ==~ /on(\p{Upper}|\d) {1}\w+/
             }
             callbacks.each { k,v ->
-                ajaxOptions << "${k}:function(e){${v}}"
+                ajaxOptions << "${k}:function(e) {${v}}"
                 options.remove(k)
             }
             if (options.params) {
@@ -525,8 +574,8 @@ class PrototypeProvider implements JavascriptProvider {
             }
         }
         // remaining options
-        optionsAttr?.each { k, v ->
-            if (k!='url') {
+        optionsAttr.each { k, v ->
+            if (k != 'url') {
                 switch(v) {
                     case 'true': ajaxOptions << "${k}:${v}"; break
                     case 'false': ajaxOptions << "${k}:${v}"; break

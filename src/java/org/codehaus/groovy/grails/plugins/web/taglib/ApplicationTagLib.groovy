@@ -24,7 +24,6 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -58,15 +57,22 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     }
 
     /**
-     * Obtains the value of a cookie
+     * Obtains the value of a cookie.
+     *
+     * @attr name REQUIRED the cookie name
      */
     def cookie = { attrs ->
-        def cke = request.cookies.find {it.name == attrs['name']}
+        def cke = request.cookies.find { it.name == attrs.name }
         if (cke) {
             out << cke.value
         }
     }
 
+    /**
+     * Renders the specified request header value.
+     *
+     * @attr name REQUIRED the header name
+     */
     def header = { attrs ->
         if (attrs.name) {
             def hdr = request.getHeader(attrs.name)
@@ -75,14 +81,18 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     }
 
     /**
-     * Sets a variable in the pageContext or the specified scope
+     * Sets a variable in the pageContext or the specified scope.
+     *
+     * @attr var REQUIRED the variable name
+     * @attr value the variable value; if not specified uses the rendered body
+     * @attr scope the scope name; defaults to pageScope
      */
     def set = { attrs, body ->
-        def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
-        if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
-
         def var = attrs.var
         if (!var) throw new IllegalArgumentException("[var] attribute must be specified to for <g:set>!")
+
+        def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
+        if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
 
         def value = attrs.value
         def containsValue = attrs.containsKey('value')
@@ -101,7 +111,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
         if (!u) {
             // Leave it null if we're in production so we can throw
             if (Environment.current != Environment.PRODUCTION) {
-                u = "http://localhost:" +(System.getProperty('server.port') ? System.getProperty('server.port') : "8080")
+                u = "http://localhost:" + (System.getProperty('server.port') ?: "8080")
             }
         }
         return u
@@ -143,11 +153,18 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      * Creates a link to a resource, generally used as a method rather than a tag.
      *
      * eg. <link type="text/css" href="${resource(dir:'css',file:'main.css')}" />
+     * 
+     * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.x≈
+     * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
+     * @attr dir the name of the directory within the grails app to link to
+     * @attr file the name of the file within the grails app to link to
+     * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:<port> if no value in Config and not running in production.
+     * @attr plugin The plugin to look for the resource in
      */
     def resource = { attrs ->
         def writer = out
         writer << handleAbsolute(attrs)
-        def dir = attrs['dir']
+        def dir = attrs.dir
         if (attrs.plugin) {
             writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
         }
@@ -163,32 +180,48 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
             }
         }
         if (dir) {
-            if(!dir.startsWith('/'))
+            if (!dir.startsWith('/')) {
                 writer << '/'
+            }
             writer << dir
         }
-        def file = attrs['file']
+        def file = attrs.file
         if (file) {
-            if(!(file.startsWith('/') || dir?.endsWith('/')))
+            if (!(file.startsWith('/') || dir?.endsWith('/'))) {
                 writer << '/'
+            }
             writer << file
         }
     }
 
     /**
-     *  General linking to controllers, actions etc. Examples:
+     * General linking to controllers, actions etc. Examples:
      *
-     *  <g:link action="myaction">link 1</gr:link>
-     *  <g:link controller="myctrl" action="myaction">link 2</gr:link>
+     * <g:link action="myaction">link 1</gr:link>
+     * <g:link controller="myctrl" action="myaction">link 2</gr:link>
+     *
+     * @attr controller The name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr action The name of the action to use in the link, if not specified the default action will be linked
+     * @attr uri relative URI
+     * @attr url A map containing the action,controller,id etc.
+     * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.
+     * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:<port> if no value in Config and not running in production.
+     * @attr id The id to use in the link
+     * @attr fragment The link fragment (often called anchor tag) to use
+     * @attr params A map containing URL query parameters
+     * @attr mapping The named URL mapping to use to rewrite the link
+     * @attr event Webflow _eventId parameter
+     * @attr elementId DOM element id
      */
     def link = { attrs, body ->
 
         def writer = getOut()
         def elementId = attrs.remove('elementId')
         def linkAttrs
-        if(attrs.params instanceof Map && attrs.params.containsKey('attrs')) {
+        if (attrs.params instanceof Map && attrs.params.containsKey('attrs')) {
             linkAttrs = attrs.params.remove('attrs').clone()
-        } else {
+        }
+        else {
             linkAttrs = [:]
         }
         writer <<  '<a href=\"'
@@ -219,21 +252,33 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      * rather than a tag eg.
      *
      *  <a href="${createLink(action:'list')}">List</a>
+     * 
+     * @attr controller The name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr action The name of the action to use in the link, if not specified the default action will be linked
+     * @attr uri relative URI
+     * @attr url A map containing the action,controller,id etc.
+     * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.
+     * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:<port> if no value in Config and not running in production.
+     * @attr id The id to use in the link
+     * @attr fragment The link fragment (often called anchor tag) to use
+     * @attr params A map containing URL query parameters
+     * @attr mapping The named URL mapping to use to rewrite the link
+     * @attr event Webflow _eventId parameter
      */
     def createLink = { attrs ->
         def writer = getOut()
         // prefer URI attribute
-        if (attrs['uri']) {
+        if (attrs.uri) {
             writer << handleAbsolute(attrs)
             writer << attrs.uri.toString()
         }
         else {
             // prefer a URL attribute
             def urlAttrs = attrs
-            if (attrs['url'] instanceof Map) {
+            if (attrs.url instanceof Map) {
                 urlAttrs = attrs.remove('url').clone()
             }
-            else if (attrs['url']) {
+            else if (attrs.url) {
                 urlAttrs = attrs.remove('url').toString()
             }
 
@@ -259,7 +304,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
                 def frag = urlAttrs.remove('fragment')?.toString()
                 def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
                 def mappingName = urlAttrs.remove('mapping')
-                if(mappingName != null) {
+                if (mappingName != null) {
                     params.mappingName = mappingName
                 }
                 if (request['flowExecutionKey']) {
@@ -296,22 +341,22 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      * withTag(name:'script',attrs:[type:'text/javascript']) {
      *
      * }
+     *
+     * @attr name REQUIRED the tag name
+     * @attr attrs tag attributes
      */
     def withTag = { attrs, body ->
         def writer = out
         writer << "<${attrs.name}"
-        if (attrs.attrs) {
-            attrs.attrs.each { k,v ->
-                if (v) {
-                    if (v instanceof Closure) {
-                        writer << " $k=\""
-                        v()
-                        writer << '"'
-                    }
-                    else {
-                        writer << " $k=\"$v\""
-                    }
-                }
+        attrs.attrs.each { k,v ->
+            if (!v) return
+            if (v instanceof Closure) {
+                writer << " $k=\""
+                v()
+                writer << '"'
+            }
+            else {
+                writer << " $k=\"$v\""
             }
         }
         writer << '>'
@@ -319,10 +364,17 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
         writer << "</${attrs.name}>"
     }
 
+    /**
+     * Uses the Groovy JDK join method to concatenate the toString() representation of each item
+     * in this collection with the given separator.
+     *
+     * @attr REQUIRED in The collection to iterate over
+     * @attr delimiter The value of the delimiter to use during the join. If no delimiter is specified then ", " (a comma followed by a space) will be used as the delimiter.
+     */
     def join = { attrs ->
         def collection = attrs.'in'
         if (collection == null) {
-            throw new GrailsTagException('Tag ["join"] missing required attribute ["in"]')
+            throwTagError('Tag ["join"] missing required attribute ["in"]')
         }
 
         def delimiter = attrs.delimiter == null ? ', ' : attrs.delimiter
@@ -330,9 +382,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
     }
 
     /**
-     * Output application metadata that is loaded from application.properties
+     * Output application metadata that is loaded from application.properties.
+     *
+     * @attr name REQUIRED the metadata key
      */
     def meta = { attrs ->
+        if (!attrs.name) {
+            throwTagError('Tag ["meta"] missing required attribute ["name"]')
+        }
         out << Metadata.current[attrs.name]
     }
 }

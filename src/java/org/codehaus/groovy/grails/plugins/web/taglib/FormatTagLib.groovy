@@ -43,7 +43,7 @@ class FormatTagLib {
         if (locale == null) {
             locale = RCU.getLocale(request)
         }
-        def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+        def messageSource = grailsAttributes.applicationContext.messageSource
         def message
         try {
             message = messageSource.getMessage( code, args == null ? null : args.toArray(), locale )
@@ -66,32 +66,31 @@ class FormatTagLib {
      * <code>true</code> and <code>false</code> option are not given,
      * then the boolean is output using the default label.
      *
-     * Attributes:
-     *
-     * boolean - the boolean to output
-     * true (optional) - text label for boolean true value
-     * false (optional) - text label for boolean false value
-     *
      * Examples:
      *
      * <g:formatBoolean boolean="${myBoolean}" />
      * <g:formatBoolean boolean="${myBoolean}" true="True!" false="False!" />
+     *
+     * @attr boolean REQUIRED the boolean to output
+     * @attr true text label for boolean true value
+     * @attr false text label for boolean false value
+     * @attr locale Force the locale for formatting.
      */
     def formatBoolean = { attrs ->
         if (!attrs.containsKey("boolean")) {
             throwTagError("Tag [formatBoolean] is missing required attribute [boolean]")
         }
 
-        def b = attrs.get("boolean")
+        def b = attrs['boolean']
         if (b == null) {
-            return null
+            return
         }
 
         if (!(b instanceof Boolean)) {
             b = Boolean.valueOf(b)
         }
 
-        def locale = resolveLocale(attrs.get('locale'))
+        def locale = resolveLocale(attrs.locale)
         if (b) {
             return attrs["true"] ?: messageHelper('boolean.true', { messageHelper('default.boolean.true', 'True', null, locale) }, null, locale)
         }
@@ -108,37 +107,47 @@ class FormatTagLib {
      * e.g., <g:formatDate date="${myDate}" format="yyyy-MM-dd HH:mm" />
      *
      * @see java.text.SimpleDateFormat
+     *
+     * @attr date the date object to display; defaults to now if not specified
+     * @attr format The formatting pattern to use for the date, see SimpleDateFormat
+     * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/*.properties file) with this key. If format and formatName are empty, format is looked up with 'default.date.format' key. If the key is missing, 'yyyy-MM-dd HH:mm:ss z' formatting pattern is used.
+     * @attr type The type of format to use for the date / time. format or formatName aren't used when type is specified. Possible values: 'date' - shows only date part, 'time' - shows only time part, 'both'/'datetime' - shows date and time
+     * @attr timeZone the time zone for formatting. See TimeZone class.
+     * @attr locale Force the locale for formatting.
+     * @attr style Use default date/time formatting of the country specified by the locale. Possible values: SHORT (default), MEDIUM, LONG, FULL . See DateFormat for explanation.
+     * @attr dateStyle Set separate style for the date part.
+     * @attr timeStyle Set separate style for the time part.
      */
     def formatDate = { attrs ->
 
         def date
         if (attrs.containsKey('date')) {
-            date = attrs.get('date')
-            if (date == null) return null
+            date = attrs.date
+            if (date == null) return
         }
         else {
             date = new Date()
         }
 
-        def locale = resolveLocale(attrs.get('locale'))
-        def timeStyle = null
-        def dateStyle = null
-        if (attrs.get('style') != null) {
-            def style=attrs.get('style').toString().toUpperCase()
+        def locale = resolveLocale(attrs.locale)
+        String timeStyle = null
+        String dateStyle = null
+        if (attrs.style != null) {
+            String style = attrs.style.toString().toUpperCase()
             timeStyle = style
             dateStyle = style
         }
 
-        if (attrs.get('dateStyle') != null) {
-            dateStyle = attrs.get('dateStyle').toString().toUpperCase()
+        if (attrs.dateStyle != null) {
+            dateStyle = attrs.dateStyle.toString().toUpperCase()
         }
-        if (attrs.get('timeStyle') != null) {
-            timeStyle = attrs.get('timeStyle').toString().toUpperCase()
+        if (attrs.timeStyle != null) {
+            timeStyle = attrs.timeStyle.toString().toUpperCase()
         }
-        def type = attrs.get('type')?.toString()?.toUpperCase()
-        def formatName = attrs.get('formatName')
-        def format = attrs.get('format')
-        def timeZone = attrs.get('timeZone')
+        String type = attrs.type?.toString()?.toUpperCase()
+        def formatName = attrs.formatName
+        def format = attrs.format
+        def timeZone = attrs.timeZone
         if (timeZone != null) {
             if (!(timeZone instanceof TimeZone)) {
                 timeZone = TimeZone.getTimeZone(timeZone as String)
@@ -177,19 +186,12 @@ class FormatTagLib {
     }
 
     def parseStyle(styleStr) {
-        if (styleStr == 'FULL') {
-            return FastDateFormat.FULL
+        switch (styleStr) {
+            case 'FULL':   return FastDateFormat.FULL
+            case 'LONG':   return FastDateFormat.LONG
+            case 'MEDIUM': return FastDateFormat.MEDIUM
+            default:       return FastDateFormat.SHORT
         }
-
-        if (styleStr == 'LONG') {
-            return FastDateFormat.LONG
-        }
-
-        if (styleStr == 'MEDIUM') {
-            return FastDateFormat.MEDIUM
-        }
-
-        return FastDateFormat.SHORT
     }
 
     /**
@@ -200,19 +202,33 @@ class FormatTagLib {
      * e.g., <g:formatNumber number="${myNumber}" format="###,##0" />
      *
      * @see java.text.DecimalFormat
+     * 
+     * @attr number REQUIRED the number to display
+     * @attr format The formatting pattern to use for the number, see DecimalFormat
+     * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key.Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key. If format and formatName are empty, format is looked up with 'default.number.format' key. If the key is missing, '0' formatting pattern is used.
+     * @attr type The type of formatter to use: 'number', 'currency' or 'percent' . format or formatName aren't used when type is specified.
+     * @attr locale Override the locale of the request , String or java.util.Locale value
+     * @attr groupingUsed Set whether or not grouping will be used in this format.
+     * @attr minIntegerDigits Sets the minimum number of digits allowed in the integer portion of a number.
+     * @attr maxIntegerDigits Sets the maximum number of digits allowed in the integer portion of a number.
+     * @attr minFractionDigits Sets the minimum number of digits allowed in the fraction portion of a number.
+     * @attr maxFractionDigits Sets the maximum number of digits allowed in the fraction portion of a number.
+     * @attr currencyCode The standard currency code ('EUR', 'USD', etc.), uses formatting settings for the currency. type='currency' attribute is recommended.
+     * @attr currencySymbol Force the currency symbol to some symbol, recommended way is to use currencyCode attribute instead (takes symbol information from java.util.Currency)
+     * @attr roundingMode Sets the RoundingMode used in this DecimalFormat. Usual values: HALF_UP, HALF_DOWN. If roundingMode is UNNECESSARY and ArithemeticException raises, the original number formatted with default number formatting will be returned.
      */
     def formatNumber = { attrs ->
         if (!attrs.containsKey('number')) {
             throwTagError("Tag [formatNumber] is missing required attribute [number]")
         }
 
-        def number = attrs.get('number')
-        if (number == null) return null
+        def number = attrs.number
+        if (number == null) return
 
-        def formatName = attrs.get('formatName')
-        def format = attrs.get('format')
-        def type = attrs.get('type')
-        def locale = resolveLocale(attrs.get('locale'))
+        def formatName = attrs.formatName
+        def format = attrs.format
+        def type = attrs.type
+        def locale = resolveLocale(attrs.locale)
 
         if (type == null) {
             if (!format && formatName) {
@@ -250,38 +266,39 @@ class FormatTagLib {
         // ensure formatting accuracy
         decimalFormat.setParseBigDecimal(true)
 
-        if (attrs.get('currencyCode') != null) {
-            Currency currency = Currency.getInstance(attrs.get('currencyCode') as String)
+        if (attrs.currencyCode != null) {
+            Currency currency = Currency.getInstance(attrs.currencyCode as String)
             decimalFormat.setCurrency(currency)
         }
-        if (attrs.get('currencySymbol') != null) {
+        if (attrs.currencySymbol != null) {
             dcfs = decimalFormat.getDecimalFormatSymbols()
-            dcfs.setCurrencySymbol(attrs.get('currencySymbol') as String)
+            dcfs.setCurrencySymbol(attrs.currencySymbol as String)
             decimalFormat.setDecimalFormatSymbols(dcfs)
         }
-        if (attrs.get('groupingUsed') != null) {
-            if (attrs.get('groupingUsed') instanceof Boolean) {
-                decimalFormat.setGroupingUsed(attrs.get('groupingUsed'))
+        if (attrs.groupingUsed != null) {
+            if (attrs.groupingUsed instanceof Boolean) {
+                decimalFormat.setGroupingUsed(attrs.groupingUsed)
             }
             else {
                 // accept true, y, 1, yes
-                decimalFormat.setGroupingUsed(attrs.get('groupingUsed').toString().toBoolean() || attrs.get('groupingUsed').toString()=='yes')
+                decimalFormat.setGroupingUsed(attrs.groupingUsed.toString().toBoolean() ||
+                    attrs.groupingUsed.toString() == 'yes')
             }
         }
-        if (attrs.get('maxIntegerDigits') != null) {
-            decimalFormat.setMaximumIntegerDigits(attrs.get('maxIntegerDigits') as Integer)
+        if (attrs.maxIntegerDigits != null) {
+            decimalFormat.setMaximumIntegerDigits(attrs.maxIntegerDigits as Integer)
         }
-        if (attrs.get('minIntegerDigits') != null) {
-            decimalFormat.setMinimumIntegerDigits(attrs.get('minIntegerDigits') as Integer)
+        if (attrs.minIntegerDigits != null) {
+            decimalFormat.setMinimumIntegerDigits(attrs.minIntegerDigits as Integer)
         }
-        if (attrs.get('maxFractionDigits') != null) {
-            decimalFormat.setMaximumFractionDigits(attrs.get('maxFractionDigits') as Integer)
+        if (attrs.maxFractionDigits != null) {
+            decimalFormat.setMaximumFractionDigits(attrs.maxFractionDigits as Integer)
         }
-        if (attrs.get('minFractionDigits') != null) {
-            decimalFormat.setMinimumFractionDigits(attrs.get('minFractionDigits') as Integer)
+        if (attrs.minFractionDigits != null) {
+            decimalFormat.setMinimumFractionDigits(attrs.minFractionDigits as Integer)
         }
-        if (attrs.get('roundingMode') != null) {
-            def roundingMode=attrs.get('roundingMode')
+        if (attrs.roundingMode != null) {
+            def roundingMode = attrs.roundingMode
             if (!(roundingMode instanceof RoundingMode)) {
                 roundingMode = RoundingMode.valueOf(roundingMode)
             }
@@ -317,6 +334,11 @@ class FormatTagLib {
         return locale
     }
 
+    /**
+     * Encodes the body using the specified codec.
+     * 
+     * @attr codec REQUIRED the codec name
+     */
     def encodeAs = { attrs, body ->
         if (!attrs.codec) {
             throwTagError("Tag [encodeAs] requires a codec name in the [codec] attribute")
