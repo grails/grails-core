@@ -29,24 +29,26 @@ class PluginTagLib {
     GrailsPluginManager pluginManager
 
     /**
-     * Gets the path to a particular plugin
+     * Gets the path to a particular plugin.
      *
-     * eg. <plugin:path name="myPlugin" />
+     * eg. &lt;plugin:path name="myPlugin" /&gt;
+     *
+     * @attr name REQUIRED the plugin name
      */
-    def path = { attrs, body  ->
+    def path = { attrs, body ->
         out << pluginManager.getPluginPath(attrs.name)
     }
 
     /**
      * Checks whether a particular plugin exists and executes the body if it does
      *
-     * eg. <plugin:isAvailable name="hibernate">print me</plugin:isAvailable>
+     * eg. &lt;plugin:isAvailable name="hibernate"&gt;print me&lt;/plugin:isAvailable&gt;
+     *
+     * @attr name REQUIRED the plugin name
+     * @attr version REQUIRED the plugin version
      */
     def isAvailable = { attrs, body ->
-        def name = attrs.name
-        def version = attrs.version
-
-        if (checkPluginExists(version, name)) {
+        if (checkPluginExists(attrs.version, attrs.name)) {
             out << body()
         }
     }
@@ -54,13 +56,13 @@ class PluginTagLib {
     /**
      * Checks whether a particular plugin does not exist and executes the body if it does
      *
-     * eg. <plugin:isNotAvailable name="hibernate">print me</plugin:isNotAvailable>
+     * eg. &lt;plugin:isNotAvailable name="hibernate"&gt;print me&lt;/plugin:isNotAvailable&gt;
+     *
+     * @attr name REQUIRED the plugin name
+     * @attr version REQUIRED the plugin version
      */
     def isNotAvailable = { attrs, body ->
-        def name = attrs.name
-        def version = attrs.version
-
-        if (!checkPluginExists(version, name)) {
+        if (!checkPluginExists(attrs.version, attrs.name)) {
             out << body()
         }
     }
