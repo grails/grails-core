@@ -32,6 +32,7 @@ class Author {
     String name
     static constraints = {
         name(size: 1..40)
+        books sort:"title"
     }
 }
 ''')
@@ -68,4 +69,56 @@ class Author {
 
         assert b.save(flush:true) : "should have saved book"
     }
+	
+	void testBindToSetCollection() {
+		def Author = ga.getDomainClass("Author").clazz
+		def Book = ga.getDomainClass("Book").clazz
+
+		def a = Author.newInstance(name:"Stephen King")
+					.addToBooks(title:"The Stand", isbn:"983479")
+					.addToBooks(title:"The Shining", isbn:"232309")
+					.save(flush:true)
+		
+	
+		assert a != null : "should have saved the Author"
+		
+		Author.withSession { session -> session.clear() }
+		
+		a = Author.findByName("Stephen King")
+		
+		def request = new MockHttpServletRequest()
+		request.addParameter("books[0].isbn","12345")
+		request.addParameter("books[1].isbn","54321")
+		def params = new GrailsParameterMap(request)
+		
+		a.properties = params
+		
+		assert a.books.find { it.isbn == "12345" } != null
+		assert a.books.find { it.isbn == "54321" } != null
+	}
+	
+	void testBindToNewInstance() {
+		def Author = ga.getDomainClass("Author").clazz
+		def Book = ga.getDomainClass("Book").clazz
+
+		def a = Author.newInstance(name:"Stephen King")
+		
+	
+		
+		def request = new MockHttpServletRequest()
+		request.addParameter("books[0].isbn","12345")
+		request.addParameter("books[0].title","The Shining")
+		
+		request.addParameter("books[1].isbn","54321")
+		request.addParameter("books[1].title","The Stand")
+		
+		def params = new GrailsParameterMap(request)
+		
+		a.properties = params
+		
+		assert a.books.find { it.isbn == "12345" }?.title == "The Shining"
+		assert a.books.find { it.isbn == "54321" }?.title == "The Stand"
+	}
+	
+
 }

@@ -946,21 +946,7 @@ public class GrailsScriptRunner {
     @SuppressWarnings("unchecked")
     private static List<File> listKnownPluginDirs(BuildSettings settings) {
         List<File> dirs = new ArrayList<File>();
-
-        // First look in the global plugins directory.
-        dirs.addAll(Arrays.asList(listPluginDirs(settings.getGlobalPluginsDir())));
-
-        // Next up, the project's plugins directory.
-        dirs.addAll(Arrays.asList(listPluginDirs(settings.getProjectPluginsDir())));
-
-        // Finally, pick up any explicit plugin directories declared in the build config.
-        Map<String, ?> buildConfig = settings.getConfig().flatten();
-        for (Map.Entry<String,?> entry : buildConfig.entrySet()) {
-            if (entry.getKey().startsWith("grails.plugin.location.")) {
-                dirs.add(new File(entry.getValue().toString()));
-            }
-        }
-
+        dirs.addAll(settings.getPluginDirectories());
         return dirs;
     }
 

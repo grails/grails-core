@@ -143,11 +143,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 out = GSPResponseWriter.getInstance(response);
             }
 
+            boolean statusSet = false;
             if (argMap.containsKey(ARGUMENT_STATUS)) {
                 Object statusObj = argMap.get(ARGUMENT_STATUS);
                 if (statusObj != null) {
                     try {
                         response.setStatus(Integer.parseInt(statusObj.toString()));
+                        statusSet = true;
                     }
                     catch (NumberFormatException e) {
                         throw new ControllerExecutionException(
@@ -184,6 +186,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
+            }
+            else if (statusSet) {
+                // GRAILS-6711 nothing to render, just setting status code, so don't render the map
+                renderView = false;
             }
             else {
                 Object object = arguments[0];

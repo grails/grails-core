@@ -595,6 +595,8 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         for (p in pluginDeps) {
             def name = p.name
             def version = p.revision
+			
+			
             def fullName = "$name-$version"
             def pluginInfo = pluginSettings.getPluginInfoForName(name)
             def pluginLoc = pluginInfo?.pluginDir
@@ -605,17 +607,23 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
             else if (pluginLoc) {
                 
-
-                def dirName = pluginLoc.file.canonicalFile.name
-                PluginBuildSettings settings = pluginSettings
-                if (GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version) && !settings.isInlinePluginLocation(pluginLoc) && !pluginsToInstall.contains()) {
-                    // only print message if the version doesn't start with "latest." since we have
-                    // to do a check for a new version when there version is specified as "latest.integration" etc.
-                    if (!version.startsWith("latest."))
-                        eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
-                    
-                    pluginsToInstall << p
-                }
+				if(version.startsWith("latest.")) {
+					pluginsToInstall << p
+				}
+				else {
+					def dirName = pluginLoc.file.canonicalFile.name
+					PluginBuildSettings settings = pluginSettings
+					if (GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version) &&
+						!settings.isInlinePluginLocation(pluginLoc) &&
+						!pluginsToInstall.contains(p)) {
+						// only print message if the version doesn't start with "latest." since we have
+						// to do a check for a new version when there version is specified as "latest.integration" etc.
+						if (!version.startsWith("latest."))
+							eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
+						
+						pluginsToInstall << p
+					}
+				}
             }
         }
         return pluginsToInstall

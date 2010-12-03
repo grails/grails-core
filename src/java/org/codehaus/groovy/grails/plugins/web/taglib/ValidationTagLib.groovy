@@ -43,35 +43,45 @@ class ValidationTagLib {
     /**
      * Renders an error message for the given bean and field
      *
-     * eg. <g:fieldError bean="${book}" field="title" />
+     * eg. &lt;g:fieldError bean="${book}" field="title" /&gt;
+     * 
+     * @attr bean REQUIRED The bean to check for errors
+     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr message The object to resolve the message for. Objects must implement org.springframework.context.MessageSourceResolvable.
+     * @attr encodeAs The name of a codec to apply, i.e. HTML, JavaScript, URL etc
+     * @attr locale override locale to use instead of the one detected
      */
     def fieldError = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field
 
         if (bean && field) {
-            if (bean.metaClass.hasProperty( bean,'errors')) {
-                return messageImpl(error:bean.errors?.getFieldError(field), encodeAs:"HTML")
+            if (bean.metaClass.hasProperty(bean, 'errors')) {
+                return messageImpl(error: bean.errors?.getFieldError(field), encodeAs: "HTML")
             }
         }
+
         return ''
     }
 
     /**
      * Obtains the value of a field either from the original errors
      *
-     * eg. <g:fieldValue bean="${book}" field="title" />
+     * eg. &lt;g:fieldValue bean="${book}" field="title" /&gt;
+     *
+     * @attr bean REQUIRED The bean to check for errors
+     * @attr field REQUIRED The field of the bean or model reference to check
      */
     def fieldValue = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field?.toString()
         if (bean && field) {
-            if (bean.metaClass.hasProperty( bean,'errors')) {
+            if (bean.metaClass.hasProperty(bean,'errors')) {
                 Errors errors = bean.errors
                 def rejectedValue = errors?.getFieldError(field)?.rejectedValue
-                if (rejectedValue == null ) {
+                if (rejectedValue == null) {
                     rejectedValue = bean
-                    field.split("\\.").each { String fieldPart ->
+                    for (String fieldPart in field.split("\\.")) {
                         rejectedValue = rejectedValue?."$fieldPart"
                     }
                 }
@@ -81,7 +91,7 @@ class ValidationTagLib {
             }
             else {
                 def rejectedValue = bean
-                field.split("\\.").each{ String fieldPart ->
+                for (String fieldPart in field.split("\\.")) {
                     rejectedValue = rejectedValue?."$fieldPart"
                 }
                 if (rejectedValue != null) {
@@ -92,9 +102,9 @@ class ValidationTagLib {
     }
 
     def extractErrors(attrs) {
-        def model = attrs['model']
+        def model = attrs.model
         def checkList = []
-        if (attrs?.containsKey('bean')) {
+        if (attrs.containsKey('bean')) {
             if (attrs.bean) {
                 checkList << attrs.bean
             }
@@ -105,8 +115,8 @@ class ValidationTagLib {
             }
         }
         else {
-            request.attributeNames.each {
-                def ra = request[it]
+            for (attributeName in request.attributeNames) {
+                def ra = request[attributeName]
                 if (ra) {
                     def mc = GroovySystem.metaClassRegistry.getMetaClass(ra.getClass())
                     if (ra instanceof Errors && !checkList.contains(ra)) {
@@ -135,19 +145,23 @@ class ValidationTagLib {
             if (errors?.hasErrors()) {
                 // if the 'field' attribute is not provided then we should output a body,
                 // otherwise we should check for field-specific errors
-                if (!attrs['field'] || errors.hasFieldErrors(attrs['field'])) {
+                if (!attrs.field || errors.hasFieldErrors(attrs.field)) {
                     resultErrorsList << errors
                 }
             }
         }
 
-        return resultErrorsList
+        resultErrorsList
     }
 
     /**
-     * Checks if the request has errors either for a field or global errors
+     * Checks if the request has errors either for a field or global errors.
+     *
+     * @attr bean REQUIRED The bean to check for errors
+     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr model The model reference to check for errors
      */
-    def hasErrors = {attrs, body ->
+    def hasErrors = { attrs, body ->
         def errorsList = extractErrors(attrs)
         if (errorsList) {
             out << body()
@@ -156,18 +170,22 @@ class ValidationTagLib {
 
     /**
      * Loops through each error for either field or global errors
+     *
+     * @attr bean REQUIRED The bean to check for errors
+     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr model The model reference to check for errors
      */
     def eachError = { attrs, body ->
         eachErrorInternal(attrs, body, true)
     }
 
-    def eachErrorInternal(attrs, body, outputResult=false) {
+    def eachErrorInternal(attrs, body, boolean outputResult = false) {
         def errorsList = extractErrors(attrs)
         def var = attrs.var
-        def field = attrs['field']
+        def field = attrs.field
 
         def errorList = []
-        errorsList.each { errors ->
+        for (errors in errorsList) {
             if (field) {
                 if (errors.hasFieldErrors(field)) {
                     errorList += errors.getFieldErrors(field)
@@ -178,7 +196,7 @@ class ValidationTagLib {
             }
         }
 
-        errorList.each { error ->
+        for (error in errorList) {
             def result
             if (var) {
                 result = body([(var):error])
@@ -196,6 +214,10 @@ class ValidationTagLib {
 
     /**
      * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported)
+     *
+     * @attr bean REQUIRED The bean to check for errors
+     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr model The model reference to check for errors
      */
     def renderErrors = { attrs, body ->
         def renderAs = attrs.remove('as')
@@ -203,7 +225,7 @@ class ValidationTagLib {
 
         if (renderAs == 'list') {
             def codec = attrs.codec ?: 'HTML'
-            if (codec=='none') codec = ''
+            if (codec == 'none') codec = ''
 
             out << "<ul>"
             out << eachErrorInternal(attrs, {
@@ -218,28 +240,36 @@ class ValidationTagLib {
                     error(object: it.objectName,
                           field: it.field,
                           message: message(error:it)?.toString(),
-                          'rejected-value': StringEscapeUtils.escapeXml(it.rejectedValue))
+                            'rejected-value': StringEscapeUtils.escapeXml(it.rejectedValue))
                 })
             }
         }
     }
 
     /**
-     * Resolves a message code for a given error or code from the resource bundle
+     * Resolves a message code for a given error or code from the resource bundle.
+     *
+     * @attr error The error to resolve the message for. Used for built-in Grails messages.
+     * @attr message The object to resolve the message for. Objects must implement org.springframework.context.MessageSourceResolvable.
+     * @attr code The code to resolve the message for. Used for custom application messages.
+     * @attr args A list of argument values to apply to the message, when code is used.
+     * @attr default The default message to output if the error or code cannot be found in messages.properties.
+     * @attr encodeAs The name of a codec to apply, i.e. HTML, JavaScript, URL etc
+     * @attr locale override locale to use instead of the one detected
      */
     def message = { attrs ->
         messageImpl(attrs)
     }
 
     def messageImpl(attrs) {
-        def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
+        def messageSource = grailsAttributes.applicationContext.messageSource
         def locale = attrs.locale ?: RCU.getLocale(request)
 
         def text
-        def error = attrs['error'] ?: attrs['message']
+        def error = attrs.error ?: attrs.message
         if (error) {
             try {
-                text = messageSource.getMessage( error , locale )
+                text = messageSource.getMessage(error , locale)
             }
             catch (NoSuchMessageException e) {
                 if (error instanceof MessageSourceResolvable) {
@@ -250,10 +280,10 @@ class ValidationTagLib {
                 }
             }
         }
-        else if (attrs['code']) {
-            def code = attrs['code']
-            def args = attrs['args']
-            def defaultMessage = attrs['default'] != null ? attrs['default'] : code
+        else if (attrs.code) {
+            def code = attrs.code
+            def args = attrs.args
+            def defaultMessage = attrs['default'] ?: code
 
             def message = messageSource.getMessage(code, args == null ? null : args.toArray(),
                 defaultMessage, locale)
@@ -265,9 +295,9 @@ class ValidationTagLib {
             }
         }
         if (text) {
-            return (attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text)
+            return attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text
         }
-        return ''
+        ''
     }
 
     // Maps out how Grails contraints map to Apache commons validators
@@ -284,32 +314,27 @@ class ValidationTagLib {
 
     /**
      * Validates a form using Apache commons validator javascript against constraints defined in a Grails
-     * domain class
+     * domain class.
      *
      * TODO: This tag is a work in progress
+     *
+     * @attr form REQUIRED the HTML form name
+     * @attr againstClass REQUIRED the domain class name
      */
     def validate = { attrs, body ->
-        def form = attrs["form"]
-        def againstClass = attrs["against"]
+        def form = attrs.form
         if (!form) {
             throwTagError("Tag [validate] is missing required attribute [form]")
         }
 
-        if (!againstClass) {
-            againstClass = form.substring(0,1).toUpperCase() + form.substring(1)
-        }
-
-        def app = grailsAttributes.getGrailsApplication()
-        def dc = app.getDomainClass(againstClass)
-
+        def againstClass = attrs.against ?: form.substring(0,1).toUpperCase() + form.substring(1)
+        def dc = grailsAttributes.grailsApplication.getDomainClass(againstClass)
         if (!dc) {
             throwTagError("Tag [validate] could not find a domain class to validate against for name [${againstClass}]")
         }
 
-        def constrainedProperties = dc.constrainedProperties.collect { k,v -> return v }
         def appliedConstraints = []
-
-        constrainedProperties.each {
+        dc.constrainedProperties.values().each {
             appliedConstraints += it.collect{ it.appliedConstraints }
         }
 
@@ -336,7 +361,7 @@ class ValidationTagLib {
                     validateTypes = validateType.split(",")
                 }
 
-                validateTypes.each { vt ->
+                for (vt in validateTypes) {
                     // import required script
                     def scriptName = "org/apache/commons/validator/javascript/validate" + vt.substring(0,1).toUpperCase() + vt.substring(1) + ".js"
                     def inStream = getClass().classLoader.getResourceAsStream(scriptName)
@@ -345,7 +370,7 @@ class ValidationTagLib {
                     }
 
                     out << "function ${form}_${vt}() {"
-                    v.each { constraint ->
+                    for (constraint in v) {
                         out << "this.${constraint.propertyName} = new Array("
                         out << "document.forms['${form}'].elements['${constraint.propertyName}']," // the field
                         out << '"Test message"' // TODO: Resolve the actual message
@@ -369,7 +394,7 @@ class ValidationTagLib {
         }
         out << 'return true;\n';
         out << '}\n'
-        // out << "document.forms['${attrs['form']}'].onsubmit = function(e) {return validateForm(this)}\n"
+        // out << "document.forms['${attrs.form}'].onsubmit = function(e) {return validateForm(this)}\n"
         out << '</script>'
     }
 
@@ -382,7 +407,7 @@ class ValidationTagLib {
     def formatValue(value, String propertyPath = null) {
         PropertyEditorRegistry registry = RequestContextHolder.currentRequestAttributes().getPropertyEditorRegistry()
         PropertyEditor editor = registry.findCustomEditor(value.getClass(), propertyPath)
-        if (editor != null) {
+        if (editor) {
             editor.setValue(value)
             return HTMLCodec.shouldEncode() && !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText
         }
