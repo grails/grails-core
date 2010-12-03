@@ -508,6 +508,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
+println "manager.listDependencies('runtime'): " + manager.listDependencies('runtime')
         assertEquals 54, manager.listDependencies('runtime').size()
         assertEquals 57, manager.listDependencies('test').size()
         assertEquals 20, manager.listDependencies('build').size()
@@ -536,6 +537,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
+println "manager.listDependencies('build'): " + manager.listDependencies('build')
         assertEquals 20, manager.listDependencies('build').size()
         assertEquals 56, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
@@ -768,7 +770,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
             runtime "commons-validator:commons-validator:1.3.1",
                     "commons-el:commons-el:1.0",
-                    "commons-pool:commons-pool:1.5.4"
+                    "commons-pool:commons-pool:1.5.5"
 
             [transitive: false]
         }
