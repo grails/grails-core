@@ -19,15 +19,14 @@ import org.codehaus.groovy.grails.support.CommandLineResourceLoader
 import org.codehaus.groovy.grails.cli.support.JndiBindingSupport
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean
+import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.core.io.FileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
-import org.springframework.mock.jndi.SimpleNamingContextBuilder
-import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
-import org.springframework.core.io.FileSystemResource
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 /**
@@ -46,19 +45,19 @@ target(loadApp:"Loads the Grails application object") {
     profile("Loading parent ApplicationContext") {
         def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
         beanDefinitions = builder.beans {
-            resourceHolder(org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder) {
+            resourceHolder(GrailsResourceHolder) {
                 resources = pluginSettings.artefactResources
             }
-            grailsResourceLoader(org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean) {
+            grailsResourceLoader(GrailsResourceLoaderFactoryBean) {
                 grailsResourceHolder = resourceHolder
             }
-            grailsApplication(org.codehaus.groovy.grails.commons.DefaultGrailsApplication, ref("grailsResourceLoader"))
+            grailsApplication(DefaultGrailsApplication, ref("grailsResourceLoader"))
         }
     }
-
+    
     appCtx = beanDefinitions.createApplicationContext()
     def ctx = appCtx
-
+    
     // The mock servlet context needs to resolve resources relative to the 'web-app'
     // directory. We also need to use a FileSystemResourceLoader, otherwise paths are
     // evaluated against the classpath - not what we want!
@@ -90,11 +89,12 @@ target(loadApp:"Loads the Grails application object") {
 }
 
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
+    event("AppCfgStart", ["Configuring Grails Application"])
     appCtx.resourceLoader = new  CommandLineResourceLoader()
     profile("Performing runtime Spring configuration") {
-        def configurer = new org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator(grailsApp,appCtx)
+        def configurer = new GrailsRuntimeConfigurator(grailsApp, appCtx)
         def jndiEntries = config?.grails?.naming?.entries
-
+        
         if (jndiEntries instanceof Map) {
             def jndiBindingSupport = new JndiBindingSupport(jndiEntries)
             jndiBindingSupport.bind()
@@ -103,6 +103,7 @@ target(configureApp:"Configures the Grails application and builds an Application
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
     }
+    event("AppCfgEnd", ["Configuring Grails Application"])
 }
 
 // Flag that determines whether the monitor loop should keep running.
@@ -117,17 +118,17 @@ monitorRecompileCallback = {}
 
 target(monitorApp:"Monitors an application for changes using the PluginManager and reloads changes") {
     depends(classpath)
-
+    
     long lastModified = classesDir.lastModified()
     while(keepMonitoring) {
         sleep(10000)
         try {
             pluginManager.checkForChanges()
-
+            
             lastModified = recompileCheck(lastModified) {
                 compile()
                 ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
-                classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], contextLoader.rootLoader)
+                classLoader = new URLClassLoader([classesDir.toURI().toURL()]as URL[], contextLoader.rootLoader)
                 Thread.currentThread().setContextClassLoader(classLoader)
                 // reload plugins
                 loadPlugins()
