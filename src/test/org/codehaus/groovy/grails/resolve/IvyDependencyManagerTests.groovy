@@ -755,7 +755,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                     "cglib:cglib-nodep:2.1_3",
                     "commons-beanutils:commons-beanutils:1.8.0",
                     "commons-collections:commons-collections:3.2.1",
-                    "commons-dbcp:commons-dbcp:1.2.2",
+                    "commons-dbcp:commons-dbcp:1.3",
                     "commons-fileupload:commons-fileupload:1.2.1",
                     "commons-io:commons-io:1.4",
                     "commons-lang:commons-lang:2.4",

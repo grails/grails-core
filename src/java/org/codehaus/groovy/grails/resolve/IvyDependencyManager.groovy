@@ -259,7 +259,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
                 "${compileTimeDependenciesMethod}"("aopalliance:aopalliance:1.0",
                         "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5",
-                        "commons-codec:commons-codec:1.3",
+                        "commons-codec:commons-codec:1.4",
                         "commons-collections:commons-collections:3.2.1",
                         "commons-io:commons-io:1.4",
                         "commons-lang:commons-lang:2.4",
@@ -307,8 +307,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                             "javax.servlet:jstl:1.1.2"
 
                     // data source
-                    "${runtimeDependenciesMethod}" "commons-dbcp:commons-dbcp:1.2.2",
-                            "commons-pool:commons-pool:1.5.3",
+                    "${runtimeDependenciesMethod}" "commons-dbcp:commons-dbcp:1.3",
+                            "commons-pool:commons-pool:1.5.5",
                             "hsqldb:hsqldb:1.8.0.10"
 
                     // caching
