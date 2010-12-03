@@ -329,7 +329,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
     void testDependenciesWithGString() {
         def settings = new BuildSettings()
-        def manager = new IvyDependencyManager("test", "0.1",settings)
+        def manager = new IvyDependencyManager("test", "0.1", settings)
 
         def springDMVersion = '2.0.0.M1'
         manager.parseDependencies {
@@ -767,7 +767,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                     "xpp3:xpp3_min:1.1.3.4.O"
 
             runtime "commons-validator:commons-validator:1.3.1",
-                    "commons-el:commons-el:1.0"
+                    "commons-el:commons-el:1.0",
+                    "commons-pool:commons-pool:1.5.4"
 
             [transitive: false]
         }
