@@ -14,17 +14,17 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
 import java.text.DateFormat
 import java.text.DateFormatSymbols
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.springframework.beans.SimpleTypeConverter
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer
-import org.springframework.http.HttpMethod
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+
+import org.springframework.beans.SimpleTypeConverter
 import org.springframework.context.MessageSourceResolvable
+import org.springframework.http.HttpMethod
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * Tags for working with form controls.
@@ -33,32 +33,45 @@ import org.springframework.context.MessageSourceResolvable
  */
 class FormTagLib {
 
+    private static final DEFAULT_CURRENCY_CODES = ['EUR', 'XCD', 'USD', 'XOF', 'NOK', 'AUD',
+                                                   'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
+                                                   'XPF', 'ILS', 'ROL', 'TRL']
+
     def out // to facilitate testing
 
     def grailsApplication
 
     /**
-     * Creates a new text field
+     * Creates a new text field.
+     *
+     * @attr name REQUIRED the field name
+     * @attr value the field value
      */
-    def textField = {attrs ->
+    def textField = { attrs ->
         attrs.type = "text"
         attrs.tagName = "textField"
         fieldImpl(out, attrs)
     }
 
     /**
-    * Creates a new password field
-    */
-    def passwordField = {attrs ->
+     * Creates a new password field.
+     *
+     * @attr name REQUIRED the field name
+     * @attr value the field value
+     */
+    def passwordField = { attrs ->
         attrs.type = "password"
         attrs.tagName = "passwordField"
         fieldImpl(out, attrs)
     }
 
     /**
-     * Creates a hidden field
+     * Creates a hidden field.
+     *
+     * @attr name REQUIRED the field name
+     * @attr value the field value
      */
-    def hiddenField = {attrs ->
+    def hiddenField = { attrs ->
         hiddenFieldImpl(out, attrs)
     }
 
@@ -69,12 +82,17 @@ class FormTagLib {
     }
 
     /**
-     * Creates a submit button
+     * Creates a submit button.
+     *
+     * @attr name REQUIRED the field name
+     * @attr value the button text
+     * @attr type input type; defaults to 'submit'
+     * @attr event the webflow event id
      */
-    def submitButton = {attrs ->
+    def submitButton = { attrs ->
         attrs.type = attrs.type ?: "submit"
         attrs.tagName = "submitButton"
-        if (request['flowExecutionKey']) {
+        if (request.flowExecutionKey) {
             attrs.name = attrs.event ? "_eventId_${attrs.event}" : "_eventId_${attrs.name}"
         }
         if (attrs.name && (attrs.value == null)) {
@@ -84,25 +102,33 @@ class FormTagLib {
     }
 
     /**
-     * A general tag for creating fields
+     * A general tag for creating fields.
+     *
+     * @attr type REQUIRED the input type
      */
-    def field = {attrs ->
+    def field = { attrs ->
         fieldImpl(out, attrs)
     }
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
-        attrs.id = attrs.id ? attrs.id : attrs.name
+        attrs.id = attrs.id ?: attrs.name
         out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs)
         out << "/>"
     }
 
     /**
-     * A helper tag for creating checkboxes
+     * A helper tag for creating checkboxes.
+     * 
+     * @attr name REQUIRED the name of the checkbox
+     * @attr value  the value of the checkbox
+     * @attr checked if evaluates to true sets to checkbox to checked
+     * @attr disabled if evaluates to true sets to checkbox to disabled
+     * @attr id DOM element id; defaults to name
      */
-    def checkBox = {attrs ->
-        attrs.id = attrs.id ? attrs.id : attrs.name
+    def checkBox = { attrs ->
+        attrs.id = attrs.id ?: attrs.name
         def value = attrs.remove('value')
         def name = attrs.remove('name')
         def disabled = attrs.remove('disabled')
@@ -114,9 +140,9 @@ class FormTagLib {
         // default to a value of "true", otherwise we use Groovy Truth
         // to determine whether the HTML attribute should be displayed or not.
         def checked = true
-		def checkedAttributeWasSpecified = false
+        def checkedAttributeWasSpecified = false
         if (attrs.containsKey('checked')) {
-			checkedAttributeWasSpecified = true
+            checkedAttributeWasSpecified = true
             checked = attrs.remove('checked')
         }
 
@@ -126,13 +152,14 @@ class FormTagLib {
 
         out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
 
-		if(checkedAttributeWasSpecified) {
-			if(checked) {
-				out << 'checked="checked" '
-			}
-		} else if(value){
-			out << 'checked="checked" '
-		}
+        if (checkedAttributeWasSpecified) {
+            if (checked) {
+                out << 'checked="checked" '
+            }
+        }
+        else if (value) {
+            out << 'checked="checked" '
+        }
 
         def outputValue = !(value instanceof Boolean || value?.class == boolean.class)
         if (outputValue) {
@@ -147,17 +174,22 @@ class FormTagLib {
 
     /**
      * A general tag for creating textareas
+     *
+     * @attr name REQUIRED the name of the textarea
+     * @attr value  the text of the textarea; if not specified renders the body as the text
+     * @attr escapeHtml if true escapes the text as HTML
+     * @attr id DOM element id; defaults to name
      */
-    def textArea = {attrs, body ->
+    def textArea = { attrs, body ->
         resolveAttributes(attrs)
-        attrs.id = attrs.id ? attrs.id : attrs.name
+        attrs.id = attrs.id ?: attrs.name
         // Pull out the value to use as content not attrib
         def value = attrs.remove('value')
         if (!value) {
             value = body()
         }
 
-        def escapeHtml = true
+        boolean escapeHtml = true
         if (attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
 
         out << "<textarea "
@@ -166,8 +198,8 @@ class FormTagLib {
     }
 
     /**
-    * Check required attributes, set the id to name if no id supplied, extract bean values etc.
-    */
+     * Check required attributes, set the id to name if no id supplied, extract bean values etc.
+     */
     void resolveAttributes(attrs) {
         if (!attrs.name && !attrs.field) {
             throwTagError("Tag [${attrs.tagName}] is missing required attribute [name] or [field]")
@@ -175,7 +207,7 @@ class FormTagLib {
 
         attrs.remove('tagName')
 
-        attrs.id = (!attrs.id ? attrs.name : attrs.id)
+        attrs.id = attrs.id ?: attrs.name
 
         def val = attrs.remove('bean')
         if (val) {
@@ -187,7 +219,7 @@ class FormTagLib {
             }
             attrs.value = val
         }
-        attrs.value = (attrs.value != null ? attrs.value : "")
+        attrs.value = attrs.value ?: ""
     }
 
     /**
@@ -196,26 +228,42 @@ class FormTagLib {
     void outputAttributes(attrs) {
         attrs.remove('tagName') // Just in case one is left
         def writer = getOut()
-        attrs.each {k, v ->
+        attrs.each { k, v ->
             writer << "$k=\"${v.encodeAsHTML()}\" "
         }
     }
 
     /**
-     * Same as <g:form>, except sets the relevant enctype for a file upload form
+     * Same as <g:form>, except sets the relevant enctype for a file upload form.
+     *
+     * @attr action the name of the action to use in the link, if not specified the default action will be linked
+     * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr id The id to use in the link
+     * @attr url A map containing the action,controller,id etc.
+     * @attr name A value to use for both the name and id attribute of the form tag
+     * @attr useToken Set whether to send a token in the request to handle duplicate form submissions. See Handling Duplicate Form Submissions
+     * @attr method the form method to use, either 'POST' or 'GET'; defaults to 'POST'
      */
-    def uploadForm = {attrs, body ->
+    def uploadForm = { attrs, body ->
         attrs.enctype = "multipart/form-data"
         out << form(attrs, body)
     }
 
     /**
-     *  General linking to controllers, actions etc. Examples:
+     * General linking to controllers, actions etc. Examples:
      *
-     *  <g:form action="myaction">...</gr:form>
-     *  <g:form controller="myctrl" action="myaction">...</gr:form>
+     * <g:form action="myaction">...</gr:form>
+     * <g:form controller="myctrl" action="myaction">...</gr:form>
+     * 
+     * @attr action the name of the action to use in the link, if not specified the default action will be linked
+     * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr id The id to use in the link
+     * @attr url A map containing the action,controller,id etc.
+     * @attr name A value to use for both the name and id attribute of the form tag
+     * @attr useToken Set whether to send a token in the request to handle duplicate form submissions. See Handling Duplicate Form Submissions
+     * @attr method the form method to use, either 'POST' or 'GET'; defaults to 'POST'
      */
-    def form = {attrs, body ->
+    def form = { attrs, body ->
 
         def useToken = attrs.remove('useToken')
         def writer = getOut()
@@ -270,19 +318,22 @@ class FormTagLib {
      * "_action_edit" or "List People" becomes "_action_listPeople"
      * If the action attribute is not specified, the value attribute will be used as part of the action name
      *
-     *  <g:actionSubmit value="Edit" />
-     *  <g:actionSubmit action="Edit" value="Some label for editing" />
+     * <g:actionSubmit value="Edit" />
+     * <g:actionSubmit action="Edit" value="Some label for editing" />
      *
+     * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
+     * @attr action The name of the action to be executed, otherwise it is derived from the value.
      */
-    def actionSubmit = {attrs ->
-        attrs.tagName = "actionSubmit"
+    def actionSubmit = { attrs ->
         if (!attrs.value) {
-            throwTagError("Tag [$attrs.tagName] is missing required attribute [value]")
+            throwTagError("Tag [actionSubmit] is missing required attribute [value]")
         }
+
+        attrs.tagName = "actionSubmit"
 
         // add action and value
         def value = attrs.remove('value')
-        def action = attrs.action ? attrs.remove('action') : value
+        def action = attrs.remove('action') ?: value
 
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
 
@@ -299,10 +350,13 @@ class FormTagLib {
      * "_action_edit" or "List People" becomes "_action_listPeople"
      * If the action attribute is not specified, the value attribute will be used as part of the action name
      *
-     *  <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
+     * <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
      *
+     * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
+     * @attr action The name of the action to be executed, otherwise it is derived from the value.
+     * @attr src The source of the image to use
      */
-    def actionSubmitImage = {attrs ->
+    def actionSubmitImage = { attrs ->
         attrs.tagName = "actionSubmitImage"
 
         if (!attrs.value) {
@@ -311,7 +365,7 @@ class FormTagLib {
 
         // add action and value
         def value = attrs.remove('value')
-        def action = attrs.action ? attrs.remove('action') : value
+        def action = attrs.remove('action') ?: value
 
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
 
@@ -331,9 +385,16 @@ class FormTagLib {
     /**
      * A simple date picker that renders a date as selects
      * eg. <g:datePicker name="myDate" value="${new Date()}" />
+     * 
+     * @attr name REQUIRED The name of the date picker field set
+     * @attr value The current value of the date picker; defaults to now if not specified
+     * @attr precision The desired granularity of the date to be rendered
+     * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank.
+     * @attr years A list or range of years to display, in the order specified. i.e. specify 2007..1900 for a reverse order list going back to 1900. If this attribute is not specified, a range of years from the current year - 100 to current year + 100 will be shown.
+     * @attr id the DOM element id
      */
-    def datePicker = {attrs ->
-        def out = out
+    def datePicker = { attrs ->
+        def out = out // let x = x ?
         def xdefault = attrs['default']
         if (xdefault == null) {
             xdefault = new Date()
@@ -342,7 +403,7 @@ class FormTagLib {
             if (xdefault instanceof String) {
                 xdefault = DateFormat.getInstance().parse(xdefault)
             }
-            else if (!(xdefault instanceof Date)){
+            else if (!(xdefault instanceof Date)) {
                 throwTagError("Tag [datePicker] requires the default date to be a parseable String or a Date")
             }
         }
@@ -350,25 +411,25 @@ class FormTagLib {
             xdefault = null
         }
 
-        def value = attrs['value']
+        def value = attrs.value
         if (value.toString() == 'none') {
             value = null
         }
         else if (!value) {
             value = xdefault
         }
-        def name = attrs['name']
-        def id = attrs['id'] ? attrs['id'] : name
+        def name = attrs.name
+        def id = attrs.id ?: name
 
-        def noSelection = attrs['noSelection']
+        def noSelection = attrs.noSelection
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
         }
 
-        def years = attrs['years']
+        def years = attrs.years
 
         final PRECISION_RANKINGS = ["year": 0, "month": 10, "day": 20, "hour": 30, "minute": 40]
-        def precision = (attrs['precision'] ? PRECISION_RANKINGS[attrs['precision']] :
+        def precision = (attrs.precision ? PRECISION_RANKINGS[attrs.precision] :
             (grailsApplication.config.grails.tags.datePicker.default.precision ?
                 PRECISION_RANKINGS["${grailsApplication.config.grails.tags.datePicker.default.precision}"] :
                 PRECISION_RANKINGS["minute"]))
@@ -511,16 +572,19 @@ class FormTagLib {
     }
 
     /**
-     *  A helper tag for creating TimeZone selects
+     * A helper tag for creating TimeZone selects
      * eg. <g:timeZoneSelect name="myTimeZone" value="${tz}" />
+     * 
+     * @attr name REQUIRED The name of the select
+     * @attr value An instance of java.util.TimeZone. Defaults to the time zone for the current Locale if not specified
      */
-    def timeZoneSelect = {attrs ->
-        attrs['from'] = TimeZone.getAvailableIDs()
-        attrs['value'] = (attrs['value'] ? attrs['value'].ID : TimeZone.getDefault().ID)
+    def timeZoneSelect = { attrs ->
+        attrs.from = TimeZone.getAvailableIDs()
+        attrs.value = (attrs.value ? attrs.value.ID : TimeZone.getDefault().ID)
         def date = new Date()
 
         // set the option value as a closure that formats the TimeZone for display
-        attrs['optionValue'] = {
+        attrs.optionValue = {
             TimeZone tz = TimeZone.getTimeZone(it)
             def shortName = tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT)
             def longName = tz.getDisplayName(tz.inDaylightTime(date), TimeZone.LONG)
@@ -540,14 +604,17 @@ class FormTagLib {
      *  A helper tag for creating locale selects
      *
      * eg. <g:localeSelect name="myLocale" value="${locale}" />
+     *
+     * @attr name REQUIRED The name of the select
+     * @attr value The set locale, defaults to the current request locale if not specified
      */
-    def localeSelect = {attrs ->
-        attrs['from'] = Locale.getAvailableLocales()
-        attrs['value'] = (attrs['value'] ?: RCU.getLocale(request))?.toString()
+    def localeSelect = { attrs ->
+        attrs.from = Locale.getAvailableLocales()
+        attrs.value = (attrs.value ?: RCU.getLocale(request))?.toString()
         // set the key as a closure that formats the locale
-        attrs['optionKey'] = { it.country ? "${it.language}_${it.country}" : it.language }
+        attrs.optionKey = { it.country ? "${it.language}_${it.country}" : it.language }
         // set the option value as a closure that formats the locale for display
-        attrs['optionValue'] = {it.country ? "${it.language}, ${it.country},  ${it.displayName}" : "${it.language}, ${it.displayName}" }
+        attrs.optionValue = {it.country ? "${it.language}, ${it.country},  ${it.displayName}" : "${it.language}, ${it.displayName}" }
 
         // use generic select
         out << select(attrs)
@@ -557,13 +624,15 @@ class FormTagLib {
      * A helper tag for creating currency selects
      *
      * eg. <g:currencySelect name="myCurrency" value="${currency}" />
+     * @attr from The currency symbols to select from, defaults to the major ones if not specified
+     * @attr value The currency value as the currency code. Defaults to the currency for the current Locale if not specified
      */
-    def currencySelect = {attrs, body ->
-        if (!attrs['from']) {
-            attrs['from'] = ['EUR', 'XCD', 'USD', 'XOF', 'NOK', 'AUD', 'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF', 'XPF', 'ILS', 'ROL', 'TRL']
+    def currencySelect = { attrs, body ->
+        if (!attrs.from) {
+            attrs.from = DEFAULT_CURRENCY_CODES
         }
         try {
-            def currency = (attrs['value'] ? attrs['value'] : Currency.getInstance(RCU.getLocale(request)))
+            def currency = attrs.value ?: Currency.getInstance(RCU.getLocale(request))
             attrs.value = currency.currencyCode
         }
         catch (IllegalArgumentException iae) {
@@ -574,17 +643,29 @@ class FormTagLib {
     }
 
     /**
-     * A helper tag for creating HTML selects
+     * A helper tag for creating HTML selects.
      *
      * Examples:
      * <g:select name="user.age" from="${18..65}" value="${age}" />
      * <g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" />
+     * 
+     * @attr name the select name
+     * @attr id the DOM element id - uses the name attribute if not specified
+     * @attr from The list or range to select from
+     * @attr keys A list of values to be used for the value attribute of each "option" element.
+     * @attr optionKey By default value attribute of each <option> element will be the result of a "toString()" call on each element. Setting this allows the value to be a bean property of each element in the list.
+     * @attr optionValue By default the body of each <option> element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be a bean property of each element in the list.
+     * @attr value The current selected value that evaluates equals() to true for one of the elements in the from list.
+     * @attr multiple boolean value indicating whether the select a multi-select (automatically true if the value is a collection, defaults to false - single-select)
+     * @attr valueMessagePrefix By default the value "option" element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be resolved from the I18n messages. The valueMessagePrefix will be suffixed with a dot ('.') and then the value attribute of the option to resolve the message. If the message could not be resolved, the value is presented.
+     * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
+     * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
      */
-    def select = {attrs ->
+    def select = { attrs ->
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
         def locale = RCU.getLocale(request)
         def writer = out
-        attrs.id = attrs.id ? attrs.id : attrs.name
+        attrs.id = attrs.id ?: attrs.name
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
@@ -711,7 +792,7 @@ class FormTagLib {
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)
             }
-            catch (Exception) {
+            catch (e) {
                 // ignore
             }
         }
@@ -722,17 +803,23 @@ class FormTagLib {
     }
 
     /**
-     * A helper tag for creating radio buttons
+     * A helper tag for creating radio buttons.
+     *
+     * @attr value REQUIRED The value of the radio button
+     * @attr name REQUIRED The name of the radio button
+     * @attr checked boolean to indicate that the radio button should be checked
+     * @attr disabled boolean to indicate that the radio button should be disabled
+     * @attr id the DOM element id
      */
-    def radio = {attrs ->
+    def radio = { attrs ->
         def value = attrs.remove('value')
-        attrs.id = attrs.id ? attrs.id : attrs.name
+        attrs.id = attrs.id ?: attrs.name
         def name = attrs.remove('name')
         def disabled = attrs.remove('disabled')
         if (disabled && Boolean.valueOf(disabled)) {
             attrs.disabled = 'disabled'
         }
-        def checked = (attrs.remove('checked') ? true : false)
+        def checked = attrs.remove('checked') ? true : false
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs)
@@ -743,8 +830,13 @@ class FormTagLib {
 
     /**
      * A helper tag for creating radio button groups
+     * 
+     * @attr name REQUIRED The name of the group
+     * @attr values REQUIRED The list values for the radio buttons
+     * @attr value The current selected value
+     * @attr labels Labels for each value contained in the values list. If this is ommitted the label property on the iterator variable (see below) will default to 'Radio ' + value.
      */
-    def radioGroup = {attrs, body ->
+    def radioGroup = { attrs, body ->
         def value = attrs.remove('value')
         def values = attrs.remove('values')
         def labels = attrs.remove('labels')

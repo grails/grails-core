@@ -18,11 +18,15 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.Factory
 import com.opensymphony.module.sitemesh.RequestConstants
+
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+
 import groovy.text.Template
+
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
@@ -35,10 +39,9 @@ import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
-import com.opensymphony.module.sitemesh.RequestConstants
 
 /**
- * Contains tags to help rendering of views and layouts.
+ * Tags to help rendering of views and layouts.
  *
  * @author Graeme Rocher
  */
@@ -57,16 +60,16 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Includes another controller/action within the current response
+     * Includes another controller/action within the current response.
      *
      * <g:include controller="foo" action="test"></g:include>
      *
-     * @param controller The name of he controller
-     * @param action The name of the action
-     * @param id The identifier
-     * @param params Any parameters
-     * @param view The name of the view. Cannot be specified in combination with controller/action/id
-     * @param model A model to pass onto the included controller in the request
+     * @attr controller The name of the controller
+     * @attr action The name of the action
+     * @attr id The identifier
+     * @attr params Any parameters
+     * @attr view The name of the view. Cannot be specified in combination with controller/action/id
+     * @attr model A model to pass onto the included controller in the request
      */
     def include = { attrs, body ->
         if (attrs.action && !attrs.controller) {
@@ -82,7 +85,7 @@ class RenderTagLib implements RequestConstants {
                                                     id: attrs.id,
                                                     params: attrs.params)
 
-            out << WebUtils.includeForUrlMappingInfo(request, response, mapping, attrs.model ?: [:] )?.content
+            out << WebUtils.includeForUrlMappingInfo(request, response, mapping, attrs.model ?: [:])?.content
         }
     }
 
@@ -93,12 +96,12 @@ class RenderTagLib implements RequestConstants {
      * <g:applyLayout name="myLayout" template="mytemplate" />
      * <g:applyLayout name="myLayout" url="http://www.google.com" />
      *
-     * @param name The name of the layout
-     * @param template Optional. The template to apply the layout to
-     * @param url Optional. The URL to retrieve the content from and apply a layout to
-     * @param contentType Optional. The content type to use, default is "text/html"
-     * @param encoding Optional. The encoding to use
-     * @param params Optiona. The params to pass onto the page object
+     * @attr name The name of the layout
+     * @attr template Optional. The template to apply the layout to
+     * @attr url Optional. The URL to retrieve the content from and apply a layout to
+     * @attr contentType Optional. The content type to use, default is "text/html"
+     * @attr encoding Optional. The encoding to use
+     * @attr params Optiona. The params to pass onto the page object
      */
     def applyLayout = { attrs, body ->
         if (!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
@@ -145,8 +148,8 @@ class RenderTagLib implements RequestConstants {
             page = parser.parse(content.toCharArray())
         }
 
-        attrs.params?.each { k,v->
-            page.addProperty(k,v?.toString())
+        attrs.params.each { k, v->
+            page.addProperty(k, v?.toString())
         }
         def decoratorMapper = getFactory().getDecoratorMapper()
 
@@ -174,6 +177,10 @@ class RenderTagLib implements RequestConstants {
      * Used to retrieve a property of the decorated page
      *
      * <g:pageProperty default="defaultValue" name="body.onload" />
+     * 
+     * @attr REQUIRED name the property name
+     * @attr default the default value to use if the property is null
+     * @attr writeEntireProperty if true, writes the property in the form 'foo = "bar"', otherwise renders 'bar'
      */
     def pageProperty = { attrs ->
         if (!attrs.name) {
@@ -182,7 +189,7 @@ class RenderTagLib implements RequestConstants {
 
         def propertyName = attrs.name
         def htmlPage = getPage()
-        def propertyValue = null
+        def propertyValue
 
         if (htmlPage instanceof GSPSitemeshPage) {
             // check if there is an component content buffer
@@ -218,32 +225,37 @@ class RenderTagLib implements RequestConstants {
      *
      * of it equals a certain value:
      *
-     *<g:ifPageProperty name="meta.index" equals="blah">body to invoke</g:ifPageProperty>
+     * <g:ifPageProperty name="meta.index" equals="blah">body to invoke</g:ifPageProperty>
+     *
+     * @attr name REQUIRED the property name
+     * @attr equals optional value to test against
      */
     def ifPageProperty = { attrs, body ->
-        if (attrs.name) {
-            def htmlPage = getPage()
-            def names = ((attrs.name instanceof List) ? attrs.name : [attrs.name])
+        if (!attrs.name) {
+            return
+        }
 
-            def invokeBody = true
-            for (i in 0..<names.size()) {
-                String propertyValue = htmlPage.getProperty(names[i])
-                if (propertyValue) {
-                    if (attrs.equals instanceof List) {
-                        invokeBody = (attrs.equals[i]==propertyValue)
-                    }
-                    else if (attrs.equals instanceof String) {
-                        invokeBody = (attrs.equals == propertyValue)
-                    }
+        def htmlPage = getPage()
+        def names = ((attrs.name instanceof List) ? attrs.name : [attrs.name])
+
+        def invokeBody = true
+        for (i in 0..<names.size()) {
+            String propertyValue = htmlPage.getProperty(names[i])
+            if (propertyValue) {
+                if (attrs.equals instanceof List) {
+                    invokeBody = attrs.equals[i] == propertyValue
                 }
-                else {
-                    invokeBody = false
-                    break
+                else if (attrs.equals instanceof String) {
+                    invokeBody = attrs.equals == propertyValue
                 }
             }
-            if (invokeBody) {
-                out << body()
+            else {
+                invokeBody = false
+                break
             }
+        }
+        if (invokeBody) {
+            out << body()
         }
     }
 
@@ -251,7 +263,9 @@ class RenderTagLib implements RequestConstants {
      * Used in layouts to render the page title from the SiteMesh page
      *
      * <g:layoutTitle default="The Default title" />
-      */
+     *
+     * @attr default the value to use if the title isn't specified in the GSP
+     */
     def layoutTitle = { attrs ->
         String title = page.title
         if (!title && attrs.'default') title = attrs.'default'
@@ -280,6 +294,18 @@ class RenderTagLib implements RequestConstants {
      * Creates next/previous links to support pagination for the current controller
      *
      * <g:paginate total="${Account.count()}" />
+     * 
+     * @attr total REQUIRED The total number of results to paginate
+     * @attr action the name of the action to use in the link, if not specified the default action will be linked
+     * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
+     * @attr id The id to use in the link
+     * @attr params A map containing request parameters
+     * @attr prev The text to display for the previous link (defaults to "Previous" as defined by default.paginate.prev property in I18n messages.properties)
+     * @attr next The text to display for the next link (defaults to "Next" as defined by default.paginate.next property in I18n messages.properties)
+     * @attr max The number of records displayed per page (defaults to 10). Used ONLY if params.max is empty
+     * @attr maxsteps The number of steps displayed for pagination (defaults to 10). Used ONLY if params.maxsteps is empty
+     * @attr offset Used only if params.offset is empty
+     * @attr fragment The link fragment (often called anchor tag) to use
      */
     def paginate = { attrs ->
         def writer = out
@@ -310,10 +336,10 @@ class RenderTagLib implements RequestConstants {
         if (attrs.controller) {
             linkTagAttrs.controller = attrs.controller
         }
-        if (attrs.id!=null) {
+        if (attrs.id != null) {
             linkTagAttrs.id = attrs.id
         }
-        if (attrs.fragment!=null) {
+        if (attrs.fragment != null) {
             linkTagAttrs.fragment = attrs.fragment
         }
         linkTagAttrs.params = linkParams
@@ -329,7 +355,7 @@ class RenderTagLib implements RequestConstants {
             linkTagAttrs.class = 'prevLink'
             linkParams.offset = offset - max
             writer << link(linkTagAttrs.clone()) {
-                (attrs.prev ? attrs.prev : messageSource.getMessage('paginate.prev', null, messageSource.getMessage('default.paginate.prev', null, 'Previous', locale), locale))
+                (attrs.prev ?: messageSource.getMessage('paginate.prev', null, messageSource.getMessage('default.paginate.prev', null, 'Previous', locale), locale))
             }
         }
 
@@ -392,15 +418,6 @@ class RenderTagLib implements RequestConstants {
     /**
      * Renders a sortable column to support sorting in list views
      *
-     * Attributes:
-     *
-     * property - name of the property relating to the field
-     * defaultOrder (optional) - default order for the property; choose between asc (default if not provided) and desc
-     * title (optional*) - title caption for the column
-     * titleKey (optional*) - title key to use for the column, resolved against the message source
-     * params (optional) - a map containing request parameters
-     * action (optional) - the name of the action to use in the link, if not specified the list action will be linked
-     *
      * Attribute title or titleKey is required. When both attributes are specified then titleKey takes precedence,
      * resulting in the title caption to be resolved against the message source. In case when the message could
      * not be resolved, the title will be used as title caption.
@@ -412,6 +429,15 @@ class RenderTagLib implements RequestConstants {
      * <g:sortableColumn property="title" titleKey="book.title" />
      * <g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" />
      * <g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" titleKey="book.releaseDate" />
+     *
+     * @attr property - name of the property relating to the field
+     * @attr defaultOrder default order for the property; choose between asc (default if not provided) and desc
+     * @attr title title caption for the column
+     * @attr titleKey title key to use for the column, resolved against the message source
+     * @attr params a map containing request parameters
+     * @attr action the name of the action to use in the link, if not specified the list action will be linked
+     * @attr params A map containing URL query parameters
+     * @attr class CSS class name
      */
     def sortableColumn = { attrs ->
         def writer = out
@@ -473,11 +499,19 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     *  allows rendering of templates inside views for collections, models and beans. Examples:
+     * Renders a template inside views for collections, models and beans. Examples:
      *
-     *  <g:render template="atemplate" collection="${users}" />
-     *  <g:render template="atemplate" model="[user:user,company:company]" />
-     *  <g:render template="atemplate" bean="${user}" />
+     * <g:render template="atemplate" collection="${users}" />
+     * <g:render template="atemplate" model="[user:user,company:company]" />
+     * <g:render template="atemplate" bean="${user}" />
+     * 
+     * @attr template REQUIRED The name of the template to apply
+     * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
+     * @attr bean The bean to apply the template against
+     * @attr model The model to apply the template against as a java.util.Map
+     * @attr collection A collection of model objects to apply the template to
+     * @attr var The variable name of the bean to be referenced in the template
+     * @attr plugin The plugin to look for the template in
      */
     def render = { attrs, body ->
         if (!groovyPagesTemplateEngine) {
@@ -489,53 +523,60 @@ class RenderTagLib implements RequestConstants {
         }
 
         def engine = groovyPagesTemplateEngine
-        def uri = grailsAttributes.getTemplateUri(attrs.template,request)
-        def var = attrs['var']
-		
-		Template t = null
+        def uri = grailsAttributes.getTemplateUri(attrs.template, request)
+        def var = attrs.var
 
-		def contextPath = attrs.contextPath ? attrs.contextPath : null
-		def pluginName = attrs.plugin
-		def pluginContextFromPagescope = false
-		if (pluginName) {
-			contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
-		} else if (contextPath == null) {
-			if (uri.startsWith('/plugins/')) contextPath = ''
-			else {
-				contextPath = pageScope.pluginContextPath ?: ''
-				pluginContextFromPagescope = true
-			}
-		}
+        Template t
 
-		def templatePath = "${contextPath}${uri}".toString()
-		def cacheKey = "${templatePath}:${pluginContextFromPagescope}".toString()
-		
+        def contextPath = attrs.contextPath ? attrs.contextPath : null
+        def pluginName = attrs.plugin
+        def pluginContextFromPagescope = false
+        if (pluginName) {
+            contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
+        }
+        else if (contextPath == null) {
+            if (uri.startsWith('/plugins/')) {
+                contextPath = ''
+            }
+            else {
+                contextPath = pageScope.pluginContextPath ?: ''
+                pluginContextFromPagescope = true
+            }
+        }
+
+        def templatePath = "${contextPath}${uri}".toString()
+        def cacheKey = "${templatePath}:${pluginContextFromPagescope}".toString()
+
         def cached = TEMPLATE_CACHE[cacheKey]
-		if (cached instanceof Template) {
-			t = cached
-		} else {
-			if(cached != null && System.currentTimeMillis() - cached.timestamp < GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL) {
-				t = cached.template
-			} else {
-	            def templateResolveOrder
-	            if (pluginName) {
-	                templateResolveOrder = [templatePath, "${contextPath}/grails-app/views/${uri}"]
-	            } else {
-	                templateResolveOrder = [uri, templatePath, "${contextPath}/grails-app/views/${uri}"]
-	            }
-	            t = engine.createTemplateForUri(templateResolveOrder as String[])
-				if(t != null) {
-		            if (!engine.isReloadEnabled()) {
-		                def prevt = TEMPLATE_CACHE.putIfAbsent(templatePath, t)
-		                if (prevt != null) {
-		                    t = prevt
-		                }
-		            } else if (!Environment.isDevelopmentMode()) {
-						TEMPLATE_CACHE.put(cacheKey, [timestamp: System.currentTimeMillis(), template: t])
-					}
-				}
-			}
-		}
+        if (cached instanceof Template) {
+            t = cached
+        }
+        else {
+            if (cached != null && System.currentTimeMillis() - cached.timestamp < GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL) {
+                t = cached.template
+            }
+            else {
+                def templateResolveOrder
+                if (pluginName) {
+                    templateResolveOrder = [templatePath, "${contextPath}/grails-app/views/${uri}"]
+                }
+                else {
+                    templateResolveOrder = [uri, templatePath, "${contextPath}/grails-app/views/${uri}"]
+                }
+                t = engine.createTemplateForUri(templateResolveOrder as String[])
+                if (t) {
+                    if (!engine.isReloadEnabled()) {
+                        def prevt = TEMPLATE_CACHE.putIfAbsent(templatePath, t)
+                        if (prevt) {
+                            t = prevt
+                        }
+                    }
+                    else if (!Environment.isDevelopmentMode()) {
+                        TEMPLATE_CACHE.put(cacheKey, [timestamp: System.currentTimeMillis(), template: t])
+                    }
+                }
+            }
+        }
 
         if (!t) {
             throwTagError("Template not found for name [$attrs.template] and path [$uri]")
@@ -577,7 +618,7 @@ class RenderTagLib implements RequestConstants {
             }
         }
         else if (attrs.model instanceof Map) {
-            t.make( [body:body] + attrs.model ).writeTo(out)
+            t.make([body:body] + attrs.model).writeTo(out)
         }
         else if (attrs.template) {
             t.make([body:body]).writeTo(out)
