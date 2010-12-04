@@ -82,6 +82,20 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         }
     }
 
+    /**
+     * GRAILS-454 - Make sure that the 'name' attribute is ignored.
+     */
+    void testActionSubmitWithName() {
+        final StringWriter sw = new StringWriter()
+
+        withTag("actionSubmit", new PrintWriter(sw)) { tag ->
+            // use sorted map to be able to predict the order in which tag attributes are generated
+            def attributes = new TreeMap([action:'Edit', value:'Some label for editing', name:'customName'])
+            tag.call(attributes)
+            assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" />', sw.toString() // NO TRIM, TEST WS!
+        }
+    }
+
     void testActionSubmitWithAdditionalAttributes() {
         final StringWriter sw = new StringWriter()
 
