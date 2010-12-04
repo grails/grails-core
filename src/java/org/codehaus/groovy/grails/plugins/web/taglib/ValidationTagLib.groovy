@@ -303,7 +303,7 @@ class ValidationTagLib {
     // Maps out how Grails contraints map to Apache commons validators
     static CONSTRAINT_TYPE_MAP = [email : 'email',
                                   creditCard : 'creditCard',
-                                  match : 'mask',
+                                  matches : 'mask',
                                   blank: 'required',
                                   nullable: 'required',
                                   maxSize: 'maxLength',
