@@ -331,6 +331,12 @@ class FormTagLib {
 
         attrs.tagName = "actionSubmit"
 
+        // Strip out any 'name' attribute, since this tag overrides it.
+        if (attrs.name) {
+            log.warn "[actionSubmit] 'name' attribute will be ignored"
+            attrs.remove('name')
+        }
+
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
