@@ -219,7 +219,7 @@ class FormTagLib {
             }
             attrs.value = val
         }
-        attrs.value = attrs.value ?: ""
+        attrs.value = attrs.value != null ? attrs.value : "" // can't use ?: since 0 is groovy false
     }
 
     /**
