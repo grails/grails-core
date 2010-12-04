@@ -681,8 +681,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
         assertEquals 13, manager.listDependencies("build").size()
-        assertEquals 22, manager.listDependencies("runtime").size()
-        assertEquals 23, manager.listDependencies("test").size()
+        assertEquals 21, manager.listDependencies("runtime").size()
+        assertEquals 22, manager.listDependencies("test").size()
     }
 
     void testParseDependencyDefinition() {
