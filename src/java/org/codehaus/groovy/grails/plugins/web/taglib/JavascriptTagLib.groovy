@@ -474,7 +474,7 @@ class PrototypeProvider implements JavascriptProvider {
         def url
         def jsParams = [:]
 
-        if (jsParams instanceof Map) {
+        if (attrs.params instanceof Map) {
             jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
             jsParams?.each { attrs.params?.remove(it.key) }
         }
