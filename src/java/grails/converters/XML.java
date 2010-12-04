@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
@@ -129,7 +130,8 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         if (om instanceof NameAwareMarshaller) {
             return ((NameAwareMarshaller) om).getElementName(o);
         }
-        return GrailsNameUtils.getPropertyName(o.getClass());
+        final Class<?> clz = GrailsHibernateUtil.unwrapIfProxy(o).getClass();
+        return GrailsNameUtils.getPropertyName(clz);
     }
 
     public void convertAnother(Object o) throws ConverterException {
