@@ -108,7 +108,7 @@ private createRootPackage() {
 }
 
 createIntegrationTest = { Map args = [:] ->
-    def superClass = args["superClass"] ?: "GrailsUnitTestCase"
+    def superClass = args["superClass"] ?: "GroovyTestCase"
     createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests",
                    path: "test/integration", superClass: superClass)
 }
