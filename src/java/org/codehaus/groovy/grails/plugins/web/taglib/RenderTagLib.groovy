@@ -557,16 +557,17 @@ class RenderTagLib implements RequestConstants {
             }
             else {
                 def templateResolveOrder
+				def templateInContextPath = "${contextPath}/grails-app/views${uri}"
                 if (pluginName) {
-                    templateResolveOrder = [templatePath, "${contextPath}/grails-app/views/${uri}"]
+                    templateResolveOrder = [templatePath, templateInContextPath]
                 }
                 else {
-                    templateResolveOrder = [uri, templatePath, "${contextPath}/grails-app/views/${uri}"]
+                    templateResolveOrder = [uri, templatePath, templateInContextPath]
                 }
                 t = engine.createTemplateForUri(templateResolveOrder as String[])
                 if (t) {
                     if (!engine.isReloadEnabled()) {
-                        def prevt = TEMPLATE_CACHE.putIfAbsent(templatePath, t)
+                        def prevt = TEMPLATE_CACHE.putIfAbsent(cacheKey, t)
                         if (prevt) {
                             t = prevt
                         }
