@@ -307,9 +307,11 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                             "javax.servlet:jstl:1.1.2"
 
                     // data source
-                    "${runtimeDependenciesMethod}" "commons-dbcp:commons-dbcp:1.3",
+                    "${runtimeDependenciesMethod}"("commons-dbcp:commons-dbcp:1.3",
                             "commons-pool:commons-pool:1.5.5",
-                            "hsqldb:hsqldb:1.8.0.10"
+                            "hsqldb:hsqldb:1.8.0.10") {
+                        transitive = false
+                    }
 
                     // caching
                     "${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:1.7.1") {

@@ -508,9 +508,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-println "manager.listDependencies('runtime'): " + manager.listDependencies('runtime')
-        assertEquals 54, manager.listDependencies('runtime').size()
-        assertEquals 57, manager.listDependencies('test').size()
+        assertEquals 53, manager.listDependencies('runtime').size()
+        assertEquals 56, manager.listDependencies('test').size()
         assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
@@ -537,9 +536,8 @@ println "manager.listDependencies('runtime'): " + manager.listDependencies('runt
 
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
-println "manager.listDependencies('build'): " + manager.listDependencies('build')
         assertEquals 20, manager.listDependencies('build').size()
-        assertEquals 56, manager.listDependencies('provided').size()
+        assertEquals 55, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
 
         manager = new IvyDependencyManager("project", "0.1",settings)
@@ -550,8 +548,8 @@ println "manager.listDependencies('build'): " + manager.listDependencies('build'
             defaultDependencyClosure()
         }
 
-        assertEquals 54, manager.listDependencies('runtime').size()
-        assertEquals 57, manager.listDependencies('test').size()
+        assertEquals 53, manager.listDependencies('runtime').size()
+        assertEquals 56, manager.listDependencies('test').size()
         assertEquals 20, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 23, manager.listDependencies('docs').size()
@@ -769,8 +767,7 @@ println "manager.listDependencies('build'): " + manager.listDependencies('build'
                     "xpp3:xpp3_min:1.1.3.4.O"
 
             runtime "commons-validator:commons-validator:1.3.1",
-                    "commons-el:commons-el:1.0",
-                    "commons-pool:commons-pool:1.5.5"
+                    "commons-el:commons-el:1.0"
 
             [transitive: false]
         }
