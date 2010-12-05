@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.plugins.web.taglib.CountryTagLib
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 class CountryTagLibTests extends AbstractGrailsTagTests {
 
@@ -45,15 +46,23 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testCountryNamesWithValueMessagePrefix() {
-        def template = '<g:countrySelect name="foo" valueMessagePrefix="country" value="usa" from="[\'gbr\', \'usa\', \'deu\']"/>'
+        // Prepare the custom message source.
+        def msgPrefix = "country"
+        def codeMap = [gbr: "Royaume Uni", usa: "Les Etats Unis", deu: "Allemagne"]
+        codeMap.each { code, val ->
+            messageSource.addMessage(msgPrefix + "." + code, RCU.getLocale(request), val)
+        }
+
+        // Execute the template.
+        def template = "<g:countrySelect name=\"foo\" valueMessagePrefix=\"${msgPrefix}\" value=\"usa\" from=\"['gbr', 'usa', 'deu']\"/>".toString()
         def result = applyTemplate(template, [:])
 
-        assertResultContains result, '<option value="usa" selected="selected" >country.usa</option>'
 
-        ['gbr', 'usa', 'deu'].each {
-            def value = CountryTagLib.ISO3166_3[it]
-            assertResultContains result, "<option value=\"${it}\""
-            assertResultContains result, ">country.${it.encodeAsHTML()}</option>"
+        assertResultContains result, "<option value=\"usa\" selected=\"selected\" >${codeMap['usa']}</option>"
+
+        codeMap.each { code, val ->
+            assertResultContains result, "<option value=\"${code}\""
+            assertResultContains result, ">${val}</option>"
         }
     }
 
