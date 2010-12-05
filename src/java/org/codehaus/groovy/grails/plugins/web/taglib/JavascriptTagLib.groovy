@@ -33,7 +33,7 @@ class JavascriptTagLib  {
     static final LIBRARY_MAPPINGS = [prototype: ['prototype/prototype']]
 
     static {
-        LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/dragdrop']
+        LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous']
         LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']
     }
 

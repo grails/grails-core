@@ -847,12 +847,28 @@ class FormTagLib {
             if (value?.toString().equals(val.toString())) {
                 it.radio += 'checked="checked" '
             }
-            it.radio += "value=\"${val.toString().encodeAsHTML()}\" />"
+            it.radio += "value=\"${val.toString().encodeAsHTML()}\" "
+			
+			// process remaining attributes
+            it.radio += returnAttributes(attrs)
+            it.radio += " />"
 
             it.label = labels == null ? 'Radio ' + val : labels[idx]
 
             out << body(it)
             out.println()
         }
+    }
+	
+	/**
+     * Return attributes in HTML compliant fashion
+     */
+    String returnAttributes(attrs) {
+        attrs.remove('tagName') // Just in case one is left
+        String result = ''
+        attrs.each { k, v ->
+            result += "$k=\"${v.encodeAsHTML()}\" "
+        }
+        return result
     }
 }
