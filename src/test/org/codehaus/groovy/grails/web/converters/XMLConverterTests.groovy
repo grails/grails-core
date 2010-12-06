@@ -30,10 +30,6 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
     }
 
     void testConvertErrors() {
-        def valErrorMarshaller = new ValidationErrorsMarshaller()
-        valErrorMarshaller.setApplicationContext(ctx)
-        XML.registerObjectMarshaller(valErrorMarshaller)
-
         def c = ga.getControllerClass("RestController").newInstance()
         c.testErrors()
 
