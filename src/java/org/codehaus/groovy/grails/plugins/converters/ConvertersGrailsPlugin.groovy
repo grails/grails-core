@@ -81,7 +81,7 @@ class ConvertersGrailsPlugin {
             converterClass = grails.converters.XML
         }
 
-        errorsXmlMarshallerRegisterer(ObjectMarshallerRegisterer) {
+        errorsJsonMarshallerRegisterer(ObjectMarshallerRegisterer) {
             marshaller = { JsonErrorsMarshaller om -> }
             converterClass = grails.converters.JSON
         }
