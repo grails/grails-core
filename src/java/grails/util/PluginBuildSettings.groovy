@@ -192,7 +192,7 @@ class PluginBuildSettings {
         }
 
         for (Resource pluginDir in pluginDirs) {
-            def pluginPath = pluginDir.file.canonicalPath
+            def pluginPath = pluginDir.file.canonicalPath + File.separator
             def sourcePath = new File(sourceFile).canonicalPath
             if (sourcePath.startsWith(pluginPath)) {
                 // Check the path of the source file relative to the
