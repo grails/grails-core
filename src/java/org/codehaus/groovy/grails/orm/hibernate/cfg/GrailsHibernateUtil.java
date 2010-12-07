@@ -75,7 +75,7 @@ public class GrailsHibernateUtil {
     private static final Log LOG = LogFactory.getLog(GrailsHibernateUtil.class);
 
     private static final String DYNAMIC_FILTER_ENABLER = "dynamicFilterEnabler";
-    
+
     public static SimpleTypeConverter converter = new SimpleTypeConverter();
     public static final String ARGUMENT_MAX = "max";
     public static final String ARGUMENT_OFFSET = "offset";
@@ -92,15 +92,15 @@ public class GrailsHibernateUtil {
 
     private static HibernateProxyHandler proxyHandler = new HibernateProxyHandler();
 
+    @SuppressWarnings("rawtypes")
     public static void enableDynamicFilterEnablerIfPresent(SessionFactory sessionFactory, Session session) {
-    	if(sessionFactory != null && session != null) {
+        if (sessionFactory != null && session != null) {
             final Set definedFilterNames = sessionFactory.getDefinedFilterNames();
-    		if(definedFilterNames != null && definedFilterNames.contains(DYNAMIC_FILTER_ENABLER))
-            		session.enableFilter(DYNAMIC_FILTER_ENABLER); // work around for HHH-2624
-    		
-    	}
+            if (definedFilterNames != null && definedFilterNames.contains(DYNAMIC_FILTER_ENABLER))
+                session.enableFilter(DYNAMIC_FILTER_ENABLER); // work around for HHH-2624
+        }
     }
-    
+
     @SuppressWarnings("rawtypes")
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
@@ -220,7 +220,7 @@ public class GrailsHibernateUtil {
             }
         }
     }
-    
+
     /**
      * Add order to criteria, creating necessary subCriteria if nested sort property (ie. sort:'nested.property').
      */
@@ -233,11 +233,11 @@ public class GrailsHibernateUtil {
             String sortTail = sort.substring(firstDotPos+1);
             GrailsDomainClassProperty property = getGrailsDomainClassProperty(targetClass, sortHead);
             if (property.isEmbedded()) {
-                // embedded objects cannot reference entities (at time of writing), so no more recursion needed  
+                // embedded objects cannot reference entities (at time of writing), so no more recursion needed
                 addOrder(c, sort, order, ignoreCase);
             } else {
                 Criteria subCriteria = c.createCriteria(sortHead);
-                Class<?> propertyTargetClass = property.getReferencedDomainClass().getClazz(); 
+                Class<?> propertyTargetClass = property.getReferencedDomainClass().getClazz();
                 addOrderPossiblyNested(subCriteria, propertyTargetClass, sortTail, order, ignoreCase); // Recurse on nested sort
             }
         }
@@ -254,9 +254,9 @@ public class GrailsHibernateUtil {
             c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
         }
     }
-    
+
     /**
-     * Get hold of the GrailsDomainClassProperty represented by the targetClass' propertyName, 
+     * Get hold of the GrailsDomainClassProperty represented by the targetClass' propertyName,
      * assuming targetClass corresponds to a GrailsDomainClass.
      */
     private static GrailsDomainClassProperty getGrailsDomainClassProperty(Class<?> targetClass, String propertyName) {
@@ -267,7 +267,7 @@ public class GrailsHibernateUtil {
         GrailsDomainClass domainClass = (GrailsDomainClass) grailsClass;
         return domainClass.getPropertyByName(propertyName);
     }
-    
+
     /**
      * Configures the criteria instance to cache based on the configured mapping.
      *

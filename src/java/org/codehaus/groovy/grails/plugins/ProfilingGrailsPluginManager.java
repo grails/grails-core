@@ -19,8 +19,6 @@ import grails.util.GrailsUtil;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -29,47 +27,40 @@ import org.springframework.core.io.Resource;
 
 /**
  * A GrailsPluginManager implementation that outputs profile data to a logger
- * 
+ *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
-	
 
-	public ProfilingGrailsPluginManager(Class<?>[] plugins,
-			GrailsApplication application) {
-		super(plugins, application);
-	}
+    public ProfilingGrailsPluginManager(Class<?>[] plugins, GrailsApplication application) {
+        super(plugins, application);
+    }
 
-	public ProfilingGrailsPluginManager(Resource[] pluginFiles,
-			GrailsApplication application) {
-		super(pluginFiles, application);
-	}
+    public ProfilingGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
+        super(pluginFiles, application);
+    }
 
-	public ProfilingGrailsPluginManager(String resourcePath,
-			GrailsApplication application) {
-		super(resourcePath, application);
-	}
+    public ProfilingGrailsPluginManager(String resourcePath, GrailsApplication application) {
+        super(resourcePath, application);
+    }
 
-	public ProfilingGrailsPluginManager(String[] pluginResources,
-			GrailsApplication application) {
-		super(pluginResources, application);
-	}
+    public ProfilingGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
+        super(pluginResources, application);
+    }
 
-	@Override
-	public void loadPlugins() throws PluginException {
-		long time = System.currentTimeMillis();
-		System.out.println("Loading plugins started");
-		super.loadPlugins();
-		System.out.println("Loading plugins took " + (System.currentTimeMillis()-time));
-	}
+    @Override
+    public void loadPlugins() throws PluginException {
+        long time = System.currentTimeMillis();
+        System.out.println("Loading plugins started");
+        super.loadPlugins();
+        System.out.println("Loading plugins took " + (System.currentTimeMillis()-time));
+    }
 
-
-	@Override
-	public void doDynamicMethods() {
-		long time = System.currentTimeMillis();
-		System.out.println("doWithDynamicMethods started");
+    @Override
+    public void doDynamicMethods() {
+        long time = System.currentTimeMillis();
+        System.out.println("doWithDynamicMethods started");
         checkInitialised();
         // remove common meta classes just to be sure
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
@@ -79,12 +70,12 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 try {
-            		long pluginTime = System.currentTimeMillis();
-            		System.out.println("doWithDynamicMethods for plugin ["+plugin.getName()+"] started");
-                	
+                    long pluginTime = System.currentTimeMillis();
+                    System.out.println("doWithDynamicMethods for plugin ["+plugin.getName()+"] started");
+
                     plugin.doWithDynamicMethods(applicationContext);
 
-            		System.out.println("doWithDynamicMethods for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
+                    System.out.println("doWithDynamicMethods for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
                 }
                 catch (Throwable t) {
                     GrailsUtil.deepSanitize(t);
@@ -93,55 +84,46 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
                 }
             }
         }
-		System.out.println("doWithDynamicMethods took " + (System.currentTimeMillis()-time));
+        System.out.println("doWithDynamicMethods took " + (System.currentTimeMillis()-time));
+    }
 
-		
-	}
-
-	@Override
-	public void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
-		long time = System.currentTimeMillis();
-		System.out.println("doWithSpring started");
+    @Override
+    public void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
+        long time = System.currentTimeMillis();
+        System.out.println("doWithSpring started");
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
-        		long pluginTime = System.currentTimeMillis();
-        		System.out.println("doWithSpring for plugin ["+plugin.getName()+"] started");
+                long pluginTime = System.currentTimeMillis();
+                System.out.println("doWithSpring for plugin ["+plugin.getName()+"] started");
                 plugin.doWithRuntimeConfiguration(springConfig);
-        		System.out.println("doWithSpring for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
+                System.out.println("doWithSpring for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
             }
         }
-		System.out.println("doWithSpring took " + (System.currentTimeMillis()-time));
-		
-	}
+        System.out.println("doWithSpring took " + (System.currentTimeMillis()-time));
+    }
 
-	@Override
-	public void doPostProcessing(ApplicationContext ctx) {
-		long time = System.currentTimeMillis();
-		System.out.println("doWithApplicationContext started");
-       checkInitialised();
+    @Override
+    public void doPostProcessing(ApplicationContext ctx) {
+        long time = System.currentTimeMillis();
+        System.out.println("doWithApplicationContext started");
+        checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
-        		long pluginTime = System.currentTimeMillis();
-        		System.out.println("doWithApplicationContext for plugin ["+plugin.getName()+"] started");
-        		plugin.doWithApplicationContext(ctx);
-        		System.out.println("doWithApplicationContext for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
+                long pluginTime = System.currentTimeMillis();
+                System.out.println("doWithApplicationContext for plugin ["+plugin.getName()+"] started");
+                plugin.doWithApplicationContext(ctx);
+                System.out.println("doWithApplicationContext for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
             }
         }
-		System.out.println("doWithApplicationContext took " + (System.currentTimeMillis()-time));
-	}
+        System.out.println("doWithApplicationContext took " + (System.currentTimeMillis()-time));
+    }
 
-	@Override
-	public void doArtefactConfiguration() {
-		long time = System.currentTimeMillis();
-		System.out.println("doArtefactConfiguration started");
-		super.doArtefactConfiguration();
-		System.out.println("doArtefactConfiguration took " + (System.currentTimeMillis()-time));
-
-
-	}
-
-	
-	
-	
+    @Override
+    public void doArtefactConfiguration() {
+        long time = System.currentTimeMillis();
+        System.out.println("doArtefactConfiguration started");
+        super.doArtefactConfiguration();
+        System.out.println("doArtefactConfiguration took " + (System.currentTimeMillis()-time));
+    }
 }

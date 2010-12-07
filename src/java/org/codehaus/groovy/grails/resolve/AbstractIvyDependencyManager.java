@@ -117,7 +117,7 @@ public abstract class AbstractIvyDependencyManager {
     protected Set<String> pluginDependencyNames = new HashSet<String>();
     protected Set<String> metadataRegisteredPluginNames = new HashSet<String>();
     protected Map<String, Collection<ModuleRevisionId>> orgToDepMap = new HashMap<String, Collection<ModuleRevisionId>>();
-    protected Collection<String> usedConfigurations = new ConcurrentLinkedQueue();
+    protected Collection<String> usedConfigurations = new ConcurrentLinkedQueue<String>();
 
     protected Map<String, DependencyDescriptor> pluginNameToDescriptorMap =
         new ConcurrentHashMap<String, DependencyDescriptor>();
@@ -339,6 +339,7 @@ public abstract class AbstractIvyDependencyManager {
         //
         //    http://jira.codehaus.org/browse/GRAILS-6270
         //
+        @SuppressWarnings("hiding")
         DefaultModuleDescriptor moduleDescriptor =
             DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance("org.grails.internal", applicationName, applicationVersion));
 

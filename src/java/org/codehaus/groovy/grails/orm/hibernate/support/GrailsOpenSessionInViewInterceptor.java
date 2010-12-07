@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
-import java.util.Set;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -43,7 +41,7 @@ import org.springframework.web.context.request.WebRequest;
  * @since 0.5
  */
 public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterceptor {
-	private static final String IS_FLOW_REQUEST_ATTRIBUTE = "org.codehaus.groovy.grails.webflow.flow_request";
+    private static final String IS_FLOW_REQUEST_ATTRIBUTE = "org.codehaus.groovy.grails.webflow.flow_request";
 
     @Override
     public void preHandle(WebRequest request) throws DataAccessException {
@@ -56,7 +54,7 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
         else {
             super.preHandle(request);
             SessionFactory sessionFactory = getSessionFactory();
-			SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory);
+            SessionHolder sessionHolder = (SessionHolder)TransactionSynchronizationManager.getResource(sessionFactory);
             Session session = sessionHolder.getSession();
             GrailsHibernateUtil.enableDynamicFilterEnablerIfPresent(sessionFactory, session);
         }

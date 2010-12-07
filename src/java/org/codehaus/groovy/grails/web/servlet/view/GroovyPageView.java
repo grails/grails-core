@@ -164,8 +164,8 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @param out The Writer
      * @param engine The GSP engine
      */
-    protected void handleException(Exception exception, Writer out,
-            GroovyPagesTemplateEngine engine,
+    protected void handleException(Exception exception, @SuppressWarnings("unused") Writer out,
+            @SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
             @SuppressWarnings("unused") HttpServletRequest request,
             @SuppressWarnings("unused") HttpServletResponse response)  {
 

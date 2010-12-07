@@ -63,17 +63,20 @@ import org.springframework.context.ApplicationContextAware;
  * @since 1.0
  */
 @SuppressWarnings("rawtypes")
-public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener implements ApplicationContextAware,
-                                                                                     GrailsConfigurationAware,
-                                                                                     PreLoadEventListener,
-                                                                                     PostLoadEventListener,
-                                                                                     PostInsertEventListener,
-                                                                                     PostUpdateEventListener,
-                                                                                     PostDeleteEventListener,
-                                                                                     PreDeleteEventListener,
-                                                                                     PreUpdateEventListener {
-    private static final long serialVersionUID = 1L;
-    public static final Collection<String> IGNORED = new HashSet<String>(Arrays.asList(new String[]{"version", "id"}));
+public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
+       implements ApplicationContextAware,
+                  GrailsConfigurationAware,
+                  PreLoadEventListener,
+                  PostLoadEventListener,
+                  PostInsertEventListener,
+                  PostUpdateEventListener,
+                  PostDeleteEventListener,
+                  PreDeleteEventListener,
+                  PreUpdateEventListener {
+
+    private static final long serialVersionUID = 1;
+
+    public static final Collection<String> IGNORED = new HashSet<String>(Arrays.asList("version", "id"));
     public static final String ONLOAD_EVENT = "onLoad";
     public static final String ONLOAD_SAVE = "onSave";
     public static final String BEFORE_LOAD_EVENT = "beforeLoad";
@@ -85,14 +88,16 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     public static final String AFTER_DELETE_EVENT = "afterDelete";
     public static final String AFTER_LOAD_EVENT = "afterLoad";
 
-    private transient ConcurrentMap<SoftKey<Class<?>>, ClosureEventListener> eventListeners = new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
-    private transient ConcurrentMap<SoftKey<Class<?>>, Boolean> cachedShouldTrigger = new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
+    private transient ConcurrentMap<SoftKey<Class<?>>, ClosureEventListener> eventListeners =
+        new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
+    private transient ConcurrentMap<SoftKey<Class<?>>, Boolean> cachedShouldTrigger =
+        new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
 
     boolean failOnError = false;
     List failOnErrorPackages = Collections.EMPTY_LIST;
 
     public void setConfiguration(ConfigObject co) {
-        Object failOnErrorConfig=co.flatten().get("grails.gorm.failOnError");
+        Object failOnErrorConfig = co.flatten().get("grails.gorm.failOnError");
         if (failOnErrorConfig instanceof List)  {
             failOnError = true;
             failOnErrorPackages = (List)failOnErrorConfig;
@@ -103,28 +108,32 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     }
 
     private ClosureEventListener findEventListener(Object entity) {
-        if(entity==null) return null;
+        if (entity == null) return null;
         Class<?> clazz = entity.getClass();
         
         SoftKey<Class<?>> key = new SoftKey<Class<?>>(clazz);
         ClosureEventListener eventListener = eventListeners.get(key);
-        if(eventListener == null) {
-            Boolean shouldTrigger=cachedShouldTrigger.get(key);
-            if(shouldTrigger==null || shouldTrigger) {
-                synchronized(clazz) {
-                    eventListener = eventListeners.get(key);
-                    if(eventListener==null) {
-                        shouldTrigger = (entity != null && (GroovySystem.getMetaClassRegistry().getMetaClass(entity.getClass()) != null) &&            (DomainClassArtefactHandler.isDomainClass(clazz) ||
-                         AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)));
-                        if(shouldTrigger) {
-                            eventListener=new ClosureEventListener(clazz, failOnError, failOnErrorPackages);
-                            ClosureEventListener previous=eventListeners.putIfAbsent(key, eventListener);
-                            if(previous != null) {
-                                eventListener=previous;
-                            }
+        if (eventListener != null) {
+            return eventListener;
+        }
+
+        Boolean shouldTrigger = cachedShouldTrigger.get(key);
+        if (shouldTrigger == null || shouldTrigger) {
+            synchronized(clazz) {
+                eventListener = eventListeners.get(key);
+                if (eventListener == null) {
+                    shouldTrigger = (entity != null &&
+                        (GroovySystem.getMetaClassRegistry().getMetaClass(entity.getClass()) != null) &&
+                        (DomainClassArtefactHandler.isDomainClass(clazz) ||
+                              AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)));
+                    if (shouldTrigger) {
+                        eventListener = new ClosureEventListener(clazz, failOnError, failOnErrorPackages);
+                        ClosureEventListener previous = eventListeners.putIfAbsent(key, eventListener);
+                        if (previous != null) {
+                            eventListener = previous;
                         }
-                        cachedShouldTrigger.put(key, shouldTrigger);
                     }
+                    cachedShouldTrigger.put(key, shouldTrigger);
                 }
             }
         }
@@ -134,8 +143,10 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     @Override
     public void onSaveOrUpdate(SaveOrUpdateEvent event) throws HibernateException {
         Object entity = event.getObject();
-        ClosureEventListener eventListener=findEventListener(entity);
-        if(eventListener != null) eventListener.onSaveOrUpdate(event);
+        ClosureEventListener eventListener = findEventListener(entity);
+        if (eventListener != null) {
+            eventListener.onSaveOrUpdate(event);
+        }
         super.onSaveOrUpdate(event);
     }
 
@@ -143,15 +154,18 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         Object entity = event.getEntity();
         GrailsHibernateUtil.ensureCorrectGroovyMetaClass(entity, entity.getClass() );
         ClosureEventListener eventListener=findEventListener(entity);
-        if(eventListener != null) eventListener.onPreLoad(event);
+        if (eventListener != null) {
+            eventListener.onPreLoad(event);
+        }
     }
 
     public void onPostLoad(PostLoadEvent event) {
         Object entity = event.getEntity();
         ClosureEventListener eventListener=findEventListener(entity);
-        if(eventListener != null) {
-            if(applicationContext != null && applicationContext.getAutowireCapableBeanFactory() != null) {    
-                applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(entity, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+        if (eventListener != null) {
+            if (applicationContext != null && applicationContext.getAutowireCapableBeanFactory() != null) {    
+                applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(
+                     entity, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
             }
             eventListener.onPostLoad(event);
         }
@@ -159,13 +173,15 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public void onPostInsert(PostInsertEvent event) {
         ClosureEventListener eventListener=findEventListener(event.getEntity());
-        if(eventListener != null) eventListener.onPostInsert(event);
+        if (eventListener != null) {
+            eventListener.onPostInsert(event);
+        }
     }
 
     public boolean onPreUpdate(PreUpdateEvent event) {
         boolean evict = false;
         ClosureEventListener eventListener=findEventListener(event.getEntity());
-        if(eventListener != null) {
+        if (eventListener != null) {
             evict = eventListener.onPreUpdate(event);
         }
         return evict;
@@ -173,17 +189,21 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public void onPostUpdate(PostUpdateEvent event) {
         ClosureEventListener eventListener=findEventListener(event.getEntity());
-        if(eventListener != null) eventListener.onPostUpdate(event);
+        if (eventListener != null) {
+            eventListener.onPostUpdate(event);
+        }
     }
 
     public void onPostDelete(PostDeleteEvent event) {
         ClosureEventListener eventListener=findEventListener(event.getEntity());
-        if(eventListener != null) eventListener.onPostDelete(event);
+        if (eventListener != null) {
+            eventListener.onPostDelete(event);
+        }
     }
 
     public boolean onPreDelete(PreDeleteEvent event) {
         ClosureEventListener eventListener=findEventListener(event.getEntity());
-        if(eventListener != null) {
+        if (eventListener != null) {
             return eventListener.onPreDelete(event);
         }
         return false;
@@ -204,7 +224,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         failOnError = in.readBoolean();
-        failOnErrorPackages = (List) in.readObject();
+        failOnErrorPackages = (List)in.readObject();
         eventListeners = new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
         cachedShouldTrigger = new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
     }
