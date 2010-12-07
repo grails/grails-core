@@ -17,40 +17,32 @@
 /**
  * Gant script that creates a ZIP file creating just the artifacts from a project, for attaching to a JIRA issue
  *
- *
  * @author Marc Palmer
- *
  * @since 0.4
  */
 
+import java.text.SimpleDateFormat
+
 includeTargets << grailsScript("_GrailsInit")
 
-artifactNames = [
-    'conf',
-    'controllers',
-    'domain',
-    'jobs',
-    'i18n',
-    'services',
-    'taglib',
-    'views'
-]
-
-target ('default': "Creates a ZIP containing source artifacts for reporting bugs") {
+target(bugReport: "Creates a ZIP containing source artifacts for reporting bugs") {
     depends(checkVersion)
 
-    def fileName = new File(basedir).name
-    def date = new java.text.SimpleDateFormat("ddMMyyyy").format(new Date())
-    def zipName = "${basedir}/${fileName}-bug-report-${date}.zip"
+    String fileName = new File(basedir).name
+    String date = new SimpleDateFormat("ddMMyyyy").format(new Date())
+    String zipName = "$basedir/${fileName}-bug-report-${date}.zip"
 
-    ant.zip(destfile: zipName) {
-        fileset(dir: "${basedir}", includes: "grails-app/**/*")
-        fileset(dir: "${basedir}", includes: "test/**/*")
-        fileset(dir: "${basedir}", includes: "scripts/**/*")
-        fileset(dir: "${basedir}", includes: "spring/**/*")
-        fileset(dir: "${basedir}", includes: "src/**/*")
-        fileset(file: "${basedir}/application.properties")
+    ant.zip(destfile: zipName, filesonly: true) {
+        fileset(dir: basedir) {
+            include name: 'grails-app/**'
+            include name: 'src/**'
+            include name: 'test/**'
+            include name: 'scripts/**'
+        }
+        fileset file: "$basedir/application.properties"
     }
 
-    event("StatusFinal", ["Created bug-report ZIP at ${zipName}"])
+    event("StatusFinal", ["Created bug-report ZIP at $zipName"])
 }
+
+setDefaultTarget 'bugReport'
