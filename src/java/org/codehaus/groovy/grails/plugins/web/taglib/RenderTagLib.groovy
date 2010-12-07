@@ -28,12 +28,15 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
@@ -52,6 +55,9 @@ class RenderTagLib implements RequestConstants {
     ServletConfig servletConfig
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
+    GrailsTemplateGenerator scaffoldingTemplateGenerator
+    Map scaffoldedActionMap
+    Map controllerToScaffoldedDomainClassMap
 
     static Map TEMPLATE_CACHE = new ConcurrentHashMap()
 
@@ -557,7 +563,7 @@ class RenderTagLib implements RequestConstants {
             }
             else {
                 def templateResolveOrder
-				def templateInContextPath = "${contextPath}/grails-app/views${uri}"
+                def templateInContextPath = "${contextPath}/grails-app/views${uri}"
                 if (pluginName) {
                     templateResolveOrder = [templatePath, templateInContextPath]
                 }
@@ -565,6 +571,23 @@ class RenderTagLib implements RequestConstants {
                     templateResolveOrder = [uri, templatePath, templateInContextPath]
                 }
                 t = engine.createTemplateForUri(templateResolveOrder as String[])
+                if (!t && scaffoldingTemplateGenerator) {
+                    GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest()
+                    def controllerActions = scaffoldedActionMap[webRequest.controllerName]
+                    if (controllerActions?.contains(webRequest.actionName)) {
+                        GrailsDomainClass domainClass = controllerToScaffoldedDomainClassMap[webRequest.controllerName]
+                        if (domainClass) {
+                            int i = uri.lastIndexOf('/')
+                            String templateName = i > -1 ? uri.substring(i) : uri
+                            if (templateName.toLowerCase().endsWith('.gsp')) {
+                                templateName = templateName[0..-5]
+                            }
+                            def sw = new StringWriter()
+                            scaffoldingTemplateGenerator.generateView domainClass, templateName, sw
+                            t = engine.createTemplate(sw.toString(), uri)
+                        }
+                    }
+                }
                 if (t) {
                     if (!engine.isReloadEnabled()) {
                         def prevt = TEMPLATE_CACHE.putIfAbsent(cacheKey, t)
