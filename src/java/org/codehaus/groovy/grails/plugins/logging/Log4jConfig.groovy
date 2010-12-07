@@ -68,7 +68,7 @@ class Log4jConfig {
                 appenders[appender.name] = appender
             }
             appender.activateOptions()
-            return appenders[name]
+            return appender
         }
 
         if (LAYOUTS.containsKey(name) && args) {
