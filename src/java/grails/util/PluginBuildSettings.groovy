@@ -200,7 +200,7 @@ class PluginBuildSettings {
                 // plugin's "test" directory, we ignore it. It's a
                 // bit of a HACK, but not much else we can do without
                 // a refactor of the plugin management.
-                sourcePath = sourcePath.substring(pluginPath.length() + 1)
+                sourcePath = sourcePath.substring(pluginPath.length())
                 if (!sourcePath.startsWith("test" + File.separator)) {
                     GrailsPluginInfo info = getPluginInfo(pluginPath)
                     if (info) {
