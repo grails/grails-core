@@ -303,7 +303,7 @@ class BlockQuoteFilter extends RegexTokenFilter {
 
 class ItalicFilter extends RegexTokenFilter {
     ItalicFilter() {
-        super(/\s_([^\n]*?)_\s/);
+        super(/\b_([^\n]*?)_\b/);
     }
     void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
         buffer << " <em class=\"italic\">${result.group(1)}</em> "
