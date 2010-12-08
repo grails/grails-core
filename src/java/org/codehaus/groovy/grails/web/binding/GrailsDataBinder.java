@@ -329,7 +329,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         if (request instanceof MultipartHttpServletRequest) {
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-            bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
+            bindMultipart(multipartRequest.getMultiFileMap(), mpvs);
         }
         doBind(mpvs);
     }
@@ -886,59 +886,106 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     /**
      * Checks for structured properties. Structured properties are properties with a name
-     * containg a "_"
+     * containg a "_".
      *
      * @param propertyValues
      */
-    @SuppressWarnings("unchecked")
     private void checkStructuredProperties(MutablePropertyValues propertyValues) {
-        PropertyValue[] pvs = propertyValues.getPropertyValues();
-        for (PropertyValue propertyValue : pvs) {
+        Map<String, PropertyValue> valuesByName = new HashMap<String, PropertyValue>();
+        List<String> valueNames = new ArrayList<String>();
+        mapPropertyValues(propertyValues.getPropertyValues(), valuesByName, valueNames);
+
+        while (!valueNames.isEmpty()) {
+            String name = valueNames.remove(0);
+            PropertyValue propertyValue = valuesByName.get(name);
+
             if (!isStructured(propertyValue)) {
                 continue;
             }
+
             String propertyName = getNameOf(propertyValue);
             Class<?> type = bean.getPropertyType(propertyName);
-            if (type != null) {
-                PropertyEditor editor = findCustomEditor(type, propertyName);
-                if (null != editor && StructuredPropertyEditor.class.isAssignableFrom(editor.getClass())) {
-                    StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) editor;
-                    List fields = new ArrayList();
-                    fields.addAll(structuredEditor.getRequiredFields());
-                    fields.addAll(structuredEditor.getOptionalFields());
-                    Map<String, String> fieldValues = new HashMap<String, String>();
-                    try {
-                        for (Object fld : fields) {
-                            String field = (String) fld;
-                            PropertyValue partialStructValue = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
-                            if (partialStructValue == null && structuredEditor.getRequiredFields().contains(field)) {
-                                throw new MissingPropertyException("Required structured property is missing [" + field + "]");
-                            }
-                            else if (partialStructValue == null) {
-                                continue;
-                            }
-                            fieldValues.put(field, getStringValue(partialStructValue));
-                        }
-                        try {
-                            Object value = structuredEditor.assemble(type, fieldValues);
-                            for (Object fld : fields) {
-                                String field = (String) fld;
-                                PropertyValue partialStructValue = propertyValues.getPropertyValue(propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
-                                if (null != partialStructValue) {
-                                    partialStructValue.setConvertedValue(getStringValue(partialStructValue));
-                                }
-                            }
-                            propertyValues.addPropertyValue(new PropertyValue(propertyName, value));
-                        }
-                        catch (IllegalArgumentException iae) {
-                            LOG.warn("Unable to parse structured date from request for date [" + propertyName + "]", iae);
-                        }
-                    }
-                    catch (InvalidPropertyException ipe) {
-                        // ignore
+            if (type == null) {
+                continue;
+            }
+
+            PropertyEditor editor = findCustomEditor(type, propertyName);
+            if (null == editor || !StructuredPropertyEditor.class.isAssignableFrom(editor.getClass())) {
+                continue;
+            }
+
+            StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) editor;
+            processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void processStructuredProperty(StructuredPropertyEditor structuredEditor, String propertyName, Class<?> type,
+            List<String> valueNames, MutablePropertyValues propertyValues) {
+
+        List requiredFields = structuredEditor.getRequiredFields();
+        List<String> fields = new ArrayList<String>();
+        fields.addAll(requiredFields);
+        fields.addAll(structuredEditor.getOptionalFields());
+
+        Map<String, String> fieldValues = new HashMap<String, String>();
+        try {
+
+            String firstRequiredField = null;
+            for (String field : fields) {
+                String fullName = propertyName + STRUCTURED_PROPERTY_SEPERATOR + field;
+
+                // don't re-process related properties
+                valueNames.remove(fullName);
+
+                if (firstRequiredField != null) {
+                    continue;
+                }
+
+                PropertyValue partialStructValue = propertyValues.getPropertyValue(fullName);
+                if (partialStructValue == null) {
+                    if (requiredFields.contains(field)) {
+                        firstRequiredField = field;
                     }
                 }
+                else {
+                    fieldValues.put(field, getStringValue(partialStructValue));
+                }
             }
+
+            // set to null since it either won't be created because of problem, or will be overwritten
+            propertyValues.removePropertyValue(propertyName);
+
+            if (firstRequiredField != null) {
+                throw new MissingPropertyException(
+                        "Required structured property is missing [" + firstRequiredField + "]");
+            }
+
+            try {
+                Object value = structuredEditor.assemble(type, fieldValues);
+                for (String field : fields) {
+                    PropertyValue partialStructValue = propertyValues.getPropertyValue(
+                            propertyName + STRUCTURED_PROPERTY_SEPERATOR + field);
+                    if (null != partialStructValue) {
+                        partialStructValue.setConvertedValue(getStringValue(partialStructValue));
+                    }
+                }
+                propertyValues.addPropertyValue(new PropertyValue(propertyName, value));
+            }
+            catch (IllegalArgumentException e) {
+                LOG.warn("Unable to parse structured date from request for date [" + propertyName + "]", e);
+            }
+        }
+        catch (InvalidPropertyException ignored) {
+            // ignored
+        }
+    }
+
+    private void mapPropertyValues(PropertyValue[] pvs,
+            Map<String, PropertyValue> valuesByName, List<String> valueNames) {
+        for (PropertyValue pv : pvs) {
+            valuesByName.put(pv.getName(), pv);
+            valueNames.add(pv.getName());
         }
     }
 
