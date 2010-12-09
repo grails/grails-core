@@ -6,6 +6,8 @@ import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 
+import grails.spring.BeanBuilder
+
 class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
     void testCorePlugin() {
@@ -115,4 +117,37 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals(1, appCtx.getBean('someTransactionalService').i)
         assertEquals(2, appCtx.getBean('nonTransactionalService').i)
     }
+    
+    // See GRAILS-6790
+    void testAopConfigurationIsEffective() {
+        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        def plugin = new DefaultGrailsPlugin(pluginClass, ga)
+        def springConfig = new WebRuntimeSpringConfiguration(ctx)
+        
+        plugin.doWithRuntimeConfiguration(springConfig)
+        
+        def bb = new BeanBuilder(ctx, springConfig, null)
+        bb.beans {
+            xmlns aop: "http://www.springframework.org/schema/aop"
+
+            aop.config("proxy-target-class": true) {
+
+                aspect(id: "myPlainJavaAspect-id", ref: "myAspect") { 
+                    "before" method: "myBeforeAdvice", pointcut: "execution(* myMethod1(..))" 
+                }
+            }
+
+            myInterfaceImpl(CoreGrailsPluginTestsAopConfig.MyInterfaceImpl)
+            myAspect(CoreGrailsPluginTestsAopConfig.MyAspect)
+        }
+
+        def appCtx = springConfig.getApplicationContext()
+        def bean = appCtx.getBean("myInterfaceImpl")
+
+        // if we can call the following method, then the proxy was class based
+        // because 'myMethod2' is not on the only interface this implements
+        bean.myMethod2()
+    }
+    
+    
 }

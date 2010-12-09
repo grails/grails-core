@@ -35,7 +35,9 @@ import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
+import org.springframework.aop.config.AopConfigUtils
 import org.springframework.core.io.Resource
+import org.springframework.beans.factory.support.GenericBeanDefinition
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 
 /**
@@ -56,15 +58,18 @@ class CoreGrailsPlugin {
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
         addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
 
-        // replace AutoProxy advisor with Groovy aware one
         def grailsConfig = application.config.grails
         def springConfig = grailsConfig.spring
-        if(springConfig.disable.aspectj.autoweaving) {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
-        }
-        else {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
-        }
+
+        // configure a Groovy aware AutoProxy advisor
+        // we need to do this on the parent context to allow
+        // plugins/apps to affect it while creating/configing beans
+        // See GRAILS-6790
+        def aspectJDisabled = springConfig.disable.aspectj.autoweaving
+        def proxyCreatorType = aspectJDisabled ? GroovyAwareInfrastructureAdvisorAutoProxyCreator : GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+        def proxyCreatorDefinition = new GenericBeanDefinition()
+        proxyCreatorDefinition.beanClass = proxyCreatorType
+        parentCtx.beanFactory.registerBeanDefinition(AopConfigUtils.AUTO_PROXY_CREATOR_BEAN_NAME, proxyCreatorDefinition)
 
         // Allow the use of Spring annotated components
         context.'annotation-config'()
