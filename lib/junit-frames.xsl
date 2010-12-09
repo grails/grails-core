@@ -779,8 +779,12 @@ h6 {
                 <xsl:otherwise>TableRowColor</xsl:otherwise>
             </xsl:choose>
         </xsl:attribute>
+        <!-- Handle empty packages -->
+        <xsl:variable name="package.path">
+            <xsl:if test="../@package != ''"><xsl:value-of select="concat(translate(../@package,'.','/'), '/')"/></xsl:if>
+        </xsl:variable>
 	<xsl:variable name="class.href">
-	    <xsl:value-of select="concat(translate(../@package,'.','/'), '/', ../@id, '_', ../@name, '.html')"/>
+	    <xsl:value-of select="concat($package.path, ../@id, '_', ../@name, '.html')"/>
 	</xsl:variable>
 	<xsl:if test="boolean($show.class)">
 	    <td><a href="{$class.href}"><xsl:value-of select="../@name"/></a></td>

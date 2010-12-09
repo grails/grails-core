@@ -146,10 +146,12 @@ class GroovyPagesGrailsPlugin {
             }
             tagLibraryLookup = gspTagLibraryLookup
             jspTagLibraryResolver = jspTagLibraryResolver
-            precompiledGspMap = { PropertiesFactoryBean pfb ->
-                ignoreResourceNotFound = true
-                location = "classpath:gsp/views.properties"
-            }
+			if(application.warDeployed) {
+	            precompiledGspMap = { PropertiesFactoryBean pfb ->
+	                ignoreResourceNotFound = true
+	                location = "classpath:gsp/views.properties"
+	            }
+			}
 			cacheResources = enableCacheResources
         }
 

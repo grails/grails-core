@@ -33,7 +33,7 @@ class JavascriptTagLib  {
     static final LIBRARY_MAPPINGS = [prototype: ['prototype/prototype']]
 
     static {
-        LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous','prototype/builder','prototype/controls','prototype/effects','prototype/slider','prototype/dragdrop']
+        LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous']
         LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']
     }
 
@@ -474,7 +474,7 @@ class PrototypeProvider implements JavascriptProvider {
         def url
         def jsParams = [:]
 
-        if (jsParams instanceof Map) {
+        if (attrs.params instanceof Map) {
             jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
             jsParams?.each { attrs.params?.remove(it.key) }
         }

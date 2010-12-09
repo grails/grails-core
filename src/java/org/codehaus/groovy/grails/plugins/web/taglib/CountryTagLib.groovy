@@ -296,8 +296,9 @@ class CountryTagLib {
         if (!attrs.from) {
             attrs.from = COUNTRY_CODES_BY_NAME_ORDER
         }
-        def valuePrefix = attrs.remove('valueMessagePrefix')
-        attrs.optionValue = { valuePrefix ? "${valuePrefix}.${it}" : ISO3166_3[it] }
+
+        if (!attrs['valueMessagePrefix']) attrs.optionValue = { ISO3166_3[it] }
+        
         if (!attrs.value) {
             attrs.value = attrs.remove('default')
         }

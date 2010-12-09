@@ -32,145 +32,140 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * API shared by controllers, tag libraries and any other web artifact
- * 
+ *
  * @author Graeme Rocher
  * @since 1.4
  *
  */
 public class CommonWebApi {
-	private GrailsPluginManager pluginManager;
+    private GrailsPluginManager pluginManager;
 
-	public CommonWebApi(GrailsPluginManager pluginManager) {
-		this.pluginManager = pluginManager;
-	}
+    public CommonWebApi(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
+    }
 
-	/**
-	 * Obtains the Grails parameter map
-	 * 
-	 * @return The GrailsParameterMap instance
-	 * 
-	 */
-	public GrailsParameterMap getParams(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getParams();
-	}
+    /**
+     * Obtains the Grails parameter map
+     *
+     * @return The GrailsParameterMap instance
+     */
+    public GrailsParameterMap getParams(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getParams();
+    }
 
-	/**
-	 * Obtains the Grails FlashScope instance
-	 * 
-	 * @return The FlashScope instance
-	 */
-	public FlashScope getFlash(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getFlashScope();    	
-	}
+    /**
+     * Obtains the Grails FlashScope instance
+     *
+     * @return The FlashScope instance
+     */
+    public FlashScope getFlash(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getFlashScope();
+    }
 
-	/**
-	 * Obtains the HttpSession instance
-	 * 
-	 * @return The HttpSession instance
-	 */
-	public HttpSession getSession(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getSession();    	    	
-	}
+    /**
+     * Obtains the HttpSession instance
+     *
+     * @return The HttpSession instance
+     */
+    public HttpSession getSession(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getSession();
+    }
 
-	/**
-	 * Obtains the HttpServletRequest instance
-	 * 
-	 * @return The HttpServletRequest instance
-	 */
-	public HttpServletRequest getRequest(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getCurrentRequest();	    	
-		
-	}
+    /**
+     * Obtains the HttpServletRequest instance
+     *
+     * @return The HttpServletRequest instance
+     */
+    public HttpServletRequest getRequest(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getCurrentRequest();
+    }
 
-	/**
-	 * Obtains the ServletContext instance
-	 * 
-	 * @return The ServletContext instance
-	 */
-	public ServletContext getServletContext(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getServletContext();    	    	
-		
-	}
+    /**
+     * Obtains the ServletContext instance
+     *
+     * @return The ServletContext instance
+     */
+    public ServletContext getServletContext(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getServletContext();
+    }
 
-	/**
-	 * Obtains the HttpServletResponse instance
-	 * 
-	 * @return The HttpServletResponse instance
-	 */
-	public HttpServletResponse getResponse(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getCurrentResponse();    	    	    	
-	}
+    /**
+     * Obtains the HttpServletResponse instance
+     *
+     * @return The HttpServletResponse instance
+     */
+    public HttpServletResponse getResponse(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getCurrentResponse();
+    }
 
-	/**
-	 * Obtains the GrailsApplicationAttributes instance
-	 * 
-	 * @return The GrailsApplicationAttributes instance
-	 */
-	public GrailsApplicationAttributes getGrailsAttributes(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getAttributes();    	    	    	
-		
-	}
+    /**
+     * Obtains the GrailsApplicationAttributes instance
+     *
+     * @return The GrailsApplicationAttributes instance
+     */
+    public GrailsApplicationAttributes getGrailsAttributes(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getAttributes();
+    }
 
-	/**
-	 * Obtains the GrailsApplication instance
-	 * @return The GrailsApplication instance
-	 */
-	public GrailsApplication getGrailsApplication(Object instance) {
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getAttributes().getGrailsApplication();    	    	    	    	
-	}
-	
-	/**
-	 * Obtains the ApplicationContext instance
-	 * @return The ApplicationContext instance
-	 */
-	public ApplicationContext getApplicationContext(Object instance) {
-		return WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext(instance));
-	}	
+    /**
+     * Obtains the GrailsApplication instance
+     * @return The GrailsApplication instance
+     */
+    public GrailsApplication getGrailsApplication(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getAttributes().getGrailsApplication();
+    }
 
-	/**
-	 * Obtains the currently executing action name
-	 * @return The action name
-	 */
-	public String getActionName(Object instance) { 
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getActionName();    	    	    	    	
-	}
+    /**
+     * Obtains the ApplicationContext instance
+     * @return The ApplicationContext instance
+     */
+    public ApplicationContext getApplicationContext(Object instance) {
+        return WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext(instance));
+    }
 
-	/**
-	 * Obtains the currently executing controller name
-	 * @return The controller name
-	 */
-	public String getControllerName(Object instance) { 
-		GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-		return webRequest.getControllerName();    	    	    	    	
-	}
+    /**
+     * Obtains the currently executing action name
+     * @return The action name
+     */
+    public String getActionName(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getActionName();
+    }
 
-	/**
-	 * Obtains the currently executing web request
-	 * 
-	 * @return The GrailsWebRequest instance
-	 */
-	public GrailsWebRequest getWebRequest(Object instance) {
-		return (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-	}
+    /**
+     * Obtains the currently executing controller name
+     * @return The controller name
+     */
+    public String getControllerName(@SuppressWarnings("unused") Object instance) {
+        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        return webRequest.getControllerName();
+    }
 
-	/**
-	 * Obtains the pluginContextPath
-	 * 
-	 * @param delegate The object the method is being invoked on
-	 * @return The plugin context path
-	 */
-	public String getPluginContextPath(Object delegate) {
-	    final String pluginPath = pluginManager.getPluginPathForInstance(delegate);
-		return pluginPath !=null ? pluginPath : "";
-	}
+    /**
+     * Obtains the currently executing web request
+     *
+     * @return The GrailsWebRequest instance
+     */
+    public GrailsWebRequest getWebRequest(@SuppressWarnings("unused") Object instance) {
+        return (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+    }
 
+    /**
+     * Obtains the pluginContextPath
+     *
+     * @param delegate The object the method is being invoked on
+     * @return The plugin context path
+     */
+    public String getPluginContextPath(Object delegate) {
+        final String pluginPath = pluginManager.getPluginPathForInstance(delegate);
+        return pluginPath !=null ? pluginPath : "";
+    }
 }

@@ -38,22 +38,19 @@ import org.apache.commons.collections.set.AbstractSerializableSetDecorator;
  * @author Henning P. Schmiedehausen
  * @author Graeme Rocher
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ListOrderedSet extends AbstractSerializableSetDecorator implements Set, List {
     private static final long serialVersionUID = -228664372470420141L;
 
     /** Internal list to hold the sequence of objects */
     protected final List setOrder;
 
-
-
     /**
      * Factory method to create an ordered set.
      * 
-
-
      * An ArrayList is used to retain order.
      * 
-     * @param set  the set to decorate, must not be null
+     * @param set the set to decorate, must not be null
      * @throws IllegalArgumentException if set is null
      */
     public static ListOrderedSet decorate(Set set) {
@@ -63,11 +60,9 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     /**
      * Factory method to create an ordered set using the supplied list to retain order.
      * 
-
-
      * A HashSet is used for the set behaviour.
      * 
-     * @param list  the list to decorate, must not be null
+     * @param list the list to decorate, must not be null
      * @throws IllegalArgumentException if list is null
      */
     public static ListOrderedSet decorate(List list) {
@@ -76,7 +71,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
         }
         Set set = new HashSet(list);
         list.retainAll(set);
-        
+
         return new ListOrderedSet(set, list);
     }
 
@@ -95,7 +90,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     /**
      * Constructor that wraps (not copies).
      * 
-     * @param set  the set to decorate, must not be null
+     * @param set the set to decorate, must not be null
      * @throws IllegalArgumentException if set is null
      */
     protected ListOrderedSet(Set set) {
@@ -106,12 +101,10 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     /**
      * Constructor that wraps (not copies) the Set and specifies the list to use.
      * 
-
-
      * The set and list must both be correctly initialised to the same elements.
      * 
-     * @param set  the set to decorate, must not be null
-     * @param list  the list to decorate, must not be null
+     * @param set the set to decorate, must not be null
+     * @param list the list to decorate, must not be null
      * @throws IllegalArgumentException if set or list is null
      */
     protected ListOrderedSet(Set set, List list) {
@@ -133,27 +126,30 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     }
 
     //-----------------------------------------------------------------------
+    @Override
     public void clear() {
         collection.clear();
         setOrder.clear();
     }
 
+    @Override
     public Iterator iterator() {
         return new OrderedSetIterator(setOrder.iterator(), collection);
     }
 
+    @Override
     public boolean add(Object object) {
         if (collection.contains(object)) {
             // re-adding doesn't change order
             return collection.add(object);
-        } else {
-            // first add, so add to both set and list
-            boolean result = collection.add(object);
-            setOrder.add(object);
-            return result;
         }
+        // first add, so add to both set and list
+        boolean result = collection.add(object);
+        setOrder.add(object);
+        return result;
     }
 
+    @Override
     public boolean addAll(Collection coll) {
         boolean result = false;
         for (Iterator it = coll.iterator(); it.hasNext();) {
@@ -163,12 +159,14 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
         return result;
     }
 
+    @Override
     public boolean remove(Object object) {
         boolean result = collection.remove(object);
         setOrder.remove(object);
         return result;
     }
 
+    @Override
     public boolean removeAll(Collection coll) {
         boolean result = false;
         for (Iterator it = coll.iterator(); it.hasNext();) {
@@ -178,13 +176,17 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
         return result;
     }
 
+    @Override
     public boolean retainAll(Collection coll) {
         boolean result = collection.retainAll(coll);
         if (result == false) {
             return false;
-        } else if (collection.size() == 0) {
+        }
+
+        if (collection.size() == 0) {
             setOrder.clear();
-        } else {
+        }
+        else {
             for (Iterator it = setOrder.iterator(); it.hasNext();) {
                 Object object = it.next();
                 if (collection.contains(object) == false) {
@@ -195,10 +197,12 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
         return result;
     }
 
+    @Override
     public Object[] toArray() {
         return setOrder.toArray();
     }
 
+    @Override
     public Object[] toArray(Object a[]) {
         return setOrder.toArray(a);
     }
@@ -245,6 +249,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
      * any custom toStrings will be ignored. 
      */
     // Fortunately List.toString and Set.toString look the same
+    @Override
     public String toString() {
         return setOrder.toString();
     }
@@ -254,7 +259,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
      * Internal iterator handle remove.
      */
     static class OrderedSetIterator extends AbstractIteratorDecorator {
-        
+
         /** Object we iterate on */
         protected final Collection set;
         /** Last object retrieved */
@@ -265,11 +270,13 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
             this.set = set;
         }
 
+        @Override
         public Object next() {
             last = iterator.next();
             return last;
         }
 
+        @Override
         public void remove() {
             set.remove(last);
             iterator.remove();
@@ -277,26 +284,26 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
         }
     }
 
-	public int lastIndexOf(Object o) {
-		return setOrder.lastIndexOf(o);
-	}
+    public int lastIndexOf(Object o) {
+        return setOrder.lastIndexOf(o);
+    }
 
-	public ListIterator listIterator() {
-		return setOrder.listIterator();
-	}
+    public ListIterator listIterator() {
+        return setOrder.listIterator();
+    }
 
-	public ListIterator listIterator(int index) {
-		return setOrder.listIterator(index);
-	}
+    public ListIterator listIterator(int index) {
+        return setOrder.listIterator(index);
+    }
 
-	public Object set(int index, Object element) {
-		Object current = get(index);
-		remove(current);
-		add(element);
-		return setOrder.set(index, element);
-	}
+    public Object set(int index, Object element) {
+        Object current = get(index);
+        remove(current);
+        add(element);
+        return setOrder.set(index, element);
+    }
 
-	public List subList(int fromIndex, int toIndex) {
-		return setOrder.subList(fromIndex, toIndex);
-	}
+    public List subList(int fromIndex, int toIndex) {
+        return setOrder.subList(fromIndex, toIndex);
+    }
 }

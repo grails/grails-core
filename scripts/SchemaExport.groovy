@@ -14,153 +14,62 @@
  * limitations under the License.
  */
 
-import org.hibernate.dialect.DialectFactory
-import org.springframework.jdbc.datasource.DriverManagerDataSource
-import org.springframework.jdbc.support.JdbcUtils
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
+import grails.util.GrailsUtil
 
-includeTargets << grailsScript("_GrailsBootstrap")
-includeTargets << grailsScript("_GrailsPackage")
+import org.hibernate.tool.hbm2ddl.SchemaExport as HibernateSchemaExport
+
+includeTargets << grailsScript('_GrailsBootstrap')
 
 /**
  * @author Burt Beckwith
  */
 
-def props = new Properties()
-def filename = "${grailsSettings.projectTargetDir}/ddl.sql"
-boolean export = false
-boolean stdout = false
-String configClassName = 'org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration'
-
-def configClasspath = {
-
-    ant.copy(todir: classesDirPath, file: metadataFile)
-    ant.copy(todir: classesDirPath, failonerror: false) {
-        fileset dir: "${basedir}/grails-app/conf", excludes: '**/*.groovy, log4j*, hibernate/**, spring/**'
-        fileset dir: "${basedir}/grails-app/conf/hibernate"
-        fileset dir: "${basedir}/src/java", excludes: '**/*.java'
-    }
-}
-
-def configureFromArgs = {
-    args = args ?: ''
-    args.split('\n').each {arg ->
-        arg = arg.trim()
-        if (arg) {
-            switch(arg) {
-                case 'export': export = true; break
-                case 'generate': export = false; break
-                case 'stdout': stdout = true; break
-                default: filename = arg
-            }
-        }
-    }
-}
-
-def populateProperties = {
-
-    createConfig()
-    def dsConfig = CH.config
-
-    props.'hibernate.connection.username' = dsConfig?.dataSource?.username ?: 'sa'
-    props.'hibernate.connection.password' = dsConfig?.dataSource?.password ?: ''
-    props.'hibernate.connection.url' = dsConfig?.dataSource?.url ?: 'jdbc:h2:mem:testDB'
-    props.'hibernate.connection.driver_class' =
-            dsConfig?.dataSource?.driverClassName ?: 'org.h2.Driver'
-
-    if (dsConfig?.dataSource?.configClass) {
-        if (dsConfig.dataSource.configClass instanceof Class) {
-            configClassName = dsConfig.dataSource.configClass.name
-        }
-        else {
-            configClassName = dsConfig.dataSource.configClass
-        }
-    }
-
-    def namingStrategy = dsConfig?.hibernate?.naming_strategy
-    if (namingStrategy) {
-        try {
-            GrailsDomainBinder.configureNamingStrategy namingStrategy
-        }
-        catch (Throwable t) {
-            println """WARNING: You've configured a custom Hibernate naming strategy '$namingStrategy' in DataSource.groovy, however the class cannot be found.
-Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getClass().name}'"""
-        }
-    }
-
-    if (dsConfig?.dataSource?.dialect) {
-        def dialect = dsConfig.dataSource.dialect
-        if (dialect instanceof Class) {
-            dialect = dialect.name
-        }
-        props.'hibernate.dialect' = dialect
-    }
-    else {
-        println('WARNING: Autodetecting the Hibernate Dialect; consider specifying the class name in DataSource.groovy')
-        try {
-            def ds = new DriverManagerDataSource(
-                props.'hibernate.connection.driver_class',
-                props.'hibernate.connection.url',
-                props.'hibernate.connection.username',
-                props.'hibernate.connection.password')
-            def dbName = JdbcUtils.extractDatabaseMetaData(ds, 'getDatabaseProductName')
-            def majorVersion = JdbcUtils.extractDatabaseMetaData(ds, 'getDatabaseMajorVersion')
-            props.'hibernate.dialect' =
-                DialectFactory.determineDialect(dbName, majorVersion).class.name
-        }
-        catch (Exception e) {
-            println "ERROR: Problem autodetecting the Hibernate Dialect: ${e.message}"
-            throw e
-        }
-    }
-}
-
 target(schemaExport: 'Run Hibernate SchemaExport') {
-    depends(packageApp)
+    depends checkVersion, configureProxy, bootstrap
 
-    configureFromArgs()
+    String filename = "${grailsSettings.projectTargetDir}/ddl.sql"
+    boolean export = false
+    boolean stdout = false
+
+    for (arg in argsMap.params) {
+        switch(arg) {
+            case 'export':   export = true; break
+            case 'generate': export = false; break
+            case 'stdout':   stdout = true; break
+            default:         filename = arg
+        }
+    }
 
     def file = new File(filename)
-    ant.mkdir(dir: file.parentFile)
+    ant.mkdir dir: file.parentFile
 
-    configClasspath()
-    loadApp()
+    def configuration = appCtx.getBean('&sessionFactory').configuration
 
-    populateProperties()
-
-    def configuration = classLoader.loadClass(configClassName).newInstance()
-    configuration.setGrailsApplication(grailsApp)
-    configuration.setProperties(props)
-    def hibernateCfgXml = eventsClassLoader.getResource('hibernate.cfg.xml')
-    if (hibernateCfgXml) {
-        configuration.configure(hibernateCfgXml)
-    }
-
-    def schemaExport = classLoader.loadClass('org.hibernate.tool.hbm2ddl.SchemaExport')
-        .newInstance(configuration)
+    def schemaExport = new HibernateSchemaExport(configuration)
         .setHaltOnError(true)
         .setOutputFile(file.path)
         .setDelimiter(';')
 
-    def action = export ? "Exporting" : "Generating script to ${file.path}"
-    println "${action} in environment '${grailsEnv}' using properties ${props}"
+    String action = export ? "Exporting" : "Generating script to ${file.path}"
+    println "$action in environment '$grailsEnv'"
 
     if (export) {
         // 1st drop, warning exceptions
-        schemaExport.execute(stdout, true, true, false)
+        schemaExport.execute stdout, true, true, false
         schemaExport.exceptions.clear()
         // then create
-        schemaExport.execute(stdout, true, false, true)
+        schemaExport.execute stdout, true, false, true
     }
     else {
         // generate
-        schemaExport.execute(stdout, false, false, false)
+        schemaExport.execute stdout, false, false, false
     }
 
-    if (!schemaExport.exceptions.empty) {
-        schemaExport.exceptions[0].printStackTrace()
+    if (schemaExport.exceptions) {
+        def e = schemaExport.exceptions[0]
+        GrailsUtil.deepSanitize e
+        e.printStackTrace()
     }
 }
 
-setDefaultTarget(schemaExport)
+setDefaultTarget schemaExport

@@ -26,6 +26,11 @@ import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 
 import org.springframework.validation.Errors
+import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
+import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
+
+import grails.converters.XML
+import grails.converters.JSON
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -59,6 +64,10 @@ class GrailsUnitTestCase extends GroovyTestCase {
         def convertersInit = new ConvertersConfigurationInitializer()
         convertersInit.initialize()
         [ List, Set, Map, Errors ].each { addConverters(it) }
+		def xmlErrorMarshaller = new XmlErrorsMarshaller()
+		XML.registerObjectMarshaller(xmlErrorMarshaller)
+		def jsonErrorMarshaller = new JsonErrorsMarshaller()
+		JSON.registerObjectMarshaller(jsonErrorMarshaller)
 
         previousConfig = ConfigurationHolder.config
 

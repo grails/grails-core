@@ -35,6 +35,7 @@ public class BlankConstraint extends AbstractVetoingConstraint {
         return type != null && String.class.isAssignableFrom(type);
     }
 
+    @Override
     public Object getParameter() {
         return Boolean.valueOf(blank);
     }

@@ -118,6 +118,18 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         }
     }
 
+    void testRadioGroupTagWithCustomAttributes() {
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+        withTag("radioGroup", pw) { tag ->
+            def attributes = new TreeMap([name: "testRadio2", values:[4,1], onclick: "growl();"])
+            tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
+            assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" onclick=\"growl();\" /></p>"
+                + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" value=\"1\" onclick=\"growl();\" /></p>"
+                + lineSep , sw.toString())
+        }
+    }
+
     void testCheckboxTag() {
         def template = '<g:checkBox name="foo" value="${test}"/>'
         assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])

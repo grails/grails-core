@@ -114,7 +114,7 @@ class FormTagLib {
         resolveAttributes(attrs)
         attrs.id = attrs.id ?: attrs.name
         out << "<input type=\"${attrs.remove('type')}\" "
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
         out << "/>"
     }
 
@@ -166,7 +166,7 @@ class FormTagLib {
             out << "value=\"${value}\" "
         }
         // process remaining attributes
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
 
         // close the tag, with no body
         out << ' />'
@@ -193,7 +193,7 @@ class FormTagLib {
         if (attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
 
         out << "<textarea "
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
         out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
     }
 
@@ -219,15 +219,14 @@ class FormTagLib {
             }
             attrs.value = val
         }
-        attrs.value = attrs.value ?: ""
+        attrs.value = attrs.value != null ? attrs.value : "" // can't use ?: since 0 is groovy false
     }
 
     /**
      * Dump out attributes in HTML compliant fashion
      */
-    void outputAttributes(attrs) {
+    void outputAttributes(attrs, writer) {
         attrs.remove('tagName') // Just in case one is left
-        def writer = getOut()
         attrs.each { k, v ->
             writer << "$k=\"${v.encodeAsHTML()}\" "
         }
@@ -285,7 +284,7 @@ class FormTagLib {
         attrs.id = attrs.id ? attrs.id : attrs.name
         if (attrs.id == null) attrs.remove('id')
 
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
 
         writer << ">"
         if (request['flowExecutionKey']) {
@@ -338,7 +337,7 @@ class FormTagLib {
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
 
         // process remaining attributes
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
 
         // close tag
         out << '/>'
@@ -376,7 +375,7 @@ class FormTagLib {
         }
 
         // process remaining attributes
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
 
         // close tag
         out << '/>'
@@ -689,7 +688,7 @@ class FormTagLib {
 
         writer << "<select name=\"${attrs.remove('name')?.encodeAsHTML()}\" "
         // process remaining attributes
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
 
         writer << '>'
         writer.println()
@@ -822,7 +821,7 @@ class FormTagLib {
         def checked = attrs.remove('checked') ? true : false
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         // process remaining attributes
-        outputAttributes(attrs)
+        outputAttributes(attrs, getOut())
 
         // close the tag, with no body
         out << ' />'
@@ -843,11 +842,15 @@ class FormTagLib {
         def name = attrs.remove('name')
         values.eachWithIndex {val, idx ->
             def it = new Expando()
-            it.radio = "<input type=\"radio\" name=\"${name}\" "
+            it.radio = new StringBuilder("<input type=\"radio\" name=\"${name}\" ")
             if (value?.toString().equals(val.toString())) {
-                it.radio += 'checked="checked" '
+                it.radio << 'checked="checked" '
             }
-            it.radio += "value=\"${val.toString().encodeAsHTML()}\" />"
+            it.radio << "value=\"${val.toString().encodeAsHTML()}\" "
+			
+            // process remaining attributes
+            outputAttributes(attrs, it.radio )
+            it.radio << "/>"
 
             it.label = labels == null ? 'Radio ' + val : labels[idx]
 

@@ -12,7 +12,7 @@ class DataBindingWithUnidirectionalAssociationTests extends AbstractGrailsHibern
 import grails.persistence.*
 
 @Entity		
-class Author {
+class DataBindingWithUnidirectionalAssociationAuthor {
 
     String name
     
@@ -21,11 +21,11 @@ class Author {
 }
 
 @Entity
-class Book {
+class DataBindingWithUnidirectionalAssociationBook {
     
     String title
     
-    static hasMany = [authors:Author]
+    static hasMany = [authors:DataBindingWithUnidirectionalAssociationAuthor]
     
     static constraints = {
     }
@@ -36,8 +36,8 @@ class Book {
 	}
 	
 	void testBindToNewInstance() {
-		def Author = ga.getDomainClass("Author").clazz
-		def Book = ga.getDomainClass("Book").clazz
+		def Author = ga.getDomainClass("DataBindingWithUnidirectionalAssociationAuthor").clazz
+		def Book = ga.getDomainClass("DataBindingWithUnidirectionalAssociationBook").clazz
 
 		def id1 = Author.newInstance(name:"Stephen King").save(flush:true).id
 		def id2 = Author.newInstance(name:"James Patterson").save(flush:true).id

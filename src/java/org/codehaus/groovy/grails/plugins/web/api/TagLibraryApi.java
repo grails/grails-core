@@ -27,34 +27,33 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * API for Tag libraries in a Grails application
- * 
+ *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public class TagLibraryApi extends CommonWebApi {
 
-	
     public TagLibraryApi(GrailsPluginManager pluginManager) {
-		super(pluginManager);
-		
-	}
+        super(pluginManager);
+    }
 
     /**
      * Throws a GrailsTagException
-     * 
+     *
      * @param instance
      * @param message
      */
-	public void throwTagError (Object instance, String message) { throw new GrailsTagException(message); }
+    public void throwTagError(@SuppressWarnings("unused") Object instance, String message) {
+        throw new GrailsTagException(message);
+    }
 
-	/**
-	 * Obtains the page scope instance
-	 * 
-	 * @param instance The tag library
-	 * @return  The page scope instance
-	 */
-	public GroovyPageBinding getPageScope(Object instance) {
+    /**
+     * Obtains the page scope instance
+     *
+     * @param instance The tag library
+     * @return  The page scope instance
+     */
+    public GroovyPageBinding getPageScope(@SuppressWarnings("unused") Object instance) {
         RequestAttributes request = RequestContextHolder.currentRequestAttributes();
         GroovyPageBinding binding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
         if (binding == null) {
@@ -64,20 +63,20 @@ public class TagLibraryApi extends CommonWebApi {
         return binding;
     }
 
-	/**
-	 * Obtains the currently output writer
-	 * @param writer The writer
-	 * @return
-	 */
-    public Writer getOut(Object instance) {
+    /**
+     * Obtains the currently output writer
+     * @param writer The writer
+     * @return
+     */
+    public Writer getOut(@SuppressWarnings("unused") Object instance) {
         return GroovyPageOutputStack.currentWriter();
     }
-    
+
     /**
      * Sets the current output writer
      * @param newOut The new output writer
      */
-    public void setOut(Object instance, Writer newOut) {
+    public void setOut(@SuppressWarnings("unused") Object instance, Writer newOut) {
         GroovyPageOutputStack.currentStack().push(newOut,true);
     }
 }

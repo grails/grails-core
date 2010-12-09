@@ -73,14 +73,18 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     private static final String GRAILS_DISPATCH_SERVLET_NAME = "/grails";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
-        WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-
-        String[] beanNames = wac.getBeanNamesForType(ViewResolver.class);
-        if (beanNames.length > 0) {
-            String beanName = beanNames[0];
-            return (ViewResolver)wac.getBean(beanName);
-        }
-        return null;
+		WebApplicationContext wac = WebApplicationContextUtils
+				.getRequiredWebApplicationContext(servletContext);
+		if (wac.containsBean("jspViewResolver")) {
+			return (ViewResolver) wac.getBean("jspViewResolver");
+		} else {
+			String[] beanNames = wac.getBeanNamesForType(ViewResolver.class);
+			if (beanNames.length > 0) {
+				String beanName = beanNames[0];
+				return (ViewResolver) wac.getBean(beanName);
+			}
+		}
+		return null;
     }
 
     /**

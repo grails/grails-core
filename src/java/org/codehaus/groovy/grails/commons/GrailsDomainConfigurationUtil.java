@@ -534,8 +534,8 @@ public class GrailsDomainConfigurationUtil {
     public static LinkedList<?> getSuperClassChain(Class<?> theClass) {
         LinkedList<Class<?>> classChain = new LinkedList<Class<?>>();
         Class<?> clazz = theClass;
-        while (clazz != Object.class) {
-            classChain.addFirst( clazz);
+        while (clazz != Object.class && clazz != null) {
+            classChain.addFirst(clazz);
             clazz = clazz.getSuperclass();
         }
         return classChain;

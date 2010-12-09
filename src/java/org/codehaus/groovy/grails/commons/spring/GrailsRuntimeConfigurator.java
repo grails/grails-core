@@ -334,6 +334,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * @param config The config instance
      * @param classLoader The class loader
      */
+    @SuppressWarnings({ "serial", "rawtypes", "unchecked" })
     public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, final GrailsApplication application) {
         if (springGroovyResourcesBeanBuilder == null) {
             try {
