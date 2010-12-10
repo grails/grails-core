@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter
 class JavascriptTagLib  {
 
     /**
-     * Mappings to the relevant files to be included for each library
+     * Mappings to the relevant files to be included for each library.
      */
     static final INCLUDED_LIBRARIES = "org.codehaus.grails.INCLUDED_JS_LIBRARIES"
     static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"
@@ -45,19 +45,19 @@ class JavascriptTagLib  {
 
     /**
      * Includes a javascript src file, library or inline script
-     * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:
+     * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
      *
-     * <g:javascript>alert('hello')</g:javascript>
+     * &lt;g:javascript&gt;alert('hello')&lt;/g:javascript&gt;<br/>
      *
      * The 'library' attribute will attempt to use the library mappings defined above to import the
-     * right js files and not duplicate imports eg.
+     * right js files and not duplicate imports eg.<br/>
      *
-     * <g:javascript library="scripaculous" /> // imports all the necessary js for the scriptaculous library
+     * &lt;g:javascript library="scripaculous" /&gt; // imports all the necessary js for the scriptaculous library<br/>
      *
      * The 'src' attribute will merely import the js file but within the right context (ie inside the /js/ directory of
-     * the Grails application:
+     * the Grails application:<br/>
      *
-     * <g:javascript src="myscript.js" /> // actually imports '/app/js/myscript.js'
+     * &lt;g:javascript src="myscript.js" /&gt; // actually imports '/app/js/myscript.js'
      *
      * @attr src The name of the javascript file to import. Will look in web-app/js dir
      * @attr library The name of the library to include. Either "prototype", "scriptaculous", "yahoo" or "dojo"
@@ -179,7 +179,7 @@ class JavascriptTagLib  {
 
     /**
      * Normal map implementation does a shallow clone. This implements a deep clone for maps
-     * using recursion
+     * using recursion.
      */
     private deepClone(Map map) {
         def cloned = [:]
@@ -207,7 +207,7 @@ class JavascriptTagLib  {
      * @attr uri relative URI
      * @attr url A map containing the action,controller,id etc.
      * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.
-     * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:<port> if no value in Config and not running in production.
+     * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:&lt;port&gt; if no value in Config and not running in production.
      * @attr id The id to use in the link
      * @attr fragment The link fragment (often called anchor tag) to use
      * @attr params A map containing URL query parameters
@@ -363,9 +363,9 @@ a 'params' key to the [url] attribute instead.""")
     }
 
     /**
-     * Escapes a javasacript string replacing single/double quotes and new lines
+     * Escapes a javascript string replacing single/double quotes and new lines.<br/>
      *
-     * <g:escapeJavascript>This is some "text" to be escaped</g:escapeJavascript>
+     * &lt;g:escapeJavascript&gt;This is some "text" to be escaped&lt;/g:escapeJavascript&gt;
      */
     def escapeJavascript = { attrs, body ->
         def js = ''

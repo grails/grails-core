@@ -29,7 +29,7 @@ class PluginTagLib {
     GrailsPluginManager pluginManager
 
     /**
-     * Gets the path to a particular plugin.
+     * Gets the path to a particular plugin.<br/>
      *
      * eg. &lt;plugin:path name="myPlugin" /&gt;
      *
@@ -40,7 +40,7 @@ class PluginTagLib {
     }
 
     /**
-     * Checks whether a particular plugin exists and executes the body if it does
+     * Checks whether a particular plugin exists and executes the body if it does.<br/>
      *
      * eg. &lt;plugin:isAvailable name="hibernate"&gt;print me&lt;/plugin:isAvailable&gt;
      *
@@ -54,7 +54,7 @@ class PluginTagLib {
     }
 
     /**
-     * Checks whether a particular plugin does not exist and executes the body if it does
+     * Checks whether a particular plugin does not exist and executes the body if it does.<br/>
      *
      * eg. &lt;plugin:isNotAvailable name="hibernate"&gt;print me&lt;/plugin:isNotAvailable&gt;
      *
