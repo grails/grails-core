@@ -50,7 +50,6 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
@@ -60,7 +59,6 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     List<String> ignoredClassLocations = new ArrayList<String>();
     PathMatcher pathMatcher = new AntPathMatcher();
     ServletContext servletContext = new MockServletContext();
-    DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
     public void registerMockBean(String name, Object instance) {
         beans.put(name, instance);
@@ -115,10 +113,6 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         throw new UnsupportedOperationException("Method not supported by implementation");
     }
 
-    BeanFactory getBeanFactory() {
-        return beanFactory;
-    }
-    
     public String getId() {
         return "MockApplicationContext";
     }
@@ -199,30 +193,26 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     public Object getBean(String name) throws BeansException {
         if (!beans.containsKey(name)) {
-            if (!beanFactory.containsBean(name)) {
-                throw new NoSuchBeanDefinitionException(name);
-            } else {
-                return beanFactory.getBean(name);
-            }
-        } else {
-            return beans.get(name);
+            throw new NoSuchBeanDefinitionException(name);
         }
+        return beans.get(name);
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
-        Object bean = getBean(name);
+        if (!beans.containsKey(name)) {
+            throw new NoSuchBeanDefinitionException( name);
+        }
 
-        if (requiredType != null && !requiredType.isAssignableFrom(bean.getClass())) {
+        if (requiredType != null && !requiredType.isAssignableFrom(beans.get(name).getClass())) {
             throw new NoSuchBeanDefinitionException(name);
         }
 
-        return (T)bean;
+        return (T)beans.get(name);
     }
 
     public <T> T getBean(Class<T> tClass) throws BeansException {
         final Map<String, T> map = getBeansOfType(tClass);
-        map.putAll(beanFactory.getBeansOfType(tClass));
         if (map.isEmpty()) {
             throw new NoSuchBeanDefinitionException(tClass, "No bean found for type: "  + tClass.getName());
         }
@@ -339,7 +329,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException {
-        return beanFactory;
+        return new DefaultListableBeanFactory();
     }
     public ClassLoader getClassLoader() {
         return getClass().getClassLoader();
