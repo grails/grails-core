@@ -66,9 +66,9 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Includes another controller/action within the current response.
+     * Includes another controller/action within the current response.<br/>
      *
-     * <g:include controller="foo" action="test"></g:include>
+     * &lt;g:include controller="foo" action="test"&gt;&lt;/g:include&gt;<br/>
      *
      * @attr controller The name of the controller
      * @attr action The name of the action
@@ -96,11 +96,11 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Apply a layout to a particular block of text or to the given view or template
+     * Apply a layout to a particular block of text or to the given view or template.<br/>
      *
-     * <g:applyLayout name="myLayout">some text</g:applyLayout>
-     * <g:applyLayout name="myLayout" template="mytemplate" />
-     * <g:applyLayout name="myLayout" url="http://www.google.com" />
+     * &lt;g:applyLayout name="myLayout"&gt;some text&lt;/g:applyLayout&gt;<br/>
+     * &lt;g:applyLayout name="myLayout" template="mytemplate" /&gt;<br/>
+     * &lt;g:applyLayout name="myLayout" url="http://www.google.com" /&gt;<br/>
      *
      * @attr name The name of the layout
      * @attr template Optional. The template to apply the layout to
@@ -180,9 +180,9 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Used to retrieve a property of the decorated page
+     * Used to retrieve a property of the decorated page.<br/>
      *
-     * <g:pageProperty default="defaultValue" name="body.onload" />
+     * &lt;g:pageProperty default="defaultValue" name="body.onload" /&gt;<br/>
      * 
      * @attr REQUIRED name the property name
      * @attr default the default value to use if the property is null
@@ -225,13 +225,13 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Invokes the body of this tag if the page property exists:
+     * Invokes the body of this tag if the page property exists:<br/>
      *
-     * <g:ifPageProperty name="meta.index">body to invoke</g:ifPageProperty>
+     * &lt;g:ifPageProperty name="meta.index"&gt;body to invoke&lt;/g:ifPageProperty&gt;<br/>
      *
-     * of it equals a certain value:
+     * or it equals a certain value:<br/>
      *
-     * <g:ifPageProperty name="meta.index" equals="blah">body to invoke</g:ifPageProperty>
+     * &lt;g:ifPageProperty name="meta.index" equals="blah"&gt;body to invoke&lt;/g:ifPageProperty&gt;
      *
      * @attr name REQUIRED the property name
      * @attr equals optional value to test against
@@ -266,9 +266,9 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Used in layouts to render the page title from the SiteMesh page
+     * Used in layouts to render the page title from the SiteMesh page.<br/>
      *
-     * <g:layoutTitle default="The Default title" />
+     * &lt;g:layoutTitle default="The Default title" /&gt;
      *
      * @attr default the value to use if the title isn't specified in the GSP
      */
@@ -279,27 +279,27 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Used in layouts to render the body of a SiteMesh layout
+     * Used in layouts to render the body of a SiteMesh layout.<br/>
      *
-     * <g:layoutBody />
+     * &lt;g:layoutBody /&gt;
      */
     def layoutBody = { attrs ->
         getPage().writeBody(out)
     }
 
     /**
-     * Used in layouts to render the head of a SiteMesh layout
+     * Used in layouts to render the head of a SiteMesh layout.<br/>
      *
-     * <g:layoutHead />
+     * &lt;g:layoutHead /&gt;
      */
     def layoutHead = { attrs ->
         getPage().writeHead(out)
     }
 
     /**
-     * Creates next/previous links to support pagination for the current controller
+     * Creates next/previous links to support pagination for the current controller.<br/>
      *
-     * <g:paginate total="${Account.count()}" />
+     * &lt;g:paginate total="${Account.count()}" /&gt;<br/>
      * 
      * @attr total REQUIRED The total number of results to paginate
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
@@ -422,19 +422,19 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Renders a sortable column to support sorting in list views
+     * Renders a sortable column to support sorting in list views.<br/>
      *
      * Attribute title or titleKey is required. When both attributes are specified then titleKey takes precedence,
      * resulting in the title caption to be resolved against the message source. In case when the message could
-     * not be resolved, the title will be used as title caption.
+     * not be resolved, the title will be used as title caption.<br/>
      *
-     * Examples:
+     * Examples:<br/>
      *
-     * <g:sortableColumn property="title" title="Title" />
-     * <g:sortableColumn property="title" title="Title" style="width: 200px" />
-     * <g:sortableColumn property="title" titleKey="book.title" />
-     * <g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" />
-     * <g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" titleKey="book.releaseDate" />
+     * &lt;g:sortableColumn property="title" title="Title" /&gt;<br/>
+     * &lt;g:sortableColumn property="title" title="Title" style="width: 200px" /&gt;<br/>
+     * &lt;g:sortableColumn property="title" titleKey="book.title" /&gt;<br/>
+     * &lt;g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" /&gt;<br/>
+     * &lt;g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" titleKey="book.releaseDate" /&gt;<br/>
      *
      * @attr property - name of the property relating to the field
      * @attr defaultOrder default order for the property; choose between asc (default if not provided) and desc
@@ -505,11 +505,11 @@ class RenderTagLib implements RequestConstants {
     }
 
     /**
-     * Renders a template inside views for collections, models and beans. Examples:
+     * Renders a template inside views for collections, models and beans. Examples:<br/>
      *
-     * <g:render template="atemplate" collection="${users}" />
-     * <g:render template="atemplate" model="[user:user,company:company]" />
-     * <g:render template="atemplate" bean="${user}" />
+     * &lt;g:render template="atemplate" collection="${users}" /&gt;<br/>
+     * &lt;g:render template="atemplate" model="[user:user,company:company]" /&gt;<br/>
+     * &lt;g:render template="atemplate" bean="${user}" /&gt;<br/>
      * 
      * @attr template REQUIRED The name of the template to apply
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
