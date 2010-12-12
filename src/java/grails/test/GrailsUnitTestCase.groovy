@@ -199,8 +199,9 @@ class GrailsUnitTestCase extends GroovyTestCase {
         MockUtils.mockLogging(clazz, enableDebug)
     }
 
-    protected void mockConfig(String config) {
+    protected ConfigObject mockConfig(String config) {
         ConfigurationHolder.config = new ConfigSlurper().parse(config)
+        return ConfigurationHolder.config
     }
 
     /**
