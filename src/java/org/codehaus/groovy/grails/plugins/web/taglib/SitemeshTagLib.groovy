@@ -92,8 +92,8 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     /**
-    * Used to capture the <head> tag
-    */
+     * Captures the &lt;head&gt; tag.
+     */
     def captureHead = { attrs, body ->
         def content = captureTagContent(out, 'head', attrs, body)
 
@@ -106,9 +106,9 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     /**
-     * Allows passing of parameters to Sitemesh layout
+     * Allows passing of parameters to Sitemesh layout.<br/>
      *
-     * <sitemesh:parameter name="foo" value="bar" />
+     * &lt;sitemesh:parameter name="foo" value="bar" /&gt;
      */
     def parameter = { attrs, body ->
         GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
@@ -120,7 +120,7 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     /**
-     * Used to capture the <body> tag
+     * Captures the &lt;body&gt; tag.
      */
     def captureBody = { attrs, body ->
         def content = captureTagContent(out, 'body', attrs, body)
@@ -138,7 +138,7 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     /**
-     * Used to capture the individual <content> tags
+     * Captures the individual &lt;content&gt; tags.
      */
     def captureContent = { attrs, body ->
         if (body != null) {
@@ -150,7 +150,7 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     /**
-     * Used to capture the individual <meta> tags
+     * Captures the individual &lt;meta&gt; tags.
      */
     def captureMeta = { attrs, body ->
         def content = captureTagContent(out, 'meta', attrs, body)
@@ -170,7 +170,7 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     /**
-     * Used to capture the <title> tag
+     * Captures the &lt;title&gt; tag.
      */
     def captureTitle = { attrs, body ->
         GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]

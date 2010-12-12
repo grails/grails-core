@@ -656,7 +656,20 @@ public class BeanBuilder extends GroovyObjectSupport {
             // factory method syntax
             else {
                 currentBeanConfig = springConfig.addSingletonBean(name);
+
+                //First arg is the map containing factoryBean : factoryMethod
                 Map.Entry factoryBeanEntry = (Map.Entry)((Map)args[0]).entrySet().iterator().next();
+                // If we have a closure body, that will be the last argument.
+                // In between are the constructor args
+                int constructorArgsTest = hasClosureArgument?2:1;
+                // If we have more than this number of args, we have constructor args
+                if(args.length > constructorArgsTest){
+                    //factory-method requires args
+                    int endOfConstructArgs = hasClosureArgument? args.length-1 : args.length;
+                    currentBeanConfig = springConfig.addSingletonBean(name, null, resolveConstructorArguments(args, 1, endOfConstructArgs));
+                } else {
+                    currentBeanConfig = springConfig.addSingletonBean(name);
+                }
                 currentBeanConfig.setFactoryBean(factoryBeanEntry.getKey().toString());
                 currentBeanConfig.setFactoryMethod(factoryBeanEntry.getValue().toString());
             }

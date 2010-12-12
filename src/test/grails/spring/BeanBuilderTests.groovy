@@ -561,7 +561,37 @@ class BeanBuilderTests extends GroovyTestCase {
 
         assert "marge", marge.person
     }
-
+	void testBeanWithFactoryMethodWithConstructorArgs() {
+		def bb = new BeanBuilder()
+		bb.beans {
+			beanFactory(Bean1FactoryWithArgs){}
+ 
+			homer(beanFactory:"newInstance", "homer") {
+				age = 45
+			}
+			//Test with no closure body
+			marge(beanFactory:"newInstance", "marge")
+ 
+			//Test more verbose method
+			mcBain("mcBain"){
+				bean ->
+				bean.factoryBean="beanFactory"
+				bean.factoryMethod="newInstance"
+ 
+			}
+		}
+		def ctx  = bb.createApplicationContext()
+ 
+		def homer = ctx.getBean("homer")
+ 
+		assert "homer", homer.person
+		assert 45, homer.age
+ 
+		assert "marge", ctx.getBean("marge").person
+ 
+		assert "mcBain", ctx.getBean("mcBain").person
+ 
+	}
     void testGetBeanDefinitions() {
         def bb = new BeanBuilder()
         bb.beans {
@@ -827,4 +857,10 @@ class AdvisedPerson {
     void birthday() {
         ++age
     }
+}
+// a factory bean that takes arguments
+class Bean1FactoryWithArgs {
+	Bean1 newInstance(String name) {
+		new Bean1(person:name)
+	}
 }

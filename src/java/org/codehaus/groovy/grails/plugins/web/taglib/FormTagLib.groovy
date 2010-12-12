@@ -173,7 +173,7 @@ class FormTagLib {
     }
 
     /**
-     * A general tag for creating textareas
+     * A general tag for creating textareas.
      *
      * @attr name REQUIRED the name of the textarea
      * @attr value  the text of the textarea; if not specified renders the body as the text
@@ -223,7 +223,7 @@ class FormTagLib {
     }
 
     /**
-     * Dump out attributes in HTML compliant fashion
+     * Dump out attributes in HTML compliant fashion.
      */
     void outputAttributes(attrs, writer) {
         attrs.remove('tagName') // Just in case one is left
@@ -233,7 +233,7 @@ class FormTagLib {
     }
 
     /**
-     * Same as <g:form>, except sets the relevant enctype for a file upload form.
+     * Same as &lt;g:form&gt;, except sets the relevant enctype for a file upload form.
      *
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
      * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
@@ -249,10 +249,10 @@ class FormTagLib {
     }
 
     /**
-     * General linking to controllers, actions etc. Examples:
+     * General linking to controllers, actions etc. Examples:<br/>
      *
-     * <g:form action="myaction">...</gr:form>
-     * <g:form controller="myctrl" action="myaction">...</gr:form>
+     * &lt;g:form action="myaction"&gt;...&lt;/gr:form&gt;<br/>
+     * &lt;g:form controller="myctrl" action="myaction"&gt;...&lt;/gr:form&gt;<br/>
      * 
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
      * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
@@ -312,13 +312,13 @@ class FormTagLib {
     }
 
     /**
-     * Creates a submit button that submits to an action in the controller specified by the form action
+     * Creates a submit button that submits to an action in the controller specified by the form action.<br/>
      * The name of the action attribute is translated into the action name, for example "Edit" becomes
-     * "_action_edit" or "List People" becomes "_action_listPeople"
-     * If the action attribute is not specified, the value attribute will be used as part of the action name
+     * "_action_edit" or "List People" becomes "_action_listPeople".<br/>
+     * If the action attribute is not specified, the value attribute will be used as part of the action name.
      *
-     * <g:actionSubmit value="Edit" />
-     * <g:actionSubmit action="Edit" value="Some label for editing" />
+     * &lt;g:actionSubmit value="Edit" /&gt;<br/>
+     * &lt;g:actionSubmit action="Edit" value="Some label for editing" /&gt;<br/>
      *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
@@ -344,12 +344,12 @@ class FormTagLib {
     }
 
     /**
-     * Creates a an image submit button that submits to an action in the controller specified by the form action
+     * Creates a an image submit button that submits to an action in the controller specified by the form action.
      * The name of the action attribute is translated into the action name, for example "Edit" becomes
-     * "_action_edit" or "List People" becomes "_action_listPeople"
-     * If the action attribute is not specified, the value attribute will be used as part of the action name
+     * "_action_edit" or "List People" becomes "_action_listPeople".<br/>
+     * If the action attribute is not specified, the value attribute will be used as part of the action name.<br/>
      *
-     * <g:actionSubmitImage src="/images/submitButton.gif" action="Edit" />
+     * &lt;g:actionSubmitImage src="/images/submitButton.gif" action="Edit" /&gt;
      *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
@@ -382,9 +382,9 @@ class FormTagLib {
     }
 
     /**
-     * A simple date picker that renders a date as selects
-     * eg. <g:datePicker name="myDate" value="${new Date()}" />
-     * 
+     * A simple date picker that renders a date as selects.<br/>
+     * e.g. &lt;g:datePicker name="myDate" value="${new Date()}" /&gt;
+     *
      * @attr name REQUIRED The name of the date picker field set
      * @attr value The current value of the date picker; defaults to now if not specified
      * @attr precision The desired granularity of the date to be rendered
@@ -571,8 +571,8 @@ class FormTagLib {
     }
 
     /**
-     * A helper tag for creating TimeZone selects
-     * eg. <g:timeZoneSelect name="myTimeZone" value="${tz}" />
+     * A helper tag for creating TimeZone selects.<br/>
+     * eg. &lt;g:timeZoneSelect name="myTimeZone" value="${tz}" /&gt;
      * 
      * @attr name REQUIRED The name of the select
      * @attr value An instance of java.util.TimeZone. Defaults to the time zone for the current Locale if not specified
@@ -600,9 +600,9 @@ class FormTagLib {
     }
 
     /**
-     *  A helper tag for creating locale selects
+     * A helper tag for creating locale selects.<br/>
      *
-     * eg. <g:localeSelect name="myLocale" value="${locale}" />
+     * eg. &lt;g:localeSelect name="myLocale" value="${locale}" /&gt;
      *
      * @attr name REQUIRED The name of the select
      * @attr value The set locale, defaults to the current request locale if not specified
@@ -620,9 +620,10 @@ class FormTagLib {
     }
 
     /**
-     * A helper tag for creating currency selects
+     * A helper tag for creating currency selects.<br/>
      *
-     * eg. <g:currencySelect name="myCurrency" value="${currency}" />
+     * eg. &lt;g:currencySelect name="myCurrency" value="${currency}" /&gt;
+     *
      * @attr from The currency symbols to select from, defaults to the major ones if not specified
      * @attr value The currency value as the currency code. Defaults to the currency for the current Locale if not specified
      */
@@ -642,18 +643,18 @@ class FormTagLib {
     }
 
     /**
-     * A helper tag for creating HTML selects.
+     * A helper tag for creating HTML selects.<br/>
      *
-     * Examples:
-     * <g:select name="user.age" from="${18..65}" value="${age}" />
-     * <g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" />
+     * Examples:<br/>
+     * &lt;g:select name="user.age" from="${18..65}" value="${age}" /&gt;<br/>
+     * &lt;g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" /&gt;<br/>
      * 
      * @attr name the select name
      * @attr id the DOM element id - uses the name attribute if not specified
      * @attr from The list or range to select from
      * @attr keys A list of values to be used for the value attribute of each "option" element.
-     * @attr optionKey By default value attribute of each <option> element will be the result of a "toString()" call on each element. Setting this allows the value to be a bean property of each element in the list.
-     * @attr optionValue By default the body of each <option> element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be a bean property of each element in the list.
+     * @attr optionKey By default value attribute of each &lt;option&gt; element will be the result of a "toString()" call on each element. Setting this allows the value to be a bean property of each element in the list.
+     * @attr optionValue By default the body of each &lt;option&gt; element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be a bean property of each element in the list.
      * @attr value The current selected value that evaluates equals() to true for one of the elements in the from list.
      * @attr multiple boolean value indicating whether the select a multi-select (automatically true if the value is a collection, defaults to false - single-select)
      * @attr valueMessagePrefix By default the value "option" element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be resolved from the I18n messages. The valueMessagePrefix will be suffixed with a dot ('.') and then the value attribute of the option to resolve the message. If the message could not be resolved, the value is presented.
@@ -828,7 +829,7 @@ class FormTagLib {
     }
 
     /**
-     * A helper tag for creating radio button groups
+     * A helper tag for creating radio button groups.
      * 
      * @attr name REQUIRED The name of the group
      * @attr values REQUIRED The list values for the radio buttons
