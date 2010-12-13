@@ -379,6 +379,11 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         assertOutputEquals("The Default Message", template, [message: resolvable])
     }
+	
+	void testDefaultMessageAttributeWithAnEmptyStringValue() {
+		def template  = '<g:message code="my.message.code" default=""/>'
+		assertOutputEquals "", template
+	}
 
     void testFieldValueTagWithMessageSourceResolvablePropertyUsesDefaultMessage() {
         def Title = ga.getClassForName("Title")

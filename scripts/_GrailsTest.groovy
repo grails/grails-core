@@ -293,11 +293,13 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
 }
 
 initPersistenceContext = {
-    appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
+	if(appCtx != null)
+    	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
 }
 
-destroyPersistenceContext = {
-    appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
+destroyPersistenceContext = {	
+	if(appCtx != null)
+    	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
 }
 
 unitTestPhasePreparation = {}
