@@ -478,13 +478,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         Validator validator = ctx.containsBean("${dc.fullName}Validator") ? ctx.getBean("${dc.fullName}Validator") : null
         def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
         metaClass.validate = {->
-            try {
-                validateMethod.invoke(delegate, "validate", [] as Object[])
-            }
-            catch (Throwable e) {
-                e.printStackTrace()
-                throw e
-            }
+            validateMethod.invoke(delegate, "validate", [] as Object[])
         }
         metaClass.validate = {Map args ->
             validateMethod.invoke(delegate, "validate", [args] as Object[])
