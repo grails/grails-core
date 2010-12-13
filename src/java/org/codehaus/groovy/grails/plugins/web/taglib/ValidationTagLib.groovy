@@ -283,7 +283,12 @@ class ValidationTagLib {
         else if (attrs.code) {
             def code = attrs.code
             def args = attrs.args
-            def defaultMessage = attrs['default'] ?: code
+            def defaultMessage
+			if(attrs.containsKey('default')) {
+				defaultMessage = attrs['default']
+			} else {
+				defaultMessage = code
+			}
 
             def message = messageSource.getMessage(code, args == null ? null : args.toArray(),
                 defaultMessage, locale)
