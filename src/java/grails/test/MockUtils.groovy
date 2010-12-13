@@ -203,6 +203,7 @@ class MockUtils {
 
                 modelAndView.viewName =  map["view"]
                 modelAndView.addAllObjects(map["model"])
+                return map["model"] // backwards compatibility for GRAILS-7022 - shouldn't ordinarily be referenced, use renderArgs instead
             }
             else if (map["text"] != null) {
                 delegate.response.outputStream << map["text"]
