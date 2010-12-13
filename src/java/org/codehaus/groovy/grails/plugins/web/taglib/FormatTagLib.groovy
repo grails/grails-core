@@ -29,7 +29,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
- * This tag library tends to get extended by others as tags within here can be re-used in said libraries
+ * This tag library tends to get extended by others as tags within here can be re-used in said libraries.
  *
  * @author Jason Rudolph
  * @author Lari Hotari
@@ -64,12 +64,12 @@ class FormatTagLib {
     /**
      * Outputs the given boolean as the specified text label. If the
      * <code>true</code> and <code>false</code> option are not given,
-     * then the boolean is output using the default label.
+     * then the boolean is output using the default label.<br/>
      *
-     * Examples:
+     * Examples:<br/>
      *
-     * <g:formatBoolean boolean="${myBoolean}" />
-     * <g:formatBoolean boolean="${myBoolean}" true="True!" false="False!" />
+     * &lt;g:formatBoolean boolean="${myBoolean}" /&gt;<br/>
+     * &lt;g:formatBoolean boolean="${myBoolean}" true="True!" false="False!" /&gt;<br/>
      *
      * @attr boolean REQUIRED the boolean to output
      * @attr true text label for boolean true value
@@ -99,12 +99,12 @@ class FormatTagLib {
     }
 
     /**
-     * Outputs the given <code>Date</code> object in the specified format.  If
+     * Outputs the given <code>Date</code> object in the specified format. If
      * the <code>date</code> is not given, then the current date/time is used.
      * If the <code>format</code> option is not given, then the date is output
-     * using the default format.
+     * using the default format.<br/>
      *
-     * e.g., <g:formatDate date="${myDate}" format="yyyy-MM-dd HH:mm" />
+     * e.g., &lt;g:formatDate date="${myDate}" format="yyyy-MM-dd HH:mm" /&gt;<br/>
      *
      * @see java.text.SimpleDateFormat
      *
@@ -197,9 +197,9 @@ class FormatTagLib {
     /**
      * Outputs the given number in the specified format.  If the
      * <code>format</code> option is not given, then the number is output
-     * using the default format.
+     * using the default format.<br/>
      *
-     * e.g., <g:formatNumber number="${myNumber}" format="###,##0" />
+     * e.g., &lt;g:formatNumber number="${myNumber}" format="###,##0" /&gt;
      *
      * @see java.text.DecimalFormat
      * 

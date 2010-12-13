@@ -41,7 +41,7 @@ class ValidationTagLib {
     static returnObjectForTags = ['message', 'fieldError', 'formatValue']
 
     /**
-     * Renders an error message for the given bean and field
+     * Renders an error message for the given bean and field.<br/>
      *
      * eg. &lt;g:fieldError bean="${book}" field="title" /&gt;
      * 
@@ -65,7 +65,7 @@ class ValidationTagLib {
     }
 
     /**
-     * Obtains the value of a field either from the original errors
+     * Obtains the value of a field either from the original errors.<br/>
      *
      * eg. &lt;g:fieldValue bean="${book}" field="title" /&gt;
      *
@@ -169,7 +169,7 @@ class ValidationTagLib {
     }
 
     /**
-     * Loops through each error for either field or global errors
+     * Loops through each error for either field or global errors.
      *
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
@@ -213,7 +213,7 @@ class ValidationTagLib {
     }
 
     /**
-     * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported)
+     * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported).
      *
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
@@ -314,7 +314,7 @@ class ValidationTagLib {
 
     /**
      * Validates a form using Apache commons validator javascript against constraints defined in a Grails
-     * domain class.
+     * domain class.<br/>
      *
      * TODO: This tag is a work in progress
      *
