@@ -41,7 +41,6 @@ import org.apache.ivy.util.url.CredentialsStore
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 import grails.util.Metadata
-import groovyx.gpars.Parallelizer;
 
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.util.MessageLogger
@@ -57,7 +56,7 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 import org.apache.ivy.plugins.repository.TransferListener
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import jsr166y.forkjoin.ForkJoinPool;
+
 
 import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
@@ -91,7 +90,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 	boolean pluginsOnly = false
 	boolean inheritRepositories = true
 	
-	private static ForkJoinPool forkJoinPool
     /**
      * Creates a new IvyDependencyManager instance
      */
@@ -217,145 +215,140 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             dependencies {
 				def compileTimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'compile'
 				def runtimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'runtime'
-				def parsingClosure = { ModuleRevisionId.newInstance(*it.split(/:/)) }
 				
-				Parallelizer.withExistingParallelizer(forkJoinPool) {
-					// dependencies needed by the Grails build system
-					[ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
-					  ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
-					  ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
-					  ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
-					  ModuleRevisionId.newInstance("org.apache.ant","ant-nodeps","1.7.1"),
-					  ModuleRevisionId.newInstance("org.apache.ant","ant-trax","1.7.1"),
-					  ModuleRevisionId.newInstance("jline","jline","0.9.94"),
-					  ModuleRevisionId.newInstance("org.fusesource.jansi","jansi","1.2.1"),
-					  ModuleRevisionId.newInstance("xalan","serializer","2.7.1"),
-					  ModuleRevisionId.newInstance("org.grails","grails-docs",grailsVersion),
-					  ModuleRevisionId.newInstance("org.grails","grails-bootstrap", grailsVersion),
-					  ModuleRevisionId.newInstance("org.grails","grails-scripts",grailsVersion),
-					  ModuleRevisionId.newInstance("org.grails","grails-core",grailsVersion),
-					  ModuleRevisionId.newInstance("org.grails","grails-resources",grailsVersion),
-					  ModuleRevisionId.newInstance("org.grails","grails-web",grailsVersion),
-					  ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8"),
-					  ModuleRevisionId.newInstance("org.slf4j","slf4j-log4j12","1.5.8"),
-					  ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE"),
-					  ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5")].eachParallel { mrid ->
-							def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"build")
-							  addDependency mrid
-							configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
-					  }
-	
-					
-					["org.xhtmlrenderer:core-renderer:R8",
-					 "com.lowagie:itext:2.0.8",
-					 "radeox:radeox:1.0-b2"].collect(parsingClosure).eachParallel { mrid ->
-					   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"docs")
-					   addDependency mrid
-					   configureDependencyDescriptor(dependencyDescriptor, "docs", null, false)
-					}
-	
-					// dependencies needed during development, but not for deployment
-					["javax.servlet:servlet-api:2.5",
-					  "javax.servlet:jsp-api:2.1"].collect(parsingClosure).eachParallel {mrid ->
-					   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"provided")
-					   addDependency mrid
-					   configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
-					}
-	
-					// dependencies needed for compilation
-					"${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.7.5") {
-						excludes 'jline'
-					}
-	
-					"${compileTimeDependenciesMethod}"("commons-beanutils:commons-beanutils:1.8.0", "commons-el:commons-el:1.0", "commons-validator:commons-validator:1.3.1") {
-						excludes "commons-logging", "xml-apis"
-					}
-	
-					[	"org.coconut.forkjoin:jsr166y:070108",
-						"org.codehaus.gpars:gpars:0.9",
-						"aopalliance:aopalliance:1.0",
-						"com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0_jdk5",
-						"commons-codec:commons-codec:1.4",
-						"commons-collections:commons-collections:3.2.1",
-						"commons-io:commons-io:1.4",
-						"commons-lang:commons-lang:2.4",
-						"javax.transaction:jta:1.1",
-						"org.hibernate:ejb3-persistence:1.0.2.GA",
-						"opensymphony:sitemesh:2.4",
-						"org.grails:grails-bootstrap:$grailsVersion",
-						"org.grails:grails-core:$grailsVersion",
-						"org.grails:grails-crud:$grailsVersion",
-						"org.grails:grails-gorm:$grailsVersion",
-						"org.grails:grails-resources:$grailsVersion",
-						"org.grails:grails-spring:$grailsVersion",
-						"org.grails:grails-web:$grailsVersion",
-						"org.springframework:org.springframework.core:3.0.3.RELEASE",
-						"org.springframework:org.springframework.aop:3.0.3.RELEASE",
-						"org.springframework:org.springframework.aspects:3.0.3.RELEASE",
-						"org.springframework:org.springframework.asm:3.0.3.RELEASE",
-						"org.springframework:org.springframework.beans:3.0.3.RELEASE",
-						"org.springframework:org.springframework.context:3.0.3.RELEASE",
-						"org.springframework:org.springframework.context.support:3.0.3.RELEASE",
-						"org.springframework:org.springframework.expression:3.0.3.RELEASE",
-						"org.springframework:org.springframework.instrument:3.0.3.RELEASE",
-						"org.springframework:org.springframework.jdbc:3.0.3.RELEASE",
-						"org.springframework:org.springframework.jms:3.0.3.RELEASE",
-						"org.springframework:org.springframework.orm:3.0.3.RELEASE",
-						"org.springframework:org.springframework.oxm:3.0.3.RELEASE",
-						"org.springframework:org.springframework.transaction:3.0.3.RELEASE",
-						"org.springframework:org.springframework.web:3.0.3.RELEASE",
-						"org.springframework:org.springframework.web.servlet:3.0.3.RELEASE",
-						"org.slf4j:slf4j-api:1.5.8"].collect(parsingClosure).eachParallel {mrid ->
-							   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
-							   addDependency mrid
-							   configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
-						}
-	
-	
-						// dependencies needed for running tests
-						["junit:junit:4.8.1",
-						 "org.grails:grails-test:$grailsVersion",
-						 "org.springframework:org.springframework.test:3.0.3.RELEASE"].collect(parsingClosure).eachParallel {mrid ->
-							   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
-							   addDependency mrid
-							   configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
-						}
-	
-						// dependencies needed at runtime only
-						[ 	"org.aspectj:aspectjweaver:1.6.8",
-							"org.aspectj:aspectjrt:1.6.8",
-							"cglib:cglib-nodep:2.1_3",
-							"commons-fileupload:commons-fileupload:1.2.1",
-							"oro:oro:2.0.8",
-							"javax.servlet:jstl:1.1.2",
-							// data source
-							"commons-dbcp:commons-dbcp:1.3",
-							"commons-pool:commons-pool:1.5.5",
-							"hsqldb:hsqldb:1.8.0.10",
-							"com.h2database:h2:1.2.144",
-							// JSP support
-							"apache-taglibs:standard:1.1.2",
-							"xpp3:xpp3_min:1.1.3.4.O" ].collect(parsingClosure).eachParallel {mrid ->
-							   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
-							   addDependency mrid
-							   configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
-						}
-	
-						// caching
-						"${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:1.7.1") {
-							excludes 'jms', 'commons-logging', 'servlet-api'
-						}
-	
-						// logging
-						"${runtimeDependenciesMethod}"("log4j:log4j:1.2.16",
-								"org.slf4j:jcl-over-slf4j:1.5.8",
-								"org.slf4j:jul-to-slf4j:1.5.8",
-								"org.slf4j:slf4j-log4j12:1.5.8" ) {
-							excludes 'mail', 'jms', 'jmxtools', 'jmxri'
-						}
-				}
-				
+				// dependencies needed by the Grails build system
+				for(mrid in [ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
+							  ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
+							  ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
+							  ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
+							  ModuleRevisionId.newInstance("org.apache.ant","ant-nodeps","1.7.1"),
+							  ModuleRevisionId.newInstance("org.apache.ant","ant-trax","1.7.1"),
+							  ModuleRevisionId.newInstance("jline","jline","0.9.94"),
+							  ModuleRevisionId.newInstance("org.fusesource.jansi","jansi","1.2.1"),
+							  ModuleRevisionId.newInstance("xalan","serializer","2.7.1"),
+							  ModuleRevisionId.newInstance("org.grails","grails-docs",grailsVersion),
+							  ModuleRevisionId.newInstance("org.grails","grails-bootstrap", grailsVersion),
+							  ModuleRevisionId.newInstance("org.grails","grails-scripts",grailsVersion),
+							  ModuleRevisionId.newInstance("org.grails","grails-core",grailsVersion),
+							  ModuleRevisionId.newInstance("org.grails","grails-resources",grailsVersion),
+							  ModuleRevisionId.newInstance("org.grails","grails-web",grailsVersion),
+							  ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8"),
+							  ModuleRevisionId.newInstance("org.slf4j","slf4j-log4j12","1.5.8"),
+							  ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE"),
+							  ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5")] ) {
+						def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"build")
+ 					    addDependency mrid
+						configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
+				  }
 
+				
+				for(mrid in [ModuleRevisionId.newInstance("org.xhtmlrenderer","core-renderer","R8"),
+							 ModuleRevisionId.newInstance("com.lowagie","itext","2.0.8"),
+							 ModuleRevisionId.newInstance("radeox","radeox","1.0-b2")]) {
+				   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"docs")
+				   addDependency mrid
+				   configureDependencyDescriptor(dependencyDescriptor, "docs", null, false)
+				}
+
+				// dependencies needed during development, but not for deployment
+				for(mrid in [ModuleRevisionId.newInstance("javax.servlet","servlet-api","2.5"),
+				 			 ModuleRevisionId.newInstance( "javax.servlet","jsp-api","2.1")]) {
+				   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"provided")
+				   addDependency mrid
+				   configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
+				}
+
+				// dependencies needed for compilation
+				"${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.7.5") {
+					excludes 'jline'
+				}
+
+				"${compileTimeDependenciesMethod}"("commons-beanutils:commons-beanutils:1.8.0", "commons-el:commons-el:1.0", "commons-validator:commons-validator:1.3.1") {
+					excludes "commons-logging", "xml-apis"
+				}
+
+				for(mrid in [	ModuleRevisionId.newInstance("org.coconut.forkjoin","jsr166y","070108"),
+								ModuleRevisionId.newInstance("org.codehaus.gpars","gpars","0.9"),
+								ModuleRevisionId.newInstance("aopalliance","aopalliance","1.0"),
+								ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5"),
+								ModuleRevisionId.newInstance("commons-codec","commons-codec","1.4"),
+								ModuleRevisionId.newInstance("commons-collections","commons-collections","3.2.1"),
+								ModuleRevisionId.newInstance("commons-io","commons-io","1.4"),
+								ModuleRevisionId.newInstance("commons-lang","commons-lang","2.4"),
+								ModuleRevisionId.newInstance("javax.transaction","jta","1.1"),
+								ModuleRevisionId.newInstance("org.hibernate","ejb3-persistence","1.0.2.GA"),
+								ModuleRevisionId.newInstance("opensymphony","sitemesh","2.4"),
+								ModuleRevisionId.newInstance("org.grails","grails-bootstrap","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-core","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-crud","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-gorm","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-resources","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-spring","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-web","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.core","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.aop","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.aspects","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.asm","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.beans","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.context","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.context.support","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.expression","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.instrument","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.jdbc","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.jms","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.orm","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.oxm","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.transaction","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.web","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","org.springframework.web.servlet","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8")] ) {
+						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
+						   addDependency mrid
+						   configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
+					}
+
+
+					// dependencies needed for running tests
+					for(mrid in [	ModuleRevisionId.newInstance("junit","junit","4.8.1"),
+								 	ModuleRevisionId.newInstance("org.grails","grails-test","$grailsVersion"),
+								 	ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE")] ) {
+						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
+						   addDependency mrid
+						   configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
+					}
+
+					// dependencies needed at runtime only
+					for( mrid in [ 		ModuleRevisionId.newInstance("org.aspectj","aspectjweaver","1.6.8"),
+										ModuleRevisionId.newInstance("org.aspectj","aspectjrt","1.6.8"),
+										ModuleRevisionId.newInstance("cglib","cglib-nodep","2.1_3"),
+										ModuleRevisionId.newInstance("commons-fileupload","commons-fileupload","1.2.1"),
+										ModuleRevisionId.newInstance("oro","oro","2.0.8"),
+										ModuleRevisionId.newInstance("javax.servlet","jstl","1.1.2"),
+										// data source
+										ModuleRevisionId.newInstance("commons-dbcp","commons-dbcp","1.3"),
+										ModuleRevisionId.newInstance("commons-pool","commons-pool","1.5.5"),
+										ModuleRevisionId.newInstance("hsqldb","hsqldb","1.8.0.10"),
+										ModuleRevisionId.newInstance("com.h2database","h2","1.2.144"),
+										// JSP support
+										ModuleRevisionId.newInstance("apache-taglibs","standard","1.1.2"),
+										ModuleRevisionId.newInstance("xpp3","xpp3_min","1.1.3.4.O") ] ) {
+						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
+						   addDependency mrid
+						   configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
+					}
+
+					// caching
+					"${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:1.7.1") {
+						excludes 'jms', 'commons-logging', 'servlet-api'
+					}
+
+					// logging
+					"${runtimeDependenciesMethod}"("log4j:log4j:1.2.16",
+							"org.slf4j:jcl-over-slf4j:1.5.8",
+							"org.slf4j:jul-to-slf4j:1.5.8",
+							"org.slf4j:slf4j-log4j12:1.5.8" ) {
+						excludes 'mail', 'jms', 'jmxtools', 'jmxri'
+					}
             }
         }
     }
@@ -583,67 +576,60 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * Parses the Ivy DSL definition
      */
     void parseDependencies(Closure definition) {
-		this.forkJoinPool = new ForkJoinPool()
-		try {
-			if (definition && applicationName && applicationVersion) {
-				if (this.moduleDescriptor == null) {
-					this.moduleDescriptor = createModuleDescriptor()
-				}
-	
-				def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
-				definition.delegate = evaluator
-				definition.resolveStrategy = Closure.DELEGATE_FIRST
-				definition()
-				evaluator = null
-	
-				if (readPom && buildSettings) {
-					List dependencies = readDependenciesFromPOM()
-	
-					if (dependencies != null) {
-						for (DependencyDescriptor dependencyDescriptor in dependencies) {
-							ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
-							ModuleId moduleId = moduleRevisionId.getModuleId()
-	
-							String groupId = moduleRevisionId.getOrganisation()
-							String artifactId = moduleRevisionId.getName()
-							String version = moduleRevisionId.getRevision()
-							String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
-	
-							if (!hasDependency(moduleId)) {
-								def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
-								for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
-									ModuleId excludedModule = excludeRule.getId().getModuleId()
-									enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
-								}
-								configureDependencyDescriptor(enhancedDependencyDescriptor, scope)
-								addDependencyDescriptor enhancedDependencyDescriptor
+		if (definition && applicationName && applicationVersion) {
+			if (this.moduleDescriptor == null) {
+				this.moduleDescriptor = createModuleDescriptor()
+			}
+
+			def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
+			definition.delegate = evaluator
+			definition.resolveStrategy = Closure.DELEGATE_FIRST
+			definition()
+			evaluator = null
+
+			if (readPom && buildSettings) {
+				List dependencies = readDependenciesFromPOM()
+
+				if (dependencies != null) {
+					for (DependencyDescriptor dependencyDescriptor in dependencies) {
+						ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
+						ModuleId moduleId = moduleRevisionId.getModuleId()
+
+						String groupId = moduleRevisionId.getOrganisation()
+						String artifactId = moduleRevisionId.getName()
+						String version = moduleRevisionId.getRevision()
+						String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
+
+						if (!hasDependency(moduleId)) {
+							def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
+							for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
+								ModuleId excludedModule = excludeRule.getId().getModuleId()
+								enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
 							}
-						}
-					}
-				}
-	
-				def installedPlugins = metadata?.getInstalledPlugins()
-				if (installedPlugins) {
-					for (entry in installedPlugins) {
-						if (!pluginDependencyNames.contains(entry.key)) {
-							def name = entry.key
-							def scope = "runtime"
-							def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, entry.value)
-							def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
-							def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
-							dd.addDependencyArtifact(scope, artifact)
-							metadataRegisteredPluginNames << name
-							configureDependencyDescriptor(dd, scope, null, true)
-							pluginDependencyDescriptors << dd
+							configureDependencyDescriptor(enhancedDependencyDescriptor, scope)
+							addDependencyDescriptor enhancedDependencyDescriptor
 						}
 					}
 				}
 			}
-		}
-		finally {
-			forkJoinPool.shutdown()
-		}
 
+			def installedPlugins = metadata?.getInstalledPlugins()
+			if (installedPlugins) {
+				for (entry in installedPlugins) {
+					if (!pluginDependencyNames.contains(entry.key)) {
+						def name = entry.key
+						def scope = "runtime"
+						def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, entry.value)
+						def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
+						def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
+						dd.addDependencyArtifact(scope, artifact)
+						metadataRegisteredPluginNames << name
+						configureDependencyDescriptor(dd, scope, null, true)
+						pluginDependencyDescriptors << dd
+					}
+				}
+			}
+		}
     }
 
     List readDependenciesFromPOM() {
@@ -666,24 +652,17 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * @param definition the Ivy DSL definition
      */
     void parseDependencies(String pluginName,Closure definition) {
-		this.forkJoinPool = new ForkJoinPool()
-		try {
-			if (definition) {
-				if (moduleDescriptor == null) {
-					throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
-				}
-	
-				def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
-				evaluator.currentPluginBeingConfigured = pluginName
-				definition.delegate = evaluator
-				definition.resolveStrategy = Closure.DELEGATE_FIRST
-				definition()
+		if (definition) {
+			if (moduleDescriptor == null) {
+				throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
 			}
-		}
-		finally {
-			forkJoinPool.shutdown()
-		}
 
+			def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
+			evaluator.currentPluginBeingConfigured = pluginName
+			definition.delegate = evaluator
+			definition.resolveStrategy = Closure.DELEGATE_FIRST
+			definition()
+		}
     }
 
     boolean getBooleanValue(dependency, String name) {
