@@ -134,6 +134,21 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertFalse modelAndView.empty
     }
+	
+	void testLogRequest() {
+		def request = new MockHttpServletRequest()
+		request.setRequestURI("/execute/me")
+		request.setMethod "GET"
+		request.addParameter "foo", "bar"
+		request.addParameter "one", "two"
+		
+		def msg = GrailsExceptionResolver.getRequestLogMessage(request)
+		
+		assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+Stacktrace follows:''' , msg
+	}
 }
 
 class DummyViewResolver implements ViewResolver {

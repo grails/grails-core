@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.errors;
 
+import java.util.Enumeration;
+
 import grails.util.GrailsUtil;
 
 import javax.servlet.ServletContext;
@@ -69,8 +71,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
         GrailsUtil.deepSanitize(ex);
 
-        LOG.error(ex.getMessage(), ex);
-
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext, ex);
         mv.addObject("exception",gwrex);
 
@@ -81,6 +81,8 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         catch (Exception e) {
             // ignore, no app ctx in this case.
         }
+
+        LOG.error(getRequestLogMessage(request), ex);
 
         if (urlMappings != null) {
             UrlMappingInfo info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
@@ -169,4 +171,42 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         }
         return null;
     }
+
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static String getRequestLogMessage(HttpServletRequest request) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Exception occurred when processing request: ");
+		sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
+
+		if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
+            sb.append(request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE));
+        } else {
+		sb.append(request.getRequestURI());
+        }
+
+		Enumeration<String> params = request.getParameterNames();
+
+		if(params.hasMoreElements()){
+			String param;
+			String values[];
+			int i;
+
+			sb.append(" - parameters:");
+
+			while(params.hasMoreElements()){
+				param = params.nextElement();
+				values = request.getParameterValues(param);
+
+				for(i=0; i< values.length; i++){
+					sb.append(LINE_SEPARATOR).append(param).append(": ").append(values[i]);
+				}
+			}
+		}
+
+		sb.append(LINE_SEPARATOR)
+		  .append("Stacktrace follows:");
+
+		return sb.toString();
+	}
 }
