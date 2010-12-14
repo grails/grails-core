@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
@@ -155,7 +156,18 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
 
     protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty,
             @SuppressWarnings("unused") GrailsDomainClass referencedDomainClass) throws ConverterException {
-        Object idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
+    	Object idValue;
+    	if(proxyHandler instanceof EntityProxyHandler) {
+    		
+    		idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
+    		if(idValue == null) {
+    			idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
+    		}
+    		
+    	}
+    	else {
+            idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
+    	}
         xml.attribute("id",String.valueOf(idValue));
     }
 
