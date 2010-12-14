@@ -26,7 +26,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals '''<?xml version="1.0" encoding="UTF-8"?><book><author>Stephen King</author><title>The Stand</title></book>''', response.contentAsString
+        assertEquals '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString
     }
 
     void testConvertErrors() {
@@ -35,17 +35,19 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
+		
+		println response.contentAsString
 
         def xml = new XmlSlurper().parseText(response.contentAsString)
 
         def titleError = xml.error.find { it.@field == 'title' }
-        assertEquals 'Property [title] of class [class Book] cannot be null', titleError.message.text()
+        assertEquals 'Property [title] of class [class XmlConverterTestBook] cannot be null', titleError.message.text()
         def authorError = xml.error.find { it.@field == 'author' }
-        assertEquals 'Property [author] of class [class Book] cannot be null', authorError.message.text()
+        assertEquals 'Property [author] of class [class XmlConverterTestBook] cannot be null', authorError.message.text()
     }
 
     void testProxiedDomainClassWithXMLConverter() {
-        def obj = ga.getDomainClass("Book").newInstance()
+        def obj = ga.getDomainClass("XmlConverterTestBook").newInstance()
         obj.title = "The Stand"
         obj.author = "Stephen King"
         def c = ga.getControllerClass("RestController").newInstance()
@@ -61,8 +63,29 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         assertTrue pum.supports(proxy)
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><book><author>Stephen King</author><title>The Stand</title></book>''', response.contentAsString)
+        assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
     }
+	
+	void testMarshalProxiedAssociations() {
+		
+		def obj = ga.getDomainClass("XmlConverterTestPublisher").newInstance()
+		obj.name = "Apress"
+		obj.id = 1L
+
+		def hibernateInitializer = [getImplementation:{obj},getPersistentClass:{obj.getClass()}] as LazyInitializer
+		def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
+
+		def book = ga.getDomainClass("XmlConverterTestBook").newInstance()
+		book.title = "The Stand"
+		book.author = "Stephen King"
+		book.publisher = obj
+		
+		def c = ga.getControllerClass("RestController").newInstance()
+		c.params.b = book
+		c.testProxyAssociations()
+
+		assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher id="1" /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
+	}
 
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
@@ -73,27 +96,41 @@ import grails.converters.*
 
 class RestController {
   def test = {
-     def b = new Book(title:'The Stand', author:'Stephen King')
+     def b = new XmlConverterTestBook(title:'The Stand', author:'Stephen King')
      render b as XML
   }
 
   def testProxy = {
      render params.b as XML
   }
+  
+  def testProxyAssociations = {
+		render params.b as XML
+  }
 
   def testErrors = {
-     def b = new Book()
+     def b = new XmlConverterTestBook()
      b.validate()
      render b.errors as XML
   }
 
 }
-class Book {
+class XmlConverterTestBook {
  Long id
  Long version
  String title
  String author
+ 
+ XmlConverterTestPublisher publisher
 
-}'''
+}
+class XmlConverterTestPublisher {
+ Long id
+ Long version
+ String name
+ 
+
+}
+'''
     }
 }
