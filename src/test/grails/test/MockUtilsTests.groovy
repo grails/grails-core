@@ -759,6 +759,18 @@ class MockUtilsTests extends GroovyTestCase {
     }
 
     /**
+     * Test for GRAILS-7022
+     */
+    void testGRAILS7022() {
+        MockUtils.mockController(TestController)
+
+        def controller = new TestController()
+
+        def returnValue = controller.render(view: "list", model: [count: 101])
+        assertTrue returnValue instanceof Map
+    }
+
+    /**
      * Tests that the render method used for templates populates the
      * "renderArgs" map with the given values.
      */
