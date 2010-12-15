@@ -148,6 +148,11 @@ class BuildSettings extends AbstractBuildSettings {
      * with the base URL that tests should be run against.
      */
     public static final String FUNCTIONAL_BASE_URL_PROPERTY = 'grails.testing.functional.baseUrl'
+	
+	/**
+	 * The name of the working directory for commands that don't belong to a project (like create-app)
+	 */
+	public static final String CORE_WORKING_DIR_NAME = '.core'
 
 
     /**
@@ -1010,7 +1015,7 @@ class BuildSettings extends AbstractBuildSettings {
             grailsWorkDir = new File(getPropertyValue(WORK_DIR, props, "${userHome}/.grails/${grailsVersion}"))
         }
 
-        def appName = metadata.getApplicationName() ?: baseDir.name
+        def appName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME
         if (!projectWorkDirSet) {
             projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${appName}"))
         }

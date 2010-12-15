@@ -51,7 +51,7 @@ class BuildSettingsTests extends GroovyTestCase {
 
         // Project paths.
         assertEquals defaultWorkPath, settings.grailsWorkDir
-        assertEquals new File("$defaultWorkPath/projects/${cwd.name}"), settings.projectWorkDir
+        assertEquals new File("$defaultWorkPath/projects/.core"), settings.projectWorkDir
         assertEquals new File("${settings.projectWorkDir}/classes"), settings.classesDir
         assertEquals new File("${settings.projectWorkDir}/test-classes"), settings.testClassesDir
         assertEquals new File("${settings.projectWorkDir}/resources"), settings.resourcesDir
@@ -115,7 +115,7 @@ class BuildSettingsTests extends GroovyTestCase {
 
             // Project paths.
             assertEquals defaultWorkPath, settings.grailsWorkDir
-            assertEquals new File("$defaultWorkPath/projects/${cwd.name}"), settings.projectWorkDir
+            assertEquals new File("$defaultWorkPath/projects/.core"), settings.projectWorkDir
             assertEquals new File("${settings.projectWorkDir}/classes"), settings.classesDir
             assertEquals new File("${settings.projectWorkDir}/test-classes"), settings.testClassesDir
             assertEquals new File("${settings.projectWorkDir}/resources"), settings.resourcesDir
@@ -150,7 +150,7 @@ class BuildSettingsTests extends GroovyTestCase {
         settings.projectPluginsDir = new File("target/pluginsDir")
 
         // Check that these values have been set.
-        String defaultProjectWorkDir = "${defaultWorkPath}/projects/${settings.baseDir.name}"
+        String defaultProjectWorkDir = "${defaultWorkPath}/projects/.core"
         assertEquals new File("workDir"), settings.grailsWorkDir
         assertEquals new File("projectDir"), settings.projectWorkDir
         assertEquals new File("${defaultProjectWorkDir}/classes"), settings.classesDir
@@ -190,13 +190,28 @@ class BuildSettingsTests extends GroovyTestCase {
 		}
 	}
 
+	void testWorkDirIsDotCoreWhenCreatingNewApp() {
+		// GRAILS-6232
+		def stubMetaData = new StubFor(Metadata)
+		stubMetaData.demand.getInstance(2) {}
+		stubMetaData.demand.getCurrent(2) {
+			[getApplicationName: {}, getApplicationVersion: {}]
+		}
+		
+		stubMetaData.use {
+			def settings = new BuildSettings()
+			settings.baseDir = new File("base/dir")
+			assertEquals '.core', settings.projectWorkDir.name
+		}
+	}
+	
     void testSetBaseDir() {
         def settings = new BuildSettings()
         settings.baseDir = new File("base/dir")
 
         assertEquals new File("base/dir"), settings.baseDir
         assertEquals defaultWorkPath, settings.grailsWorkDir
-        assertEquals new File("$defaultWorkPath/projects/dir"), settings.projectWorkDir
+        assertEquals new File("$defaultWorkPath/projects/.core"), settings.projectWorkDir
         assertEquals new File("${settings.projectWorkDir}/classes"), settings.classesDir
         assertEquals new File("${settings.projectWorkDir}/test-classes"), settings.testClassesDir
         assertEquals new File("${settings.projectWorkDir}/resources"), settings.resourcesDir
