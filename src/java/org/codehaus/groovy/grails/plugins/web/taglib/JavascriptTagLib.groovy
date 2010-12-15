@@ -223,8 +223,11 @@ class JavascriptTagLib  {
         out << '" onclick="'
         // create remote function
         out << remoteFunction(attrs)
-        attrs.remove('url')
         out << 'return false;"'
+
+        // These options should not be included as attributes of the anchor element.
+        attrs.remove('method')
+        attrs.remove('url')
 
         // handle elementId like link
         def elementId = attrs.remove('elementId')
@@ -537,6 +540,10 @@ class PrototypeProvider implements JavascriptProvider {
     // helper function to build ajax options
     def getAjaxOptions(options) {
         def ajaxOptions = []
+
+        if (options.method) {
+            ajaxOptions << "method:'${options.method.toLowerCase()}'"
+        }
 
         // necessary defaults
         def optionsAttr = options.remove('options')
