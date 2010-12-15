@@ -19,11 +19,12 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.hibernate.Hibernate;
 import org.hibernate.collection.AbstractPersistentCollection;
 import org.hibernate.collection.PersistentCollection;
 import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.HibernateProxyHelper;
 import org.hibernate.proxy.LazyInitializer;
 
 /**
@@ -32,7 +33,7 @@ import org.hibernate.proxy.LazyInitializer;
  * @author Graeme Rocher
  * @since 1.2.2
  */
-public class HibernateProxyHandler implements ProxyHandler {
+public class HibernateProxyHandler implements EntityProxyHandler {
 
     public boolean isInitialized(Object o) {
         if (o instanceof HibernateProxy) {
@@ -125,4 +126,15 @@ public class HibernateProxyHandler implements ProxyHandler {
             }
         }
     }
+
+	public Object getProxyIdentifier(Object o) {
+		if(o instanceof HibernateProxy) {
+			return ((HibernateProxy)o).getHibernateLazyInitializer().getIdentifier();
+		}
+		return null;
+	}
+
+	public Class<?> getProxiedClass(Object o) {
+		return HibernateProxyHelper.getClassWithoutInitializingProxy(o);
+	}
 }

@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
+import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
@@ -173,10 +174,23 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
     }
 
     protected void asShortObject(Object refObj, JSON json, GrailsDomainClassProperty idProperty, GrailsDomainClass referencedDomainClass) throws ConverterException {
+    	
+    	Object idValue;
+    	
+    	if(proxyHandler instanceof EntityProxyHandler) {    		
+    		idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
+    		if(idValue == null) {
+    			idValue = extractValue(refObj, idProperty);
+    		}
+    		
+    	}
+    	else {
+            idValue = extractValue(refObj, idProperty);
+    	}
         JSONWriter writer = json.getWriter();
         writer.object();
         writer.key("class").value(referencedDomainClass.getName());
-        writer.key("id").value(extractValue(refObj, idProperty));
+        writer.key("id").value(idValue);
         writer.endObject();
     }
 
