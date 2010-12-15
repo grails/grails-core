@@ -332,6 +332,11 @@ a 'params' key to the [url] attribute instead.""")
         if (params.name && !params.id) {
             params.id = params.name
         }
+
+        // The <form> element shouldn't have a 'name' attribute.
+        // See http://jira.codehaus.org/browse/GRAILS-2839
+        params.remove 'name'
+
         out << withTag(name:'form',attrs:params) {
             out << body()
         }

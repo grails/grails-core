@@ -94,7 +94,7 @@ class TestUrlMappings {
     void testPrototypeFormRemoteWithExtraParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
+        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
     }
 
     /**
@@ -127,13 +127,13 @@ class TestUrlMappings {
 
         assertOutputEquals('''\
 <form onsubmit="new Ajax.Request('/people/details/one',{method:'get',asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+'&var2=two'});return false" method="GET"\
- action="/person/showOld?var1=one&var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
+ action="/person/showOld?var1=one&var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
     }
 
     void testPrototypeFormRemoteWithExactParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
+        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
     }
 
     void testPrototypeWithAsyncProperty() {
