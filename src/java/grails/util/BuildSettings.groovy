@@ -1015,9 +1015,9 @@ class BuildSettings extends AbstractBuildSettings {
             grailsWorkDir = new File(getPropertyValue(WORK_DIR, props, "${userHome}/.grails/${grailsVersion}"))
         }
 
-        def appName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME
         if (!projectWorkDirSet) {
-            projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${appName}"))
+			def workingDirName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME
+            projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${workingDirName}"))
         }
 
         if (!projectTargetDirSet) {
@@ -1026,6 +1026,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectWarFileSet) {
             def version = metadata.getApplicationVersion()
+			def appName = metadata.getApplicationName() ?: baseDir.name
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
 
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
