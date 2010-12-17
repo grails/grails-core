@@ -22,7 +22,7 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
 
 #footer a, .menu a, .local .local-title a, .local .local-title .toggle,
     #navigation #nav-summary-childs a {
-    color: #666;
+    color: #333;
 }
 
 .java-keyword, .java-object {
@@ -74,9 +74,6 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
 ////////////////////////////////////////////////////////////////////////////////
 */
 
-#colset #col2 {
-    background: url(../img/default/separator-vertical.gif) repeat-y 145px 0;
-}
 
 .menu .menu-item {
     background: url(../img/default/bullet.gif) no-repeat 2px 8px;
@@ -120,7 +117,7 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
 
 .code {
     border-style: dashed;
-    border-color: #666;
+    border-color: #333;
 }
 
 #navigation #nav-summary-childs {

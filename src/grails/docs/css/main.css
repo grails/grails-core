@@ -16,12 +16,12 @@ body {
 .body {
     font-family: Arial;
     text-align: justify;
-    font-size: 12px;
+    font-size: 16px;
     background: #F2F2F2;
 }
 
 body, html, table, th, td {
-    font-size: 12px;
+    font-size: 16px;
 }
 
 /*
@@ -60,12 +60,12 @@ strong {
 
 #colset #col2, #colset #col1 {
     vertical-align: top;
-    font-size: 12px;
+    font-size: 18px;
 }
 
 #colset #col2 {
     display: table-cell;
-    width: 300px;
+    width: 250px;
 }
 
 /*
@@ -83,7 +83,6 @@ strong {
 
 .local {
     margin-right: 10px;
-    width: 290px;
 }
 
 .local .local-title {
@@ -95,17 +94,25 @@ strong {
 
 .local .local-title a {
     text-decoration: none;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
 }
 
 .local .local-title .toggle, .local .local-title .toggle a {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: normal;
 }
 
 .local .local-title .toggle a:hover {
     text-decoration: underline;
+}
+
+.next-right{
+    float:right;
+}
+
+.prev-left{
+    float:left;
 }
 
 /*
@@ -130,6 +137,19 @@ strong {
 ////////////////////////////////////////
 */
 
+
+.section-block-right{
+    float:right;
+    clear:right;
+    width:50%;
+}
+
+.section-block-left{
+    float:left;
+    clear:left;
+    width:50%;
+}
+
 .toc-item span{
     padding-left:10px;
 }
@@ -152,17 +172,20 @@ strong {
 ////////////////////////////////////////
 */
 
+.menu .menu-sub {
+    display:none;
+}
 .menu .menu-block {
-    width: 46%;
+    width: 210px;
     padding: 0 2%;
-    float: left;
 }
 
 .menu .menu-block h1 {
     padding: 2px 0;
+    cursor:pointer;
     padding-top: 8px;
     margin: 0;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: bold;
 }
 
@@ -220,7 +243,7 @@ strong {
 
 #nav-summary #nav-summary-childs {
     position: absolute;
-    top: 30px;
+    top: 25px;
     left: 6px;
     margin: 0;
     border-width: 1px;
@@ -332,7 +355,7 @@ pre .code {
     background-color: #F0F0F0;
     border: 1px dashed black;
     font-family: courier, courier new, monospace;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 100%;
     white-space: pre;
     width: 90%;
@@ -400,17 +423,17 @@ img.float-right {
 
 .heading-1 {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 18px;
     font-variant: small-caps;
 }
 
 .heading-1-1 {
-    font-size: 12px;
+    font-size: 16px;
     font-variant: small-caps;
 }
 
 .heading-1-1-1 {
-    font-size: 12px;
+    font-size: 16px;
 }
 
 .quote {
@@ -429,7 +452,7 @@ img.float-right {
     color: inherit;
     border-width: 1px;
     font-family: courier, courier new, monospace;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 100%;
     white-space: pre;
     overflow: auto;
@@ -490,7 +513,7 @@ img.float-right {
     color: inherit;
     font-weight: bold; /* background-color: #DDEEFF; */
     padding: 4px 4px 4px 4px;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 .wiki-table .table-odd {
@@ -643,9 +666,9 @@ li {
 }
 
 #navigation a {
-    border-radius: 14px;
-    -moz-border-radius: 14px;
-    -webkit-border-radius: 14px;
+    border-radius: 18px;
+    -moz-border-radius: 18px;
+    -webkit-border-radius: 18px;
 }
 
 #footer, #table-of-content a:hover, #navigation #nav-summary-childs a {
