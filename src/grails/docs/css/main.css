@@ -16,7 +16,7 @@ body {
 .body {
     font-family: Arial;
     text-align: justify;
-    font-size: 16px;
+    font-size: 11pt;
     background: #F2F2F2;
 }
 
@@ -60,7 +60,7 @@ strong {
 
 #colset #col2, #colset #col1 {
     vertical-align: top;
-    font-size: 18px;
+    font-size: 11pt;
 }
 
 #colset #col2 {
