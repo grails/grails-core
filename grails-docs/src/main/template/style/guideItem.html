@@ -1,123 +1,150 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-    <head>
-        <title>${title} ${version}</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Style" charset="utf-8" />
-        <link rel="stylesheet" href="${path}/css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8" />
-    </head>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>${title} ${version}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Style" charset="utf-8"/>
+    <link rel="stylesheet" href="${path}/css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8"/>
+</head>
 
-    <body class="body">
-        <div id="navigation">
-            <ul>
-                <li>
-                    <div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)">
-                        <a href="${path}/guide/index.html" class="button">Table of contents</a>
-                        <div id="nav-summary-childs" style="display:none;">
-                            <% for (ch in toc) { %>
-                            <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title}.html">${ch.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
-                            <% } %>
-                        </div>
+<body class="body">
+<div id="navigation">
+    <ul>
+        <li>
+            <div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)">
+                <a href="${path}/guide/index.html" class="button">Table of contents</a>
+
+                <div id="nav-summary-childs" style="display:none;">
+                    <% for (ch in toc) { %>
+                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title}.html">${ch.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
                     </div>
-                </li>
-                <li class="separator selected">
-                    <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick References</a>
-                </li>
-            </ul>
-        </div>
-        <div id="header">
-            <div class="images clearfix">
-                <% if (logo) { %>
-                <span id="logo">${logo}</span>
-                <% } %>
-                <% if (sponsorLogo) { %>
-                <span id="sponsor">${sponsorLogo}</span>
-                <% } %>
+                    <% } %>
+                </div>
             </div>
-            <div class="message">${subtitle}</div>
-        </div>
+        </li>
+        <li class="separator selected">
+            <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick References</a>
+        </li>
+    </ul>
+</div>
+<div id="header">
+    <div class="images clearfix">
+        <% if (logo) { %>
+        <span id="logo">${logo}</span>
+        <% } %>
+        <% if (sponsorLogo) { %>
+        <span id="sponsor">${sponsorLogo}</span>
+        <% } %>
+    </div>
+    <h1 class="message">${subtitle}</h1>
+</div>
 
 
-        <table id="colset" border="0" cellpadding="0" cellspacing="0">
-            <tr>
-                <td id="col1">
-                    <div id="main" class="corner-all">
-                        <div class="project">
-                            <h1>${title} - Reference Documentation</h1>
-                            <p><strong>Authors:</strong> ${authors}</p>
-                            <p><strong>Version:</strong> ${version}</p>
-                        </div>
+<table id="colset" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td id="col1">
+            <div id="main" class="corner-all">
 
-                        <% if (sectionToc) { %>
-                        <div id="table-of-content">
-                            <h2>Table of Contents</h2>
-                            <%
-                            sectionWriter = { lvl, section ->
-                            %>
-                            <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.title }">${section.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
-                            <%
+                <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick
+                    References</a>)</span>
 
-                                lvl++
-                                for (s in section.subSections) {
-                                    sectionWriter.call(lvl, s)
-                                }
-                            }
+                <div class="project">
+                    <h1>${title} - Reference Documentation</h1>
 
-                            for (s in sectionToc) {
-                                sectionWriter.call(0, s)
-                            }
-                            %>
-                        </div>
-                        <% } %>
+                    <p><strong>Authors:</strong> ${authors}</p>
 
-                        ${content}
+                    <p><strong>Version:</strong> ${version}</p>
+                </div>
+
+                <% if (sectionToc) { %>
+                <div id="table-of-content">
+                    <h2>Table of Contents</h2>
+                    <%
+                    sectionWriter = { lvl, section ->
+                    %>
+                    <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.title }">${section.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
                     </div>
-                </td>
-                <td id="col2">
-                    <div class="local clearfix">
-                        <div class="local-title">
-                            <a href="${path}/guide/index.html" target="mainFrame">Quick References</a>
-                            <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
-                        </div>
-                        <div class="menu">
-                            <% for (cat in refMenu) { %>
-                            <div class="menu-block"><h1 class="menu-title">${cat.name}</h1>
-                            <% if (cat.usage.exists()) { %>
-                            <div class="menu-usage-item"><a href="${path}/ref/${cat.name}/Usage.html" >Usage</a></div>
+                    <%
+
+                    lvl++
+                    for (s in section.subSections) {
+                    sectionWriter.call(lvl, s)
+                    }
+                    }
+
+                    for (s in sectionToc) {
+                    sectionWriter.call(0, s)
+                    }
+                    %>
+                </div>
+                <% } %>
+
+                ${content}
+
+                <div style="clear:both;margin-top:15px;"></div>
+                <% if(prev){ %>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title}.html"><< ${prev?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                <% }
+                   if(next){ %>
+                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title}.html">${next?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
+                <% } %>
+                <div style="clear:both"></div>
+            </div>
+        </td>
+        <td id="col2">
+            <div class="local clearfix">
+                <div class="local-title">
+                    <a href="${path}/guide/index.html" target="mainFrame">Quick References</a>
+                    <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
+                </div>
+                <div class="menu">
+                    <% for (cat in refMenu) { %>
+                    <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">${cat.name}</h1><div class="menu-sub">
+                        <% if (cat.usage.exists()) { %>
+                            <div class="menu-usage-item"><a href="${path}/ref/${cat.name}/Usage.html">Usage</a></div>
                             <% } %>
                             <% for (txt in cat.sections) { %>
-                            <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html" >${txt.name[0..-6]}</a></div>
-                            <% } %>
+                            <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html">${txt.name[0..-6]}</a>
                             </div>
                             <% } %>
-                        </div>
+                            </div>
                     </div>
-                </td>
-            </tr>
-        </table>
+                    <% } %>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
 
-        <div id="footer">
-            ${copyright}
-            ${footer}
-        </div>
+<div id="footer">
+    ${copyright}
+    ${footer}
+</div>
 
 
-        
-    <script type="text/javascript">
-        var show = true;
-        function localToggle()
-        {
-            document.getElementById("col2").style.display =  show ? "none" : "table-cell";
-            document.getElementById("ref-button").parentNode.className = (show = !show) ? "separator selected" : "separator";
-            return false;
+<script type="text/javascript">
+    var show = true;
+    function toggleRef(el) {
+        if (!el.show || el.show == 'undefined') {
+            el.style.display = "block"
+            el.show = true;
+        } else {
+            el.style.display = "none"
+            el.show = false;
         }
-        function toggleNavSummary(hide)
-        {
-            document.getElementById("nav-summary-childs").style.display =  !hide ? "block" : "none";
-            document.getElementById("nav-summary").className = hide ? "" : "active";
-        }
+    }
+    function localToggle() {
+        document.getElementById("col2").style.display = show ? "none" : "table-cell";
+        document.getElementById("toggle-col1").style.display = show ? "inline" : "none";
+        document.getElementById("ref-button").parentNode.className = (show = !show) ? "separator selected" : "separator";
+        return false;
+    }
+    function toggleNavSummary(hide) {
+        document.getElementById("nav-summary-childs").style.display = !hide ? "block" : "none";
+        document.getElementById("nav-summary").className = hide ? "" : "active";
+    }
 
-    </script>
-    
-    </body>
+</script>
+
+</body>
 </html>

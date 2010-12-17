@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
         <title>${title} ${version}</title>
@@ -45,7 +45,7 @@
                 <span id="sponsor">${sponsorLogo}</span>
                 <% } %>
             </div>
-            <div class="message">${subtitle}</div>
+            <h1 class="message">${subtitle}</h1>
         </div>
 
 
@@ -53,6 +53,9 @@
             <tr>
                 <td id="col1">
                     <div id="main" class="corner-all">
+
+                        <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick References</a>)</span>
+
                         <div class="project">
                             <h1>${title} - Reference Documentation</h1>
                             <p><strong>Authors:</strong> ${authors}</p>
@@ -85,31 +88,34 @@
                                 sectionWriter.call(0, topSection, topSection)
                             }
                             %>
+                            <div style="clear:both" ></div>
                         </div>
                         <% } %>
                         ${content}
                     </div>
                 </td>
                 <td id="col2">
-                    <div class="local clearfix">
-                        <div class="local-title">
-                            <a href="${path}/guide/index.html" target="mainFrame">Quick References</a>
-                            <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
+            <div class="local clearfix">
+                <div class="local-title">
+                    <a href="${path}/guide/index.html" target="mainFrame">Quick References</a>
+                    <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
+                </div>
+                <div class="menu">
+                    <% for (cat in refMenu) { %>
+                    <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">${cat.name}</h1><div class="menu-sub">
+                        <% if (cat.usage.exists()) { %>
+                        <div class="menu-usage-item"><a href="${path}/ref/${cat.name}/Usage.html">Usage</a></div>
+                        <% } %>
+                        <% for (txt in cat.sections) { %>
+                        <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html">${txt.name[0..-6]}</a>
                         </div>
-                        <div class="menu">
-                            <% for (cat in refMenu) { %>
-                            <div class="menu-block"><h1 class="menu-title">${cat.name}</h1>
-                            <% if (cat.usage.exists()) { %>
-                            <div class="menu-usage-item"><a href="${path}/ref/${cat.name}/Usage.html" >Usage</a></div>
-                            <% } %>
-                            <% for (txt in cat.sections) { %>
-                            <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html" >${txt.name[0..-6]}</a></div>
-                            <% } %>
-                            </div>
-                            <% } %>
+                        <% } %>
                         </div>
                     </div>
-                </td>
+                    <% } %>
+                </div>
+            </div>
+        </td>
             </tr>
         </table>
 
@@ -119,12 +125,22 @@
         </div>
 
 
-        
+
     <script type="text/javascript">
         var show = true;
+        function toggleRef(el) {
+        if (!el.show || el.show == 'undefined') {
+            el.style.display = "block"
+            el.show = true;
+        } else {
+            el.style.display = "none"
+            el.show = false;
+        }
+    }
         function localToggle()
         {
             document.getElementById("col2").style.display =  show ? "none" : "table-cell";
+            document.getElementById("toggle-col1").style.display =  show ? "inline" : "none";
             document.getElementById("ref-button").parentNode.className = (show = !show) ? "separator selected" : "separator";
             return false;
         }
@@ -135,6 +151,6 @@
         }
 
     </script>
-    
+
     </body>
 </html>

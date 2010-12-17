@@ -232,7 +232,9 @@ class DocPublisher {
             logo: logo,
             sponsorLogo: sponsorLogo,
             single: false,
-            path: ".."
+            path: "..",
+                prev:null,
+                next:null
         ]
 
         // Build the user guide sections first.
@@ -240,8 +242,14 @@ class DocPublisher {
         def sectionTemplate = templateEngine.createTemplate(new File("${docResources}/style/section.html").newReader(encoding))
         def fullContents = new StringBuilder()
 
-        for (chapter in book) {
-            writeChapter(chapter, template, sectionTemplate, refGuideDir, fullContents, vars)
+      def chapterVars
+        book.eachWithIndex{ chapter, i ->
+            chapterVars = [*:vars]
+            if(i!=0)
+              chapterVars['prev'] = book[i-1]
+            if(i!=(book.size()-1))
+              chapterVars['next'] = book[i+1]
+            writeChapter(chapter, template, sectionTemplate, refGuideDir, fullContents, chapterVars)
         }
 
         files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
