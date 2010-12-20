@@ -571,10 +571,10 @@ class PrototypeProvider implements JavascriptProvider {
         if (options) {
             // process callbacks
             def callbacks = options.findAll { k,v ->
-                k ==~ /on(\p{Upper}|\d) {1}\w+/
+                k ==~ /on(\p{Upper}|\d){1}\w+/
             }
             callbacks.each { k,v ->
-                ajaxOptions << "${k}:function(e) {${v}}"
+                ajaxOptions << "${k}:function(e){${v}}"
                 options.remove(k)
             }
             if (options.params) {

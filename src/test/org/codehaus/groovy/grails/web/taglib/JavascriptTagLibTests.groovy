@@ -173,6 +173,13 @@ class TestUrlMappings {
         assertOutputEquals('<a href="/person/show" onclick="new Ajax.Updater(\'success\',\'/person/show\',{method:\'get\',asynchronous:true,evalScripts:true});return false;">Test</a>', template)
     }
 
+    void testRemoteLinkWithEvents() {
+        // see http://jira.codehaus.org/browse/GRAILS-7062
+        def template = '<g:remoteLink controller="person" action="show" update="success" onComplete="doSomething();" on404="handleNotFound();">Test</g:remoteLink>'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+        assertOutputEquals('<a href="/person/show" onclick="new Ajax.Updater(\'success\',\'/person/show\',{asynchronous:true,evalScripts:true,onComplete:function(e){doSomething();},on404:function(e){handleNotFound();}});return false;">Test</a>', template)
+    }
+
     void testRemoteFieldWithAdditionalArgs() {
         def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'" />'
         assertOutputEquals '<input type="text" name="nv" value="" onkeyup="new Ajax.Request(\'/bar/storeField/2\',{asynchronous:true,evalScripts:true,parameters:\'a=b&\'+\'pnv=\'+this.value});" />', template
