@@ -14,10 +14,42 @@ class PluginBuildSettingsTests extends GroovyTestCase {
     private static final File NESTED_INLINE_PLUGIN_TEST_PROJ_DIR = new File("test/test-projects/nested-inline-plugins/app")
     private static final File INLINE_PLUGINS_TEST_PROJ_DIR = new File("test/test-projects/inline-plugins/app")
 
+    def absoluteTestDir
+
     PluginBuildSettings createPluginBuildSettings(File projectDir = TEST_PROJ_DIR) {
         def settings = new BuildSettings(new File("."), projectDir)
         settings.loadConfig()
         return new PluginBuildSettings(settings)
+    }
+
+    protected void setUp() {
+        super.setUp()
+        absoluteTestDir = new File(System.getProperty("java.io.tmpdir"), ".grails/test")
+        absoluteTestDir.mkdirs()
+
+        // Create a plugin in the absolute directory.
+        def pluginDir = new File(absoluteTestDir, "dummy")
+        new File(pluginDir, "grails-app").mkdirs()
+        new File(pluginDir, "DummyGrailsPlugin.groovy") << '''\
+                class DummyGrailsPlugin {
+                    def version = "0.1" 
+                    def grailsVersion = "1.1 > *" 
+                    def dependsOn = [:] 
+                    def pluginExcludes = [ "grails-app/views/error.gsp" ] 
+                 
+                    def author = "Your name" 
+                    def authorEmail = "" 
+                    def title = "Plugin summary/headline" 
+                    def description = "Brief description of the plugin." 
+                 
+                    def documentation = "http://grails.org/plugin/dummy" 
+                }
+                '''.stripIndent()
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        absoluteTestDir.deleteDir()
     }
 
     void testGetPluginSourceFiles() {
@@ -189,7 +221,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         def pluginSettings = createPluginBuildSettings(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR)
         def inlinePluginDirs = pluginSettings.inlinePluginDirectories*.file
 
-        assertEquals("inline plugins found", 2, inlinePluginDirs.size())
+        assertEquals("inline plugins found", 3, inlinePluginDirs.size())
 
         def pluginOneDir = inlinePluginDirs.find { it.name.endsWith("plugin-one") }
         assertNotNull("plugin one dir", pluginOneDir)
@@ -197,6 +229,11 @@ class PluginBuildSettingsTests extends GroovyTestCase {
 
         def pluginTwoDir = inlinePluginDirs.find { it.name.endsWith("plugin-two") }
         assertNotNull("plugin two dir", pluginTwoDir)
+
+        // GRAILS-7045: Make sure that absolute in-place plugin locations
+        // aren't mangled.
+        def absolutePluginDir = inlinePluginDirs.find { it.name.endsWith("dummy") }
+        assertTrue "Dummy plugin directory does not exist", absolutePluginDir.exists()
 
         // This is the most important test.
         //

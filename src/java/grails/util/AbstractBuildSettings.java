@@ -142,7 +142,14 @@ public abstract class AbstractBuildSettings {
                     if (value != null) {
                         File resource;
                         try {
-                            resource = new File(baseDir, value.toString()).getCanonicalFile();
+                            // GRAILS-7045: Check whether the plugin location is absolute
+                            // before resolving against the project's base dir.
+                            resource = new File(value.toString());
+                            if (!resource.isAbsolute()) {
+                                resource = new File(baseDir, resource.getPath());
+                            }
+
+                            resource = resource.getCanonicalFile();
                             inlinePlugins.add(resource);
                         }
                         catch (IOException e) {
