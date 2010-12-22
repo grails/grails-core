@@ -86,8 +86,8 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
     protected void reset() {
         mockRequest?.clearAttributes()
         mockRequest?.removeAllParameters()
-        mockResponse?.reset()
         mockResponse?.committed = false
+        mockResponse?.reset()
         mockSession?.clearAttributes()
         mockSession?.setNew(true)
 
