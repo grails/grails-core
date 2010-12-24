@@ -179,14 +179,6 @@ class DocPublisher {
         def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
         def templateEngine = new groovy.text.SimpleTemplateEngine()
 
-        // Add any custom macros registered with this publisher to the engine.
-        for (m in customMacros) {
-            if (m.metaClass.hasProperty(m, "initialContext")) {
-                m.initialContext = context
-            }
-            engine.addMacro(m)
-        }
-
         // A tree of book sections, where 'book' is a list of the top-level
         // sections and each of those has a list of sub-sections and so on.
         def book = []
@@ -387,6 +379,13 @@ class DocPublisher {
         engine.engineProperties = engineProperties
         context.renderEngine = engine
 
+        // Add any custom macros registered with this publisher to the engine.
+        for (m in customMacros) {
+            if (m.metaClass.hasProperty(m, "initialContext")) {
+                m.initialContext = context
+            }
+            engine.addMacro(m)
+        }
     }
 
     private unpack(Map args) {

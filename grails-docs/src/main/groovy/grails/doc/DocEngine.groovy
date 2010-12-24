@@ -52,7 +52,8 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static ALIAS = [:]
 
     private basedir
-    private customMacros = []
+    private macroFilter
+    private macroLoader
 
     Properties engineProperties = new Properties()
 
@@ -126,7 +127,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     boolean showCreate() { false }
 
     void addMacro(macro) {
-        customMacros << macro
+        macroLoader.add(macroFilter.macroRepository, macro)
     }
 
     protected void init() {
@@ -165,15 +166,15 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                 fp.addFilter(filter)
 
                 if (filter instanceof MacroFilter) {
-                    MacroLoader loader = new MacroLoader()
-                    def repository = filter.getMacroRepository()
+                    // Save the filter and loader so that we can add macros
+                    // after engine construction.
+                    macroFilter = filter
+                    macroLoader = new MacroLoader()
 
-                    loader.add(repository, new WarningMacro())
-                    loader.add(repository, new NoteMacro())
-
-                    for (m in customMacros) {
-                        loader.add(repository, m)
-                    }
+                    // Add the macros provided by Grails.
+                    def repository = filter.macroRepository
+                    macroLoader.add(repository, new WarningMacro())
+                    macroLoader.add(repository, new NoteMacro())
                 }
             }
             fp.init()
