@@ -1,13 +1,21 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <title>${title} ${version}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Style" charset="utf-8"/>
     <link rel="stylesheet" href="${path}/css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8"/>
+    <script type="text/javascript">
+function addJsClass() {
+    var classes = document.body.className.split(" ");
+    classes.push("js");
+    document.body.className = classes.join(" ");
+}
+    </script>
 </head>
 
-<body class="body">
+<body class="body" onload="addJsClass();">
 <div id="navigation">
     <ul>
         <li>
@@ -23,7 +31,7 @@
             </div>
         </li>
         <li class="separator selected">
-            <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick References</a>
+            <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick Reference</a>
         </li>
     </ul>
 </div>
@@ -36,7 +44,7 @@
         <span id="sponsor">${sponsorLogo}</span>
         <% } %>
     </div>
-    <h1 class="message">${subtitle}</h1>
+    <p>${subtitle}</p>
 </div>
 
 
@@ -45,8 +53,16 @@
         <td id="col1">
             <div id="main" class="corner-all">
 
-                <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick
-                    References</a>)</span>
+                <% if(prev){ %>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title}.html">&lt;&lt; ${prev?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                <% } %>
+
+                <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick Reference</a>)</span>
+
+                <% if(next){ %>
+                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title}.html">${next?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
+                <% } %>
+
 
                 <div class="project">
                     <h1>${title} - Reference Documentation</h1>
@@ -83,7 +99,7 @@
 
                 <div style="clear:both;margin-top:15px;"></div>
                 <% if(prev){ %>
-                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title}.html"><< ${prev?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title}.html">&lt;&lt; ${prev?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
                 <% }
                    if(next){ %>
                     <div class="toc-item next-right"><a href="${path}/guide/${next?.title}.html">${next?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
@@ -94,14 +110,14 @@
         <td id="col2">
             <div class="local clearfix">
                 <div class="local-title">
-                    <a href="${path}/guide/index.html" target="mainFrame">Quick References</a>
+                    <a href="${path}/guide/index.html" target="mainFrame">Quick Reference</a>
                     <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
                 </div>
                 <div class="menu">
                     <% for (cat in refMenu) { %>
                     <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">${cat.name}</h1><div class="menu-sub">
                         <% if (cat.usage.exists()) { %>
-                            <div class="menu-usage-item"><a href="${path}/ref/${cat.name}/Usage.html">Usage</a></div>
+                            <div class="menu-item"><a href="${path}/ref/${cat.name}/Usage.html">Usage</a></div>
                             <% } %>
                             <% for (txt in cat.sections) { %>
                             <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html">${txt.name[0..-6]}</a>
@@ -121,30 +137,7 @@
     ${footer}
 </div>
 
-
-<script type="text/javascript">
-    var show = true;
-    function toggleRef(el) {
-        if (!el.show || el.show == 'undefined') {
-            el.style.display = "block"
-            el.show = true;
-        } else {
-            el.style.display = "none"
-            el.show = false;
-        }
-    }
-    function localToggle() {
-        document.getElementById("col2").style.display = show ? "none" : "table-cell";
-        document.getElementById("toggle-col1").style.display = show ? "inline" : "none";
-        document.getElementById("ref-button").parentNode.className = (show = !show) ? "separator selected" : "separator";
-        return false;
-    }
-    function toggleNavSummary(hide) {
-        document.getElementById("nav-summary-childs").style.display = !hide ? "block" : "none";
-        document.getElementById("nav-summary").className = hide ? "" : "active";
-    }
-
-</script>
+<script type="text/javascript" src="${path}/js/docs.js"></script>
 
 </body>
 </html>

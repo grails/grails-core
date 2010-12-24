@@ -39,6 +39,8 @@ class DocPublisher {
     File images
     /** The directory containing any CSS to use (will override defaults) **/
     File css
+    /** The directory containing any Javascript to use (will override defaults) **/
+    File js
     /** The directory cotnaining any templates to use (will override defaults) **/
     File style
     /** The AntBuilder instance to use */
@@ -127,13 +129,15 @@ class DocPublisher {
         ant.mkdir(dir: imgsDir)
         String cssDir = "${refDocsDir}/css"
         ant.mkdir(dir: cssDir)
+        String jsDir = "${refDocsDir}/js"
+        ant.mkdir(dir: jsDir)
         ant.mkdir(dir: "${refDocsDir}/ref")
 
         ant.copy(todir: imgsDir) {
             fileset(dir: "${docResources}/img")
         }
 
-        if (images) {
+        if (images && images.exists()) {
             ant.copy(todir: imgsDir, overwrite: true, failonerror:false) {
                 fileset(dir: images)
             }
@@ -141,12 +145,20 @@ class DocPublisher {
         ant.copy(todir: cssDir) {
             fileset(dir: "${docResources}/css")
         }
-        if (css) {
+        if (css && css.exists()) {
             ant.copy(todir: cssDir, overwrite: true, failonerror:false) {
                 fileset(dir: css)
             }
         }
-        if (style) {
+        ant.copy(todir: jsDir) {
+            fileset(dir: "${docResources}/js")
+        }
+        if (js && js.exists()) {
+            ant.copy(todir: jsDir, overwrite: true, failonerror:false) {
+                fileset(dir: js)
+            }
+        }
+        if (style && style.exists()) {
             ant.copy(todir: "${docResources}/style", overwrite: true, failonerror:false) {
                 fileset(dir: style)
             }
@@ -211,9 +223,10 @@ class DocPublisher {
 
         def fullToc = new StringBuilder()
 
+        def pathToRoot = ".."
         def vars = [
             encoding: encoding,
-            title: "",
+            title: title,
             subtitle: subtitle,
             footer: footer, // TODO - add a way to specify footer
             authors: authors,
@@ -221,12 +234,12 @@ class DocPublisher {
             refMenu: refCategories,
             toc: book,
             copyright: copyright,
-            logo: logo,
-            sponsorLogo: sponsorLogo,
+            logo: injectPath(logo, pathToRoot),
+            sponsorLogo: injectPath(sponsorLogo, pathToRoot),
             single: false,
-            path: "..",
-                prev:null,
-                next:null
+            path: pathToRoot,
+            prev: null,
+            next: null
         ]
 
         // Build the user guide sections first.
@@ -234,7 +247,7 @@ class DocPublisher {
         def sectionTemplate = templateEngine.createTemplate(new File("${docResources}/style/section.html").newReader(encoding))
         def fullContents = new StringBuilder()
 
-      def chapterVars
+        def chapterVars
         book.eachWithIndex{ chapter, i ->
             chapterVars = [*:vars]
             if(i!=0)
@@ -248,45 +261,51 @@ class DocPublisher {
         def reference = [:]
         template = templateEngine.createTemplate(new File("${docResources}/style/referenceItem.html").newReader(encoding))
 
-        vars.path = "../.."
+        pathToRoot = "../.."
+        vars.logo = injectPath(logo, pathToRoot)
+        vars.sponsorLogo = injectPath(sponsorLogo, pathToRoot)
+        vars.path = pathToRoot
 
         for (f in files) {
             if (f.directory && !f.name.startsWith(".")) {
                 def section = f.name
-                reference."${section}" = [:]
-                new File("${refDocsDir}/ref/${f.name}").mkdirs()
+                vars.section = section
+
+                new File("${refDocsDir}/ref/${section}").mkdirs()
                 def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
-                def usageFile = new File("${src}/ref/${f.name}.gdoc")
+                def usageFile = new File("${src}/ref/${section}.gdoc")
                 if (usageFile.exists()) {
                     def data = usageFile.text
-                    reference."${section}".usage = data
                     context.set(DocEngine.SOURCE_FILE, usageFile)
-                    context.set(DocEngine.CONTEXT_PATH, "../..")
+                    context.set(DocEngine.CONTEXT_PATH, pathToRoot)
                     vars.content = engine.render(data, context)
 
-                    new File("${refDocsDir}/ref/${f.name}/Usage.html").withWriter(encoding) {out ->
+                    new File("${refDocsDir}/ref/${section}/Usage.html").withWriter(encoding) {out ->
                         template.make(vars).writeTo(out)
                     }
                 }
                 for (txt in textiles) {
                     def name = txt.name[0..-6]
                     def data = txt.text
-                    reference."${section}".put(name,data)
                     context.set(DocEngine.SOURCE_FILE, txt.name)
-                    context.set(DocEngine.CONTEXT_PATH, "../..")
+                    context.set(DocEngine.CONTEXT_PATH, pathToRoot)
                     vars.content = engine.render(data, context)
 
-                    new File("${refDocsDir}/ref/${f.name}/${name}.html").withWriter(encoding) {out ->
+                    new File("${refDocsDir}/ref/${section}/${name}.html").withWriter(encoding) {out ->
                         template.make(vars).writeTo(out)
                     }
                 }
             }
         }
 
-        vars.title = title
+        vars.remove("section")
         vars.content = fullContents.toString()
         vars.single = true
-        vars.path = ".."
+
+        pathToRoot = ".."
+        vars.logo = injectPath(logo, pathToRoot)
+        vars.sponsorLogo = injectPath(sponsorLogo, pathToRoot)
+        vars.path = pathToRoot
 
         template = templateEngine.createTemplate(new File("${docResources}/style/layout.html").newReader(encoding))
         new File("${refGuideDir}/single.html").withWriter(encoding) {out ->
@@ -299,7 +318,11 @@ class DocPublisher {
             template.make(vars).writeTo(out)
         }
 
-        template = templateEngine.createTemplate(new File("${docResources}/style/index.html").newReader(encoding))
+        pathToRoot = "."
+        vars.logo = injectPath(logo, pathToRoot)
+        vars.sponsorLogo = injectPath(sponsorLogo, pathToRoot)
+        vars.path = pathToRoot
+
         new File("${refDocsDir}/index.html").withWriter(encoding) {out ->
             template.make(vars).writeTo(out)
         }
@@ -317,10 +340,10 @@ class DocPublisher {
 
         def varsCopy = [*:vars]
         varsCopy.title = section.title
-        varsCopy.content = engine.render(section.file.text, context)
         varsCopy.path = path
         varsCopy.level = level
         varsCopy.sectionToc = section.subSections
+        varsCopy.content = engine.render(section.file.text, context)
 
         // First create the section content, which usually consists of a header
         // and the translated gdoc content.
@@ -334,14 +357,24 @@ class DocPublisher {
         // Create the sub-section pages.
         level++
         for (s in section.subSections) {
-            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, targetDir, "pages", "../..", level, vars)
+            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, targetDir, "pages", path, level, vars)
         }
 
+        // TODO PAL - I don't see why these pages are necessary, plus there seems
+        // to be no way to get embedded images to display properly (since the path
+        // passed to the Wiki rendering engine is wrong for pages written to a
+        // 'pages' subdirectory). Keeping them in case someone, somewhere depends
+        // on them.
+        //
         // Create the HTML page for this section, which includes the content
         // from all the sub-sections too.
         if (subDir) {
             if (subDir.endsWith('/')) subDir = subDir[0..-2]
             targetDir = "$targetDir/$subDir"
+
+            varsCopy.path = "../${path}"
+            varsCopy.logo = injectPath(logo, varsCopy.path)
+            varsCopy.sponsorLogo = injectPath(sponsorLogo, varsCopy.path)
         }
 
         new File("${targetDir}/${section.title}.html").withWriter(encoding) { writer ->
@@ -386,6 +419,13 @@ class DocPublisher {
             }
             engine.addMacro(m)
         }
+    }
+
+    private String injectPath(String source, String path) {
+        def templateEngine = new groovy.text.SimpleTemplateEngine()
+        def out = new StringWriter()
+        templateEngine.createTemplate(source).make(path: path).writeTo(out)
+        return out.toString()
     }
 
     private unpack(Map args) {

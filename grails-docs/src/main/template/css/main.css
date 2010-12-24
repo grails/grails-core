@@ -16,12 +16,17 @@ body {
 .body {
     font-family: Arial;
     text-align: justify;
-    font-size: 11pt;
+    font-size: 85%;
     background: #F2F2F2;
 }
 
-body, html, table, th, td {
-    font-size: 16px;
+/* Monospace should be same size as other fonts: this fix was taken from
+ *
+ *     http://meyerweb.com/eric/thoughts/2010/02/12/fixed-monospace-sizing/
+ */
+pre, code {
+    font-family: "Courier New", monospace, serif;
+    font-size: 1em;
 }
 
 /*
@@ -60,13 +65,15 @@ strong {
 
 #colset #col2, #colset #col1 {
     vertical-align: top;
-    font-size: 11pt;
 }
 
 #colset #col2 {
     display: table-cell;
     width: 250px;
 }
+
+/* Required for IE6 */
+#col2 .local { width: 250px; }
 
 /*
 ////////////////////////////////////////
@@ -79,6 +86,10 @@ strong {
     border-width: 1px;
     padding: 10px 15px;
     margin-bottom: 0;
+}
+
+#main.reference h1 {
+    color: #7C9D00;
 }
 
 .local {
@@ -94,12 +105,20 @@ strong {
 
 .local .local-title a {
     text-decoration: none;
-    font-size: 18px;
+    font-size: 1.25em;
     font-weight: bold;
 }
 
+.local .local-title .toggle {
+    display: none;
+}
+
+.js .local .local-title .toggle {
+    display: inline;
+}
+
 .local .local-title .toggle, .local .local-title .toggle a {
-    font-size: 16px;
+    font-size: 1.05em;
     font-weight: normal;
 }
 
@@ -120,6 +139,11 @@ strong {
 //  Project.
 ////////////////////////////////////////
 */
+
+#main .project {
+	clear: left;
+	padding-top: 10px;
+}
 
 #main .project h1 {
     padding: 0;
@@ -172,9 +196,13 @@ strong {
 ////////////////////////////////////////
 */
 
-.menu .menu-sub {
-    display:none;
+.js .menu .menu-sub {
+    display: none;
 }
+.js .menu .selected {
+	display: block;
+}
+
 .menu .menu-block {
     width: 210px;
     padding: 0 2%;
@@ -185,13 +213,19 @@ strong {
     cursor:pointer;
     padding-top: 8px;
     margin: 0;
-    font-size: 16px;
+    font-size: 1.1em;
     font-weight: bold;
 }
 
-.menu .menu-item {
+.menu .menu-sub .menu-item {
+    margin-left: 10px;
     padding: 2px 0;
     padding-left: 10px;
+}
+
+.menu .menu-sub .menu-item:first-child {
+    margin-bottom: 0.3em;
+    margin-top: 0.3em;
 }
 
 .menu a {
@@ -216,7 +250,7 @@ strong {
 #navigation ul {
     margin: 0;
     padding: 0;
-    height: 38px;
+    height: 2.8em;
 }
 
 #navigation ul li {
@@ -227,28 +261,38 @@ strong {
     float: left;
 }
 
+#navigation ul li.separator {
+    display: none;
+}
+
+.js #navigation ul li.separator {
+    display: block;
+}
 
 #navigation a {
-    float: left;
     display: block;
-    padding: 3px 10px;
+    padding: 0.3em 10px;
     outline: none;
     text-decoration: none;
 }
 
 #nav-summary {
+    position: relative;
     margin: 0;
     padding: 0;
 }
 
 #nav-summary #nav-summary-childs {
     position: absolute;
-    top: 25px;
-    left: 6px;
+    top: 1.6em;
     margin: 0;
     border-width: 1px;
     padding: 10px;
-    width: 300px;
+    width: 25em;
+}
+
+#nav-summary #nav-summary-childs {
+    display: none;
 }
 
 #nav-summary #nav-summary-childs a {
@@ -285,8 +329,9 @@ strong {
     margin: 0;
 }
 
-#header .message {
-
+#header p {
+	font-size: 1.1em;
+	margin: 0 0 0.5em 0;
 }
 
 #header {
@@ -314,10 +359,10 @@ strong {
 .warning {
     background-image: url(../img/warning.gif);
     background-repeat: no-repeat;
-    background-position: 7 7;
+    background-position: 10px 10px;
     border: 1px solid #CC0000;
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
     padding: 10px;
     padding-left: 40px;
     line-height: 100%;
@@ -328,10 +373,10 @@ strong {
 .note {
     background-image: url(../img/note.gif);
     background-repeat: no-repeat;
-    background-position: 7 7;
+    background-position: 10px 10px;
     border: 1px solid #F0C000;
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
     padding: 10px;
     padding-left: 40px;
     line-height: 100%;
@@ -355,8 +400,8 @@ pre .code {
     background-color: #F0F0F0;
     border: 1px dashed black;
     font-family: courier, courier new, monospace;
-    font-size: 16px;
-    line-height: 100%;
+    font-size: 1em;
+    line-height: 1.1em;
     white-space: pre;
     width: 90%;
     overflow: auto;
@@ -423,17 +468,17 @@ img.float-right {
 
 .heading-1 {
     font-weight: bold;
-    font-size: 18px;
+    font-size: 1.05em;
     font-variant: small-caps;
 }
 
 .heading-1-1 {
-    font-size: 16px;
+    font-size: 1em;
     font-variant: small-caps;
 }
 
 .heading-1-1-1 {
-    font-size: 16px;
+    font-size: 1em;
 }
 
 .quote {
@@ -452,8 +497,8 @@ img.float-right {
     color: inherit;
     border-width: 1px;
     font-family: courier, courier new, monospace;
-    font-size: 16px;
-    line-height: 100%;
+    font-size: 1em;
+    line-height: 1.1em;
     white-space: pre;
     overflow: auto;
     overflow: scroll -moz-scrollbars-horizontal;
@@ -488,7 +533,7 @@ img.float-right {
     background-color: #f8f8f8;
     color: black;
     font-family: verdana, sans-serif;
-    font-size: 16px;
+    font-size: 1em;
     font-weight: bold;
     margin-bottom: 10px;
     width: 100%;
@@ -513,7 +558,7 @@ img.float-right {
     color: inherit;
     font-weight: bold; /* background-color: #DDEEFF; */
     padding: 4px 4px 4px 4px;
-    font-size: 16px;
+    font-size: 1em;
 }
 
 .wiki-table .table-odd {

@@ -14,14 +14,14 @@ body {
   margin: 0;
   padding: 0;
   font-size: .8em;
-  line-height: 1.4;
+  line-height: 1.2;
   color: black;
   background: white;
 }
 
 h1, h2, h3, h4, h5, h6 {
   margin: 1em 0 .5em 0;
-  line-height: 1.2;
+  line-height: 1.1;
   font-weight: bold;
   font-style: normal;
 }
@@ -44,7 +44,7 @@ ul, ol {
 }
 
 p {
-  margin: 1.75em 0;
+  margin: 1em 0;
 }
 
 address {
@@ -117,6 +117,7 @@ html[xmlns] .clearfix
 
 
 #toggle-col1{
-    display:none;
-    float:right;
+    display: none;
+    float: right;
+	padding-left: 50px;
 }
