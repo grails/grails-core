@@ -94,7 +94,7 @@ class TestUrlMappings {
     void testPrototypeFormRemoteWithExtraParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
+        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
     }
 
     /**
@@ -111,9 +111,11 @@ class TestUrlMappings {
     }
 
     /**
-     * Tests that the 'formRemote' tag defaults to supplied 'method'
+     * <p>Tests that the 'formRemote' tag defaults to supplied 'method'
      * and 'action' attributes in fallback mode, i.e. when javascript
-     * is unavailable or disabled.
+     * is unavailable or disabled.</p>
+     *
+     * <p>Also makes sure no regressions on http://jira.codehaus.org/browse/GRAILS-3330</p>
      */
     void testPrototypeFormRemoteWithOverrides() {
         def template = '''\
@@ -124,14 +126,14 @@ class TestUrlMappings {
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
 
         assertOutputEquals('''\
-<form onsubmit="new Ajax.Request('/people/details/one',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+'&var2=two'});return false" method="GET"\
- action="/person/showOld?var1=one&var2=two" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
+<form onsubmit="new Ajax.Request('/people/details/one',{method:'get',asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+'&var2=two'});return false" method="GET"\
+ action="/person/showOld?var1=one&var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
     }
 
     void testPrototypeFormRemoteWithExactParams() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\']]" ><g:textField name="foo" /></g:formRemote>'
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" name="myForm" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
+        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
     }
 
     void testPrototypeWithAsyncProperty() {
@@ -162,6 +164,13 @@ class TestUrlMappings {
         // see http://jira.codehaus.org/browse/GRAILS-4672
         def template = '<g:remoteLink controller="people" action="theAction" params="someParams" update="success" onComplete="doSomething();" title="The Album Is ${variable} By Tool" class="hoverLT">${variable}</g:remoteLink>'
         assertOutputContains 'title="The Album Is Undertow By Tool"', template, [variable: 'Undertow']
+    }
+
+    void testRemoteLinkWithMethod() {
+        // see http://jira.codehaus.org/browse/GRAILS-2468
+        def template = '<g:remoteLink controller="person" action="show" update="success" method="GET">Test</g:remoteLink>'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+        assertOutputEquals('<a href="/person/show" onclick="new Ajax.Updater(\'success\',\'/person/show\',{method:\'get\',asynchronous:true,evalScripts:true});return false;">Test</a>', template)
     }
 
     void testRemoteFieldWithAdditionalArgs() {

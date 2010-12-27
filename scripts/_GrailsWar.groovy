@@ -81,10 +81,6 @@ target (configureRunningScript: "Sets the currently running script, in case call
     System.setProperty('current.gant.script',"war")
 }
 
-target(startLogging: "Bootstraps logging") {
-    // do nothing, overrides default behaviour so that logging doesn't kick in
-}
-
 target(checkInPlacePlugins: "Perform a check whether inplace plugins have been packaged") {
     def inlinePluginDirs = pluginSettings.inlinePluginDirectories
     if (inlinePluginDirs) {

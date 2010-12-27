@@ -148,6 +148,11 @@ class BuildSettings extends AbstractBuildSettings {
      * with the base URL that tests should be run against.
      */
     public static final String FUNCTIONAL_BASE_URL_PROPERTY = 'grails.testing.functional.baseUrl'
+	
+	/**
+	 * The name of the working directory for commands that don't belong to a project (like create-app)
+	 */
+	public static final String CORE_WORKING_DIR_NAME = '.core'
 
 
     /**
@@ -1005,13 +1010,14 @@ class BuildSettings extends AbstractBuildSettings {
         // null, a default value. This ensures that we don't override
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
-        Metadata metadata = Metadata.current
+        def metadata = Metadata.current
         if (!grailsWorkDirSet) {
             grailsWorkDir = new File(getPropertyValue(WORK_DIR, props, "${userHome}/.grails/${grailsVersion}"))
         }
 
         if (!projectWorkDirSet) {
-            projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${baseDir.name}"))
+			def workingDirName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME
+            projectWorkDir = new File(getPropertyValue(PROJECT_WORK_DIR, props, "$grailsWorkDir/projects/${workingDirName}"))
         }
 
         if (!projectTargetDirSet) {
@@ -1020,7 +1026,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectWarFileSet) {
             def version = metadata.getApplicationVersion()
-            def appName = metadata.getApplicationName() ?: baseDir.name
+			def appName = metadata.getApplicationName() ?: baseDir.name
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
 
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
