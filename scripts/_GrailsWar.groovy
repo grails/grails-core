@@ -68,7 +68,6 @@ defaultWarDependencies = { antBuilder ->
 											.allArtifactsReports
 											.localFile
 		dependencies += grailsSettings.applicationJars
-		println "RESOLVED DEPENDENCIES ${dependencies.join('\n')}"
         if(dependencies) {
             for(File f in dependencies) {
                 fileset(dir: f.parent, includes: f.name)
