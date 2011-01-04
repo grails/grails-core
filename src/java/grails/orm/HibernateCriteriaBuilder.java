@@ -355,6 +355,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         }
         return null;
     }
+    
+    public Class<?> getTargetClass() {
+    	return targetClass;
+    }
 
     /**
      * Calculates the property value, converting GStrings if necessary

@@ -33,6 +33,11 @@ class PlantCategory {
             withPlantsInPatch()
             withPlantsThatStartWithG()
         }
+        withPlantsThatStartWithG {
+            plants {
+                nameStartsWithG()
+            }
+        }
     }
 }
 
@@ -41,6 +46,11 @@ class Plant {
     Long version
     boolean goesInPatch
     String name
+    static namedQueries = {
+        nameStartsWithG {
+            like 'name', 'G%'
+        }
+    }
 }
 
 class PublicationSubclassWithoutNamedQueries extends Publication {
@@ -330,6 +340,30 @@ class Publication {
         assertEquals 1, results.size()
         assertEquals 'groovy', results[0].name
     }
+
+	void testInvokingNamedQueryDefinedInAnotherDomainClass() {
+		def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+
+		assert plantCategoryClass.newInstance(name:"leafy")
+								 .addToPlants(goesInPatch:true, name:"Lettuce")
+								 .save(flush:true)
+
+		assert plantCategoryClass.newInstance(name:"groovy")
+								 .addToPlants(goesInPatch: true, name: 'Gplant')
+								 .save(flush:true)
+
+		assert plantCategoryClass.newInstance(name:"grapes")
+								 .addToPlants(goesInPatch:false, name:"Gray")
+								 .save(flush:true)
+
+		session.clear()
+
+		def results = plantCategoryClass.withPlantsThatStartWithG.list()
+		assertEquals 2, results.size()
+		def names = results*.name
+		assertTrue 'groovy' in names
+		assertTrue 'grapes' in names
+	}
 
     void testListDistinct() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz

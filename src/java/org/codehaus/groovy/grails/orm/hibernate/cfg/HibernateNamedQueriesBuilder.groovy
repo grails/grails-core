@@ -218,17 +218,38 @@ class NamedCriteriaProxy {
             return nextInChain(args)
         }
 
-        def metaProperty = domainClass.metaClass.getMetaProperty(methodName)
-        if (metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
-            def staticProperty = metaProperty.getProperty(domainClass)
-            if (staticProperty instanceof NamedCriteriaProxy) {
-                def nestedCriteria = staticProperty.criteriaClosure.clone()
-                nestedCriteria.delegate = this
-                return nestedCriteria(*args)
-            }
+		def proxy = getNamedCriteriaProxy(domainClass, methodName)
+        if (proxy) {
+            def nestedCriteria = proxy.criteriaClosure.clone()
+            nestedCriteria.delegate = this
+            return nestedCriteria(*args)
         }
-        queryBuilder."${methodName}"(*args)
+		try {
+			def returnValue = queryBuilder."${methodName}"(*args)
+			return returnValue
+		} catch (MissingMethodException mme) {
+			def targetType = queryBuilder?.targetClass
+			proxy = getNamedCriteriaProxy(targetType, methodName)
+			if(proxy) {
+				def nestedCriteria = proxy.criteriaClosure.clone()
+				nestedCriteria.delegate = this
+				return nestedCriteria(*args)
+			}
+			throw mme
+		}
     }
+
+	private getNamedCriteriaProxy(targetClass, name) {
+		def proxy = null
+		def metaProperty = targetClass.metaClass.getMetaProperty(name)
+		if(metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
+			def prop = metaProperty.getProperty(targetClass)
+			if(prop instanceof NamedCriteriaProxy) {
+				proxy = prop
+			}
+		}
+		proxy
+	}
 
     private getPreparedCriteriaClosure(additionalCriteriaClosure = null) {
         def closureClone = criteriaClosure.clone()
