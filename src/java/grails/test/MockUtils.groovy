@@ -255,7 +255,7 @@ class MockUtils {
         clazz.metaClass.throwTagError = {String message -> throw new GrailsTagException(message) }
         clazz.metaClass.getOut = {-> mockOut }
 
-        def mockPageScope = [:]
+        def mockPageScope = new Binding()
         clazz.metaClass.getPageScope = {->mockPageScope}
 
         // Render tag (called as a method).
