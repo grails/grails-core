@@ -19,6 +19,14 @@ public class CodecPrintWriterTest {
 	}
 	
 	@Test
+	public void testPrintStringWithClosure() {
+		FastStringWriter stringwriter=new FastStringWriter();
+		CodecPrintWriter writer=new CodecPrintWriter(stringwriter, CodecWithClosureProperties.class);
+		writer.print("hello");
+		assertEquals("-> hello <-", stringwriter.getValue());
+	}
+	
+	@Test
 	public void testPrintStreamCharBuffer() throws IOException {
 		FastStringWriter stringwriter=new FastStringWriter();
 		CodecPrintWriter writer=new CodecPrintWriter(stringwriter, HTMLCodec.class);
@@ -26,6 +34,16 @@ public class CodecPrintWriterTest {
 		buf.getWriter().write("&&");
 		writer.write(buf);
 		assertEquals("&amp;&amp;", stringwriter.getValue());
+	}
+	
+	@Test
+	public void testPrintStreamCharBufferWithClosure() throws IOException {
+		FastStringWriter stringwriter=new FastStringWriter();
+		CodecPrintWriter writer=new CodecPrintWriter(stringwriter, CodecWithClosureProperties.class);
+		StreamCharBuffer buf=new StreamCharBuffer();
+		buf.getWriter().write("hola");
+		writer.write(buf);
+		assertEquals("-> hola <-", stringwriter.getValue());
 	}	
 
 }

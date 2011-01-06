@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.Closure;
 import groovy.lang.Writable;
 
 import java.io.IOException;
@@ -7,9 +8,11 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
 
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.springframework.util.ReflectionUtils;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
+	private Closure encodeClosure;
 	Method encodeMethod;
 	Class<?> encodeParamType;
 		
@@ -20,19 +23,30 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 	}
 
 	private void initEncode(Class<?> codecClass) {
-		encodeMethod=ReflectionUtils.findMethod(codecClass, "encode", (Class<?>[])null);
-		ReflectionUtils.makeAccessible(encodeMethod);
-		encodeParamType=encodeMethod.getParameterTypes()[0];
+		ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(codecClass);
+		Object encodeProperty = propertyFetcher.getPropertyValue("encode");
+		if(encodeProperty instanceof Closure) {
+			encodeClosure = (Closure) encodeProperty;
+		} else {
+			encodeMethod=ReflectionUtils.findMethod(codecClass, "encode", (Class<?>[])null);
+			ReflectionUtils.makeAccessible(encodeMethod);
+			encodeParamType=encodeMethod.getParameterTypes()[0];
+		}
 	}
 	
 	private Object encodeObject(Object o) {
 		try {
-			if (!encodeParamType.isInstance(o)) {
-				o=String.valueOf(o);
+			if (encodeClosure != null) {
+				return encodeClosure.call(o);
+			} else {
+				if (!encodeParamType.isInstance(o)) {
+					o = String.valueOf(o);
+				}
+				return ReflectionUtils.invokeMethod(encodeMethod, null, o);
 			}
-			return ReflectionUtils.invokeMethod(encodeMethod, null, o);
 		} catch (Exception e) {
-			throw new RuntimeException("Problem calling encode method " + encodeMethod, e);
+			throw new RuntimeException("Problem calling encode method "
+					+ encodeMethod, e);
 		}
 	}
 
