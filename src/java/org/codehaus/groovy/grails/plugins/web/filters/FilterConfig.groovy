@@ -52,7 +52,7 @@ class FilterConfig {
         // Delegate to the parent definition if it has this property.
         if (filtersDefinition.metaClass.hasProperty(filtersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            metaClass."$getterName" = {-> filtersDefinition."$propertyName" }
+            metaClass."$getterName" = {-> delegate.filtersDefinition."$propertyName" }
             return filtersDefinition."$propertyName"
         }
 
