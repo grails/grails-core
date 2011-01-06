@@ -69,7 +69,6 @@ class Loader {
             fc.scope = [ uri: '/**' ]
             def closure = args[0]
             closure.delegate = fc
-            closure.resolveStrategy = Closure.DELEGATE_FIRST
             closure.call()
         }
         else if (args[0] instanceof Map) {
@@ -77,7 +76,6 @@ class Loader {
             if (args.size() > 1 && args[1] instanceof Closure) {
                 def closure = args[1]
                 closure.delegate = fc
-                closure.resolveStrategy = Closure.DELEGATE_FIRST
                 closure.call()
             }
         }
