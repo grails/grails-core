@@ -83,24 +83,14 @@ class DomainClassGrailsPlugin {
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
             metaClass.constructor = { ->
-                if (ctx.containsBean(domainClass.fullName)) {
-                    ctx.getBean(domainClass.fullName)
-                }
-                else {
-                    BeanUtils.instantiateClass(domainClass.clazz)
-                }
+				getDomainInstance domainClass, ctx
             }
             metaClass.static.create = { ->
-                if (ctx.containsBean(domainClass.fullName)) {
-                    ctx.getBean(domainClass.fullName)
-                }
-                else {
-                    BeanUtils.instantiateClass(domainClass.clazz)
-                }
+				getDomainInstance domainClass, ctx
             }
 
             addValidationMethods(application, domainClass, ctx)
-            addRelationshipManagementMethods(domainClass)
+            addRelationshipManagementMethods(domainClass, ctx)
         }
     }
 
@@ -171,7 +161,17 @@ class DomainClassGrailsPlugin {
         metaClass.getConstraints = {-> domainClass.constrainedProperties }
     }
 
-    private static addRelationshipManagementMethods(GrailsDomainClass dc) {
+	private static getDomainInstance(domainClass, ctx) {
+		def obj
+		if (ctx.containsBean(domainClass.fullName)) {
+			obj = ctx.getBean(domainClass.fullName)
+		}
+		else {
+			obj = BeanUtils.instantiateClass(domainClass.clazz)
+		}
+		obj
+	}
+    private static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
         for (p in dc.persistantProperties) {
             def prop = p
@@ -222,7 +222,7 @@ class DomainClassGrailsPlugin {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
                         }
                         if (arg instanceof Map) {
-                            obj = otherDomainClass.newInstance()
+							obj = getDomainInstance(otherDomainClass, ctx)
                             obj.properties = arg
                             delegate[prop.name].add(obj)
                         }
