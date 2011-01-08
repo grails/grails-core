@@ -51,7 +51,6 @@ import org.codehaus.groovy.ast.expr.PostfixExpression;
 import org.codehaus.groovy.ast.expr.PrefixExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
-import org.codehaus.groovy.ast.expr.RegexExpression;
 import org.codehaus.groovy.ast.expr.SpreadExpression;
 import org.codehaus.groovy.ast.expr.SpreadMapExpression;
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
@@ -633,21 +632,6 @@ public class LineNumberTransform implements ASTTransformation {
                 expression.setLastLineNumber(lineNumbers[expression.getLastLineNumber() - 1]);
             }
             super.visitFieldExpression(expression);
-        }
-        @Override
-        public void visitRegexExpression(RegexExpression expression) {
-            // LOG.debug "Transforming expression '${expression}':"
-
-            if (expression.getLineNumber() >= 0 && expression.getLineNumber() < lineNumbers.length) {
-                // LOG.debug "   start from ${expression.lineNumber} to ${lineNumbers[expression.lineNumber - 1]}"
-                expression.setLineNumber(lineNumbers[expression.getLineNumber() - 1]);
-            }
-
-            if (expression.getLastLineNumber() > 0 && expression.getLastLineNumber() < lineNumbers.length) {
-                // LOG.debug "   end from ${expression.lastLineNumber} to ${lineNumbers[expression.lastLineNumber - 1]}"
-                expression.setLastLineNumber(lineNumbers[expression.getLastLineNumber() - 1]);
-            }
-            super.visitRegexExpression(expression);
         }
         @Override
         public void visitGStringExpression(GStringExpression expression) {
