@@ -4,14 +4,6 @@ import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 
 class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
 
-	void testDependencyInjectionHappensOnInstancesCreatedByAddToMethods() {
-		def storeClass = ga.getDomainClass('Store')
-		def store = storeClass.newInstance()
-		store.addToWidgets(widgetName: 'Some Widget')
-		def widgets = store.widgets as List
-		assertNotNull 'the someService property in the Widget was null, but should not have been', widgets[0].someService
-	}
-
     void testHandlingGstrings() {
         // GRAILS-5499
 
@@ -179,18 +171,6 @@ class Tag {
     Set bookmarks = new HashSet()
     static hasMany = [bookmarks:Bookmark]
 }
-@grails.persistence.Entity
-class Store {
-   static hasMany = [widgets: Widget]
-}
-
-@grails.persistence.Entity
-class Widget {
-    def someService
-    String widgetName
-}
-
-class SomeService {}
 '''
         )
     }

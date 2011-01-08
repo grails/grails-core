@@ -83,14 +83,24 @@ class DomainClassGrailsPlugin {
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
             metaClass.constructor = { ->
-				getDomainInstance domainClass, ctx
+                if (ctx.containsBean(domainClass.fullName)) {
+                    ctx.getBean(domainClass.fullName)
+                }
+                else {
+                    BeanUtils.instantiateClass(domainClass.clazz)
+                }
             }
             metaClass.static.create = { ->
-				getDomainInstance domainClass, ctx
+                if (ctx.containsBean(domainClass.fullName)) {
+                    ctx.getBean(domainClass.fullName)
+                }
+                else {
+                    BeanUtils.instantiateClass(domainClass.clazz)
+                }
             }
 
             addValidationMethods(application, domainClass, ctx)
-            addRelationshipManagementMethods(domainClass, ctx)
+            addRelationshipManagementMethods(domainClass)
         }
     }
 
@@ -161,17 +171,7 @@ class DomainClassGrailsPlugin {
         metaClass.getConstraints = {-> domainClass.constrainedProperties }
     }
 
-	private static getDomainInstance(domainClass, ctx) {
-		def obj
-		if (ctx.containsBean(domainClass.fullName)) {
-			obj = ctx.getBean(domainClass.fullName)
-		}
-		else {
-			obj = BeanUtils.instantiateClass(domainClass.clazz)
-		}
-		obj
-	}
-    private static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
+    private static addRelationshipManagementMethods(GrailsDomainClass dc) {
         def metaClass = dc.metaClass
         for (p in dc.persistantProperties) {
             def prop = p
@@ -222,7 +222,7 @@ class DomainClassGrailsPlugin {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
                         }
                         if (arg instanceof Map) {
-							obj = getDomainInstance(otherDomainClass, ctx)
+                            obj = otherDomainClass.newInstance()
                             obj.properties = arg
                             delegate[prop.name].add(obj)
                         }
