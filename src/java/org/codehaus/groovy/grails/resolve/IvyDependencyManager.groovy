@@ -259,7 +259,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				}
 
 				// dependencies needed for compilation
-				"${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.7.5") {
+				"${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.8.0-beta-3") {
 					excludes 'jline'
 				}
 

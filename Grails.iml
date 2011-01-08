@@ -143,7 +143,7 @@
     <orderEntry type="module-library">
       <library name="Groovy">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.7.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/groovy-all-1.8.0-beta-3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
