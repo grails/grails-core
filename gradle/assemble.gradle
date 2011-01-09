@@ -205,7 +205,7 @@ task coreJar(type: Jar, description: 'Package up core JAR containing the central
                 "**/groovy/grails/aop/framework/**", "**/groovy/grails/beans/factory/**", "**/groovy/grails/commons/**",
                 "**/groovy/grails/context/**", "**/groovy/grails/compiler/**", "**/groovy/grails/orm/support/**",
                 "**/groovy/grails/exceptions/**", "**/groovy/grails/support/**", "**/groovy/grails/test/**",
-                "**/groovy/grails/validation/**", "**/groovy/grails/plugins/**"
+                "**/groovy/grails/validation/**", "**/groovy/grails/plugins/**", "org/codehaus/groovy/transform/powerassert/**"
         exclude "grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*",
                 "grails/util/Metadata*", "grails/util/BuildScope*", "grails/util/GrailsMain*", "**/groovy/grails/commons/spring/**",
                 "**/groovy/grails/plugins/orm/hibernate**", "**/groovy/grails/plugins/web/**", "**/groovy/grails/plugins/converters/**",
