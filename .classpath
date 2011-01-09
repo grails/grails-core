@@ -28,7 +28,7 @@
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/ehcache-core-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ejb3-persistence-1.0.2.GA.jar"/>
-	<classpathentry kind="lib" path="lib/gant_groovy1.7-1.9.2.jar"/>
+	<classpathentry kind="lib" path="lib/gant_groovy1.8-1.9.4-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/gpars-0.9.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.8.0-beta-3.jar"/>
 	<classpathentry kind="lib" path="lib/h2-1.2.144.jar"/>

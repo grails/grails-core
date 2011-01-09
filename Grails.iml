@@ -80,7 +80,7 @@
     <orderEntry type="module-library" exported="">
       <library name="Gant">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/gant_groovy1.7-1.9.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/gant_groovy1.8-1.9.4-SNAPSHOT.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
