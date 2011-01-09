@@ -26,7 +26,7 @@ includeTargets << grailsScript("_GrailsInit")
 
 target ('default': "Installs the artifact and scaffolding templates") {
     depends(checkVersion, parseArguments)
-
+    event 'InstallTemplatesStart', [ 'Installing Templates...' ]
     targetDir = "${basedir}/src/templates"
     overwrite = false
 
@@ -46,4 +46,5 @@ target ('default': "Installs the artifact and scaffolding templates") {
     copyGrailsResource("${targetDir}/war/web.xml", grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"), overwrite)
 
     event("StatusUpdate", [ "Templates installed successfully"])
+    event 'InstallTemplatesEnd', [ 'Finished Installing Templates.' ]
 }
