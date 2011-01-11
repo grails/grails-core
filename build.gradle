@@ -23,7 +23,7 @@ configurations {
 dependencies {
     lib = "$projectDir/lib"
     groovy files(fileTree(dir: lib as File, includes: ['groovy-all-*.jar']))
-    compile files(fileTree(dir: lib as File, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar', 'groovy-all-1.8.0-beta-3.jar']), "${System.getenv('JAVA_HOME')}/lib/tools.jar")
+    compile files(fileTree(dir: lib as File, includes: ['*.jar'], excludes: ['jsp-api-2.1.jar', 'groovy-all-1.8.0-beta-4-SNAPSHOT.jar']), "${System.getenv('JAVA_HOME')}/lib/tools.jar")
     jsp21 files("$lib/jsp-api-2.1.jar")
 }
 
