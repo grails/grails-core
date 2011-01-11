@@ -73,11 +73,6 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
                                 ". The former will take precedence.");
                         tag2libMap.put(tagName, taglibClass);
                     }
-                    else {
-                        throw new GrailsConfigurationException("Cannot configure tag library [" +
-                                taglibClass.getName() + "]. Library [" + current.getName() +
-                                "] already contains a tag called [" + tagName + "]");
-                    }
                 }
             }
         }
