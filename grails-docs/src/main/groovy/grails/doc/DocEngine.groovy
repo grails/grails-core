@@ -52,8 +52,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static ALIAS = [:]
 
     private basedir
-    private macroFilter
-    private macroLoader
+    private customMacros = []
 
     Properties engineProperties = new Properties()
 
@@ -127,7 +126,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     boolean showCreate() { false }
 
     void addMacro(macro) {
-        macroLoader.add(macroFilter.macroRepository, macro)
+        customMacros << macro
     }
 
     protected void init() {
@@ -142,7 +141,6 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
             fp = new FilterPipe(initialContext)
 
             def filters = [ParamFilter,
-                           MacroFilter,
                            TextileLinkFilter,
                            HeaderFilter,
                            BlockQuoteFilter,
@@ -159,6 +157,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                            MarkFilter,
                            KeyFilter,
                            TypographyFilter,
+                           MacroFilter,
                            EscapeFilter]
 
             for (f in filters) {
@@ -166,15 +165,17 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                 fp.addFilter(filter)
 
                 if (filter instanceof MacroFilter) {
-                    // Save the filter and loader so that we can add macros
-                    // after engine construction.
-                    macroFilter = filter
-                    macroLoader = new MacroLoader()
+                    def macroLoader = new MacroLoader()
 
                     // Add the macros provided by Grails.
                     def repository = filter.macroRepository
                     macroLoader.add(repository, new WarningMacro())
                     macroLoader.add(repository, new NoteMacro())
+
+                    // Add custom macros
+                    for (m in customMacros) {
+                        macroLoader.add(repository, m)
+                    }
                 }
             }
             fp.init()
