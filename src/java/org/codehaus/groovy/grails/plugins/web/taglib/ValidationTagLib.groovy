@@ -158,7 +158,7 @@ class ValidationTagLib {
      * Checks if the request has errors either for a field or global errors.
      *
      * @attr bean REQUIRED The bean to check for errors
-     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
     def hasErrors = { attrs, body ->
@@ -216,7 +216,7 @@ class ValidationTagLib {
      * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported).
      *
      * @attr bean REQUIRED The bean to check for errors
-     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
     def renderErrors = { attrs, body ->
