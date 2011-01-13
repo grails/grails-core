@@ -96,4 +96,40 @@ class TestUrlMappings {
         def template = '<g:form url="[controller:\'test\',action:\'index\', id:\'MacBook\']">${name}</g:form>'
         assertOutputEquals('<form action="/products/MacBook" method="post" >MacBook</form>', template, [name:"MacBook"])
     }
+	
+	void testCreateLinkWithCollectionParamsGRAILS7096() {
+		def template = '''<g:createLink controller="controller" action="action" params="[test:['1','2']]"/>'''
+		
+		assertOutputEquals(
+			"/controller/action?test=1&test=2",
+			template,
+			[:]
+		)
+		
+		template = '''<g:createLink controller="controller" action="action" params="[test:['2','3']]"/>'''
+		
+		assertOutputEquals(
+			"/controller/action?test=2&test=3",
+			template,
+			[:]
+		)
+	}
+
+	void testCreateLinkWithObjectArrayParams() {
+		def template = '''<g:createLink controller="controller" action="action" params="[test:['1','2'] as Object[]]"/>'''
+		
+		assertOutputEquals(
+			"/controller/action?test=1&test=2",
+			template,
+			[:]
+		)
+		
+		template = '''<g:createLink controller="controller" action="action" params="[test:['2','3'] as Object[]]"/>'''
+		
+		assertOutputEquals(
+			"/controller/action?test=2&test=3",
+			template,
+			[:]
+		)
+	}
 }

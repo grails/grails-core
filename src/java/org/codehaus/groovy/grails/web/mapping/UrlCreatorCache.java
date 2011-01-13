@@ -146,10 +146,10 @@ public class UrlCreatorCache {
 						value = String.valueOf(entry.getValue());
 					}
 					else if (entry.getValue() instanceof Collection) {
-						StringUtils.join((Collection)entry.getValue(), ',');
+						value = StringUtils.join((Collection)entry.getValue(), ',');
 					}
 					else if (entry.getValue() instanceof Object[]) {
-						StringUtils.join((Object[])entry.getValue(), ',');
+						value = StringUtils.join((Object[])entry.getValue(), ',');
 					}
 					else {
 						value = String.valueOf(entry.getValue());
