@@ -241,7 +241,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
                 for(mrid in [ModuleRevisionId.newInstance("org.xhtmlrenderer","core-renderer","R8"),
                              ModuleRevisionId.newInstance("com.lowagie","itext","2.0.8"),
-                             ModuleRevisionId.newInstance("radeox","radeox","1.0-b2")]) {
+                             ModuleRevisionId.newInstance("org.grails","grails-radeox","1.0-b4")]) {
                    def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"docs")
                    addDependency mrid
                    configureDependencyDescriptor(dependencyDescriptor, "docs", null, false)
