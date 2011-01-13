@@ -141,6 +141,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
             fp = new FilterPipe(initialContext)
 
             def filters = [ParamFilter,
+                           MacroFilter,
                            TextileLinkFilter,
                            HeaderFilter,
                            BlockQuoteFilter,
@@ -157,7 +158,6 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                            MarkFilter,
                            KeyFilter,
                            TypographyFilter,
-                           MacroFilter,
                            EscapeFilter]
 
             for (f in filters) {
