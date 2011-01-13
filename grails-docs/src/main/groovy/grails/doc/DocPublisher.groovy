@@ -422,6 +422,8 @@ class DocPublisher {
     }
 
     private String injectPath(String source, String path) {
+        if (!source) return source
+
         def templateEngine = new groovy.text.SimpleTemplateEngine()
         def out = new StringWriter()
         templateEngine.createTemplate(source).make(path: path).writeTo(out)
