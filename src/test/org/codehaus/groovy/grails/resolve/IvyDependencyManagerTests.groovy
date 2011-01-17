@@ -580,8 +580,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             inherits('test') {
                 excludes 'junit'
             }
-            runtime("opensymphony:oscache:2.4.1") {
-                excludes 'jms'
+            runtime("commons-lang:commons-lang:2.4") {
             }
         }
 
@@ -599,8 +598,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         // test simple exclude
         manager.parseDependencies {
             inherits 'test'
-            runtime("opensymphony:oscache:2.4.1") {
-                excludes 'jms'
+            runtime("commons-lang:commons-lang:2.4") {
             }
         }
 
@@ -684,8 +682,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
         assertEquals 13, manager.listDependencies("build").size()
-        assertEquals 21, manager.listDependencies("runtime").size()
-        assertEquals 22, manager.listDependencies("test").size()
+        assertEquals 20, manager.listDependencies("runtime").size()
+        assertEquals 21, manager.listDependencies("test").size()
     }
 
     void testParseDependencyDefinition() {
@@ -762,7 +760,6 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                     "javax.transaction:jta:1.1",
                     "log4j:log4j:1.2.16",
                     "net.sf.ehcache:ehcache:1.6.1",
-                    "opensymphony:oscache:2.4.1",
                     "opensymphony:sitemesh:2.4",
                     "org.slf4j:jcl-over-slf4j:1.5.6",
                     "org.slf4j:slf4j-api:1.5.6",
