@@ -11,6 +11,32 @@ import grails.util.GrailsWebUtil
 
 class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
+	void testCommentAtEndOfTemplate() {
+		def webRequest = GrailsWebUtil.bindMockWebRequest()
+		def request = webRequest.request
+		request.addParameter("showSource", "true")
+
+		System.setProperty("grails.env", "development")
+        assert GrailsUtil.isDevelopmentEnv()
+
+		def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+		gpte.afterPropertiesSet()
+
+		// It is important that the template ends with the comment. Whitespace or anything else after
+		// the comment will not trigger the problem.  See GRAILS-1737
+		def pageSource = "<html><body></body></html><%-- should not be in the output --%>"
+
+		def t = gpte.createTemplate(pageSource, "comment_test")
+		def w = t.make()
+
+		def sw = new StringWriter()
+		def pw = new PrintWriter(sw)
+
+		w.writeTo(pw)
+
+		assertTrue(sw.toString().indexOf("should not be in the output") == -1)
+	}
+
     void testShowSourceParameter() {
         try {
             def webRequest = GrailsWebUtil.bindMockWebRequest()
