@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -201,4 +202,17 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
         }
     }
+	
+	void testSelectTagWithNoNameAttribute() {
+		final StringWriter sw = new StringWriter()
+		final PrintWriter pw = new PrintWriter(sw)
+
+		withTag("select", pw) { tag ->
+			assertNotNull tag
+			def message = shouldFail(GrailsTagException) {
+				tag([from: [1,2,3]])
+			}
+			assertEquals 'Tag [select] is missing required attribute [name]', message
+		}
+	}
 }

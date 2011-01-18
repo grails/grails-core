@@ -668,6 +668,9 @@ class FormTagLib {
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
      */
     def select = { attrs ->
+        if (!attrs.name) {
+            throwTagError("Tag [select] is missing required attribute [name]")
+        }
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
         def locale = RCU.getLocale(request)
         def writer = out
