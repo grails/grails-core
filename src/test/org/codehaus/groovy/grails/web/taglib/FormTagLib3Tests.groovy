@@ -202,7 +202,20 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
         }
     }
-	
+
+	void testSelectTagWithNoFromAttribute() {
+		final StringWriter sw = new StringWriter()
+		final PrintWriter pw = new PrintWriter(sw)
+
+		withTag("select", pw) { tag ->
+			assertNotNull tag
+			def message = shouldFail(GrailsTagException) {
+				tag([name: 'mySelectTag'])
+			}
+			assertEquals 'Tag [select] is missing required attribute [from]', message
+		}
+	}
+
 	void testSelectTagWithNoNameAttribute() {
 		final StringWriter sw = new StringWriter()
 		final PrintWriter pw = new PrintWriter(sw)

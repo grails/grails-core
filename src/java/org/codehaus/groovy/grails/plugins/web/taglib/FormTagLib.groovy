@@ -671,6 +671,9 @@ class FormTagLib {
         if (!attrs.name) {
             throwTagError("Tag [select] is missing required attribute [name]")
         }
+        if (!attrs.from) {
+        	throwTagError("Tag [select] is missing required attribute [from]")
+        }
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
         def locale = RCU.getLocale(request)
         def writer = out
