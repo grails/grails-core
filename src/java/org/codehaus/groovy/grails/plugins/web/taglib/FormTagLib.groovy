@@ -655,9 +655,9 @@ class FormTagLib {
      * &lt;g:select name="user.age" from="${18..65}" value="${age}" /&gt;<br/>
      * &lt;g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" /&gt;<br/>
      * 
-     * @attr name the select name
+     * @attr name REQUIRED the select name
      * @attr id the DOM element id - uses the name attribute if not specified
-     * @attr from The list or range to select from
+     * @attr from REQUIRED The list or range to select from
      * @attr keys A list of values to be used for the value attribute of each "option" element.
      * @attr optionKey By default value attribute of each &lt;option&gt; element will be the result of a "toString()" call on each element. Setting this allows the value to be a bean property of each element in the list.
      * @attr optionValue By default the body of each &lt;option&gt; element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be a bean property of each element in the list.
