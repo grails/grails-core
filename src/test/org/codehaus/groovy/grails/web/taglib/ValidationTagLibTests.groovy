@@ -286,7 +286,8 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue b.validate()
         assertFalse b.hasErrors()
 
-        assertOutputEquals("<ul></ul>", template, [book:b])
+		// should render nothing, not an empty ul - GRAILS-2709
+        assertOutputEquals("", template, [book:b])
     }
 
     void testRenderErrorsTagAsListWithNoBeanAttribute() {
