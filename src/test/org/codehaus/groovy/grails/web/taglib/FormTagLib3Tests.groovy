@@ -203,6 +203,18 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         }
     }
 
+	void testSelectTagWithEmptyListFromAttribute() {
+		final StringWriter sw = new StringWriter()
+		final PrintWriter pw = new PrintWriter(sw)
+
+		withTag("select", pw) { tag ->
+			assertNotNull tag
+			tag([name: 'mySelectTag', from: []])
+		}
+
+		assertTrue sw.toString().startsWith('<select name="mySelectTag" id="mySelectTag" >')
+	}
+
 	void testSelectTagWithNoFromAttribute() {
 		final StringWriter sw = new StringWriter()
 		final PrintWriter pw = new PrintWriter(sw)

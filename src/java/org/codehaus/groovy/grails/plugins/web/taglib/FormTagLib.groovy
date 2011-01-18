@@ -671,7 +671,7 @@ class FormTagLib {
         if (!attrs.name) {
             throwTagError("Tag [select] is missing required attribute [name]")
         }
-        if (!attrs.from) {
+        if (!attrs.containsKey('from')) {
         	throwTagError("Tag [select] is missing required attribute [from]")
         }
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
