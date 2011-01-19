@@ -71,18 +71,27 @@ public class GrailsViewResolver extends InternalResourceViewResolver
      * Constructor.
      */
     public GrailsViewResolver() {
-        setCache(!GrailsUtil.isDevelopmentEnv());
+        setCache(false);
     }
 
     @Override
     protected View loadView(String viewName, Locale locale) throws Exception {
         Assert.notNull(templateEngine, "Property [templateEngine] cannot be null");
 
-        if (VIEW_CACHE.containsKey(viewName) && !templateEngine.isReloadEnabled()) {
-            return VIEW_CACHE.get(viewName);
+        if(GrailsUtil.isDevelopmentEnv()) {
+        	return createGrailsView(viewName); 
+        } else {
+        	View view=VIEW_CACHE.get(viewName);
+        	if(view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
+        		view = createGrailsView(viewName);
+        	}
+        	VIEW_CACHE.put(viewName, view);
+        	return view;
         }
+    }
 
-        // try GSP if res is null
+	private View createGrailsView(String viewName) throws Exception {
+		// try GSP if res is null
 
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
 
@@ -117,16 +126,14 @@ public class GrailsViewResolver extends InternalResourceViewResolver
 
         if (res.exists()) {
             final View view = createGroovyPageView(webRequest, gspView);
-            VIEW_CACHE.put(viewName, view);
             return view;
         }
 
         AbstractUrlBasedView view = buildView(viewName);
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
-        VIEW_CACHE.put(viewName, view);
-        return view;
-    }
+		return view;
+	}
 
     private View createGroovyPageView(GrailsWebRequest webRequest, String gspView) {
         if (LOG.isDebugEnabled()) {
@@ -175,8 +182,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver
     private ResourceLoader establishResourceLoader(GrailsApplication application) {
         ApplicationContext ctx = getApplicationContext();
 
-        if (ctx.containsBean(GROOVY_PAGE_RESOURCE_LOADER) && application != null &&
-                !application.isWarDeployed()) {
+        if (application != null && !application.isWarDeployed() && ctx.containsBean(GROOVY_PAGE_RESOURCE_LOADER)) {
             return (ResourceLoader)ctx.getBean(GROOVY_PAGE_RESOURCE_LOADER);
         }
         return resourceLoader;

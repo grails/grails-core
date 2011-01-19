@@ -58,6 +58,8 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
     public static final String EXCEPTION_MODEL_KEY = "exception";
     private GroovyPagesTemplateEngine templateEngine;
+    private long createTimestamp = System.currentTimeMillis();
+    private static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
 
     /**
      * Delegates to renderMergedOutputModel(..)
@@ -196,4 +198,8 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
     }
+
+	public boolean isExpired() {
+		return System.currentTimeMillis() - createTimestamp > LASTMODIFIED_CHECK_INTERVAL;
+	}
 }
