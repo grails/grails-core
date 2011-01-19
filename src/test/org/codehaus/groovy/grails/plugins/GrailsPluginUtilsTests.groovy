@@ -64,13 +64,11 @@ grails {
     }
 
     void testIsVersionGreaterThanWithSnapshots() {
-        println "testIsVersionGreaterThanWithSnapshots - start"
         assertVersionIsGreaterThan "0.5.5-SNAPSHOT", "0.5.5.1"
         assertVersionIsGreaterThan "0.5.5-SNAPSHOT", "0.5.5"
         
         assertVersionIsNotGreaterThan "0.5.5.1", "0.5.5-SNAPSHOT"
         assertVersionIsNotGreaterThan "0.5.5", "0.5.5-SNAPSHOT"
-        println "testIsVersionGreaterThanWithSnapshots - stop"
     }
     
     protected assertVersionIsGreaterThan(lower, higher) {
