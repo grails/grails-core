@@ -24,6 +24,8 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
 
     private PrintWriter destination;
     private DestinationFactory factory;
+    private boolean blockFlush=true;
+    private boolean blockClose=true;
 
     /**
      * Factory to lazily instantiate the destination.
@@ -84,7 +86,9 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
 
     @Override
     public void close() {
-        getDestination().close();
+    	if(!isBlockClose()) {
+    		getDestination().close();
+    	}
     }
 
     @Override
@@ -214,7 +218,9 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
 
     @Override
     public void flush() {
-        getDestination().flush();
+    	if(!isBlockFlush()) {
+    		getDestination().flush();
+    	}
     }
 
     @Override
@@ -256,4 +262,30 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
             throw new UnsupportedOperationException();
         }
     }
+
+	public boolean isBlockFlush() {
+		return blockFlush;
+	}
+
+	public void setBlockFlush(boolean blockFlush) {
+		this.blockFlush = blockFlush;
+	}
+
+	public boolean isBlockClose() {
+		return blockClose;
+	}
+
+	public void setBlockClose(boolean blockClose) {
+		this.blockClose = blockClose;
+	}
+	
+	public void unBlockFlushAndClose() {
+		this.blockClose = false;
+		this.blockFlush = false;
+	}
+
+	public void blockFlushAndClose() {
+		this.blockClose = true;
+		this.blockFlush = true;
+	}
 }
