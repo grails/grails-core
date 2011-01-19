@@ -98,13 +98,10 @@ class PluginInstallEngine {
 
         IvyDependencyManager dependencyManager = settings.dependencyManager
 
-        List pluginDeps = dependencyManager.pluginDependencyDescriptors.collect { DependencyDescriptor dd ->
-            dd.getDependencyRevisionId()
-        }
-        List pluginsToInstall = findMissingOrUpgradePlugins(pluginDeps)
+        List<ModuleRevisionId> pluginsToInstall = findMissingOrUpgradePlugins(dependencyManager.pluginDependencyDescriptors)
         installPlugins(pluginsToInstall)
 
-        checkPluginsToUninstall(pluginDeps)
+        checkPluginsToUninstall(dependencyManager.pluginDependencyDescriptors.collect { it.dependencyRevisionId })
     }
 
     /**
@@ -590,9 +587,14 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    protected List<ModuleRevisionId> findMissingOrUpgradePlugins(List pluginDeps) {
+    protected List<ModuleRevisionId> findMissingOrUpgradePlugins(Collection<EnhancedDefaultDependencyDescriptor> descriptors) {
         def pluginsToInstall = []
-        for (p in pluginDeps) {
+        for (descriptor in descriptors) {
+            if (!descriptor.exportedToApplication) {
+                continue
+            }
+            
+            def p = descriptor.dependencyRevisionId
             def name = p.name
             def version = p.revision
 			
