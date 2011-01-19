@@ -345,6 +345,9 @@ class GrailsPluginUtils {
 }
 
 class VersionComparator implements Comparator {
+    
+    static private final SNAPSHOT_SUFFIXES = ["-SNAPSHOT", ".BUILD-SNAPSHOT"].asImmutable()
+    
     int compare(o1, o2) {
         int result = 0
         if (o1 == '*') {
@@ -356,7 +359,7 @@ class VersionComparator implements Comparator {
         else {
             def nums1
             try {
-                def tokens = o1.split(/\./)
+                def tokens = deSnapshot(o1).split(/\./)
                 tokens = tokens.findAll { it.trim() ==~ /\d+/ }
                 nums1 = tokens*.toInteger()
             }
@@ -365,7 +368,7 @@ class VersionComparator implements Comparator {
             }
             def nums2
             try {
-                def tokens = o2.split(/\./)
+                def tokens = deSnapshot(o2).split(/\./)
                 tokens = tokens.findAll { it.trim() ==~ /\d+/ }
                 nums2 = tokens*.toInteger()
             }
@@ -391,8 +394,38 @@ class VersionComparator implements Comparator {
                 }
             }
         }
+        
+        if (result == 0) {
+            // Versions are equal, but one may be a snapshot.
+            // A snapshot version is considered less than a non snapshot version
+            def o1IsSnapshot = isSnapshot(o1)
+            def o2IsSnapshot = isSnapshot(o2)
+
+            if (o1IsSnapshot && !o2IsSnapshot) {
+                result = -1
+            } else if (!o1IsSnapshot && o2IsSnapshot) {
+                result = 1
+            }
+        }
+
         result
     }
 
     boolean equals(obj) { false }
+
+    /**
+     * Removes any suffixes that indicate that the version is a kind of snapshot
+     */
+    protected deSnapshot(String version) {
+        def suffix = SNAPSHOT_SUFFIXES.find { version.endsWith(it) }
+        if (suffix) {
+            version[0..-(suffix.size() + 1)]
+        } else {
+            version
+        }
+    }
+    
+    protected isSnapshot(String version) {
+        SNAPSHOT_SUFFIXES.any { version.endsWith(it) }
+    }
 }
