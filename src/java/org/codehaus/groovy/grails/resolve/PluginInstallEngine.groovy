@@ -613,7 +613,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 				else {
 					def dirName = pluginLoc.file.canonicalFile.name
 					PluginBuildSettings settings = pluginSettings
-					println "plugin - $name : existing: $pluginInfo.version - config: $version - greater: ${GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version)}"
 					if (GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version) &&
 						!settings.isInlinePluginLocation(pluginLoc) &&
 						!pluginsToInstall.contains(p)) {
