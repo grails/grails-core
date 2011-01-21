@@ -159,6 +159,10 @@ target (war: "The implementation target") {
                 include(name:"**/**")
                 exclude(name:"**/*.java")
             }
+            fileset(dir:"${grailsSettings.sourceDir}/groovy") {
+                include(name:"**/**")
+                exclude(name:"**/*.groovy")
+            }
             fileset(dir:"${resourcesDirPath}", includes:"log4j.properties")
         }
 
