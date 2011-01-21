@@ -468,7 +468,8 @@ private def warPluginForPluginInfo(GrailsPluginInfo info) {
     def confDir = new File("${pluginBase.absolutePath}/grails-app/conf")
     def hibDir = new File("${pluginBase.absolutePath}/grails-app/conf/hibernate")
     def javaDir = new File("${pluginBase.absolutePath}/src/java")
-    if (confDir.exists() || hibDir.exists() || javaDir.exists()) {
+    def groovyDir = new File("${pluginBase.absolutePath}/src/groovy")
+    if (confDir.exists() || hibDir.exists() || javaDir.exists() || groovyDir.exists()) {
         ant.copy(todir: targetClassesDir, failonerror: false, preservelastmodified:true) {
             if (confDir.exists()) {
                 fileset(dir: confDir) {
@@ -487,6 +488,13 @@ private def warPluginForPluginInfo(GrailsPluginInfo info) {
                 fileset(dir: javaDir) {
                     include(name: "**/**")
                     exclude(name: "**/*.java")
+                }
+            }
+
+            if (groovyDir.exists()) {
+                fileset(dir: groovyDir) {
+                    include(name: "**/**")
+                    exclude(name: "**/*.groovy")
                 }
             }
         }
