@@ -234,6 +234,51 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             addDependencyDescriptor dd
         }
     }
+    
+    protected addMetadataPluginDependencies(Map<String, String> plugins) {
+        for (plugin in plugins) {
+            addMetadataPluginDependency(plugin.key, plugin.value)
+        }
+    }
+    
+    protected addMetadataPluginDependency(String name, String version) {
+        if (!pluginDependencyNames.contains(entry.key)) {
+            def scope = "runtime"
+            def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version)
+            def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
+            def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
+            dd.addDependencyArtifact(scope, artifact)
+            metadataRegisteredPluginNames << name
+            configureDependencyDescriptor(dd, scope, null, true)
+            pluginDependencyDescriptors << dd
+        }
+    }
+    
+    protected addDependencies(DependencyDescriptor[] dependencyDescriptors) {
+        for (dependencyDescriptor in dependencyDescriptors) {
+            addDependency(dependencyDescriptor)
+        }
+    }
+    
+    protected addDependency(DependencyDescriptor dependencyDescriptor) {
+        ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
+        ModuleId moduleId = moduleRevisionId.getModuleId()
+
+        String groupId = moduleRevisionId.getOrganisation()
+        String artifactId = moduleRevisionId.getName()
+        String version = moduleRevisionId.getRevision()
+        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
+
+        if (!hasDependency(moduleId)) {
+            def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
+            for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
+                ModuleId excludedModule = excludeRule.getId().getModuleId()
+                enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
+            }
+            configureDependencyDescriptor(enhancedDependencyDescriptor, scope)
+            addDependencyDescriptor enhancedDependencyDescriptor
+        }
+    }
 
     boolean isPluginConfiguredByApplication(String name) {
         (configuredPlugins.contains(name) || configuredPlugins.contains(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)))
@@ -411,50 +456,24 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 			}
 
             doParseDependencies(definition)
+            
+            // The dependency config can use the pom(Boolean) method to declare
+            // that this project has a POM and it has the dependencies, which means
+            // we now have to inspect it for the dependencies to use.
+            if (readPom && buildSettings) {
+                List<DependencyDescriptor> dependencies = readDependenciesFromPOM()
+                if (dependencies != null) {
+                    addDependencies(dependencies as DependencyDescriptor[])
+                }
+            }
 
-			if (readPom && buildSettings) {
-				List dependencies = readDependenciesFromPOM()
-
-				if (dependencies != null) {
-					for (DependencyDescriptor dependencyDescriptor in dependencies) {
-						ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
-						ModuleId moduleId = moduleRevisionId.getModuleId()
-
-						String groupId = moduleRevisionId.getOrganisation()
-						String artifactId = moduleRevisionId.getName()
-						String version = moduleRevisionId.getRevision()
-						String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
-
-						if (!hasDependency(moduleId)) {
-							def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
-							for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
-								ModuleId excludedModule = excludeRule.getId().getModuleId()
-								enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
-							}
-							configureDependencyDescriptor(enhancedDependencyDescriptor, scope)
-							addDependencyDescriptor enhancedDependencyDescriptor
-						}
-					}
-				}
-			}
-
-			def installedPlugins = metadata?.getInstalledPlugins()
-			if (installedPlugins) {
-				for (entry in installedPlugins) {
-					if (!pluginDependencyNames.contains(entry.key)) {
-						def name = entry.key
-						def scope = "runtime"
-						def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, entry.value)
-						def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
-						def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
-						dd.addDependencyArtifact(scope, artifact)
-						metadataRegisteredPluginNames << name
-						configureDependencyDescriptor(dd, scope, null, true)
-						pluginDependencyDescriptors << dd
-					}
-				}
-			}
-		}
+            // Legacy support for the old mechanism of plugin dependencies being
+            // declared in the application.properties file.
+            def metadataDeclaredPlugins = metadata?.getInstalledPlugins()
+            if (metadataDeclaredPlugins) {
+                addMetadataPluginDependencies(metadataDeclaredPlugins)
+            }
+        }
     }
 
     List readDependenciesFromPOM() {
