@@ -44,8 +44,9 @@ class IvyDomainSpecificLanguageEvaluator {
     String currentPluginBeingConfigured = null
     @Delegate IvyDependencyManager delegate
 
-    IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate) {
+    IvyDomainSpecificLanguageEvaluator(IvyDependencyManager delegate, String currentPluginBeingConfigured = null) {
         this.delegate = delegate
+        this.currentPluginBeingConfigured = currentPluginBeingConfigured
     }
 
     void useOrigin(boolean b) {

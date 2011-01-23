@@ -410,11 +410,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				this.moduleDescriptor = createModuleDescriptor()
 			}
 
-			def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
-			definition.delegate = evaluator
-			definition.resolveStrategy = Closure.DELEGATE_FIRST
-			definition()
-			evaluator = null
+            doParseDependencies(definition)
 
 			if (readPom && buildSettings) {
 				List dependencies = readDependenciesFromPOM()
@@ -486,11 +482,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
 			}
 
-			def evaluator = new IvyDomainSpecificLanguageEvaluator(this)
-			evaluator.currentPluginBeingConfigured = pluginName
-			definition.delegate = evaluator
-			definition.resolveStrategy = Closure.DELEGATE_FIRST
-			definition()
+            doParseDependencies(definition, pluginName)
 		}
     }
 
@@ -515,4 +507,16 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
     }
     
+    /**
+     * Evaluates the given DSL definition.
+     * 
+     * If pluginName is not null, all dependencies will record that they were defined by this plugin.
+     * 
+     * @see EnhancedDefaultDependencyDescriptor#plugin
+     */
+    protected doParseDependencies(Closure definition, String pluginName = null) {
+        definition.delegate = new IvyDomainSpecificLanguageEvaluator(this, pluginName)
+        definition.resolveStrategy = Closure.DELEGATE_FIRST
+        definition()
+    }
 }
