@@ -75,10 +75,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     boolean readPom = false
     boolean inheritsAll = false
     boolean resolveErrors = false
-	boolean defaultDependenciesProvided = false
-	boolean pluginsOnly = false
-	boolean inheritRepositories = true
-	
+    boolean defaultDependenciesProvided = false
+    boolean pluginsOnly = false
+    boolean inheritRepositories = true
+    
     /**
      * Creates a new IvyDependencyManager instance
      */
@@ -450,10 +450,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * Parses the Ivy DSL definition
      */
     void parseDependencies(Closure definition) {
-		if (definition && applicationName && applicationVersion) {
-			if (this.moduleDescriptor == null) {
-				this.moduleDescriptor = createModuleDescriptor()
-			}
+        if (definition && applicationName && applicationVersion) {
+            if (this.moduleDescriptor == null) {
+                this.moduleDescriptor = createModuleDescriptor()
+            }
 
             doParseDependencies(definition)
             
@@ -496,13 +496,13 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * @param definition the Ivy DSL definition
      */
     void parseDependencies(String pluginName,Closure definition) {
-		if (definition) {
-			if (moduleDescriptor == null) {
-				throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
-			}
+        if (definition) {
+            if (moduleDescriptor == null) {
+                throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
+            }
 
             doParseDependencies(definition, pluginName)
-		}
+        }
     }
 
     boolean getBooleanValue(dependency, String name) {
