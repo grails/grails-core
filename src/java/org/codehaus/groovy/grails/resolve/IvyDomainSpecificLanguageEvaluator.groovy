@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import grails.util.DslUtils
+
 import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.core.module.id.ArtifactId
@@ -455,7 +457,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
                         def mrid = ModuleRevisionId.newInstance(group, name, version)
 
-                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(args, 'transitive'), scope)
+                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(args, 'transitive', true), scope)
 
                         if (!pluginMode) {
                             addDependency mrid
@@ -464,7 +466,7 @@ class IvyDomainSpecificLanguageEvaluator {
                             def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
                             dependencyDescriptor.addDependencyArtifact(scope, artifact)
                         }
-                        dependencyDescriptor.exported = getBooleanValue(args, 'export')
+                        dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(args, 'export', true)
                         dependencyDescriptor.inherited = inherited || inheritsAll || currentPluginBeingConfigured
 
                         if (currentPluginBeingConfigured) {
@@ -500,7 +502,7 @@ class IvyDomainSpecificLanguageEvaluator {
                             mrid = ModuleRevisionId.newInstance(group, name, version, attrs)
                         }
 
-                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValue(dependency, 'transitive'), scope)
+                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(dependency, 'transitive', true), scope)
                         if (!pluginMode) {
                             addDependency mrid
                         }
@@ -516,7 +518,7 @@ class IvyDomainSpecificLanguageEvaluator {
                             dependencyDescriptor.addDependencyArtifact(scope, artifact)
                         }
 
-                        dependencyDescriptor.exported = getBooleanValue(dependency, 'export')
+                        dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
                         dependencyDescriptor.inherited = inherited || inheritsAll
                         if (currentPluginBeingConfigured) {
                             dependencyDescriptor.plugin = currentPluginBeingConfigured

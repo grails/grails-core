@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import grails.util.DslUtils
+
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
@@ -217,8 +219,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         // do nothing if the dependencies of the plugin are configured by the application
         if (isPluginConfiguredByApplication(pluginName)) return
         if (args?.group && args?.name && args?.version) {
-            def transitive = getBooleanValue(args, 'transitive')
-            def exported = getBooleanValue(args, 'export')
+            def transitive = DslUtils.getBooleanValueOrDefault(args, 'transitive', true)
+            def exported = DslUtils.getBooleanValueOrDefault(args, 'export', true)
             def scope = args.conf ?: 'runtime'
             def mrid = ModuleRevisionId.newInstance(args.group, args.name, args.version)
             def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, transitive, scope)
@@ -505,10 +507,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
     }
 
-    boolean getBooleanValue(dependency, String name) {
-        return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
-    }
-    
     /**
      * The plugin dependencies excluding non-exported transitive deps and
      * collapsed to the highest version of each dependency.
