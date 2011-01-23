@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve
+package org.codehaus.groovy.grails.resolve.dsl
 
 import grails.util.DslUtils
 
@@ -34,6 +34,11 @@ import org.apache.ivy.plugins.matcher.PatternMatcher
 import org.apache.ivy.plugins.matcher.ExactPatternMatcher
 
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
+
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.resolve.GrailsPluginsDirectoryResolver
+import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 
 class IvyDomainSpecificLanguageEvaluator {
 

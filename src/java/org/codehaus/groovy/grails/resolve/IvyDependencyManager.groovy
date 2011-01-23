@@ -52,6 +52,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
 import org.codehaus.groovy.grails.plugins.VersionComparator
 
+import org.codehaus.groovy.grails.resolve.dsl.IvyDomainSpecificLanguageEvaluator
+
 /**
  * Implementation that uses Apache Ivy under the hood.
  *
