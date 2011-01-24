@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-
 import org.codehaus.groovy.grails.resolve.GrailsPluginsDirectoryResolver
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
 
@@ -28,8 +26,8 @@ import org.apache.ivy.plugins.latest.LatestTimeStrategy
 
 class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     
-    RepositoriesConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
-        super(dependencyManager, currentPluginBeingConfigured, inherited)
+    RepositoriesConfigurer(DependencyConfigurationContext context) {
+        super(context)
     }
     
     void inherit(boolean b) {
@@ -217,7 +215,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
     
     private addToChainResolver(DependencyResolver resolver) {
-        if (currentPluginBeingConfigured && !dependencyManager.inheritRepositories) return 
+        if (context.currentPluginBeingConfigured && !dependencyManager.inheritRepositories) return 
         
         if (dependencyManager.transferListener !=null && (resolver instanceof RepositoryResolver)) {
             ((RepositoryResolver)resolver).repository.addTransferListener dependencyManager.transferListener

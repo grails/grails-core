@@ -14,12 +14,10 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-
 class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
-    PluginDependenciesConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
-        super(dependencyManager, currentPluginBeingConfigured, inherited, true)
+    PluginDependenciesConfigurer(DependencyConfigurationContext context) {
+        super(context, true)
     }
 
 }

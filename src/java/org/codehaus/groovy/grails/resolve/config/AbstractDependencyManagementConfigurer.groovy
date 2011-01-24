@@ -18,14 +18,13 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 abstract class AbstractDependencyManagementConfigurer {
     
-    final IvyDependencyManager dependencyManager
-    String currentPluginBeingConfigured
-    final boolean inherited
+    final DependencyConfigurationContext context
 
-    AbstractDependencyManagementConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited) {
-        this.dependencyManager = dependencyManager
-        this.currentPluginBeingConfigured = currentPluginBeingConfigured
-        this.inherited = inherited
+    AbstractDependencyManagementConfigurer(DependencyConfigurationContext context) {
+        this.context = context
     }
-    
+
+    IvyDependencyManager getDependencyManager() {
+        context.dependencyManager
+    }
 }

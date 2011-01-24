@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-
 import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.module.id.ArtifactId
 import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
@@ -25,8 +23,8 @@ import org.apache.ivy.plugins.matcher.ExactPatternMatcher
 
 class InheritanceConfigurer extends AbstractDependencyManagementConfigurer {
 
-    InheritanceConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
-        super(dependencyManager, currentPluginBeingConfigured, inherited)
+    InheritanceConfigurer(DependencyConfigurationContext context) {
+        super(context)
     }
 
     void excludes(Map exclude) {

@@ -15,20 +15,16 @@
 package org.codehaus.groovy.grails.resolve.config
 
 import grails.util.DslUtils
-
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
-
 import org.apache.ivy.core.module.id.ModuleRevisionId
-
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
     final boolean pluginMode
     
-    AbstractDependenciesConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false, boolean pluginMode = false) {
-        super(dependencyManager, currentPluginBeingConfigured, inherited)
+    AbstractDependenciesConfigurer(DependencyConfigurationContext context, boolean pluginMode = false) {
+        super(context)
         this.pluginMode = pluginMode
     }
     
@@ -68,7 +64,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                 if (m.matches()) {
 
                     String name = m[0][2]
-                    boolean isExcluded = currentPluginBeingConfigured ? dependencyManager.isExcludedFromPlugin(currentPluginBeingConfigured, name) : dependencyManager.isExcluded(name)
+                    boolean isExcluded = context.currentPluginBeingConfigured ? dependencyManager.isExcludedFromPlugin(context.currentPluginBeingConfigured, name) : dependencyManager.isExcluded(name)
                     if (!isExcluded) {
                         def group = m[0][1]
                         def version = m[0][3]
@@ -88,10 +84,10 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                             dependencyDescriptor.addDependencyArtifact(scope, artifact)
                         }
                         dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(args, 'export', true)
-                        dependencyDescriptor.inherited = inherited || dependencyManager.inheritsAll || currentPluginBeingConfigured
+                        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.currentPluginBeingConfigured
 
-                        if (currentPluginBeingConfigured) {
-                            dependencyDescriptor.plugin = currentPluginBeingConfigured
+                        if (context.currentPluginBeingConfigured) {
+                            dependencyDescriptor.plugin = context.currentPluginBeingConfigured
                         }
                         
                         dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
@@ -109,7 +105,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                 if (!group && pluginMode) group = "org.grails.plugins"
 
                 if (group && name && version) {
-                    boolean isExcluded = currentPluginBeingConfigured ? dependencyManager.isExcludedFromPlugin(currentPluginBeingConfigured, name) : dependencyManager.isExcluded(name)
+                    boolean isExcluded = context.currentPluginBeingConfigured ? dependencyManager.isExcludedFromPlugin(context.currentPluginBeingConfigured, name) : dependencyManager.isExcluded(name)
                     if (!isExcluded) {
                         def attrs = [:]
                         if(dependency.classifier) {
@@ -141,9 +137,9 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                         }
 
                         dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
-                        dependencyDescriptor.inherited = inherited || dependencyManager.inheritsAll
-                        if (currentPluginBeingConfigured) {
-                            dependencyDescriptor.plugin = currentPluginBeingConfigured
+                        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll
+                        if (context.currentPluginBeingConfigured) {
+                            dependencyDescriptor.plugin = context.currentPluginBeingConfigured
                         }
 
                         dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)

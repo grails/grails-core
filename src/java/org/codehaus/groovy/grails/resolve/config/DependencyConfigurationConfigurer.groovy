@@ -23,8 +23,6 @@ import org.apache.ivy.util.Message
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.url.CredentialsStore
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-
 class DependencyConfigurationConfigurer extends AbstractDependencyManagementConfigurer {
 
     static final String WILDCARD = '*'
@@ -32,8 +30,8 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
     boolean pluginMode = false
     boolean repositoryMode = false
 
-    DependencyConfigurationConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
-        super(dependencyManager, currentPluginBeingConfigured, inherited)
+    DependencyConfigurationConfigurer(DependencyConfigurationContext context) {
+        super(context)
     }
 
     void useOrigin(boolean b) {
@@ -61,10 +59,10 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     void inherits(String name, Closure configurer) {
         // plugins can't configure inheritance
-        if (currentPluginBeingConfigured) return
+        if (context.currentPluginBeingConfigured) return
 
         if (configurer) {
-            configurer.delegate = new InheritanceConfigurer(dependencyManager, currentPluginBeingConfigured)
+            configurer.delegate = new InheritanceConfigurer(context)
             configurer.call()
         }
 
@@ -74,7 +72,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
             if (dependencies instanceof Closure) {
                 println "creating with inherited context"
                 // Create a new configurer with an 'inherited' context
-                dependencies.delegate = new DependencyConfigurationConfigurer(dependencyManager, currentPluginBeingConfigured, true)
+                dependencies.delegate = new DependencyConfigurationConfigurer(context.createInheritedContext())
                 dependencies.call()
                 dependencyManager.moduleExcludes.clear()
             }
@@ -86,7 +84,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
     }
 
     void plugins(Closure callable) {
-        callable.delegate = new PluginDependenciesConfigurer(dependencyManager, currentPluginBeingConfigured, inherited)
+        callable.delegate = new PluginDependenciesConfigurer(context)
         callable.call()
     }
 
@@ -94,18 +92,18 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
         configuredPlugins << name
 
         try {
-            currentPluginBeingConfigured = name
+            context.currentPluginBeingConfigured = name
             callable?.delegate = this
             callable?.call()
         }
         finally {
-            currentPluginBeingConfigured = null
+            context.currentPluginBeingConfigured = null
         }
     }
 
     void log(String level) {
         // plugins can't configure log
-        if (currentPluginBeingConfigured) return
+        if (context.currentPluginBeingConfigured) return
 
         switch(level) {
             case "warn":    dependencyManager.setLogger(new DefaultMessageLogger(Message.MSG_WARN)); break
@@ -129,13 +127,13 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
      * Same as #resolvers(Closure)
      */
     void repositories(Closure repos) {
-        repos.delegate = new RepositoriesConfigurer(dependencyManager, currentPluginBeingConfigured, inherited)
+        repos.delegate = new RepositoriesConfigurer(context)
         repos()
     }
 
     void dependencies(Closure deps) {
         if (deps && !dependencyManager.pluginsOnly) {
-            deps.delegate = new JarDependenciesConfigurer(dependencyManager, currentPluginBeingConfigured, inherited)
+            deps.delegate = new JarDependenciesConfigurer(context)
             deps.call()
         }
     }

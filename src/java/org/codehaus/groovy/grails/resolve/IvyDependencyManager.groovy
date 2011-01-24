@@ -52,6 +52,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
 import org.codehaus.groovy.grails.plugins.VersionComparator
 
+import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer
 
 /**
@@ -534,7 +535,14 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * @see EnhancedDefaultDependencyDescriptor#plugin
      */
     protected doParseDependencies(Closure definition, String pluginName = null) {
-        definition.delegate = new DependencyConfigurationConfigurer(this, pluginName)
+        def context
+        if (pluginName) { 
+            context = DependencyConfigurationContext.forPlugin(this, pluginName)
+        } else {
+            context = DependencyConfigurationContext.forApplication(this)
+        }
+        
+        definition.delegate = new DependencyConfigurationConfigurer(context)
         definition.resolveStrategy = Closure.DELEGATE_FIRST
         definition()
     }
