@@ -29,7 +29,6 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     }
     
     def invokeMethod(String name, args) {
-        println "invokeMethod($name, $args)"
         if (!args || !((args[0] instanceof CharSequence)||(args[0] instanceof Map)||(args[0] instanceof Collection))) {
             println "WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring.."
         }
