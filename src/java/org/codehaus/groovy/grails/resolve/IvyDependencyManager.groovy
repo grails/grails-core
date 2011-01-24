@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
 import org.codehaus.groovy.grails.plugins.VersionComparator
 
-import org.codehaus.groovy.grails.resolve.dsl.IvyDomainSpecificLanguageEvaluator
+import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -534,7 +534,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * @see EnhancedDefaultDependencyDescriptor#plugin
      */
     protected doParseDependencies(Closure definition, String pluginName = null) {
-        definition.delegate = new IvyDomainSpecificLanguageEvaluator(this, pluginName)
+        definition.delegate = new DependencyConfigurationConfigurer(this, pluginName)
         definition.resolveStrategy = Closure.DELEGATE_FIRST
         definition()
     }

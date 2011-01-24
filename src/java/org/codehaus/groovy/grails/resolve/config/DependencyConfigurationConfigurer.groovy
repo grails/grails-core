@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.dsl
+package org.codehaus.groovy.grails.resolve.config
 
 import org.apache.ivy.core.module.id.ModuleId
 
@@ -25,14 +25,14 @@ import org.apache.ivy.util.url.CredentialsStore
 
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
-class IvyDomainSpecificLanguageEvaluator extends AbstractEvaluator {
+class DependencyConfigurationConfigurer extends AbstractDependencyManagementConfigurer {
 
     static final String WILDCARD = '*'
 
     boolean pluginMode = false
     boolean repositoryMode = false
 
-    IvyDomainSpecificLanguageEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
+    DependencyConfigurationConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
         super(dependencyManager, currentPluginBeingConfigured, inherited)
     }
 
@@ -64,7 +64,7 @@ class IvyDomainSpecificLanguageEvaluator extends AbstractEvaluator {
         if (currentPluginBeingConfigured) return
 
         if (configurer) {
-            configurer.delegate = new InheritanceEvaluator(dependencyManager, currentPluginBeingConfigured)
+            configurer.delegate = new InheritanceConfigurer(dependencyManager, currentPluginBeingConfigured)
             configurer.call()
         }
 
@@ -73,8 +73,8 @@ class IvyDomainSpecificLanguageEvaluator extends AbstractEvaluator {
             def dependencies = config[name]?.dependency?.resolution
             if (dependencies instanceof Closure) {
                 println "creating with inherited context"
-                // Create a new evaluator with an 'inherited' context
-                dependencies.delegate = new IvyDomainSpecificLanguageEvaluator(dependencyManager, currentPluginBeingConfigured, true)
+                // Create a new configurer with an 'inherited' context
+                dependencies.delegate = new DependencyConfigurationConfigurer(dependencyManager, currentPluginBeingConfigured, true)
                 dependencies.call()
                 dependencyManager.moduleExcludes.clear()
             }
@@ -86,7 +86,7 @@ class IvyDomainSpecificLanguageEvaluator extends AbstractEvaluator {
     }
 
     void plugins(Closure callable) {
-        callable.delegate = new PluginDependenciesEvaluator(dependencyManager, currentPluginBeingConfigured, inherited)
+        callable.delegate = new PluginDependenciesConfigurer(dependencyManager, currentPluginBeingConfigured, inherited)
         callable.call()
     }
 
@@ -129,13 +129,13 @@ class IvyDomainSpecificLanguageEvaluator extends AbstractEvaluator {
      * Same as #resolvers(Closure)
      */
     void repositories(Closure repos) {
-        repos.delegate = new RepositoriesEvaluator(dependencyManager, currentPluginBeingConfigured, inherited)
+        repos.delegate = new RepositoriesConfigurer(dependencyManager, currentPluginBeingConfigured, inherited)
         repos()
     }
 
     void dependencies(Closure deps) {
         if (deps && !dependencyManager.pluginsOnly) {
-            deps.delegate = new JarDependenciesEvaluator(dependencyManager, currentPluginBeingConfigured, inherited)
+            deps.delegate = new JarDependenciesConfigurer(dependencyManager, currentPluginBeingConfigured, inherited)
             deps.call()
         }
     }

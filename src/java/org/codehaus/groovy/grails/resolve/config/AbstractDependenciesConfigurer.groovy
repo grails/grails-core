@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.dsl
+package org.codehaus.groovy.grails.resolve.config
 
 import grails.util.DslUtils
 
@@ -23,11 +23,11 @@ import org.apache.ivy.core.module.id.ModuleRevisionId
 
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 
-abstract class AbstractDependenciesEvaluator extends AbstractEvaluator {
+abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
     final boolean pluginMode
     
-    AbstractDependenciesEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false, boolean pluginMode = false) {
+    AbstractDependenciesConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false, boolean pluginMode = false) {
         super(dependencyManager, currentPluginBeingConfigured, inherited)
         this.pluginMode = pluginMode
     }

@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.dsl
+package org.codehaus.groovy.grails.resolve.config
 
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
@@ -26,9 +26,9 @@ import org.apache.ivy.plugins.resolver.IBiblioResolver
 
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 
-class RepositoriesEvaluator extends AbstractEvaluator {
+class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     
-    RepositoriesEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
+    RepositoriesConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
         super(dependencyManager, currentPluginBeingConfigured, inherited)
     }
     

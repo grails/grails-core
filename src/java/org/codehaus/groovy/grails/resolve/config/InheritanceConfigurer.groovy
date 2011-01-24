@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.dsl
+package org.codehaus.groovy.grails.resolve.config
 
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
@@ -23,9 +23,9 @@ import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
 import org.apache.ivy.plugins.matcher.PatternMatcher
 import org.apache.ivy.plugins.matcher.ExactPatternMatcher
 
-class InheritanceEvaluator extends AbstractEvaluator {
+class InheritanceConfigurer extends AbstractDependencyManagementConfigurer {
 
-    InheritanceEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
+    InheritanceConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
         super(dependencyManager, currentPluginBeingConfigured, inherited)
     }
 

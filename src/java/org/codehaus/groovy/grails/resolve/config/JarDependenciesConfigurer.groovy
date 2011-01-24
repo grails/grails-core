@@ -12,20 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.dsl
+package org.codehaus.groovy.grails.resolve.config
 
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
-abstract class AbstractEvaluator {
-    
-    final IvyDependencyManager dependencyManager
-    String currentPluginBeingConfigured
-    final boolean inherited
+class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
-    AbstractEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited) {
-        this.dependencyManager = dependencyManager
-        this.currentPluginBeingConfigured = currentPluginBeingConfigured
-        this.inherited = inherited
+    JarDependenciesConfigurer(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
+        super(dependencyManager, currentPluginBeingConfigured, inherited, false)
     }
-    
+
 }
