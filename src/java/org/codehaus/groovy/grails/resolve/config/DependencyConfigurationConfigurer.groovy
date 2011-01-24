@@ -59,7 +59,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     void inherits(String name, Closure configurer) {
         // plugins can't configure inheritance
-        if (context.currentPluginBeingConfigured) return
+        if (context.pluginName) return
 
         if (configurer) {
             configurer.delegate = new InheritanceConfigurer(context)
@@ -92,18 +92,18 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
         configuredPlugins << name
 
         try {
-            context.currentPluginBeingConfigured = name
+            context.pluginName = name
             callable?.delegate = this
             callable?.call()
         }
         finally {
-            context.currentPluginBeingConfigured = null
+            context.pluginName = null
         }
     }
 
     void log(String level) {
         // plugins can't configure log
-        if (context.currentPluginBeingConfigured) return
+        if (context.pluginName) return
 
         switch(level) {
             case "warn":    dependencyManager.setLogger(new DefaultMessageLogger(Message.MSG_WARN)); break

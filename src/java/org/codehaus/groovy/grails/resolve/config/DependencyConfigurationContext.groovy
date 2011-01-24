@@ -19,12 +19,12 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 class DependencyConfigurationContext {
     
     final IvyDependencyManager dependencyManager
-    final String currentPluginBeingConfigured
+    final String pluginName
     final boolean inherited
     
-    private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured, boolean inherited) {
+    private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String pluginName, boolean inherited) {
         this.dependencyManager = dependencyManager
-        this.currentPluginBeingConfigured = currentPluginBeingConfigured
+        this.pluginName = pluginName
         this.inherited = inherited
     }
     
@@ -37,7 +37,7 @@ class DependencyConfigurationContext {
     }
     
     DependencyConfigurationContext createInheritedContext() {
-        new DependencyConfigurationContext(dependencyManager, currentPluginBeingConfigured, true)
+        new DependencyConfigurationContext(dependencyManager, pluginName, true)
     }
     
 }

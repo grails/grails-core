@@ -215,7 +215,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
     
     private addToChainResolver(DependencyResolver resolver) {
-        if (context.currentPluginBeingConfigured && !dependencyManager.inheritRepositories) return 
+        if (context.pluginName && !dependencyManager.inheritRepositories) return 
         
         if (dependencyManager.transferListener !=null && (resolver instanceof RepositoryResolver)) {
             ((RepositoryResolver)resolver).repository.addTransferListener dependencyManager.transferListener

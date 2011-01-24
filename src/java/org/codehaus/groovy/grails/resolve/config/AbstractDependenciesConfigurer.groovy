@@ -64,7 +64,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                 if (m.matches()) {
 
                     String name = m[0][2]
-                    boolean isExcluded = context.currentPluginBeingConfigured ? dependencyManager.isExcludedFromPlugin(context.currentPluginBeingConfigured, name) : dependencyManager.isExcluded(name)
+                    boolean isExcluded = context.pluginName ? dependencyManager.isExcludedFromPlugin(context.pluginName, name) : dependencyManager.isExcluded(name)
                     if (!isExcluded) {
                         def group = m[0][1]
                         def version = m[0][3]
@@ -84,10 +84,10 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                             dependencyDescriptor.addDependencyArtifact(scope, artifact)
                         }
                         dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(args, 'export', true)
-                        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.currentPluginBeingConfigured
+                        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.pluginName
 
-                        if (context.currentPluginBeingConfigured) {
-                            dependencyDescriptor.plugin = context.currentPluginBeingConfigured
+                        if (context.pluginName) {
+                            dependencyDescriptor.plugin = context.pluginName
                         }
                         
                         dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
@@ -105,7 +105,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                 if (!group && pluginMode) group = "org.grails.plugins"
 
                 if (group && name && version) {
-                    boolean isExcluded = context.currentPluginBeingConfigured ? dependencyManager.isExcludedFromPlugin(context.currentPluginBeingConfigured, name) : dependencyManager.isExcluded(name)
+                    boolean isExcluded = context.pluginName ? dependencyManager.isExcludedFromPlugin(context.pluginName, name) : dependencyManager.isExcluded(name)
                     if (!isExcluded) {
                         def attrs = [:]
                         if(dependency.classifier) {
@@ -138,8 +138,8 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
 
                         dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
                         dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll
-                        if (context.currentPluginBeingConfigured) {
-                            dependencyDescriptor.plugin = context.currentPluginBeingConfigured
+                        if (context.pluginName) {
+                            dependencyDescriptor.plugin = context.pluginName
                         }
 
                         dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
