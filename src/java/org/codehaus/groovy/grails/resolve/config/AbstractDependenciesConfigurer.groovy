@@ -126,7 +126,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
         
         def attrs = [:]
-        if(dependency.classifier) {
+        if (dependency.classifier) {
             attrs["m:classifier"] = dependency.classifier
         }
         
