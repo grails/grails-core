@@ -26,15 +26,10 @@ import org.apache.ivy.plugins.resolver.IBiblioResolver
 
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 
-class RepositoriesEvaluator {
+class RepositoriesEvaluator extends AbstractEvaluator {
     
-    IvyDependencyManager dependencyManager
-    
-    boolean currentPluginBeingConfigured
-
-    RepositoriesEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null) {
-        this.dependencyManager = dependencyManager
-        this.currentPluginBeingConfigured = currentPluginBeingConfigured
+    RepositoriesEvaluator(IvyDependencyManager dependencyManager, String currentPluginBeingConfigured = null, boolean inherited = false) {
+        super(dependencyManager, currentPluginBeingConfigured, inherited)
     }
     
     void inherit(boolean b) {

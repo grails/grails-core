@@ -50,9 +50,10 @@ class GrailsCoreDependencies {
                 //mavenRepo "http://download.java.net/maven/2/"
                 //mavenRepo "http://repository.jboss.com/maven2/
             }
+            
             dependencies {
-                def compileTimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'compile'
-                def runtimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'runtime'
+                def compileTimeDependenciesMethod = dependencyManager.defaultDependenciesProvided ? 'provided' : 'compile'
+                def runtimeDependenciesMethod = dependencyManager.defaultDependenciesProvided ? 'provided' : 'runtime'
                 
                 // dependencies needed by the Grails build system
                 for(mrid in [ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
@@ -76,7 +77,7 @@ class GrailsCoreDependencies {
                               ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5")] ) {
                         def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"build")
                         addDependency mrid
-                        configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
+                        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
                   }
 
                 
@@ -85,7 +86,7 @@ class GrailsCoreDependencies {
                              ModuleRevisionId.newInstance("radeox","radeox","1.0-b2")]) {
                    def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"docs")
                    addDependency mrid
-                   configureDependencyDescriptor(dependencyDescriptor, "docs", null, false)
+                   dependencyManager.configureDependencyDescriptor(dependencyDescriptor, "docs", null, false)
                 }
 
                 // dependencies needed during development, but not for deployment
@@ -93,7 +94,7 @@ class GrailsCoreDependencies {
                              ModuleRevisionId.newInstance( "javax.servlet","jsp-api","2.1")]) {
                    def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"provided")
                    addDependency mrid
-                   configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
+                   dependencyManager.configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
                 }
 
                 // dependencies needed for compilation
@@ -142,7 +143,7 @@ class GrailsCoreDependencies {
                                 ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8")] ) {
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
                            addDependency mrid
-                           configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
+                           dependencyManager.configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
                     }
 
 
@@ -152,7 +153,7 @@ class GrailsCoreDependencies {
                                     ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE")] ) {
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
                            addDependency mrid
-                           configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
+                           dependencyManager.configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
                     }
 
                     // dependencies needed at runtime only
@@ -172,7 +173,7 @@ class GrailsCoreDependencies {
                                         ModuleRevisionId.newInstance("xpp3","xpp3_min","1.1.3.4.O") ] ) {
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
                            addDependency mrid
-                           configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
+                           dependencyManager.configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
                     }
 
                     // caching

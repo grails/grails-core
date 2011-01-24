@@ -75,8 +75,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"]) {
-                changing = true
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"]) {
+                    changing = true
+                }
             }
         }
 
@@ -89,7 +91,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", classifier:"source"])
+            }
         }
 
         ModuleRevisionId dep = manager.dependencies.iterator().next()
@@ -208,7 +212,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"])
+            }
+            
         }
 
         ModuleRevisionId dep = manager.dependencies.iterator().next()
@@ -220,8 +227,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"]){
-                dependencyConfiguration("oscache-runtime")
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"]){
+                    dependencyConfiguration("oscache-runtime")
+                }
             }
         }
 
@@ -238,7 +247,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"])
+            }
         }
 
         DependencyDescriptor dep = manager.dependencyDescriptors.iterator().next()
@@ -253,10 +264,12 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime group:"opensymphony", name:"oscache", version:"2.4.1"
-            runtime group:"opensymphony", name:"oscache2", version:"2.4.2", export:true
-            runtime group:"opensymphony", name:"oscache3", version:"2.4.3", export:false
-            runtime "opensymphony:oscache4:2.4.5", [export: false]
+            dependencies {
+                runtime group:"opensymphony", name:"oscache", version:"2.4.1"
+                runtime group:"opensymphony", name:"oscache2", version:"2.4.2", export:true
+                runtime group:"opensymphony", name:"oscache3", version:"2.4.3", export:false
+                runtime "opensymphony:oscache4:2.4.5", [export: false]
+            }
         }
 
         def dd = manager.dependencyDescriptors.find { DependencyDescriptor dd -> dd.dependencyRevisionId.name == 'oscache' }
@@ -280,19 +293,23 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
-            runtime([group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false])
-            plugins {
-                runtime(":foo:1.5") {
-                    excludes "junit"
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+                runtime([group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false])
+                plugins {
+                    runtime(":foo:1.5") {
+                        excludes "junit"
+                    }
                 }
+                build "junit:junit:4.8.1"
             }
-            build "junit:junit:4.8.1"
         }
 
         manager.parseDependencies("foo") {
-            build "org.grails:grails-test:1.2"
-            build "junit:junit:4.8.1"
+            dependencies {
+                build "org.grails:grails-test:1.2"
+                build "junit:junit:4.8.1"
+            }
         }
 
         final IvyNode[] buildDeps = manager.listDependencies("build")
@@ -311,8 +328,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
-            runtime([group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+                runtime([group:"opensymphony", name:"foocache", version:"2.4.1", transitive:false])
+            }
             plugins {
                 runtime(":foo:1.0") {
                     excludes "junit"
@@ -321,8 +340,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
 
         manager.parseDependencies("foo") {
-            build "org.grails:grails-test:1.2"
-            build "junit:junit:4.8.1"
+            dependencies {
+                build "org.grails:grails-test:1.2"
+                build "junit:junit:4.8.1"
+            }
         }
 
         final IvyNode[] buildDeps = manager.listDependencies("build")
@@ -336,13 +357,15 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
         def springDMVersion = '2.0.0.M1'
         manager.parseDependencies {
-            build("org.springframework.osgi:spring-osgi-core:$springDMVersion",
-                  "org.springframework.osgi:spring-osgi-extender:$springDMVersion",
-                  "org.springframework.osgi:spring-osgi-io:$springDMVersion",
-                  "org.springframework.osgi:spring-osgi-web:$springDMVersion",
-                  "org.springframework.osgi:spring-osgi-web-extender:$springDMVersion") {
-                        transitive = false
-                    }
+            dependencies {
+                build("org.springframework.osgi:spring-osgi-core:$springDMVersion",
+                      "org.springframework.osgi:spring-osgi-extender:$springDMVersion",
+                      "org.springframework.osgi:spring-osgi-io:$springDMVersion",
+                      "org.springframework.osgi:spring-osgi-web:$springDMVersion",
+                      "org.springframework.osgi:spring-osgi-web-extender:$springDMVersion") {
+                            transitive = false
+                        }
+            }
         }
 
         assertEquals 5, manager.listDependencies("build").size()
@@ -352,13 +375,17 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "org.grails:grails-test:1.2"
+            dependencies {
+                test "org.grails:grails-test:1.2"
+            }
         }
         // test simple exclude
         manager.parseDependencies {
             inherits "test"
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
-            test([group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+                test([group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            }
         }
 
         manager.resolveApplicationDependencies()
@@ -368,13 +395,17 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "org.grails:grails-test:1.2"
+            dependencies {
+                test "org.grails:grails-test:1.2"
+            }
         }
         // test simple exclude
         manager.parseDependencies {
             inherits "test"
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
-            test([group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false])
+                test([group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            }
         }
 
         assertEquals 2, manager.getApplicationDependencyDescriptors().size()
@@ -403,7 +434,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "org.grails:grails-test:1.2"
+            dependencies {
+                test "org.grails:grails-test:1.2"
+            }
         }
 
         manager.parseDependencies {
@@ -415,9 +448,11 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
         manager.parseDependencies {
             inherits "test"
-
-            runtime("opensymphony:foocache:2.4.1") {
-                excludes 'jms'
+            
+            dependencies {
+                runtime("opensymphony:foocache:2.4.1") {
+                    excludes 'jms'
+                }
             }
         }
 
@@ -439,7 +474,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "org.grails:grails-test:1.2"
+            dependencies {
+                test "org.grails:grails-test:1.2"
+            }
         }
 
         // test simple exclude
@@ -449,11 +486,13 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                 grailsHome()
                 mavenRepo "http://snapshots.repository.codehaus.org"
             }
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
-                    [group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
+                        [group:"junit", name:"junit", version:"4.8.1", transitive:true])
 
-            runtime("opensymphony:foocache:2.4.1") {
-                excludes 'jms'
+                runtime("opensymphony:foocache:2.4.1") {
+                    excludes 'jms'
+                }
             }
         }
 
@@ -497,8 +536,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1")
         // test simple exclude
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
-                    [group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            dependencies {
+                runtime([group:"opensymphony", name:"oscache", version:"2.4.1", transitive:false],
+                        [group:"junit", name:"junit", version:"4.8.1", transitive:true])
+            }
         }
 
         assertEquals 2, manager.listDependencies('runtime').size()
@@ -573,14 +614,19 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "junit:junit:4.8.1"
+            dependencies {
+                test "junit:junit:4.8.1"
+            }
+
         }
         // test simple exclude
         manager.parseDependencies {
             inherits('test') {
                 excludes 'junit'
             }
-            runtime("commons-lang:commons-lang:2.4") {
+            dependencies {
+                runtime("commons-lang:commons-lang:2.4") {
+                }
             }
         }
 
@@ -593,12 +639,16 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
         settings.config.grails.test.dependency.resolution = {
-            test "junit:junit:4.8.1"
+            dependencies {
+                test "junit:junit:4.8.1"
+            }
         }
         // test simple exclude
         manager.parseDependencies {
             inherits 'test'
-            runtime("commons-lang:commons-lang:2.4") {
+            dependencies {
+                runtime("commons-lang:commons-lang:2.4") {
+                }
             }
         }
 
@@ -610,8 +660,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1")
         // test simple exclude
         manager.parseDependencies {
-            runtime("opensymphony:oscache:2.4.1") {
-                excludes 'jms'
+            dependencies {
+                runtime("opensymphony:oscache:2.4.1") {
+                    excludes 'jms'
+                }
             }
         }
 
@@ -624,8 +676,10 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         manager = new IvyDependencyManager("test", "0.1")
         // test complex exclude
         manager.parseDependencies {
-            runtime("opensymphony:oscache:2.4.1") {
-                excludes group:'javax.jms',name:'jms'
+            dependencies {
+                runtime("opensymphony:oscache:2.4.1") {
+                    excludes group:'javax.jms',name:'jms'
+                }
             }
         }
 
