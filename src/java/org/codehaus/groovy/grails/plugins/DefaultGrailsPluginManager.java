@@ -61,6 +61,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
@@ -684,6 +685,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
                         try {
                             config = slurper.parse(configURL);
+                            ConfigurationHelper.initConfig(config, null, application.getClassLoader());
                             ConfigurationHolder.setConfig(config);
                             configLastModified = lastModified;
                             application.configChanged();
