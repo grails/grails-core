@@ -21,6 +21,8 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
+    private static final DEPENDENCY_PATTERN = ~/([a-zA-Z0-9\-\/\._+=]*?):([a-zA-Z0-9\-\/\._+=]+?):([a-zA-Z0-9\-\/\._+=]+)/
+    
     final boolean pluginMode
     
     AbstractDependenciesConfigurer(DependencyConfigurationContext context, boolean pluginMode = false) {
@@ -28,130 +30,135 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         this.pluginMode = pluginMode
     }
     
-    def invokeMethod(String name, args) {
-        if (!args || !((args[0] instanceof CharSequence)||(args[0] instanceof Map)||(args[0] instanceof Collection))) {
+    def methodMissing(String name, args) {
+        if (!args) {
             println "WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring.."
-        }
-        else {
-            def dependencies = args
-            def callable
-            if (dependencies && (dependencies[-1] instanceof Closure)) {
-                callable = dependencies[-1]
-                dependencies = dependencies[0..-2]
-            }
-
-            if (dependencies) {
-                parseDependenciesInternal(dependencies, name, callable)
-            }
+        } else if (isOnlyStrings(args)) {
+            addDependencyStrings(name, args.toList(), null, null)
+        } else if (isProperties(args)) {
+            addDependencyMaps(name, args.toList(), null)
+        } else if (isStringsAndConfigurer(args)) {
+            addDependencyStrings(name, args[0..-2], null, args[-1])
+        } else if (isPropertiesAndConfigurer(args)) {
+            addDependencyMaps(name, args[0..-2], args[-1])
+        } else if (isStringsAndProperties(args)) {
+            addDependencyStrings(name, args[0..-2], args[-1], null)
+        } else {
+            println "WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring.."
         }
     }
 
-    private parseDependenciesInternal(dependencies, String scope, Closure dependencyConfigurer) {
-        boolean usedArgs = false
-
-        def parseDep = { dependency ->
-            if ((dependency instanceof CharSequence)) {
-                def args = [:]
-                if (dependencies[-1] instanceof Map) {
-                    args = dependencies[-1]
-                    usedArgs = true
-                }
-                def depDefinition = dependency.toString()
-
-                def m = depDefinition =~ /([a-zA-Z0-9\-\/\._+=]*?):([a-zA-Z0-9\-\/\._+=]+?):([a-zA-Z0-9\-\/\._+=]+)/
-
-                if (m.matches()) {
-
-                    String name = m[0][2]
-                    boolean isExcluded = context.pluginName ? dependencyManager.isExcludedFromPlugin(context.pluginName, name) : dependencyManager.isExcluded(name)
-                    if (!isExcluded) {
-                        def group = m[0][1]
-                        def version = m[0][3]
-                        if (pluginMode) {
-                            group = group ?: 'org.grails.plugins'
-                        }
-
-                        def mrid = ModuleRevisionId.newInstance(group, name, version)
-
-                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(args, 'transitive', true), scope)
-
-                        if (!pluginMode) {
-                            dependencyManager.addDependency mrid
-                        }
-                        else {
-                            def artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
-                            dependencyDescriptor.addDependencyArtifact(scope, artifact)
-                        }
-                        dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(args, 'export', true)
-                        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.pluginName
-
-                        if (context.pluginName) {
-                            dependencyDescriptor.plugin = context.pluginName
-                        }
-                        
-                        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
-                    }
-                }
-                else {
-                    println "WARNING: Specified dependency definition ${scope}(${depDefinition.inspect()}) is invalid! Skipping.."
-                }
-            }
-            else if (dependency instanceof Map) {
-                def name = dependency.name
-                def group = dependency.group
-                def version = dependency.version
-                
-                if (!group && pluginMode) group = "org.grails.plugins"
-
-                if (group && name && version) {
-                    boolean isExcluded = context.pluginName ? dependencyManager.isExcludedFromPlugin(context.pluginName, name) : dependencyManager.isExcluded(name)
-                    if (!isExcluded) {
-                        def attrs = [:]
-                        if(dependency.classifier) {
-                            attrs["m:classifier"] = dependency.classifier
-                        }
-
-                        def mrid
-                        if (dependency.branch) {
-                            mrid = ModuleRevisionId.newInstance(group, name, dependency.branch, version, attrs)
-                        }
-                        else {
-                            mrid = ModuleRevisionId.newInstance(group, name, version, attrs)
-                        }
-
-                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(dependency, 'transitive', true), scope)
-                        if (!pluginMode) {
-                            dependencyManager.addDependency mrid
-                        }
-                        else {
-                            def artifact
-                            if (dependency.classifier == 'plugin') {
-                                artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "xml", "xml", null, null )
-                            }
-                            else {
-                                artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, name, "zip", "zip", null, null )
-                            }
-
-                            dependencyDescriptor.addDependencyArtifact(scope, artifact)
-                        }
-
-                        dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
-                        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll
-                        if (context.pluginName) {
-                            dependencyDescriptor.plugin = context.pluginName
-                        }
-
-                        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, pluginMode)
-                    }
-                }
-            }
+    private isOnlyStrings(args) {
+        args.every { it instanceof CharSequence }
+    }
+    
+    private isStringsAndConfigurer(args) {
+        if (args.size() == 1) {
+            false
+        } else {
+            isOnlyStrings(args[0..-2]) && args[-1] instanceof Closure
         }
+    }
 
+    private isStringsAndProperties(args) {
+        if (args.size() == 1) {
+            false
+        } else {
+            isOnlyStrings(args[0..-2]) && args[-1] instanceof Map
+        }
+    }
+
+    private isProperties(args) {
+        args.every { it instanceof Map }
+    }
+
+    private isPropertiesAndConfigurer(args) {
+        if (args.size() == 1) {
+            false
+        } else {
+            isProperties(args[0..-2]) && args[-1] instanceof Closure
+        }
+    }
+    
+    private Map extractDependencyProperties(String scope, String dependency) {
+        def matcher = dependency =~ DEPENDENCY_PATTERN
+        if (matcher.matches()) {
+            def properties = [:]
+            properties.name = matcher[0][2]
+            properties.group = matcher[0][1]
+            properties.version = matcher[0][3]
+            properties
+        } else {
+            println "WARNING: Specified dependency definition ${scope}(${dependency}) is invalid! Skipping.."
+            null
+        }
+    }
+    
+    private addDependencyStrings(String scope, Collection<String> dependencies, Map overrides, Closure configurer) {
+        for (dependency in dependencies) {
+            def dependencyProperties = extractDependencyProperties(scope, dependency)
+            if (!dependencyProperties) {
+                continue
+            }
+            
+            if (overrides) {
+                dependencyProperties.putAll(overrides)
+            }
+            
+            addDependency(scope, dependencyProperties, configurer)
+        }
+    }
+
+    protected addDependencyMaps(String scope, Collection<Map> dependencies, Closure configurer) {
+        for (dependency in dependencies) {
+            addDependency(scope, dependency, configurer)
+        }
+    }
+    
+    private addDependency(String scope, Map dependency, Closure configurer) {
+        def isExcluded = context.pluginName ? dependencyManager.isExcludedFromPlugin(context.pluginName, dependency.name) : dependencyManager.isExcluded(dependency.name)
+        if (isExcluded) {
+            return
+        }
         
-        for(dep in dependencies ) {
-            if ((dependencies[-1] == dep) && usedArgs) return 
-            parseDep(dep) 
+        if (!dependency.group && pluginMode) {
+            dependency.group = "org.grails.plugins"
         }
+        
+        def attrs = [:]
+        if(dependency.classifier) {
+            attrs["m:classifier"] = dependency.classifier
+        }
+        
+        def mrid
+        if (dependency.branch) {
+            mrid = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.branch, dependency.version, attrs)
+        } else {
+            mrid = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.version, attrs)
+        }
+        
+        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(dependency, 'transitive', true), scope)
+    
+        if (pluginMode) {
+            def artifact
+            if (dependency.classifier == 'plugin') {
+                artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependency.name, "xml", "xml", null, null )
+            } else {
+                artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependency.name, "zip", "zip", null, null )
+            }
+            dependencyDescriptor.addDependencyArtifact(scope, artifact)
+        } else {
+            dependencyManager.addDependency mrid
+        }
+        
+        dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
+        dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.pluginName
+
+        if (context.pluginName) {
+            dependencyDescriptor.plugin = context.pluginName
+        }
+        
+        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, configurer, pluginMode)
     }
     
 }
