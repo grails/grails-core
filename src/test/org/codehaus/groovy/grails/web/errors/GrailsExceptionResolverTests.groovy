@@ -163,6 +163,60 @@ Stacktrace follows:''' , msg
             ConfigurationHolder.config = oldConfig
         }
     }
+
+    void testDisablingRequestParameterLogging() {
+        def oldConfig = ConfigurationHolder.config
+        try {
+            def config = new ConfigSlurper().parse('''
+grails.exceptionresolver.logRequestParameters = false
+''')
+
+            ConfigurationHolder.config = config
+
+            def request = new MockHttpServletRequest()
+            request.setRequestURI("/execute/me")
+            request.setMethod "GET"
+            request.addParameter "foo", "bar"
+            request.addParameter "one", "two"
+
+            def msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me
+Stacktrace follows:''' , msg
+
+            config = new ConfigSlurper().parse('''
+grails.exceptionresolver.logRequestParameters = true
+''')
+
+            ConfigurationHolder.config = config
+
+            request = new MockHttpServletRequest()
+            request.setRequestURI("/execute/me")
+            request.setMethod "GET"
+            request.addParameter "foo", "bar"
+            request.addParameter "one", "two"
+
+            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+Stacktrace follows:''' , msg
+
+            config = new ConfigSlurper().parse('''
+''')
+
+            ConfigurationHolder.config = config
+            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+Stacktrace follows:''' , msg
+        } finally {
+            ConfigurationHolder.config = oldConfig
+        }
+    }
 }
 
 class DummyViewResolver implements ViewResolver {

@@ -17,9 +17,10 @@ package org.codehaus.groovy.grails.web.errors;
 
 import grails.util.GrailsUtil;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -177,11 +178,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public static String getRequestLogMessage(HttpServletRequest request) {
-        List<String> blackList = (List<String>) ConfigurationHolder.getFlatConfig().get("grails.exceptionresolver.params.exclude");
-
-        if (blackList == null) {
-            blackList = new ArrayList<String>();
-        }
         StringBuilder sb = new StringBuilder();
 
         sb.append("Exception occurred when processing request: ");
@@ -193,26 +189,37 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             sb.append(request.getRequestURI());
         }
 
-        Enumeration<String> params = request.getParameterNames();
+        Map flatConfig = ConfigurationHolder.getFlatConfig();
 
-        if(params.hasMoreElements()){
-            String param;
-            String values[];
-            int i;
+        if (!Boolean.FALSE.equals(flatConfig
+                .get("grails.exceptionresolver.logRequestParameters"))) {
+            Enumeration<String> params = request.getParameterNames();
 
-            sb.append(" - parameters:");
+            if (params.hasMoreElements()) {
+                String param;
+                String values[];
+                int i;
 
-            while(params.hasMoreElements()){
-                param = params.nextElement();
-                values = request.getParameterValues(param);
+                sb.append(" - parameters:");
+                List<String> blackList = (List<String>) ConfigurationHolder
+                        .getFlatConfig().get(
+                                "grails.exceptionresolver.params.exclude");
 
-                for (i = 0; i < values.length; i++) {
-                    sb.append(LINE_SEPARATOR).append(param).append(": ");
+                if (blackList == null) {
+                    blackList = Collections.emptyList();
+                }
+                while (params.hasMoreElements()) {
+                    param = params.nextElement();
+                    values = request.getParameterValues(param);
 
-                    if (blackList.contains(param)) {
-                        sb.append("***");
-                    } else {
-                        sb.append(values[i]);
+                    for (i = 0; i < values.length; i++) {
+                        sb.append(LINE_SEPARATOR).append(param).append(": ");
+
+                        if (blackList.contains(param)) {
+                            sb.append("***");
+                        } else {
+                            sb.append(values[i]);
+                        }
                     }
                 }
             }
