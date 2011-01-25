@@ -16,7 +16,6 @@ package grails.test
 
 import grails.util.GrailsNameUtils
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultArtefactInfo
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
@@ -55,7 +54,6 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
-        ApplicationHolder.application = null
         loadedCodecs = []
         applicationContext = new MockApplicationContext()
         savedMetaClasses = [:]
