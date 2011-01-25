@@ -135,7 +135,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertFalse modelAndView.empty
     }
-	
+
     void testLogRequest() {
         def oldConfig = ConfigurationHolder.config
         try {
