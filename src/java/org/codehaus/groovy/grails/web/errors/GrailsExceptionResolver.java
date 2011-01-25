@@ -184,27 +184,27 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         }
         StringBuilder sb = new StringBuilder();
 
-		sb.append("Exception occurred when processing request: ");
-		sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
+        sb.append("Exception occurred when processing request: ");
+        sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
 
-		if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
+        if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
             sb.append(request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE));
         } else {
             sb.append(request.getRequestURI());
         }
 
-		Enumeration<String> params = request.getParameterNames();
+        Enumeration<String> params = request.getParameterNames();
 
-		if(params.hasMoreElements()){
-			String param;
-			String values[];
-			int i;
+        if(params.hasMoreElements()){
+            String param;
+            String values[];
+            int i;
 
-			sb.append(" - parameters:");
+            sb.append(" - parameters:");
 
-			while(params.hasMoreElements()){
-				param = params.nextElement();
-				values = request.getParameterValues(param);
+            while(params.hasMoreElements()){
+                param = params.nextElement();
+                values = request.getParameterValues(param);
 
                 for (i = 0; i < values.length; i++) {
                     sb.append(LINE_SEPARATOR).append(param).append(": ");
@@ -216,11 +216,11 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
                     }
                 }
             }
-		}
+        }
 
-		sb.append(LINE_SEPARATOR)
-		  .append("Stacktrace follows:");
+        sb.append(LINE_SEPARATOR)
+          .append("Stacktrace follows:");
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 }
