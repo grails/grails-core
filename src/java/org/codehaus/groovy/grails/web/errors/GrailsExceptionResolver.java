@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.errors;
 
-import java.util.Enumeration;
-
 import grails.util.GrailsUtil;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
@@ -174,7 +177,12 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public static String getRequestLogMessage(HttpServletRequest request) {
-		StringBuilder sb = new StringBuilder();
+        List<String> blackList = (List<String>) ConfigurationHolder.getFlatConfig().get("grails.exceptionresolver.params.exclude");
+
+        if (blackList == null) {
+            blackList = new ArrayList<String>();
+        }
+        StringBuilder sb = new StringBuilder();
 
 		sb.append("Exception occurred when processing request: ");
 		sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
@@ -182,7 +190,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 		if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
             sb.append(request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE));
         } else {
-		sb.append(request.getRequestURI());
+            sb.append(request.getRequestURI());
         }
 
 		Enumeration<String> params = request.getParameterNames();
@@ -198,10 +206,16 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 				param = params.nextElement();
 				values = request.getParameterValues(param);
 
-				for(i=0; i< values.length; i++){
-					sb.append(LINE_SEPARATOR).append(param).append(": ").append(values[i]);
-				}
-			}
+                for (i = 0; i < values.length; i++) {
+                    sb.append(LINE_SEPARATOR).append(param).append(": ");
+
+                    if (blackList.contains(param)) {
+                        sb.append("***");
+                    } else {
+                        sb.append(values[i]);
+                    }
+                }
+            }
 		}
 
 		sb.append(LINE_SEPARATOR)
