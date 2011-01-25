@@ -201,8 +201,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
                 int i;
 
                 sb.append(" - parameters:");
-                List<String> blackList = (List<String>) ConfigurationHolder
-                        .getFlatConfig().get(
+                List<String> blackList = (List<String>) flatConfig.get(
                                 "grails.exceptionresolver.params.exclude");
 
                 if (blackList == null) {
