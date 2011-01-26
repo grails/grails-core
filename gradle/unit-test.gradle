@@ -116,7 +116,7 @@ def createTestTaskWithoutSuffix(String name, includes, excludes) {
 /*        classpath = classpath + project.rootProject.configurations.coverage*/
         classpath = sourceSets.test.runtimeClasspath + project.rootProject.configurations.coverage
         testClassesDir = sourceSets.test.classesDir
-        forkEvery = 10
+        forkEvery = 1
     }
     test.dependsOn task
     task.dependsOn coreJar
