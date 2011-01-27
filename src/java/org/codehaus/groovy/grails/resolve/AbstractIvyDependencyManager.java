@@ -231,10 +231,16 @@ public abstract class AbstractIvyDependencyManager {
         return dd == null || dd.isTransitive();
     }
 
+    /**
+     * @deprecated use registerDependency(String, EnhancedDefaultDependencyDescriptor)
+     */
     public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope) {
         configureDependencyDescriptor(dependencyDescriptor, scope, false);
     }
     
+    /**
+     * @deprecated use registerDependency(String, EnhancedDefaultDependencyDescriptor) or registerPluginDependency(String EnhancedDefaultDependencyDescriptor)
+     */
     public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, boolean pluginMode) {
         if (pluginMode) {
             registerPluginDependency(scope, dependencyDescriptor);
@@ -243,6 +249,11 @@ public abstract class AbstractIvyDependencyManager {
         }
     }
 
+    /**
+     * Registers a JAR dependency with the dependency manager.
+     * 
+     * @see registerPluginDependency(String, EnhancedDefaultDependencyDescriptor)
+     */
     public void registerDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         registerDependencyCommon(scope, descriptor);
         
@@ -264,6 +275,11 @@ public abstract class AbstractIvyDependencyManager {
         }
     }
 
+    /**
+     * Registers a plugin dependency (as in Grails plugin).
+     * 
+     * @see registerDependency(String, EnhancedDefaultDependencyDescriptor)
+     */
     public void registerPluginDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         String name = descriptor.getDependencyId().getName();
         
