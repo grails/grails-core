@@ -249,22 +249,12 @@ public abstract class AbstractIvyDependencyManager {
     }
 
     public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope) {
-    	configureDependencyDescriptor(dependencyDescriptor, scope, null, false);
+        configureDependencyDescriptor(dependencyDescriptor, scope, false);
     }
     
-    public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer) {
-    	configureDependencyDescriptor(dependencyDescriptor, scope, dependencyConfigurer, false);
-    }
-
-    public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, Closure dependencyConfigurer, boolean pluginMode ) {
+    public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, boolean pluginMode) {
         if (!usedConfigurations.contains(scope)) {
             usedConfigurations.add( scope );
-        }
-
-        if (dependencyConfigurer != null) {
-            dependencyConfigurer.setResolveStrategy(Closure.DELEGATE_ONLY);
-            dependencyConfigurer.setDelegate(dependencyDescriptor);
-            dependencyConfigurer.call();
         }
 
         if (dependencyDescriptor.getModuleConfigurations().length == 0){

@@ -158,7 +158,11 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             dependencyDescriptor.plugin = context.pluginName
         }
         
-        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, configurer, pluginMode)
+        if (configurer) {
+            dependencyDescriptor.configure(configurer)
+        }
+        
+        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, pluginMode)
     }
     
 }

@@ -253,7 +253,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
             dd.addDependencyArtifact(scope, artifact)
             metadataRegisteredPluginNames << name
-            configureDependencyDescriptor(dd, scope, null, true)
+            configureDependencyDescriptor(dd, scope, true)
             pluginDependencyDescriptors << dd
         }
     }
