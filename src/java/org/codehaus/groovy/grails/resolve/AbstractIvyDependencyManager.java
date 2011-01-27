@@ -123,7 +123,6 @@ public abstract class AbstractIvyDependencyManager {
         new ConcurrentHashMap<String, DependencyDescriptor>();
     protected String applicationName;
     protected String applicationVersion;
-    protected DefaultDependencyDescriptor currentDependencyDescriptor;
     protected DefaultModuleDescriptor moduleDescriptor;    
     protected boolean hasApplicationDependencies = false;
     
@@ -145,15 +144,6 @@ public abstract class AbstractIvyDependencyManager {
 		return hasApplicationDependencies;
 	}
     
-	public DefaultDependencyDescriptor getCurrentDependencyDescriptor() {
-		return currentDependencyDescriptor;
-	}
-
-	public void setCurrentDependencyDescriptor(
-			DefaultDependencyDescriptor currentDependencyDescriptor) {
-		this.currentDependencyDescriptor = currentDependencyDescriptor;
-	}
-
 	public Collection<String> getUsedConfigurations() {
 		return usedConfigurations;
 	}
@@ -271,17 +261,12 @@ public abstract class AbstractIvyDependencyManager {
             usedConfigurations.add( scope );
         }
 
-        try {
-            this.currentDependencyDescriptor = dependencyDescriptor;
-            if (dependencyConfigurer != null) {
-                dependencyConfigurer.setResolveStrategy(Closure.DELEGATE_ONLY);
-                dependencyConfigurer.setDelegate(dependencyDescriptor);
-                dependencyConfigurer.call();
-            }
+        if (dependencyConfigurer != null) {
+            dependencyConfigurer.setResolveStrategy(Closure.DELEGATE_ONLY);
+            dependencyConfigurer.setDelegate(dependencyDescriptor);
+            dependencyConfigurer.call();
         }
-        finally {
-            this.currentDependencyDescriptor = null;
-        }
+
         if (dependencyDescriptor.getModuleConfigurations().length == 0){
             List<String> mappings = configurationMappings.get(scope);
             if(mappings != null) {

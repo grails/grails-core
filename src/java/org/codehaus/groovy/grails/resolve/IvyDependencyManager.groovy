@@ -69,8 +69,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     IvySettings ivySettings
     MessageLogger logger
     Metadata metadata
-    ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)  
-    DefaultDependencyDescriptor currentDependencyDescriptor
+    ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     Collection repositoryData = new ConcurrentLinkedQueue()
     Collection<String> configuredPlugins = new ConcurrentLinkedQueue()
     
