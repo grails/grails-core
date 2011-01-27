@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.resolve.config
 import grails.util.DslUtils
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
 
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
