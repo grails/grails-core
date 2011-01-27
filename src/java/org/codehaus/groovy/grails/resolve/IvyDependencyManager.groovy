@@ -391,6 +391,23 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     /**
+     * The plugin dependencies excluding non-exported transitive deps and
+     * collapsed to the highest version of each dependency.
+     */
+    Set<DependencyDescriptor> getEffectivePluginDependencyDescriptors() {
+        def versionComparator = new VersionComparator()
+        def candidates = getPluginDependencyDescriptors().findAll { it.exportedToApplication }
+        def groupedByModule = candidates.groupBy { it.dependencyRevisionId.moduleId }
+
+        groupedByModule.collect {
+            it.value.max { lhs, rhs -> 
+                def versionComparison = versionComparator.compare(lhs.dependencyRevisionId.revision, rhs.dependencyRevisionId.revision)
+                versionComparison ?: (rhs.plugin <=> lhs.plugin)
+            }
+        }
+    }
+    
+    /**
      * Parses the Ivy DSL definition
      */
     void parseDependencies(Closure definition) {
@@ -417,6 +434,42 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
     }
 
+    /**
+     * Parses dependencies of a plugin
+     *
+     * @param pluginName the name of the plugin
+     * @param definition the Ivy DSL definition
+     */
+    void parseDependencies(String pluginName,Closure definition) {
+        if (definition) {
+            if (moduleDescriptor == null) {
+                throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
+            }
+
+            doParseDependencies(definition, pluginName)
+        }
+    }
+    
+    /**
+     * Evaluates the given DSL definition.
+     * 
+     * If pluginName is not null, all dependencies will record that they were defined by this plugin.
+     * 
+     * @see EnhancedDefaultDependencyDescriptor#plugin
+     */
+    protected doParseDependencies(Closure definition, String pluginName = null) {
+        def context
+        if (pluginName) { 
+            context = DependencyConfigurationContext.forPlugin(this, pluginName)
+        } else {
+            context = DependencyConfigurationContext.forApplication(this)
+        }
+        
+        definition.delegate = new DependencyConfigurationConfigurer(context)
+        definition.resolveStrategy = Closure.DELEGATE_FIRST
+        definition()
+    }
+    
     List readDependenciesFromPOM() {
       List fixedDependencies = null
       def pom = new File("${buildSettings.baseDir.path}/pom.xml")
@@ -459,56 +512,4 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
     }
     
-    /**
-     * Parses dependencies of a plugin
-     *
-     * @param pluginName the name of the plugin
-     * @param definition the Ivy DSL definition
-     */
-    void parseDependencies(String pluginName,Closure definition) {
-        if (definition) {
-            if (moduleDescriptor == null) {
-                throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
-            }
-
-            doParseDependencies(definition, pluginName)
-        }
-    }
-
-    /**
-     * The plugin dependencies excluding non-exported transitive deps and
-     * collapsed to the highest version of each dependency.
-     */
-    Set<DependencyDescriptor> getEffectivePluginDependencyDescriptors() {
-        def versionComparator = new VersionComparator()
-        def candidates = getPluginDependencyDescriptors().findAll { it.exportedToApplication }
-        def groupedByModule = candidates.groupBy { it.dependencyRevisionId.moduleId }
-
-        groupedByModule.collect {
-            it.value.max { lhs, rhs -> 
-                def versionComparison = versionComparator.compare(lhs.dependencyRevisionId.revision, rhs.dependencyRevisionId.revision)
-                versionComparison ?: (rhs.plugin <=> lhs.plugin)
-            }
-        }
-    }
-    
-    /**
-     * Evaluates the given DSL definition.
-     * 
-     * If pluginName is not null, all dependencies will record that they were defined by this plugin.
-     * 
-     * @see EnhancedDefaultDependencyDescriptor#plugin
-     */
-    protected doParseDependencies(Closure definition, String pluginName = null) {
-        def context
-        if (pluginName) { 
-            context = DependencyConfigurationContext.forPlugin(this, pluginName)
-        } else {
-            context = DependencyConfigurationContext.forApplication(this)
-        }
-        
-        definition.delegate = new DependencyConfigurationConfigurer(context)
-        definition.resolveStrategy = Closure.DELEGATE_FIRST
-        definition()
-    }
 }
