@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
-import grails.util.DslUtils
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleRevisionId
 
@@ -139,9 +138,9 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
                 mrid = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.version, attrs)
             }
 
-            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(dependency, 'transitive', true), scope)
+            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, getBooleanValueOrDefault(dependency, 'transitive', true), scope)
 
-            dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
+            dependencyDescriptor.exported = getBooleanValueOrDefault(dependency, 'export', true)
             dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.pluginName
 
             if (context.pluginName) {
@@ -153,6 +152,10 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             }
 
             addDependency(scope, dependencyDescriptor)
+        }
+        
+        static boolean getBooleanValueOrDefault(Map properties, String propertyName, boolean defaultValue) {
+            properties.containsKey(propertyName) ? Boolean.valueOf(properties[propertyName]) : defaultValue
         }
     }
     
