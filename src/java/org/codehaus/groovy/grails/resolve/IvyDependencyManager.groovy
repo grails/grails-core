@@ -223,32 +223,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             registerPluginDependency(scope, dd)
         }
     }
-    
-    protected addDependencies(DependencyDescriptor[] dependencyDescriptors) {
-        for (dependencyDescriptor in dependencyDescriptors) {
-            addDependency(dependencyDescriptor)
-        }
-    }
-    
-    protected addDependency(DependencyDescriptor dependencyDescriptor) {
-        ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
-        ModuleId moduleId = moduleRevisionId.getModuleId()
-
-        String groupId = moduleRevisionId.getOrganisation()
-        String artifactId = moduleRevisionId.getName()
-        String version = moduleRevisionId.getRevision()
-        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
-
-        if (!hasDependency(moduleId)) {
-            def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
-            for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
-                ModuleId excludedModule = excludeRule.getId().getModuleId()
-                enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
-            }
-            
-            registerDependency(scope, enhancedDependencyDescriptor)
-        }
-    }
 
     boolean isPluginConfiguredByApplication(String name) {
         (configuredPlugins.contains(name) || configuredPlugins.contains(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)))
@@ -431,10 +405,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             // that this project has a POM and it has the dependencies, which means
             // we now have to inspect it for the dependencies to use.
             if (readPom && buildSettings) {
-                List<DependencyDescriptor> dependencies = readDependenciesFromPOM()
-                if (dependencies != null) {
-                    addDependencies(dependencies as DependencyDescriptor[])
-                }
+                registerPomDependencies()
             }
 
             // Legacy support for the old mechanism of plugin dependencies being
@@ -459,6 +430,35 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
       return fixedDependencies
     }
 
+    private registerPomDependencies() {
+        def pomDependencies = readDependenciesFromPOM()
+        if (pomDependencies != null) {
+            for (dependencyDescriptor in pomDependencies) {
+                registerPomDependency(dependencyDescriptor)
+            }
+        }
+    }
+    
+    private registerPomDependency(DependencyDescriptor dependencyDescriptor) {
+        ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
+        ModuleId moduleId = moduleRevisionId.getModuleId()
+
+        String groupId = moduleRevisionId.getOrganisation()
+        String artifactId = moduleRevisionId.getName()
+        String version = moduleRevisionId.getRevision()
+        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
+
+        if (!hasDependency(moduleId)) {
+            def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
+            for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
+                ModuleId excludedModule = excludeRule.getId().getModuleId()
+                enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
+            }
+            
+            registerDependency(scope, enhancedDependencyDescriptor)
+        }
+    }
+    
     /**
      * Parses dependencies of a plugin
      *
