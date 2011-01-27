@@ -148,6 +148,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * Serializes the parsed dependencies using the given builder.
      *
      * @param builder A builder such as groovy.xml.MarkupBuilder
+     * @deprecated Will be removed in a future release
      */
     void serialize(builder, boolean createRoot = true) {
         if (createRoot) {
