@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.resolve
 
-import grails.util.DslUtils
-
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
