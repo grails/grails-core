@@ -219,11 +219,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             def scope = "runtime"
             def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version)
             def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
-            def artifact = new DefaultDependencyArtifactDescriptor(dd, name, "zip", "zip", null, null )
-            dd.addDependencyArtifact(scope, artifact)
-            metadataRegisteredPluginNames << name
-            configureDependencyDescriptor(dd, scope, true)
-            pluginDependencyDescriptors << dd
+            
+            registerPluginDependency(scope, dd)
         }
     }
     
@@ -248,8 +245,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 ModuleId excludedModule = excludeRule.getId().getModuleId()
                 enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
             }
-            configureDependencyDescriptor(enhancedDependencyDescriptor, scope)
-            addDependencyDescriptor enhancedDependencyDescriptor
+            
+            registerDependency(scope, enhancedDependencyDescriptor)
         }
     }
 

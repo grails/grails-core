@@ -138,19 +138,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
         
         def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, DslUtils.getBooleanValueOrDefault(dependency, 'transitive', true), scope)
-    
-        if (pluginMode) {
-            def artifact
-            if (dependency.classifier == 'plugin') {
-                artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependency.name, "xml", "xml", null, null )
-            } else {
-                artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependency.name, "zip", "zip", null, null )
-            }
-            dependencyDescriptor.addDependencyArtifact(scope, artifact)
-        } else {
-            dependencyManager.addDependency mrid
-        }
-        
+            
         dependencyDescriptor.exported = DslUtils.getBooleanValueOrDefault(dependency, 'export', true)
         dependencyDescriptor.inherited = context.inherited || dependencyManager.inheritsAll || context.pluginName
 
@@ -162,7 +150,11 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             dependencyDescriptor.configure(configurer)
         }
         
-        dependencyManager.configureDependencyDescriptor(dependencyDescriptor, scope, pluginMode)
+        if (pluginMode) {
+            dependencyManager.registerPluginDependency(scope, dependencyDescriptor)
+        } else {
+            dependencyManager.registerDependency(scope, dependencyDescriptor)
+        }
     }
     
 }

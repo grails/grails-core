@@ -32,6 +32,8 @@ import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.ExcludeRule;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
+import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor;
+import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor;
 import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
@@ -229,60 +231,90 @@ public abstract class AbstractIvyDependencyManager {
         return dd == null || dd.isTransitive();
     }
 
-    /**
-     * Adds a dependency to the project
-     *
-     * @param revisionId The ModuleRevisionId instance
-     */
-    public void addDependency(ModuleRevisionId revisionId) {
-        modules.add(revisionId.getModuleId());
-        dependencies.add(revisionId);
-        final String org = revisionId.getOrganisation();
-        if (orgToDepMap.containsKey(org)) {
-            orgToDepMap.get(org).add(revisionId);
-        }
-        else {
-            Collection<ModuleRevisionId> deps = new HashSet<ModuleRevisionId>();
-            deps.add(revisionId);
-            orgToDepMap.put(org, deps);
-        }
-    }
-
     public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope) {
         configureDependencyDescriptor(dependencyDescriptor, scope, false);
     }
     
     public void configureDependencyDescriptor(EnhancedDefaultDependencyDescriptor dependencyDescriptor, String scope, boolean pluginMode) {
-        if (!usedConfigurations.contains(scope)) {
-            usedConfigurations.add( scope );
+        if (pluginMode) {
+            registerPluginDependency(scope, dependencyDescriptor);
+        } else {
+            registerDependency(scope, dependencyDescriptor);
         }
+    }
 
-        if (dependencyDescriptor.getModuleConfigurations().length == 0){
-            List<String> mappings = configurationMappings.get(scope);
-            if(mappings != null) {
-                for(String m : mappings) {
-                    dependencyDescriptor.addDependencyConfiguration( scope, m );
-                }
-            }
+    public void registerDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        registerDependencyCommon(scope, descriptor);
+        
+        ModuleRevisionId revisionId = descriptor.getDependencyRevisionId();
+        modules.add(revisionId.getModuleId());
+        dependencies.add(revisionId);
+        String org = revisionId.getOrganisation();
+        if (orgToDepMap.containsKey(org)) {
+            orgToDepMap.get(org).add(revisionId);
+        } else {
+            Collection<ModuleRevisionId> deps = new HashSet<ModuleRevisionId>();
+            deps.add(revisionId);
+            orgToDepMap.put(org, deps);
         }
-        if (!dependencyDescriptor.isInherited()) {
+        
+        dependencyDescriptors.add(descriptor);
+        if (descriptor.isExportedToApplication()) {
+            moduleDescriptor.addDependency(descriptor);
+        }
+    }
+
+    public void registerPluginDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        String name = descriptor.getDependencyId().getName();
+        
+        String classifierAttribute = (String)descriptor.getExtraAttribute("m:classifier");
+        String packaging = null;
+        if (classifierAttribute != null && classifierAttribute.equals("plugin")) {
+            packaging = "xml";
+        } else {
+            packaging = "zip";
+        }
+        
+        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(descriptor, name, packaging, packaging, null, null);
+        descriptor.addDependencyArtifact(scope, artifact);
+        
+        registerDependencyCommon(scope, descriptor);
+        
+        pluginDependencyNames.add(name);
+        pluginDependencyDescriptors.add(descriptor);
+        pluginNameToDescriptorMap.put(name, descriptor);
+    }
+    
+    /**
+     * Aspects of registering a dependency common to both plugins and jar dependencies.
+     */
+    private void registerDependencyCommon(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        registerUsedConfigurationIfNecessary(scope);
+        
+        if (descriptor.getModuleConfigurations().length == 0) {
+            addDefaultModuleConfigurations(descriptor, scope);
+        }
+        
+        if (!descriptor.isInherited()) {
             hasApplicationDependencies = true;
         }
-        if (pluginMode) {
-            String name = dependencyDescriptor.getDependencyId().getName();
-            pluginDependencyNames.add(name);
-            pluginDependencyDescriptors.add(dependencyDescriptor);
-            pluginNameToDescriptorMap.put(name,  dependencyDescriptor );
+    }
+    
+    private void registerUsedConfigurationIfNecessary(String configurationName) {
+        if (!usedConfigurations.contains(configurationName)) {
+            usedConfigurations.add(configurationName);
         }
-        else {
-            dependencyDescriptors.add(dependencyDescriptor);
-            if (dependencyDescriptor.isExportedToApplication()) {
-            	moduleDescriptor.addDependency(dependencyDescriptor);
+    }
+    
+    private void addDefaultModuleConfigurations(EnhancedDefaultDependencyDescriptor descriptor, String configurationName) {
+        List<String> mappings = configurationMappings.get(configurationName);
+        if (mappings != null) {
+            for(String m : mappings) {
+                descriptor.addDependencyConfiguration(configurationName, m);
             }
-            
         }
-    }    
-
+    }
+    
     protected ArtifactId createExcludeArtifactId(String excludeName) {
         return createExcludeArtifactId(excludeName, PatternMatcher.ANY_EXPRESSION);
     }
@@ -293,17 +325,6 @@ public abstract class AbstractIvyDependencyManager {
                 mid, PatternMatcher.ANY_EXPRESSION,
                 PatternMatcher.ANY_EXPRESSION,
                 PatternMatcher.ANY_EXPRESSION);
-    }
-
-    /**
-     * Adds a dependency descriptor to the project
-     * @param dd The DependencyDescriptor instance
-     */
-    public void addDependencyDescriptor(DependencyDescriptor dd) {
-        if (dd != null) {
-            dependencyDescriptors.add(dd);
-            addDependency(dd.getDependencyRevisionId());
-        }
     }
 
     public ModuleDescriptor createModuleDescriptor() {
