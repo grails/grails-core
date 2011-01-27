@@ -207,37 +207,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         def aid = createExcludeArtifactId(name)
         return moduleDescriptor.doesExclude(configurationNames, aid)
     }
-
-    /**
-     * For usages such as addPluginDependency("foo", [group:"junit", name:"junit", version:"4.8.1"])
-     *
-     * This method is designed to be used by the internal framework and plugins and not be end users.
-     * The idea is that plugins can provide dependencies at runtime which are then inherited by
-     * the user's dependency configuration
-     *
-     * A user can however override a plugin's dependencies inside the dependency resolution DSL
-     */
-    void addPluginDependency(String pluginName, Map args) {
-        // do nothing if the dependencies of the plugin are configured by the application
-        if (isPluginConfiguredByApplication(pluginName)) return
-        if (args?.group && args?.name && args?.version) {
-            def transitive = DslUtils.getBooleanValueOrDefault(args, 'transitive', true)
-            def exported = DslUtils.getBooleanValueOrDefault(args, 'export', true)
-            def scope = args.conf ?: 'runtime'
-            def mrid = ModuleRevisionId.newInstance(args.group, args.name, args.version)
-            def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, transitive, scope)
-            dd.exported = exported
-            dd.inherited = true
-            dd.plugin = pluginName
-            configureDependencyDescriptor(dd, scope)
-            if (args.excludes) {
-                for (ex in excludes) {
-                    dd.exclude(ex)
-                }
-            }
-            addDependencyDescriptor dd
-        }
-    }
     
     protected addMetadataPluginDependencies(Map<String, String> plugins) {
         for (plugin in plugins) {

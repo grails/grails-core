@@ -459,16 +459,6 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertTrue "application has dependencies!",manager.hasApplicationDependencies()
     }
 
-    void testDynamicAddDependencyDescriptor() {
-
-        def manager = new IvyDependencyManager("test", "0.1")
-        manager.parseDependencies {}
-
-        manager.addPluginDependency("foo",[group:"org.grails", name:"grail-test", version:"1.2"])
-
-        assertEquals 1, manager.listDependencies("runtime").size()
-    }
-
     void testSerializerToMarkup() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
         def settings = new BuildSettings()
