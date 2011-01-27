@@ -14,10 +14,16 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+
 class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
     JarDependenciesConfigurer(DependencyConfigurationContext context) {
-        super(context, false)
+        super(context)
+    }
+
+    protected addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        dependencyManager.registerDependency(scope, descriptor)
     }
 
 }

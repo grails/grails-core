@@ -14,10 +14,23 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+
 class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
     PluginDependenciesConfigurer(DependencyConfigurationContext context) {
-        super(context, true)
+        super(context)
     }
 
+    protected addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        dependencyManager.registerPluginDependency(scope, descriptor)
+    }
+
+    protected preprocessDependencyProperties(Map dependency) {
+        if (!dependency.group) {
+            dependency.group = "org.grails.plugins"
+        }
+    }
+    
+    
 }

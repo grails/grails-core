@@ -23,11 +23,8 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
 
     private static final DEPENDENCY_PATTERN = ~/([a-zA-Z0-9\-\/\._+=]*?):([a-zA-Z0-9\-\/\._+=]+?):([a-zA-Z0-9\-\/\._+=]+)/
     
-    final boolean pluginMode
-    
-    AbstractDependenciesConfigurer(DependencyConfigurationContext context, boolean pluginMode = false) {
+    AbstractDependenciesConfigurer(DependencyConfigurationContext context) {
         super(context)
-        this.pluginMode = pluginMode
     }
     
     def methodMissing(String name, args) {
@@ -116,15 +113,13 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     }
     
     private addDependency(String scope, Map dependency, Closure configurer) {
+        preprocessDependencyProperties(dependency)
+        
         def isExcluded = context.pluginName ? dependencyManager.isExcludedFromPlugin(context.pluginName, dependency.name) : dependencyManager.isExcluded(dependency.name)
         if (isExcluded) {
             return
         }
-        
-        if (!dependency.group && pluginMode) {
-            dependency.group = "org.grails.plugins"
-        }
-        
+
         def attrs = [:]
         if (dependency.classifier) {
             attrs["m:classifier"] = dependency.classifier
@@ -150,11 +145,13 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             dependencyDescriptor.configure(configurer)
         }
         
-        if (pluginMode) {
-            dependencyManager.registerPluginDependency(scope, dependencyDescriptor)
-        } else {
-            dependencyManager.registerDependency(scope, dependencyDescriptor)
-        }
+        addDependency(scope, dependencyDescriptor)
     }
+    
+    protected preprocessDependencyProperties(Map dependency) {
+        // used in plugin subclass to populate default group id
+    }
+    
+    abstract protected addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor)
     
 }
