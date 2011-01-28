@@ -70,7 +70,6 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
         if (config) {
             def dependencies = config[name]?.dependency?.resolution
             if (dependencies instanceof Closure) {
-                println "creating with inherited context"
                 // Create a new configurer with an 'inherited' context
                 dependencies.delegate = new DependencyConfigurationConfigurer(context.createInheritedContext())
                 dependencies.call()
