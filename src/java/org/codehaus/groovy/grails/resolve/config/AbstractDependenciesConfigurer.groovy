@@ -154,7 +154,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             addDependency(scope, dependencyDescriptor)
         }
         
-        static boolean getBooleanValueOrDefault(Map properties, String propertyName, boolean defaultValue) {
+        private boolean getBooleanValueOrDefault(Map properties, String propertyName, boolean defaultValue) {
             properties.containsKey(propertyName) ? Boolean.valueOf(properties[propertyName]) : defaultValue
         }
     }

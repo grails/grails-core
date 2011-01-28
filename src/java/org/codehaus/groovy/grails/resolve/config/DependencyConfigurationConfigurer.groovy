@@ -72,6 +72,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
             if (dependencies instanceof Closure) {
                 // Create a new configurer with an 'inherited' context
                 dependencies.delegate = new DependencyConfigurationConfigurer(context.createInheritedContext())
+                println "invoking core dependencies: ${dependencies.getClass()}"
                 dependencies.call()
                 dependencyManager.moduleExcludes.clear()
             }
