@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import grails.util.BuildSettings
+import grails.util.Metadata
+
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
@@ -28,15 +31,12 @@ import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.util.Message
 
-import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import grails.util.GrailsNameUtils
 
-import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
-import grails.util.Metadata
 
 import org.apache.ivy.util.MessageLogger
 import org.apache.ivy.core.module.descriptor.Artifact
@@ -47,11 +47,8 @@ import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 import org.apache.ivy.plugins.repository.TransferListener
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
-import org.codehaus.groovy.grails.plugins.VersionComparator
 
-import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext
-import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer
+import org.codehaus.groovy.grails.plugins.VersionComparator
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -61,12 +58,8 @@ import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigur
  */
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
-    
     ResolveEngine resolveEngine
-    BuildSettings buildSettings
-    IvySettings ivySettings
     MessageLogger logger
-    Metadata metadata
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     Collection repositoryData = new ConcurrentLinkedQueue()
     Collection<String> configuredPlugins = new ConcurrentLinkedQueue()
@@ -74,7 +67,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     Collection moduleExcludes = new ConcurrentLinkedQueue()
     TransferListener transferListener
 
-    boolean readPom = false
+    
     boolean inheritsAll = false
     boolean resolveErrors = false
     boolean defaultDependenciesProvided = false
@@ -85,8 +78,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * Creates a new IvyDependencyManager instance
      */
     IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null) {
-        ivySettings = new IvySettings()
-
+        super(new IvySettings(), settings, metadata)
+        
         ivySettings.defaultInit()
         // don't cache for snapshots
         if (settings?.grailsVersion?.endsWith("SNAPSHOT")) {
@@ -102,8 +95,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
         this.applicationName = applicationName
         this.applicationVersion = applicationVersion
-        this.buildSettings = settings
-        this.metadata = metadata
     }
 
     /**
@@ -207,22 +198,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         return moduleDescriptor.doesExclude(configurationNames, aid)
     }
     
-    protected addMetadataPluginDependencies(Map<String, String> plugins) {
-        for (plugin in plugins) {
-            addMetadataPluginDependency(plugin.key, plugin.value)
-        }
-    }
-    
-    protected addMetadataPluginDependency(String name, String version) {
-        if (!pluginDependencyNames.contains(entry.key)) {
-            def scope = "runtime"
-            def mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version)
-            def dd = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope)
-            
-            registerPluginDependency(scope, dd)
-        }
-    }
-
     boolean isPluginConfiguredByApplication(String name) {
         (configuredPlugins.contains(name) || configuredPlugins.contains(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)))
     }
@@ -376,20 +351,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     /**
-     * Tests whether the given ModuleId is defined in the list of dependencies
-     */
-    boolean hasDependency(ModuleId mid) {
-        return modules.contains(mid)
-    }
-
-    /**
-     * Tests whether the given group and name are defined in the list of dependencies
-     */
-    boolean hasDependency(String group, String name) {
-        return hasDependency(ModuleId.newInstance(group, name))
-    }
-
-    /**
      * The plugin dependencies excluding non-exported transitive deps and
      * collapsed to the highest version of each dependency.
      */
@@ -406,109 +367,5 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
     }
     
-    /**
-     * Parses the Ivy DSL definition
-     */
-    void parseDependencies(Closure definition) {
-        if (definition && applicationName && applicationVersion) {
-            if (this.moduleDescriptor == null) {
-                this.moduleDescriptor = createModuleDescriptor()
-            }
-
-            doParseDependencies(definition)
-            
-            // The dependency config can use the pom(Boolean) method to declare
-            // that this project has a POM and it has the dependencies, which means
-            // we now have to inspect it for the dependencies to use.
-            if (readPom && buildSettings) {
-                registerPomDependencies()
-            }
-
-            // Legacy support for the old mechanism of plugin dependencies being
-            // declared in the application.properties file.
-            def metadataDeclaredPlugins = metadata?.getInstalledPlugins()
-            if (metadataDeclaredPlugins) {
-                addMetadataPluginDependencies(metadataDeclaredPlugins)
-            }
-        }
-    }
-
-    /**
-     * Parses dependencies of a plugin
-     *
-     * @param pluginName the name of the plugin
-     * @param definition the Ivy DSL definition
-     */
-    void parseDependencies(String pluginName,Closure definition) {
-        if (definition) {
-            if (moduleDescriptor == null) {
-                throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies")
-            }
-
-            doParseDependencies(definition, pluginName)
-        }
-    }
-    
-    /**
-     * Evaluates the given DSL definition.
-     * 
-     * If pluginName is not null, all dependencies will record that they were defined by this plugin.
-     * 
-     * @see EnhancedDefaultDependencyDescriptor#plugin
-     */
-    protected doParseDependencies(Closure definition, String pluginName = null) {
-        def context
-        if (pluginName) { 
-            context = DependencyConfigurationContext.forPlugin(this, pluginName)
-        } else {
-            context = DependencyConfigurationContext.forApplication(this)
-        }
-        
-        definition.delegate = new DependencyConfigurationConfigurer(context)
-        definition.resolveStrategy = Closure.DELEGATE_FIRST
-        definition()
-    }
-    
-    List readDependenciesFromPOM() {
-      List fixedDependencies = null
-      def pom = new File("${buildSettings.baseDir.path}/pom.xml")
-      if (pom.exists()) {
-          PomModuleDescriptorParser parser = PomModuleDescriptorParser.getInstance()
-          ModuleDescriptor md = parser.parseDescriptor(ivySettings, pom.toURL(), false)
-
-          fixedDependencies = md.getDependencies()
-      }
-
-      return fixedDependencies
-    }
-
-    private registerPomDependencies() {
-        def pomDependencies = readDependenciesFromPOM()
-        if (pomDependencies != null) {
-            for (dependencyDescriptor in pomDependencies) {
-                registerPomDependency(dependencyDescriptor)
-            }
-        }
-    }
-    
-    private registerPomDependency(DependencyDescriptor dependencyDescriptor) {
-        ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId()
-        ModuleId moduleId = moduleRevisionId.getModuleId()
-
-        String groupId = moduleRevisionId.getOrganisation()
-        String artifactId = moduleRevisionId.getName()
-        String version = moduleRevisionId.getRevision()
-        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0)
-
-        if (!hasDependency(moduleId)) {
-            def enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope)
-            for (ExcludeRule excludeRule in dependencyDescriptor.getAllExcludeRules()) {
-                ModuleId excludedModule = excludeRule.getId().getModuleId()
-                enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope)
-            }
-            
-            registerDependency(scope, enhancedDependencyDescriptor)
-        }
-    }
     
 }

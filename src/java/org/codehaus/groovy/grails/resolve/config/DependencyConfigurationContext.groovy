@@ -28,11 +28,11 @@ class DependencyConfigurationContext {
         this.inherited = inherited
     }
     
-    static forApplication(IvyDependencyManager dependencyManager) {
+    static DependencyConfigurationContext forApplication(IvyDependencyManager dependencyManager) {
         new DependencyConfigurationContext(dependencyManager, null, false)
     }
     
-    static forPlugin(IvyDependencyManager dependencyManager, String pluginName) {
+    static DependencyConfigurationContext forPlugin(IvyDependencyManager dependencyManager, String pluginName) {
         new DependencyConfigurationContext(dependencyManager, pluginName, false)
     }
     
