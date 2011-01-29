@@ -27,7 +27,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         super(context)
     }
     
-    def methodMissing(String name, args) {
+    def invokeMethod(String name, args) {
         if (!args) {
             println "WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring.."
         } else if (assistant.isOnlyStrings(args)) {

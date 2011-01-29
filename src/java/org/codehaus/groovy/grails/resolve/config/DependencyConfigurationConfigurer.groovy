@@ -63,6 +63,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
         if (configurer) {
             configurer.delegate = new InheritanceConfigurer(context)
+            configurer.resolveStrategy = Closure.DELEGATE_FIRST
             configurer.call()
         }
 
@@ -72,6 +73,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
             if (dependencies instanceof Closure) {
                 // Create a new configurer with an 'inherited' context
                 dependencies.delegate = new DependencyConfigurationConfigurer(context.createInheritedContext())
+                dependencies.resolveStrategy = Closure.DELEGATE_FIRST
                 dependencies.call()
                 dependencyManager.moduleExcludes.clear()
             }
@@ -84,6 +86,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     void plugins(Closure callable) {
         callable.delegate = new PluginDependenciesConfigurer(context)
+        callable.resolveStrategy = Closure.DELEGATE_FIRST
         callable.call()
     }
 
@@ -127,12 +130,14 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
      */
     void repositories(Closure repos) {
         repos.delegate = new RepositoriesConfigurer(context)
+        repos.resolveStrategy = Closure.DELEGATE_FIRST
         repos()
     }
 
     void dependencies(Closure deps) {
         if (deps && !dependencyManager.pluginsOnly) {
             deps.delegate = new JarDependenciesConfigurer(context)
+            deps.resolveStrategy = Closure.DELEGATE_FIRST
             deps.call()
         }
     }

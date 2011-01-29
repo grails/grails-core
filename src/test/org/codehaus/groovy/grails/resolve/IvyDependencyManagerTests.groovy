@@ -758,6 +758,44 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         ModuleRevisionId junit = manager.dependencies.find {  ModuleRevisionId m -> m.organisation == 'junit'}
     }
 
+    // Having the dependencies come from config can change the method resolution semantics
+    // so this test verifies that everything still works in this context
+    void testParseDependencyDefinitionFromConfig() {
+        def config = new ConfigSlurper().parse("""
+            dependencyConfig = {
+                dependencies {
+                    runtime("opensymphony:oscache:2.4.1") {
+                        excludes 'jms'
+                    }
+                }
+            }
+        """)
+        
+        def manager = new IvyDependencyManager("test", "0.1")
+        manager.parseDependencies(config.dependencyConfig)
+        
+        DefaultDependencyDescriptor dd = manager.getDependencyDescriptors().iterator().next()
+        ArtifactId aid = createExcludeArtifactId("jms")
+        assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
+        aid = createExcludeArtifactId("jdbc")
+        assertFalse "should not contain exclude", dd.doesExclude(['runtime'] as String[], aid)
+
+        manager = new IvyDependencyManager("test", "0.1")
+        // test complex exclude
+        manager.parseDependencies {
+            dependencies {
+                runtime("opensymphony:oscache:2.4.1") {
+                    excludes group:'javax.jms',name:'jms'
+                }
+            }
+        }
+
+        dd = manager.getDependencyDescriptors().iterator().next()
+        aid = createExcludeArtifactId("jms", 'javax.jms')
+        assertTrue "should have contained exclude",dd.doesExclude(['runtime'] as String[], aid)
+        
+        
+    }
     void testCreateModuleDescriptor() {
         def manager = new IvyDependencyManager("test", "0.1")
         def md = manager.createModuleDescriptor()
