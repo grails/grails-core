@@ -32,7 +32,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
-/*  void testInheritRepositoryResolvers() {
+  void testInheritRepositoryResolvers() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
@@ -533,7 +533,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
 
         assertEquals 2, manager.listDependencies('runtime').size()
-    }*/
+    }
 
     void testDefaultDependencyDefinition() {
 
@@ -555,7 +555,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 //        assertFalse "dependency resolve should have no errors!",report.hasError()
     }
 
-/*    void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
+    void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
         
         def settings = new BuildSettings()
         def grailsVersion = getCurrentGrailsVersion()
@@ -587,7 +587,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 19, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
-    }*/
+    }
 
     def getCurrentGrailsVersion() {
         def props = new Properties()
@@ -598,7 +598,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         return grailsVersion
     }
 
-    /*void testInheritanceAndExcludes() {
+    void testInheritanceAndExcludes() {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
 
         def settings = new BuildSettings()
@@ -824,12 +824,12 @@ class DummyMavenAwareDependencyManager extends IvyDependencyManager {
         super(applicationName, applicationVersion, settings)
     }
 
-    List readDependenciesFromPOM() {
+    DependencyDescriptor[] readDependenciesFromPOM() {
         ModuleId moduleId = new ModuleId("junit", "junit")
         ModuleRevisionId moduleRevisionId = new ModuleRevisionId(moduleId, "4.8.1")
         DefaultDependencyDescriptor dependencyDescriptor = new DefaultDependencyDescriptor(moduleRevisionId, false)
         dependencyDescriptor.addDependencyConfiguration("test", "")
 
-        [dependencyDescriptor]
+        [dependencyDescriptor] as DependencyDescriptor[]
     }
-*/}
+}
