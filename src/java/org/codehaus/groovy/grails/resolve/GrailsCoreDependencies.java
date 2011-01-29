@@ -51,9 +51,6 @@ public class GrailsCoreDependencies {
     public Closure createDeclaration() {
         return new Closure(this, this) {
             public Object doCall() {
-                
-                System.out.println("in root block");
-                
                 DependencyConfigurationConfigurer rootDelegate = (DependencyConfigurationConfigurer)getDelegate();
                 
                 rootDelegate.log("warn");
@@ -62,8 +59,6 @@ public class GrailsCoreDependencies {
                 
                 rootDelegate.repositories(new Closure(this, GrailsCoreDependencies.this) {
                     public Object doCall() {
-                        
-                        System.out.println("in repositories block");
                         RepositoriesConfigurer repositoriesDelegate = (RepositoriesConfigurer)getDelegate();
                      
                         repositoriesDelegate.grailsPlugins();
@@ -77,8 +72,6 @@ public class GrailsCoreDependencies {
                 
                 rootDelegate.dependencies(new Closure(this, GrailsCoreDependencies.this) {
                     public Object doCall() {
-                        
-                        System.out.println("in dependencies block");
                         JarDependenciesConfigurer dependenciesDelegate = (JarDependenciesConfigurer)getDelegate(); 
                         IvyDependencyManager dependencyManager = dependenciesDelegate.getDependencyManager();
                         
