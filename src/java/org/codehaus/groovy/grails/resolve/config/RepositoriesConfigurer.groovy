@@ -23,6 +23,7 @@ import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
 
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
+import org.apache.ivy.util.Message
 
 class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     
