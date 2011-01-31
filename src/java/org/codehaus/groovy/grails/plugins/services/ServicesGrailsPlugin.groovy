@@ -111,7 +111,7 @@ class ServicesGrailsPlugin {
         def serviceName = "${serviceClass.propertyName}"
         def scope = serviceClass.getPropertyValue("scope")
 
-        if (serviceClass.transactional && event.ctx.containsBean("transactionManager")) {
+        if (shouldCreateTransactionalProxy(serviceClass) && event.ctx.containsBean("transactionManager")) {
             def beans = beans {
                 "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
                     targetObject = ref("grailsApplication", true)

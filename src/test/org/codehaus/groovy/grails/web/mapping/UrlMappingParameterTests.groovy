@@ -37,6 +37,35 @@ class UrlMappings {
 }
 '''
 
+    def test3 = '''
+class UrlMappings {
+    static mappings = {
+        "/showSomething/$key" {
+            controller = "blog"
+            constraints {
+                key notEqual: 'bad'
+            }
+        }
+   }
+}
+'''
+
+	void testNotEqual() {
+        Closure closure = new GroovyClassLoader().parseClass(test3).mappings
+        def mappings = evaluator.evaluateMappings(closure)
+
+        def holder = new DefaultUrlMappingsHolder(mappings)
+        def info = holder.match('/showSomething/bad')
+
+		assertNull 'url should not have matched', info
+
+		info = holder.match('/showSomething/good')
+
+		assertNotNull 'url should have matched', info
+        info.configure webRequest
+        assertEquals "good", webRequest.params.key
+	}
+
     void testDynamicMappingWithAdditionalParameter() {
         Closure closure = new GroovyClassLoader().parseClass(test1).mappings
         def mappings = evaluator.evaluateMappings(closure)

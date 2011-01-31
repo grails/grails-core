@@ -88,8 +88,8 @@ The following libraries are included in Grails because they are required either 
 - Gant 1.9.4-SNAPSHOT (http://gant.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 
-* groovy-all-1.8.0-beta-3.jar
-- Groovy 1.8.0-beta-3 (http://groovy.codehaus.org) Apache 2.0 License
+* groovy-all-1.8.0-beta-4-SNAPSHOT.jar
+- Groovy 1.8.0-beta-4-SNAPSHOT (http://groovy.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 - required for building Grails core
 - required for running Grails applications

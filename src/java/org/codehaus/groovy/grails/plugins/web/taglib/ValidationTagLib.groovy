@@ -158,7 +158,7 @@ class ValidationTagLib {
      * Checks if the request has errors either for a field or global errors.
      *
      * @attr bean REQUIRED The bean to check for errors
-     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
     def hasErrors = { attrs, body ->
@@ -181,6 +181,10 @@ class ValidationTagLib {
 
     def eachErrorInternal(attrs, body, boolean outputResult = false) {
         def errorsList = extractErrors(attrs)
+		eachErrorInternalForList attrs, errorsList, body, outputResult
+    }
+
+	def eachErrorInternalForList(attrs, errorsList, body, boolean outputResult = false) {
         def var = attrs.var
         def field = attrs.field
 
@@ -216,7 +220,7 @@ class ValidationTagLib {
      * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported).
      *
      * @attr bean REQUIRED The bean to check for errors
-     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
     def renderErrors = { attrs, body ->
@@ -227,11 +231,14 @@ class ValidationTagLib {
             def codec = attrs.codec ?: 'HTML'
             if (codec == 'none') codec = ''
 
-            out << "<ul>"
-            out << eachErrorInternal(attrs, {
-                out << "<li>${message(error:it, encodeAs:codec)}</li>"
-            })
-            out << "</ul>"
+			def errorsList = extractErrors(attrs)
+			if(errorsList) {
+				out << "<ul>"
+				out << eachErrorInternalForList(attrs, errorsList, {
+					out << "<li>${message(error:it, encodeAs:codec)}</li>"
+				})
+				out << "</ul>"
+			}
         }
         else if (renderAs.equalsIgnoreCase("xml")) {
             def mkp = new MarkupBuilder(out)

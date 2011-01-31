@@ -98,13 +98,13 @@ class PluginInstallEngine {
 
         IvyDependencyManager dependencyManager = settings.dependencyManager
 
-        List pluginDeps = dependencyManager.pluginDependencyDescriptors.collect { DependencyDescriptor dd ->
-            dd.getDependencyRevisionId()
-        }
-        List pluginsToInstall = findMissingOrUpgradePlugins(pluginDeps)
+        // Get the plugin dependency descriptors for the max version of each applicable dependency
+        def pluginDescriptors = dependencyManager.effectivePluginDependencyDescriptors
+        
+        List<ModuleRevisionId> pluginsToInstall = findMissingOrUpgradePlugins(pluginDescriptors)
         installPlugins(pluginsToInstall)
 
-        checkPluginsToUninstall(pluginDeps)
+        checkPluginsToUninstall(pluginDescriptors.collect { it.dependencyRevisionId })
     }
 
     /**
@@ -590,9 +590,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    protected List<ModuleRevisionId> findMissingOrUpgradePlugins(List pluginDeps) {
+    protected List<ModuleRevisionId> findMissingOrUpgradePlugins(Collection<EnhancedDefaultDependencyDescriptor> descriptors) {
         def pluginsToInstall = []
-        for (p in pluginDeps) {
+        for (descriptor in descriptors) {
+            def p = descriptor.dependencyRevisionId
             def name = p.name
             def version = p.revision
 			
@@ -613,13 +614,16 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 				else {
 					def dirName = pluginLoc.file.canonicalFile.name
 					PluginBuildSettings settings = pluginSettings
-					if (GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version) &&
+					if (pluginInfo.version != version &&
 						!settings.isInlinePluginLocation(pluginLoc) &&
 						!pluginsToInstall.contains(p)) {
 						// only print message if the version doesn't start with "latest." since we have
 						// to do a check for a new version when there version is specified as "latest.integration" etc.
-						if (!version.startsWith("latest."))
-							eventHandler "StatusUpdate", "Upgrading plugin [$dirName] to [${fullName}]."
+						if (!version.startsWith("latest.")) {
+							def upgrading = GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version)
+							def action = upgrading ? "Upgrading" : "Downgrading"
+							eventHandler "StatusUpdate", "$action plugin [$dirName] to [${fullName}]."
+						}
 						
 						pluginsToInstall << p
 					}

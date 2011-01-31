@@ -130,6 +130,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                 return buffer.getWriter();
             }
         });
+        routablePrintWriter.blockFlushAndClose();
         routableServletOutputStream.updateDestination(new RoutableServletOutputStream.DestinationFactory() {
             public ServletOutputStream create() {
                 return buffer.getOutputStream();
@@ -146,6 +147,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                 return getResponse().getWriter();
             }
         });
+        routablePrintWriter.unBlockFlushAndClose();
         routableServletOutputStream.updateDestination(new RoutableServletOutputStream.DestinationFactory() {
             public ServletOutputStream create() throws IOException {
                 return getResponse().getOutputStream();

@@ -60,6 +60,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
+import org.codehaus.groovy.grails.plugins.VersionComparator
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -259,7 +260,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				}
 
 				// dependencies needed for compilation
-				"${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.8.0-beta-3") {
+				"${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.8.0-beta-4-SNAPSHOT") {
 					excludes 'jline'
 				}
 
@@ -668,6 +669,24 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     boolean getBooleanValue(dependency, String name) {
         return dependency.containsKey(name) ? Boolean.valueOf(dependency[name]) : true
     }
+    
+    /**
+     * The plugin dependencies excluding non-exported transitive deps and
+     * collapsed to the highest version of each dependency.
+     */
+    Set<DependencyDescriptor> getEffectivePluginDependencyDescriptors() {
+        def versionComparator = new VersionComparator()
+        def candidates = getPluginDependencyDescriptors().findAll { it.exportedToApplication }
+        def groupedByModule = candidates.groupBy { it.dependencyRevisionId.moduleId }
+
+        groupedByModule.collect {
+            it.value.max { lhs, rhs -> 
+                def versionComparison = versionComparator.compare(lhs.dependencyRevisionId.revision, rhs.dependencyRevisionId.revision)
+                versionComparison ?: (rhs.plugin <=> lhs.plugin)
+            }
+        }
+    }
+    
 }
 
 class IvyDomainSpecificLanguageEvaluator {

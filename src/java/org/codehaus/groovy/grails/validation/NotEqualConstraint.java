@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.validation;
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.springframework.validation.Errors;
 
 /**
@@ -46,7 +47,7 @@ public class NotEqualConstraint extends AbstractConstraint {
         }
 
         Class<?> propertyClass = GrailsClassUtils.getPropertyType(constraintOwningClass, constraintPropertyName);
-        if (!GrailsClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(),propertyClass)) {
+        if (!GrailsClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(),propertyClass) && !UrlMapping.class.isAssignableFrom(constraintOwningClass)) {
             throw new IllegalArgumentException("Parameter for constraint [" +
                     ConstrainedProperty.NOT_EQUAL_CONSTRAINT + "] of property [" +
                     constraintPropertyName + "] of class [" + constraintOwningClass +

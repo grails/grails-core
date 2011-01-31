@@ -15,9 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.errors;
 
-import java.util.Enumeration;
-
 import grails.util.GrailsUtil;
+
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
@@ -174,39 +178,55 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public static String getRequestLogMessage(HttpServletRequest request) {
-		StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-		sb.append("Exception occurred when processing request: ");
-		sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
+        sb.append("Exception occurred when processing request: ");
+        sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
 
-		if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
+        if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
             sb.append(request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE));
         } else {
-		sb.append(request.getRequestURI());
+            sb.append(request.getRequestURI());
         }
 
-		Enumeration<String> params = request.getParameterNames();
+        Map flatConfig = ConfigurationHolder.getFlatConfig();
 
-		if(params.hasMoreElements()){
-			String param;
-			String values[];
-			int i;
+        if (!Boolean.FALSE.equals(flatConfig
+                .get("grails.exceptionresolver.logRequestParameters"))) {
+            Enumeration<String> params = request.getParameterNames();
 
-			sb.append(" - parameters:");
+            if (params.hasMoreElements()) {
+                String param;
+                String values[];
+                int i;
 
-			while(params.hasMoreElements()){
-				param = params.nextElement();
-				values = request.getParameterValues(param);
+                sb.append(" - parameters:");
+                List<String> blackList = (List<String>) flatConfig.get(
+                                "grails.exceptionresolver.params.exclude");
 
-				for(i=0; i< values.length; i++){
-					sb.append(LINE_SEPARATOR).append(param).append(": ").append(values[i]);
-				}
-			}
-		}
+                if (blackList == null) {
+                    blackList = Collections.emptyList();
+                }
+                while (params.hasMoreElements()) {
+                    param = params.nextElement();
+                    values = request.getParameterValues(param);
 
-		sb.append(LINE_SEPARATOR)
-		  .append("Stacktrace follows:");
+                    for (i = 0; i < values.length; i++) {
+                        sb.append(LINE_SEPARATOR).append(param).append(": ");
 
-		return sb.toString();
-	}
+                        if (blackList.contains(param)) {
+                            sb.append("***");
+                        } else {
+                            sb.append(values[i]);
+                        }
+                    }
+                }
+            }
+        }
+
+        sb.append(LINE_SEPARATOR)
+          .append("Stacktrace follows:");
+
+        return sb.toString();
+    }
 }

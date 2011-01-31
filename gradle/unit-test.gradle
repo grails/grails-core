@@ -74,7 +74,25 @@ createTestTask("cli", ["org/codehaus/groovy/grails/cli/**/*Tests.class"], ["org/
 createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
         "**/orm/hibernate/binding/*Tests.class",
         "**/orm/hibernate/cfg/*Tests.class",
-        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", "**/UniqueConstraint*"])
+        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", 
+                                                      "**/UniqueConstraint*", 
+                                                      "**/AssociationDataBinding*", 
+                                                      "**/GORMNamespaceHandler*", 
+                                                      "**/GrailsDomainBinder*", 
+                                                      "**/CascadingValidationOnUpdate*",
+                                                      "**/CascadingValidationWIthInheritance*",
+                                                      "**/GStringValidation*",
+                                                      "**/InheritedConstraints*",
+                                                      "**/ValidateTransient*"])
+createTestTask("associationDataBinding", ["**/AssociationDataBindingTests.class"], [])
+createTestTask("gormNamespaceHandler", ["**/GORMNamespaceHandlerTests.class"], [])
+createTestTask("grailsDomainBinder", ["**/GrailsDomainBinderTests.class"], [])
+createTestTask("cascadingValidationOnUpdate", ["**/CascadingValidationOnUpdateTests.class"], [])
+createTestTask("cascadingValidationWithInheritance", ["**/CascadingValidationWithInheritanceTests.class"], [])
+createTestTask("cascadingValidationWithInheritance2", ["**/CascadingValidationWithInheritance2Tests.class"], [])
+createTestTask("gstringValidation", ["**/GStringValidationTests.class"], [])
+createTestTask("inheritedConstraints", ["**/InheritedConstraintsTests.class"], [])
+createTestTask("validateTransient", ["**/ValidateTransientTests.class"], [])
 createTestTask("uniqueConstraints", ["**/UniqueConstraintTests.class"], [])
 createTestTask("webflow", ["**/webflow/**/*Tests.class"], ["**/Abstract*"])
 createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
@@ -98,7 +116,6 @@ def createTestTaskWithoutSuffix(String name, includes, excludes) {
 /*        classpath = classpath + project.rootProject.configurations.coverage*/
         classpath = sourceSets.test.runtimeClasspath + project.rootProject.configurations.coverage
         testClassesDir = sourceSets.test.classesDir
-
         forkEvery = 1
     }
     test.dependsOn task

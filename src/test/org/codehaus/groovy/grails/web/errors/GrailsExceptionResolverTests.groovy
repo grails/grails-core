@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.errors
 
 import grails.util.GrailsWebUtil
 
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -134,21 +135,88 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertFalse modelAndView.empty
     }
-	
-	void testLogRequest() {
-		def request = new MockHttpServletRequest()
-		request.setRequestURI("/execute/me")
-		request.setMethod "GET"
-		request.addParameter "foo", "bar"
-		request.addParameter "one", "two"
-		
-		def msg = GrailsExceptionResolver.getRequestLogMessage(request)
-		
-		assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+
+    void testLogRequest() {
+        def oldConfig = ConfigurationHolder.config
+        try {
+            def config = new ConfigSlurper().parse('''
+grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
+''')
+
+            ConfigurationHolder.config = config
+
+            def request = new MockHttpServletRequest()
+            request.setRequestURI("/execute/me")
+            request.setMethod "GET"
+            request.addParameter "foo", "bar"
+            request.addParameter "one", "two"
+            request.addParameter "jennysPhoneNumber", "8675309"
+
+            def msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+jennysPhoneNumber: ***
+Stacktrace follows:''' , msg
+        } finally {
+            ConfigurationHolder.config = oldConfig
+        }
+    }
+
+    void testDisablingRequestParameterLogging() {
+        def oldConfig = ConfigurationHolder.config
+        try {
+            def config = new ConfigSlurper().parse('''
+grails.exceptionresolver.logRequestParameters = false
+''')
+
+            ConfigurationHolder.config = config
+
+            def request = new MockHttpServletRequest()
+            request.setRequestURI("/execute/me")
+            request.setMethod "GET"
+            request.addParameter "foo", "bar"
+            request.addParameter "one", "two"
+
+            def msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me
+Stacktrace follows:''' , msg
+
+            config = new ConfigSlurper().parse('''
+grails.exceptionresolver.logRequestParameters = true
+''')
+
+            ConfigurationHolder.config = config
+
+            request = new MockHttpServletRequest()
+            request.setRequestURI("/execute/me")
+            request.setMethod "GET"
+            request.addParameter "foo", "bar"
+            request.addParameter "one", "two"
+
+            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
 foo: bar
 one: two
 Stacktrace follows:''' , msg
-	}
+
+            config = new ConfigSlurper().parse('''
+''')
+
+            ConfigurationHolder.config = config
+            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+
+            assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+Stacktrace follows:''' , msg
+        } finally {
+            ConfigurationHolder.config = oldConfig
+        }
+    }
 }
 
 class DummyViewResolver implements ViewResolver {
