@@ -35,6 +35,20 @@ class ControllerUnitTestCaseTests extends GroovyTestCase {
         testCase.testModelAndView()
         testCase.tearDown()
     }
+
+    void testResetWithResponseNotCommitted() {
+        def testCase = new UnitTestControllerTestCase()
+        testCase.setUp()
+        testCase.testResetWithResponseNotCommitted()
+        testCase.tearDown()
+    }
+
+    void testResetWithResponseCommitted() {
+        def testCase = new UnitTestControllerTestCase()
+        testCase.setUp()
+        testCase.testResetWithResponseCommitted()
+        testCase.tearDown()
+    }
 }
 
 class UnitTestControllerTestCase extends ControllerUnitTestCase {
@@ -71,6 +85,20 @@ class UnitTestControllerTestCase extends ControllerUnitTestCase {
         assertTrue cmd.validate()
         assertFalse cmd.errors.hasErrors()
     }
+
+    void testResetWithResponseNotCommitted() {
+        controller.testSetModelAndView()
+        reset()
+        controller.testSetModelAndView()
+    }
+
+    void testResetWithResponseCommitted() {
+        controller.testWriteIntoResponse()
+        assert controller.response.contentAsString == "test"
+        reset()
+        controller.testWriteIntoResponse()
+        assert controller.response.contentAsString == "test"
+    }
 }
 
 class OtherTestCase extends ControllerUnitTestCase {
@@ -90,6 +118,10 @@ class UnitTestController {
 
     def testSetModelAndView() {
         modelAndView = new ModelAndView()
+    }
+
+    def testWriteIntoResponse() {
+        response << "test"
     }
 }
 
