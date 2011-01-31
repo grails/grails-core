@@ -351,6 +351,22 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "grails-test", buildDeps[0].moduleId.name
     }
 
+    void testIsPluginConfiguredByApplication() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1", settings)
+
+        manager.parseDependencies {
+            plugins { runtime(":foo:1.0") }
+        }
+
+        manager.parseDependencies("a-plugin") {
+            plugins { runtime(":bar:1.0") }
+        }
+
+        assertTrue manager.isPluginConfiguredByApplication("foo")
+        assertFalse manager.isPluginConfiguredByApplication("bar")
+    }
+
     void testDependenciesWithGString() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

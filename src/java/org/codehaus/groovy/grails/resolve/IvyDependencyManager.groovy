@@ -62,7 +62,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     MessageLogger logger
     ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
     Collection repositoryData = new ConcurrentLinkedQueue()
-    Collection<String> configuredPlugins = new ConcurrentLinkedQueue()
     
     Collection moduleExcludes = new ConcurrentLinkedQueue()
     TransferListener transferListener
@@ -199,7 +198,9 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
     
     boolean isPluginConfiguredByApplication(String name) {
-        (configuredPlugins.contains(name) || configuredPlugins.contains(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)))
+        def propertyName = GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)
+        def descriptor = pluginNameToDescriptorMap[name] ?: pluginNameToDescriptorMap[propertyName]
+        descriptor?.plugin == null
     }
 
     Set<ModuleRevisionId> getModuleRevisionIds(String org) { orgToDepMap[org] }
