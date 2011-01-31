@@ -63,11 +63,7 @@ defaultWarDependencies = { antBuilder ->
         }
     }
     else {
-		IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-        def dependencies = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-											.allArtifactsReports
-											.localFile
-		dependencies += grailsSettings.applicationJars
+		def dependencies = grailsSettings.runtimeDependencies
         if(dependencies) {
             for(File f in dependencies) {
                 fileset(dir: f.parent, includes: f.name)
