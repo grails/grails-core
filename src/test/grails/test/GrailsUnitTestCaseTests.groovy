@@ -32,13 +32,24 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
 
     void testMockConfig() {
         def testCase = new TestUnitTestCase()
+        def d = new GrailsUnitTestClass()
+
+        // Empty at first
+        testCase.setUp()
+        d.testEmptyConfig()
+        testCase.tearDown()
+
+        // Not empty
         testCase.setUp()
         testCase.mockConfig '''
             foo.bar = "good"
         '''
+        d.testConfig()
+        testCase.tearDown()
 
-        new GrailsUnitTestClass().testConfig()
-
+        // Then empty again
+        testCase.setUp()
+        d.testEmptyConfig()
         testCase.tearDown()
     }
 
@@ -353,6 +364,12 @@ class GrailsUnitTestClass {
 
     void testConfig() {
         assert ConfigurationHolder.config.foo.bar == "good"
+        assert ConfigurationHolder.flatConfig["foo.bar"] == "good"
+    }
+
+    void testEmptyConfig() {
+        assert ConfigurationHolder.config == null
+        assert ConfigurationHolder.flatConfig.size() == 0
     }
 
     static constraints = {
