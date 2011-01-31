@@ -42,6 +42,13 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
         testCase.tearDown()
     }
 
+    void testMockConfigReturnsConfig() {
+        def testCase = new TestUnitTestCase()
+        testCase.setUp()
+        testCase.testMockConfigReturnsConfig()
+        testCase.tearDown()
+    }
+
     void testMockLogging() {
         def testCase = new TestUnitTestCase()
         testCase.setUp()
@@ -310,6 +317,15 @@ class TestUnitTestCase extends GrailsUnitTestCase {
         assertFalse testDomain.hasErrors()
         assertTrue testDomain.validate()
         assertFalse testDomain.hasErrors()
+    }
+
+    void testMockConfigReturnsConfig() {
+        def config = mockConfig('''
+            foo.bar = "good"
+        ''')
+
+        assert config.foo.bar == "good"
+        assert ConfigurationHolder.config.foo.bar == "good"
     }
 }
 
