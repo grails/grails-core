@@ -12,25 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.config
+package org.codehaus.groovy.grails.resolve.config;
 
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
+import java.util.Map;
 
 class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
-    PluginDependenciesConfigurer(DependencyConfigurationContext context) {
-        super(context)
+    public PluginDependenciesConfigurer(DependencyConfigurationContext context) {
+        super(context);
     }
 
-    protected addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
-        dependencyManager.registerPluginDependency(scope, descriptor)
+    protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        getDependencyManager().registerPluginDependency(scope, descriptor);
     }
 
-    protected preprocessDependencyProperties(Map dependency) {
-        if (!dependency.group) {
-            dependency.group = "org.grails.plugins"
+    protected void preprocessDependencyProperties(Map<Object, Object> dependency) {
+        Object groupValue = dependency.get("group");
+        if (groupValue == null || groupValue.toString().equals("")) {
+            dependency.put("group", "org.grails.plugins");
         }
     }
-    
     
 }

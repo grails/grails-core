@@ -12,19 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.config
+package org.codehaus.groovy.grails.resolve.config;
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
-abstract class AbstractDependencyManagementConfigurer {
-    
-    final DependencyConfigurationContext context
+public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
-    AbstractDependencyManagementConfigurer(DependencyConfigurationContext context) {
-        this.context = context
+    public JarDependenciesConfigurer(DependencyConfigurationContext context) {
+        super(context);
     }
 
-    IvyDependencyManager getDependencyManager() {
-        context.dependencyManager
+    protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        getDependencyManager().registerDependency(scope, descriptor);
     }
+
 }
