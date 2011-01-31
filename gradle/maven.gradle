@@ -11,7 +11,10 @@ dependencies {
 }
 
 
-def artifact = NamespaceBuilder.newInstance(ant, 'antlib:org.apache.maven.artifact.ant')
+
+ant.taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml',
+              uri: 'antlib:org.apache.maven.artifact.ant',
+              classpath: configurations.deployerJars.asPath)
 
 task generatePoms(type: Copy) {
     pomsDir = "$buildDir/poms"
@@ -25,13 +28,13 @@ task generatePoms(type: Copy) {
 
 task mavenInstall(dependsOn: [generatePoms, tasks.withType(Jar).all]) << {
     tasks.withType(Jar).matching({task -> task.mavenArtifact } as Spec).each {jar ->
-        artifact.install(file: jar.archivePath) {
+        ant.'antlib:org.apache.maven.artifact.ant:install'(file: jar.archivePath) {
             pom(file: "$generatePoms.pomsDir/$jar.baseName${jar.appendix ? '-' + jar.appendix : ""}.pom")
         }
     }
     
     // install the grails parent POM
-    artifact.install(file: "${libs.destinationDir}/grails-${version}.jar") {
+    ant.'antlib:org.apache.maven.artifact.ant:install'(file: "${libs.destinationDir}/grails-${version}.jar") {
     	pom(file: "$generatePoms.pomsDir/grails.pom")
     }
 }
