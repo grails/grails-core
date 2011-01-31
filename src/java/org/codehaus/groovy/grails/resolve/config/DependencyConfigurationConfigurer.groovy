@@ -90,19 +90,6 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
         callable.call()
     }
 
-    void plugin(String name, Closure callable) {
-        configuredPlugins << name
-
-        try {
-            context.pluginName = name
-            callable?.delegate = this
-            callable?.call()
-        }
-        finally {
-            context.pluginName = null
-        }
-    }
-
     void log(String level) {
         // plugins can't configure log
         if (context.pluginName) return
