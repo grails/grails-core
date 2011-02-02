@@ -16,6 +16,7 @@ package grails.util
 
 import groovy.util.slurpersupport.GPathResult
 
+import java.io.File;
 import java.util.concurrent.ConcurrentHashMap
 
 import org.apache.commons.lang.ArrayUtils
@@ -29,6 +30,7 @@ import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.util.AntPathMatcher;
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -578,8 +580,12 @@ class PluginBuildSettings {
             if (newResources) {
                 if (processExcludes) {
                     def excludes = EXCLUDED_RESOURCES
+					AntPathMatcher pathMatcher=new AntPathMatcher()
                     newResources = newResources.findAll { Resource r ->
-                        !excludes.any { r.file.absolutePath.endsWith(it) }
+						def relPath = relativePath(dir.file, r.file)
+                        !excludes.any {
+							pathMatcher.match(it, relPath) 
+						}
                     }
                 }
                 originalResources = ArrayUtils.addAll(originalResources, newResources as Resource[])
@@ -587,4 +593,15 @@ class PluginBuildSettings {
         }
         return originalResources
     }
+	
+	private String relativePath(File relbase, File file) {
+		def pathParts = []
+		def currentFile = file
+		while (currentFile != null && currentFile != relbase) {
+			pathParts += currentFile.name
+			currentFile = currentFile.parentFile
+		}
+		pathParts.reverse().join('/')
+	}
+
 }
