@@ -69,6 +69,24 @@ class Filters {
     }
 
     def filters = {
+      itRocks(action: 'b*', actionExclude: 'bieb*') {
+          before = {
+              request.rocks = 'yes'
+          }
+      }
+
+      blues(controller: 'w*', controllerExclude: 'wing*') {
+          before = {
+              request.blues = 'yes'
+          }
+      }
+
+      funky(uri: '/b*', uriExclude: '/blackoak*') {
+          before = {
+              request.funky = 'yes'
+          }
+      }
+
       "default"(controller:"*", action:"*") {
             before = {
                 // Check that the filters property is available. This
@@ -211,6 +229,56 @@ class Group3Filters {
     }
 }
         '''
+    }
+
+    void testFilterExclusions() {
+        HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/band/beardfish")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "band")
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "beardfish")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertEquals 'yes', request.rocks
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/band/bieber")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "band")
+        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "bieber")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertNull request.rocks
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/winter")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "winter")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertEquals 'yes', request.blues
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/winger")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "winger")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertNull request.blues
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/blackcrowes")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertEquals 'yes', request.funky
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/blackoakarkansas")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertNull request.funky
     }
 
     void testFilterOrdering() {

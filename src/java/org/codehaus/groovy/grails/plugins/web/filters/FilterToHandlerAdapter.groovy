@@ -42,8 +42,11 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     def configClass
 
     def controllerRegex
+    def controllerExcludeRegex
     def actionRegex
+    def actionExcludeRegex
     def uriPattern
+    def uriExcludePattern
     def urlPathHelper = new UrlPathHelper()
     def pathMatcher = new AntPathMatcher()
     def useRegex  // standard regex
@@ -65,6 +68,10 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             controllerRegex = Pattern.compile(".*")
         }
 
+        if(scope.controllerExclude) {
+            controllerExcludeRegex = Pattern.compile((useRegex)?scope.controllerExclude:scope.controllerExclude.replaceAll("\\*", ".*"))
+        }
+
         if (scope.action) {
             actionRegex = Pattern.compile((useRegex)?scope.action:scope.action.replaceAll("\\*", ".*"))
         }
@@ -72,8 +79,15 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             actionRegex = Pattern.compile(".*")
         }
 
+        if(scope.actionExclude) {
+            actionExcludeRegex = Pattern.compile((useRegex)?scope.actionExclude:scope.actionExclude.replaceAll("\\*", ".*"))
+        }
+
         if (scope.uri) {
             uriPattern = scope.uri.toString()
+        }
+        if(scope.uriExclude) {
+            uriExcludePattern = scope.uriExclude.toString()
         }
     }
 
@@ -183,6 +197,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
 
         if (uriPattern) {
             matched = pathMatcher.match(uriPattern, uri)
+            if(matched && uriExcludePattern) {
+                matched = !pathMatcher.match(uriExcludePattern, uri)
+            }
         }
         else if (controllerRegex && actionRegex) {
             if (controllerName == null) {
@@ -190,6 +207,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             }
             if (matched) {
                 matched = doesMatch(controllerRegex, controllerName)
+                if(matched && controllerExcludeRegex) {
+                    matched = !doesMatch(controllerExcludeRegex, controllerName)
+                }
             }
             if (matched && filterConfig.scope.action) {
                 if (!actionName && controllerName) {
@@ -198,6 +218,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
                     actionName = controllerClass?.getDefaultAction()
                 }
                 matched = doesMatch(actionRegex, actionName)
+                if(matched && actionExcludeRegex) {
+                    matched = !doesMatch(actionExcludeRegex, actionName)
+                }
             }
         }
 
