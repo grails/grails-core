@@ -87,6 +87,12 @@ class Filters {
           }
       }
 
+      heavy(uriExclude: '/music/pop*') {
+          before = {
+              request.heavy = 'yes'
+          }
+      }
+
       "default"(controller:"*", action:"*") {
             before = {
                 // Check that the filters property is available. This
@@ -279,6 +285,20 @@ class Group3Filters {
 
         filterInterceptor.preHandle(request, response, null)
         assertNull request.funky
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/music/metal")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertEquals 'yes', request.heavy
+
+        request.clearAttributes()
+
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/music/poprock")
+
+        filterInterceptor.preHandle(request, response, null)
+        assertNull request.heavy
     }
 
     void testFilterOrdering() {

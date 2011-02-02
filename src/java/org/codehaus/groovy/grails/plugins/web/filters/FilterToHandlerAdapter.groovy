@@ -201,6 +201,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
                 matched = !pathMatcher.match(uriExcludePattern, uri)
             }
         }
+        else if (uriExcludePattern) {
+            matched = !pathMatcher.match(uriExcludePattern, uri)
+        }
         else if (controllerRegex && actionRegex) {
             if (controllerName == null) {
                 matched = ('/' == uri)
