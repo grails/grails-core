@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.errors;
 
+import grails.util.Environment;
 import grails.util.GrailsUtil;
 
 import java.util.Collections;
@@ -190,9 +191,14 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         }
 
         Map flatConfig = ConfigurationHolder.getFlatConfig();
+        final boolean shouldLogRequestParameters;
 
-        if (!Boolean.FALSE.equals(flatConfig
-                .get("grails.exceptionresolver.logRequestParameters"))) {
+        if(flatConfig.containsKey("grails.exceptionresolver.logRequestParameters")) {
+            shouldLogRequestParameters = Boolean.TRUE.equals(flatConfig.get("grails.exceptionresolver.logRequestParameters"));
+        } else {
+            shouldLogRequestParameters = Environment.getCurrent() != Environment.PRODUCTION;
+        }
+        if (shouldLogRequestParameters) {
             Enumeration<String> params = request.getParameterNames();
 
             if (params.hasMoreElements()) {
