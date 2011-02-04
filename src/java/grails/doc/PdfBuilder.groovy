@@ -32,9 +32,9 @@ class PdfBuilder {
     /**
      * Builds a PDF file from the manual's single.html file.<p>
      * The following directories are assumed to exist:<ul>
-     * <li> $basedir/manual/guide/single.html</li>
-     * <li> $basedir/manual/css/</li>
-     * <li> $basedir/manual/img/</li>
+     * <li> $basedir/guide/single.html</li>
+     * <li> $basedir/guide/css/</li>
+     * <li> $basedir/guide/img/</li>
      * <li> $home/src/$tool/docs/style</li>
      * </ul>
      *
@@ -49,12 +49,12 @@ class PdfBuilder {
         String home = options.home
         String tool = options.tool ?: 'grails'
  
-        File htmlFile = new File("${baseDir}/manual/guide/single.html")
-        File outputFile = new File("${baseDir}/manual/guide/single.pdf")
+        File htmlFile = new File("${baseDir}/guide/single.html")
+        File outputFile = new File("${baseDir}/guide/single.pdf")
         File homeFile = new File(home).canonicalFile
         String urlBase = "file://${homeFile.absolutePath}/src/${tool}/docs/style"
 
-        String xml = createXml(htmlFile, "${baseDir}/manual")
+        String xml = createXml(htmlFile, "${baseDir}")
         createPdf xml, outputFile, urlBase
     }
 
