@@ -39,9 +39,13 @@ class ConfigurationHelper {
     private static final String CONFIG_BINDING_APP_NAME = "appName"
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion"
 
-    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null) {
+    static ConfigObject loadConfigFromClasspath(String environment) {
+        loadConfigFromClasspath(null, environment)
+    }
 
-        ConfigSlurper configSlurper = new ConfigSlurper(Environment.current.name)
+    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null, String environment = Environment.current.name) {
+
+        ConfigSlurper configSlurper = new ConfigSlurper(environment)
         Map binding = new HashMap()
 
         // configure config slurper binding
