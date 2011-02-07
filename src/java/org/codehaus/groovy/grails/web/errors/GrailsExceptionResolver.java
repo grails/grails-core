@@ -196,7 +196,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         if(flatConfig.containsKey("grails.exceptionresolver.logRequestParameters")) {
             shouldLogRequestParameters = Boolean.TRUE.equals(flatConfig.get("grails.exceptionresolver.logRequestParameters"));
         } else {
-            shouldLogRequestParameters = Environment.getCurrent() != Environment.PRODUCTION;
+            shouldLogRequestParameters = Environment.getCurrent() == Environment.DEVELOPMENT;
         }
         if (shouldLogRequestParameters) {
             Enumeration<String> params = request.getParameterNames();
