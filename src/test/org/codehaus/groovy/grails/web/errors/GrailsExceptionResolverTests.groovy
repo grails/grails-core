@@ -192,7 +192,7 @@ Stacktrace follows:'''
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
             msg = GrailsExceptionResolver.getRequestLogMessage(request)
-            assertEquals msgWithParameters, msg
+            assertEquals msgWithoutParameters, msg
 
             def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.logRequestParameters = false
