@@ -250,7 +250,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                          "javax.servlet:jsp-api:2.1"
 
                 // dependencies needed for compilation
-                "${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.7.6") {
+                "${compileTimeDependenciesMethod}"("org.codehaus.groovy:groovy-all:1.7.5") {
                     excludes 'jline'
                 }
 
