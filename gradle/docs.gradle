@@ -5,8 +5,10 @@
 task stubs {
     destinationDir = "$buildDir/docs/stubs"
     doFirst {
+        def antBuilderClasspath = services.get(org.gradle.api.internal.ClassPathRegistry).getClassPathFiles('ANT') +
+                configurations.groovy.files
         def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
-        isolatedAnt.execute {
+        isolatedAnt.execute(antBuilderClasspath) {
             mkdir(dir: destinationDir)
             taskdef(name: "generatestubs", classname: "org.codehaus.groovy.grails.cli.GenerateStubsTask", classpath: sourceSets.main.runtimeClasspath.asPath)
             generatestubs(destdir: destinationDir) {

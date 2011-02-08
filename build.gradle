@@ -7,7 +7,7 @@ buildscript {
     }
 }
 
-apply plugin: 'groovy'
+apply id: 'groovy'
 
 version = '1.3.7'
 
@@ -79,14 +79,14 @@ configure([compileJava, compileTestJava]) {
 }
 
 apply {
-    from 'gradle/docs.gradle'
-    from 'gradle/assemble.gradle'
-    from 'gradle/unit-test.gradle'
-    from 'gradle/maven.gradle'
-    from 'gradle/findbugs.gradle'
+    url 'gradle/docs.gradle'
+    url 'gradle/assemble.gradle'
+    url 'gradle/unit-test.gradle'
+    url 'gradle/maven.gradle'
+    url 'gradle/findbugs.gradle'
 }
 
 clean {
     // add additional dirs
-    delete(docs.destinationDir, libs.destinationDir)
+    from(docs.destinationDir, libs.destinationDir)
 }
