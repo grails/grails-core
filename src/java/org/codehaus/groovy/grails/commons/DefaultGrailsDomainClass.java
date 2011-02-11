@@ -637,7 +637,18 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         if (propertyMap.containsKey(name)) {
             return propertyMap.get(name);
         }
-
+        int indexOfDot = name.indexOf('.');
+        if(indexOfDot > 0) {
+            String basePropertyName = name.substring(0, indexOfDot);
+            if(propertyMap.containsKey(basePropertyName)) {
+                GrailsDomainClassProperty prop = propertyMap.get(basePropertyName);
+                GrailsDomainClass referencedDomainClass = prop.getReferencedDomainClass();
+                if(referencedDomainClass != null) {
+                    String restOfPropertyName = name.substring(indexOfDot + 1);
+                    return referencedDomainClass.getPropertyByName(restOfPropertyName);
+                }
+            }
+        }
         throw new InvalidPropertyException("No property found for name ["+name+"] for class ["+getClazz()+"]");
     }
 
