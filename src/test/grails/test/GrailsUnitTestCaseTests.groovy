@@ -34,7 +34,6 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		ApplicationHolder.setApplication null
-		super.tearDown();
 	}
     void testMockConfig() {
         def testCase = new TestUnitTestCase()
