@@ -35,6 +35,18 @@ class Author {
         books sort:"title"
     }
 }
+
+@Entity
+class Ship {
+   String name
+   Captain captain
+}
+
+@Entity
+class Captain {
+   String name
+   static hasMany = [weapons: String]
+}
 ''')
     }
 
@@ -119,6 +131,26 @@ class Author {
 		assert a.books.find { it.isbn == "12345" }?.title == "The Shining"
 		assert a.books.find { it.isbn == "54321" }?.title == "The Stand"
 	}
-	
 
+    void testBindingToSetOfString() {
+        def shipClass = ga.getDomainClass('Ship').clazz
+        def ship = shipClass.newInstance()
+
+        def request = new MockHttpServletRequest()
+        request.addParameter 'name', 'Ship Name'
+        request.addParameter 'captain.name', 'Captain Name'
+        request.addParameter 'captain.weapons', 'sword'
+        request.addParameter 'captain.weapons', 'pistol'
+
+        def params = new GrailsParameterMap(request)
+
+        ship.properties = params
+
+        assertEquals 'Ship Name', ship.name
+        assertEquals 'Captain Name', ship.captain?.name
+
+        assertEquals 2, ship.captain.weapons?.size()
+        assertTrue ship.captain.weapons.contains('sword')
+        assertTrue ship.captain.weapons.contains('pistol')
+    }
 }
