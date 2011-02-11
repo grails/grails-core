@@ -11,10 +11,15 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 class MockUtilsAndHasManyTests extends GroovyTestCase {
 
     @Override
-    protected void tearDown() {
+    protected void setUp() {
         ApplicationHolder.application = null
     }
 
+    @Override
+    protected void tearDown() {
+        ApplicationHolder.application = null
+    }
+    
     void testMockDomainWithHasMany() {
         def test = new MagazineTests()
         test.setUp()
