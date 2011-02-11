@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.GrailsUtil
+import net.sf.ehcache.CacheManager
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
@@ -11,17 +12,18 @@ import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
-
+import org.codehaus.groovy.grails.web.converters.ConverterUtil
+import org.hibernate.EntityMode;
 import org.hibernate.Session
 import org.hibernate.SessionFactory
-
+import org.hibernate.metadata.ClassMetadata
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Log4jConfigurer
 
 /**
@@ -142,11 +144,32 @@ hibernate {
             TransactionSynchronizationManager.unbindResource(sessionFactory)
             SessionFactoryUtils.releaseSession(s, sessionFactory)
         }
+		def classMetadata = sessionFactory.allClassMetadata
+		for(entry in classMetadata) {
+			ClassMetadata metadata = entry.value
+			GroovySystem.getMetaClassRegistry().removeMetaClass(metadata.getMappedClass(EntityMode.POJO))
+		}
+		
+		GroovySystem.stopThreadedReferenceManager()
 
+		try {			
+			TransactionSynchronizationManager.clear()
+		}
+		catch(e) {
+			// means it is not active, ignore
+		}
+		try {
+			CacheManager.getInstance()?.shutdown()
+		}
+		catch(e) {
+			// means there is no cache, ignore	
+		}
         gcl = null
         ga = null
         mockManager = null
-        ctx = null
+		appCtx.close()
+		ConverterUtil.clearInstance()
+        ctx = null		
         appCtx = null
 
         ApplicationHolder.setApplication(null)
