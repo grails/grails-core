@@ -248,7 +248,7 @@ class MockUtilsTests extends GroovyTestCase {
 
     void testUnknownJoinTypeThrowsException() {
         MockUtils.mockDomain(TestDomain, errorsMap, [])
-        shouldFail(RuntimeExceptionN) { TestDomain.findByCountryNotEqualUnknownNameLike("A","B") }
+        shouldFail(RuntimeException) { TestDomain.findByCountryNotEqualUnknownNameLike("A","B") }
     }
 
     /**
