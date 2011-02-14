@@ -271,12 +271,12 @@ target(createIndex: "Produces an index.html page in the root directory") {
 """
 
 		if (createdManual) {
-			writer.write '\t\t<a href="manual/index.html">Manual (Frames)</a><br />\n'
-			writer.write '\t\t<a href="manual/guide/single.html">Manual (Single)</a><br />\n'
+			writer.write '\t\t<a href="guide/index.html">Manual (Frames)</a><br />\n'
+			writer.write '\t\t<a href="guide/single.html">Manual (Single)</a><br />\n'
 		}
 
 		if (createdPdf) {
-			writer.write '\t\t<a href="manual/guide/single.pdf">Manual (PDF)</a><br />\n'
+			writer.write '\t\t<a href="guide/single.pdf">Manual (PDF)</a><br />\n'
 		}
 
 		writer.write """\
