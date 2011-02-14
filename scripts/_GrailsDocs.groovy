@@ -243,7 +243,7 @@ target(pdf: "Produces PDF documentation") {
 
     event("DocStart", ['pdf'])
 
-    PdfBuilder.build(grailsSettings.docsOutputDir.canonicalPath, grailsHome)
+    PdfBuilder.build(grailsSettings.docsOutputDir.canonicalPath, grailsHome.toString())
 
     createdPdf = true
 
@@ -257,7 +257,7 @@ target(createIndex: "Produces an index.html page in the root directory") {
 		 return
 	}
 
-	new File("${grailsSettings.docsOutputDir}/index.html").withWriter { writer ->
+	new File("${grailsSettings.docsOutputDir}/all-docs.html").withWriter { writer ->
 		writer.write """\
 <html>
 
@@ -271,7 +271,7 @@ target(createIndex: "Produces an index.html page in the root directory") {
 """
 
 		if (createdManual) {
-			writer.write '\t\t<a href="guide/index.html">Manual (Frames)</a><br />\n'
+			writer.write '\t\t<a href="index.html">Manual (Frames)</a><br />\n'
 			writer.write '\t\t<a href="guide/single.html">Manual (Single)</a><br />\n'
 		}
 
