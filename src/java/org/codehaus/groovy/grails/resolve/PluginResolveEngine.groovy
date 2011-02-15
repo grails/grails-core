@@ -95,7 +95,7 @@ final class PluginResolveEngine {
             return null
         }
 
-        def reports = report.allArtifactsReports
+        def reports = report.getArtifactsReports(null, false)
         def artifactReport = reports.find { it.artifact.attributes.organisation == resolveArgs.group && it.artifact.name == resolveArgs.name && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
         if(artifactReport == null) {
             artifactReport = reports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
@@ -132,8 +132,8 @@ final class PluginResolveEngine {
             }
         }
         def report = dependencyManager.resolvePluginDependencies('runtime', [download:false])
-        if (!report.hasError() && report.allArtifactsReports) {
-            ArtifactOrigin origin = report.allArtifactsReports.origin.first()
+        if (!report.hasError() && report.getArtifactsReports(null, false)) {
+            ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
             def location = origin.location
             def parent = location[0..location.lastIndexOf('/')-1]
             for (DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
@@ -172,11 +172,11 @@ final class PluginResolveEngine {
 
             report = dependencyManager.resolvePluginDependencies()
 
-            if (report.hasError() || !report.allArtifactsReports) {
+            if (report.hasError() || !report.getArtifactsReports(null, false)) {
                 return null
             }
 
-            return new XmlSlurper().parse(report.allArtifactsReports.localFile.first())
+            return new XmlSlurper().parse(report.getArtifactsReports(null, false).localFile.first())
         }
     }
 }

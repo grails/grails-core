@@ -209,25 +209,13 @@ target (war: "The implementation target") {
         if (includeJars) {
             if (pluginInfos) {
                 def libDir = "${stagingDir}/WEB-INF/lib"
+                // Copy embedded libs (dependencies declared inside dependencies.groovy are already provided)
                 ant.copy(todir:libDir, flatten:true, failonerror:false, preservelastmodified:true) {
                     for (GrailsPluginInfo info in pluginInfos) {
                         fileset(dir: info.pluginDir.file.path) {
                             include(name:"lib/*.jar")
                         }
                     }
-                }
-
-                for(GrailsPluginInfo info in pluginInfos) {
-                    IvyDependencyManager freshManager = new IvyDependencyManager(info.name, info.version)
-                    freshManager.parseDependencies {}
-                    freshManager.chainResolver = grailsSettings.dependencyManager.chainResolver
-                    grailsSettings.pluginDependencyHandler(freshManager).call(info.pluginDir.file.canonicalFile)
-                    for(File file in freshManager.resolveDependencies("runtime").allArtifactsReports.localFile) {
-                        if(file) {
-                            ant.copy(file:file, todir:libDir)
-                        }
-                    }
-                    
                 }
             }
         }
