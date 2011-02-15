@@ -209,7 +209,11 @@ class NamedCriteriaProxy {
 
         if (method) {
             def preparedClosure = getPreparedCriteriaClosure()
-            return method.invoke(domainClass.clazz, methodName, preparedClosure, args)
+            def c = {
+                queryBuilder = delegate
+                preparedClosure()
+            }
+            return method.invoke(domainClass.clazz, methodName, c, args)
         }
 
         if (!queryBuilder && domainClass.metaClass.getMetaProperty(methodName)) {
