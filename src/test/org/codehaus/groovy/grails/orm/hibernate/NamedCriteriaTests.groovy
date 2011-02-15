@@ -3,8 +3,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 import org.hibernate.FetchMode;
 import org.hibernate.NonUniqueResultException 
 
-import apple.laf.CoreUIConstants.Size;
-
 /**
  * @author Jeff Brown
  */
