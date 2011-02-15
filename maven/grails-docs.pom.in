@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>1.7.8-SNAPSHOT</version>
+            <version>1.7.8</version>
             <exclusions>
                 <exclusion>
                     <groupId>jline</groupId>
