@@ -7,8 +7,6 @@ import org.springframework.validation.BeanPropertyBindingResult
 import grails.converters.XML
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
-import org.hibernate.repackage.cglib.proxy.Enhancer
-import org.hibernate.repackage.cglib.proxy.MethodProxy
 import org.hibernate.proxy.LazyInitializer
 import org.hibernate.proxy.HibernateProxy
 
