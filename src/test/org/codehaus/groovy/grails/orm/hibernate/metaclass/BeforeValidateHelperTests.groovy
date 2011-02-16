@@ -1,4 +1,4 @@
-package org.codehause.groovy.grails.org.hibernate.metaclass;
+package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.mock.interceptor.MockFor 
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper;

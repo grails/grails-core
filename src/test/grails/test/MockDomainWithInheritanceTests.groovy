@@ -2,11 +2,18 @@ package grails.test
 
 import grails.persistence.*
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
 class MockDomainWithInheritanceTests extends GroovyTestCase {
+
+    @Override
+    protected void tearDown() {
+        ApplicationHolder.application = null
+    }
 
     void testMockDomainWithInheritance() {
         def test = new PersonTests()
@@ -21,6 +28,11 @@ class PersonTests extends GrailsUnitTestCase {
         def aPerson = new Person(name: "Rob Fletcher")
         def aPirate = new Pirate(name: "Edward Teach", nickname: "Blackbeard")
         mockDomain(Person, [aPerson, aPirate])
+    }
+
+    @Override
+    protected void tearDown() {
+        ApplicationHolder.application = null
     }
 
     void testLoadingPersonInstance() {

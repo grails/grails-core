@@ -120,6 +120,10 @@ public class ConverterUtil {
         }
         return INSTANCE;
     }
+    
+    public static void clearInstance() {
+    	INSTANCE = null;
+    }
 
     public static boolean isConverterClass(Class<?> clazz) {
         return Converter.class.isAssignableFrom(clazz);

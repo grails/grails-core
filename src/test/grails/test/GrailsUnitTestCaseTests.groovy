@@ -19,6 +19,7 @@ import grails.converters.XML
 
 import junit.framework.AssertionFailedError
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
@@ -30,6 +31,10 @@ import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
  */
 class GrailsUnitTestCaseTests extends GroovyTestCase {
 
+	@Override
+	protected void tearDown() throws Exception {
+		ApplicationHolder.setApplication null
+	}
     void testMockConfig() {
         def testCase = new TestUnitTestCase()
         def d = new GrailsUnitTestClass()

@@ -18,6 +18,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.validation.Errors
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class MockUtilsSaveDomainTests extends GroovyTestCase {
 
@@ -41,6 +42,7 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
         metaTestHelper.tearDown()
         MockUtils.resetIds()
         PluginManagerHolder.pluginManager = null
+        ApplicationHolder.application = null
     }
 
     /**
