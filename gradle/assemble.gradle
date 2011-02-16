@@ -364,7 +364,7 @@ distSpec = copySpec {
 }
 
 task zipDist(type: Zip) {
-    dependsOn tasks.withType(Jar).all/*, docs*/
+//    dependsOn tasks.withType(Jar).all/*, docs*/
     from distSpec
 	doFirst dependencyCache
 }
