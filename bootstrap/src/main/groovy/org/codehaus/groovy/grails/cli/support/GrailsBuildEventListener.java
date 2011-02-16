@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.cli.support;
 import grails.build.GrailsBuildListener;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
-import grails.util.GrailsUtil;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -140,7 +139,7 @@ public class GrailsBuildEventListener implements BuildListener{
             script.run();
         }
         catch (Throwable e) {
-            GrailsUtil.deepSanitize(e);
+            org.codehaus.groovy.runtime.StackTraceUtils.deepSanitize(e);
             e.printStackTrace();
             System.out.println("Error loading event script from file [" + eventScript + "] " + e.getMessage());
         }
@@ -150,9 +149,6 @@ public class GrailsBuildEventListener implements BuildListener{
         File f = new File(dir, "_Events.groovy");
         if (!f.exists()) {
             f = new File(dir, "Events.groovy");
-            if (f.exists()) {
-                GrailsUtil.deprecated("Use of 'Events.groovy' is DEPRECATED.  Please rename to '_Events.groovy'.");
-            }
         }
 
         return f.exists() ? f : null;

@@ -17,4 +17,4 @@ idea
 .classpath
 .project
 /.settings
-/projects/*/build
+/*/build/*

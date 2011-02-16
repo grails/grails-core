@@ -22,9 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.lang.ArrayUtils
 
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginInfo
 
 import org.springframework.core.io.FileSystemResource
@@ -74,7 +72,7 @@ class PluginBuildSettings {
     }
 
     BuildSettings buildSettings
-    GrailsPluginManager pluginManager
+    def pluginManager
     private String pluginDirPath
     private Map cache = new ConcurrentHashMap()
     private Map pluginToDirNameMap = new ConcurrentHashMap()
@@ -87,7 +85,7 @@ class PluginBuildSettings {
         this(buildSettings, null)
     }
 
-    PluginBuildSettings(BuildSettings buildSettings, GrailsPluginManager pluginManager) {
+    PluginBuildSettings(BuildSettings buildSettings, pluginManager) {
         // We use null-safe navigation on buildSettings because otherwise
         // lots of unit tests will fail.
         this.buildSettings = buildSettings
@@ -359,7 +357,7 @@ class PluginBuildSettings {
         if (pluginManager == null) return getPluginInfos()
 
         def pluginInfos = getPluginInfos().findAll {GrailsPluginInfo info ->
-            GrailsPlugin plugin = pluginManager.getGrailsPlugin(info.getName())
+            def plugin = pluginManager.getGrailsPlugin(info.getName())
             return plugin?.supportsCurrentScopeAndEnvironment()
         }
         return pluginInfos as GrailsPluginInfo[]

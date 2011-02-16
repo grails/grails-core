@@ -20,7 +20,6 @@ import grails.util.BuildSettings
 import grails.util.Metadata
 import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import grails.util.GrailsUtil
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.cli.CommandLineHelper
 import groovy.util.slurpersupport.GPathResult
@@ -384,7 +383,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             def depName = dep.@name.toString()
             String depVersion = dep.@version.toString()
             if (isCorePlugin(depName)) {
-                def grailsVersion = GrailsUtil.getGrailsVersion()
+                def grailsVersion = settings.getGrailsVersion()
                 if (!GrailsPluginUtils.isValidVersion(grailsVersion, depVersion)) {
                     errorHandler("Plugin requires version [$depVersion] of Grails core, but installed version is [${grailsVersion}]. Please upgrade your Grails installation and try again.")
                 }
@@ -405,7 +404,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                         def upperVersion = GrailsPluginUtils.getUpperVersion(depVersion)
                         def installVersion = upperVersion
                         if (installVersion == '*') {
-                            installVersion = settings.defaultPluginSet.contains(depDirName) ? GrailsUtil.getGrailsVersion() : null
+                            installVersion = settings.defaultPluginSet.contains(depDirName) ? settings.getGrailsVersion() : null
                         }
 
                         // recurse
@@ -436,7 +435,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 
     private assertGrailsVersionValid(String pluginName, String grailsVersion) {
         if (grailsVersion) {
-            if (!GrailsPluginUtils.isValidVersion(GrailsUtil.grailsVersion, grailsVersion)) {
+            if (!GrailsPluginUtils.isValidVersion(settings.grailsVersion, grailsVersion)) {
                 errorHandler("Plugin $pluginName requires version [${grailsVersion}] of Grails which your current Grails installation does not meet. Please try install a different version of the plugin or Grails.")
             }
         }
