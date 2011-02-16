@@ -26,7 +26,7 @@ repositories {
 }
 dependencies {
 	// Jars in lib
-	compile files(fileTree(dir:"$projectDir/lib" as File))
+	compile files(fileTree(dir:"$projectDir/src/libs" as File))
 	
 	// Ant
 	def antVersion = "1.7.1"
@@ -120,9 +120,11 @@ dependencies {
 	
 	// Groovy
     groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
-	compile 'org.codehaus.gpars:gpars:0.9'
+	compile( 'org.codehaus.gpars:gpars:0.9' ) {
+		exclude module:'netty'
+	}
 
-    jsp21 'javax.servlet:jsp-api:2.1'
+    jsp21 'javax.servlet.jsp:jsp-api:2.1'
 }
 
 sourceSets {
