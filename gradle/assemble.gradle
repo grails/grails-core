@@ -86,6 +86,22 @@ task appFilesJars {
 distJars = tasks.withType(Jar).matching({ jar -> !jar.appFileJar } as Spec)
 
 task libs {
+	doFirst {
+		def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
+		copy {
+			from( cacheLocation ) {				
+				configurations.compile.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+					def dependency = artifact.getResolvedDependency() 					
+					include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+					include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"					
+				}			
+				
+			}
+			into "$projectDir/lib"
+		}
+
+	}
+	
     destinationDir = 'dist'
     dependsOn { distJars.all }
 }
@@ -139,7 +155,7 @@ task bootstrapJar(type: Jar, description: 'Package up the classes used to bootst
 
 task scriptsJar(type: Jar, description: 'Package up files used for generating documentation.') {
     appendix = "scripts"
-    from sourceSets.buildScripts.classes, "scripts/log4j.properties"
+    from sourceSets.buildScripts.classes
     osgify = true
     mavenArtifact = true
 }
