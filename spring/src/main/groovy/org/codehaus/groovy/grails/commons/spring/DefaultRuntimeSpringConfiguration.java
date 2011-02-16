@@ -104,8 +104,8 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     }
 
     private void trySettingClassLoaderOnContextIfFoundInParent(ApplicationContext parentCtx) {
-        if (parentCtx.containsBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN)) {
-            Object cl = parentCtx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN);
+        if (parentCtx.containsBean("classLoader")) {
+            Object cl = parentCtx.getBean("classLoader");
             if (cl instanceof ClassLoader){
                 setClassLoaderOnContext((ClassLoader)cl);
             }
