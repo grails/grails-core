@@ -54,7 +54,6 @@ dependencies {
 	compile( 'cglib:cglib-nodep:2.1_3',
 			 'org.fusesource.jansi:jansi:1.2.1',
 			 'oro:oro:2.0.8',
-			 'com.h2database:h2:1.2.147',
 			 'com.lowagie:itext:2.1.7',
 			 'org.xhtmlrenderer:core-renderer:R8pre2',
 			 'jline:jline:0.9.94',
@@ -63,6 +62,15 @@ dependencies {
 			 'ognl:ognl:2.7.3',
 			 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.1_jdk5') 
 	
+	runtime 'aopalliance:aopalliance:1.0',
+  		    'com.h2database:h2:1.2.147',
+			'hsqldb:hsqldb:1.8.0.10',
+			'org.aspectj:aspectjrt:1.6.10',
+			'org.aspectj:aspectjweaver:1.6.10',
+			'net.sf.ehcache:ehcache-core:2.3.1',
+			'org.coconut.forkjoin:jsr166y:070108'
+			
+			
 	// Testing
 	compile 'junit:junit:4.8.1'
 	
@@ -80,7 +88,8 @@ dependencies {
 	// Specs
 	compile 'javax.servlet:jsp-api:2.0'
 	compile 'javax.servlet:servlet-api:2.5'
-	compile 'jstl:jstl:1.1.2'
+	compile 'javax.servlet:jstl:1.2'
+	compile 'taglibs:standard:1.1.2'
 	compile 'net.sf.jsr107cache:jsr107cache:1.0'
 	compile 'javax.transaction:jta:1.1'
 	compile 'javax.persistence:persistence-api:1.0'
@@ -91,7 +100,7 @@ dependencies {
 			'org.hibernate:hibernate-core:3.3.1.GA',
 			'org.hibernate:hibernate-validator:3.1.0.GA',
 			'org.hibernate:hibernate-ehcache:3.3.1.GA',
-			'javassist:javassist:3.12.0.GA',
+			'javassist:javassist:3.11.0.GA',
 			'antlr:antlr:2.7.6'
 	
 	// Spring
@@ -106,7 +115,8 @@ dependencies {
 			"org.springframework:spring-instrument:${springVersion}",								
 			"org.springframework:spring-jdbc:${springVersion}",					
 			"org.springframework:spring-jms:${springVersion}",					
-			"org.springframework:spring-orm:${springVersion}",					
+			"org.springframework:spring-orm:${springVersion}",
+			"org.springframework:spring-oxm:${springVersion}",					
 			"org.springframework:spring-test:${springVersion}",					
 			"org.springframework:spring-tx:${springVersion}",
 			"org.springframework:spring-web:${springVersion}",

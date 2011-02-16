@@ -218,7 +218,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				def runtimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'runtime'
 				
 				// dependencies needed by the Grails build system
-				for(mrid in [ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.1"),
+				for(mrid in [ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.4"),
 							  ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
 							  ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
 							  ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
@@ -233,10 +233,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 							  ModuleRevisionId.newInstance("org.grails","grails-core",grailsVersion),
 							  ModuleRevisionId.newInstance("org.grails","grails-resources",grailsVersion),
 							  ModuleRevisionId.newInstance("org.grails","grails-web",grailsVersion),
-							  ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8"),
-							  ModuleRevisionId.newInstance("org.slf4j","slf4j-log4j12","1.5.8"),
-							  ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE"),
-							  ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5")] ) {
+							  ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.6.1"),
+							  ModuleRevisionId.newInstance("org.slf4j","slf4j-log4j12","1.6.1"),
+							  ModuleRevisionId.newInstance("org.springframework","spring-test","3.0.3.RELEASE"),
+							  ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.1_jdk5")] ) {
 						def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"build")
  					    addDependency mrid
 						configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
@@ -253,7 +253,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
 				// dependencies needed during development, but not for deployment
 				for(mrid in [ModuleRevisionId.newInstance("javax.servlet","servlet-api","2.5"),
-				 			 ModuleRevisionId.newInstance( "javax.servlet","jsp-api","2.1")]) {
+				 			 ModuleRevisionId.newInstance( "javax.servlet.jsp","jsp-api","2.1")]) {
 				   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"provided")
 				   addDependency mrid
 				   configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
@@ -271,13 +271,13 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 				for(mrid in [	ModuleRevisionId.newInstance("org.coconut.forkjoin","jsr166y","070108"),
 								ModuleRevisionId.newInstance("org.codehaus.gpars","gpars","0.9"),
 								ModuleRevisionId.newInstance("aopalliance","aopalliance","1.0"),
-								ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.0_jdk5"),
+								ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.1_jdk5"),
 								ModuleRevisionId.newInstance("commons-codec","commons-codec","1.4"),
 								ModuleRevisionId.newInstance("commons-collections","commons-collections","3.2.1"),
 								ModuleRevisionId.newInstance("commons-io","commons-io","1.4"),
 								ModuleRevisionId.newInstance("commons-lang","commons-lang","2.4"),
 								ModuleRevisionId.newInstance("javax.transaction","jta","1.1"),
-								ModuleRevisionId.newInstance("org.hibernate","ejb3-persistence","1.0.2.GA"),
+								ModuleRevisionId.newInstance("javax.persistence","persistence-api","1.0"),
 								ModuleRevisionId.newInstance("opensymphony","sitemesh","2.4"),
 								ModuleRevisionId.newInstance("org.grails","grails-bootstrap","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-core","$grailsVersion"),
@@ -286,23 +286,22 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 								ModuleRevisionId.newInstance("org.grails","grails-resources","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-spring","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-web","$grailsVersion"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.core","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.aop","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.aspects","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.asm","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.beans","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.context","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.context.support","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.expression","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.instrument","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.jdbc","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.jms","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.orm","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.oxm","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.transaction","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.web","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.springframework","org.springframework.web.servlet","3.0.3.RELEASE"),
-								ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.5.8")] ) {
+								ModuleRevisionId.newInstance("org.springframework","spring-core","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-aop","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-aspects","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-asm","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-beans","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-context","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-expression","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-instrument","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-jdbc","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-jms","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-orm","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-oxm","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-tx","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-web","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.springframework","spring-webmvc","3.0.3.RELEASE"),
+								ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.6.1")] ) {
 						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
 						   addDependency mrid
 						   configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
@@ -312,42 +311,42 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 					// dependencies needed for running tests
 					for(mrid in [	ModuleRevisionId.newInstance("junit","junit","4.8.1"),
 								 	ModuleRevisionId.newInstance("org.grails","grails-test","$grailsVersion"),
-								 	ModuleRevisionId.newInstance("org.springframework","org.springframework.test","3.0.3.RELEASE")] ) {
+								 	ModuleRevisionId.newInstance("org.springframework","spring-test","3.0.3.RELEASE")] ) {
 						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
 						   addDependency mrid
 						   configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
 					}
 
 					// dependencies needed at runtime only
-					for( mrid in [ 		ModuleRevisionId.newInstance("org.aspectj","aspectjweaver","1.6.8"),
-										ModuleRevisionId.newInstance("org.aspectj","aspectjrt","1.6.8"),
+					for( mrid in [ 		ModuleRevisionId.newInstance("org.aspectj","aspectjweaver","1.6.10"),
+										ModuleRevisionId.newInstance("org.aspectj","aspectjrt","1.6.10"),
 										ModuleRevisionId.newInstance("cglib","cglib-nodep","2.1_3"),
 										ModuleRevisionId.newInstance("commons-fileupload","commons-fileupload","1.2.1"),
 										ModuleRevisionId.newInstance("oro","oro","2.0.8"),
-										ModuleRevisionId.newInstance("javax.servlet","jstl","1.1.2"),
+										ModuleRevisionId.newInstance("javax.servlet","jstl","1.2"),
 										// data source
 										ModuleRevisionId.newInstance("commons-dbcp","commons-dbcp","1.3"),
 										ModuleRevisionId.newInstance("commons-pool","commons-pool","1.5.5"),
 										ModuleRevisionId.newInstance("hsqldb","hsqldb","1.8.0.10"),
-										ModuleRevisionId.newInstance("com.h2database","h2","1.2.144"),
+										ModuleRevisionId.newInstance("com.h2database","h2","1.2.147"),
 										// JSP support
-										ModuleRevisionId.newInstance("apache-taglibs","standard","1.1.2"),
-										ModuleRevisionId.newInstance("xpp3","xpp3_min","1.1.3.4.O") ] ) {
+										ModuleRevisionId.newInstance("taglibs","standard","1.1.2"),
+										ModuleRevisionId.newInstance("xpp3","xpp3_min","1.1.4c") ] ) {
 						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
 						   addDependency mrid
 						   configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
 					}
 
 					// caching
-					"${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:1.7.1") {
+					"${runtimeDependenciesMethod}" ("net.sf.ehcache:ehcache-core:2.3.1") {
 						excludes 'jms', 'commons-logging', 'servlet-api'
 					}
 
 					// logging
 					"${runtimeDependenciesMethod}"("log4j:log4j:1.2.16",
-							"org.slf4j:jcl-over-slf4j:1.5.8",
-							"org.slf4j:jul-to-slf4j:1.5.8",
-							"org.slf4j:slf4j-log4j12:1.5.8" ) {
+							"org.slf4j:jcl-over-slf4j:1.6.1",
+							"org.slf4j:jul-to-slf4j:1.6.1",
+							"org.slf4j:slf4j-log4j12:1.6.1" ) {
 						excludes 'mail', 'jms', 'jmxtools', 'jmxri'
 					}
             }
@@ -903,7 +902,17 @@ class IvyDomainSpecificLanguageEvaluator {
             return
         }
 
-        flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
+		def fileSystemResolver = new FileSystemResolver()
+		fileSystemResolver.local = true
+		fileSystemResolver.name = "grailsHome"
+		fileSystemResolver.addIvyPattern( "${grailsHome}/lib/[organisation]/[module]/ivy-[revision](-[classifier]).xml")
+		fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/jars/[module]-[revision](-[classifier]).[ext]"
+		fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/bundles/[module]-[revision](-[classifier]).[ext]"
+		fileSystemResolver.settings = ivySettings
+
+		addToChainResolver(fileSystemResolver)
+
+        flatDir(name:"grailsHome", dirs:"${grailsHome}/src/libs")
         flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
         if (grailsHome!='.') {
             def resolver = createLocalPluginResolver("grailsHome", grailsHome)
