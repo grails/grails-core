@@ -1,4 +1,4 @@
 dependencies {
-	compile project(":bootstrap")
+	compile project(":bootstrap"), project(":spring")
 }
 jar.appendix = 'core'
