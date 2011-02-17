@@ -31,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
@@ -274,18 +273,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                     BeanDefinition bd = xmlBf.getBeanDefinition(beanName);
                     final String beanClassName = bd.getBeanClassName();
                     Class<?> beanClass = beanClassName == null ? null : ClassUtils.forName(beanClassName, classLoader);
-                    if (SESSION_FACTORY_BEAN.equals(beanName)) {
-                        Class<?> configurableLocalSessionFactoryBeanClass = ConfigurableLocalSessionFactoryBean.class;
-                        if (beanClass == null || !configurableLocalSessionFactoryBeanClass.isAssignableFrom(beanClass)) {
-                            LOG.warn("[RuntimeConfiguration] Found custom Hibernate SessionFactory bean defined in " + springResources.getURL() +
-                                    ". The bean will not be configured as Grails needs to use its own specialized Hibernate SessionFactoryBean" +
-                                    " in order to inject dynamic bahavior into domain classes." +
-                                    " Use specialized Hibernate SessionFactoryBean '" + configurableLocalSessionFactoryBeanClass +
-                                    "' for custom Hibernate SessionFactory bean defined in '" + springResources.getURL() +
-                                    "' instead of '" + beanClassName + "' in order to configure custom Hibernate SessionFactory bean.");
-                            continue;
-                        }
-                    }
 
                     springConfig.addBeanDefinition(beanName, bd);
                     String[] aliases = xmlBf.getAliases(beanName);

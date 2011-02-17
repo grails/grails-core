@@ -40,7 +40,6 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 
 /**
@@ -93,13 +92,23 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     protected boolean shouldInjectClass(ClassNode classNode) {
         String fullName = GrailsASTUtils.getFullName(classNode);
-        String mappingFile = GrailsDomainConfigurationUtil.getMappingFileName(fullName);
+        String mappingFile = getMappingFileName(fullName);
 
         if (getClass().getResource(mappingFile) != null) {
             return false;
         }
 
         return !isEnum(classNode);
+    }
+
+    /**
+     * Returns the ORM framework's mapping file name for the specified class name.
+     *
+     * @param className The class name of the mapped file
+     * @return The mapping file name
+     */
+    private String getMappingFileName(String className) {
+        return className.replaceAll("\\.", "/") + ".hbm.xml";
     }
 
     private void injectAssociations(ClassNode classNode) {
