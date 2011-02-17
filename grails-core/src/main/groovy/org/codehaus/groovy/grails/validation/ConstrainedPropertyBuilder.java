@@ -19,19 +19,14 @@ import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
 
 import java.beans.PropertyDescriptor;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.InvalidPropertyException;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances .
@@ -132,27 +127,8 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Object handleImportFrom(Map attributes, Class importFromClazz) {
-        GrailsWebRequest grailsWebRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        if (grailsWebRequest == null) {
-            String message =
-                    "Web request can't be found. Importing constraints is only allowed FROM domain classes TO " +
-                    "command classes in running Grails application.";
-            throw new IllegalArgumentException(message);
-        }
 
-        GrailsApplication grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
-        GrailsDomainClass importFromGrailsDomainClazz =
-                (GrailsDomainClass) grailsApplication.getArtefact(
-                        DomainClassArtefactHandler.TYPE, importFromClazz.getName());
-
-        if (importFromGrailsDomainClazz == null) {
-            String message =
-                    "Class '" + importFromClazz.getName() + "' is not a domain class. Importing constraints is only " +
-                    "allowed FROM domain classes TO command classes.";
-            throw new IllegalArgumentException(message);
-        }
-
-        Map importFromConstrainedProperties = importFromGrailsDomainClazz.getConstrainedProperties();
+        Map importFromConstrainedProperties = new DefaultConstraintEvaluator().evaluate(importFromClazz);
 
         PropertyDescriptor[] targetPropertyDescriptorArray = classPropertyFetcher.getPropertyDescriptors();
 

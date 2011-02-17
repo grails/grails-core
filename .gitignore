@@ -18,3 +18,4 @@ idea
 .project
 /.settings
 /*/build/*
+/eclipse-build

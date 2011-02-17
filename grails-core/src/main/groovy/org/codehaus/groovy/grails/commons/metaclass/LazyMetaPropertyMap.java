@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.springframework.util.Assert;
 
 /**
@@ -141,8 +140,8 @@ public class LazyMetaPropertyMap implements Map {
         MetaProperty mp = metaClass.getMetaProperty((String)propertyName);
         if (mp != null) {
             old = mp.getProperty(instance);
-            if (propertyValue instanceof GrailsParameterMap) {
-                propertyValue = ((GrailsParameterMap)propertyValue).get(propertyName);
+            if (propertyValue instanceof Map) {
+                propertyValue = ((Map)propertyValue).get(propertyName);
             }
             mp.setProperty(instance, propertyValue);
         }

@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import grails.util.BuildSettings;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
+import grails.util.PluginBuildSettings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyRuntimeException;
@@ -61,9 +63,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -134,6 +136,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private PluginFilter pluginFilter;
     private static final String GRAILS_PLUGIN_SUFFIX = "GrailsPlugin";
     private List<GrailsPlugin> userPlugins = new ArrayList<GrailsPlugin>();
+    
+    private BuildSettings buildSettings;
+    private PluginBuildSettings pluginBuildSettings;
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) {
         super(application);
@@ -189,7 +194,24 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         setPluginFilter();
     }
 
-    public GrailsPlugin[] getUserPlugins() {
+    
+    public BuildSettings getBuildSettings() {
+		return buildSettings;
+	}
+
+	public void setBuildSettings(BuildSettings buildSettings) {
+		this.buildSettings = buildSettings;
+	}
+
+	public PluginBuildSettings getPluginBuildSettings() {
+		return pluginBuildSettings;
+	}
+
+	public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
+		this.pluginBuildSettings = pluginBuildSettings;
+	}
+
+	public GrailsPlugin[] getUserPlugins() {
         return userPlugins.toArray(new GrailsPlugin[userPlugins.size()]);
     }
 

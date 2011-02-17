@@ -15,8 +15,8 @@
 package org.codehaus.groovy.grails.validation.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicProperty;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 
 /**
  * This is a dynamic property that instead of returning the closure sets a new proxy meta class for the scope
@@ -45,7 +45,7 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
     @Override
     public Object get(Object object) {
-        return GrailsDomainConfigurationUtil.evaluateConstraints(object,properties );
+        return new DefaultConstraintEvaluator().evaluate(object,properties );
     }
 
     @Override

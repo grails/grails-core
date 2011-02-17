@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.compiler;
 
+import grails.util.PluginBuildSettings;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,8 @@ import org.springframework.core.io.Resource;
 public class Grailsc extends Groovyc {
 
 	private List<File> destList = new ArrayList<File>();
+	private PluginBuildSettings pluginBuildSettings;
+	
 	@Override
 	protected void scanDir(File srcDir, File destDir, String[] files) {
        List<File> srcList = new ArrayList<File>();
@@ -82,10 +86,10 @@ public class Grailsc extends Groovyc {
 	}
 	
     private void configureResourceLoader() {
-    	String sysProp = System.getProperty("base.dir");
-        String basedir = sysProp != null ? sysProp : ".";
-        Resource[] resources = GrailsPluginUtils.getArtefactResources(basedir);
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
-        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
+    	if(pluginBuildSettings != null) {
+            Resource[] resources = pluginBuildSettings.getArtefactResources();
+            GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
+            GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);    		
+    	}
     }	
 }

@@ -20,6 +20,7 @@ import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.validation.Validator;
 
 import java.beans.PropertyDescriptor;
@@ -756,10 +757,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
     public void refreshConstraints() {
         if (defaultConstraints!=null) {
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), persistentProperties, defaultConstraints);
+            constraints = new DefaultConstraintEvaluator(defaultConstraints).evaluate(getClazz(), persistentProperties);
         }
         else {
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), persistentProperties);
+            constraints = new DefaultConstraintEvaluator(defaultConstraints).evaluate(getClazz(), persistentProperties);
         }
 
         // Embedded components have their own ComponentDomainClass instance which

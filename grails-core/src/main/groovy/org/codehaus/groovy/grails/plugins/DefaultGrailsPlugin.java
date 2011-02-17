@@ -22,6 +22,7 @@ import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
+import grails.util.PluginBuildSettings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
@@ -338,63 +339,69 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
 
             if (resourceList != null) {
-
                 List<String> resourceListTmp = new ArrayList<String>();
-                final Resource[] pluginDirs = GrailsPluginUtils.getPluginDirectories();
-                final Environment env = Environment.getCurrent();
-                final String baseLocation = env.getReloadLocation();
-
-                for (Object ref : resourceList) {
-                    String stringRef = ref.toString();
-                    if (!warDeployed) {
-                        for (Resource pluginDir : pluginDirs) {
-                            if (pluginDir !=null) {
-                                String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
-                                resourceListTmp.add(pluginResources);
-                            }
-                        }
-                        addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
-                    }
-                    else {
-                        addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
-                    }
-                }
-
-                resourcesReferences = new String[resourceListTmp.size()];
-                resourceCount = new int[resourceListTmp.size()];
-                for (int i = 0; i < resourcesReferences.length; i++) {
-                    String resRef = resourceListTmp.get(i);
-                    resourcesReferences[i]=resRef;
-                }
-                for (int i = 0; i < resourcesReferences.length; i++) {
-                    String res = resourcesReferences[i];
-
-                    // Try to load the resources that match the "res" pattern.
-                    Resource[] tmp = new Resource[0];
-                    try {
-                        try {
-                            tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
-                        }
-                        catch (IOException e) {
-                            // ignore, no resources at default location
-                        }
-                    }
-                    catch (Exception ex) {
-                        // The pattern is invalid so we continue as if there are no matching files.
-                        LOG.debug("Resource pattern [" + res + "] is not valid - maybe base directory does not exist?");
-                    }
-                    resourceCount[i] = tmp.length;
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
-                    }
-                    if (tmp.length == 0) {
-                        tmp = resolver.getResources("classpath*:" + res);
-                    }
-
-                    if (tmp.length > 0) {
-                        watchedResources = (Resource[])ArrayUtils.addAll(watchedResources, tmp);
-                    }
+                PluginBuildSettings pluginBuildSettings = getManager()
+                								.getPluginBuildSettings();
+                
+                if(pluginBuildSettings != null) {
+                	
+                	final Resource[] pluginDirs = pluginBuildSettings
+                	.getPluginDirectories();
+                	final Environment env = Environment.getCurrent();
+                	final String baseLocation = env.getReloadLocation();
+                	
+                	for (Object ref : resourceList) {
+                		String stringRef = ref.toString();
+                		if (!warDeployed) {
+                			for (Resource pluginDir : pluginDirs) {
+                				if (pluginDir !=null) {
+                					String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
+                					resourceListTmp.add(pluginResources);
+                				}
+                			}
+                			addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
+                		}
+                		else {
+                			addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
+                		}
+                	}
+                	
+                	resourcesReferences = new String[resourceListTmp.size()];
+                	resourceCount = new int[resourceListTmp.size()];
+                	for (int i = 0; i < resourcesReferences.length; i++) {
+                		String resRef = resourceListTmp.get(i);
+                		resourcesReferences[i]=resRef;
+                	}
+                	for (int i = 0; i < resourcesReferences.length; i++) {
+                		String res = resourcesReferences[i];
+                		
+                		// Try to load the resources that match the "res" pattern.
+                		Resource[] tmp = new Resource[0];
+                		try {
+                			try {
+                				tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
+                			}
+                			catch (IOException e) {
+                				// ignore, no resources at default location
+                			}
+                		}
+                		catch (Exception ex) {
+                			// The pattern is invalid so we continue as if there are no matching files.
+                			LOG.debug("Resource pattern [" + res + "] is not valid - maybe base directory does not exist?");
+                		}
+                		resourceCount[i] = tmp.length;
+                		
+                		if (LOG.isDebugEnabled()) {
+                			LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
+                		}
+                		if (tmp.length == 0) {
+                			tmp = resolver.getResources("classpath*:" + res);
+                		}
+                		
+                		if (tmp.length > 0) {
+                			watchedResources = (Resource[])ArrayUtils.addAll(watchedResources, tmp);
+                		}
+                	}
                 }
             }
         }

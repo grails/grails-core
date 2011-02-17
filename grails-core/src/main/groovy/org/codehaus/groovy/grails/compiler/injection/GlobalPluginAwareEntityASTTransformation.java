@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.util.BuildSettingsHolder;
 import grails.util.PluginBuildSettings;
 
 import java.io.File;
@@ -43,8 +44,18 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 public class GlobalPluginAwareEntityASTTransformation implements ASTTransformation {
 
     private boolean disableTransformation = Boolean.getBoolean("disable.grails.plugin.transform");
+    PluginBuildSettings pluginBuildSettings;
+    
+    
 
-    public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
+    public GlobalPluginAwareEntityASTTransformation() {
+		super();
+		pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
+	}
+
+
+
+	public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
         if (disableTransformation) {
             return;
         }
@@ -68,7 +79,6 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
         File sourcePath = new File(sourceUnit.getName());
         try {
             String absolutePath = sourcePath.getCanonicalPath();
-            PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
             if (pluginBuildSettings == null) {
                 return;
             }
