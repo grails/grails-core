@@ -214,8 +214,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver())
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
-
-        assert appCtx.grailsUrlMappingsHolder
     }
 
     protected void tearDown() {

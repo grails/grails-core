@@ -1,13 +1,15 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
+
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
-import javax.servlet.jsp.jstl.core.Config
-import org.springframework.web.servlet.support.JstlUtils
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.tools.RootLoader
+import org.springframework.core.io.FileSystemResource
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.support.JstlUtils
 
 /**
  * @author Graeme Rocher
@@ -27,7 +29,7 @@ class SimpleJspTagTests extends GroovyTestCase {
     }
 
     void testSimpleTagUsage() {
-
+		
         def resolver = new MockRootLoaderTagLibraryResolver()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication = new DefaultGrailsApplication()

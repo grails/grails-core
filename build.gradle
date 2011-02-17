@@ -88,11 +88,13 @@ dependencies {
 	// Specs
 	compile 'javax.servlet:jsp-api:2.0'
 	compile 'javax.servlet:servlet-api:2.5'
-	compile 'javax.servlet:jstl:1.2'
-	compile 'taglibs:standard:1.1.2'
+	compile 'javax.servlet:jstl:1.1.2'	
 	compile 'net.sf.jsr107cache:jsr107cache:1.0'
 	compile 'javax.transaction:jta:1.1'
 	compile 'javax.persistence:persistence-api:1.0'
+	
+	testCompile 'taglibs:standard:1.1.2'
+	testCompile 'javax.el:el-api:1.0'
 	
 	// Hibernate related
 	compile 'org.hibernate:hibernate-annotations:3.4.0.GA',

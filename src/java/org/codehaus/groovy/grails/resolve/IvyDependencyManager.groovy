@@ -902,6 +902,7 @@ class IvyDomainSpecificLanguageEvaluator {
             return
         }
 
+		grailsHome = new File(grailsHome).absolutePath
 		def fileSystemResolver = new FileSystemResolver()
 		fileSystemResolver.local = true
 		fileSystemResolver.name = "grailsHome"

@@ -703,7 +703,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "1.7.1", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
-        assertEquals 4, resolvers.size()
+        assertEquals 6, resolvers.size()
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
         assertEquals "mine", resolvers[0].name
