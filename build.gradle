@@ -141,7 +141,7 @@ subprojects {
 		compile 'org.slf4j:slf4j-api:1.6.1'
 		compile 'org.slf4j:jcl-over-slf4j:1.6.1'
 		compile 'org.slf4j:jul-to-slf4j:1.6.1'	
-		compile 'log4j:log4j:1.2.16'
+
 
 		// Specs
 		compile 'javax.servlet:jsp-api:2.0'
