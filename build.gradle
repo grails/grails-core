@@ -93,8 +93,8 @@ dependencies {
 	compile 'javax.transaction:jta:1.1'
 	compile 'javax.persistence:persistence-api:1.0'
 	
-	testCompile 'taglibs:standard:1.1.2'
-	testCompile 'javax.el:el-api:1.0'
+	compile 'taglibs:standard:1.1.2'
+	compile 'javax.el:el-api:1.0'
 	
 	// Hibernate related
 	compile 'org.hibernate:hibernate-annotations:3.4.0.GA',
