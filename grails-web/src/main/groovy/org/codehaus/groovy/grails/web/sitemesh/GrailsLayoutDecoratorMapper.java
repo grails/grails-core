@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import grails.util.Environment;
 import grails.util.Metadata;
+import grails.util.PluginBuildSettings;
 import groovy.lang.GroovyObject;
 
 import java.io.IOException;
@@ -73,6 +74,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private ServletContext servletContext;
     private WebApplicationContext applicationContext;
     private GrailsPluginManager pluginManager;
+    private PluginBuildSettings pluginBuildSettings;
 
     @Override
     public void init(Config c, Properties properties, DecoratorMapper parentMapper) throws InstantiationException {
@@ -81,6 +83,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         if (applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
             pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+            pluginBuildSettings = pluginManager.getPluginBuildSettings();
         }
     }
 
@@ -223,22 +226,25 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private String searchPluginViewsInDevelopmentMode(String name) {
 
         String pluginViewLocation = null;
-        for (Resource resource : GrailsPluginUtils.getPluginDirectories()) {
-            try {
-                final String pathToLayoutInPlugin = "grails-app/views/layouts/"+name;
-                final String absolutePathToResource = resource.getFile().getAbsolutePath();
-                if (!absolutePathToResource.endsWith("/")) {
-                    resource = new FileSystemResource(absolutePathToResource + '/');
+        if(pluginBuildSettings != null) {
+            for (Resource resource : pluginBuildSettings.getPluginDirectories()) {
+                try {
+                    final String pathToLayoutInPlugin = "grails-app/views/layouts/"+name;
+                    final String absolutePathToResource = resource.getFile().getAbsolutePath();
+                    if (!absolutePathToResource.endsWith("/")) {
+                        resource = new FileSystemResource(absolutePathToResource + '/');
+                    }
+                    final Resource layoutPath = resource.createRelative(pathToLayoutInPlugin);
+                    if (layoutPath.exists()) {
+                        GrailsPluginInfo info = pluginBuildSettings.getPluginInfo(absolutePathToResource);
+                        pluginViewLocation = GrailsResourceUtils.WEB_INF + "/plugins/" + info.getFullName() + '/' + pathToLayoutInPlugin;
+                    }
                 }
-                final Resource layoutPath = resource.createRelative(pathToLayoutInPlugin);
-                if (layoutPath.exists()) {
-                    GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfo(absolutePathToResource);
-                    pluginViewLocation = GrailsResourceUtils.WEB_INF + "/plugins/" + info.getFullName() + '/' + pathToLayoutInPlugin;
+                catch (IOException e) {
+                    // ignore
                 }
             }
-            catch (IOException e) {
-                // ignore
-            }
+        	
         }
         return pluginViewLocation;
     }

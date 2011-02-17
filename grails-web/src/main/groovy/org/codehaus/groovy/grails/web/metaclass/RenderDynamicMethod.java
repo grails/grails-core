@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.metaclass;
 
 import grails.converters.JSON;
 import grails.util.GrailsWebUtil;
-import grails.util.OpenRicoBuilder;
 import grails.web.JSONBuilder;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
@@ -162,10 +161,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
             if (arguments[arguments.length - 1] instanceof Closure) {
                 Closure callable = (Closure) arguments[arguments.length - 1];
-                if (BUILDER_TYPE_RICO.equals(argMap.get(ARGUMENT_BUILDER))) {
-                    renderView = renderRico(callable, response);
-                }
-                else if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
+                if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
                     renderView = renderJSON(callable, response);
                 }
                 else {
@@ -380,40 +376,14 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     @SuppressWarnings("deprecation")
     private boolean renderJSON(Closure callable, HttpServletResponse response) {
         boolean renderView = true;
-        if (!useLegacyJSONBuilder) {
-            JSONBuilder builder = new JSONBuilder();
-            JSON json = builder.build(  callable);
-            json.render(response);
-            renderView = false;
-        }
-        else {
-            grails.util.JSonBuilder jsonBuilder;
-            try {
-                jsonBuilder = new grails.util.JSonBuilder(response);
-                renderView = false;
-            }
-            catch (IOException e) {
-                throw new ControllerExecutionException("I/O error executing render method for arguments [" +
-                        callable + "]: " + e.getMessage(), e);
-            }
-            jsonBuilder.invokeMethod("json", new Object[]{callable});
-        }
+        JSONBuilder builder = new JSONBuilder();
+        JSON json = builder.build(  callable);
+        json.render(response);
+        renderView = false;
         return renderView;
     }
 
-    private boolean renderRico(Closure callable, HttpServletResponse response) {
-        boolean renderView;
-        OpenRicoBuilder orb;
-        try {
-            orb = new OpenRicoBuilder(response);
-            renderView = false;
-        }
-        catch (IOException e) {
-            throw new ControllerExecutionException("I/O error executing render method for arguments [" + callable + "]: " + e.getMessage(), e);
-        }
-        orb.invokeMethod("ajax", new Object[]{callable});
-        return renderView;
-    }
+
 
     private boolean renderMarkup(Closure closure, HttpServletResponse response) {
         boolean renderView;
