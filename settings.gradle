@@ -4,7 +4,8 @@ include	'grails-bootstrap',
 		'grails-hibernate',
 		'grails-web',
 		'grails-test',
-		'grails-docs'
+		'grails-docs',
+		'grails-webflow'
 		/*,  
 				'crud',  
 				'docs',  

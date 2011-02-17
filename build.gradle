@@ -181,11 +181,6 @@ subprojects {
 				"org.springframework:spring-webmvc:${springVersion}"
 
 
-		// Spring Web Flow
-		compile "org.springframework.webflow:spring-binding:2.0.8.RELEASE",
-		 		"org.springframework.webflow:spring-js:2.0.8.RELEASE",
-				"org.springframework.webflow:spring-webflow:2.0.8.RELEASE"		
-
 		// Groovy
 	    groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
 		compile( 'org.codehaus.gpars:gpars:0.9' ) {
