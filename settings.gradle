@@ -5,7 +5,12 @@ include	'grails-bootstrap',
 		'grails-web',
 		'grails-test',
 		'grails-docs',
-		'grails-webflow'
+		'grails-webflow',
+		'grails-crud',
+		
+		// Plugins
+		'grails-plugin-url-mappings',
+		'grails-plugin-controllers'
 		/*,  
 				'crud',  
 				'docs',  
