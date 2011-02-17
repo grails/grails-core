@@ -1,6 +1,7 @@
 include	'grails-bootstrap',
 		'grails-core',
-		'grails-spring'
+		'grails-spring',
+		'grails-hibernate'
 		/*,  
 				'crud',  
 				'docs',  
