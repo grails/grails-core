@@ -131,7 +131,12 @@ dependencies {
 			"org.springframework.webflow:spring-webflow:2.0.8.RELEASE"		
 	
 	// Groovy
-    groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
+    if(System.getProperty('groovy.jar')) {
+        groovy files(System.getProperty('groovy.jar'))
+    } else {
+        groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
+    }
+
 	compile( 'org.codehaus.gpars:gpars:0.9' ) {
 		exclude module:'netty'
 	}
