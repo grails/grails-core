@@ -21,4 +21,5 @@ include	'grails-bootstrap',
 		'grails-plugin-servlets',
 		'grails-plugin-validation',
 		'grails-plugin-datasource',
-		'grails-plugin-services'
+		'grails-plugin-services',
+		'grails-plugin-scaffolding'
