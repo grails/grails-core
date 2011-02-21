@@ -18,4 +18,5 @@ include	'grails-bootstrap',
 		'grails-plugin-codecs',		
 		'grails-plugin-converters',		
 		'grails-plugin-i18n',
-		'grails-plugin-servlets'		
+		'grails-plugin-servlets',
+		'grails-plugin-validation'
