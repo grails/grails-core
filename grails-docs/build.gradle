@@ -3,6 +3,23 @@ dependencies {
 	compile 'com.lowagie:itext:2.1.7',
 	 		'org.xhtmlrenderer:core-renderer:R8pre2'
 	
-	compile project(":grails-core")
+	compile project(":grails-core"),project(":grails-bootstrap")
 }
+
+task docFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
+	version = null
+    appendix = "doc-files"
+    from("src/main/template")
+	doLast {
+		copy {
+			from docFilesJar.archivePath
+			into "${buildDir}/classes/main"
+		}		
+	}
+}
+
+assemble.dependsOn docFilesJar
+
+
+
 jar.appendix = 'docs'
