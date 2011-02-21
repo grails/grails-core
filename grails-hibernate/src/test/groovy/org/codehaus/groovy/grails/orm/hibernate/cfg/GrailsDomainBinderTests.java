@@ -34,7 +34,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGeneratorTests;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.TestClass;
 import org.hibernate.cfg.ImprovedNamingStrategy;
@@ -217,7 +216,7 @@ public class GrailsDomainBinderTests extends TestCase {
         ExpandoMetaClass.enableGlobally();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
         PluginManagerHolder.setPluginManager(pluginManager);
-        pluginManager.registerMockPlugin(DefaultGrailsTemplateGeneratorTests.fakeHibernatePlugin);
+
     }
 
     @Override
