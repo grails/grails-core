@@ -13,7 +13,8 @@ include	'grails-bootstrap',
 		'grails-plugin-controllers',
         'grails-plugin-logging',
 		'grails-plugin-mimetypes',
-		'grails-plugin-gsp'		
+		'grails-plugin-gsp',		
+		'grails-plugin-filters'
 		/*,  
 				'crud',  
 				'docs',  
