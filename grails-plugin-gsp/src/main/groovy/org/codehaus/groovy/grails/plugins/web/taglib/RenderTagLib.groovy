@@ -29,7 +29,6 @@ import javax.servlet.ServletConfig
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -55,7 +54,7 @@ class RenderTagLib implements RequestConstants {
     ServletConfig servletConfig
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
-    GrailsTemplateGenerator scaffoldingTemplateGenerator
+    def scaffoldingTemplateGenerator
     Map scaffoldedActionMap
     Map controllerToScaffoldedDomainClassMap
 
