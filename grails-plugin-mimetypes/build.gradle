@@ -1,0 +1,4 @@
+dependencies {
+	compile project(":grails-web")
+}
+jar.appendix = 'plugin-mimetypes'

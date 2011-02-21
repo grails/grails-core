@@ -1,0 +1,5 @@
+dependencies {
+	compile 'log4j:log4j:1.2.16'
+	compile project(":grails-core")
+}
+jar.appendix = 'plugin-logging'

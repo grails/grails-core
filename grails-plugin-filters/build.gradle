@@ -1,0 +1,4 @@
+dependencies {
+	compile project(":grails-web"), project(":grails-plugin-controllers")
+}
+jar.appendix = 'plugin-filters'

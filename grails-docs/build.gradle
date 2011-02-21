@@ -1,0 +1,8 @@
+dependencies {
+	compile files(fileTree(dir:"../src/libs" as File))
+	compile 'com.lowagie:itext:2.1.7',
+	 		'org.xhtmlrenderer:core-renderer:R8pre2'
+	
+	compile project(":grails-core")
+}
+jar.appendix = 'docs'

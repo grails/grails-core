@@ -1,0 +1,10 @@
+dependencies {
+	// Spring Web Flow
+	compile "org.springframework.webflow:spring-binding:2.0.8.RELEASE",
+	 		"org.springframework.webflow:spring-js:2.0.8.RELEASE",
+			"org.springframework.webflow:spring-webflow:2.0.8.RELEASE"
+				
+	
+	compile project(":grails-web"), project(':grails-hibernate')
+}
+jar.appendix = 'webflow'
