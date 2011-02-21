@@ -1,4 +1,6 @@
 dependencies {
 	compile project(":grails-web"), project(":grails-plugin-controllers")
+	
+	testCompile project(":grails-test"), project(":grails-test-suite-base"), project(":grails-plugin-testing")
 }
 jar.appendix = 'plugin-url-mappings'

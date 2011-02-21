@@ -11,7 +11,8 @@ dependencies {
 			'javassist:javassist:3.11.0.GA',
 			'antlr:antlr:2.7.6'	
 			 
-	testCompile project(':grails-test'),
+	testCompile project(':grails-test-suite-base'),
+				project(':grails-test'),
 				project(':grails-plugin-url-mappings'),
 				project(':grails-plugin-controllers'),
 		        project(':grails-plugin-logging'),
@@ -27,4 +28,9 @@ dependencies {
 				project(':grails-plugin-services'),				
 				project(':grails-plugin-testing')
 }
+test {
+     maxParallelForks = 2
+     forkEvery = 30
+}
+
 jar.appendix = 'hibernate'
