@@ -29,8 +29,9 @@ dependencies {
 				project(':grails-plugin-testing')
 }
 test {
-     maxParallelForks = 2
-     forkEvery = 30
+//     maxParallelForks = 4
+     forkEvery = 100
+	 maxHeapSize = '1024m'
 }
 
 jar.appendix = 'hibernate'
