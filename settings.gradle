@@ -15,7 +15,8 @@ include	'grails-bootstrap',
 		'grails-plugin-mimetypes',
 		'grails-plugin-gsp',		
 		'grails-plugin-filters',
-		'grails-plugin-codecs'		
+		'grails-plugin-codecs',		
+		'grails-plugin-converters'		
 		/*,  
 				'crud',  
 				'docs',  
