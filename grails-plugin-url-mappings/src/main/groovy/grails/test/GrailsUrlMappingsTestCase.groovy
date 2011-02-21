@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
+
 import org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator

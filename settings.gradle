@@ -11,7 +11,9 @@ include	'grails-bootstrap',
 		// Plugins
 		'grails-plugin-url-mappings',
 		'grails-plugin-controllers',
-                'grails-plugin-logging'
+        'grails-plugin-logging',
+		'grails-plugin-mimetypes',
+		'grails-plugin-gsp'		
 		/*,  
 				'crud',  
 				'docs',  
