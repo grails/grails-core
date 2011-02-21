@@ -22,4 +22,5 @@ include	'grails-bootstrap',
 		'grails-plugin-validation',
 		'grails-plugin-datasource',
 		'grails-plugin-services',
-		'grails-plugin-scaffolding'
+		'grails-plugin-scaffolding',
+		'grails-plugin-testing'

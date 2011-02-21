@@ -5,6 +5,6 @@ dependencies {
 			"org.springframework.webflow:spring-webflow:2.0.8.RELEASE"
 				
 	
-	compile project(":grails-web"), project(':grails-hibernate')
+	compile project(":grails-web"), project(':grails-hibernate'), project(':grails-plugin-controllers')
 }
 jar.appendix = 'webflow'
