@@ -85,6 +85,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     private GrailsApplication application;
     private ApplicationContext appContext;
     private static final String TAG_LIBS_ATTRIBUTE = "org.codehaus.groovy.grails.TAG_LIBS";
+	private static final String OUT_PROPERTY = "out";
     private String tagContent;
     private boolean bodyInvokation;
 
@@ -178,7 +179,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
 
         sw = new FastStringWriter();
         out = sw;
-        tagLib.setProperty(TagLibDynamicMethods.OUT_PROPERTY, out);
+        tagLib.setProperty(OUT_PROPERTY, out);
         Object tagLibProp;
         final Map tagLibProperties = DefaultGroovyMethods.getProperties(tagLib);
         if (tagLibProperties.containsKey(getTagName())) {
