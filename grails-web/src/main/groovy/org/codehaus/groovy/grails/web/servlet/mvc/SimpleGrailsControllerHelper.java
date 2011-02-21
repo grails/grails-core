@@ -42,7 +42,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -72,6 +71,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
+	private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
+	
     private String id;
     private String controllerName;
     private String actionName;
@@ -264,7 +265,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                     throw new ControllerExecutionException("I/O error sending redirect to URI: " + uri,e);
                 }
             }
-            else if (request.getAttribute(ForwardMethod.CALLED) == null) {
+            else if (request.getAttribute(FORWARD_CALLED) == null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Action ["+actionName+"] executed with result ["+returnValue+"] and view name ["+viewName+"]");
                 }
