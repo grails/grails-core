@@ -155,7 +155,7 @@ public class GroovyPageParser implements Tokens {
     private long lastModified;
     private boolean precompileMode;
     private boolean sitemeshPreprocessMode=false;
-    private PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
+    private PluginBuildSettings pluginBuildSettings;
     private String defaultCodecDirectiveValue;
 
     public String getContentType() {
@@ -230,8 +230,13 @@ public class GroovyPageParser implements Tokens {
         makeName(name);
         makeSourceName(filename);
     }
+    
+    public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
+    	// TODO: Deprecate PluginBuildSettingsHolder and inject via Spring
+		this.pluginBuildSettings = pluginBuildSettings;
+	}
 
-    private Map<String, String> parseDirectives(String gspSource) {
+	private Map<String, String> parseDirectives(String gspSource) {
         Map <String, String> result=new HashMap<String, String>();
         // strip gsp comments
         String input = PRESCAN_COMMENT_PATTERN.matcher(gspSource).replaceAll("");
