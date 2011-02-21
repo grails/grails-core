@@ -1,4 +1,4 @@
 dependencies {
-	compile project(":grails-core")
+	compile  project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
 }
 jar.appendix = 'web'

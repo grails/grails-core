@@ -69,12 +69,20 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'maven'
 
+	manifest.mainAttributes(
+	        "Built-By": System.properties['user.name'],
+	        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+	        "Implementation-Title": "Grails",
+	        "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
+	        "Implementation-Version": version,
+	        "Implementation-Vendor": 'grails.org')
+	
     group = "org.grails"
 	version = grailsVersion
     archivesBaseName = "grails"
 
 	configurations {
-	    compile.transitive = false
+	    compile.transitive = true
 	    jsp21.extendsFrom compile
 	}
 	repositories {
@@ -210,9 +218,9 @@ configure([compileJava, compileTestJava]) {
 apply {
     from 'gradle/docs.gradle'
     from 'gradle/assemble.gradle'
-    from 'gradle/unit-test.gradle'
+/*    from 'gradle/unit-test.gradle'
     from 'gradle/maven.gradle'
-    from 'gradle/findbugs.gradle'
+    from 'gradle/findbugs.gradle'*/
 }
 
 clean {

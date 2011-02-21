@@ -24,4 +24,8 @@ include	'grails-bootstrap',
 		'grails-plugin-datasource',
 		'grails-plugin-services',
 		'grails-plugin-scaffolding',
-		'grails-plugin-testing'
+		'grails-plugin-testing',
+		
+		// Test Suite
+		'grails-test-suite-base'
+		

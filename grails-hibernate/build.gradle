@@ -1,5 +1,6 @@
 dependencies {
-	compile project(":grails-core"),project(":grails-web")
+
+	compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring"),project(":grails-web")
 	
 	// Hibernate related
 	compile 'org.hibernate:hibernate-annotations:3.4.0.GA',

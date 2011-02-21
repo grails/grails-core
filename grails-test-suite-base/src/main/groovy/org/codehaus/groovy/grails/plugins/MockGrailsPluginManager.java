@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import grails.util.BuildSettings;
+import grails.util.PluginBuildSettings;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.File;
@@ -127,4 +129,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     public void verify() {
         Assert.assertFalse(this.checkForChangesExpected);
     }
+
+	public BuildSettings getBuildSettings() {
+		return null;
+	}
+
+	public PluginBuildSettings getPluginBuildSettings() {
+		return null;
+	}
 }
