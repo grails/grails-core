@@ -38,7 +38,6 @@ import javax.servlet.jsp.tagext.DynamicAttributes;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.web.metaclass.TagLibDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
