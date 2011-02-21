@@ -4,8 +4,6 @@ import org.hibernate.event.PostDeleteEvent
 import org.hibernate.event.PostDeleteEventListener
 import org.hibernate.event.PostInsertEvent
 import org.hibernate.event.PostInsertEventListener
-
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 
 /**

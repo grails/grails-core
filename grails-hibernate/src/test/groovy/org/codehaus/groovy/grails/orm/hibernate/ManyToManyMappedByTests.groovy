@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 
 /**
  * @author Graeme Rocher
