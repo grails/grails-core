@@ -32,7 +32,7 @@ antVersion = "1.7.1"
 springVersion = "3.0.3.RELEASE"
 
 
-subprojects {
+subprojects { project ->
     apply plugin: 'groovy'
     apply plugin: 'eclipse'
     apply plugin: 'maven'
@@ -168,6 +168,14 @@ subprojects {
 	    jsp21 'javax.servlet.jsp:jsp-api:2.1'
 	}
 
+    install.doLast {
+        copy {
+            from(project.libsDir) {
+                include "*-${grailsVersion}.jar"
+            }
+            into "${rootProject.projectDir}/dist"
+        }
+    }
 	
 }
 
