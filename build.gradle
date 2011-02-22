@@ -44,7 +44,7 @@ subprojects { project ->
 	        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
 	        "Implementation-Title": "Grails",
 	        "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
-	        "Implementation-Version": version,
+	        "Implementation-Version": grailsVersion,
 	        "Implementation-Vendor": 'grails.org')
 	
     group = "org.grails"
