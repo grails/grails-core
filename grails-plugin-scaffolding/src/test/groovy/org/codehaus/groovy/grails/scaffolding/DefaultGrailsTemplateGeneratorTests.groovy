@@ -47,7 +47,7 @@ class ScaffoldingTest {
 '''
 
     void testGenerateDateSelect() {
-        def templateGenerator = new DefaultGrailsTemplateGenerator()
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         gcl.parseClass(testDomain)
         def testClass = gcl.loadClass("ScaffoldingTest")
 
@@ -66,7 +66,7 @@ class ScaffoldingTest {
     }
 
     void testGenerateNumberSelect() {
-        def templateGenerator = new DefaultGrailsTemplateGenerator()
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         gcl.parseClass(testDomain)
         def testClass = gcl.loadClass("ScaffoldingTest")
 

@@ -1,10 +1,13 @@
 package org.codehaus.groovy.grails.plugins.scaffolding;
 
-import org.codehaus.groovy.grails.commons.test.*
+import grails.util.GrailsUtil
+
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*
+import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.plugins.*
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
+import org.springframework.core.io.Resource;
 
 class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -55,7 +58,7 @@ class TestTagLib {
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
+        dependantPluginClasses << MockHibernateGrailsPlugin
 
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
@@ -86,3 +89,18 @@ class TestTagLib {
             gcl.getLoadedClasses().find { it.name.endsWith("TagLib") })
     }
 }
+
+class MockHibernateGrailsPlugin {
+	
+		def version = GrailsUtil.grailsVersion
+		def dependsOn = [dataSource: version,
+						 i18n: version,
+						 core: version,
+						 domainClass: version]
+	
+		def artefacts = [new AnnotationDomainClassArtefactHandler()]
+		def loadAfter = ['controllers']
+		def doWithSpring = HibernatePluginSupport.doWithSpring
+		def doWithDynamicMethods = HibernatePluginSupport.doWithDynamicMethods
+}
+	

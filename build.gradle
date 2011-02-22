@@ -68,6 +68,8 @@ subprojects {
     apply plugin: 'groovy'
     apply plugin: 'eclipse'
     apply plugin: 'maven'
+	apply plugin: 'idea'
+
 
 	manifest.mainAttributes(
 	        "Built-By": System.properties['user.name'],
