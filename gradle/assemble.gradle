@@ -1,6 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-
 dependencyCache = {
 	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
 	copy {
@@ -23,11 +22,20 @@ dependencyCache = {
 
 }
 
-task libs {
+task libs(dependsOn: getTasksByName("jar", true))  {
 	doFirst dependencyCache
 	
     destinationDir = 'dist'
-    dependsOn { distJars.all }
+	doLast {
+		subprojects.each { project ->
+			copy {
+				from( project.libsDir ) {
+					includes "*-${version}.jar"
+				}
+				into 'dist'
+			}
+		}		
+	}
 }
 
 
@@ -98,7 +106,7 @@ distSpec = copySpec {
     }
 }
 
-task zipDist(type: Zip,dependsOn: getTasksByName("jar", true)) {
+task zipDist(type: Zip,dependsOn:libs) {
     from distSpec
 	doFirst dependencyCache
 }
