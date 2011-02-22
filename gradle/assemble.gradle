@@ -1,12 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-jar.enabled = false
-
-tasks.withType(Jar).allObjects {jar ->
-    jar.osgify = false
-    jar.mavenArtifact = false
-    jar.appFileJar = false
-}
 
 dependencyCache = {
 	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
@@ -36,50 +29,7 @@ task libs {
     destinationDir = 'dist'
     dependsOn { distJars.all }
 }
- 
-tasks.withType(Jar).allTasks { jarTask ->
-    jarTask.manifest.from project.manifest
-}
 
-task initBundlor(type: Copy) {
-    dir = "$buildDir/bundlor"
-    version = '1.0.0.RELEASE'
-    from zipTree("bundlor/bundlor-${version}.zip")
-    into dir
-}
-
-/*distJars.matching({ jar -> jar.osgify } as Spec).allObjects {task ->
-    task.dependsOn initBundlor
-    task.doLast {
-    	if(new File("${initBundlor.dir}/bundlor-${initBundlor.version}").exists()) {
-            def bundlorPath = fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/dist") +
-            				  fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/lib")
-		    Properties antBuildProps = new Properties()
-		    antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
-		    ant {
-		        antBuildProps.each {key, value ->
-		            if (key.startsWith('bundlor.')) {
-		                ant.properties[key] = value
-		            }
-		        }
-		        taskdef(resource: "com/springsource/bundlor/ant/antlib.xml", uri: "antlib:com.springsource.bundlor.ant",
-		                classpath: bundlorPath.asPath)
-		        'antlib:com.springsource.bundlor.ant:bundlor'(
-		                inputPath: archivePath,
-		                outputPath: archivePath,
-		                bundleVersion: version,
-		                manifestTemplatePath: "$projectDir/maven/grails-${appendix}.mf",
-		                failOnWarnings: "true") {
-		            propertyset() {
-		                propertyref(prefix: "bundlor.")
-		                mapper(type: "glob", from: "bundlor.*", to: "*")
-		            }
-		        }
-		    }    		
-    	}
-
-    }
-}*/
 
 task pluginsFromSvn {
     dir = "$buildDir/pluginsFromSvn"
@@ -148,8 +98,7 @@ distSpec = copySpec {
     }
 }
 
-task zipDist(type: Zip) {
-//    dependsOn tasks.withType(Jar).all/*, docs*/
+task zipDist(type: Zip,dependsOn: getTasksByName("jar", true)) {
     from distSpec
 	doFirst dependencyCache
 }
