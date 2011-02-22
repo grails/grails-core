@@ -282,10 +282,26 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 								ModuleRevisionId.newInstance("org.grails","grails-bootstrap","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-core","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-crud","$grailsVersion"),
-								ModuleRevisionId.newInstance("org.grails","grails-gorm","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-hibernate","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-resources","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-spring","$grailsVersion"),
 								ModuleRevisionId.newInstance("org.grails","grails-web","$grailsVersion"),
+
+                                // Plugins
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-codecs","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-controllers","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-converters","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-datasource","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-filters","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-gsp","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-i18n","$grailsVersion"),
+                        		ModuleRevisionId.newInstance("org.grails","grails-plugin-logging","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-scaffolding","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-services","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-servlets","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-url-mappings","$grailsVersion"),
+								ModuleRevisionId.newInstance("org.grails","grails-plugin-validation","$grailsVersion"),
+
 								ModuleRevisionId.newInstance("org.springframework","spring-core","3.0.3.RELEASE"),
 								ModuleRevisionId.newInstance("org.springframework","spring-aop","3.0.3.RELEASE"),
 								ModuleRevisionId.newInstance("org.springframework","spring-aspects","3.0.3.RELEASE"),
@@ -310,6 +326,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
 					// dependencies needed for running tests
 					for(mrid in [	ModuleRevisionId.newInstance("junit","junit","4.8.1"),
+                                    ModuleRevisionId.newInstance("org.grails","grails-plugin-testing","$grailsVersion"),
 								 	ModuleRevisionId.newInstance("org.grails","grails-test","$grailsVersion"),
 								 	ModuleRevisionId.newInstance("org.springframework","spring-test","3.0.3.RELEASE")] ) {
 						   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
