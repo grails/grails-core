@@ -172,9 +172,6 @@ class GrailsPluginUtils {
      */
     static GrailsPluginInfo[] getSupportedPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
         final PluginBuildSettings settings = getPluginBuildSettings()
-        if (!settings.pluginManager) {
-            settings.pluginManager = PluginManagerHolder.currentPluginManager()
-        }
         return settings.getSupportedPluginInfos()
     }
 
