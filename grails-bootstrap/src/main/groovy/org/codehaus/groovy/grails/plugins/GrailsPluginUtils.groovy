@@ -134,6 +134,214 @@ class GrailsPluginUtils {
 
         return tokens.findAll { it ==~ /\d+/ || it =='*'}.join(".")
     }
+
+   /**
+     * Returns a new PluginBuildSettings instance
+     */
+    static PluginBuildSettings newPluginBuildSettings() {
+        new PluginBuildSettings(BuildSettingsHolder.settings, PluginManagerHolder.getPluginManager())
+    }
+
+    private static INSTANCE
+    /**
+     * Returns a cached PluginBuildSettings instance.
+     */
+    static synchronized PluginBuildSettings getPluginBuildSettings() {
+        if (INSTANCE == null) {
+            INSTANCE = newPluginBuildSettings()
+        }
+        return INSTANCE
+    }
+
+    static synchronized setPluginBuildSettings(PluginBuildSettings settings) {
+        INSTANCE = settings
+    }
+
+    /**
+     * Returns an array of PluginInfo objects
+     */
+    static GrailsPluginInfo[] getPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
+        return getPluginBuildSettings().getPluginInfos()
+    }
+
+    /**
+     * Returns only the PluginInfo objects that support the current Environment and BuildScope
+     *
+     * @see grails.util.Environment
+     * @see grails.util.BuildScope
+     */
+    static GrailsPluginInfo[] getSupportedPluginInfos(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
+        final PluginBuildSettings settings = getPluginBuildSettings()
+        if (!settings.pluginManager) {
+            settings.pluginManager = PluginManagerHolder.currentPluginManager()
+        }
+        return settings.getSupportedPluginInfos()
+    }
+
+    /**
+     * All the known plugin base directories (directories where plugins are installed to).
+     */
+    static List<String> getPluginBaseDirectories(String pluginDirPath) {
+        getPluginBuildSettings().getPluginBaseDirectories()
+    }
+
+    /**
+     * All the known plugin base directories (directories where plugins are installed to).
+     */
+    static List<String> getPluginBaseDirectories() {
+        getPluginBuildSettings().getPluginBaseDirectories()
+    }
+
+    static Resource[] getPluginDirectories() {
+        getPluginBuildSettings().getPluginDirectories()
+    }
+
+    static Resource[] getPluginDirectories(String pluginDirPath) {
+        getPluginBuildSettings().getPluginDirectories()
+    }
+
+    /**
+     * All plugin directories in both the given path and the global "plugins" directory together.
+     */
+    static List<Resource> getImplicitPluginDirectories(String pluginDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
+        getPluginBuildSettings().getImplicitPluginDirectories()
+    }
+
+    static boolean isGlobalPluginLocation(Resource pluginDir) {
+        getPluginBuildSettings().isGlobalPluginLocation(pluginDir)
+    }
+
+    /**
+     * All artefact resources (all Groovy files contained within the grails-app directory of plugins or applications).
+     */
+    static Resource[] getArtefactResources(String basedir) {
+        getPluginBuildSettings().getArtefactResources()
+    }
+
+    /**
+     * All artefacts in the given application or plugin directory as Spring resources.
+     */
+    static Resource[] getArtefactResourcesForOne(String projectDir) {
+        getPluginBuildSettings().getArtefactResourcesForOne(projectDir)
+    }
+
+    /**
+     * The Plugin metadata XML files used to describe the plugins provided resources.
+     */
+    static Resource[] getPluginXmlMetadata(String pluginsDirPath) {
+        getPluginBuildSettings().getPluginXmlMetadata()
+    }
+
+    /**
+     * All Gant scripts that are availabe for execution in a Grails application.
+     */
+    static Resource[] getAvailableScripts(String grailsHome, String pluginDirPath, String basedir) {
+        getPluginBuildSettings().getAvailableScripts()
+    }
+
+    /**
+     * Plug-in provided Gant scripts available to a Grails application.
+     */
+    static Resource[] getPluginScripts(String pluginDirPath) {
+        getPluginBuildSettings().getPluginScripts()
+    }
+
+    /**
+     * All plugin provided resource bundles.
+     */
+    static Resource[] getPluginResourceBundles(String pluginDirPath) {
+        getPluginBuildSettings().getPluginResourceBundles()
+    }
+
+    /**
+     * All plug-in provided source files (Java and Groovy).
+     */
+    static Resource[] getPluginSourceFiles(String pluginsDirPath) {
+        getPluginBuildSettings().getPluginSourceFiles()
+    }
+
+    /**
+     * All plug-in provided JAR files.
+     */
+    static Resource[] getPluginJarFiles(String pluginsDirPath) {
+        getPluginBuildSettings().getPluginJarFiles()
+    }
+
+    /**
+     * All plug-in descriptors (the root classes that end with *GrailsPlugin.groovy).
+     */
+    static Resource[] getPluginDescriptors(String basedir, String pluginsDirPath) {
+        getPluginBuildSettings().getPluginDescriptors()
+    }
+
+    static Resource getBasePluginDescriptor(String basedir) {
+        getPluginBuildSettings().getBasePluginDescriptor(basedir)
+    }
+
+    /**
+     * Returns the descriptor location for the given plugin directory. The descriptor is the Groovy
+     * file that ends with *GrailsPlugin.groovy.
+     */
+    static Resource getDescriptorForPlugin(Resource pluginDir) {
+        getPluginBuildSettings().getDescriptorForPlugin(pluginDir)
+    }
+
+    /**
+     * All plug-in lib directories.
+     */
+    static Resource[] getPluginLibDirectories(String pluginsDirPath) {
+        getPluginBuildSettings().getPluginLibDirectories()
+    }
+
+    /**
+     * All plugin i18n directories.
+     */
+    static Resource[] getPluginI18nDirectories(String pluginsDirPath = BuildSettingsHolder.settings?.projectPluginsDir?.path) {
+        getPluginBuildSettings().getPluginI18nDirectories()
+    }
+
+    /**
+     * The path to the global plugins directory.
+     */
+    static String getGlobalPluginsPath() {
+        getPluginBuildSettings().getGlobalPluginsPath()
+    }
+
+    /**
+     * Obtains a plugin directory for the given name.
+     */
+    static Resource getPluginDirForName(String pluginName) {
+        getPluginBuildSettings().getPluginDirForName(pluginName)
+    }
+
+    /**
+     * Returns XML about the plugin.
+     */
+    static GPathResult getMetadataForPlugin(String pluginName) {
+        getPluginBuildSettings().getMetadataForPlugin(pluginName)
+    }
+
+    /**
+     * Returns XML metadata for the plugin.
+     */
+    static GPathResult getMetadataForPlugin(Resource pluginDir) {
+        getPluginBuildSettings().getMetadataForPlugin(pluginDir)
+    }
+
+    /**
+     * Obtains a plugin directory for the given name.
+     */
+    static Resource getPluginDirForName(String pluginsDirPath, String pluginName) {
+        getPluginBuildSettings().getPluginDirForName(pluginName)
+    }
+
+    /**
+     * Clears cached resolved resources
+     */
+    static synchronized clearCaches() {
+        getPluginBuildSettings().clearCache()
+        INSTANCE = null
+    }
 }
 
 class VersionComparator implements Comparator {
