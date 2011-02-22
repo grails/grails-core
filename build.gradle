@@ -47,12 +47,7 @@ subprojects { project ->
 	        "Implementation-Version": grailsVersion,
 	        "Implementation-Vendor": 'grails.org')
 	
-	// Groovy
-    if(System.getProperty('groovy.jar')) {
-        groovy files(System.getProperty('groovy.jar'))
-    } else {
-        groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
-    }
+
 
 	compile( 'org.codehaus.gpars:gpars:0.9' ) {
 		exclude module:'netty'
@@ -61,7 +56,12 @@ subprojects { project ->
 		mavenRepo urls:"http://maven.springframework.org/release"
 	}	
 	dependencies {
-       	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
+		// Groovy
+	    if(System.getProperty('groovy.jar')) {
+	        groovy files(System.getProperty('groovy.jar'))
+	    } else {
+	        groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
+	    }		
 
 		// Jars in lib
 		compile files(fileTree(dir:"$projectDir/src/libs" as File))
@@ -161,8 +161,6 @@ subprojects { project ->
 				"org.springframework:spring-webmvc:${springVersion}"
 
 
-		// Groovy
-	    groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
 		compile( 'org.codehaus.gpars:gpars:0.9' ) {
 			exclude module:'netty'
 		}
