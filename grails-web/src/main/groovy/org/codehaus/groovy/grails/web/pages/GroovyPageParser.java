@@ -158,6 +158,8 @@ public class GroovyPageParser implements Tokens {
     private PluginBuildSettings pluginBuildSettings;
     private String defaultCodecDirectiveValue;
 
+	private String filename;
+
     public String getContentType() {
         return contentType;
     }
@@ -192,11 +194,7 @@ public class GroovyPageParser implements Tokens {
     @SuppressWarnings("rawtypes")
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
         Map config = ConfigurationHolder.getFlatConfig();
-        GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
-        if (info != null) {
-            pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
-                info.getVersion() + "')";
-        }
+        this.filename = filename;
 
         // Get the GSP file encoding from Config, or fall back to system
         // file.encoding if none set
@@ -234,6 +232,15 @@ public class GroovyPageParser implements Tokens {
     public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
     	// TODO: Deprecate PluginBuildSettingsHolder and inject via Spring
 		this.pluginBuildSettings = pluginBuildSettings;
+		
+		if(filename!= null) {
+	        GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+	        if (info != null) {
+	            pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
+	                info.getVersion() + "')";
+	        }
+			
+		}		
 	}
 
 	private Map<String, String> parseDirectives(String gspSource) {

@@ -985,9 +985,9 @@ public class ConstrainedProperty   {
                 }
                 catch (Exception e) {
                     LOG.error("Exception thrown applying constraint [" + constraintName +
-                            "] to class [" + owningClass + "] for value [" + constrainingValue + "]: " + e.getMessage());
+                            "] to class [" + owningClass + "] for value [" + constrainingValue + "]: " + e.getMessage(), e);
                     throw new ConstraintException("Exception thrown applying constraint [" + constraintName +
-                            "] to class [" + owningClass + "] for value [" + constrainingValue + "]: " + e.getMessage());
+                            "] to class [" + owningClass + "] for value [" + constrainingValue + "]: " + e.getMessage(), e);
                 }
             }
         }
