@@ -47,13 +47,15 @@ subprojects { project ->
 	        "Implementation-Version": grailsVersion,
 	        "Implementation-Vendor": 'grails.org')
 	
-    group = "org.grails"
-	version = grailsVersion
-    archivesBaseName = "grails"
+	// Groovy
+    if(System.getProperty('groovy.jar')) {
+        groovy files(System.getProperty('groovy.jar'))
+    } else {
+        groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
+    }
 
-	configurations {
-	    compile.transitive = true
-	    jsp21.extendsFrom compile
+	compile( 'org.codehaus.gpars:gpars:0.9' ) {
+		exclude module:'netty'
 	}
 	repositories {
 		mavenRepo urls:"http://maven.springframework.org/release"
