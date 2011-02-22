@@ -1,89 +1,73 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-// todo Ask why startGrails and startGrails.bat live in two different locations (one with placeholder, the other probably manually maintained)
-// todo Retrieve bundlor zip via dependency DSL
-// todo Retrieve svn plugins via dependency DSL (ask regarding SNAPSHOTS)
-// todo Add correct description to all Jar tasks
+sourceSets {
 
-manifest.mainAttributes(
-        "Built-By": System.properties['user.name'],
-        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-        "Implementation-Title": "Grails",
-        "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
-        "Implementation-Version": version,
-        "Implementation-Vendor": 'grails.org')
-
-// todo Once the base Java plugin is out, we will use this and then there will be no default jar and we can remove this line.
-jar.enabled = false
-
-tasks.withType(Jar).allObjects {jar ->
-    jar.osgify = false
-    jar.mavenArtifact = false
-    jar.appFileJar = false
-}
-
-task sharedFilesJar(type: Jar, description: 'Package up the files that are shared by both applications and plugins.') {
-    appendix = "shared-files"
-    appFileJar = true
-    from("src/war/WEB-INF") {
-        into "web-app/WEB-INF"
-        include "applicationContext.xml", "sitemesh.xml", "tld/*.tld"
-    }
-    from("src/grails/grails-app/conf") {
-        into "grails-app/conf"
-        include "DataSource.groovy", "UrlMappings.groovy"
+    buildScripts {
+        def buildScriptsClasspath = sourceSets.main.compileClasspath + configurations.grailsScripts
+        for(subproject in subprojects) {
+            buildScriptsClasspath = buildScriptsClasspath + subproject.sourceSets.main.classes
+        }
+        compileClasspath =  buildScriptsClasspath
+        classesDir = "$buildDir/compiled-scripts" as File
+        groovy.srcDirs = ['scripts']
+        resources.srcDirs = []
     }
 }
 
-task sharedApplicationFilesJar(type: Jar, description: 'Package up the files that are exclusive to applications.') {
-    appendix = "app-files"
-    appFileJar = true
-    from("src/war") {
-        into "web-app"
-        exclude "WEB-INF/**"
+
+dependencies {
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
+
+	// Specs
+	grailsScripts 'javax.servlet:jsp-api:2.0'
+	grailsScripts 'javax.servlet:servlet-api:2.5'
+	grailsScripts 'javax.servlet:jstl:1.2'
+	grailsScripts 'taglibs:standard:1.1.2'
+	grailsScripts 'net.sf.jsr107cache:jsr107cache:1.0'
+	grailsScripts 'javax.transaction:jta:1.1'
+	grailsScripts 'javax.persistence:persistence-api:1.0'
+	
+	// Logging
+	grailsScripts 'log4j:log4j:1.2.16'
+	grailsScripts 'org.slf4j:slf4j-log4j12:1.6.1'
+	grailsScripts 'org.slf4j:slf4j-api:1.6.1'
+	grailsScripts 'org.slf4j:jcl-over-slf4j:1.6.1'
+	grailsScripts 'org.slf4j:jul-to-slf4j:1.6.1'
+	
+    grailsScripts( 'org.codehaus.gpars:gpars:0.9' ) {
+        exclude module:'netty'
     }
-    from("src/grails/grails-app") {
-        into "grails-app"
-        exclude "taglib/**", "utils/**", "conf/DataSource.groovy", "conf/UrlMappings.groovy"
-    }
+	// Apache Commons
+	grailsScripts 'commons-io:commons-io:1.4'
+
+    grailsScripts "org.springframework:spring-context:${springVersion}",
+                  "org.springframework:spring-core:${springVersion}",
+                  "org.springframework:spring-beans:${springVersion}",
+                  "org.springframework:spring-web:${springVersion}",
+                  "org.springframework:spring-tx:${springVersion}",
+                  "org.springframework:spring-orm:${springVersion}",
+                  "org.springframework:spring-test:${springVersion}",
+                  'org.tmatesoft.svnkit:svnkit:1.3.4'
+
+
+    grailsScripts "org.apache.ant:ant:${antVersion}",
+                  "org.apache.ant:ant-launcher:${antVersion}",
+                  "org.apache.ant:ant-junit:${antVersion}",
+                  "org.apache.ant:ant-nodeps:${antVersion}",
+                  "org.apache.ant:ant-trax:${antVersion}",
+                  "org.apache.ivy:ivy:2.2.0",
+                  'org.codehaus.gant:gant_groovy1.7:1.9.3'
+
+	grailsScripts 'org.hibernate:hibernate-annotations:3.4.0.GA',
+				'org.hibernate:hibernate-commons-annotations:3.1.0.GA',
+				'org.hibernate:hibernate-core:3.3.1.GA',
+				'org.hibernate:hibernate-validator:3.1.0.GA',
+				'org.hibernate:hibernate-ehcache:3.3.1.GA',
+				'javassist:javassist:3.11.0.GA',
+				'antlr:antlr:2.7.6'
 }
 
-task sharedPluginFilesJar(type: Jar, description: 'Package up the files that are exclusive to plugins.') {
-    appendix = "plugin-files"
-    appFileJar = true
-    from("src/grails/templates/plugins")
-    from("src/grails") {
-        include "grails-app/conf/BuildConfig.groovy", "grails-app/views/error.gsp"
-    }
-    from("src/grails/plugin")
-}
 
-task docGeneratingFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
-    appendix = "doc-files"
-    appFileJar = true
-    from("src/grails/docs")
-}
-
-task integrationFilesJar(type: Jar, description: 'Files to integrate Grails with IDEs and build systems.') {
-    appendix = "integration-files"
-    appFileJar = true
-    from("src/grails/templates/ide-support", "src/grails/ant")
-}
-
-appFilesJars = tasks.withType(Jar).matching({ jar -> jar.appFileJar } as Spec)
-
-appFilesJars.allObjects {jar ->
-    configure(jar) {
-        version = ''
-        destinationDir = "$buildDir/appFileJars" as File
-    }
-}
-
-task appFilesJars {
-    dependsOn { appFilesJars.all }
-}
-
-distJars = tasks.withType(Jar).matching({ jar -> !jar.appFileJar } as Spec)
 dependencyCache = {
 	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
 	copy {
@@ -98,7 +82,6 @@ dependencyCache = {
 			}
 			configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
 			configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 								
-			configurations.jsp21.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 												
 			includes = dependencyIncludes
 		}
 		into "$projectDir/lib"
@@ -106,195 +89,36 @@ dependencyCache = {
 
 }
 
-task libs {
+task scriptsJar(type:Jar, dependsOn:compileBuildScriptsGroovy) {
+	appendix = 'scripts'
+	from sourceSets.buildScripts.classes
+	destinationDir = new File('dist')
+}
+
+task libs(dependsOn: getTasksByName("jar", true))  {
 	doFirst dependencyCache
 	
     destinationDir = 'dist'
-    dependsOn { distJars.all }
+	doLast {
+		copy {		
+			for(project in subprojects) {
+				from( project.libsDir ) {
+					include "*-${version}.jar"
+				}
+			}		
+			into 'dist'			
+		}
+		copy {
+			from("$projectDir/grails-resources") {
+				include 'src/grails', 'src/war'
+			}			
+			into projectDir			
+		}
+		
+	}
 }
+libs.dependsOn scriptsJar
 
-distJars.allObjects {jar ->
-    jar.baseName = "grails"
-    jar.destinationDir = libs.destinationDir as File
-}
-
-
-handlersAndSchemasMetaInf = {
-    from 'src/jar/META-INF'
-    include '**/*.handlers', '**/*.schemas'
-}
-
-task testJar(type: Jar, description: 'Package up the Grails testing jar') {
-    appendix = "test"
-    metaInf handlersAndSchemasMetaInf
-    with mainClassesIncludeSpec("grails/test/**", "**/groovy/grails/test/**")
-    osgify = true
-    mavenArtifact = true
-}
-
-task docsJar(type: Jar, dependsOn: docGeneratingFilesJar, description: 'Package up files used for generating documentation.') {
-    appendix = "docs"
-    metaInf handlersAndSchemasMetaInf
-    with mainClassesIncludeSpec("grails/doc/**", "**/groovy/grails/documentation/**")
-    from docGeneratingFilesJar.archivePath
-    osgify = true
-    mavenArtifact = true
-}
-
-task springJar(type: Jar, description: 'Package up the Spring related Grails classes') {
-    appendix = "spring"
-    metaInf handlersAndSchemasMetaInf
-    with mainClassesIncludeSpec("grails/spring/**", "**/groovy/grails/commons/spring/**")
-    osgify = true
-    mavenArtifact = true
-}
-
-task bootstrapJar(type: Jar, description: 'Package up the classes used to bootstrap Grails') {
-    appendix = "bootstrap"
-    metaInf handlersAndSchemasMetaInf
-    with mainClassesIncludeSpec("grails/util/AbstractBuildSettings*","grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*", "grails/util/Metadata*",
-            "grails/util/BuildScope*", "grails/util/GrailsMain*", "grails/ant/**/*", "**/groovy/grails/cli/**/*", "**/groovy/grails/resolve/**/*",
-            "grails/build/**")
-    from "build.properties"
-    rename "build.properties", "grails.build.properties"
-    mavenArtifact = true
-}
-
-task scriptsJar(type: Jar, description: 'Package up files used for generating documentation.') {
-    appendix = "scripts"
-    from sourceSets.buildScripts.classes
-    osgify = true
-    mavenArtifact = true
-}
-
-task gormJar(type: Jar, description: 'Package up GORM related classes.') {
-    appendix = "gorm"
-    metaInf handlersAndSchemasMetaInf
-    with mainClassesIncludeSpec("grails/orm/**", "**/groovy/grails/orm/hibernate/**", "**/groovy/grails/plugins/orm/hibernate/**",
-            "**/groovy/grails/validation/Hibernate**")
-    osgify = true
-    mavenArtifact = true
-}
-
-task webJar(type: Jar, description: 'Package up web related classes.') {
-    appendix = "web"
-    from(sourceSets.main.classes) {
-        include "grails/converters/**", "grails/util/**", "grails/web/**", "**/groovy/grails/web/**", "**/groovy/grails/plugins/web/**",
-                "**/groovy/grails/plugins/converters/**", "**/groovy/grails/webflow/executor/support/GrailsConventionsFlowExecutorArgumentHandler*"
-        exclude "grails/util/Generate**"
-    }
-    from(sourceSets.jsp21.classes)
-    osgify = true
-    mavenArtifact = true
-}
-
-task webflowJar(type: Jar, description: 'Package up Web Flow integration classes.') {
-    appendix = "webflow"
-    with mainClassesIncludeSpec("**/groovy/grails/webflow/**", "**/groovy/grails/plugins/webflow/**")
-    osgify = true
-    mavenArtifact = true
-}
-
-task crudJar(type: Jar, description: 'Package up scaffolding related classes.') {
-    appendix = "crud"
-    with mainClassesIncludeSpec("**/groovy/grails/scaffolding/**", "**/groovy/grails/plugins/scaffolding/**")
-    osgify = true
-    mavenArtifact = true
-}
-
-task resourcesJar(type: Jar, dependsOn: [sharedFilesJar, sharedApplicationFilesJar, integrationFilesJar, sharedPluginFilesJar],
-        description: 'Package up JAR containing all Grails templates and static resources.') {
-    appendix = "resources"
-    from(projectDir) {
-        include "conf/webdefault.xml", "src/grails/templates/artifacts/**", "src/grails/templates/scaffolding/**",
-                "src/war/WEB-INF/web*.template.xml", "src/war/WEB-INF/tld/*/*.tld"
-    }
-    from(sharedApplicationFilesJar.archivePath)
-    from(integrationFilesJar.archivePath)
-    from(sharedPluginFilesJar.archivePath)
-    from(sharedFilesJar.archivePath)
-    osgify = true
-    mavenArtifact = true
-}
-
-task coreJar(type: Jar, description: 'Package up core JAR containing the central APIs of the framework') {
-    appendix = "core"
-    metaInf {
-        from "src/jar/META-INF"
-        include 'services/**'
-    }
-    from(sourceSets.main.classes) {
-        include "grails/ui/**", "grails/util/**", "grails/validation/**", "grails/persistence/**",
-                "**/groovy/grails/aop/framework/**", "**/groovy/grails/beans/factory/**", "**/groovy/grails/commons/**",
-                "**/groovy/grails/context/**", "**/groovy/grails/compiler/**", "**/groovy/grails/orm/support/**",
-                "**/groovy/grails/exceptions/**", "**/groovy/grails/support/**", "**/groovy/grails/test/**",
-                "**/groovy/grails/validation/**", "**/groovy/grails/plugins/**"
-        exclude "grails/util/BuildSettings*", "grails/util/GrailsNameUtils*", "grails/util/Environment*",
-                "grails/util/Metadata*", "grails/util/BuildScope*", "grails/util/GrailsMain*", "**/groovy/grails/commons/spring/**",
-                "**/groovy/grails/plugins/orm/hibernate**", "**/groovy/grails/plugins/web/**", "**/groovy/grails/plugins/converters/**",
-                "**/groovy/grails/plugins/webflow/**", "**/groovy/grails/plugins/scaffolding/**", "**/groovy/grails/validation/Hibernate**",
-                "grails/test/**", "**/groovy/grails/test/**"
-    }
-    mavenArtifact = true
-}
-
-task osgiJar(type: Jar, dependsOn: [bootstrapJar, coreJar], description: 'Create an OSGi jar that merges the core and bootstrap JARs for OSGi comptabibility.') {
-    appendix = "osgi"
-    from bootstrapJar.archivePath, coreJar.archivePath
-    osgify = true
-}
- 
-tasks.withType(Jar).allTasks { jarTask ->
-    jarTask.manifest.from project.manifest
-}
-
-task initBundlor(type: Copy) {
-    dir = "$buildDir/bundlor"
-    version = '1.0.0.RELEASE'
-    from zipTree("bundlor/bundlor-${version}.zip")
-    into dir
-}
-
-distJars.matching({ jar -> jar.osgify } as Spec).allObjects {task ->
-    task.dependsOn initBundlor
-    task.doLast {
-    	if(new File("${initBundlor.dir}/bundlor-${initBundlor.version}").exists()) {
-            def bundlorPath = fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/dist") +
-            				  fileTree("${initBundlor.dir}/bundlor-${initBundlor.version}/lib")
-		    Properties antBuildProps = new Properties()
-		    antBuildProps.load(new FileInputStream("$projectDir/build.properties"))
-		    ant {
-		        antBuildProps.each {key, value ->
-		            if (key.startsWith('bundlor.')) {
-		                ant.properties[key] = value
-		            }
-		        }
-		        taskdef(resource: "com/springsource/bundlor/ant/antlib.xml", uri: "antlib:com.springsource.bundlor.ant",
-		                classpath: bundlorPath.asPath)
-		        'antlib:com.springsource.bundlor.ant:bundlor'(
-		                inputPath: archivePath,
-		                outputPath: archivePath,
-		                bundleVersion: version,
-		                manifestTemplatePath: "$projectDir/maven/grails-${appendix}.mf",
-		                failOnWarnings: "true") {
-		            propertyset() {
-		                propertyref(prefix: "bundlor.")
-		                mapper(type: "glob", from: "bundlor.*", to: "*")
-		            }
-		        }
-		    }    		
-    	}
-
-    }
-}
-
-def mainClassesIncludeSpec(String[] args) {
-    copySpec {
-        from(sourceSets.main.classes) {
-            args.each { include it }
-        }
-    }
-}
 
 task pluginsFromSvn {
     dir = "$buildDir/pluginsFromSvn"
@@ -326,6 +150,10 @@ distSpec = copySpec {
         // this file is accounted for later with special handling to do some token replacement
         exclude 'src/grails/grails-macros.xml'
     }
+	from("$projectDir/grails-resources") {
+		into "grails-$version"
+		include 'src/grails', 'src/war'
+	}
     from(projectDir) {
     	into "grails-$version"
     	include "gradlew"
@@ -363,8 +191,7 @@ distSpec = copySpec {
     }
 }
 
-task zipDist(type: Zip) {
-    dependsOn tasks.withType(Jar).all/*, docs*/
+task zipDist(type: Zip,dependsOn:libs) {
     from distSpec
 	doFirst dependencyCache
 }

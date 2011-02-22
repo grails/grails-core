@@ -17,4 +17,8 @@ idea
 .classpath
 .project
 /.settings
+/*/build/*
+/*/.settings/*
+/*/out/*
+/*/*.iml
 /eclipse-build

@@ -1,0 +1,16 @@
+dependencies {
+	compile project(":grails-web"), project(":grails-plugin-controllers")
+	
+	testCompile project(":grails-test"), project(":grails-test-suite-base"), project(":grails-plugin-testing")
+	
+	testCompile project(':grails-plugin-logging'),
+				project(':grails-plugin-mimetypes'),
+				project(':grails-plugin-gsp'),		
+				project(':grails-plugin-filters'),
+				project(':grails-plugin-codecs'),		
+				project(':grails-plugin-converters'),		
+				project(':grails-plugin-i18n'),
+				project(':grails-plugin-servlets')
+
+}
+jar.appendix = 'plugin-url-mappings'

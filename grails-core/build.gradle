@@ -1,0 +1,12 @@
+dependencies {
+	compile project(":grails-bootstrap"), project(":grails-spring")
+}
+
+compileGroovy.doFirst {
+    delete("${buildDir}/classes/main/META-INF")
+    ant.mkdir(dir:sourceSets.main.classesDir)
+   ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
+       entry key:"grails.version", value:version
+   }
+}
+jar.appendix = 'core'

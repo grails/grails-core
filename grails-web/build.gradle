@@ -1,0 +1,27 @@
+configurations {
+    jsp21.extendsFrom compile
+}
+dependencies {
+    jsp21 'javax.servlet.jsp:jsp-api:2.1'
+
+	compile  project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
+}
+sourceSets {
+    jsp21 {
+        compileClasspath = files(configurations.jsp21, main.classes)
+        groovy.srcDirs = ['src/jsp21/groovy']
+        resources.srcDirs = []
+    }
+}
+
+task addJsp21Classes(dependsOn:compileJsp21Groovy) {
+    doFirst {
+        copy {
+            from sourceSets.jsp21.classes
+            into sourceSets.main.classesDir
+        }
+    }
+}
+assemble.dependsOn addJsp21Classes
+
+jar.appendix = 'web'

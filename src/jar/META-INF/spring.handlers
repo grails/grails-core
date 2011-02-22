@@ -1,2 +1,0 @@
-http\://grails.org/schema/gorm=org.codehaus.groovy.grails.orm.hibernate.cfg.GORMNamespaceHandler
-http\://grails.org/schema/context=org.codehaus.groovy.grails.context.annotation.GrailsContextNamespaceHandler

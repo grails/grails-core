@@ -1,0 +1,22 @@
+dependencies {
+	// Spring Web Flow
+	compile "org.springframework.webflow:spring-binding:2.0.8.RELEASE",
+	 		"org.springframework.webflow:spring-js:2.0.8.RELEASE",
+			"org.springframework.webflow:spring-webflow:2.0.8.RELEASE"
+				
+	
+	compile project(":grails-web"), project(':grails-hibernate'), project(':grails-plugin-controllers')
+	
+	testCompile project(":grails-test"), project(":grails-test-suite-base"), project(":grails-plugin-testing")
+	
+	testCompile project(':grails-plugin-logging'),
+				project(':grails-plugin-mimetypes'),
+				project(':grails-plugin-gsp'),		
+				project(':grails-plugin-filters'),
+				project(':grails-plugin-codecs'),		
+				project(':grails-plugin-converters'),		
+				project(':grails-plugin-i18n'),
+				project(':grails-plugin-servlets'),
+				project(':grails-plugin-url-mappings')	
+}
+jar.appendix = 'webflow'
