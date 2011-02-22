@@ -7,4 +7,4 @@ dependencies {
 			project(':grails-plugin-converters'),
 			project(':grails-test')
 }
-jar.appendix = 'webflow'
+jar.appendix = 'plugin-testing'
