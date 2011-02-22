@@ -49,9 +49,6 @@ subprojects { project ->
 	
 
 
-	compile( 'org.codehaus.gpars:gpars:0.9' ) {
-		exclude module:'netty'
-	}
 	repositories {
 		mavenRepo urls:"http://maven.springframework.org/release"
 	}	
