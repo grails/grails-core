@@ -1,4 +1,4 @@
 dependencies { 
-	compile project(":grails-web"), project(':grails-hibernate')
+	compile project(':grails-hibernate')
 }
 jar.appendix = 'crud' 
