@@ -72,7 +72,7 @@ dependencyCache = {
 	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
 	copy {
 		from( cacheLocation ) {	
-			def dependencyIncludes = []			
+			def dependencyIncludes = [] as Set			
 			def includeClosure = { artifact ->
 				def dependency = artifact.getResolvedDependency() 	
 				def file = artifact.file	
@@ -80,13 +80,20 @@ dependencyCache = {
 				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"					
 				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"										
 			}
-			configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
-			configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 								
-			includes = dependencyIncludes
+			subprojects.each { project -> 
+				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
+				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
+			}
+													
+			includes = dependencyIncludes as List
 		}
 		into "$projectDir/lib"
 	}
 
+}
+
+task populateDependencies {
+	doFirst dependencyCache
 }
 
 task scriptsJar(type:Jar, dependsOn:compileBuildScriptsGroovy) {
