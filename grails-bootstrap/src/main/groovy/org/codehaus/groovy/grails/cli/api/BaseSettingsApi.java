@@ -172,7 +172,11 @@ public class BaseSettingsApi {
         if that is set, or from the classpath.*/
     public Resource grailsResource(String path) {
         if (grailsHome != null) {
-            return new FileSystemResource(grailsHome + "/" + path);
+            FileSystemResource resource = new FileSystemResource(grailsHome + "/" + path);
+            if(!resource.exists()) {
+                resource = new FileSystemResource(grailsHome + "/grails-resources/" + path);
+            }
+            return resource;
         }
         return new ClassPathResource(path);
     }

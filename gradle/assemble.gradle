@@ -108,6 +108,13 @@ task libs(dependsOn: getTasksByName("jar", true))  {
 			}		
 			into 'dist'			
 		}
+		copy {
+			from("$projectDir/grails-resources") {
+				include 'src/grails', 'src/war'
+			}			
+			into projectDir			
+		}
+		
 	}
 }
 libs.dependsOn scriptsJar
@@ -143,6 +150,10 @@ distSpec = copySpec {
         // this file is accounted for later with special handling to do some token replacement
         exclude 'src/grails/grails-macros.xml'
     }
+	from("$projectDir/grails-resources") {
+		into "grails-$version"
+		include 'src/grails', 'src/war'
+	}
     from(projectDir) {
     	into "grails-$version"
     	include "gradlew"
