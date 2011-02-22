@@ -4,10 +4,9 @@ dependencies {
 			project(':grails-core'),
 			project(':grails-spring'),
 			project(':grails-web'),
-			project(':grails-test'),
-			project(':grails-plugin-testing')
-	
-			
+			project(':grails-test')
+
+
 }
 			
 jar.appendix = 'test-suite-base'

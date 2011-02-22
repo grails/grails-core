@@ -27,5 +27,6 @@ include	'grails-bootstrap',
 		'grails-plugin-testing',
 		
 		// Test Suite
-		'grails-test-suite-base'
+		'grails-test-suite-base',
+		'grails-uber-test-suite'
 		

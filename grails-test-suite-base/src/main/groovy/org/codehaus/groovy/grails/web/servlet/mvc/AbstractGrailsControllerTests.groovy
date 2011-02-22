@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.test.GrailsUnitTestCase
 import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -22,7 +21,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.springframework.context.ApplicationContext
 
-abstract class AbstractGrailsControllerTests extends GrailsUnitTestCase {
+abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
     def servletContext
     GrailsWebRequest webRequest

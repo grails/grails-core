@@ -1,0 +1,12 @@
+// dependencies
+dependencies {	
+	compile project(':grails-hibernate'),
+            project(':grails-test-suite-base'),
+			project(':grails-plugin-testing')
+}
+
+test {
+//     maxParallelForks = 4
+     forkEvery = 100
+	 maxHeapSize = '1024m'
+}

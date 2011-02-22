@@ -18,7 +18,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGeneratorTests;
+import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
@@ -31,7 +31,7 @@ public class ConstrainedPropertyTests extends TestCase {
         super.setUp();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
         PluginManagerHolder.setPluginManager(pluginManager);
-        pluginManager.registerMockPlugin(DefaultGrailsTemplateGeneratorTests.fakeHibernatePlugin);
+        pluginManager.registerMockPlugin(MockHibernatePluginHelper.FAKE_HIBERNATE_PLUGIN);
     }
 
     @Override
