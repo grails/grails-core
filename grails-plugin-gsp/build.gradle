@@ -13,7 +13,7 @@ dependencies {
 				project(':grails-plugin-servlets')	
 }
 test {
-//     maxParallelForks = 4
+     maxParallelForks = 4
      forkEvery = 100
 	 maxHeapSize = '1024m'
 }
