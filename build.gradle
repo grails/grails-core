@@ -161,8 +161,6 @@ subprojects { project ->
 		compile( 'org.codehaus.gpars:gpars:0.9' ) {
 			exclude module:'netty'
 		}
-
-	    jsp21 'javax.servlet.jsp:jsp-api:2.1'
 	}
 
     install.doLast {
