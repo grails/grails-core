@@ -1,7 +1,7 @@
 dependencies {
 	compile project(":grails-bootstrap"), project(":grails-spring")
 }
-assemble.doLast {
+compileGroovy.doFirst {
     delete("${buildDir}/classes/main/META-INF")
 }
 jar.appendix = 'core'

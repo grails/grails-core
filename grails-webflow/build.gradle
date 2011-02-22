@@ -16,6 +16,7 @@ dependencies {
 				project(':grails-plugin-codecs'),		
 				project(':grails-plugin-converters'),		
 				project(':grails-plugin-i18n'),
-				project(':grails-plugin-servlets')	
+				project(':grails-plugin-servlets'),
+				project(':grails-plugin-url-mappings')	
 }
 jar.appendix = 'webflow'
