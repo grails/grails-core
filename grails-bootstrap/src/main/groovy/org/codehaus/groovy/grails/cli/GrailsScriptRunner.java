@@ -28,13 +28,7 @@ import groovy.util.AntBuilder;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -57,6 +51,7 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
+import org.springframework.util.Log4jConfigurer;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -427,6 +422,14 @@ public class GrailsScriptRunner {
         }
         catch (MalformedURLException ex) {
             throw new RuntimeException("Invalid classpath URL", ex);
+        }
+
+        if(settings.getGrailsHome() != null) {
+            try {
+                Log4jConfigurer.initLogging("file:" + settings.getGrailsHome() + "/scripts/log4j.properties");
+            } catch (FileNotFoundException e) {
+                // ignore, Log4j will print an error in this case
+            }
         }
 
         List<File> potentialScripts;
