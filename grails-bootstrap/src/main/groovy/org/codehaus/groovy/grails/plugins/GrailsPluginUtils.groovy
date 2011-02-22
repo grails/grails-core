@@ -139,7 +139,7 @@ class GrailsPluginUtils {
      * Returns a new PluginBuildSettings instance
      */
     static PluginBuildSettings newPluginBuildSettings() {
-        new PluginBuildSettings(BuildSettingsHolder.settings, PluginManagerHolder.getPluginManager())
+        new PluginBuildSettings(BuildSettingsHolder.settings)
     }
 
     private static INSTANCE
