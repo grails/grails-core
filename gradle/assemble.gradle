@@ -82,7 +82,6 @@ dependencyCache = {
 			}
 			configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
 			configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 								
-			configurations.jsp21.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 												
 			includes = dependencyIncludes
 		}
 		into "$projectDir/lib"
@@ -111,6 +110,7 @@ task libs(dependsOn: getTasksByName("jar", true))  {
 		}
 	}
 }
+libs.dependsOn scriptsJar
 
 
 task pluginsFromSvn {

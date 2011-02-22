@@ -45,9 +45,7 @@ task createIntegrationFilesJar(type: Jar, description: 'Files to integrate Grail
 }
 
 allJarFileTasks = [createSharedFilesJar,createSharedApplicationFilesJar,createSharedPluginFilesJar,createIntegrationFilesJar]
-task resourceJarFiles << {
-	dependsOn allJarFileTasks	
-}
+task resourceJarFiles(dependsOn:allJarFileTasks)
 
 
 jar.dependsOn resourceJarFiles
