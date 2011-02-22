@@ -19,18 +19,18 @@ archivesBaseName = 'grails'
 
 
 repositories {
+    mavenCentral()
 	mavenRepo urls:"http://maven.springframework.org/release"
 }
 
-sourceSets {
-
-    buildScripts {
-        compileClasspath = sourceSets.main.compileClasspath + main.classes
-        classesDir = "$buildDir/compiled-scripts" as File
-        groovy.srcDirs = ['scripts']
-        resources.srcDirs = []
-    }
+configurations {
+    grailsScripts
+    grailsScripts.transitive = false
 }
+
+antVersion = "1.7.1"
+springVersion = "3.0.3.RELEASE"
+
 
 subprojects {
     apply plugin: 'groovy'
@@ -65,7 +65,6 @@ subprojects {
 		compile files(fileTree(dir:"$projectDir/src/libs" as File))
 
 		// Ant
-		def antVersion = "1.7.1"
 		compile "org.apache.ant:ant:${antVersion}",
 	 			"org.apache.ant:ant-launcher:${antVersion}",
 				"org.apache.ant:ant-junit:${antVersion}",	
@@ -141,7 +140,7 @@ subprojects {
 				'antlr:antlr:2.7.6'
 
 		// Spring
-		def springVersion = "3.0.3.RELEASE"
+
 		compile "org.springframework:spring-aop:${springVersion}",
 				"org.springframework:spring-asm:${springVersion}",
 				"org.springframework:spring-aspects:${springVersion}",
@@ -185,9 +184,6 @@ configure([compileJava, compileTestJava]) {
 apply {
     from 'gradle/docs.gradle'
     from 'gradle/assemble.gradle'
-/*    from 'gradle/unit-test.gradle'
-    from 'gradle/maven.gradle'
-    from 'gradle/findbugs.gradle'*/
 }
 
 clean {
