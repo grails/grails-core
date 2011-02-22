@@ -17,45 +17,13 @@ sourceCompatibility = "1.5"
 targetCompatibility = "1.5"
 archivesBaseName = 'grails'
 
-configurations {
-    compile.transitive = false
-    jsp21.extendsFrom compile
-}
 
 repositories {
 	mavenRepo urls:"http://maven.springframework.org/release"
 }
 
 sourceSets {
-    main {
-        java {
-            srcDirs = []
-        }
-        groovy {
-            srcDirs = ['src/java']
-        }
-        resources {
-            srcDirs = ['src/java']
-            include '**/*.properties', '**/*.xsd', '**/*.dtd'
-        }
-    }
-    jsp21 {
-        compileClasspath = files(configurations.jsp21, main.classes)
-        groovy.srcDirs = ['src/jsp21']
-        resources.srcDirs = []
-    }
-    test {
-        java {
-            srcDirs = []
-        }
-        groovy {
-            srcDirs = ['src/test']
-        }
-        resources {
-            srcDirs = ['src/test', 'src/jar']
-            exclude '**/*.java', '**/*.groovy'
-        }
-    }
+
     buildScripts {
         compileClasspath = sourceSets.main.compileClasspath + main.classes
         classesDir = "$buildDir/compiled-scripts" as File
@@ -203,9 +171,6 @@ subprojects {
 
 	
 }
-
-jsp21Classes.dependsOn classes
-task allClasses(dependsOn: [classes, jsp21Classes, buildScriptsClasses])
 
 configure([compileGroovy, compileTestGroovy]) {
     groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')

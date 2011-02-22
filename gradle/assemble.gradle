@@ -27,14 +27,14 @@ task libs(dependsOn: getTasksByName("jar", true))  {
 	
     destinationDir = 'dist'
 	doLast {
-		subprojects.each { project ->
-			copy {
+		copy {		
+			for(project in subprojects) {
 				from( project.libsDir ) {
-					includes "*-${version}.jar"
+					include "*-${version}.jar"
 				}
-				into 'dist'
-			}
-		}		
+			}		
+			into 'dist'			
+		}
 	}
 }
 
