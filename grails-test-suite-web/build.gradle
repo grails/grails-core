@@ -8,7 +8,8 @@ dependencies {
 				project(':grails-plugin-logging'),					
 				project(':grails-plugin-url-mappings'),												
 				project(':grails-plugin-services'),								
-				project(':grails-hibernate')
+				project(':grails-hibernate'),
+				project(':grails-webflow')
 }
 test {
     maxParallelForks = 4
