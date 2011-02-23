@@ -1,4 +1,5 @@
 dependencies {
+    runtime 'ognl:ognl:2.7.3'
     // Spring Web Flow
     compile "org.springframework.webflow:spring-binding:2.0.8.RELEASE",
             "org.springframework.webflow:spring-js:2.0.8.RELEASE",

@@ -1,5 +1,20 @@
 dependencies {
     groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
+
+    compile( 'org.codehaus.gpars:gpars:0.9' ) {
+        exclude module:'netty'
+    }
+
+    // Ant
+    compile "org.apache.ant:ant:${antVersion}",
+            "org.apache.ant:ant-launcher:${antVersion}",
+            "org.apache.ant:ant-junit:${antVersion}",
+            "org.apache.ant:ant-nodeps:${antVersion}",
+            "org.apache.ant:ant-trax:${antVersion}",
+            "org.apache.ivy:ivy:2.2.0",
+            'org.codehaus.gant:gant_groovy1.7:1.9.3'
+
+    runtime 'org.coconut.forkjoin:jsr166y:070108'
 }
 
 compileGroovy.doFirst {

@@ -1,4 +1,7 @@
 dependencies {
+    // Testing
+    compile 'junit:junit:4.8.1'
+
     compile project(":grails-web")
 }
 jar.appendix = 'test'

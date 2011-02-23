@@ -5,6 +5,19 @@ dependencies {
     jsp21 'javax.servlet.jsp:jsp-api:2.1'
 
     compile  project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
+    compile( 'commons-el:commons-el:1.0' ) {
+         exclude module:'commons-logging'
+    }
+    compile('commons-fileupload:commons-fileupload:1.2.1')
+    compile 'opensymphony:sitemesh:2.4'
+
+    // Required for JSP support
+    compile 'javax.servlet:jsp-api:2.0'
+    compile 'javax.servlet:jstl:1.2'
+    compile 'xpp3:xpp3_min:1.1.4c'
+    runtime 'taglibs:standard:1.1.2'
+    runtime 'javax.el:el-api:1.0'
+
 }
 sourceSets {
     jsp21 {

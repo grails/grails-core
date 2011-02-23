@@ -5,11 +5,14 @@ dependencies {
     // Hibernate related
     compile 'org.hibernate:hibernate-annotations:3.4.0.GA',
             'org.hibernate:hibernate-commons-annotations:3.1.0.GA',
-            'org.hibernate:hibernate-core:3.3.1.GA',
-            'org.hibernate:hibernate-validator:3.1.0.GA',
+            'org.hibernate:hibernate-core:3.3.1.GA'
+    compile 'javassist:javassist:3.11.0.GA'
+
+
+
+    runtime 'org.hibernate:hibernate-validator:3.1.0.GA',
             'org.hibernate:hibernate-ehcache:3.3.1.GA',
-            'javassist:javassist:3.11.0.GA',
-            'antlr:antlr:2.7.6'    
+            'antlr:antlr:2.7.6'
              
 
 }

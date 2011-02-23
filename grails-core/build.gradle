@@ -1,4 +1,5 @@
 dependencies {
+    runtime 'oro:oro:2.0.8'
     compile project(":grails-bootstrap"), project(":grails-spring")
 }
 
