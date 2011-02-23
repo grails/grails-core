@@ -80,9 +80,10 @@ dependencyCache = {
 				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"					
 				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"										
 			}
-			subprojects.each { project -> 
+			for(project in subprojects) {
 				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
 				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
+				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure) 
 			}
 													
 			includes = dependencyIncludes as List
