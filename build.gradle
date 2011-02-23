@@ -11,19 +11,6 @@ apply plugin: 'groovy'
 apply plugin: 'eclipse'
 
 grailsVersion = '1.4.0.BUILD-SNAPSHOT'
-version = grailsVersion
-
-sourceCompatibility = "1.5"
-targetCompatibility = "1.5"
-archivesBaseName = 'grails'
-
-
-
-configurations {
-    grailsScripts
-    grailsScripts.transitive = false
-}
-
 antVersion = "1.7.1"
 springVersion = "3.0.3.RELEASE"
 
@@ -195,5 +182,5 @@ clean {
     delete(docs.destinationDir, libs.destinationDir)
 }
 
-task install(dependsOn:[populateDependencies, scriptsJar])
+task install(dependsOn:[populateDependencies])
 

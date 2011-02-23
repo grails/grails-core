@@ -8,6 +8,7 @@ include	'grails-bootstrap',
 		'grails-webflow',
 		'grails-crud',
 		'grails-resources',
+        'grails-scripts',
 		
 		// Plugins
 		'grails-plugin-url-mappings',

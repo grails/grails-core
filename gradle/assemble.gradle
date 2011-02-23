@@ -1,73 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-sourceSets {
-
-    buildScripts {
-        def buildScriptsClasspath = sourceSets.main.compileClasspath + configurations.grailsScripts
-        for(subproject in subprojects) {
-            buildScriptsClasspath = buildScriptsClasspath + subproject.sourceSets.main.classes
-        }
-        compileClasspath =  buildScriptsClasspath
-        classesDir = "$buildDir/compiled-scripts" as File
-        groovy.srcDirs = ['scripts']
-        resources.srcDirs = []
-    }
-}
-
-
-dependencies {
-    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
-
-	// Specs
-	grailsScripts 'javax.servlet:jsp-api:2.0'
-	grailsScripts 'javax.servlet:servlet-api:2.5'
-	grailsScripts 'javax.servlet:jstl:1.2'
-	grailsScripts 'taglibs:standard:1.1.2'
-	grailsScripts 'net.sf.jsr107cache:jsr107cache:1.0'
-	grailsScripts 'javax.transaction:jta:1.1'
-	grailsScripts 'javax.persistence:persistence-api:1.0'
-	
-	// Logging
-	grailsScripts 'log4j:log4j:1.2.16'
-	grailsScripts 'org.slf4j:slf4j-log4j12:1.6.1'
-	grailsScripts 'org.slf4j:slf4j-api:1.6.1'
-	grailsScripts 'org.slf4j:jcl-over-slf4j:1.6.1'
-	grailsScripts 'org.slf4j:jul-to-slf4j:1.6.1'
-	
-    grailsScripts( 'org.codehaus.gpars:gpars:0.9' ) {
-        exclude module:'netty'
-    }
-	// Apache Commons
-	grailsScripts 'commons-io:commons-io:1.4'
-
-    grailsScripts "org.springframework:spring-context:${springVersion}",
-                  "org.springframework:spring-core:${springVersion}",
-                  "org.springframework:spring-beans:${springVersion}",
-                  "org.springframework:spring-web:${springVersion}",
-                  "org.springframework:spring-tx:${springVersion}",
-                  "org.springframework:spring-orm:${springVersion}",
-                  "org.springframework:spring-test:${springVersion}",
-                  'org.tmatesoft.svnkit:svnkit:1.3.4'
-
-
-    grailsScripts "org.apache.ant:ant:${antVersion}",
-                  "org.apache.ant:ant-launcher:${antVersion}",
-                  "org.apache.ant:ant-junit:${antVersion}",
-                  "org.apache.ant:ant-nodeps:${antVersion}",
-                  "org.apache.ant:ant-trax:${antVersion}",
-                  "org.apache.ivy:ivy:2.2.0",
-                  'org.codehaus.gant:gant_groovy1.7:1.9.3'
-
-	grailsScripts 'org.hibernate:hibernate-annotations:3.4.0.GA',
-				'org.hibernate:hibernate-commons-annotations:3.1.0.GA',
-				'org.hibernate:hibernate-core:3.3.1.GA',
-				'org.hibernate:hibernate-validator:3.1.0.GA',
-				'org.hibernate:hibernate-ehcache:3.3.1.GA',
-				'javassist:javassist:3.11.0.GA',
-				'antlr:antlr:2.7.6'
-}
-
-
 dependencyCache = {
 	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
 	copy {
@@ -97,12 +29,6 @@ task populateDependencies {
 	doFirst dependencyCache
 }
 
-task scriptsJar(type:Jar, dependsOn:compileBuildScriptsGroovy) {
-	appendix = 'scripts'
-	from sourceSets.buildScripts.classes
-	destinationDir = new File('dist')
-}
-
 task libs(dependsOn: getTasksByName("jar", true))  {
 	doFirst dependencyCache
 	
@@ -111,7 +37,7 @@ task libs(dependsOn: getTasksByName("jar", true))  {
 		copy {		
 			for(project in subprojects) {
 				from( project.libsDir ) {
-					include "*-${version}.jar"
+					include "*-${grailsVersion}.jar"
 				}
 			}		
 			into 'dist'			
@@ -125,21 +51,21 @@ task libs(dependsOn: getTasksByName("jar", true))  {
 		
 	}
 }
-libs.dependsOn scriptsJar
+
 
 
 task pluginsFromSvn {
     dir = "$buildDir/pluginsFromSvn"
-    grailsHibernateDest = "$dir/grails-hibernate-${version}.zip"
-    grailsTomcatDest = "$dir/grails-tomcat-${version}.zip"
+    grailsHibernateDest = "$dir/grails-hibernate-${grailsVersion}.zip"
+    grailsTomcatDest = "$dir/grails-tomcat-${grailsVersion}.zip"
     outputs.files grailsHibernateDest, grailsTomcatDest
     doFirst {
         ant {
             mkdir(dir: dir)
-			def versionTag = version.replaceAll(/\./, '_').toUpperCase()
-            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${version}.zip",
+			def versionTag = grailsVersion.replaceAll(/\./, '_').toUpperCase()
+            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${grailsVersion}.zip",
                     dest: grailsHibernateDest, verbose: true, usetimestamp: true)
-            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${version}.zip",
+            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${grailsVersion}.zip",
                     dest: grailsTomcatDest, verbose: true, usetimestamp: true)
 
         }
@@ -150,7 +76,7 @@ binExecutables = ["cygrails", "grails", "grails-debug", "grails-debug.bat", "gra
 
 distSpec = copySpec {
     from(projectDir) {
-        into "grails-$version"
+        into "grails-$grailsVersion"
         include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'conf/', 'build.gradle', 'build.properties',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
         exclude 'ant/bin'
@@ -159,43 +85,43 @@ distSpec = copySpec {
         exclude 'src/grails/grails-macros.xml'
     }
 	from("$projectDir/grails-resources") {
-		into "grails-$version"
+		into "grails-$grailsVersion"
 		include 'src/grails', 'src/war'
 	}
     from(projectDir) {
-    	into "grails-$version"
+    	into "grails-$grailsVersion"
     	include "gradlew"
     	fileMode = 0755
     }
     from(docs.destinationDir) {
-        into "grails-$version/doc"
+        into "grails-$grailsVersion/doc"
     }
     exclude "**/CVS/**"
     from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
-        into "grails-$version/plugins"
+        into "grails-$grailsVersion/plugins"
     }
     from('bin') {
-        into "grails-$version/bin"
+        into "grails-$grailsVersion/bin"
         include binExecutables
         fileMode = 0755
     }
     from('src/resources/docs/README') {
-        into "grails-$version"
-        filter(ReplaceTokens, tokens: ['grails.version': version])
+        into "grails-$grailsVersion"
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
     from("src/resources/bash") {
         include "startGrails.bat", "startGrails"
         into "grails-$version/bin"
-        filter(ReplaceTokens, tokens: ['grails.version': version])
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         fileMode = 0755
     }
     from(libs.destinationDir) {
-        into "grails-$version/dist"
+        into "grails-$grailsVersion/dist"
         exclude "*.zip"
     }
     from("src/grails/grails-macros.xml") {
-        into "grails-$version/src/grails"
-        filter(ReplaceTokens, tokens: ['grails.version': version])
+        into "grails-$grailsVersion/src/grails"
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
 }
 

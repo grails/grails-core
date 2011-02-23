@@ -1,0 +1,16 @@
+dependencies {
+	compile project(":grails-web"), 
+			project(':grails-hibernate'),
+			project(':grails-docs'), 
+			project(':grails-crud'),
+			project(':grails-plugin-controllers'),
+			project(':grails-plugin-logging'),
+    		project(":grails-test"), 
+			project(":grails-plugin-testing")
+    
+}
+sourceSets {
+    main {
+		groovy.srcDirs = ['../scripts']
+    }
+}
