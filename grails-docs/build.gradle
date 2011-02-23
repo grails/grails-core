@@ -1,21 +1,25 @@
+repositories {
+	mavenCentral()
+	mavenRepo urls:"http://download.java.net/maven/2"
+}
+
 dependencies {
-	compile files(fileTree(dir:"../src/libs" as File))
-	compile 'com.lowagie:itext:2.1.7',
-	 		'org.xhtmlrenderer:core-renderer:R8pre2'
-	
-	compile project(":grails-core"),project(":grails-bootstrap")
+    compile files(fileTree(dir:"../src/libs" as File))
+    compile 'com.lowagie:itext:2.1.7',
+            'org.xhtmlrenderer:core-renderer:R8'
+    compile project(":grails-core"),project(":grails-bootstrap")
 }
 
 task docFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
-	version = null
+    version = null
     appendix = "doc-files"
     from("src/main/template")
-	doLast {
-		copy {
-			from docFilesJar.archivePath
-			into "${buildDir}/classes/main"
-		}		
-	}
+    doLast {
+        copy {
+            from docFilesJar.archivePath
+            into "${buildDir}/classes/main"
+        }
+    }
 }
 
 assemble.dependsOn docFilesJar
