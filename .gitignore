@@ -22,3 +22,5 @@ target
 /*/out/*
 /*/*.iml
 /eclipse-build
+
+/.idea/
