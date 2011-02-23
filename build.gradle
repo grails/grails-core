@@ -169,6 +169,10 @@ subprojects { project ->
             into "${rootProject.projectDir}/dist"
         }
     }
+
+	test {
+		excludes = ["**/*TestCase.class", "**/*\$*.class"]
+	}
 	
 }
 
