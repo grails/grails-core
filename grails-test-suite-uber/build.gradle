@@ -4,7 +4,9 @@ dependencies {
             project(':grails-test-suite-base'),
             project(':grails-plugin-testing')
 
-    testCompile project(':grails-plugin-url-mappings') ,
+
+    testCompile project(':grails-plugin-codecs') ,
+                project(':grails-plugin-url-mappings') ,
                 project(':grails-plugin-validation'),
                 project(":grails-plugin-datasource"),
                 project(":grails-plugin-servlets"),

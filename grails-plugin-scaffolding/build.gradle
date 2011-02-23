@@ -1,21 +1,4 @@
 dependencies {
     compile project(":grails-crud")
-
-    testCompile project(":grails-test"), project(":grails-test-suite-base"), project(":grails-plugin-testing")
-
-    testCompile project(':grails-plugin-url-mappings'),
-                project(':grails-plugin-controllers'),
-                project(':grails-plugin-logging'),
-                project(':grails-plugin-mimetypes'),
-                project(':grails-plugin-gsp'),
-                project(':grails-plugin-filters'),
-                project(':grails-plugin-codecs'),
-                project(':grails-plugin-converters'),
-                project(':grails-plugin-i18n'),
-                project(':grails-plugin-servlets'),
-                project(':grails-plugin-validation'),
-                project(':grails-plugin-datasource'),
-                project(':grails-plugin-services'),
-                project(':grails-plugin-testing')
 }
 jar.appendix = 'plugin-scaffolding'

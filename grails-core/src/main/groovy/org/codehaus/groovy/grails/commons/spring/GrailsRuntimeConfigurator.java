@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
@@ -93,14 +94,11 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             parent.containsBean(DATA_SOURCE_BEAN);
         }
 
-        pluginManager = PluginManagerHolder.getPluginManager();
-        if (pluginManager == null) {
+        try {
+            pluginManager = parent.getBean(GrailsPluginManager.class);
+        } catch (BeansException e) {
             pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
             PluginManagerHolder.setPluginManager(pluginManager);
-        }
-        else {
-            LOG.debug("Retrieved thread-bound PluginManager instance");
-            pluginManager.setApplication(application);
         }
     }
 

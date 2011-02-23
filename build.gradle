@@ -18,10 +18,6 @@ targetCompatibility = "1.5"
 archivesBaseName = 'grails'
 
 
-repositories {
-    mavenCentral()
-	mavenRepo urls:"http://maven.springframework.org/release"
-}
 
 configurations {
     grailsScripts
@@ -54,6 +50,7 @@ subprojects { project ->
 
 
 	repositories {
+        mavenCentral()
 		mavenRepo urls:"http://maven.springframework.org/release"
 	}	
 	dependencies {

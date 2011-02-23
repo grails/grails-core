@@ -28,5 +28,7 @@ include	'grails-bootstrap',
 		
 		// Test Suite
 		'grails-test-suite-base',
-		'grails-uber-test-suite'
+		'grails-test-suite-uber',
+		'grails-test-suite-web',		
+		'grails-test-suite-persistence'		
 		

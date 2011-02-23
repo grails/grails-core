@@ -1,7 +1,3 @@
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     // Spring Web Flow
     compile "org.springframework.webflow:spring-binding:2.0.8.RELEASE",
