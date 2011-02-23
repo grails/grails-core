@@ -46,7 +46,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -155,10 +154,9 @@ public class GroovyPageParser implements Tokens {
     private long lastModified;
     private boolean precompileMode;
     private boolean sitemeshPreprocessMode=false;
-    private PluginBuildSettings pluginBuildSettings;
     private String defaultCodecDirectiveValue;
 
-	private String filename;
+    private String filename;
 
     public String getContentType() {
         return contentType;
@@ -228,22 +226,20 @@ public class GroovyPageParser implements Tokens {
         makeName(name);
         makeSourceName(filename);
     }
-    
-    public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
-    	// TODO: Deprecate PluginBuildSettingsHolder and inject via Spring
-		this.pluginBuildSettings = pluginBuildSettings;
-		
-		if(filename!= null) {
-	        GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
-	        if (info != null) {
-	            pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
-	                info.getVersion() + "')";
-	        }
-			
-		}		
-	}
 
-	private Map<String, String> parseDirectives(String gspSource) {
+    public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
+        // TODO: Deprecate PluginBuildSettingsHolder and inject via Spring
+
+        if (filename != null) {
+            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+            if (info != null) {
+                pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
+                    info.getVersion() + "')";
+            }
+        }
+    }
+
+    private Map<String, String> parseDirectives(String gspSource) {
         Map <String, String> result=new HashMap<String, String>();
         // strip gsp comments
         String input = PRESCAN_COMMENT_PATTERN.matcher(gspSource).replaceAll("");
@@ -395,7 +391,7 @@ public class GroovyPageParser implements Tokens {
         scan = null;
     }
 
-    public void writeHtmlParts(File filename) throws IOException {
+    public void writeHtmlParts(@SuppressWarnings("hiding") File filename) throws IOException {
         DataOutputStream dataOut = null;
         try {
             dataOut = new DataOutputStream(new BufferedOutputStream(
@@ -410,7 +406,7 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    public void writeLineNumbers(File filename) throws IOException {
+    public void writeLineNumbers(@SuppressWarnings("hiding") File filename) throws IOException {
         DataOutputStream dataOut = null;
         try {
             dataOut = new DataOutputStream(new BufferedOutputStream(
@@ -700,7 +696,7 @@ public class GroovyPageParser implements Tokens {
      * find the simple name of this gsp
      * @param filename the fully qualified file name
      */
-    private void makeSourceName(String filename) {
+    private void makeSourceName(@SuppressWarnings("hiding") String filename) {
         if (filename != null) {
             int lastSegmentStart = filename.lastIndexOf('/');
             if (lastSegmentStart == -1) {
@@ -861,7 +857,7 @@ public class GroovyPageParser implements Tokens {
                 out.println("null");
             }
             out.println("}");
-            
+
             if (shouldAddLineNumbers()) {
                 addLineNumbers();
             }
@@ -873,7 +869,7 @@ public class GroovyPageParser implements Tokens {
             }
         }
     }
-    
+
     /**
      * Determines if the line numbers array should be added to the generated Groovy class.
      * @return true if they should
@@ -926,7 +922,7 @@ public class GroovyPageParser implements Tokens {
                 break;
             }
         }
-        
+
         int[] newLineNumbers = new int[startLocation];
         System.arraycopy(lineNumbers, 0, newLineNumbers, 0, startLocation);
         return newLineNumbers;
@@ -976,7 +972,7 @@ public class GroovyPageParser implements Tokens {
                 closureLevel--;
             }
 
-            if (tm.bufferMode && tm.bufferPartNumber != -1){
+            if (tm.bufferMode && tm.bufferPartNumber != -1) {
                 if (!bodyVarsDefined.contains(tm.tagIndex)) {
                     //out.print("def ");
                     bodyVarsDefined.add(tm.tagIndex);

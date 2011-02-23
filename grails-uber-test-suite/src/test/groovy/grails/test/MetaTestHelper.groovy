@@ -33,13 +33,13 @@ class MetaTestHelper {
     void backupMeta() {
         classToMetaClass.clear()
         classesUnderTest?.each { Class clazz ->
-            classToMetaClass.put clazz, clazz.metaClass    
+            classToMetaClass.put clazz, clazz.metaClass
         }
     }
 
     void restoreMeta() {
         classToMetaClass?.each { Class clazz, MetaClass metaClass ->
-            GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)    
+            GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
         }
     }
 
@@ -48,5 +48,4 @@ class MetaTestHelper {
             GroovySystem.metaClassRegistry.removeMetaClass clazz
         }
     }
-
 }

@@ -85,7 +85,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * Cares for balanced register/unregister.
      * @param closure piece of code to be executed with registered ProxyMetaClass
      */
-    public void use(Closure closure){
+    public void use(Closure closure) {
         registry.setMetaClass(theClass, this);
 
         try {
@@ -102,7 +102,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      * @param closure piece of code to be executed with ProxyMetaClass
      * @param object The GroovyObject to use this ProxyMetaClass with
      */
-    public void use(GroovyObject object, Closure closure){
+    public void use(GroovyObject object, Closure closure) {
         object.setMetaClass(this);
 
         try {
@@ -151,7 +151,7 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
      */
     @Override
     public Object invokeStaticMethod(final Object object, final String methodName, final Object[] arguments) {
-        return doCall(object, methodName, arguments, new Callable(){
+        return doCall(object, methodName, arguments, new Callable() {
             public Object call() {
                 return adaptee.invokeStaticMethod(object, methodName, arguments);
             }

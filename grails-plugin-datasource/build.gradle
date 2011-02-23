@@ -1,5 +1,5 @@
 dependencies {
-	compile project(":grails-core")
+    compile project(":grails-core")
 }
 
 jar.appendix = 'plugin-datasource'

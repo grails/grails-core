@@ -86,15 +86,15 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns) {
         this(mappings, excludePatterns, false);
     }
-    
+
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings, List excludePatterns, boolean doNotCallInit) {
         urlMappings = mappings;
         this.excludePatterns = excludePatterns;
-        if(!doNotCallInit) {
+        if (!doNotCallInit) {
             initialize();
         }
     }
-    
+
     public void initialize() {
         sortMappings();
 
@@ -105,10 +105,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             .maximumWeightedCapacity(maxWeightedCacheCapacity)
             .weigher(CustomListWeigher.INSTANCE)
             .build();
-        if(urlCreatorMaxWeightedCacheCapacity > 0) {
+        if (urlCreatorMaxWeightedCacheCapacity > 0) {
             urlCreatorCache = new UrlCreatorCache(urlCreatorMaxWeightedCacheCapacity);
         }
-        
+
         mappings = urlMappings.toArray(new UrlMapping[urlMappings.size()]);
 
         for (UrlMapping mapping : mappings) {
@@ -190,11 +190,11 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
      */
     public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         if (params == null) params = Collections.EMPTY_MAP;
-        
-        if(urlCreatorCache != null) {
+
+        if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, params);
             UrlCreator creator=urlCreatorCache.lookup(key);
-            if(creator==null) {
+            if (creator==null) {
                 creator=resolveUrlCreator(controller, action, params);
                 creator=urlCreatorCache.putAndDecorate(key, creator);
             }

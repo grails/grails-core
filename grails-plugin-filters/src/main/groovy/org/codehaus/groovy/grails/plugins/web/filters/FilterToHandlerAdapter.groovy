@@ -68,7 +68,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             controllerRegex = Pattern.compile(".*")
         }
 
-        if(scope.controllerExclude) {
+        if (scope.controllerExclude) {
             controllerExcludeRegex = Pattern.compile((useRegex)?scope.controllerExclude:scope.controllerExclude.replaceAll("\\*", ".*"))
         }
 
@@ -79,14 +79,14 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             actionRegex = Pattern.compile(".*")
         }
 
-        if(scope.actionExclude) {
+        if (scope.actionExclude) {
             actionExcludeRegex = Pattern.compile((useRegex)?scope.actionExclude:scope.actionExclude.replaceAll("\\*", ".*"))
         }
 
         if (scope.uri) {
             uriPattern = scope.uri.toString()
         }
-        if(scope.uriExclude) {
+        if (scope.uriExclude) {
             uriExcludePattern = scope.uriExclude.toString()
         }
     }
@@ -197,7 +197,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
 
         if (uriPattern) {
             matched = pathMatcher.match(uriPattern, uri)
-            if(matched && uriExcludePattern) {
+            if (matched && uriExcludePattern) {
                 matched = !pathMatcher.match(uriExcludePattern, uri)
             }
         }
@@ -210,7 +210,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             }
             if (matched) {
                 matched = doesMatch(controllerRegex, controllerName)
-                if(matched && controllerExcludeRegex) {
+                if (matched && controllerExcludeRegex) {
                     matched = !doesMatch(controllerExcludeRegex, controllerName)
                 }
             }
@@ -221,7 +221,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
                     actionName = controllerClass?.getDefaultAction()
                 }
                 matched = doesMatch(actionRegex, actionName)
-                if(matched && actionExcludeRegex) {
+                if (matched && actionExcludeRegex) {
                     matched = !doesMatch(actionExcludeRegex, actionName)
                 }
             }

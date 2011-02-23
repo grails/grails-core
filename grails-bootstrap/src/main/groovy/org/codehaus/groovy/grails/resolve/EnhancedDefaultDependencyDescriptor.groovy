@@ -122,7 +122,7 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         field.set(this, b)
     }
 
-	void addRuleForModuleId(ModuleId mid, String scope, String type = WILDCARD, String ext = WILDCARD) {
+    void addRuleForModuleId(ModuleId mid, String scope, String type = WILDCARD, String ext = WILDCARD) {
         def id = new ArtifactId(mid, WILDCARD, type, ext)
         def rule = new DefaultExcludeRule(id, ExactPatternMatcher.INSTANCE, null)
         addExcludeRule scope, rule

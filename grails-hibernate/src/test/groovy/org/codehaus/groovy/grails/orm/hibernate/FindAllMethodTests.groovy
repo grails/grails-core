@@ -3,8 +3,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Nov 30, 2007
  */
 class FindAllMethodTests extends AbstractGrailsHibernateTests {
 
@@ -21,7 +19,7 @@ class FindAllTest {
     }
 }
 '''
-    }    
+    }
 
     void testUsingHibernateCache() {
         def theClass = ga.getDomainClass("FindAllTest").clazz
@@ -29,7 +27,7 @@ class FindAllTest {
         def stats = sessionFactory.statistics
         stats.statisticsEnabled = true
         stats.clear()
-        
+
         def cacheStats = stats.getSecondLevelCacheStatistics('org.hibernate.cache.StandardQueryCache')
         assertEquals 0, cacheStats.hitCount
         assertEquals 0, cacheStats.missCount
@@ -49,12 +47,12 @@ class FindAllTest {
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = 'Angus'")
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = 'Angus'", [cache: false])
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
@@ -64,12 +62,12 @@ class FindAllTest {
         assertEquals 3, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = 'Malcolm'", [cache: true])
         assertEquals 3, cacheStats.hitCount
         assertEquals 2, cacheStats.missCount
         assertEquals 2, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = 'Malcolm'", [cache: true])
         assertEquals 4, cacheStats.hitCount
         assertEquals 2, cacheStats.missCount
@@ -78,11 +76,11 @@ class FindAllTest {
 
     void testUsingHibernateCacheWithNamedParams() {
         def theClass = ga.getDomainClass("FindAllTest").clazz
-        
+
         def stats = sessionFactory.statistics
         stats.statisticsEnabled = true
         stats.clear()
-        
+
         def cacheStats = stats.getSecondLevelCacheStatistics('org.hibernate.cache.StandardQueryCache')
         assertEquals 0, cacheStats.hitCount
         assertEquals 0, cacheStats.missCount
@@ -92,7 +90,7 @@ class FindAllTest {
         assertEquals 0, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = :name", [name: 'Angus'], [cache: true])
         assertEquals 1, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
@@ -107,22 +105,22 @@ class FindAllTest {
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = :name", [name: 'Angus'], [cache: false])
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = :name", [name: 'Angus'], [cache: true])
         assertEquals 3, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = :name", [name: 'Malcolm'], [cache: true])
         assertEquals 3, cacheStats.hitCount
         assertEquals 2, cacheStats.missCount
         assertEquals 2, cacheStats.putCount
-        
+
         theClass.findAll("from FindAllTest where name = :name", [name: 'Malcolm'], [cache: true])
         assertEquals 4, cacheStats.hitCount
         assertEquals 2, cacheStats.missCount

@@ -106,7 +106,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     private void trySettingClassLoaderOnContextIfFoundInParent(ApplicationContext parentCtx) {
         if (parentCtx.containsBean("classLoader")) {
             Object cl = parentCtx.getBean("classLoader");
-            if (cl instanceof ClassLoader){
+            if (cl instanceof ClassLoader) {
                 setClassLoaderOnContext((ClassLoader)cl);
             }
         }
@@ -126,7 +126,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         }
 
         context = createApplicationContext(parent);
-        if (parent != null && classLoader == null){
+        if (parent != null && classLoader == null) {
             trySettingClassLoaderOnContextIfFoundInParent(parent);
         }
         else if (classLoader != null)  {
@@ -149,12 +149,12 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     }
 
     public ApplicationContext getApplicationContext() {
-    	long now = LOG.isDebugEnabled() ?  System.currentTimeMillis() : 0;
+        long now = LOG.isDebugEnabled() ?  System.currentTimeMillis() : 0;
         initialiseApplicationContext();
         registerBeansWithContext(context);
         context.refresh();
-        if(LOG.isDebugEnabled()) {
-        	LOG.debug("Created ApplicationContext in " +(System.currentTimeMillis()-now)+ "ms" );
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Created ApplicationContext in " +(System.currentTimeMillis()-now)+ "ms" );
         }
         return context;
     }

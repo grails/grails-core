@@ -79,7 +79,7 @@ class MockUtilsDeleteDomainTests extends GroovyTestCase {
 
     void testDeleteEvents() {
         def domain = new TestDomain(name: "Alice Doe", country: "US", age: 35, title: "Ms.")
-        
+
         MockUtils.mockDomain(TestDomain, errorsMap, [domain])
 
         assertEquals 0, domain.beforeDeleted
@@ -90,7 +90,6 @@ class MockUtilsDeleteDomainTests extends GroovyTestCase {
         assertEquals 'beforeDeleted was not called', 1, domain.beforeDeleted
         assertEquals 'afterDeleted was not called', 1, domain.afterDeleted
     }
-
 
     void testDeleteEventsWithClosureHandlers() {
         def domain = new TestDomainWithClosureEventHandlers(name: "Alice Doe")

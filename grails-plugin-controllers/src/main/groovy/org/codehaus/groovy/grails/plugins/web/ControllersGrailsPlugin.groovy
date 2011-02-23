@@ -212,10 +212,10 @@ class ControllersGrailsPlugin {
             }
         }
 
-		def controllerApi = new ControllersApi(pluginManager, ctx)
-		
-		def enhancer = new MetaClassEnhancer()
-		enhancer.addApi controllerApi
+        def controllerApi = new ControllersApi(pluginManager, ctx)
+
+        def enhancer = new MetaClassEnhancer()
+        enhancer.addApi controllerApi
 
         // add commons objects and dynamic methods like render and redirect to controllers
         for (GrailsClass controller in application.controllerClasses) {
@@ -223,11 +223,11 @@ class ControllersGrailsPlugin {
 
             Class controllerClass = controller.clazz
             Class superClass = controller.clazz.superclass
-			enhancer.enhance mc
+            enhancer.enhance mc
             // deal with abstract super classes
             while (superClass != Object) {
                 if (Modifier.isAbstract(superClass.getModifiers())) {
-					enhancer.enhance superClass.metaClass
+                    enhancer.enhance superClass.metaClass
                 }
                 superClass = superClass.superclass
             }
@@ -237,8 +237,6 @@ class ControllersGrailsPlugin {
             }
         }
     }
-
-  
 
     def onChange = {event ->
         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {

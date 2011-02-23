@@ -20,20 +20,20 @@ import grails.build.GrailsBuildListener
 class GrailsTestEventConsoleReporter implements GrailsBuildListener {
 
     private final static EVENTS = ['TestCaseStart', 'TestFailure', 'TestCaseEnd']
-        
+
     protected PrintStream out
     protected int failureCount
-    
+
     GrailsTestEventConsoleReporter(PrintStream out) {
         this.out = out
     }
-    
+
     void receiveGrailsBuildEvent(String name, Object[] args) {
         if (name in EVENTS) {
             this."do$name"(*args)
         }
     }
-    
+
     protected doTestCaseStart(String name) {
         out.print("Running test ${name}...")
         failureCount = 0

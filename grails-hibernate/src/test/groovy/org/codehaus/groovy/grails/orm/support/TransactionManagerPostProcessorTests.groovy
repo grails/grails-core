@@ -8,8 +8,6 @@ import org.springframework.transaction.PlatformTransactionManager
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: May 28, 2008
  */
 class TransactionManagerPostProcessorTests extends GroovyTestCase{
 
@@ -18,7 +16,7 @@ class TransactionManagerPostProcessorTests extends GroovyTestCase{
 
         bb.beans {
             myBean(MyBean) { bean ->
-                bean.lazyInit = true                
+                bean.lazyInit = true
             }
             dataSource(DriverManagerDataSource) {
                 url = "jdbc:h2:mem:tmpptDB"
@@ -40,12 +38,12 @@ class TransactionManagerPostProcessorTests extends GroovyTestCase{
         assert bean.tm
     }
 }
+
 class MyBean implements TransactionManagerAware {
 
     PlatformTransactionManager tm
 
-    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+    void setTransactionManager(PlatformTransactionManager transactionManager) {
         tm = transactionManager
     }
-
 }

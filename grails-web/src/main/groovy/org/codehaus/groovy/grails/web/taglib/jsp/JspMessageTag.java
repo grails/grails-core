@@ -21,9 +21,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspMessageTag extends JspInvokeGrailsTagLibTag {
-	private static final long serialVersionUID = -3098229619044871773L;
+    private static final long serialVersionUID = -3098229619044871773L;
 
-	private static final String TAG_NAME = "message";
+    private static final String TAG_NAME = "message";
 
     private String code;
     private String error;
@@ -47,5 +47,4 @@ public class JspMessageTag extends JspInvokeGrailsTagLibTag {
     public void setError(String error) {
         this.error = error;
     }
-
 }

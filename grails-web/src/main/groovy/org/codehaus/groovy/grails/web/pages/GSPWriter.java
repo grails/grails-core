@@ -45,9 +45,9 @@ public class GSPWriter extends PrintWriter {
     }
 
     public void printlnToResponse(String s) {
-    	printlnToResponse(GroovyPage.OUT, s);
+        printlnToResponse(GroovyPage.OUT, s);
     }
-    
+
     public void printlnToResponse(String outVarName, String s) {
         if (StringUtils.isEmpty(s)) {
             return;

@@ -49,75 +49,74 @@ class CodecsGrailsPlugin {
     def onChange = { event ->
         if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
             def codecClass = application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-			configureCodecMethods codecClass
+            configureCodecMethods codecClass
         }
     }
 
     def doWithDynamicMethods = { applicationContext ->
         for (GrailsCodecClass c in application.codecClasses) {
-			configureCodecMethods c
+            configureCodecMethods c
         }
     }
 
-	private configureCodecMethods(codecClass) {
-		String codecName = codecClass.name
-		String encodeMethodName = "encodeAs${codecName}"
-		String decodeMethodName = "decode${codecName}"
+    private configureCodecMethods(codecClass) {
+        String codecName = codecClass.name
+        String encodeMethodName = "encodeAs${codecName}"
+        String decodeMethodName = "decode${codecName}"
 
-		def encoder
-		def decoder
-		if (Environment.current == Environment.DEVELOPMENT) {
-			// Resolve codecs in every call in case of a codec reload
-			encoder = {	->
-				def encodeMethod = codecClass.getEncodeMethod()
-				if (encodeMethod) {
-					return encodeMethod(delegate)
-				}
+        def encoder
+        def decoder
+        if (Environment.current == Environment.DEVELOPMENT) {
+            // Resolve codecs in every call in case of a codec reload
+            encoder = {    ->
+                def encodeMethod = codecClass.getEncodeMethod()
+                if (encodeMethod) {
+                    return encodeMethod(delegate)
+                }
 
-				// note the call to delegate.getClass() instead of the more groovy delegate.class.
-				// this is because the delegate might be a Map, in which case delegate.class doesn't
-				// do what we want here...
-				throw new MissingMethodException(encodeMethodName, delegate.getClass(), []as Object[])
-			}
+                // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                // this is because the delegate might be a Map, in which case delegate.class doesn't
+                // do what we want here...
+                throw new MissingMethodException(encodeMethodName, delegate.getClass(), []as Object[])
+            }
 
-			decoder = {	->
-				def decodeMethod = codecClass.getDecodeMethod()
-				if (decodeMethod) {
-					return decodeMethod(delegate)
-				}
+            decoder = {    ->
+                def decodeMethod = codecClass.getDecodeMethod()
+                if (decodeMethod) {
+                    return decodeMethod(delegate)
+                }
 
-				// note the call to delegate.getClass() instead of the more groovy delegate.class.
-				// this is because the delegate might be a Map, in which case delegate.class doesn't
-				// do what we want here...
-				throw new MissingMethodException(decodeMethodName, delegate.getClass(), []as Object[])
-			}
-		}
-		else {
-			// Resolve codec methods once only at startup
-			def encodeMethod = codecClass.encodeMethod
-			def decodeMethod = codecClass.decodeMethod
-			if (encodeMethod) {
-				encoder = { -> encodeMethod(delegate) }
-			}
-			else {
-				// note the call to delegate.getClass() instead of the more groovy delegate.class.
-				// this is because the delegate might be a Map, in which case delegate.class doesn't
-				// do what we want here...
-				encoder = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), []as Object[]) }
-			}
-			if (decodeMethod) {
-				decoder = { -> decodeMethod(delegate) }
-			}
-			else {
-				// note the call to delegate.getClass() instead of the more groovy delegate.class.
-				// this is because the delegate might be a Map, in which case delegate.class doesn't
-				// do what we want here...
-				decoder = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), []as Object[]) }
-			}
-		}
+                // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                // this is because the delegate might be a Map, in which case delegate.class doesn't
+                // do what we want here...
+                throw new MissingMethodException(decodeMethodName, delegate.getClass(), []as Object[])
+            }
+        }
+        else {
+            // Resolve codec methods once only at startup
+            def encodeMethod = codecClass.encodeMethod
+            def decodeMethod = codecClass.decodeMethod
+            if (encodeMethod) {
+                encoder = { -> encodeMethod(delegate) }
+            }
+            else {
+                // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                // this is because the delegate might be a Map, in which case delegate.class doesn't
+                // do what we want here...
+                encoder = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), []as Object[]) }
+            }
+            if (decodeMethod) {
+                decoder = { -> decodeMethod(delegate) }
+            }
+            else {
+                // note the call to delegate.getClass() instead of the more groovy delegate.class.
+                // this is because the delegate might be a Map, in which case delegate.class doesn't
+                // do what we want here...
+                decoder = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), []as Object[]) }
+            }
+        }
 
-		Object.metaClass."${encodeMethodName}" << encoder
-		Object.metaClass."${decodeMethodName}" << decoder
-	}
+        Object.metaClass."${encodeMethodName}" << encoder
+        Object.metaClass."${decodeMethodName}" << decoder
+    }
 }
-

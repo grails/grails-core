@@ -40,6 +40,7 @@ public interface GrailsBootstrapClass extends GrailsClass {
      *
      * @return A Closure instance
      */
+    @SuppressWarnings("rawtypes")
     Closure getInitClosure();
 
     /**
@@ -47,5 +48,6 @@ public interface GrailsBootstrapClass extends GrailsClass {
      *
      * @return A Closure instance
      */
+    @SuppressWarnings("rawtypes")
     Closure getDestroyClosure();
 }

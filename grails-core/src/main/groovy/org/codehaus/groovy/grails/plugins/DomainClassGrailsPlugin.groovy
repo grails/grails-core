@@ -83,10 +83,10 @@ class DomainClassGrailsPlugin {
 
             metaClass.ident = {-> delegate[domainClass.identifier.name] }
             metaClass.constructor = { ->
-				getDomainInstance domainClass, ctx
+                getDomainInstance domainClass, ctx
             }
             metaClass.static.create = { ->
-				getDomainInstance domainClass, ctx
+                getDomainInstance domainClass, ctx
             }
 
             addValidationMethods(application, domainClass, ctx)
@@ -161,16 +161,16 @@ class DomainClassGrailsPlugin {
         metaClass.getConstraints = {-> domainClass.constrainedProperties }
     }
 
-	private static getDomainInstance(domainClass, ctx) {
-		def obj
-		if (ctx.containsBean(domainClass.fullName)) {
-			obj = ctx.getBean(domainClass.fullName)
-		}
-		else {
-			obj = BeanUtils.instantiateClass(domainClass.clazz)
-		}
-		obj
-	}
+    private static getDomainInstance(domainClass, ctx) {
+        def obj
+        if (ctx.containsBean(domainClass.fullName)) {
+            obj = ctx.getBean(domainClass.fullName)
+        }
+        else {
+            obj = BeanUtils.instantiateClass(domainClass.clazz)
+        }
+        obj
+    }
     private static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
         for (p in dc.persistantProperties) {
@@ -222,7 +222,7 @@ class DomainClassGrailsPlugin {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
                         }
                         if (arg instanceof Map) {
-							obj = getDomainInstance(otherDomainClass, ctx)
+                            obj = getDomainInstance(otherDomainClass, ctx)
                             obj.properties = arg
                             delegate[prop.name].add(obj)
                         }

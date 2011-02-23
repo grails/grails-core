@@ -29,8 +29,6 @@ import org.springframework.util.Log4jConfigurer
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jan 14, 2009
  */
 abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
 
@@ -51,9 +49,8 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
     protected void setUp() {
         super.setUp()
 
-        Log4jConfigurer.initLogging("src/test/log4j.properties") 
+        Log4jConfigurer.initLogging("src/test/log4j.properties")
         ExpandoMetaClass.enableGlobally()
-
 
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
 
@@ -64,7 +61,7 @@ dataSource {
     username = "sa"
     password = ""
     dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-    url = "jdbc:h2:mem:grailsIntTestDB"    
+    url = "jdbc:h2:mem:grailsIntTestDB"
 }
 hibernate {
     cache.use_second_level_cache=true
@@ -78,7 +75,7 @@ hibernate {
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
         grailsApplication = ga
         mockManager = new MockGrailsPluginManager(ga)
-        
+
         ctx.registerMockBean("pluginManager", mockManager)
         PluginManagerHolder.setPluginManager(mockManager)
 
@@ -113,7 +110,7 @@ hibernate {
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
-		  doWithRuntimeConfiguration dependentPlugins, springConfig
+          doWithRuntimeConfiguration dependentPlugins, springConfig
 
         appCtx = springConfig.getApplicationContext()
         ga.setMainContext(appCtx)
@@ -125,7 +122,7 @@ hibernate {
 
         sessionFactory = appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)
 
-        if(!TransactionSynchronizationManager.hasResource(sessionFactory)) {
+        if (!TransactionSynchronizationManager.hasResource(sessionFactory)) {
             session = sessionFactory.openSession()
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
@@ -134,7 +131,7 @@ hibernate {
     protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
-	 }
+     }
 
     protected void tearDown() {
 
@@ -144,32 +141,32 @@ hibernate {
             TransactionSynchronizationManager.unbindResource(sessionFactory)
             SessionFactoryUtils.releaseSession(s, sessionFactory)
         }
-		def classMetadata = sessionFactory.allClassMetadata
-		for(entry in classMetadata) {
-			ClassMetadata metadata = entry.value
-			GroovySystem.getMetaClassRegistry().removeMetaClass(metadata.getMappedClass(EntityMode.POJO))
-		}
-		
-		GroovySystem.stopThreadedReferenceManager()
+        def classMetadata = sessionFactory.allClassMetadata
+        for (entry in classMetadata) {
+            ClassMetadata metadata = entry.value
+            GroovySystem.getMetaClassRegistry().removeMetaClass(metadata.getMappedClass(EntityMode.POJO))
+        }
 
-		try {			
-			TransactionSynchronizationManager.clear()
-		}
-		catch(e) {
-			// means it is not active, ignore
-		}
-		try {
-			CacheManager.getInstance()?.shutdown()
-		}
-		catch(e) {
-			// means there is no cache, ignore	
-		}
+        GroovySystem.stopThreadedReferenceManager()
+
+        try {
+            TransactionSynchronizationManager.clear()
+        }
+        catch(e) {
+            // means it is not active, ignore
+        }
+        try {
+            CacheManager.getInstance()?.shutdown()
+        }
+        catch(e) {
+            // means there is no cache, ignore
+        }
         gcl = null
         ga = null
         mockManager = null
-		appCtx.close()
-		ConverterUtil.clearInstance()
-        ctx = null		
+        appCtx.close()
+        ConverterUtil.clearInstance()
+        ctx = null
         appCtx = null
 
         ApplicationHolder.setApplication(null)
@@ -194,7 +191,7 @@ hibernate {
 
     protected void onTearDown() {
     }
-	 
+
     protected void afterPluginInitialization() {
     }
 }

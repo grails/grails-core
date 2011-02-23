@@ -61,7 +61,7 @@ class FiltersGrailsPlugin {
     def doWithSpring = {
         filterInterceptor(CompositeInterceptor)
 
-        for(filter in application.getArtefacts(TYPE)) {
+        for (filter in application.getArtefacts(TYPE)) {
             def callable = BEANS.curry(filter)
             callable.delegate = delegate
             callable.call()
@@ -148,7 +148,7 @@ class FiltersGrailsPlugin {
                     dependsOn = bean.dependsOn
                     log.debug("  depends on '"+dependsOn.join(",")+"'")
                 }
-                
+
                 if (dependsOn != null) {
                     // check dependencies to see if all the filters it depends on are already in the list
                     log.debug("  Checking filter '${bean.class.name}' dependencies (${dependsOn.size()})")
@@ -214,7 +214,7 @@ class FiltersGrailsPlugin {
                 break
             }
         }
-        
+
         // add the filter configs in dependency sorted order
         log.debug("Resulting handlers:")
         for (c in sortedFilterConfigs) {

@@ -27,8 +27,8 @@ import org.codehaus.groovy.runtime.MethodClosure;
 public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements GrailsCodecClass {
 
     public static final String CODEC = "Codec";
-    private Closure encodeMethod;
-    private Closure decodeMethod;
+    private Closure<?> encodeMethod;
+    private Closure<?> decodeMethod;
 
     public DefaultGrailsCodecClass(Class<?> clazz) {
         super(clazz, CODEC);
@@ -37,16 +37,16 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         decodeMethod = getMethodOrClosureMethod("decode");
     }
 
-    public Closure getDecodeMethod() {
+    public Closure<?> getDecodeMethod() {
         return decodeMethod;
     }
 
-    public Closure getEncodeMethod() {
+    public Closure<?> getEncodeMethod() {
         return encodeMethod;
     }
 
-    private Closure getMethodOrClosureMethod(String methodName) {
-        Closure closure = (Closure) getPropertyOrStaticPropertyOrFieldValue(methodName, Closure.class);
+    private Closure<?> getMethodOrClosureMethod(String methodName) {
+        Closure<?> closure = (Closure<?>) getPropertyOrStaticPropertyOrFieldValue(methodName, Closure.class);
         if (closure == null) {
             MetaMethod method = getMetaClass().getMetaMethod(methodName, new Object[]{Object.class});
             if (method != null) {

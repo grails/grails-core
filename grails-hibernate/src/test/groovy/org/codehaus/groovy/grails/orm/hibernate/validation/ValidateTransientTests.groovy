@@ -76,6 +76,6 @@ class User {
                 isSupervisor: "Y",
                 isAgent: "N",
                 isSuperUser: "N")
-		assertFalse "User validation passed but there should be an error on the transient field.", user.validate()
+        assertFalse "User validation passed but there should be an error on the transient field.", user.validate()
     }
 }

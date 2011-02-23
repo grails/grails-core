@@ -1,8 +1,8 @@
 // dependencies
-dependencies {	
-	compile project(':grails-hibernate'),
+dependencies {
+    compile project(':grails-hibernate'),
             project(':grails-test-suite-base'),
-			project(':grails-plugin-testing')
+            project(':grails-plugin-testing')
 
     testCompile project(':grails-plugin-url-mappings') ,
                 project(':grails-plugin-validation'),
@@ -12,9 +12,8 @@ dependencies {
                 project(":grails-plugin-logging")
 }
 
-
 test {
      maxParallelForks = 4
      forkEvery = 100
-	 maxHeapSize = '1024m'
+     maxHeapSize = '1024m'
 }

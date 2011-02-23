@@ -48,7 +48,7 @@ class Book {
 
         flash.book = b
         assert b.hasErrors()
-        
+
         GrailsWebUtil.bindMockWebRequest()
         flash.next()
 

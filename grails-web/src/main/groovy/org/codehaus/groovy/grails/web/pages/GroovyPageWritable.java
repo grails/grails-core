@@ -87,18 +87,18 @@ class GroovyPageWritable implements Writable {
         this.metaInfo = metaInfo;
         showSource = shouldShowGroovySource();
         debugTemplates = shouldDebugTemplates();
-        if(debugTemplates) {
-        	debugTemplatesIdCounter=(AtomicInteger)request.getAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER);
-        	if(debugTemplatesIdCounter==null) {
-        		debugTemplatesIdCounter=new AtomicInteger(0);
-        		request.setAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER, debugTemplatesIdCounter);
-        	}
+        if (debugTemplates) {
+            debugTemplatesIdCounter=(AtomicInteger)request.getAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER);
+            if (debugTemplatesIdCounter==null) {
+                debugTemplatesIdCounter=new AtomicInteger(0);
+                request.setAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER, debugTemplatesIdCounter);
+            }
         }
     }
 
-	private boolean shouldDebugTemplates() {
-		return request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
-	}
+    private boolean shouldDebugTemplates() {
+        return request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
+    }
 
     private boolean shouldShowGroovySource() {
         return request.getParameter("showSource") != null &&
@@ -186,18 +186,18 @@ class GroovyPageWritable implements Writable {
             page.initRun(out, webRequest, metaInfo.getCodecClass());
             int debugId=0;
             long debugStartTimeMs=0;
-            if(debugTemplates) {
-            	debugId=debugTemplatesIdCounter.incrementAndGet();
-            	out.write("<!-- GSP #");
-            	out.write(String.valueOf(debugId));
-            	out.write(" START template: ");
-            	out.write(page.getGroovyPageFileName());
-            	out.write(" precompiled: ");
-            	out.write(String.valueOf(metaInfo.isPrecompiledMode()));
-            	out.write(" lastmodified: ");
-            	out.write(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(metaInfo.getLastModified())));
-            	out.write(" -->");
-            	debugStartTimeMs=System.currentTimeMillis();
+            if (debugTemplates) {
+                debugId=debugTemplatesIdCounter.incrementAndGet();
+                out.write("<!-- GSP #");
+                out.write(String.valueOf(debugId));
+                out.write(" START template: ");
+                out.write(page.getGroovyPageFileName());
+                out.write(" precompiled: ");
+                out.write(String.valueOf(metaInfo.isPrecompiledMode()));
+                out.write(" lastmodified: ");
+                out.write(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(metaInfo.getLastModified())));
+                out.write(" -->");
+                debugStartTimeMs=System.currentTimeMillis();
             }
             try {
                 page.run();
@@ -205,14 +205,14 @@ class GroovyPageWritable implements Writable {
             finally {
                 page.cleanup();
             }
-            if(debugTemplates) {
-            	out.write("<!-- GSP #");
-            	out.write(String.valueOf(debugId));
-            	out.write(" END template: ");
-            	out.write(page.getGroovyPageFileName());
-            	out.write(" rendering time: ");
-            	out.write(String.valueOf(System.currentTimeMillis() - debugStartTimeMs));
-            	out.write(" ms -->");
+            if (debugTemplates) {
+                out.write("<!-- GSP #");
+                out.write(String.valueOf(debugId));
+                out.write(" END template: ");
+                out.write(page.getGroovyPageFileName());
+                out.write(" rendering time: ");
+                out.write(String.valueOf(System.currentTimeMillis() - debugStartTimeMs));
+                out.write(" ms -->");
             }
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);
         }

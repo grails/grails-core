@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 
 /**
  * Models the mapping from GORM classes to the db.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
  */
@@ -25,7 +25,7 @@ class Mapping {
 
     /**
      * Custom hibernate user types
-     */    
+     */
     Map userTypes = [:]
 
     /**
@@ -92,12 +92,12 @@ class Mapping {
     String sort
 
     /**
-     * Default direction to sort by 
+     * Default direction to sort by
      */
     String order
 
     /**
-     * Value used to discriminate entities in table-per-hierarchy inheritance mapping 
+     * Value used to discriminate entities in table-per-hierarchy inheritance mapping
      */
     String discriminator
 
@@ -133,6 +133,6 @@ class Mapping {
 
     /**
      * Whether to use dynamically created insert queries, at the cost of some performance
-     */    
+     */
     boolean dynamicInsert = false
 }

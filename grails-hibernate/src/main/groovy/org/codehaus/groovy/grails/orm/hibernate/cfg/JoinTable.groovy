@@ -6,8 +6,6 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Oct 8, 2007
  */
 class JoinTable {
     String name

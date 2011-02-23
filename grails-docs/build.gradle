@@ -1,6 +1,6 @@
 repositories {
-	mavenCentral()
-	mavenRepo urls:"http://download.java.net/maven/2"
+    mavenCentral()
+    mavenRepo urls:"http://download.java.net/maven/2"
 }
 
 dependencies {

@@ -20,36 +20,34 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 
 /**
  * Evaluates and returns constraints
- * 
+ *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public interface ConstraintsEvaluator {
-	
-    public static final String PROPERTY_NAME = "constraints";
-    public static final String CONSTRAINTS_GROOVY_SCRIPT = "Constraints.groovy";
-	
-	/**
-	 * The default constraints to use
-	 * @return A map of default constraints
-	 */
-	Map<String, Object> getDefaultConstraints();
-	
-	/**
-	 * Evaluate constraints for the given class
-	 * 
-	 * @param cls The class to evaluate constraints for
-	 * @return A map of constrained properties
-	 */
-	public Map<String, ConstrainedProperty> evaluate(Class cls);
 
-	/**
-	 * Evaluate constraints for the given class
-	 * 
-	 * @param cls The class to evaluate constraints for
-	 * @return A map of constrained properties
-	 */	
-	public Map<String, ConstrainedProperty> evaluate(GrailsDomainClass cls);
+    String PROPERTY_NAME = "constraints";
+    String CONSTRAINTS_GROOVY_SCRIPT = "Constraints.groovy";
 
+    /**
+     * The default constraints to use
+     * @return A map of default constraints
+     */
+    Map<String, Object> getDefaultConstraints();
+
+    /**
+     * Evaluate constraints for the given class
+     *
+     * @param cls The class to evaluate constraints for
+     * @return A map of constrained properties
+     */
+    Map<String, ConstrainedProperty> evaluate(@SuppressWarnings("rawtypes") Class cls);
+
+    /**
+     * Evaluate constraints for the given class
+     *
+     * @param cls The class to evaluate constraints for
+     * @return A map of constrained properties
+     */
+    Map<String, ConstrainedProperty> evaluate(GrailsDomainClass cls);
 }

@@ -4,7 +4,7 @@ package org.codehaus.groovy.grails.orm.hibernate
  * Test for GRAILS-3911
  */
 class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
-    
+
     def bookClass
 
     protected void onSetUp() {
@@ -26,18 +26,18 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
                     sort 'author.name'
                 }
             }
-            
+
             @Entity
             class Author {
                 String name
                 Person person
             }
-            
+
             @Entity
             class Person {
                 String name
             }
-            
+
             class Address {
                 String street
                 String city
@@ -47,7 +47,7 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
 
     protected void setUp() {
         super.setUp()
-        
+
         def personClass = ga.getDomainClass('Person').clazz
         def authorClass = ga.getDomainClass('Author').clazz
         bookClass = ga.getDomainClass('Book').clazz
@@ -59,7 +59,7 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
             bookClass.newInstance(id:i, version:1, title:'foo', author:author, address:address).save(flush:true)
         }
     }
-    
+
     void testListPersistentMethod() {
         assertEquals( ['A','a','b','B','C','c'], bookClass.list(sort:'author.name').author.name )
         assertEquals( ['A','B','C','a','b','c'], bookClass.list(sort:'author.name', ignoreCase:false).author.name )
@@ -80,7 +80,7 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
     void testFindByPersistentMethod() {
         assertEquals( 'A', bookClass.findByPublisher('Manning', [sort:'author.name']).author.name )
     }
-    
+
     void testDeepSort() {
         assertEquals( ['A','a','b','B','C','c'], bookClass.list(sort:'author.person.name').author.person.name )
     }
@@ -93,7 +93,7 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
         assertEquals( ['b','B','C'], bookClass.findAllByPublisher('Manning', [max:3, offset:2, sort:'author.name']).author.name )
         assertEquals( ['b','B','C'], bookClass.list(max:3, offset:2, sort:'author.person.name').author.person.name )
     }
-    
+
     void testSortByEmbeddedProperty() {
         assertEquals( ['A','a','b','B','C','c'], bookClass.list(sort:'address.street').address.street)
     }

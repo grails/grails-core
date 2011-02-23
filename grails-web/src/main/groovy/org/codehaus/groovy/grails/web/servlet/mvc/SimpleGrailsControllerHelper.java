@@ -71,8 +71,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
-	private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
-	
+    private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
+
     private String id;
     private String controllerName;
     private String actionName;
@@ -292,7 +292,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
     private boolean invokeBeforeInterceptor(GroovyObject controller, GrailsControllerClass controllerClass) {
         boolean executeAction = true;
         if (controllerClass.isInterceptedBefore(controller,actionName)) {
-            Closure beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
+            Closure<?> beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
             if (beforeInterceptor!= null) {
                 if (beforeInterceptor.getDelegate() != controller) {
                     beforeInterceptor.setDelegate(controller);
@@ -333,7 +333,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
             if (mv != null) {
                 model =    mv.getModel() != null ? mv.getModel() : new HashMap();
             }
-            switch(afterInterceptor.getMaximumNumberOfParameters()){
+            switch(afterInterceptor.getMaximumNumberOfParameters()) {
                 case 1:
                     interceptorResult = afterInterceptor.call(new Object[]{ model });
                     break;
@@ -352,7 +352,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return grailsAttributes;
     }
 
-    public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request,
+    public Object handleAction(GroovyObject controller, @SuppressWarnings("rawtypes") Closure action, HttpServletRequest request,
             HttpServletResponse response) {
         return handleAction(controller,action,request,response,Collections.EMPTY_MAP);
     }

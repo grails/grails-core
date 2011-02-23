@@ -64,11 +64,11 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
             bd.propertyValues.addPropertyValue(property, value)
         }
     }
-    
+
     protected ConfigObject getBeansConfig() {
         application.config.beans
     }
-    
+
     protected ClassLoader getClassLoader() {
         application.classLoader
     }

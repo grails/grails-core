@@ -30,5 +30,6 @@ public interface DependencyDefinitionParser {
      *
      * @param definition The DSL code
      */
+    @SuppressWarnings("rawtypes")
     void parseDependencies(Closure definition);
 }

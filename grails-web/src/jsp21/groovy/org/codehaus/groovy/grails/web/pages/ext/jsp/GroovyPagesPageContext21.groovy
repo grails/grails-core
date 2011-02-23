@@ -23,25 +23,23 @@ import javax.servlet.jsp.JspContext
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 10, 2008
  */
 class GroovyPagesPageContext21 extends GroovyPagesPageContext {
 
     static {
-        if(JspFactory.getDefaultFactory() == null) {
-            JspFactory.setDefaultFactory(new GroovyPagesJspFactory21()());
+        if (JspFactory.getDefaultFactory() == null) {
+            JspFactory.setDefaultFactory(new GroovyPagesJspFactory21()())
         }
     }
 
     private ELContext elContext
 
-    public ELContext getELContext() {
-        if(!elContext) {
+    ELContext getELContext() {
+        if (!elContext) {
             def jspContext = JspFactory.getDefaultFactory().getJspApplicationContext(getServletContext())
-            if(jspContext instanceof GroovyPagesJspApplicationContext) {
+            if  (jspContext instanceof GroovyPagesJspApplicationContext) {
                 elContext = jspContext.createELContext(this)
-                elContext.putContext JspContext.class, this
+                elContext.putContext JspContext, this
             }
             else {
                 throw new IllegalStateException("Unable to create ELContext for a JspApplicationContext. It must be an instance of [org.codehaus.groovy.grails.web.pages.ext.jsp.GroovyPagesJspApplicationContext] do not override JspFactory.setDefaultFactory()!")
@@ -49,6 +47,4 @@ class GroovyPagesPageContext21 extends GroovyPagesPageContext {
         }
         return elContext
     }
-
-
 }

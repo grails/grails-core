@@ -1,7 +1,7 @@
 package grails.util
 
 import grails.build.GrailsBuildListener
-import groovy.mock.interceptor.StubFor 
+import groovy.mock.interceptor.StubFor
 
 /**
  * Test case for {@link BuildSettings}.
@@ -175,36 +175,36 @@ class BuildSettingsTests extends GroovyTestCase {
         assertEquals new File("target").canonicalFile, settings.projectTargetDir
     }
 
-	void testWorkDirIsBasedOnAppNameNotBaseDirName() {
-		// GRAILS-6232
-		def stubMetaData = new StubFor(Metadata)
-		stubMetaData.demand.getInstance(2) {}
-		stubMetaData.demand.getCurrent(2) {
-			[getApplicationName: {'myappname'}, getApplicationVersion: {'1.1'}]
-		}
+    void testWorkDirIsBasedOnAppNameNotBaseDirName() {
+        // GRAILS-6232
+        def stubMetaData = new StubFor(Metadata)
+        stubMetaData.demand.getInstance(2) {}
+        stubMetaData.demand.getCurrent(2) {
+            [getApplicationName: {'myappname'}, getApplicationVersion: {'1.1'}]
+        }
 
-		stubMetaData.use {
-			def settings = new BuildSettings()
-			settings.baseDir = new File("base/dir")
-			assertEquals 'myappname', settings.projectWorkDir.name
-		}
-	}
+        stubMetaData.use {
+            def settings = new BuildSettings()
+            settings.baseDir = new File("base/dir")
+            assertEquals 'myappname', settings.projectWorkDir.name
+        }
+    }
 
-	void testWorkDirIsDotCoreWhenCreatingNewApp() {
-		// GRAILS-6232
-		def stubMetaData = new StubFor(Metadata)
-		stubMetaData.demand.getInstance(2) {}
-		stubMetaData.demand.getCurrent(2) {
-			[getApplicationName: {}, getApplicationVersion: {}]
-		}
-		
-		stubMetaData.use {
-			def settings = new BuildSettings()
-			settings.baseDir = new File("base/dir")
-			assertEquals '.core', settings.projectWorkDir.name
-		}
-	}
-	
+    void testWorkDirIsDotCoreWhenCreatingNewApp() {
+        // GRAILS-6232
+        def stubMetaData = new StubFor(Metadata)
+        stubMetaData.demand.getInstance(2) {}
+        stubMetaData.demand.getCurrent(2) {
+            [getApplicationName: {}, getApplicationVersion: {}]
+        }
+
+        stubMetaData.use {
+            def settings = new BuildSettings()
+            settings.baseDir = new File("base/dir")
+            assertEquals '.core', settings.projectWorkDir.name
+        }
+    }
+
     void testSetBaseDir() {
         def settings = new BuildSettings()
         settings.baseDir = new File("base/dir")
@@ -276,13 +276,13 @@ class BuildSettingsTests extends GroovyTestCase {
             System.clearProperty(BuildSettings.BUILD_LISTENERS)
         }
     }
-    
+
     void testBuildListenersMultipleClassNames() {
         def config = new ConfigObject()
         config.grails.build.listeners = 'java.lang.String,java.lang.String'
         def settings = new BuildSettings()
         settings.loadConfig(config)
-        
+
         assertEquals(['java.lang.String', 'java.lang.String'], settings.buildListeners as List)
     }
 
@@ -292,19 +292,19 @@ class BuildSettingsTests extends GroovyTestCase {
         def settings = new BuildSettings()
         settings.loadConfig(config)
         assertEquals([String, String], settings.buildListeners as List)
-        
+
         config = new ConfigObject()
         config.grails.build.listeners = ['java.lang.String', 'java.lang.String']
         settings = new BuildSettings()
         settings.loadConfig(config)
         assertEquals(['java.lang.String', 'java.lang.String'], settings.buildListeners as List)
     }
-    
+
     void testBuildListenersBadValue() {
         def config = new ConfigObject()
         config.grails.build.listeners = 1
         def settings = new BuildSettings()
-        
+
         shouldFail(IllegalArgumentException) {
             settings.loadConfig(config)
         }

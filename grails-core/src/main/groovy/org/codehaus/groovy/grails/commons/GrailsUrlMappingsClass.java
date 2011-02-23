@@ -28,6 +28,7 @@ public interface GrailsUrlMappingsClass extends GrailsClass {
      *
      * @return A Closure instance
      */
+    @SuppressWarnings("rawtypes")
     Closure getMappingsClosure();
 
     /**

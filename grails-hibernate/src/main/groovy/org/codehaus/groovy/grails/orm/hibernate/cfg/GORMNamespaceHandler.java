@@ -19,11 +19,9 @@ import groovy.lang.ExpandoMetaClass;
 
 /**
  * A Spring namespace handler for the <gorm:*> namespace tags
- * 
+ *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Jan 16, 2009
  */
 public class GORMNamespaceHandler extends NamespaceHandlerSupport{
     public void init() {

@@ -81,12 +81,12 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws IOException Thrown when an IO error occurs reading the stream
      */
     public abstract Template createTemplate(InputStream inputStream) throws IOException;
-    
+
     @Override
     public Template createTemplate(String templateText) throws CompilationFailedException, ClassNotFoundException, IOException {
         return createTemplate(new ByteArrayInputStream(templateText.getBytes(GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING)));
     }
-    
+
     @Override
     public Template createTemplate(File file) throws CompilationFailedException, ClassNotFoundException, IOException {
         return createTemplateAndCloseInput(new FileInputStream(file));
@@ -95,7 +95,7 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
     @Override
     public Template createTemplate(URL url) throws CompilationFailedException, ClassNotFoundException, IOException {
         return createTemplateAndCloseInput(url.openStream());
-    }    
+    }
 
     private Template createTemplateAndCloseInput(InputStream input) throws FileNotFoundException, IOException {
         try {

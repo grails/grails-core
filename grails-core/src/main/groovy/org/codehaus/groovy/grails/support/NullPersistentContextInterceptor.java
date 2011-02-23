@@ -16,11 +16,9 @@ package org.codehaus.groovy.grails.support;
 
 /**
  * A dummy persistence context interceptor that does nothing.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.1.1
- *        <p/>
- *        Created: May 8, 2009
  */
 public class NullPersistentContextInterceptor implements PersistenceContextInterceptor {
     public void init() {
@@ -56,6 +54,6 @@ public class NullPersistentContextInterceptor implements PersistenceContextInter
     }
 
     public boolean isOpen() {
-        return false;  
+        return false;
     }
 }

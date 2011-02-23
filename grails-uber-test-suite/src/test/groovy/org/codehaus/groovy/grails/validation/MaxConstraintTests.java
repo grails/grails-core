@@ -70,7 +70,7 @@ public class MaxConstraintTests extends AbstractConstraintTests{
 
         constraint = (MaxConstraint) getConstraint( "testLong", new Long(100) );
         assertEquals( new Long( 100 ), constraint.getMaxValue() );
-        
+
         try {
             getConstraint( "testFloat", new Object() );
             fail("MaxConstraint must throw an exception for non-comparable parameters.");

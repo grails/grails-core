@@ -173,7 +173,7 @@ public class BaseSettingsApi {
     public Resource grailsResource(String path) {
         if (grailsHome != null) {
             FileSystemResource resource = new FileSystemResource(grailsHome + "/" + path);
-            if(!resource.exists()) {
+            if (!resource.exists()) {
                 resource = new FileSystemResource(grailsHome + "/grails-resources/" + path);
             }
             return resource;
@@ -249,7 +249,7 @@ public class BaseSettingsApi {
      *
      * where 'compile' is the target.
      */
-    public void profile(String name, Closure callable ) {
+    public void profile(String name, Closure<?> callable ) {
         if (enableProfile) {
             long now = System.currentTimeMillis();
             System.out.println("Profiling ["+name+"] start");

@@ -167,11 +167,10 @@ public class GrailsConfigUtils {
 
         return configurator;
     }
-    
+
     /**
      * Checks if a Config parameter is true or a System property with the same name is true
-     * 
-     * 
+     *
      * @param application
      * @param propertyName
      * @return
@@ -180,7 +179,7 @@ public class GrailsConfigUtils {
         return ((application != null && application.getFlatConfig() != null && DefaultTypeTransformation.castToBoolean(application.getFlatConfig().get(propertyName))) ||
                 Boolean.getBoolean(propertyName));
     }
-    
+
     // support GrailsApplication mocking, see ControllersGrailsPluginTests
     public static boolean isConfigTrue(@SuppressWarnings("unused")Object application, @SuppressWarnings("unused")String propertyName) {
         return false;

@@ -516,7 +516,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
                     private static final long serialVersionUID = -2404119898659287216L;
 
                     @Override
-                    public Object call(Object[] objects) {
+                    public Object call(Object... objects) {
                         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
                         return webRequest.getParams().get(name);
                     }

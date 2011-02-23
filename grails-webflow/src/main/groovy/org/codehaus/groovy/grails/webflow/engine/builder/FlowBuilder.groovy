@@ -446,10 +446,10 @@ class FlowInfoCapturer {
     Closure getEntryAction() { this.entryAction}
     Closure getExitAction() { this.exitAction}
     Closure getSubflow() { this.subflow }
-    String getSubflowController(){ this.subflowController }
-    String getSubflowAction(){ this.subflowAction }
-    Map getSubflowInput(){ this.subflowInput }
-    Mapper getOutputMapper(){ this.outputMapper }
+    String getSubflowController() { this.subflowController }
+    String getSubflowAction() { this.subflowAction }
+    Map getSubflowInput() { this.subflowInput }
+    Mapper getOutputMapper() { this.outputMapper }
 
     def getRedirectUrl() { this.redirectUrl }
 
@@ -520,11 +520,11 @@ class FlowInfoCapturer {
                 def urlMapper =  applicationContext?.getBean(UrlMappingsHolder.BEAN_ID)
                 def params = args.params ?: [:]
                 if (args.id) params.id = args.id
-				def controllerName = args.controller
-				if(!controllerName) {
-				    def webRequest = RequestContextHolder.currentRequestAttributes()
-				    controllerName = webRequest?.controllerName
-				}
+                def controllerName = args.controller
+                if (!controllerName) {
+                    def webRequest = RequestContextHolder.currentRequestAttributes()
+                    controllerName = webRequest?.controllerName
+                }
                 redirectUrl = new RuntimeRedirectAction(controller:controllerName,
                     action:args.action,
                     params:params,
@@ -533,7 +533,7 @@ class FlowInfoCapturer {
         }
     }
 
-    void output(Closure callable){
+    void output(Closure callable) {
         this.outputMapper = new OutputMapper(callable)
     }
 

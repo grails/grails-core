@@ -87,12 +87,12 @@ class GrailsPluginUtils {
 
     /**
      * Returns true if rightVersion is greater than leftVersion
-     * @param leftVersion 
+     * @param leftVersion
      * @param rightVersion
      * @return
      */
     static boolean isVersionGreaterThan(String leftVersion, String rightVersion) {
-        if(leftVersion == rightVersion) return false
+        if (leftVersion == rightVersion) return false
         def versions = [leftVersion, rightVersion]
         versions = versions.sort(new VersionComparator())
         return versions[1] == rightVersion
@@ -342,9 +342,9 @@ class GrailsPluginUtils {
 }
 
 class VersionComparator implements Comparator {
-    
+
     static private final SNAPSHOT_SUFFIXES = ["-SNAPSHOT", ".BUILD-SNAPSHOT"].asImmutable()
-    
+
     int compare(o1, o2) {
         int result = 0
         if (o1 == '*') {
@@ -380,18 +380,18 @@ class VersionComparator implements Comparator {
                     if (result != 0) {
                         break
                     }
-                    if(i == (nums1.size()-1) && bigRight) {
-                       if(nums2[i+1] != 0)
+                    if (i == (nums1.size()-1) && bigRight) {
+                       if (nums2[i+1] != 0)
                            result = -1; break
                     }
                 }
-                else if(bigLeft){
-                   if(nums1[i] != 0)
-                        result = 1; break
+                else if (bigLeft) {
+                   if (nums1[i] != 0)
+                       result = 1; break
                 }
             }
         }
-        
+
         if (result == 0) {
             // Versions are equal, but one may be a snapshot.
             // A snapshot version is considered less than a non snapshot version
@@ -421,7 +421,7 @@ class VersionComparator implements Comparator {
             version
         }
     }
-    
+
     protected isSnapshot(String version) {
         SNAPSHOT_SUFFIXES.any { version.endsWith(it) }
     }

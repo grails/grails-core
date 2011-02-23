@@ -1,4 +1,4 @@
 dependencies {
-	compile project(":grails-web"), project(':grails-plugin-converters')
+    compile project(":grails-web"), project(':grails-plugin-converters')
 }
 jar.appendix = 'plugin-controllers'

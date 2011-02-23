@@ -161,7 +161,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         value(o);
     }
 
-    public void build(Closure c) throws ConverterException {
+    public void build(@SuppressWarnings("rawtypes") Closure c) throws ConverterException {
         new Builder(this).execute(c);
     }
 
@@ -392,7 +392,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         return cfg;
     }
 
-    public static Object use(String configName, Closure callable) throws ConverterException {
+    public static Object use(String configName, Closure<?> callable) throws ConverterException {
         ConverterConfiguration<JSON> old = ConvertersConfigurationHolder.getThreadLocalConverterConfiguration(JSON.class);
         ConverterConfiguration<JSON> cfg = getNamedConfig(configName);
         ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, cfg);
@@ -413,11 +413,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         }
     }
 
-    public static void registerObjectMarshaller(Class<?> clazz, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, Closure<?> callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<JSON>(clazz, callable));
     }
 
-    public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure<?> callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<JSON>(clazz, callable), priority);
     }
 
@@ -445,7 +445,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         ((DefaultConverterConfiguration<JSON>) cfg).registerObjectMarshaller(om, priority);
     }
 
-    public static void createNamedConfig(String name, Closure callable) throws ConverterException {
+    public static void createNamedConfig(String name, Closure<?> callable) throws ConverterException {
         DefaultConverterConfiguration<JSON> cfg = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON.class));
         try {
             callable.call(cfg);
@@ -456,7 +456,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
         }
     }
 
-    public static void withDefaultConfiguration(Closure callable) throws ConverterException {
+    public static void withDefaultConfiguration(Closure<?> callable) throws ConverterException {
         ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
         if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<JSON>(cfg);
@@ -480,7 +480,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
             writer = json.writer;
         }
 
-        public void execute(Closure callable) {
+        public void execute(Closure<?> callable) {
             callable.setDelegate(this);
 //            callable.setDelegate(Closure.DELEGATE_FIRST);
             invokeMethod("json", new Object[] { callable });

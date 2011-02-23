@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.springframework.core.io.Resource;
 
 /**
@@ -47,6 +48,7 @@ public class GrailsBuildEventListener implements BuildListener{
     private static final Pattern EVENT_NAME_PATTERN = Pattern.compile("event([A-Z]\\w*)");
     private GroovyClassLoader classLoader;
     private Binding binding;
+    @SuppressWarnings("rawtypes")
     protected Map<String, List<Closure>> globalEventHooks = new HashMap<String, List<Closure>>();
     private BuildSettings buildSettings;
 
@@ -70,7 +72,7 @@ public class GrailsBuildEventListener implements BuildListener{
         this.classLoader = classLoader;
     }
 
-    public void setGlobalEventHooks(Map<String, List<Closure>> globalEventHooks) {
+    public void setGlobalEventHooks(@SuppressWarnings("rawtypes") Map<String, List<Closure>> globalEventHooks) {
         this.globalEventHooks = globalEventHooks;
     }
 
@@ -121,6 +123,7 @@ public class GrailsBuildEventListener implements BuildListener{
 
             Script script = (Script) scriptClass.newInstance();
             script.setBinding(new Binding(binding.getVariables()) {
+                @SuppressWarnings("rawtypes")
                 @Override
                 public void setVariable(String var, Object o) {
                     final Matcher matcher = EVENT_NAME_PATTERN.matcher(var);
@@ -131,7 +134,7 @@ public class GrailsBuildEventListener implements BuildListener{
                             hooks = new ArrayList<Closure>();
                             globalEventHooks.put(eventName, hooks);
                         }
-                        hooks.add((Closure) o);
+                        hooks.add((Closure<?>) o);
                     }
                     super.setVariable(var, o);
                 }
@@ -139,7 +142,7 @@ public class GrailsBuildEventListener implements BuildListener{
             script.run();
         }
         catch (Throwable e) {
-            org.codehaus.groovy.runtime.StackTraceUtils.deepSanitize(e);
+            StackTraceUtils.deepSanitize(e);
             e.printStackTrace();
             System.out.println("Error loading event script from file [" + eventScript + "] " + e.getMessage());
         }
@@ -181,6 +184,7 @@ public class GrailsBuildEventListener implements BuildListener{
      * @param eventName The name of the event
      * @param arguments The arguments
      */
+    @SuppressWarnings("rawtypes")
     public void triggerEvent(String eventName, Object... arguments) {
         List<Closure> handlers = globalEventHooks.get(eventName);
         if (handlers != null) {

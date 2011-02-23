@@ -28,12 +28,12 @@ class ScriptNameResolver {
     static boolean resolvesTo(String scriptName, String scriptFileName) {
         def scriptFileNameTokens = scriptFileName.findAll(/[A-Z][a-z]+/)
         def scriptNameTokens = scriptName.findAll(/[A-Z][a-z]*/)
-        
-        if(scriptFileNameTokens.size() != scriptNameTokens.size()) return false
-        for(int i = 0; i < scriptNameTokens.size(); i++) {
+
+        if (scriptFileNameTokens.size() != scriptNameTokens.size()) return false
+        for (int i = 0; i < scriptNameTokens.size(); i++) {
             String str = scriptNameTokens[i]
-            if(!scriptFileNameTokens[i].startsWith(str)) return false
+            if (!scriptFileNameTokens[i].startsWith(str)) return false
         }
-        true    
+        true
     }
 }

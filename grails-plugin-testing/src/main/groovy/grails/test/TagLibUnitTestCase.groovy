@@ -40,7 +40,7 @@ class TagLibUnitTestCase extends MvcUnitTestCase {
      * Creates a new test case for the given tag lib class.
      */
     TagLibUnitTestCase(Class tagLibClass) {
-        super(tagLibClass)   
+        super(tagLibClass)
     }
 
     protected void setUp() {

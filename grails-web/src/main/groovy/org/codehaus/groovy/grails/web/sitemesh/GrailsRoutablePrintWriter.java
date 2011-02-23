@@ -86,9 +86,9 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
 
     @Override
     public void close() {
-    	if(!isBlockClose()) {
-    		getDestination().close();
-    	}
+        if (!isBlockClose()) {
+            getDestination().close();
+        }
     }
 
     @Override
@@ -218,9 +218,9 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
 
     @Override
     public void flush() {
-    	if(!isBlockFlush()) {
-    		getDestination().flush();
-    	}
+        if (!isBlockFlush()) {
+            getDestination().flush();
+        }
     }
 
     @Override
@@ -263,29 +263,29 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
         }
     }
 
-	public boolean isBlockFlush() {
-		return blockFlush;
-	}
+    public boolean isBlockFlush() {
+        return blockFlush;
+    }
 
-	public void setBlockFlush(boolean blockFlush) {
-		this.blockFlush = blockFlush;
-	}
+    public void setBlockFlush(boolean blockFlush) {
+        this.blockFlush = blockFlush;
+    }
 
-	public boolean isBlockClose() {
-		return blockClose;
-	}
+    public boolean isBlockClose() {
+        return blockClose;
+    }
 
-	public void setBlockClose(boolean blockClose) {
-		this.blockClose = blockClose;
-	}
-	
-	public void unBlockFlushAndClose() {
-		this.blockClose = false;
-		this.blockFlush = false;
-	}
+    public void setBlockClose(boolean blockClose) {
+        this.blockClose = blockClose;
+    }
 
-	public void blockFlushAndClose() {
-		this.blockClose = true;
-		this.blockFlush = true;
-	}
+    public void unBlockFlushAndClose() {
+        this.blockClose = false;
+        this.blockFlush = false;
+    }
+
+    public void blockFlushAndClose() {
+        this.blockClose = true;
+        this.blockFlush = true;
+    }
 }

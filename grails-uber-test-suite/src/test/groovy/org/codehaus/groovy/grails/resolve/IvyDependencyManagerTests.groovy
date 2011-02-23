@@ -32,44 +32,42 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
-	void testInheritRepositoryResolvers() {
-		def settings = new BuildSettings()
-		def manager = new IvyDependencyManager("test", "0.1",settings)
+    void testInheritRepositoryResolvers() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
 
-		manager.parseDependencies {
-			repositories {
-				inherit true
-				ebr()
-			}	
-   	    }
-		
-		manager.parseDependencies "myplugin", {
-			repositories {
-				mavenCentral()
-			}	
-	    }
-		
-		
-		assert 3 == manager.chainResolver.resolvers.size()
-		
-		
-		manager = new IvyDependencyManager("test", "0.1",settings)
-		
-		manager.parseDependencies {
-			repositories {
-				inherit false
-				ebr()
-			}
-		}
-		
-		manager.parseDependencies "myplugin", {
-			repositories {
-				mavenCentral()
-			}
-		}
-		
-		assert 2 == manager.chainResolver.resolvers.size()
-	} 
+        manager.parseDependencies {
+            repositories {
+                inherit true
+                ebr()
+            }
+        }
+
+        manager.parseDependencies "myplugin", {
+            repositories {
+                mavenCentral()
+            }
+        }
+
+        assert 3 == manager.chainResolver.resolvers.size()
+
+        manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            repositories {
+                inherit false
+                ebr()
+            }
+        }
+
+        manager.parseDependencies "myplugin", {
+            repositories {
+                mavenCentral()
+            }
+        }
+
+        assert 2 == manager.chainResolver.resolvers.size()
+    }
     void testChanging() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
@@ -215,12 +213,12 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "jdk14",dep.branch
     }
 
-    void testModuleConf(){
+    void testModuleConf() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
         manager.parseDependencies {
-            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"]){
+            runtime([group:"opensymphony", name:"oscache", version:"2.4.1", branch:"jdk14"]) {
                 dependencyConfiguration("oscache-runtime")
             }
         }
@@ -233,7 +231,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "oscache-runtime", configs[0]
     }
 
-    void testWithoutModuleConf(){
+    void testWithoutModuleConf() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
@@ -525,7 +523,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     }
 
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
-        
+
         def settings = new BuildSettings()
         def grailsVersion = getCurrentGrailsVersion()
 
@@ -536,13 +534,13 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure.delegate = delegate
             defaultDependencyClosure()
         }
-        
+
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
         assertEquals 58, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
-        
+
         manager = new IvyDependencyManager("project", "0.1",settings)
         defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
         manager.parseDependencies {
@@ -550,7 +548,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure.delegate = delegate
             defaultDependencyClosure()
         }
-        
+
         assertEquals 56, manager.listDependencies('runtime').size()
         assertEquals 59, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()

@@ -16,16 +16,25 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.validation.Validator;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
-import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -240,7 +249,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
             // establish if the property is a one-to-many
             // if it is a Set and there are relationships defined
             // and it is defined as persistent
-            if(currentPropType != null) {
+            if (currentPropType != null) {
                 if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
                     establishRelationshipForCollection(currentProp);
                 }
@@ -639,12 +648,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
             return propertyMap.get(name);
         }
         int indexOfDot = name.indexOf('.');
-        if(indexOfDot > 0) {
+        if (indexOfDot > 0) {
             String basePropertyName = name.substring(0, indexOfDot);
-            if(propertyMap.containsKey(basePropertyName)) {
+            if (propertyMap.containsKey(basePropertyName)) {
                 GrailsDomainClassProperty prop = propertyMap.get(basePropertyName);
                 GrailsDomainClass referencedDomainClass = prop.getReferencedDomainClass();
-                if(referencedDomainClass != null) {
+                if (referencedDomainClass != null) {
                     String restOfPropertyName = name.substring(indexOfDot + 1);
                     return referencedDomainClass.getPropertyByName(restOfPropertyName);
                 }

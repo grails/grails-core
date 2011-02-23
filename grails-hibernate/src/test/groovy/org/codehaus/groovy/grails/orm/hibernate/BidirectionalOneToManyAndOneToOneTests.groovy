@@ -1,11 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: Sep 24, 2010
- * Time: 2:17:05 PM
- * To change this template use File | Settings | File Templates.
+ * @author graemerocher
  */
 class BidirectionalOneToManyAndOneToOneTests extends AbstractGrailsHibernateTests{
 
@@ -15,7 +11,7 @@ import grails.persistence.*
 
 @Entity
 class BidirectionalOneToManyAndOneToOneMembership{
-	String a = 'b'
+    String a = 'b'
     static hasMany = [ referrals : BidirectionalOneToManyAndOneToOneUser ]
     static belongsTo = [ user: BidirectionalOneToManyAndOneToOneUser ]
 
@@ -31,10 +27,9 @@ class BidirectionalOneToManyAndOneToOneUser{
 ''')
     }
 
-
     void testSaveAndLoad() {
         session.enableFilter("dynamicFilterEnabler")
-        
+
         def User = ga.getDomainClass("BidirectionalOneToManyAndOneToOneUser").clazz
         def Membership = ga.getDomainClass("BidirectionalOneToManyAndOneToOneMembership").clazz
         def user = User.newInstance()
@@ -49,7 +44,5 @@ class BidirectionalOneToManyAndOneToOneUser{
 
         user = User.findByName( 'Pete' )
         user.save( failOnError : true )
-
     }
-
 }

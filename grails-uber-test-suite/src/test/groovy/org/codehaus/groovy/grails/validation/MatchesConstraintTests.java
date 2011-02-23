@@ -35,7 +35,6 @@ public class MatchesConstraintTests extends AbstractConstraintTests {
                 "$",
                 "Property [{0}] of class [{1}] with value [{2}] does not match the required pattern [{3}]"
         );
-
     }
 
     public void testCreation() {
@@ -47,7 +46,7 @@ public class MatchesConstraintTests extends AbstractConstraintTests {
 
         constraint = (MatchesConstraint) getConstraint( "testString", "[a-z]");
         assertEquals( "[a-z]", constraint.getRegex());
-        
+
         try {
             getConstraint( "testString", new Long(123));
             fail("MatchesConstraint must throw an exception for non-string parameters.");

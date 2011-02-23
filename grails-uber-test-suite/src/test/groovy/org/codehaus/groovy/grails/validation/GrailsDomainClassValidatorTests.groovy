@@ -22,11 +22,11 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         bookMetaClass.setErrors = setter
         authorMetaClass.setErrors = setter
         bookMetaClass.initialize()
-        authorMetaClass.initialize()        
+        authorMetaClass.initialize()
 
         def book = bookClass.newInstance()
         book.metaClass = bookMetaClass
-        
+
         def bookValidator = new GrailsDomainClassValidator()
         def authorValidator = new GrailsDomainClassValidator()
 
@@ -69,7 +69,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
-        assert !errors.hasErrors()        
+        assert !errors.hasErrors()
 
         def book2 = bookClass.newInstance()
         book2.metaClass = bookMetaClass
@@ -105,16 +105,16 @@ class Book {
     }
 }
 class Author {
-   Long id
-   Long version
-   String name
-   Address address
-   Set books = new HashSet()
-   static hasMany = [books:Book]
-   static constraints = {
+    Long id
+    Long version
+    String name
+    Address address
+    Set books = new HashSet()
+    static hasMany = [books:Book]
+    static constraints = {
         address(nullable:false)
-        name(size:1..255, blank:false)        
-   }
+        name(size:1..255, blank:false)
+    }
 }
 class Address {
     Long id

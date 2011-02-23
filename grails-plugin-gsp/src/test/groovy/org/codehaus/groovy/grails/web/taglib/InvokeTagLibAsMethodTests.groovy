@@ -7,7 +7,7 @@ class InvokeTagLibAsMethodTests extends AbstractGrailsTagTests {
 class TestTagLib {
     def testTypeConversion = { attrs ->
         out << "Number Is: ${attrs.int('number')}"
-	}
+    }
 }
 ''')
     }
@@ -17,5 +17,4 @@ class TestTagLib {
         def template = '${g.testTypeConversion(number: "42")}'
         assertOutputEquals 'Number Is: 42', template
     }
-
 }

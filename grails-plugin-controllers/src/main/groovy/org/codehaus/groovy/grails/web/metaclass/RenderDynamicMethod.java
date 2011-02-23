@@ -75,12 +75,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_BUILDER = "builder";
     public static final String ARGUMENT_VAR = "var";
     private static final String DEFAULT_ARGUMENT = "it";
-    private static final String BUILDER_TYPE_RICO = "rico";
     private static final String BUILDER_TYPE_JSON = "json";
 
     private static final String TEXT_HTML = "text/html";
     private String gspEncoding;
-    private boolean useLegacyJSONBuilder = true;
     private static final String DEFAULT_ENCODING = "utf-8";
     private Object ARGUMENT_PLUGIN = "plugin";
 
@@ -95,11 +93,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         else {
             gspEncoding = DEFAULT_ENCODING;
-        }
-
-        Object o = config.get("grails.json.legacy.builder");
-        if (o instanceof Boolean) {
-            useLegacyJSONBuilder = (Boolean) o;
         }
     }
 
@@ -373,7 +366,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         controller.setProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(viewUri, model));
     }
 
-    @SuppressWarnings("deprecation")
     private boolean renderJSON(Closure callable, HttpServletResponse response) {
         boolean renderView = true;
         JSONBuilder builder = new JSONBuilder();
@@ -382,8 +374,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         renderView = false;
         return renderView;
     }
-
-
 
     private boolean renderMarkup(Closure closure, HttpServletResponse response) {
         boolean renderView;

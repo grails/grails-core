@@ -17,7 +17,7 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 class DefaultGrailsTemplateGeneratorTests extends GroovyTestCase {
 
     public static GrailsPlugin fakeHibernatePlugin = [getName: { -> 'hibernate' }] as GrailsPlugin
-	
+
     protected void setUp() {
         def buildSettings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = buildSettings

@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  */
 public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation, StaticMethodInvocation, Cloneable {
 
-    private Closure callable;
+    private Closure<?> callable;
     private Pattern pattern;
 
     /**
@@ -44,7 +44,7 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation, St
         return super.clone();
     }
 
-    public ClosureInvokingDynamicMethod(String pattern, Closure closure) {
+    public ClosureInvokingDynamicMethod(String pattern, Closure<?> closure) {
         Assert.hasLength(pattern, "Argument [pattern] must be a valid regular expression");
         Assert.notNull(closure, "Argument [closure] cannot be null");
 
@@ -57,18 +57,18 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation, St
     }
 
     public Object invoke(@SuppressWarnings("rawtypes") Class clazz, String methodName, Object[] arguments) {
-        Closure c = (Closure)callable.clone();
+        Closure<?> c = (Closure<?>)callable.clone();
         c.setDelegate(clazz);
         return invokeMethod(methodName,arguments, c);
     }
 
     public Object invoke(Object target, String methodName, Object[] arguments) {
-        Closure c = (Closure)callable.clone();
+        Closure<?> c = (Closure<?>)callable.clone();
         c.setDelegate(target);
         return invokeMethod(methodName, arguments,c);
     }
 
-    private Object invokeMethod(String methodName, Object[] arguments, Closure c) {
+    private Object invokeMethod(String methodName, Object[] arguments, Closure<?> c) {
 
         Matcher matcher = pattern.matcher(methodName);
         matcher.find();

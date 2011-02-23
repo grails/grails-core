@@ -106,7 +106,7 @@ class ConfigurationHelper {
         // Get these now before we do any merging
         def defaultsLocations = config.grails.config.defaults.locations
         def locations = config.grails.config.locations
-        
+
         // We load defaults in a way that allows them to be overridden by the main config
         if (isLocations(defaultsLocations)) {
             def newConfigObject = new ConfigObject()
@@ -114,14 +114,14 @@ class ConfigurationHelper {
             newConfigObject.merge(config)
             config.merge(newConfigObject)
         }
-        
+
         // We load non-defaults in a way that overrides the main config
         if (isLocations(locations)) {
             mergeInLocations(config, locations, resolver, classLoader)
         }
     }
 
-    
+
     static private void mergeInLocations(ConfigObject config, List locations, PathMatchingResourcePatternResolver resolver, ClassLoader classLoader) {
         for (location in locations) {
             if (!location) {
@@ -139,11 +139,11 @@ class ConfigurationHelper {
                         configSlurper.classLoader = new GroovyClassLoader(classLoader)
                     }
                 }
-                
+
                 if (location instanceof Class) {
                     def newConfig = configSlurper.parse(location)
                     config.merge(newConfig)
-                } 
+                }
                 else {
                     def resource = resolver.getResource(location.toString())
                     def stream
@@ -175,7 +175,7 @@ class ConfigurationHelper {
             }
         }
     }
-    
+
     static private boolean isLocations(locations) {
         locations != null && locations instanceof List
     }

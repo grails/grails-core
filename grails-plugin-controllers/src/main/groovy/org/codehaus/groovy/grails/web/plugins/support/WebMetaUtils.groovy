@@ -65,7 +65,7 @@ class WebMetaUtils {
             actionDelegate.delegate = delegate
             actionDelegate
         }
-        for(type in originalAction.parameterTypes) {
+        for (type in originalAction.parameterTypes) {
             enhanceCommandObject ctx, type
         }
         commandObjectAction.delegate = controller
@@ -111,7 +111,7 @@ class WebMetaUtils {
                         if (params != null && commandParamsKey != null && params[commandParamsKey] instanceof Map) {
                             commandParams = params[commandParamsKey]
                         }
-                        
+
                         bind.invoke(commandObject, "bindData", [commandObject, commandParams] as Object[])
                         def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
                         def constrainedProperties = commandObject.constraints?.values()
@@ -132,7 +132,6 @@ class WebMetaUtils {
             callable.call(* commandObjects)
         }
     }
-
 
     private static String convertTypeNameToParamsPrefix(Class clazz) {
         def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/,'-$1')?.toLowerCase()

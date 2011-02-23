@@ -184,7 +184,7 @@ Validation Error(s) occurred during save():
         session.flush()
 
         interceptor.failOnErrorPackages = ['grails.tests']
-		interceptor.eventListeners.clear()
+        interceptor.eventListeners.clear()
 
         session.clear()
         team = teamClass.get(1)

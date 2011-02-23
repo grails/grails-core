@@ -30,8 +30,6 @@ import org.springframework.util.StringUtils;
  *
  * @author Graeme Rocher
  * @since 1.1
- *        <p/>
- *        Created: Dec 12, 2008
  */
 @SuppressWarnings("serial")
 public enum Environment {
@@ -170,7 +168,7 @@ public enum Environment {
      * @param closure The top level closure
      * @return The environment specific block or null if non exists
      */
-    public static Closure getEnvironmentSpecificBlock(Closure closure) {
+    public static Closure<?> getEnvironmentSpecificBlock(Closure<?> closure) {
         final Environment env = getCurrent();
         return getEnvironmentSpecificBlock(env, closure);
     }
@@ -191,7 +189,7 @@ public enum Environment {
      * @param closure The top level closure
      * @return The environment specific block or null if non exists
      */
-    public static Closure getEnvironmentSpecificBlock(Environment env, Closure closure) {
+    public static Closure<?> getEnvironmentSpecificBlock(Environment env, Closure<?> closure) {
         if (closure == null) {
             return null;
         }
@@ -215,7 +213,7 @@ public enum Environment {
      * @param closure The top level closure
      * @return The result of the closure execution
      */
-    public static Object executeForCurrentEnvironment(Closure closure) {
+    public static Object executeForCurrentEnvironment(Closure<?> closure) {
         final Environment env = getCurrent();
         return executeForEnvironment(env, closure);
     }
@@ -236,7 +234,7 @@ public enum Environment {
      * @param closure The top level closure
      * @return The result of the closure execution
      */
-    public static Object executeForEnvironment(Environment env, Closure closure) {
+    public static Object executeForEnvironment(Environment env, Closure<?> closure) {
         if (closure == null) {
             return null;
         }
@@ -245,7 +243,7 @@ public enum Environment {
         return evaluator.execute();
     }
 
-    private static EnvironmentBlockEvaluator evaluateEnvironmentSpecificBlock(Environment environment, Closure closure) {
+    private static EnvironmentBlockEvaluator evaluateEnvironmentSpecificBlock(Environment environment, Closure<?> closure) {
         final EnvironmentBlockEvaluator evaluator = new EnvironmentBlockEvaluator(environment);
         closure.setDelegate(evaluator);
         closure.call();
@@ -254,9 +252,9 @@ public enum Environment {
 
     private static class EnvironmentBlockEvaluator extends GroovyObjectSupport {
         private Environment current;
-        private Closure callable;
+        private Closure<?> callable;
 
-        public Closure getCallable() {
+        public Closure<?> getCallable() {
             return callable;
         }
 
@@ -269,26 +267,26 @@ public enum Environment {
         }
 
         @SuppressWarnings("unused")
-        public void environments(Closure c) {
+        public void environments(Closure<?> c) {
             if (c != null) {
                 c.setDelegate(this);
                 c.call();
             }
         }
         @SuppressWarnings("unused")
-        public void production(Closure c) {
+        public void production(Closure<?> c) {
             if (current == Environment.PRODUCTION) {
                 this.callable = c;
             }
         }
         @SuppressWarnings("unused")
-        public void development(Closure c) {
+        public void development(Closure<?> c) {
             if (current == Environment.DEVELOPMENT) {
                 this.callable = c;
             }
         }
         @SuppressWarnings("unused")
-        public void test(Closure c) {
+        public void test(Closure<?> c) {
             if (current == Environment.TEST) {
                 this.callable = c;
             }
@@ -299,7 +297,7 @@ public enum Environment {
             Object[] argsArray = (Object[])args;
             if (args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
                 if (current == Environment.CUSTOM && current.getName().equals(name)) {
-                    this.callable = (Closure) argsArray[0];
+                    this.callable = (Closure<?>) argsArray[0];
                 }
                 return null;
             }

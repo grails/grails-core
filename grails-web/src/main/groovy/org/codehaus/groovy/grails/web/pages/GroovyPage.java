@@ -111,6 +111,7 @@ public abstract class GroovyPage extends Script {
     private GrailsWebRequest webRequest;
     private String pluginContextPath;
 
+    @SuppressWarnings("rawtypes")
     public static final class ConstantClosure extends Closure {
         private static final long serialVersionUID = 1L;
         final Object retval;
@@ -133,12 +134,12 @@ public abstract class GroovyPage extends Script {
         }
 
         @Override
-        public Object call(Object[] args) {
+        public Object call(Object... args) {
             return retval;
         }
     }
 
-    protected static final Closure EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
+    protected static final Closure<?> EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
 
     private static final String REQUEST_TAGLIB_CACHE = GroovyPage.class.getName() + ".TAGLIBCACHE";
 
@@ -153,9 +154,9 @@ public abstract class GroovyPage extends Script {
     public Writer getOut() {
         return out;
     }
-    
+
     public Writer getCodecOut() {
-    	return codecOut;
+        return codecOut;
     }
 
     public void setOut(@SuppressWarnings("unused") Writer newWriter) {
@@ -179,12 +180,12 @@ public abstract class GroovyPage extends Script {
             grailsWebRequest.setOut(out);
         }
         getBinding().setVariable(OUT, out);
-        if(codecClass != null) {
-        	codecOut=new CodecPrintWriter(out, codecClass);
+        if (codecClass != null) {
+            codecOut=new CodecPrintWriter(out, codecClass);
         } else {
-        	codecOut=out;
+            codecOut=out;
         }
-        getBinding().setVariable(CODEC_OUT, codecOut); 
+        getBinding().setVariable(CODEC_OUT, codecOut);
     }
 
     public String getPluginContextPath() {
@@ -195,7 +196,7 @@ public abstract class GroovyPage extends Script {
         outputStack.pop(true);
     }
 
-    protected Closure createClosureForHtmlPart(int partNumber) {
+    protected Closure<?> createClosureForHtmlPart(int partNumber) {
         final String htmlPart = htmlParts[partNumber];
         return new ConstantClosure(htmlPart);
     }
@@ -234,7 +235,7 @@ public abstract class GroovyPage extends Script {
      * @param evaluator The expression evaluator
      * @return The result
      */
-    public Object evaluate(String exprText, int lineNumber, Object outerIt, Closure evaluator)  {
+    public Object evaluate(String exprText, int lineNumber, Object outerIt, Closure<?> evaluator)  {
         try {
             return evaluator.call(outerIt);
         }
@@ -515,7 +516,7 @@ public abstract class GroovyPage extends Script {
         final GroovyPageTagWriter out = new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
             GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(webRequest, false);
-            if(outputStack == null) {
+            if (outputStack == null) {
                 outputStack = GroovyPageOutputStack.currentStack(webRequest, true, out, true, true);
             }
             outputStack.push(out);
@@ -591,7 +592,8 @@ public abstract class GroovyPage extends Script {
         return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupTagLibrary(namespace, tagName) : null;
     }
 
-    public static Closure createOutputCapturingClosure(Object wrappedInstance, final Object body1, final GrailsWebRequest webRequest, boolean preferSubChunkWhenWritingToOtherBuffer) {
+    public static Closure<?> createOutputCapturingClosure(Object wrappedInstance, final Object body1,
+              final GrailsWebRequest webRequest, boolean preferSubChunkWhenWritingToOtherBuffer) {
         if (body1 == null) {
             return EMPTY_BODY_CLOSURE;
         }
@@ -602,12 +604,12 @@ public abstract class GroovyPage extends Script {
             return gptb;
         }
 
-        if (body1 instanceof ConstantClosure){
-            return (Closure)body1;
+        if (body1 instanceof ConstantClosure) {
+            return (Closure<?>)body1;
         }
 
         if (body1 instanceof Closure) {
-            return new GroovyPageTagBody(wrappedInstance, webRequest, (Closure)body1, preferSubChunkWhenWritingToOtherBuffer);
+            return new GroovyPageTagBody(wrappedInstance, webRequest, (Closure<?>)body1, preferSubChunkWhenWritingToOtherBuffer);
         }
 
         return new ConstantClosure(body1);

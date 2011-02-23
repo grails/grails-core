@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0             s
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,11 +60,11 @@ class BeanBuilderTests extends GroovyTestCase {
         def bb = new BeanBuilder()
 
         bb.beans {
-            myB(Bean1){
+            myB(Bean1) {
                 person = "wombat"
             }
 
-            myAbstractA(Bean2){ bean ->
+            myAbstractA(Bean2) { bean ->
                 bean.'abstract' = true
                 age = 10
                 bean1 = myB
@@ -561,37 +561,37 @@ class BeanBuilderTests extends GroovyTestCase {
 
         assert "marge", marge.person
     }
-	void testBeanWithFactoryMethodWithConstructorArgs() {
-		def bb = new BeanBuilder()
-		bb.beans {
-			beanFactory(Bean1FactoryWithArgs){}
- 
-			homer(beanFactory:"newInstance", "homer") {
-				age = 45
-			}
-			//Test with no closure body
-			marge(beanFactory:"newInstance", "marge")
- 
-			//Test more verbose method
-			mcBain("mcBain"){
-				bean ->
-				bean.factoryBean="beanFactory"
-				bean.factoryMethod="newInstance"
- 
-			}
-		}
-		def ctx  = bb.createApplicationContext()
- 
-		def homer = ctx.getBean("homer")
- 
-		assert "homer", homer.person
-		assert 45, homer.age
- 
-		assert "marge", ctx.getBean("marge").person
- 
-		assert "mcBain", ctx.getBean("mcBain").person
- 
-	}
+    void testBeanWithFactoryMethodWithConstructorArgs() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            beanFactory(Bean1FactoryWithArgs) {}
+
+            homer(beanFactory:"newInstance", "homer") {
+                age = 45
+            }
+            //Test with no closure body
+            marge(beanFactory:"newInstance", "marge")
+
+            //Test more verbose method
+            mcBain("mcBain") {
+                bean ->
+                bean.factoryBean="beanFactory"
+                bean.factoryMethod="newInstance"
+
+            }
+        }
+        def ctx  = bb.createApplicationContext()
+
+        def homer = ctx.getBean("homer")
+
+        assert "homer", homer.person
+        assert 45, homer.age
+
+        assert "marge", ctx.getBean("marge").person
+
+        assert "mcBain", ctx.getBean("mcBain").person
+    }
+
     void testGetBeanDefinitions() {
         def bb = new BeanBuilder()
         bb.beans {
@@ -860,7 +860,7 @@ class AdvisedPerson {
 }
 // a factory bean that takes arguments
 class Bean1FactoryWithArgs {
-	Bean1 newInstance(String name) {
-		new Bean1(person:name)
-	}
+    Bean1 newInstance(String name) {
+        new Bean1(person:name)
+    }
 }

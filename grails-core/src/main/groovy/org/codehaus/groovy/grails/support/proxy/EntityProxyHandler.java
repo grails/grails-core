@@ -18,25 +18,25 @@ package org.codehaus.groovy.grails.support.proxy;
 
 /**
  * Methods specified to proxied entities
- * 
+ *
  * @author Graeme Rocher
  * @since 1.3.6
  */
 public interface EntityProxyHandler extends ProxyHandler{
-	
-	/**
-	 * This method returns the identifier of the proxy or null if the 
-	 * object is not a proxy
-	 * 
-	 * @return The identifier of the identity
-	 */
-	Object getProxyIdentifier(Object o);
 
-	/**
-	 * Returns the proxied class without initializing the proxy
-	 * 
-	 * @param o The object
-	 * @return The class 
-	 */
-	Class<?> getProxiedClass(Object o);
+    /**
+     * This method returns the identifier of the proxy or null if the
+     * object is not a proxy
+     *
+     * @return The identifier of the identity
+     */
+    Object getProxyIdentifier(Object o);
+
+    /**
+     * Returns the proxied class without initializing the proxy
+     *
+     * @param o The object
+     * @return The class
+     */
+    Class<?> getProxiedClass(Object o);
 }

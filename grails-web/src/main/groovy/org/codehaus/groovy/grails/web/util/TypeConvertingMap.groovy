@@ -22,7 +22,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder
  *
  * Type converting maps have no inherent ordering. Two maps with identical entries
  * but arranged in a different order internally are considered equal.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.2
  */
@@ -51,7 +51,7 @@ class TypeConvertingMap implements Map, Cloneable {
         if (getClass() != that.getClass()) {
             return false
         }
-        
+
         if (this.size() != that.size()) {
             return false
         }
@@ -59,7 +59,7 @@ class TypeConvertingMap implements Map, Cloneable {
         if (this.empty && that.empty) {
             return true
         }
-        
+
         this.entrySet() == that.entrySet()
     }
 
@@ -70,7 +70,7 @@ class TypeConvertingMap implements Map, Cloneable {
         }
         builder.toHashCode()
     }
-    
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter

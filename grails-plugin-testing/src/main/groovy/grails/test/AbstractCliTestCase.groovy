@@ -16,7 +16,7 @@ import java.util.concurrent.locks.*
  */
 abstract class AbstractCliTestCase extends GroovyTestCase {
     private final Lock lock = new ReentrantLock()
-    private final Condition condition = lock.newCondition() 
+    private final Condition condition = lock.newCondition()
     private final Condition waiting = lock.newCondition()
 
     private String commandOutput
@@ -57,7 +57,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
         pb.redirectErrorStream(true)
         pb.directory(workDir)
         pb.environment()["GRAILS_HOME"] = grailsHome
-        
+
         process = pb.start()
 
         // Read the process output on a separate thread. This is
@@ -120,7 +120,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
         final timeoutThread = Thread.startDaemon {
             try {
                 Thread.sleep(timeout)
-                
+
                 // Timed out. Interrupt the main thread.
                 mainThread.interrupt()
             }

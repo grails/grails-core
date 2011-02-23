@@ -23,7 +23,7 @@ import grails.util.GrailsNameUtils
  * into controllers. By default it determines what controller to mock
  * based on the name of the test, but this can be overridden by one
  * of the constructors.
- * 
+ *
  * @author Graeme Rocher
  * @author Peter Ledbrook
  */
@@ -111,7 +111,7 @@ class ControllerUnitTestCase extends MvcUnitTestCase {
     protected Object newInstance() {
         def instance = super.newInstance()
         webRequest.controllerName = GrailsNameUtils.getLogicalPropertyName(
-      		  instance.getClass().name, "Controller")
+                instance.getClass().name, "Controller")
         return instance
     }
 }

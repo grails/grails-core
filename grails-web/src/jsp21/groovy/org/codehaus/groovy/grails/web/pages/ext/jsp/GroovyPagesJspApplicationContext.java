@@ -28,8 +28,6 @@ import java.util.LinkedList;
 /**
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: May 1, 2008
  */
 public class GroovyPagesJspApplicationContext implements JspApplicationContext{
 
@@ -37,7 +35,7 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
 
     private static final ExpressionFactory expressionFactoryImpl = findExpressionFactoryImplementation();
 
-    private final LinkedList listeners = new LinkedList();
+    private final LinkedList<ELContextListener> listeners = new LinkedList<ELContextListener>();
     private final CompositeELResolver elResolver = new CompositeELResolver();
     private final CompositeELResolver additionalResolvers = new CompositeELResolver();
     {
@@ -53,9 +51,9 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
 
     private static ExpressionFactory findExpressionFactoryImplementation() {
         ExpressionFactory ef = tryExpressionFactoryImplementation("com.sun");
-        if(ef == null) {
+        if (ef == null) {
             ef = tryExpressionFactoryImplementation("org.apache");
-            if(ef == null) {
+            if (ef == null) {
                 LOG.warn("Could not find any implementation for " +
                         ExpressionFactory.class.getName());
             }
@@ -66,8 +64,8 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
     private static ExpressionFactory tryExpressionFactoryImplementation(String packagePrefix) {
         String className = packagePrefix + ".el.ExpressionFactoryImpl";
         try {
-            Class cl = ClassUtils.forName(className);
-            if(ExpressionFactory.class.isAssignableFrom(cl)) {
+            Class<?> cl = ClassUtils.forName(className);
+            if (ExpressionFactory.class.isAssignableFrom(cl)) {
                 LOG.info("Using " + className + " as implementation of " +
                         ExpressionFactory.class.getName());
                 return (ExpressionFactory)cl.newInstance();
@@ -76,15 +74,16 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
                     ExpressionFactory.class.getName());
         }
         catch(ClassNotFoundException e) {
+            // ignored
         }
         catch(Exception e) {
             LOG.error("Failed to instantiate " + className, e);
         }
         return null;
-    }    
-    
-    public void addELResolver(ELResolver elResolver) {
-        additionalResolvers.add(elResolver);
+    }
+
+    public void addELResolver(ELResolver resolver) {
+        additionalResolvers.add(resolver);
     }
 
     public ExpressionFactory getExpressionFactory() {
@@ -101,9 +100,8 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
         ELContext ctx = new GroovyPagesELContext(pageCtx);
         ELContextEvent event = new ELContextEvent(ctx);
         synchronized(listeners) {
-            for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-                ELContextListener l = (ELContextListener) iter.next();
-                l.contextCreated(event);
+            for (Iterator<ELContextListener> iter = listeners.iterator(); iter.hasNext();) {
+                iter.next().contextCreated(event);
             }
         }
         return ctx;
@@ -116,25 +114,28 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
             this.pageCtx = pageCtx;
         }
 
+        @Override
         public ELResolver getELResolver() {
             return elResolver;
         }
 
+        @Override
         public FunctionMapper getFunctionMapper() {
             return null;
         }
 
+        @Override
         public VariableMapper getVariableMapper() {
             return new VariableMapper() {
 
+                @Override
                 public ValueExpression resolveVariable(String name) {
                     Object o = pageCtx.findAttribute(name);
-                    if(o == null)return null;
-                    else {
-                        return expressionFactoryImpl.createValueExpression(o, o.getClass());
-                    }
+                    if (o == null) return null;
+                    return expressionFactoryImpl.createValueExpression(o, o.getClass());
                 }
 
+                @Override
                 public ValueExpression setVariable(String name, ValueExpression valueExpression) {
                     ValueExpression previous = resolveVariable(name);
                     pageCtx.setAttribute(name, valueExpression.getValue(GroovyPagesELContext.this));

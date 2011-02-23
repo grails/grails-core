@@ -119,11 +119,11 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
             if (defaultConstraints != null) {
                 // repopulate existing map
                 defaultConstraints.clear();
-                new ClosureToMapPopulator(defaultConstraints).populate((Closure) constraints);
+                new ClosureToMapPopulator(defaultConstraints).populate((Closure<?>) constraints);
             }
             else {
                 ClosureToMapPopulator populator = new ClosureToMapPopulator();
-                defaultConstraints = populator.populate((Closure) constraints);
+                defaultConstraints = populator.populate((Closure<?>) constraints);
             }
         }
     }

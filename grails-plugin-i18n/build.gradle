@@ -1,5 +1,5 @@
 dependencies {
-	compile project(":grails-web")
+    compile project(":grails-web")
 }
 
 jar.appendix = 'plugin-i18n'

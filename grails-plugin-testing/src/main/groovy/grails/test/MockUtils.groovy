@@ -78,13 +78,13 @@ class MockUtils {
      */
     static void mockAttributeAccess(Class clazz) {
         clazz.metaClass.getProperty = { String name ->
-            if(delegate.metaClass.hasProperty(delegate,name)) {
+            if (delegate.metaClass.hasProperty(delegate,name)) {
                 return delegate.metaClass.getMetaProperty(name).getProperty(delegate)
             }
             return delegate.getAttribute(name)
         }
         clazz.metaClass.setProperty = { String name, val ->
-            if(delegate.metaClass.hasProperty(delegate,name)) {
+            if (delegate.metaClass.hasProperty(delegate,name)) {
                 delegate.metaClass.getMetaProperty(name).setProperty(delegate, val)
             }
             else {
@@ -135,16 +135,16 @@ class MockUtils {
             }
             def formats = formatInterceptor.formatOptions
             def response = null
-            if(request.format && formats.containsKey(request.format)) {
+            if (request.format && formats.containsKey(request.format)) {
                 response = formats[request.format]
             }
             else {
                 response = formats[formats.firstKey()]
             }
-            if(response instanceof Closure) {
+            if (response instanceof Closure) {
                 return response.call()
             }
-            if(response instanceof Map) {
+            if (response instanceof Map) {
                 return response
             }
         }
@@ -542,7 +542,7 @@ class MockUtils {
      */
     static void prepareForConstraintsTests(Class clazz, Map errorsMap, List testInstances = []) {
         def dc = null
-        if(DomainClassArtefactHandler.isDomainClass(clazz))
+        if (DomainClassArtefactHandler.isDomainClass(clazz))
            dc = new DefaultGrailsDomainClass(clazz)
 
         addValidateMethod(clazz, dc, errorsMap, testInstances)
@@ -629,7 +629,7 @@ class MockUtils {
                 return result ? result[0] : null
             } else {
                 m = method =~ /^countBy${DYNAMIC_FINDER_RE}$/
-                if(m) {
+                if (m) {
                     switch(args.size()) {
                         case 0: return clazz."findAllBy${method[7..-1]}"().size()
                         case 1: return clazz."findAllBy${method[7..-1]}"(args[0]).size()
@@ -737,7 +737,7 @@ class MockUtils {
     private static void addDynamicInstanceMethods(Class clazz, List testInstances) {
         // Add save() method.
         clazz.metaClass.save = { Map args = [:] ->
-            if(validate()) {
+            if (validate()) {
 
                 def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
                 def mapping = evaluateMapping(clazz)
@@ -749,7 +749,7 @@ class MockUtils {
                     isInsert = !delegate.id
                 }
 
-                if(isInsert) {
+                if (isInsert) {
                     triggerEvent delegate, 'beforeInsert'
                     if (!testInstances.contains(delegate)) {
                         testInstances << delegate
@@ -763,11 +763,11 @@ class MockUtils {
                     setTimestamp delegate, 'lastUpdated', properties, mapping
                     triggerEvent delegate, 'afterUpdate'
                 }
-                
+
                 return delegate
             } else if (args.failOnError) {
-				throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
-			}
+                throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+            }
             return null
         }
 
@@ -959,7 +959,7 @@ class MockUtils {
         clazz.metaClass.getErrors = {-> getErrorsFor(errorsMap, delegate) }
         clazz.metaClass.hasErrors = {-> getErrorsFor(errorsMap, delegate).hasErrors() }
         clazz.metaClass.setErrors = { Errors errors ->
-            if(!(errors instanceof GrailsMockErrors)) {
+            if (!(errors instanceof GrailsMockErrors)) {
                 def mockErrors = new GrailsMockErrors(delegate)
                 mockErrors.addAllErrors errors
                 errors = mockErrors
@@ -1099,7 +1099,7 @@ class MockUtils {
             case "Between":
                 if (propValue >= args[0] && propValue <= args[1]) result << record
                 break
-                
+
             case "InList":
                  if (propValue in args[0]) result << record
                  break;
@@ -1259,15 +1259,15 @@ class MockUtils {
 
     private static void setId(instance, clazz) {
         def prop = instance.metaClass.hasProperty(instance, "id")
-		def mapping = evaluateMapping(clazz)
-        if (prop && !instance.id && mapping.id?.generator != "assigned") { 
-			def id = (IDS[clazz] ?: 0) + 1
+        def mapping = evaluateMapping(clazz)
+        if (prop && !instance.id && mapping.id?.generator != "assigned") {
+            def id = (IDS[clazz] ?: 0) + 1
             IDS[clazz] = id
-			if (Number.isAssignableFrom(prop.type)) {
-	            instance.id = id
-			} else if (prop.type == String) {
-	            instance.id = id.toString()
-			}
+            if (Number.isAssignableFrom(prop.type)) {
+                instance.id = id
+            } else if (prop.type == String) {
+                instance.id = id.toString()
+            }
         }
     }
 

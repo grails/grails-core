@@ -66,12 +66,12 @@ class ScaffoldingGrailsPlugin {
     }
 
     def doWithApplicationContext = { ApplicationContext appCtx ->
-		def app = application
-		Parallelizer.doParallel {		
-			app.controllerClasses.eachParallel { GrailsControllerClass controllerClass -> 
-				configureScaffoldingController(appCtx, app, controllerClass)
-			}
-		}
+        def app = application
+        Parallelizer.doParallel {
+            app.controllerClasses.eachParallel { GrailsControllerClass controllerClass ->
+                configureScaffoldingController(appCtx, app, controllerClass)
+            }
+        }
     }
 
     private configureScaffoldingController(ApplicationContext appCtx, application, GrailsControllerClass controllerClass) {

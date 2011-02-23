@@ -156,18 +156,18 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
 
     protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty,
             @SuppressWarnings("unused") GrailsDomainClass referencedDomainClass) throws ConverterException {
-    	Object idValue;
-    	if(proxyHandler instanceof EntityProxyHandler) {
-    		
-    		idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
-    		if(idValue == null) {
-    			idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
-    		}
-    		
-    	}
-    	else {
+        Object idValue;
+        if (proxyHandler instanceof EntityProxyHandler) {
+
+            idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
+            if (idValue == null) {
+                idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
+            }
+
+        }
+        else {
             idValue = new BeanWrapperImpl(refObj).getPropertyValue(idProperty.getName());
-    	}
+        }
         xml.attribute("id",String.valueOf(idValue));
     }
 

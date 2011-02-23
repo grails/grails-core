@@ -29,7 +29,6 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
@@ -45,17 +44,12 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
 
     private boolean disableTransformation = Boolean.getBoolean("disable.grails.plugin.transform");
     PluginBuildSettings pluginBuildSettings;
-    
-    
 
     public GlobalPluginAwareEntityASTTransformation() {
-		super();
-		pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
-	}
+        pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
+    }
 
-
-
-	public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
+    public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
         if (disableTransformation) {
             return;
         }

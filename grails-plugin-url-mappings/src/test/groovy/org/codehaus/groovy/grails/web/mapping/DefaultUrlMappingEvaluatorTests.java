@@ -41,22 +41,22 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         GroovyShell shell = new GroovyShell ();
         Binding binding = new Binding();
         Script script = shell.parse (
-                "mappings = {\n" + 
-                "    \"/$controller/$action?/$id?\" { \n" + 
-                "        constraints {\n" + 
-                "            id(matches:/\\d+/)\n" + 
-                "        }\n" + 
-                "    }\n" + 
+                "mappings = {\n" +
+                "    \"/$controller/$action?/$id?\" { \n" +
+                "        constraints {\n" +
+                "            id(matches:/\\d+/)\n" +
+                "        }\n" +
+                "    }\n" +
                 "}\n");
 
         script.setBinding(binding);
         script.run();
-        
+
         Closure closure = (Closure) binding.getVariable("mappings");
         List mappings = evaluator.evaluateMappings(closure);
 
         assertEquals(1, mappings.size());
-        
+
         UrlMapping mapping = (UrlMapping) mappings.get(0);
 
         assertNull(mapping.getActionName());
@@ -64,16 +64,16 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals("(*)",mapping.getUrlData().getTokens()[0]);
         assertEquals("(*)",mapping.getUrlData().getTokens()[1]);
         assertEquals("(*)",mapping.getUrlData().getTokens()[2]);
-        
+
         assertNotNull(mapping.getConstraints());
-        
+
         assertTrue(makeSureMatchesConstraintExistsOnId(mapping));
-        
+
         GrailsWebRequest r = GrailsWebUtil.bindMockWebRequest();
 
         UrlMappingInfo info = mapping.match("/mycontroller");
         info.configure(r);
-        
+
         assertEquals("mycontroller", info.getControllerName());
         assertNull(mapping.match("/mycontroller").getActionName());
         assertNull(mapping.match("/mycontroller").getId());
@@ -89,12 +89,12 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
     public void testOldMethod () throws Exception {
         GroovyShell shell = new GroovyShell ();
         Script script = shell.parse (
-                "mappings {\n" + 
-                "    \"/$controller/$action?/$id?\" { \n" + 
-                "        constraints {\n" + 
-                "            id(matches:/\\d+/)\n" + 
-                "        }\n" + 
-                "    }\n" + 
+                "mappings {\n" +
+                "    \"/$controller/$action?/$id?\" { \n" +
+                "        constraints {\n" +
+                "            id(matches:/\\d+/)\n" +
+                "        }\n" +
+                "    }\n" +
                 "}\n");
 
         @SuppressWarnings("hiding")

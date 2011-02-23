@@ -122,7 +122,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
         if (IMPORT_FROM_CONSTRAINT.equals(name) && (value instanceof Class)) {
             return handleImportFrom(attributes, (Class) value);
         }
-        throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes,value});   
+        throw new MissingMethodException((String)name,targetClass,new Object[]{ attributes,value});
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -151,9 +151,9 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 resultingPropertyNames.remove(targetPropertyName);
             }
         }
-        
+
         resultingPropertyNames.remove("class");
-        resultingPropertyNames.remove("metaClass");        
+        resultingPropertyNames.remove("metaClass");
 
         for (String targetPropertyName : resultingPropertyNames) {
             ConstrainedProperty importFromConstrainedProperty =

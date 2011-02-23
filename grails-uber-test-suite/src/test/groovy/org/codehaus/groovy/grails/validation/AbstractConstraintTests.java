@@ -47,7 +47,7 @@ public abstract class AbstractConstraintTests extends TestCase {
     protected void testConstraintMessageCodes( Constraint constraint, Object value, String[] code, Object[] args ) {
         Errors errors = testConstraintFailed( constraint, value );
         FieldError fieldError = errors.getFieldError( constraint.getPropertyName() );
-        for( int j = 0; j < code.length; j++ ) {
+        for ( int j = 0; j < code.length; j++ ) {
             checkCode( fieldError, code[j] );
         }
         checkArguments( args, fieldError.getArguments() );
@@ -83,12 +83,12 @@ public abstract class AbstractConstraintTests extends TestCase {
         BeanWrapper constrainedBean = new BeanWrapperImpl(new TestClass());
         constrainedBean.setPropertyValue(constraint.getPropertyName(), value);
         Errors errors = new BindException(constrainedBean.getWrappedInstance(), constrainedBean.getWrappedClass().getName());
-        if(!(constraint instanceof VetoingConstraint) || shouldVeto == null) {
+        if (!(constraint instanceof VetoingConstraint) || shouldVeto == null) {
             constraint.validate(constrainedBean.getWrappedInstance(), value, errors);
         } else {
             boolean vetoed = ((VetoingConstraint) constraint).validateWithVetoing(constrainedBean.getWrappedInstance(), value, errors);
-            if(shouldVeto.booleanValue() && !vetoed) fail("Constraint should veto");
-            else if(!shouldVeto.booleanValue() && vetoed) fail("Constraint shouldn't veto");
+            if (shouldVeto.booleanValue() && !vetoed) fail("Constraint should veto");
+            else if (!shouldVeto.booleanValue() && vetoed) fail("Constraint shouldn't veto");
         }
         return errors;
     }
@@ -96,8 +96,8 @@ public abstract class AbstractConstraintTests extends TestCase {
     private void checkCode( FieldError error, String code ) {
         String[] codes = error.getCodes();
         boolean result = false;
-        for( int i = 0; i < codes.length; i++ ) {
-            if( code.equals( codes[i] ) ) {
+        for ( int i = 0; i < codes.length; i++ ) {
+            if (code.equals( codes[i] ) ) {
                 result = true;
                 break;
             }
@@ -107,7 +107,7 @@ public abstract class AbstractConstraintTests extends TestCase {
 
     private void checkArguments( Object[] left, Object[] right ) {
         assertEquals( left.length, right.length );
-        for( int i = 0; i < left.length; i++ ) {
+        for ( int i = 0; i < left.length; i++ ) {
             assertEquals( left[i], right[i] );
         }
     }

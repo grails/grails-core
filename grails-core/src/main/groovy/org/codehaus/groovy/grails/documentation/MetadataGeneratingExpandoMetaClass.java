@@ -48,7 +48,7 @@ public class MetadataGeneratingExpandoMetaClass extends ExpandoMetaClass {
     }
 
     @Override
-    protected void registerStaticMethod(String name, Closure callable) {
+    protected void registerStaticMethod(String name, @SuppressWarnings("rawtypes") Closure callable) {
         super.registerStaticMethod(name, callable);
         if (!MetadataGeneratingMetaClassCreationHandle.isExcludedClass(getJavaClass())) {
             DocumentationContext context = DocumentationContext.getInstance();

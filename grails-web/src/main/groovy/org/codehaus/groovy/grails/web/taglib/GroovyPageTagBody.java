@@ -35,19 +35,20 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  * @since 0.5
  */
+@SuppressWarnings("rawtypes")
 public class GroovyPageTagBody extends Closure {
 
     private static final long serialVersionUID = 4396762064131558457L;
-    private Closure bodyClosure;
+    private Closure<?> bodyClosure;
     private Binding binding;
     private boolean preferSubChunkWhenWritingToOtherBuffer;
     private GrailsWebRequest webRequest;
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure) {
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure) {
         this(owner, webRequest, bodyClosure, false);
     }
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure bodyClosure, boolean preferSubChunkWhenWritingToOtherBuffer) {
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure, boolean preferSubChunkWhenWritingToOtherBuffer) {
         super(owner);
 
         Assert.notNull(bodyClosure, "Argument [bodyClosure] cannot be null!");
@@ -79,7 +80,7 @@ public class GroovyPageTagBody extends Closure {
         this.preferSubChunkWhenWritingToOtherBuffer = prefer;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     private Object captureClosureOutput(Object args) {
         final GroovyPageTagWriter capturedOut =  new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
         try {
@@ -124,7 +125,7 @@ public class GroovyPageTagBody extends Closure {
                             // GRAILS-2675: Restore the original binding.
                             for (Object key : argsMap.keySet()) {
                                 Object originalVal = originalBinding.get(key);
-                                if(originalVal != null) {
+                                if (originalVal != null) {
                                     currentBinding.put(key, originalVal);
                                 }
                             }
@@ -150,7 +151,7 @@ public class GroovyPageTagBody extends Closure {
     }
 
     private void popCapturedOut() {
-        if(webRequest != null && webRequest.isActive()) {
+        if (webRequest != null && webRequest.isActive()) {
             GroovyPageOutputStack.currentStack(webRequest).pop();
         }
         else {
@@ -159,7 +160,7 @@ public class GroovyPageTagBody extends Closure {
     }
 
     private void pushCapturedOut(GroovyPageTagWriter capturedOut) {
-        if(webRequest != null && webRequest.isActive()) {
+        if (webRequest != null && webRequest.isActive()) {
             GroovyPageOutputStack.currentStack(webRequest).push(capturedOut);
         }
         else {
@@ -189,7 +190,7 @@ public class GroovyPageTagBody extends Closure {
     }
 
     @Override
-    public Object call(Object[] args) {
+    public Object call(Object... args) {
         return captureClosureOutput(args);
     }
 

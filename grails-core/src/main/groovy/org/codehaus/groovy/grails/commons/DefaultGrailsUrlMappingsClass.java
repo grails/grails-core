@@ -30,8 +30,8 @@ public class DefaultGrailsUrlMappingsClass extends AbstractGrailsClass implement
         super(clazz, URL_MAPPINGS);
     }
 
-    public Closure getMappingsClosure() {
-        Closure result = getStaticPropertyValue(MAPPINGS_CLOSURE, Closure.class);
+    public Closure<?> getMappingsClosure() {
+        Closure<?> result = getStaticPropertyValue(MAPPINGS_CLOSURE, Closure.class);
         if (result == null) {
             throw new RuntimeException(MAPPINGS_CLOSURE + " closure does not exists for class " +  getClazz().getName());
         }

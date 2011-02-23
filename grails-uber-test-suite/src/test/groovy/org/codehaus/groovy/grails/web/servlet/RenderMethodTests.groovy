@@ -67,21 +67,21 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assertEquals '["a":1, "b":2]', response.contentAsString
     }
 
-	void testRenderGString() {
-		runTest {
-			def mockController = ga.getControllerClass("RenderController").newInstance()
-			mockController.renderGString.call()
+    void testRenderGString() {
+        runTest {
+            def mockController = ga.getControllerClass("RenderController").newInstance()
+            mockController.renderGString.call()
 
-			def request = mockController.request
-			assert request != null
-			def response = mockController.response
+            def request = mockController.request
+            assert request != null
+            def response = mockController.response
 
-			assert response != null
+            assert response != null
 
-			assertEquals "test render", response.contentAsString
-		}
-	}
-	
+            assertEquals "test render", response.contentAsString
+        }
+    }
+
     void testRenderText() {
         runTest {
             def mockController = ga.getControllerClass("RenderController").newInstance()
@@ -226,9 +226,9 @@ class RenderController {
         render "test render"
     }
     def renderGString = {
-		def foo = 'render'
+        def foo = 'render'
         render "test $foo"
-    }    
+    }
     def renderXML = {
         render(contentType:"text/xml") {
             hello("world")

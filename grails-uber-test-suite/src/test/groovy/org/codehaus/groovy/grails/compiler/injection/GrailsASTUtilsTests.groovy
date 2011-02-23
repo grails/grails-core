@@ -6,12 +6,12 @@ import org.codehaus.groovy.ast.ClassNode
  * @author Burt Beckwith
  */
 class GrailsASTUtilsTests extends GroovyTestCase {
-    
+
     void testGetFurthestParent() {
         def fooNode = new ClassNode(Foo)
         def barNode = new ClassNode(Bar)
         def bazNode = new ClassNode(Baz)
-        
+
         assertEquals Foo.name, GrailsASTUtils.getFurthestParent(fooNode).name
         assertEquals Foo.name, GrailsASTUtils.getFurthestParent(barNode).name
         assertEquals Foo.name, GrailsASTUtils.getFurthestParent(bazNode).name

@@ -130,7 +130,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         }
         catch (NoSuchBeanDefinitionException ex) {
             // We need to use the default.
-            localeResolver = (LocaleResolver) getDefaultStrategy(context, LocaleResolver.class);
+            localeResolver = getDefaultStrategy(context, LocaleResolver.class);
             if (logger.isDebugEnabled()) {
                 logger.debug("Unable to locate LocaleResolver with name '" + LOCALE_RESOLVER_BEAN_NAME +
                         "': using default [" + localeResolver + "]");
@@ -248,7 +248,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         Exception handlerException = null;
         try {
             ModelAndView mv;
-			boolean errorView = false;
+            boolean errorView = false;
             try {
                 Object exceptionAttribute = request.getAttribute(EXCEPTION_ATTRIBUTE);
                 // only process multipart requests if an exception hasn't occured
@@ -317,7 +317,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 handlerException = ex;
                 Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
                 mv = processHandlerException(request, response, handler, ex);
-				errorView = (mv != null);
+                errorView = (mv != null);
             }
 
             // Did the handler return a view to render?
@@ -327,15 +327,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 try {
                     render(mv, processedRequest, response);
-					if (errorView) {
-						WebUtils.clearErrorRequestAttributes(request);
-					}
+                    if (errorView) {
+                        WebUtils.clearErrorRequestAttributes(request);
+                    }
                 } catch (Exception e) {
                     // Only render the error view if we're not already trying to render it.
                     // This prevents a recursion if the error page itself has errors.
                     if (request.getAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE) == null) {
                         request.setAttribute(GrailsApplicationAttributes.RENDERING_ERROR_ATTRIBUTE, Boolean.TRUE);
-                        
+
                         mv = super.processHandlerException(processedRequest, response, mappedHandler, e);
                         handlerException = e;
                         if (mv != null) render(mv, processedRequest, response);

@@ -5,11 +5,9 @@ import org.springframework.core.io.FileSystemResource
 
 /**
  * A Mock TagLibraryResolver that resolves the standard taglib from the GRAILS_HOME/lib directory instead of the root loader
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 9, 2008
  */
 class MockRootLoaderTagLibraryResolver extends TagLibraryResolver {
 
@@ -19,5 +17,4 @@ class MockRootLoaderTagLibraryResolver extends TagLibraryResolver {
         rootLoader.addURL res.getURL()
         return rootLoader
     }
-
 }

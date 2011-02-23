@@ -97,14 +97,14 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
             request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, new AcceptHeaderLocaleResolver())
 
             def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, "g:" + tagName)
-            if(!tagLibrary) {
+            if (!tagLibrary) {
                 fail("No tag library found for tag $tagName")
             }
             def go = tagLibrary.newInstance()
-            if(go.properties.containsKey("grailsUrlMappingsHolder"))   {
+            if (go.properties.containsKey("grailsUrlMappingsHolder"))   {
                 go.grailsUrlMappingsHolder = appCtx.grailsUrlMappingsHolder
             }
-            if(go instanceof ApplicationContextAware) {
+            if (go instanceof ApplicationContextAware) {
                 go.applicationContext = appCtx
             }
 
@@ -117,9 +117,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                 // the first or second arg may be a Map
                 // wrap Map args in GroovyPageAttributes
                 def newArgs = []
-                if(args?.length > 0) {
+                if (args?.length > 0) {
                     args.each {arg ->
-                        if(arg instanceof Map && (!(arg instanceof GroovyPageAttributes))) {
+                        if (arg instanceof Map && (!(arg instanceof GroovyPageAttributes))) {
                             newArgs << new GroovyPageAttributes(arg)
                         }
                         else {
@@ -198,8 +198,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         springConfig.addSingletonBean("messageSource", StaticMessageSource)
 
         appCtx = springConfig.getApplicationContext()
-		
-		ctx.servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+
+        ctx.servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         mockManager.applicationContext = appCtx

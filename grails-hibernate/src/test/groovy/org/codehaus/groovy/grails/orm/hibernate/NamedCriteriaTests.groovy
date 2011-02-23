@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import org.hibernate.FetchMode;
-import org.hibernate.NonUniqueResultException 
+import org.hibernate.NonUniqueResultException
 
 /**
  * @author Jeff Brown
@@ -76,7 +76,7 @@ class Publication {
        aPaperback  {
           eq 'paperback', true
        }
-       
+
        lastPublishedBefore { date ->
            uniqueResult = true
            le 'datePublished', date
@@ -174,10 +174,10 @@ class Publication {
         def now = new Date()
 
         assert publicationClass.newInstance(title: "Ten Day Old Paperback",
-                                            datePublished: now - 10, 
+                                            datePublished: now - 10,
                                             paperback: true).save()
         assert publicationClass.newInstance(title: "One Hundred Day Old Paperback",
-                                            datePublished: now - 100, 
+                                            datePublished: now - 100,
                                             paperback: true).save()
         session.clear()
 
@@ -192,7 +192,7 @@ class Publication {
         }
     }
 
-	void testSorting() {
+    void testSorting() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
         def now = new Date()
@@ -210,35 +210,35 @@ class Publication {
         assert publicationClass.newInstance(title: "AAA Old Paperback",
                 datePublished: now - 900, paperback: true).save()
 
-		session.clear()
+        session.clear()
 
-		// verify the sort works...
-		def results = publicationClass.paperbackAndRecent.list(sort: 'title')
+        // verify the sort works...
+        def results = publicationClass.paperbackAndRecent.list(sort: 'title')
 
-		assertEquals 'wrong number of results', 4, results?.size()
-		assertEquals 'wrong title', 'AAA New Paperback', results[0].title
-		assertEquals 'wrong title', 'BBB New Paperback', results[1].title
-		assertEquals 'wrong title', 'CCC New Paperback', results[2].title
-		assertEquals 'wrong title', 'ZZZ New Paperback', results[3].title
+        assertEquals 'wrong number of results', 4, results?.size()
+        assertEquals 'wrong title', 'AAA New Paperback', results[0].title
+        assertEquals 'wrong title', 'BBB New Paperback', results[1].title
+        assertEquals 'wrong title', 'CCC New Paperback', results[2].title
+        assertEquals 'wrong title', 'ZZZ New Paperback', results[3].title
 
-		// verify the sort works along with additional criteria...
-		results = publicationClass.paperbackAndRecent(sort: 'title') {
-			ne 'title', 'CCC New Paperback'
-		}
+        // verify the sort works along with additional criteria...
+        results = publicationClass.paperbackAndRecent(sort: 'title') {
+            ne 'title', 'CCC New Paperback'
+        }
 
-		assertEquals 'wrong number of results', 3, results?.size()
-		assertEquals 'wrong title', 'AAA New Paperback', results[0].title
-		assertEquals 'wrong title', 'BBB New Paperback', results[1].title
-		assertEquals 'wrong title', 'ZZZ New Paperback', results[2].title
+        assertEquals 'wrong number of results', 3, results?.size()
+        assertEquals 'wrong title', 'AAA New Paperback', results[0].title
+        assertEquals 'wrong title', 'BBB New Paperback', results[1].title
+        assertEquals 'wrong title', 'ZZZ New Paperback', results[2].title
 
-		// verify the order works...
-		results = publicationClass.paperbackAndRecent.list(sort: 'title', order: 'desc')
+        // verify the order works...
+        results = publicationClass.paperbackAndRecent.list(sort: 'title', order: 'desc')
 
-		assertEquals 'wrong number of results', 4, results?.size()
-		assertEquals 'wrong title', 'ZZZ New Paperback', results[0].title
-		assertEquals 'wrong title', 'CCC New Paperback', results[1].title
-		assertEquals 'wrong title', 'BBB New Paperback', results[2].title
-		assertEquals 'wrong title', 'AAA New Paperback', results[3].title
+        assertEquals 'wrong number of results', 4, results?.size()
+        assertEquals 'wrong title', 'ZZZ New Paperback', results[0].title
+        assertEquals 'wrong title', 'CCC New Paperback', results[1].title
+        assertEquals 'wrong title', 'BBB New Paperback', results[2].title
+        assertEquals 'wrong title', 'AAA New Paperback', results[3].title
 
         assert publicationClass.newInstance(title: "zzz New Paperback",
                 datePublished: now - 10, paperback: true).save()
@@ -249,8 +249,8 @@ class Publication {
         assert publicationClass.newInstance(title: "bbb New Paperback",
                 datePublished: now - 10, paperback: true).save()
 
-		// verify the ignoreCase works
-		results = publicationClass.paperbackAndRecent.list(sort: 'title', ignoreCase: false)
+        // verify the ignoreCase works
+        results = publicationClass.paperbackAndRecent.list(sort: 'title', ignoreCase: false)
 
         assertEquals 'wrong number of results', 8, results?.size()
         assertEquals 'wrong title', 'AAA New Paperback', results[0].title
@@ -265,19 +265,19 @@ class Publication {
 
         assertEquals 'wrong number of results', 8, results?.size()
 
-		// AAA and aaa should be the first 2, BBB and bbb should be the second 2 etc...
-		// but we don't know if AAA or aaa comes first
-		assertTrue 'AAA New Paperback was not where it should have been in the results', results.title[0..1].contains('AAA New Paperback')
-		assertTrue 'aaa New Paperback was not where it should have been in the results', results.title[0..1].contains('aaa New Paperback')
-		assertTrue 'BBB New Paperback was not where it should have been in the results', results.title[2..3].contains('BBB New Paperback')
-		assertTrue 'bbb New Paperback was not where it should have been in the results', results.title[2..3].contains('bbb New Paperback')
-		assertTrue 'CCC New Paperback was not where it should have been in the results', results.title[4..5].contains('CCC New Paperback')
-		assertTrue 'ccc New Paperback was not where it should have been in the results', results.title[4..5].contains('ccc New Paperback')
-		assertTrue 'ZZZ New Paperback was not where it should have been in the results', results.title[6..7].contains('ZZZ New Paperback')
-		assertTrue 'zzz New Paperback was not where it should have been in the results', results.title[6..7].contains('zzz New Paperback')
-	}
+        // AAA and aaa should be the first 2, BBB and bbb should be the second 2 etc...
+        // but we don't know if AAA or aaa comes first
+        assertTrue 'AAA New Paperback was not where it should have been in the results', results.title[0..1].contains('AAA New Paperback')
+        assertTrue 'aaa New Paperback was not where it should have been in the results', results.title[0..1].contains('aaa New Paperback')
+        assertTrue 'BBB New Paperback was not where it should have been in the results', results.title[2..3].contains('BBB New Paperback')
+        assertTrue 'bbb New Paperback was not where it should have been in the results', results.title[2..3].contains('bbb New Paperback')
+        assertTrue 'CCC New Paperback was not where it should have been in the results', results.title[4..5].contains('CCC New Paperback')
+        assertTrue 'ccc New Paperback was not where it should have been in the results', results.title[4..5].contains('ccc New Paperback')
+        assertTrue 'ZZZ New Paperback was not where it should have been in the results', results.title[6..7].contains('ZZZ New Paperback')
+        assertTrue 'zzz New Paperback was not where it should have been in the results', results.title[6..7].contains('zzz New Paperback')
+    }
 
-	void testInheritedNamedQueries() {
+    void testInheritedNamedQueries() {
         def publicationClass = ga.getDomainClass("PublicationSubclassWithoutNamedQueries").clazz
 
         def now = new Date()
@@ -293,7 +293,7 @@ class Publication {
         assertEquals 1, publications?.size()
         assertEquals 'Some New Book', publications[0].title
 
-		publicationClass = ga.getDomainClass("PublicationSubclassWithNamedQueries").clazz
+        publicationClass = ga.getDomainClass("PublicationSubclassWithNamedQueries").clazz
 
         now = new Date()
         assert publicationClass.newInstance(title: "Some New Book",
@@ -308,12 +308,12 @@ class Publication {
         assertEquals 1, publications?.size()
         assertEquals 'Some New Book', publications[0].title
 
-		publications = publicationClass.oldPaperbacks.list()
-		assertEquals 1, publications?.size()
-		assertEquals 'Some Old Book', publications[0].title
-	}
+        publications = publicationClass.oldPaperbacks.list()
+        assertEquals 1, publications?.size()
+        assertEquals 'Some Old Book', publications[0].title
+    }
 
-	void testFetch() {
+    void testFetch() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
@@ -322,19 +322,19 @@ class Publication {
 
         session.clear()
 
-		// the code below relies on some implementation details which is a little brittle but should work...
+        // the code below relies on some implementation details which is a little brittle but should work...
 
-		def query = plantCategoryClass.withPlantsInPatch
-		query.list(fetch: [plants: 'lazy'])
-		def crit = query.queryBuilder.instance
-		def plantFetchMode = crit.getFetchMode('plants')
-		assertEquals 'wrong fetch mode for plants', FetchMode.SELECT, plantFetchMode
+        def query = plantCategoryClass.withPlantsInPatch
+        query.list(fetch: [plants: 'lazy'])
+        def crit = query.queryBuilder.instance
+        def plantFetchMode = crit.getFetchMode('plants')
+        assertEquals 'wrong fetch mode for plants', FetchMode.SELECT, plantFetchMode
 
-		query.list(fetch: [plants: 'eager'])
-		crit = query.queryBuilder.instance
-		plantFetchMode = crit.getFetchMode('plants')
-		assertEquals 'wrong fetch mode fro plants', FetchMode.JOIN, plantFetchMode
-	}
+        query.list(fetch: [plants: 'eager'])
+        crit = query.queryBuilder.instance
+        plantFetchMode = crit.getFetchMode('plants')
+        assertEquals 'wrong fetch mode fro plants', FetchMode.JOIN, plantFetchMode
+    }
 
     void testNamedQueryWithRelationshipInCriteria() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
@@ -368,29 +368,29 @@ class Publication {
         assertEquals 'groovy', results[0].name
     }
 
-	void testInvokingNamedQueryDefinedInAnotherDomainClass() {
-		def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+    void testInvokingNamedQueryDefinedInAnotherDomainClass() {
+        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
 
-		assert plantCategoryClass.newInstance(name:"leafy")
-								 .addToPlants(goesInPatch:true, name:"Lettuce")
-								 .save(flush:true)
+        assert plantCategoryClass.newInstance(name:"leafy")
+                                 .addToPlants(goesInPatch:true, name:"Lettuce")
+                                 .save(flush:true)
 
-		assert plantCategoryClass.newInstance(name:"groovy")
-								 .addToPlants(goesInPatch: true, name: 'Gplant')
-								 .save(flush:true)
+        assert plantCategoryClass.newInstance(name:"groovy")
+                                 .addToPlants(goesInPatch: true, name: 'Gplant')
+                                 .save(flush:true)
 
-		assert plantCategoryClass.newInstance(name:"grapes")
-								 .addToPlants(goesInPatch:false, name:"Gray")
-								 .save(flush:true)
+        assert plantCategoryClass.newInstance(name:"grapes")
+                                 .addToPlants(goesInPatch:false, name:"Gray")
+                                 .save(flush:true)
 
-		session.clear()
+        session.clear()
 
-		def results = plantCategoryClass.withPlantsThatStartWithG.list()
-		assertEquals 2, results.size()
-		def names = results*.name
-		assertTrue 'groovy' in names
-		assertTrue 'grapes' in names
-	}
+        def results = plantCategoryClass.withPlantsThatStartWithG.list()
+        assertEquals 2, results.size()
+        def names = results*.name
+        assertTrue 'groovy' in names
+        assertTrue 'grapes' in names
+    }
 
     void testListDistinct() {
         def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
@@ -498,7 +498,7 @@ class Publication {
 
         assertEquals 2, results?.size()
 
-		results = publicationClass.queryThatNestsMultipleLevels().list()
+        results = publicationClass.queryThatNestsMultipleLevels().list()
 
         assertEquals 2, results?.size()
     }
@@ -579,7 +579,7 @@ class Publication {
         }
         assertEquals 0, results?.size()
     }
-    
+
     void testPropertyCapitalization() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 
@@ -591,9 +591,9 @@ class Publication {
             }
         }
         session.clear()
-        
+
         def results = publicationClass.aPaperback.list()
-        
+
         assertEquals 3, results.size()
     }
 

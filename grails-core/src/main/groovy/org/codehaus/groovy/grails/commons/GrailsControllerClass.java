@@ -94,6 +94,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @param controller The controller instance
      * @return The before interceptor as a Closure or null if non exists
      */
+    @SuppressWarnings("rawtypes")
     Closure getBeforeInterceptor(GroovyObject controller);
 
     /**
@@ -102,6 +103,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @param controller The controller instance
      * @return The after interceptor as a Closure or null if non exists
      */
+    @SuppressWarnings("rawtypes")
     Closure getAfterInterceptor(GroovyObject controller);
 
     /**

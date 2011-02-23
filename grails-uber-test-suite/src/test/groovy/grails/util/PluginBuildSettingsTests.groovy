@@ -32,23 +32,23 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         new File(pluginDir, "grails-app").mkdirs()
         new File(pluginDir, "DummyGrailsPlugin.groovy") << '''\
                 class DummyGrailsPlugin {
-                    def version = "0.1" 
-                    def grailsVersion = "1.1 > *" 
-                    def dependsOn = [:] 
-                    def pluginExcludes = [ "grails-app/views/error.gsp" ] 
-                 
-                    def author = "Your name" 
-                    def authorEmail = "" 
-                    def title = "Plugin summary/headline" 
-                    def description = "Brief description of the plugin." 
-                 
-                    def documentation = "http://grails.org/plugin/dummy" 
+                    def version = "0.1"
+                    def grailsVersion = "1.1 > *"
+                    def dependsOn = [:]
+                    def pluginExcludes = [ "grails-app/views/error.gsp" ]
+
+                    def author = "Your name"
+                    def authorEmail = ""
+                    def title = "Plugin summary/headline"
+                    def description = "Brief description of the plugin."
+
+                    def documentation = "http://grails.org/plugin/dummy"
                 }
                 '''.stripIndent()
-		// for testing that .svn directory gets ignored
-		new File(pluginDir, "grails-app/.svn").mkdirs()
-		// for testing that CVS directory gets ignored
-		new File(pluginDir, "grails-app/CVS").mkdirs()
+        // for testing that .svn directory gets ignored
+        new File(pluginDir, "grails-app/.svn").mkdirs()
+        // for testing that CVS directory gets ignored
+        new File(pluginDir, "grails-app/CVS").mkdirs()
     }
 
     protected void tearDown() {
@@ -59,13 +59,12 @@ class PluginBuildSettingsTests extends GroovyTestCase {
     void testGetPluginSourceFiles() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR)
         def sourceFiles = pluginSettings.getPluginSourceFiles()
-		// Test GRAILS-7213
-		sourceFiles.each { it ->
-			assertFalse("There should be no .svn directory", it.file.name == '.svn')	
-			assertFalse("There should be no CVS directory", it.file.name == 'CVS')
+        // Test GRAILS-7213
+        sourceFiles.each { it ->
+            assertFalse("There should be no .svn directory", it.file.name == '.svn')
+            assertFalse("There should be no CVS directory", it.file.name == 'CVS')
         }
-		assertEquals 7, sourceFiles.size()
-		
+        assertEquals 7, sourceFiles.size()
     }
 
     void testGetMetadataForPlugin() {
@@ -259,23 +258,23 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         assertTrue("should not be a plugin-two dir in same dir as root app", !pluginTwoInSameDirAsRootApp.exists())
     }
 
-	void testInlinePluginsWithCommonPrefix() {
-		def pluginSettings = createPluginBuildSettings(INLINE_PLUGINS_TEST_PROJ_DIR)
-		def pluginInfos = pluginSettings.getPluginInfos()
+    void testInlinePluginsWithCommonPrefix() {
+        def pluginSettings = createPluginBuildSettings(INLINE_PLUGINS_TEST_PROJ_DIR)
+        def pluginInfos = pluginSettings.getPluginInfos()
 
-		assertEquals "plugins found", 2, pluginInfos.size()
+        assertEquals "plugins found", 2, pluginInfos.size()
 
-		assertNotNull "should contain foo", pluginInfos.find { it.name == 'foo' }
-		assertNotNull "should contain foobar", pluginInfos.find { it.name == 'foobar' }
+        assertNotNull "should contain foo", pluginInfos.find { it.name == 'foo' }
+        assertNotNull "should contain foobar", pluginInfos.find { it.name == 'foobar' }
 
-		def pluginsDir = new File(INLINE_PLUGINS_TEST_PROJ_DIR.parentFile, "plugins")
-		def fooSource = new File(pluginsDir, "foo/grails-app/controllers/foo/FooController.groovy")
-		def foobarSource = new File(pluginsDir, "foobar/grails-app/controllers/foobar/FoobarController.groovy")
+        def pluginsDir = new File(INLINE_PLUGINS_TEST_PROJ_DIR.parentFile, "plugins")
+        def fooSource = new File(pluginsDir, "foo/grails-app/controllers/foo/FooController.groovy")
+        def foobarSource = new File(pluginsDir, "foobar/grails-app/controllers/foobar/FoobarController.groovy")
 
-		assertEquals "FooController in foo plugin", "foo", pluginSettings.getPluginInfoForSource(fooSource.path).name
-		assertEquals "FoobarController in foobar plugin", "foobar", pluginSettings.getPluginInfoForSource(foobarSource.path).name
+        assertEquals "FooController in foo plugin", "foo", pluginSettings.getPluginInfoForSource(fooSource.path).name
+        assertEquals "FoobarController in foobar plugin", "foobar", pluginSettings.getPluginInfoForSource(foobarSource.path).name
 
-		def testSource = new File(pluginsDir, "foo/test/unit/foo/FooControllerTests.groovy")
-		assertNull "test source should not return a plugin info", pluginSettings.getPluginInfoForSource(testSource.path)
-	}
+        def testSource = new File(pluginsDir, "foo/test/unit/foo/FooControllerTests.groovy")
+        assertNull "test source should not return a plugin info", pluginSettings.getPluginInfoForSource(testSource.path)
+    }
 }

@@ -46,7 +46,7 @@ class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
         }
         builder.toHashCode()
     }
-    
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter

@@ -39,7 +39,7 @@ class TestUrlMappings {
         def template = '<link:productDetail attrs="[class: \'fancy\']" packaging="boxed" size="large" productName="licorice" flavor="strawberry">Strawberry Licorice</link:productDetail>'
             assertOutputEquals '<a href="/showProduct/licorice/strawberry?packaging=boxed&amp;size=large" class="fancy">Strawberry Licorice</a>', template
     }
-    
+
     void testNoParameters() {
         def template = '<link:productListing>Product Listing</link:productListing>'
         assertOutputEquals '<a href="/products/list">Product Listing</a>', template

@@ -28,7 +28,14 @@ import groovy.util.AntBuilder;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -424,7 +431,7 @@ public class GrailsScriptRunner {
             throw new RuntimeException("Invalid classpath URL", ex);
         }
 
-        if(settings.getGrailsHome() != null) {
+        if (settings.getGrailsHome() != null) {
             try {
                 Log4jConfigurer.initLogging("file:" + settings.getGrailsHome() + "/scripts/log4j.properties");
             } catch (FileNotFoundException e) {
@@ -499,7 +506,7 @@ public class GrailsScriptRunner {
             private static final long serialVersionUID = 1L;
             @Override public Object call(Object arguments) { return null; }
             @Override public Object call() { return null; }
-            @Override public Object call(Object[] args) { return null; }
+            @Override public Object call(Object... args) { return null; }
         };
 
         // First try to load the script from its file. If there is no
@@ -667,7 +674,7 @@ public class GrailsScriptRunner {
         }
     }
 
-    private int executeWithGantInstance(Gant gant, final Closure doNothingClosure) {
+    private int executeWithGantInstance(Gant gant, final Closure<?> doNothingClosure) {
         gant.prepareTargets();
         gant.setAllPerTargetPostHooks(doNothingClosure);
         gant.setAllPerTargetPreHooks(doNothingClosure);
@@ -706,7 +713,7 @@ public class GrailsScriptRunner {
      * exists there; otherwise it will load the Init class.
      */
     private GantBinding initBinding(final GantBinding binding) {
-        Closure c = settings.getGrailsScriptClosure();
+        Closure<?> c = settings.getGrailsScriptClosure();
         c.setDelegate(binding);
         binding.setVariable("grailsScript", c);
         binding.setVariable("grailsSettings", settings);

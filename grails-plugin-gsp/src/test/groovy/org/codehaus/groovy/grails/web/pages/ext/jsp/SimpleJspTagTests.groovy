@@ -29,7 +29,7 @@ class SimpleJspTagTests extends GroovyTestCase {
     }
 
     void testSimpleTagUsage() {
-		
+
         def resolver = new MockRootLoaderTagLibraryResolver()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication = new DefaultGrailsApplication()

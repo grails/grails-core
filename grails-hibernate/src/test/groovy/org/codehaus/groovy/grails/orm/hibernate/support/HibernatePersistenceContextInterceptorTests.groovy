@@ -16,12 +16,12 @@ class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernat
 
     protected void setUp() {
         super.setUp()
-        
+
         // We are going to manage the session ourselves through the interceptor
         def holder = TransactionSynchronizationManager.getResource(sessionFactory)
         def s = holder.session
         TransactionSynchronizationManager.unbindResource(sessionFactory)
-        SessionFactoryUtils.releaseSession(s, sessionFactory)       
+        SessionFactoryUtils.releaseSession(s, sessionFactory)
     }
 
     void testSimpleLifecycle() {
@@ -40,7 +40,7 @@ class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernat
     void testNestedLifecycle() {
         def interceptor = getInterceptor()
         assertEquals("interceptor open", false, interceptor.open)
-        
+
         interceptor.init()
         assertEquals("interceptor open", true, interceptor.open)
         interceptor.init()
@@ -49,13 +49,13 @@ class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernat
         assertEquals("interceptor open", true, interceptor.open)
         interceptor.destroy()
         assertEquals("interceptor open", false, interceptor.open)
-        
+
         interceptor.init()
         assertEquals("interceptor open", true, interceptor.open)
         interceptor.destroy()
         assertEquals("interceptor open", false, interceptor.open)
     }
-    
+
     void testMultithreadedLifecycle() {
         def interceptor = getInterceptor()
         def latch = new CountDownLatch(1)
@@ -76,7 +76,7 @@ class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernat
             latch.countDown()
         }
     }
-    
+
     void testMultiThreadedNestedLifecycle() {
         def interceptor = getInterceptor()
         def latch = new CountDownLatch(1)
@@ -99,7 +99,7 @@ class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernat
             latch.countDown()
         }
     }
-        
+
     protected getInterceptor() {
         appCtx.persistenceInterceptor
     }

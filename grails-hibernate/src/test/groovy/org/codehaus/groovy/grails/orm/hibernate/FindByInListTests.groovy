@@ -3,8 +3,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Oct 27, 2008
  */
 class FindByInListTests extends AbstractGrailsHibernateTests {
 

@@ -44,7 +44,7 @@ class ValidationTagLib {
      * Renders an error message for the given bean and field.<br/>
      *
      * eg. &lt;g:fieldError bean="${book}" field="title" /&gt;
-     * 
+     *
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
      * @attr message The object to resolve the message for. Objects must implement org.springframework.context.MessageSourceResolvable.
@@ -181,10 +181,10 @@ class ValidationTagLib {
 
     def eachErrorInternal(attrs, body, boolean outputResult = false) {
         def errorsList = extractErrors(attrs)
-		eachErrorInternalForList attrs, errorsList, body, outputResult
+        eachErrorInternalForList attrs, errorsList, body, outputResult
     }
 
-	def eachErrorInternalForList(attrs, errorsList, body, boolean outputResult = false) {
+    def eachErrorInternalForList(attrs, errorsList, body, boolean outputResult = false) {
         def var = attrs.var
         def field = attrs.field
 
@@ -231,14 +231,14 @@ class ValidationTagLib {
             def codec = attrs.codec ?: 'HTML'
             if (codec == 'none') codec = ''
 
-			def errorsList = extractErrors(attrs)
-			if(errorsList) {
-				out << "<ul>"
-				out << eachErrorInternalForList(attrs, errorsList, {
-					out << "<li>${message(error:it, encodeAs:codec)}</li>"
-				})
-				out << "</ul>"
-			}
+            def errorsList = extractErrors(attrs)
+            if (errorsList) {
+                out << "<ul>"
+                out << eachErrorInternalForList(attrs, errorsList, {
+                    out << "<li>${message(error:it, encodeAs:codec)}</li>"
+                })
+                out << "</ul>"
+            }
         }
         else if (renderAs.equalsIgnoreCase("xml")) {
             def mkp = new MarkupBuilder(out)
@@ -291,11 +291,11 @@ class ValidationTagLib {
             def code = attrs.code
             def args = attrs.args
             def defaultMessage
-			if(attrs.containsKey('default')) {
-				defaultMessage = attrs['default']
-			} else {
-				defaultMessage = code
-			}
+            if (attrs.containsKey('default')) {
+                defaultMessage = attrs['default']
+            } else {
+                defaultMessage = code
+            }
 
             def message = messageSource.getMessage(code, args == null ? null : args.toArray(),
                 defaultMessage, locale)

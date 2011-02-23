@@ -1,18 +1,18 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ 
+ */
 package org.codehaus.groovy.grails.plugins.i18n
 
 import grails.util.BuildSettingsHolder
@@ -96,12 +96,12 @@ class I18nGrailsPlugin {
             fallbackToSystemLocale = false
             pluginManager = manager
             if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
-				def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
-				if(cacheSecondsSetting != null) {	
-					cacheSeconds = cacheSecondsSetting as Integer
-				} else {		
-                	cacheSeconds = 5
-				}
+                def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
+                if (cacheSecondsSetting != null) {
+                    cacheSeconds = cacheSecondsSetting as Integer
+                } else {
+                    cacheSeconds = 5
+                }
             }
         }
 
@@ -109,7 +109,7 @@ class I18nGrailsPlugin {
             paramName = "lang"
         }
 
-        localeResolver(SessionLocaleResolver) 
+        localeResolver(SessionLocaleResolver)
     }
 
     def onChange = { event ->
@@ -120,7 +120,7 @@ class I18nGrailsPlugin {
         }
 
         def resourcesDir = BuildSettingsHolder?.settings?.resourcesDir?.path
-        if (resourcesDir) {            
+        if (resourcesDir) {
             String i18nDir = "${resourcesDir}/grails-app/i18n"
 
             def ant = new AntBuilder()

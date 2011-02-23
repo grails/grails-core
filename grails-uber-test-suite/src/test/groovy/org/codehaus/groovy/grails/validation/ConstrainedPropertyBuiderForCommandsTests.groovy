@@ -264,7 +264,7 @@ class ConstrainedPropertyBuiderForCommandsTests extends AbstractGrailsController
         assertTrue(person.hasErrors())
         assertEquals(1, person.getErrors().getErrorCount())
         assertEquals(1, person.getErrors().getFieldErrors("email").size())
-        assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())        
+        assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
     }
 
     public void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsFirst() {
@@ -294,7 +294,7 @@ class ConstrainedPropertyBuiderForCommandsTests extends AbstractGrailsController
 
         assertEquals(30, person.getConstraints().get("firstName").getAppliedConstraint("maxSize").getParameter())
         assertEquals(50, person.getConstraints().get("lastName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals("123123", person.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())        
+        assertEquals("123123", person.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
     }
 
     public void testImportFrom_AllConstraints_Validation_NormalConstraintsFirst() {
@@ -336,7 +336,7 @@ class ConstrainedPropertyBuiderForCommandsTests extends AbstractGrailsController
         assertTrue(person.hasErrors())
         assertEquals(2, person.getErrors().getErrorCount())
         assertEquals(1, person.getErrors().getFieldErrors("firstName").size())
-        assertNull(person.getErrors().getFieldErrors("firstName")[0].getRejectedValue())        
+        assertNull(person.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
         assertEquals(1, person.getErrors().getFieldErrors("email").size())
         assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
     }
@@ -382,7 +382,7 @@ class ConstrainedPropertyBuiderForCommandsTests extends AbstractGrailsController
         personCommand.lastName = null
         personCommand.email = "someemail@some.net"
         personCommand.validate()
-        
+
         assertFalse(personCommand.hasErrors())
 
         personCommand.clearErrors()

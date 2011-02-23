@@ -238,12 +238,11 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         }
 
         def templateFile = new FileSystemResource(new File("${basedir}/src/templates/scaffolding/${template}").absoluteFile)
-		
-		
+
         if (!templateFile.exists()) {
-			templateFile = new FileSystemResource(new File("${basedir}/src/grails/templates/scaffolding/${template}").absoluteFile)
+            templateFile = new FileSystemResource(new File("${basedir}/src/grails/templates/scaffolding/${template}").absoluteFile)
         }
-		if (!templateFile.exists()) {
+        if (!templateFile.exists()) {
             // template not found in application, use default template
             def grailsHome = BuildSettingsHolder.settings?.grailsHome
 

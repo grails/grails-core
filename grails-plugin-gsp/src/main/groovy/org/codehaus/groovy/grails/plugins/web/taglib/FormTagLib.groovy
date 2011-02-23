@@ -120,7 +120,7 @@ class FormTagLib {
 
     /**
      * A helper tag for creating checkboxes.
-     * 
+     *
      * @attr name REQUIRED the name of the checkbox
      * @attr value  the value of the checkbox
      * @attr checked if evaluates to true sets to checkbox to checked
@@ -253,7 +253,7 @@ class FormTagLib {
      *
      * &lt;g:form action="myaction"&gt;...&lt;/gr:form&gt;<br/>
      * &lt;g:form controller="myctrl" action="myaction"&gt;...&lt;/gr:form&gt;<br/>
-     * 
+     *
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
      * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
      * @attr id The id to use in the link
@@ -579,7 +579,7 @@ class FormTagLib {
     /**
      * A helper tag for creating TimeZone selects.<br/>
      * eg. &lt;g:timeZoneSelect name="myTimeZone" value="${tz}" /&gt;
-     * 
+     *
      * @attr name REQUIRED The name of the select
      * @attr value An instance of java.util.TimeZone. Defaults to the time zone for the current Locale if not specified
      */
@@ -654,7 +654,7 @@ class FormTagLib {
      * Examples:<br/>
      * &lt;g:select name="user.age" from="${18..65}" value="${age}" /&gt;<br/>
      * &lt;g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" /&gt;<br/>
-     * 
+     *
      * @attr name REQUIRED the select name
      * @attr id the DOM element id - uses the name attribute if not specified
      * @attr from REQUIRED The list or range to select from
@@ -672,7 +672,7 @@ class FormTagLib {
             throwTagError("Tag [select] is missing required attribute [name]")
         }
         if (!attrs.containsKey('from')) {
-        	throwTagError("Tag [select] is missing required attribute [from]")
+            throwTagError("Tag [select] is missing required attribute [from]")
         }
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
         def locale = RCU.getLocale(request)
@@ -759,7 +759,7 @@ class FormTagLib {
                     else if (keyValue && keys) {
                         def s = el.toString()
                         if (s) writer << s.encodeAsHTML()
-                    }                    
+                    }
                     else if (keyValue) {
                         writer << keyValue.encodeAsHTML()
                     }
@@ -842,7 +842,7 @@ class FormTagLib {
 
     /**
      * A helper tag for creating radio button groups.
-     * 
+     *
      * @attr name REQUIRED The name of the group
      * @attr values REQUIRED The list values for the radio buttons
      * @attr value The current selected value
@@ -860,7 +860,7 @@ class FormTagLib {
                 it.radio << 'checked="checked" '
             }
             it.radio << "value=\"${val.toString().encodeAsHTML()}\" "
-			
+
             // process remaining attributes
             outputAttributes(attrs, it.radio )
             it.radio << "/>"

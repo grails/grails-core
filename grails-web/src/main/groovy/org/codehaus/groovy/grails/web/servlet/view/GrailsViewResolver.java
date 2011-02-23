@@ -78,20 +78,19 @@ public class GrailsViewResolver extends InternalResourceViewResolver
     protected View loadView(String viewName, Locale locale) throws Exception {
         Assert.notNull(templateEngine, "Property [templateEngine] cannot be null");
 
-        if(GrailsUtil.isDevelopmentEnv()) {
-        	return createGrailsView(viewName); 
-        } else {
-        	View view=VIEW_CACHE.get(viewName);
-        	if(view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
-        		view = createGrailsView(viewName);
-        	}
-        	VIEW_CACHE.put(viewName, view);
-        	return view;
+        if (GrailsUtil.isDevelopmentEnv()) {
+            return createGrailsView(viewName);
         }
+        View view = VIEW_CACHE.get(viewName);
+        if (view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
+            view = createGrailsView(viewName);
+        }
+        VIEW_CACHE.put(viewName, view);
+        return view;
     }
 
-	private View createGrailsView(String viewName) throws Exception {
-		// try GSP if res is null
+    private View createGrailsView(String viewName) throws Exception {
+        // try GSP if res is null
 
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
 
@@ -132,8 +131,8 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         AbstractUrlBasedView view = buildView(viewName);
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
-		return view;
-	}
+        return view;
+    }
 
     private View createGroovyPageView(GrailsWebRequest webRequest, String gspView) {
         if (LOG.isDebugEnabled()) {

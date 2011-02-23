@@ -48,7 +48,7 @@ class HibernateMappingBuilder {
      * Central entry point for the class. Passing a closure that defines a set of mappings will evaluate said mappings
      * and populate the "mapping" property of this class which can then be obtained with getMappings()
      *
-     * @param mappingClosure The closure that defines the ORM DSL 
+     * @param mappingClosure The closure that defines the ORM DSL
      */
     Mapping evaluate(Closure mappingClosure) {
         if (mapping == null) {
@@ -110,7 +110,7 @@ class HibernateMappingBuilder {
         }
         else if (args.column instanceof Map) {
             ColumnConfig config = new ColumnConfig()
-            BeanUtils.populate config, args.column 
+            BeanUtils.populate config, args.column
             mapping.discriminatorColumn = config
         }
         mapping.discriminatorMap.type = args?.remove('type')
@@ -141,7 +141,7 @@ class HibernateMappingBuilder {
      * <code> { sort 'foo' }
      *
      * @param name The name of the property to sort by
-     */    
+     */
     void sort(String name) {
         if (name) {
             mapping.sort = name
@@ -149,7 +149,7 @@ class HibernateMappingBuilder {
     }
 
     /**
-     * Whether to use dynamic update queries 
+     * Whether to use dynamic update queries
      */
     void dynamicUpdate(boolean b) {
         mapping.dynamicUpdate = b
@@ -199,7 +199,7 @@ class HibernateMappingBuilder {
     }
 
     /**
-     * Set whether auto time stamping should occur for last_updated and date_created columns 
+     * Set whether auto time stamping should occur for last_updated and date_created columns
      */
     void autoTimestamp(boolean b) {
         mapping.autoTimestamp = b
@@ -212,7 +212,7 @@ class HibernateMappingBuilder {
      * @param isVersioned True if a version property should be configured
      */
     void version(boolean isVersioned) {
-        mapping.versioned = isVersioned 
+        mapping.versioned = isVersioned
     }
 
     /**
@@ -251,7 +251,7 @@ class HibernateMappingBuilder {
                 mapping.cache.include = args.include
             }
             else {
-                LOG.warn("ORM Mapping Invalid: Specified [include] with value [$args.include] of [cache] in class [$className] is not valid")            
+                LOG.warn("ORM Mapping Invalid: Specified [include] with value [$args.include] of [cache] in class [$className] is not valid")
             }
         }
     }
@@ -275,7 +275,7 @@ class HibernateMappingBuilder {
     void cache(String usage, Map args) {
         args = args ? args : [:]
         args.usage = usage
-        cache(args)        
+        cache(args)
     }
 
     /**
@@ -295,7 +295,7 @@ class HibernateMappingBuilder {
     /**
      * <p>Configures the second-level cache with the default usage of 'read-write' and the default include of 'all' if
      *  the passed argument is true
-     *  
+     *
      * <code> { cache true }
      *
      * @param shouldCache True if the default cache configuration should be applied
@@ -476,7 +476,7 @@ class HibernateMappingBuilder {
                     if (joinArgs.key) {
                         join.key = new ColumnConfig(name:joinArgs.remove('key'))
                     }
-                    if (joinArgs.column){                        
+                    if (joinArgs.column) {
                         ColumnConfig cc = new ColumnConfig(name: joinArgs.column)
                         join.column = cc
                         bindArgumentsToColumnConfig(joinArgs, cc)

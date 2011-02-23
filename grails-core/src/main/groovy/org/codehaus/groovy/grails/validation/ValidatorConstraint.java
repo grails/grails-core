@@ -45,7 +45,7 @@ import org.springframework.validation.Errors;
  */
 public class ValidatorConstraint extends AbstractConstraint {
 
-    private Closure validator;
+    private Closure<?> validator;
     private int numValidatorParams;
 
     @Override
@@ -141,7 +141,7 @@ public class ValidatorConstraint extends AbstractConstraint {
                     constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a Closure");
         }
 
-        validator = (Closure)constraintParameter;
+        validator = (Closure<?>)constraintParameter;
 
         Class<?>[] params = validator.getParameterTypes();
         // Groovy should always force one parameter, but let's check anyway...

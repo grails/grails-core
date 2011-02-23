@@ -26,8 +26,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
  *
  * @author Graeme Rocher
  * @since 0.1
- * 
- * Created - 18-Feb-2006
  */
 public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProperty {
     private GrailsHibernateDomainClass domainClass;
@@ -194,7 +192,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     public boolean isCircular() {
         return false;
     }
-    
+
     public String getReferencedPropertyName() {
         throw new UnsupportedOperationException("Method 'getReferencedPropertyName' is not supported by implementation");
     }

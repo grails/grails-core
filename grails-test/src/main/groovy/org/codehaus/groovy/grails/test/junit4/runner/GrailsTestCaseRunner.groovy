@@ -109,11 +109,11 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
                 }
             }
         }
-        
+
         def methodMatchingTargetPatterns = testTargetPatterns?.findAll { it.methodTargeting }
         if (methodMatchingTargetPatterns) { // slow lane, filter methods
-            def patternsForThisClass = testTargetPatterns.findAll { 
-                it.matchesClass(testClass.javaClass.name, JUnit4GrailsTestType.SUFFIXES as String[]) 
+            def patternsForThisClass = testTargetPatterns.findAll {
+                it.matchesClass(testClass.javaClass.name, JUnit4GrailsTestType.SUFFIXES as String[])
             }
             if (patternsForThisClass) {
                 annotated.findAll { frameworkMethod ->
@@ -131,7 +131,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         def superResult = super.withBefores(method, target, statement)
         if (superResult.is(statement)) {
             def setupMethod = ReflectionUtils.findMethod(testClass.javaClass, 'setUp')
-            if(setupMethod) {
+            if (setupMethod) {
                 setupMethod.accessible = true
                 def setUp = new FrameworkMethod(setupMethod)
                 new RunBefores(statement, [setUp], target)
@@ -148,7 +148,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         def superResult = super.withAfters(method, target, statement)
         if (superResult.is(statement)) {
             def tearDownMethod = ReflectionUtils.findMethod(testClass.javaClass, 'tearDown')
-            if(tearDownMethod) {
+            if (tearDownMethod) {
                 tearDownMethod.accessible = true
                 def tearDown = new FrameworkMethod(tearDownMethod)
                 new RunAfters(statement, [tearDown], target)

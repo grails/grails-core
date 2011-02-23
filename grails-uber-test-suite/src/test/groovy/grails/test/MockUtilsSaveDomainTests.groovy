@@ -69,7 +69,7 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
         def domain = new TestDomainWithUUID(name: "Alice Doe", country: "US", age: 35)
         assertEquals domain, domain.save()
         assertEquals "automatically assigned id", "1", domain.id
-		assertNotNull "object looked up by String id", TestDomainWithUUID.get(domain.id)
+        assertNotNull "object looked up by String id", TestDomainWithUUID.get(domain.id)
     }
 
     void testSaveAssignsStringIdsSequentially() {
@@ -86,7 +86,7 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
 
         def domain = new TestDomainWithAssignedId(name: "Alice Doe")
         assertNull domain.save()
-		assertEquals "nullable", domain.errors.id
+        assertEquals "nullable", domain.errors.id
     }
 
     /**

@@ -47,7 +47,7 @@ public abstract class AbstractBuildSettings {
     protected Map flatConfig = Collections.emptyMap();
 
     abstract File getBaseDir();
-    
+
     /**
      * Clears any locally cached values
      */
@@ -119,17 +119,17 @@ public abstract class AbstractBuildSettings {
 
     /**
      * Extracts the inline plugin dirs relative to the base dir of this project.
-     * 
+     *
      * @see getInlinePluginsFromConfiguration(Map, File)
      */
     @SuppressWarnings({ "rawtypes" })
     protected Collection<File> getInlinePluginsFromConfiguration(@SuppressWarnings("hiding") Map config) {
         return getInlinePluginsFromConfiguration(config, getBaseDir());
     }
-    
+
     /**
      * Extracts the inline plugin dirs from the given config, relative to the given baseDir.
-     * 
+     *
      * @todo consider trowing an error here if an plugin does not exists at the location.
      */
     @SuppressWarnings({ "rawtypes", "hiding" })
@@ -188,7 +188,7 @@ public abstract class AbstractBuildSettings {
         ConcurrentLinkedQueue<File> dirList = new ConcurrentLinkedQueue<File>();
 
         for (String pluginBase : getPluginBaseDirectories()) {
-            File[] pluginDirs = new File(pluginBase).listFiles(new FileFilter(){
+            File[] pluginDirs = new File(pluginBase).listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
                     final String fileName = pathname.getName();
                     return pathname.isDirectory() && (!fileName.startsWith(".") && fileName.indexOf('-') >- 1);
@@ -247,7 +247,7 @@ public abstract class AbstractBuildSettings {
     public Collection<File> getInlinePluginDirectories() {
         getPluginDirectories(); // initailize the cache
         Collection<File> locations = (ConcurrentLinkedQueue<File>) cache.get(KEY_INLINE_PLUGIN_LOCATIONS);
-        if (locations == null){
+        if (locations == null) {
             locations = new ConcurrentLinkedQueue<File>();
             cache.put(KEY_INLINE_PLUGIN_LOCATIONS, locations);
         }

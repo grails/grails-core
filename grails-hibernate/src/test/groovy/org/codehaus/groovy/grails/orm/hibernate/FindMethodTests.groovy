@@ -23,14 +23,14 @@ class FindMethodTestClass {
 
         assert domain.find("from FindMethodTestClass as f where f.one = ? and f.two = ?", ["one", 2]) : "should have returned a result"
     }
-    
+
     void testUsingHibernateCache() {
         def theClass = ga.getDomainClass("FindMethodTestClass").clazz
 
         def stats = sessionFactory.statistics
         stats.statisticsEnabled = true
         stats.clear()
-        
+
         def cacheStats = stats.getSecondLevelCacheStatistics('org.hibernate.cache.StandardQueryCache')
         assertEquals 0, cacheStats.hitCount
         assertEquals 0, cacheStats.missCount
@@ -50,12 +50,12 @@ class FindMethodTestClass {
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = 'Angus'")
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = 'Angus'", [cache: false])
         assertEquals 2, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
@@ -65,37 +65,37 @@ class FindMethodTestClass {
         assertEquals 3, cacheStats.hitCount
         assertEquals 1, cacheStats.missCount
         assertEquals 1, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = 'Malcolm'", [cache: true])
         assertEquals 3, cacheStats.hitCount
         assertEquals 2, cacheStats.missCount
         assertEquals 2, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = 'Malcolm'", [cache: true])
         assertEquals 4, cacheStats.hitCount
         assertEquals 2, cacheStats.missCount
         assertEquals 2, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = :name", [name: 'Brian'], [cache: true])
         assertEquals 4, cacheStats.hitCount
         assertEquals 3, cacheStats.missCount
         assertEquals 3, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = :name", [name: 'Brian'], [cache: true])
         assertEquals 5, cacheStats.hitCount
         assertEquals 3, cacheStats.missCount
         assertEquals 3, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = :name", [name: 'Bon'], [cache: true])
         assertEquals 5, cacheStats.hitCount
         assertEquals 4, cacheStats.missCount
         assertEquals 4, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = :name", [name: 'Bon'], [cache: false])
         assertEquals 5, cacheStats.hitCount
         assertEquals 4, cacheStats.missCount
         assertEquals 4, cacheStats.putCount
-        
+
         theClass.find("from FindMethodTestClass where one = :name", [name: 'Bon'], [cache: true])
         assertEquals 6, cacheStats.hitCount
         assertEquals 4, cacheStats.missCount

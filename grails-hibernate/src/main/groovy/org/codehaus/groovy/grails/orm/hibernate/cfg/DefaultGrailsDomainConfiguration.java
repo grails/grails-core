@@ -100,7 +100,7 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         // do Grails class configuration
         for (GrailsDomainClass domainClass : domainClasses) {
             if (defaultMapping instanceof Closure) {
-                GrailsDomainBinder.evaluateMapping(domainClass, (Closure)defaultMapping);
+                GrailsDomainBinder.evaluateMapping(domainClass, (Closure<?>)defaultMapping);
             }
             else {
                 GrailsDomainBinder.evaluateMapping(domainClass);
