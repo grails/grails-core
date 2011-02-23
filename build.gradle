@@ -55,7 +55,7 @@ subprojects { project ->
 	    if(System.getProperty('groovy.jar')) {
 	        groovy files(System.getProperty('groovy.jar'))
 	    } else {
-	        groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
+	        groovy "org.codehaus.groovy:groovy-all:1.8.0-rc-1"
 	    }		
 
 		// Jars in lib
