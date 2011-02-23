@@ -38,7 +38,11 @@ subprojects { project ->
     apply plugin: 'maven'
 	apply plugin: 'idea'
 
-
+	sourceCompatibility = "1.5"
+	targetCompatibility = "1.5"
+	archivesBaseName = 'grails'
+	version = grailsVersion	
+	
 	manifest.mainAttributes(
 	        "Built-By": System.properties['user.name'],
 	        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
