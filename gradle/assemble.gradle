@@ -111,7 +111,7 @@ distSpec = copySpec {
     }
     from("src/resources/bash") {
         include "startGrails.bat", "startGrails"
-        into "grails-$version/bin"
+        into "grails-$grailsVersion/bin"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         fileMode = 0755
     }
