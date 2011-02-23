@@ -7,7 +7,8 @@ dependencies {
 				project(':grails-plugin-servlets'),								
 				project(':grails-plugin-url-mappings'),												
 				project(':grails-plugin-services'),								
-				project(':grails-hibernate')
+				project(':grails-hibernate'),
+                project(':grails-crud')
 }
 test {
 //    maxParallelForks = 4
