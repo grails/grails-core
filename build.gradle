@@ -198,3 +198,5 @@ clean {
     delete(docs.destinationDir, libs.destinationDir)
 }
 
+task install(dependsOn:[populateDependencies, scriptsJar])
+
