@@ -140,7 +140,7 @@ subprojects { project ->
 
 
 apply {
-//    from 'gradle/docs.gradle'
+    from 'gradle/docs.gradle'
     from 'gradle/assemble.gradle'
 }
 
