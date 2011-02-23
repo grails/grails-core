@@ -119,6 +119,7 @@ subprojects { project ->
 
 
 		// Specs
+        compile 'javax.el:el-api:1.0'
 		compile 'javax.servlet:jsp-api:2.0'
 		compile 'javax.servlet:servlet-api:2.5'
 		compile 'javax.servlet:jstl:1.2'
