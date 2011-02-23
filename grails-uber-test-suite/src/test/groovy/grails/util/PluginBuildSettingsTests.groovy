@@ -17,7 +17,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
     def absoluteTestDir
 
     PluginBuildSettings createPluginBuildSettings(File projectDir = TEST_PROJ_DIR) {
-        def settings = new BuildSettings(new File("."), projectDir)
+        def settings = new BuildSettings(new File(".."), projectDir)
         settings.loadConfig()
         return new PluginBuildSettings(settings)
     }

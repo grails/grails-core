@@ -14,7 +14,7 @@ class BuildSettingsTests extends GroovyTestCase {
 
     protected void setUp() {
         def props = new Properties()
-        new File("build.properties").withInputStream { InputStream is ->
+        new File("../build.properties").withInputStream { InputStream is ->
             props.load(is)
         }
 

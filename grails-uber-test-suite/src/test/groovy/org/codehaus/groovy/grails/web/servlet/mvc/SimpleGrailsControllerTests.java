@@ -110,13 +110,6 @@ public class SimpleGrailsControllerTests extends TestCase {
                  "}\n" +
             "}");
 
-        Class<?> noViewControllerClass = cl.parseClass("class NoViewController {\n"+
-                " Closure test = {\n"+
-                  "request, response ->\n" +
-                  "new grails.util.OpenRicoBuilder(response).ajax { element(id:\"test\") { } };\n" +
-                  "return null;\n" +
-                 "}\n" +
-            "}");
 
         Class<?> restrictedControllerClass = cl.parseClass("class RestrictedController {\n"+
                 "static allowedMethods=[action1:'POST', action3:['PUT', 'DELETE'], action4: 'pOsT', action5: ['pUt', 'DeLeTe']]\n" +
@@ -132,7 +125,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         localContext = new GenericApplicationContext();
 
         ConstructorArgumentValues args = new ConstructorArgumentValues();
-        args.addGenericArgumentValue(new Class[]{testControllerClass,simpleControllerClass,noViewControllerClass,restrictedControllerClass});
+        args.addGenericArgumentValue(new Class[]{testControllerClass,simpleControllerClass,restrictedControllerClass});
         args.addGenericArgumentValue(cl);
         MutablePropertyValues propValues = new MutablePropertyValues();
 
