@@ -84,9 +84,9 @@ distSpec = copySpec {
         // this file is accounted for later with special handling to do some token replacement
         exclude 'src/grails/grails-macros.xml'
     }
-	from("$projectDir/grails-resources") {
+	from("grails-resources") {
 		into "grails-$grailsVersion"
-		include 'src/grails', 'src/war'
+		include 'src/grails/**', 'src/war/**'
 	}
     from(projectDir) {
     	into "grails-$grailsVersion"
@@ -127,7 +127,9 @@ distSpec = copySpec {
 
 task zipDist(type: Zip,dependsOn:libs) {
     from distSpec
-	doFirst dependencyCache
+	destinationDir = "${buildDir}/distributions" as File
+	baseName = 'grails'
+	appendix = grailsVersion	
 }
 
 /*task zipDoc(type: Zip) {
