@@ -558,7 +558,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
     def getCurrentGrailsVersion() {
         def props = new Properties()
-        new File("./build.properties").withInputStream {
+        new File("../build.properties").withInputStream {
             props.load(it)
         }
         def grailsVersion = props.'grails.version'
@@ -679,7 +679,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     void testListDependencies() {
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
-        assertEquals 13, manager.listDependencies("build").size()
+        assertEquals 18, manager.listDependencies("build").size()
         assertEquals 20, manager.listDependencies("runtime").size()
         assertEquals 21, manager.listDependencies("test").size()
     }
