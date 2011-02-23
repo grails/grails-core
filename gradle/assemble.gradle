@@ -29,7 +29,7 @@ task populateDependencies {
 	doFirst dependencyCache
 }
 
-task libs(dependsOn: getTasksByName("jar", true))  {
+task libs(dependsOn: getTasksByName("assemble", true))  {
 	doFirst dependencyCache
 	
     destinationDir = 'dist'
@@ -93,9 +93,9 @@ distSpec = copySpec {
     	include "gradlew"
     	fileMode = 0755
     }
-    from(docs.destinationDir) {
+/*    from(docs.destinationDir) {
         into "grails-$grailsVersion/doc"
-    }
+    }*/
     exclude "**/CVS/**"
     from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
         into "grails-$grailsVersion/plugins"
@@ -130,7 +130,7 @@ task zipDist(type: Zip,dependsOn:libs) {
 	doFirst dependencyCache
 }
 
-task zipDoc(type: Zip) {
+/*task zipDoc(type: Zip) {
     appendix = 'docs'
     from docs.destinationDir
-}
+}*/

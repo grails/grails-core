@@ -7,8 +7,6 @@ buildscript {
     }
 }
 
-apply plugin: 'groovy'
-apply plugin: 'eclipse'
 
 grailsVersion = '1.4.0.BUILD-SNAPSHOT'
 antVersion = "1.7.1"
@@ -19,9 +17,9 @@ version = grailsVersion
 
 subprojects { project ->
     apply plugin: 'groovy'
-    apply plugin: 'eclipse'
     apply plugin: 'maven'
-	apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
 
 	sourceCompatibility = "1.5"
 	targetCompatibility = "1.5"
@@ -36,6 +34,16 @@ subprojects { project ->
 	        "Implementation-Version": grailsVersion,
 	        "Implementation-Vendor": 'grails.org')
 	
+
+    configure([compileGroovy, compileTestGroovy]) {
+        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
+        groovyOptions.encoding = "UTF-8"
+    }
+
+    configure([compileJava, compileTestJava]) {
+        options.deprecation = true
+        options.debug = true
+    }
 
 
 	repositories {
@@ -164,25 +172,19 @@ subprojects { project ->
 	
 }
 
-configure([compileGroovy, compileTestGroovy]) {
-    groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
-    groovyOptions.encoding = "UTF-8"
-}
-
-configure([compileJava, compileTestJava]) {
-    options.deprecation = true
-    options.debug = true
-}
 
 apply {
-    from 'gradle/docs.gradle'
+//    from 'gradle/docs.gradle'
     from 'gradle/assemble.gradle'
 }
 
-clean {
+task clean << {
     // add additional dirs
-    delete(docs.destinationDir, libs.destinationDir)
+//    delete(docs.destinationDir, libs.destinationDir)
+    delete(libs.destinationDir)
+    delete(buildDir)
 }
 
 task install(dependsOn:[populateDependencies])
 
+task assemble(dependsOn:zipDist)
