@@ -57,9 +57,9 @@
                 <div class="panelBody">
                     <h1>Application Status</h1>
                     <ul>
-                        <li>App version: <g:meta name="app.version"></g:meta></li>
-                        <li>Grails version: <g:meta name="app.grails.version"></g:meta></li>
-                        <li>Groovy version: ${org.codehaus.groovy.runtime.InvokerHelper.getVersion()}</li>
+                        <li>App version: <g:meta name="app.version"/></li>
+                        <li>Grails version: <g:meta name="app.grails.version"/></li>
+                        <li>Groovy version: ${GroovySystem.version}</li>
                         <li>JVM version: ${System.getProperty('java.version')}</li>
                         <li>Controllers: ${grailsApplication.controllerClasses.size()}</li>
                         <li>Domains: ${grailsApplication.domainClasses.size()}</li>
@@ -68,13 +68,9 @@
                     </ul>
                     <h1>Installed Plugins</h1>
                     <ul>
-                        <g:set var="pluginManager"
-                               value="${applicationContext.getBean('pluginManager')}"></g:set>
-
-                        <g:each var="plugin" in="${pluginManager.allPlugins}">
+                        <g:each var="plugin" in="${applicationContext.pluginManager.allPlugins}">
                             <li>${plugin.name} - ${plugin.version}</li>
                         </g:each>
-
                     </ul>
                 </div>
                 <div class="panelBtm"></div>
