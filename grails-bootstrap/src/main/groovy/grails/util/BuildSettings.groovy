@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap
  * setting the appropriate system property or specifying a value for
  * it in the BuildConfig.groovy file.</p>
  * <p><b>Warning</b> The behaviour is poorly defined if you explicitly
- * set some of the project paths (such as {@link #projectWorkDir }),
+ * set some of the project paths (such as {@link BuildSettings#projectWorkDir }),
  * but not others. If you set one of them explicitly, set all of them
  * to ensure consistent behaviour.</p>
  */
@@ -86,7 +86,7 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_SOURCE_DIR = "grails.project.source.dir"
 
     /**
-     * The name of the system property for {@link #webXmlFile}.
+     * The name of the system property for {@link BuildSettings#webXmlLocation}.
      */
     public static final String PROJECT_WEB_XML_FILE = "grails.project.web.xml"
     /**
