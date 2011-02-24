@@ -49,7 +49,7 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
     protected void setUp() {
         super.setUp()
 
-        Log4jConfigurer.initLogging("src/test/log4j.properties")
+        Log4jConfigurer.initLogging("src/test/groovy/log4j.properties")
         ExpandoMetaClass.enableGlobally()
 
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
