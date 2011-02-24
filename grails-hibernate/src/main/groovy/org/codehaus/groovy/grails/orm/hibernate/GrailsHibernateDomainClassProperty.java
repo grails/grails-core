@@ -224,4 +224,11 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     public String getColumnName() {
         return columnName;
     }
+
+    public void setDerived(boolean derived) {
+    }
+
+    public boolean isDerived() {
+        return false;
+    }
 }
