@@ -23,19 +23,19 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
 
-	sourceCompatibility = "1.5"
-	targetCompatibility = "1.5"
-	archivesBaseName = 'grails'
-	version = grailsVersion	
-	
-	manifest.mainAttributes(
-	        "Built-By": System.properties['user.name'],
-	        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-	        "Implementation-Title": "Grails",
-	        "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
-	        "Implementation-Version": grailsVersion,
-	        "Implementation-Vendor": 'grails.org')
-	
+    sourceCompatibility = "1.5"
+    targetCompatibility = "1.5"
+    archivesBaseName = 'grails'
+    version = grailsVersion
+
+    manifest.mainAttributes(
+            "Built-By": System.properties['user.name'],
+            "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+            "Implementation-Title": "Grails",
+            "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
+            "Implementation-Version": grailsVersion,
+            "Implementation-Vendor": 'grails.org')
+
 
     configure([compileGroovy, compileTestGroovy]) {
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
@@ -48,47 +48,47 @@ subprojects { project ->
     }
 
 
-	repositories {
+    repositories {
         mavenCentral()
-		mavenRepo urls:"http://maven.springframework.org/release"
-	}	
-	dependencies {
-		// Groovy
-	    if(System.getProperty('groovy.jar')) {
-	        groovy files(System.getProperty('groovy.jar'))
-	    } else {
-	        groovy "org.codehaus.groovy:groovy-all:1.8.0-rc-1"
-	    }		
+        mavenRepo urls:"http://maven.springframework.org/release"
+    }
+    dependencies {
+        // Groovy
+        if(System.getProperty('groovy.jar')) {
+            groovy files(System.getProperty('groovy.jar'))
+        } else {
+            groovy "org.codehaus.groovy:groovy-all:1.8.0-rc-1"
+        }
 
-		// Jars in lib
-		compile files(fileTree(dir:"$projectDir/src/libs" as File))
+        // Jars in lib
+        compile files(fileTree(dir:"$projectDir/src/libs" as File))
 
 
-        compile 'commons-beanutils:commons-beanutils:1.8.0'	,
-				'commons-cli:commons-cli:1.0',
-				'commons-codec:commons-codec:1.4',
-				'commons-collections:commons-collections:3.2.1',
-				'commons-io:commons-io:1.4',
-				'commons-lang:commons-lang:2.4',
-				'commons-validator:commons-validator:1.3.1'
+        compile 'commons-beanutils:commons-beanutils:1.8.0',
+                'commons-cli:commons-cli:1.0',
+                'commons-codec:commons-codec:1.4',
+                'commons-collections:commons-collections:3.2.1',
+                'commons-io:commons-io:1.4',
+                'commons-lang:commons-lang:2.4',
+                'commons-validator:commons-validator:1.3.1'
         // Apache Commons
 
-		// Others
-		runtime( 'cglib:cglib-nodep:2.1_3')
+        // Others
+        runtime( 'cglib:cglib-nodep:2.1_3')
 
-		compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.1_jdk5'
+        compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.1_jdk5'
 
-		runtime 'aopalliance:aopalliance:1.0',
-				'org.aspectj:aspectjrt:1.6.10',
-				'org.aspectj:aspectjweaver:1.6.10',
-				'net.sf.ehcache:ehcache-core:2.3.1'
+        runtime 'aopalliance:aopalliance:1.0',
+                'org.aspectj:aspectjrt:1.6.10',
+                'org.aspectj:aspectjweaver:1.6.10',
+                'net.sf.ehcache:ehcache-core:2.3.1'
 
 
-		// XML
-		runtime 'xalan:serializer:2.7.1'
+        // XML
+        runtime 'xalan:serializer:2.7.1'
 
-		// Logging
-		compile 'log4j:log4j:1.2.16'
+        // Logging
+        compile 'log4j:log4j:1.2.16'
         compile 'org.slf4j:slf4j-api:1.6.1'
         compile 'org.slf4j:jcl-over-slf4j:1.6.1'
 
@@ -96,34 +96,34 @@ subprojects { project ->
         runtime 'org.slf4j:jul-to-slf4j:1.6.1'
 
 
-		// Specs
+        // Specs
         compile 'javax.servlet:servlet-api:2.5'
-		compile 'javax.transaction:jta:1.1'
-		compile 'javax.persistence:persistence-api:1.0'
+        compile 'javax.transaction:jta:1.1'
+        compile 'javax.persistence:persistence-api:1.0'
 
-		// Spring
+        // Spring
 
-		compile "org.springframework:spring-aop:${springVersion}",
-				"org.springframework:spring-asm:${springVersion}",
-				"org.springframework:spring-aspects:${springVersion}",
-				"org.springframework:spring-beans:${springVersion}",
-				"org.springframework:spring-context:${springVersion}",
-				"org.springframework:spring-core:${springVersion}",					
-				"org.springframework:spring-expression:${springVersion}",								
-				"org.springframework:spring-instrument:${springVersion}",								
-				"org.springframework:spring-jdbc:${springVersion}",					
-				"org.springframework:spring-jms:${springVersion}",					
-				"org.springframework:spring-orm:${springVersion}",
-				"org.springframework:spring-oxm:${springVersion}",					
-				"org.springframework:spring-test:${springVersion}",					
-				"org.springframework:spring-tx:${springVersion}",
-				"org.springframework:spring-web:${springVersion}",
-				"org.springframework:spring-webmvc:${springVersion}"
+        compile "org.springframework:spring-aop:${springVersion}",
+                "org.springframework:spring-asm:${springVersion}",
+                "org.springframework:spring-aspects:${springVersion}",
+                "org.springframework:spring-beans:${springVersion}",
+                "org.springframework:spring-context:${springVersion}",
+                "org.springframework:spring-core:${springVersion}",
+                "org.springframework:spring-expression:${springVersion}",
+                "org.springframework:spring-instrument:${springVersion}",
+                "org.springframework:spring-jdbc:${springVersion}",
+                "org.springframework:spring-jms:${springVersion}",
+                "org.springframework:spring-orm:${springVersion}",
+                "org.springframework:spring-oxm:${springVersion}",
+                "org.springframework:spring-test:${springVersion}",
+                "org.springframework:spring-tx:${springVersion}",
+                "org.springframework:spring-web:${springVersion}",
+                "org.springframework:spring-webmvc:${springVersion}"
 
-		// Testing
-		testCompile 'junit:junit:4.8.1'
+        // Testing
+        testCompile 'junit:junit:4.8.1'
 
-	}
+    }
 
     install.doLast {
         copy {
@@ -134,9 +134,9 @@ subprojects { project ->
         }
     }
 
-	test {
-		excludes = ["**/*TestCase.class", "**/*\$*.class"]
-	}
+    test {
+        excludes = ["**/*TestCase.class", "**/*\$*.class"]
+    }
 
     task sourcesJar(type: Jar, dependsOn:classes) {
         classifier = 'sources'
