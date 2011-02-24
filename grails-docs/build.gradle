@@ -1,11 +1,12 @@
 repositories {
     mavenRepo urls:"http://download.java.net/maven/2"
+    mavenRepo urls:"http://snapshots.repository.codehaus.org/"
 }
 
 dependencies {
-    compile files(fileTree(dir:"../src/libs" as File))
     compile 'com.lowagie:itext:2.1.7',
-            'org.xhtmlrenderer:core-renderer:R8'
+            'org.xhtmlrenderer:core-renderer:R8',
+            'org.grails:grails-gdoc-engine:1.0-SNAPSHOT'
     compile project(":grails-core"),project(":grails-bootstrap")
 }
 
