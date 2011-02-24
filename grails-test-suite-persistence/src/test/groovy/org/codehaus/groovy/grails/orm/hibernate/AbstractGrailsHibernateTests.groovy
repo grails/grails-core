@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.GrailsUtil
-import net.sf.ehcache.CacheManager
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.ApplicationHolder
@@ -25,6 +24,7 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Log4jConfigurer
+import net.sf.ehcache.CacheManager
 
 /**
  * @author Graeme Rocher
@@ -49,7 +49,12 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
     protected void setUp() {
         super.setUp()
 
-        Log4jConfigurer.initLogging("src/test/groovy/log4j.properties")
+        if(new File("src/test/groovy/log4j.properties").exists())
+            Log4jConfigurer.initLogging("src/test/groovy/log4j.properties")
+        else if(new File("grails-test-suite-persistence/src/test/groovy/log4j.properties").exists()) {
+            Log4jConfigurer.initLogging("grails-test-suite-persistence/src/test/groovy/log4j.properties")
+        }
+
         ExpandoMetaClass.enableGlobally()
 
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()

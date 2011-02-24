@@ -8,6 +8,8 @@ buildscript {
 }
 
 
+apply plugin: 'idea'
+
 grailsVersion = '1.4.0.BUILD-SNAPSHOT'
 antVersion = "1.7.1"
 springVersion = "3.0.3.RELEASE"
