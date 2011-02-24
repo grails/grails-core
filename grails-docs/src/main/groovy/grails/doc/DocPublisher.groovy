@@ -163,9 +163,6 @@ class DocPublisher {
                 fileset(dir: style)
             }
         }
-        ant.copy(todir: "${refDocsDir}/ref") {
-            fileset(dir: "${docResources}/style/ref")
-        }
 
         def comparator = [compare: {o1, o2 ->
             def idx1 = o1.name[0..o1.name.indexOf(' ') - 1]
