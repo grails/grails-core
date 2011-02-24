@@ -13,7 +13,8 @@ dependencies {
 
     // Required for JSP support
     compile 'javax.servlet:jsp-api:2.0'
-    compile 'javax.servlet:jstl:1.2'
+    //compile 'javax.servlet:jstl:1.2'
+    compile 'jstl:jstl:1.1.2'
     compile 'xpp3:xpp3_min:1.1.4c'
     runtime 'taglibs:standard:1.1.2'
     runtime 'javax.el:el-api:1.0'

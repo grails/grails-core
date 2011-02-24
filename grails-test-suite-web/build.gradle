@@ -1,5 +1,6 @@
 dependencies {
 
+    testRuntime 'javax.servlet.jsp:jsp-api:2.1'
     testCompile project(':grails-test-suite-base'),
 	            project(':grails-plugin-testing'),
 				project(':grails-plugin-datasource'),
