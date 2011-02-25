@@ -27,6 +27,7 @@ subprojects { project ->
     targetCompatibility = "1.5"
     archivesBaseName = 'grails'
     version = grailsVersion
+	group = "org.grails"
 
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
