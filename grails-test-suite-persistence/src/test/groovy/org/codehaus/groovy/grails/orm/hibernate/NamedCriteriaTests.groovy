@@ -12,8 +12,6 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
 
     void onApplicationCreated() {
         def domainClasses = [NamedCriteriaPublication, 
-                             NamedCriteriaPublicationSubclassWithNamedQueries, 
-                             NamedCriteriaPublicationSubclassWithoutNamedQueries, 
                              NamedCriteriaPlant, 
                              NamedCriteriaPlantCategory]
         
@@ -156,42 +154,6 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assertTrue 'ccc New Paperback was not where it should have been in the results', results.title[4..5].contains('ccc New Paperback')
         assertTrue 'ZZZ New Paperback was not where it should have been in the results', results.title[6..7].contains('ZZZ New Paperback')
         assertTrue 'zzz New Paperback was not where it should have been in the results', results.title[6..7].contains('zzz New Paperback')
-    }
-
-    void testInheritedNamedQueries() {
-        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublicationSubclassWithoutNamedQueries").clazz
-
-        def now = new Date()
-        assert publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save()
-        assert publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save()
-
-        session.clear()
-
-        def publications = publicationClass.recentPublications.list()
-
-        assertEquals 1, publications?.size()
-        assertEquals 'Some New Book', publications[0].title
-
-        publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublicationSubclassWithNamedQueries").clazz
-
-        now = new Date()
-        assert publicationClass.newInstance(title: "Some New Book",
-                datePublished: now - 10).save()
-        assert publicationClass.newInstance(title: "Some Old Book",
-                datePublished: now - 900).save()
-
-        session.clear()
-
-        publications = publicationClass.recentPublications.list()
-
-        assertEquals 1, publications?.size()
-        assertEquals 'Some New Book', publications[0].title
-
-        publications = publicationClass.oldPaperbacks.list()
-        assertEquals 1, publications?.size()
-        assertEquals 'Some Old Book', publications[0].title
     }
 
     void testFetch() {
