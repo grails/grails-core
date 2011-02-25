@@ -27,10 +27,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import grails.util.GrailsWebUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -78,7 +77,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
     }
 
     public static boolean isEnabled() {
-        Object disableConfigOption = ConfigurationHolder.getFlatConfig().get("grails.orm.enum.id.mapping");
+        Object disableConfigOption = GrailsWebUtil.currentFlatConfiguration().get("grails.orm.enum.id.mapping");
         return disableConfigOption == null || !(Boolean.FALSE.equals(disableConfigOption));
     }
 
@@ -104,7 +103,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
     @SuppressWarnings("unchecked")
     public void setParameterValues(Properties properties) {
         try {
-            enumClass = (Class<? extends Enum<?>>)ApplicationHolder.getApplication().getClassLoader().loadClass(
+            enumClass = (Class<? extends Enum<?>>)Thread.currentThread().getContextClassLoader().loadClass(
                     (String)properties.get(PARAM_ENUM_CLASS));
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Building ID-mapping for Enum Class %s", enumClass.getName()));
@@ -201,7 +200,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
 
             for (Object value : values) {
                 Object id = idAccessor.invoke(value);
-                enumToKey.put(value, id);
+                enumToKey.put((Enum) value, id);
                 if (keytoEnum.containsKey(id)) {
                     LOG.warn(String.format("Duplicate Enum ID '%s' detected for Enum %s!", id, enumClass.getName()));
                 }

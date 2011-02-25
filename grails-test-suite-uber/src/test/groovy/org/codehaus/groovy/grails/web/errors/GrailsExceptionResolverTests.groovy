@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.web.errors
 import grails.util.GrailsWebUtil
 import grails.util.Environment
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -138,13 +137,9 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testLogRequest() {
-        def oldConfig = ConfigurationHolder.config
-        try {
             def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
 ''')
-
-            ConfigurationHolder.config = config
 
             def request = new MockHttpServletRequest()
             request.setRequestURI("/execute/me")
@@ -153,20 +148,17 @@ grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
             request.addParameter "one", "two"
             request.addParameter "jennysPhoneNumber", "8675309"
 
-            def msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
 
             assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
 foo: bar
 one: two
 jennysPhoneNumber: ***
 Stacktrace follows:''' , msg
-        } finally {
-            ConfigurationHolder.config = oldConfig
-        }
     }
 
     void testDisablingRequestParameterLogging() {
-        def oldConfig = ConfigurationHolder.config
+
         def oldEnvName = Environment.current.name
         try {
             def request = new MockHttpServletRequest()
@@ -183,54 +175,52 @@ Stacktrace follows:'''
 Stacktrace follows:'''
 
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            def msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
             assertEquals msgWithParameters, msg
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg
 
             def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.logRequestParameters = false
 ''')
 
-            ConfigurationHolder.config = config
+
 
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg
 
             config = new ConfigSlurper().parse('''
 grails.exceptionresolver.logRequestParameters = true
 ''')
 
-            ConfigurationHolder.config = config
 
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
             assertEquals msgWithParameters, msg
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
             assertEquals msgWithParameters, msg
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
-            msg = GrailsExceptionResolver.getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
             assertEquals msgWithParameters, msg
         } finally {
-            ConfigurationHolder.config = oldConfig
             System.setProperty(Environment.KEY, oldEnvName)
         }
     }

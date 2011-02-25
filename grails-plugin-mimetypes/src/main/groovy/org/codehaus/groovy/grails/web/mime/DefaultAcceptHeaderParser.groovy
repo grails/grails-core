@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.mime
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.apache.commons.logging.*
+import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
-/**
+ /**
 * Parsed the HTTP accept header into a a list of MimeType instances in the order of priority. Priority is dictated
 * by the order of the mime entries and the associated q parameter. The higher the q parameter the higher the prioirity.
 *
@@ -29,8 +29,19 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
 
     static final LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
 
+    GrailsApplication application
+
+
+
+    DefaultAcceptHeaderParser() {
+    }
+
+    DefaultAcceptHeaderParser(GrailsApplication application) {
+        this.application = application
+    }
+
     MimeType[] parse(String header) {
-        def config = ConfigurationHolder.getConfig()
+        def config = application?.getConfig()
         def mimes = []
         def qualifiedMimes = []
         def mimeConfig = config?.grails?.mime?.types

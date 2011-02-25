@@ -1,10 +1,9 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 
 class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -63,7 +62,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
      * @author Luke Daley
      */
     void testBeanPropertyOverride() {
-        ConfigurationHolder.config = new ConfigSlurper().parse('''
+        ga.config = new ConfigSlurper().parse('''
             dataSource {
                 pooled = true
                 driverClassName = "org.h2.Driver"

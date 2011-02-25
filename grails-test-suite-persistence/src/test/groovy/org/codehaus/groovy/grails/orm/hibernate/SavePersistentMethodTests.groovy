@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.commons.*
 import grails.validation.ValidationException
 import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor
 
@@ -136,9 +135,8 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigTrueWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true")
+        ga.config.grails.gorm.failOnError = true
 
-        ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -196,9 +194,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigIncludesMatchingPackageWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']")
-
-        ConfigurationHolder.config = config
+        ga.config.grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']
         def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -213,9 +209,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigDoesNotIncludeMatchingPackageWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']")
-
-        ConfigurationHolder.config = config
+        ga.config.grails.gorm.failOnError = ['com.foo', 'com.bar']
         def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -223,9 +217,8 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigFalseWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false")
+        ga.config.grails.gorm.failOnError = false
 
-        ConfigurationHolder.config = config
         def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -233,9 +226,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true")
-
-        ConfigurationHolder.config = config
+        ga.config.grails.gorm.failOnError = true
         def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -243,9 +234,7 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false")
-
-        ConfigurationHolder.config = config
+        ga.config.grails.gorm.failOnError = true
         def teamClass = ga.getDomainClass('grails.tests.Team')
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -350,7 +339,5 @@ class SaveCustomValidation {
 '''
     }
 
-    void onTearDown() {
-        ConfigurationHolder.config = null
-    }
+
 }

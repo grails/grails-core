@@ -26,21 +26,11 @@ public class CodecPrintWriterTest {
 
     private static GrailsApplication initialGrailsApplication = null;
 
-    @BeforeClass
-    public static void setupMockGrailsApplication() {
-        initialGrailsApplication = ApplicationHolder.getApplication();
-        ApplicationHolder.setApplication(new MockGrailsApplication());
-    }
-
-    @AfterClass
-    public static void restoreInitialGrailsApplication() {
-        ApplicationHolder.setApplication(initialGrailsApplication);
-    }
 
     @Test
     public void testPrintString() {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, HTMLCodec.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, HTMLCodec.class);
         writer.print("&&");
         assertEquals("&amp;&amp;", stringwriter.getValue());
     }
@@ -48,7 +38,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStringWithClosure() {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, CodecWithClosureProperties.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, CodecWithClosureProperties.class);
         writer.print("hello");
         assertEquals("-> hello <-", stringwriter.getValue());
     }
@@ -56,7 +46,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStreamCharBuffer() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, HTMLCodec.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, HTMLCodec.class);
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("&&");
         writer.write(buf);
@@ -66,7 +56,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStreamCharBufferWithClosure() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, CodecWithClosureProperties.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, CodecWithClosureProperties.class);
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("hola");
         writer.write(buf);

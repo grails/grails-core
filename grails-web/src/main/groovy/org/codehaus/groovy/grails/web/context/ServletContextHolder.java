@@ -24,10 +24,20 @@ import javax.servlet.ServletContext;
  */
 public class ServletContextHolder {
 
+    /**
+     * @return The ServletContext instance
+     * @deprecated Use dependency injection instead
+     */
+    @Deprecated
     public static ServletContext getServletContext() {
         return servletContext;
     }
 
+    /**
+     * @param servletContext The ServletContext instance
+     * @deprecated Use dependency injection instead
+     */
+    @Deprecated
     public static void setServletContext(ServletContext servletContext) {
         ServletContextHolder.servletContext = servletContext;
     }

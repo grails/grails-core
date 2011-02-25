@@ -32,9 +32,8 @@ class Band {
     }
 
     void testFlushPropertyTrue() {
-        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true")
+        ga.config.grails.gorm.autoFlush = true
 
-        ConfigurationHolder.config = config
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
@@ -48,9 +47,8 @@ class Band {
     }
 
     void testFlushPropertyFalse() {
-        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false")
+        ga.config.grails.gorm.autoFlush = false
 
-        ConfigurationHolder.config = config
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
@@ -62,9 +60,8 @@ class Band {
     }
 
     void testTrueFlushArgumentOverridesFalsePropertySetting() {
-        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false")
+        ga.config.grails.gorm.autoFlush = true
 
-        ConfigurationHolder.config = config
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
@@ -78,9 +75,8 @@ class Band {
     }
 
     void testFalseFlushArgumentOverridesTruePropertySetting() {
-        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true")
+        ga.config.grails.gorm.autoFlush = true
 
-        ConfigurationHolder.config = config
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
@@ -92,9 +88,8 @@ class Band {
     }
 
     void testMapWithoutFlushEntryRespectsTruePropertySetting() {
-        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = true")
+        ga.config.grails.gorm.autoFlush = true
 
-        ConfigurationHolder.config = config
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
@@ -108,9 +103,8 @@ class Band {
     }
 
     void testMapWithoutFlushEntryRespectsFalsePropertySetting() {
-        def config = new ConfigSlurper().parse("grails.gorm.autoFlush = false")
+        ga.config.grails.gorm.autoFlush = false
 
-        ConfigurationHolder.config = config
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]

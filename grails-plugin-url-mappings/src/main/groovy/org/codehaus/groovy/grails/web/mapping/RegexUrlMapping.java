@@ -14,28 +14,12 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -45,6 +29,15 @@ import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.ServletContext;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -79,6 +72,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
     private static final Pattern DOUBLE_WILDCARD_PATTERN = Pattern.compile("\\(\\*\\*?\\)");
+    private GrailsApplication grailsApplication;
 
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
@@ -94,6 +88,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName,
             Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(controllerName, actionName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
+        this.grailsApplication = GrailsWebUtil.lookupApplication(servletContext);
         parse(data, constraints);
     }
 
@@ -449,7 +444,7 @@ public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
             }
         }
 
-        Map<String, Object> config = ConfigurationHolder.getFlatConfig();
+        Map<String, Object> config = grailsApplication != null ? grailsApplication.getFlatConfig() : null;
         if (lastGroup != null && config != null && Boolean.TRUE.equals(config.get("grails.mapping.legacyMapping"))) {
             String remainingUri = uri.substring(uri.lastIndexOf(lastGroup) + lastGroup.length());
             if (remainingUri.length() > 0) {

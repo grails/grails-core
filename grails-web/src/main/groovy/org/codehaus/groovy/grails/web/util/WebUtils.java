@@ -33,8 +33,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.util.GrailsWebUtil;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
@@ -479,7 +479,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      */
     @SuppressWarnings("rawtypes")
     public static boolean areFileExtensionsEnabled() {
-        Map config = ConfigurationHolder.getFlatConfig();
+        Map config = GrailsWebUtil.currentFlatConfiguration();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);
         return !(o != null && o instanceof Boolean) || ((Boolean) o).booleanValue();
     }

@@ -2,29 +2,32 @@ package org.codehaus.groovy.grails.web.util;
 
 import groovy.lang.Closure;
 import groovy.lang.Writable;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.GrailsCodecClass;
-
 public class CodecPrintWriter extends GrailsPrintWriter {
     private Closure<?> encodeClosure;
 
-    public CodecPrintWriter(Writer out, Class<?> codecClass) {
+    public CodecPrintWriter(GrailsApplication grailsApplication, Writer out, Class<?> codecClass) {
         super(out);
         allowUnwrappingOut=false;
-        initEncode(codecClass);
+
+        initEncode(grailsApplication,codecClass);
     }
 
-    private void initEncode(Class<?> codecClass) {
-        GrailsCodecClass codecArtefact = (GrailsCodecClass) ApplicationHolder.getApplication().getArtefact("Codec", codecClass.getName());
-        encodeClosure = codecArtefact.getEncodeMethod();
+    private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
+        if(grailsApplication != null && codecClass != null) {
+            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
+            encodeClosure = codecArtefact.getEncodeMethod();
+        }
     }
 
     private Object encodeObject(Object o) {
+        if(encodeClosure == null) return o;
         try {
             return encodeClosure.call(o);
         } catch (Exception e) {

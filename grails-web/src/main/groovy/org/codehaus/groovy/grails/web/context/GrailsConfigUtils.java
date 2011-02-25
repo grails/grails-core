@@ -126,8 +126,6 @@ public class GrailsConfigUtils {
     }
 
     public static void configureServletContextAttributes(ServletContext servletContext, GrailsApplication application, GrailsPluginManager pluginManager, WebApplicationContext webContext) {
-        ServletContextHolder.setServletContext(servletContext);
-
         servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, pluginManager);
         // use config file locations if available
         servletContext.setAttribute(ApplicationAttributes.PARENT_APPLICATION_CONTEXT, webContext.getParent());

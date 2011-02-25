@@ -40,6 +40,10 @@ class MimeTypesGrailsPlugin {
     def dependsOn = [core:version, servlets:version, controllers:version]
     def observe = ['controllers']
 
+    def doWithSpring = {
+        MimeType.initializeMimeTypes(application)
+    }
+
     def doWithDynamicMethods = { ctx ->
 
         def config = application.config.grails.mime
@@ -83,7 +87,7 @@ class MimeTypesGrailsPlugin {
                 def userAgent = delegate.getHeader(HttpHeaders.USER_AGENT)
                 def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
-                def parser = new DefaultAcceptHeaderParser()
+                def parser = new DefaultAcceptHeaderParser(application)
                 def header = delegate.contentType
                 if (!header) header = delegate.getHeader(HttpHeaders.CONTENT_TYPE)
                 if (msie) header = "*/*"

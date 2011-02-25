@@ -1,12 +1,15 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.GrailsWebUtil
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -15,11 +18,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
-import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
-import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.plugins.*
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
@@ -48,8 +47,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
         mockManager = new MockGrailsPluginManager(ga)
         ctx.registerMockBean("manager", mockManager)
-        PluginManagerHolder.setPluginManager(mockManager)
-
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
@@ -106,6 +103,31 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         PluginManagerHolder.setPluginManager(null)
 
         super.tearDown()
+    }
+
+
+    def withConfig(String text, Closure callable) {
+        def config = new ConfigSlurper().parse(text)
+        try {
+            buildMockRequest(config)
+            callable()
+        }
+        finally {
+            RequestContextHolder.setRequestAttributes(null)
+
+        }
+    }
+
+    GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
+        def appCtx = new MockApplicationContext()
+        appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
+
+        ga.config = config
+
+        appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+        appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+        return GrailsWebUtil.bindMockWebRequest(appCtx)
     }
 
     void runTest(Closure callable) {

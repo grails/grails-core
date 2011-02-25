@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.MetaClass;
 
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.BeanWrapper;
 
 /**
@@ -26,7 +27,14 @@ import org.springframework.beans.BeanWrapper;
  * @author Graeme Rocher
  * @since 0.1
  */
-public interface GrailsClass {
+public interface GrailsClass extends GrailsApplicationAware {
+
+    /**
+     * The GrailsApplication that this class belongs to
+     *
+     * @return The GrailsApplication instance
+     */
+    GrailsApplication getGrailsApplication();
 
     /**
      * Gets the initial value of the given property on the class.

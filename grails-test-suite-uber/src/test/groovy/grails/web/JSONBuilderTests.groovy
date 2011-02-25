@@ -1,6 +1,7 @@
 package grails.web
 
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
 /**
  * @author Graeme Rocher
@@ -10,7 +11,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testSimple() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def result = builder.build {
@@ -22,7 +23,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testArrays() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def result = builder.build {
@@ -35,7 +36,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testSubObjects() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def result = builder.build {
@@ -52,7 +53,7 @@ class JSONBuilderTests extends GroovyTestCase {
     void testAssignedObjects() {
 
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def result = builder.build {
@@ -68,7 +69,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testNamedArgumentHandling() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def result = builder.build {
@@ -82,7 +83,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testArrayOfClosures() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def result = builder.build {
@@ -94,7 +95,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testRootElementList() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def results = ['one', 'two', 'three']
@@ -116,7 +117,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testExampleFromReferenceGuide() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def results = ['one', 'two', 'three']
@@ -150,7 +151,7 @@ class JSONBuilderTests extends GroovyTestCase {
 
     void testAppendToArray() {
         def initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize()
+        initializer.initialize(new DefaultGrailsApplication())
         def builder = new JSONBuilder()
 
         def results = ['one', 'two', 'three']

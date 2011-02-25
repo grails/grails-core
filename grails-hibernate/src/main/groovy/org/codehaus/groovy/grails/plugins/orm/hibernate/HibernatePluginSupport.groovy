@@ -17,14 +17,10 @@ package org.codehaus.groovy.grails.plugins.orm.hibernate
 
 import grails.orm.HibernateCriteriaBuilder
 import grails.util.GrailsUtil
-
 import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -41,25 +37,15 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
-import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-
-import org.hibernate.Criteria
-import org.hibernate.EmptyInterceptor
-import org.hibernate.FlushMode
-import org.hibernate.LockMode
-import org.hibernate.Session
-import org.hibernate.SessionFactory
 import org.hibernate.cfg.Environment
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.proxy.HibernateProxy
-
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
@@ -69,13 +55,19 @@ import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
-import org.springframework.orm.hibernate3.*
+import org.springframework.orm.hibernate3.HibernateAccessor
+import org.springframework.orm.hibernate3.HibernateCallback
+import org.springframework.orm.hibernate3.HibernateTemplate
+import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.validation.Validator
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.hibernate.*
 
-/**
+ /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
  *
  * @author Graeme Rocher
@@ -833,7 +825,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             try {
                 template.execute({Session session ->
                     session.delete obj
-                    if (this.shouldFlush()) {
+                    if (this.shouldFlush(application)) {
                         session.flush()
                     }
                 } as HibernateCallback)
@@ -845,7 +837,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         metaClass.delete = { Map args ->
             def obj = delegate
             template.delete obj
-            if (shouldFlush(args)) {
+            if (shouldFlush(application, args)) {
                 try {
                     template.flush()
                 }
@@ -1009,13 +1001,13 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         return value
     }
 
-    static shouldFlush(Map map = [:]) {
+    static shouldFlush(GrailsApplication application, Map map = [:]) {
         def shouldFlush
 
         if (map?.containsKey('flush')) {
             shouldFlush = Boolean.TRUE == map.flush
         } else {
-            def config = ConfigurationHolder.flatConfig
+            def config = application.flatConfig
             shouldFlush = Boolean.TRUE == config.get('grails.gorm.autoFlush')
         }
         return shouldFlush

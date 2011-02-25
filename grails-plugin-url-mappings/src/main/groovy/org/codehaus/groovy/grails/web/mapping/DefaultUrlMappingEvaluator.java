@@ -39,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.plugins.support.aware.ClassLoaderAware;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -48,6 +49,8 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -70,7 +73,7 @@ import org.springframework.core.io.Resource;
  * @author Graeme Rocher
  * @since 0.5
  */
-public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoaderAware {
+public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoaderAware, PluginManagerAware {
 
     private static final Log LOG = LogFactory.getLog(UrlMappingBuilder.class);
 
@@ -80,6 +83,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private static final String EXCEPTION = "exception";
     private static final String PARSE_REQUEST = "parseRequest";
     private static final String RESOURCE = "resource";
+    private GrailsPluginManager pluginManager;
 
     public DefaultUrlMappingEvaluator(ServletContext servletContext) {
         this.servletContext = servletContext;
@@ -143,15 +147,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     }
 
     private void configureUrlMappingDynamicObjects(Script script) {
-        GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
-        if (manager != null) {
+        if (pluginManager != null) {
             WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()), null);
         }
     }
 
     private void configureUrlMappingDynamicObjects(Object object) {
-        GrailsPluginManager manager = PluginManagerHolder.getPluginManager();
-        if (manager != null) {
+        if (pluginManager != null) {
             WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null);
         }
     }
@@ -163,6 +165,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         else {
             throw new IllegalArgumentException("Property [classLoader] must be an instance of GroovyClassLoader");
         }
+    }
+
+    public void setPluginManager(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
     }
 
     /**

@@ -28,7 +28,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import grails.util.GrailsWebUtil;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.springframework.web.context.WebApplicationContext;
@@ -38,7 +39,6 @@ import org.springframework.web.util.UrlPathHelper;
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.module.sitemesh.HTMLPage;
-//import com.opensymphony.module.sitemesh.factory.DefaultFactory;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.Decorator;
@@ -69,6 +69,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
     private ContainerTweaks containerTweaks;
     private WebApplicationContext applicationContext;
     private PersistenceContextInterceptor persistenceInterceptor = new NullPersistentContextInterceptor();
+    private String defaultEncoding = UTF_8_ENCODING;
 
     @Override
     public void init(FilterConfig fc) {
@@ -83,6 +84,13 @@ public class GrailsPageFilter extends SiteMeshFilter {
         FactoryHolder.setFactory(defaultFactory);
 
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(fc.getServletContext());
+
+        final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(fc.getServletContext());
+        String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
+        if(encoding != null) {
+            defaultEncoding = encoding;
+        }
+
         Map<String, PersistenceContextInterceptor> interceptors = applicationContext.getBeansOfType(PersistenceContextInterceptor.class);
         if (!interceptors.isEmpty()) {
             persistenceInterceptor = interceptors.values().iterator().next();
@@ -265,9 +273,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         String requestURI = urlHelper.getOriginatingRequestUri(request);
         // static content?
         if (requestURI.endsWith(HTML_EXT))    {
-            String encoding = (String) ConfigurationHolder.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
-            if (encoding == null) encoding = UTF_8_ENCODING;
-            contentBufferingResponse.setContentType("text/html;charset="+encoding);
+            contentBufferingResponse.setContentType("text/html;charset="+defaultEncoding);
         }
     }
 

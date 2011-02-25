@@ -19,7 +19,6 @@ import groovy.util.ObjectGraphBuilder;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
@@ -41,7 +40,7 @@ public class DomainBuilder extends ObjectGraphBuilder {
 
     public DomainBuilder() {
         setChildPropertySetter(new DefaultGrailsChildPropertySetter());
-        setClassLoader(ApplicationHolder.getApplication().getClassLoader());
+        setClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
     public static class DefaultGrailsChildPropertySetter implements ChildPropertySetter {

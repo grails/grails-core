@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -31,7 +32,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
@@ -422,7 +422,7 @@ public class GrailsHibernateUtil {
     }
 
     public static boolean isCacheQueriesByDefault() {
-        Object o = ConfigurationHolder.getFlatConfig().get(CONFIG_PROPERTY_CACHE_QUERIES);
+        Object o = GrailsWebUtil.currentFlatConfiguration().get(CONFIG_PROPERTY_CACHE_QUERIES);
         return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
     }
 

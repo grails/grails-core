@@ -19,11 +19,12 @@ class MetaClassEnhancerTests extends GroovyTestCase {
     void testEnhanceMetaClass() {
         def ctx = new MockApplicationContext()
 
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication([TestController] as Class[], getClass().classLoader))
+        def application = new DefaultGrailsApplication([TestController] as Class[], getClass().classLoader)
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, application)
 
         ctx.registerMockBean "grailsUrlMappingsHolder", new DefaultUrlMappingsHolder([])
 
-        def controllerApi = new ControllersApi(new MockGrailsPluginManager(), ctx)
+        def controllerApi = new ControllersApi(application, new MockGrailsPluginManager(), ctx)
 
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi controllerApi

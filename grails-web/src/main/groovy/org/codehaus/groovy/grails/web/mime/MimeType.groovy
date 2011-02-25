@@ -15,7 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.mime
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * @author Graeme Rocher
@@ -43,12 +44,10 @@ class MimeType {
         return "MimeType { name=$name,extension=$extension,parameters=$parameters }".toString()
     }
 
-    static MimeType[] getConfiguredMimeTypes() {
-        if (MIMES) return MIMES
-
-        def config = ConfigurationHolder.getConfig()
+    static void initializeMimeTypes(GrailsApplication application) {
+        def config = application.config
         def mimeConfig = config?.grails?.mime?.types
-        if (!mimeConfig) return createDefaults()
+        if (!mimeConfig) MIMES = createDefaults()
 
         def mimes = []
         for (entry in mimeConfig) {
@@ -64,6 +63,9 @@ class MimeType {
             }
         }
         MIMES = mimes as MimeType[]
+    }
+
+    static MimeType[] getConfiguredMimeTypes() {
         return MIMES
     }
 

@@ -1,9 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-
 class DerivedPropertiesTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
@@ -34,12 +30,9 @@ class ClassWithConstrainedDerivedProperty {
     }
 
     protected void afterPluginInitialization() {
-        // base class registers its own plugins but the hibernate plugin has the wrong name
-        PluginManagerHolder.pluginManager.plugins['hibernate'] = PluginManagerHolder.pluginManager.plugins['mockHibernate']
     }
 
     protected void onTearDown() {
-        PluginManagerHolder.pluginManager = null
     }
 
     void testDerivedPropertiesCannotBeMadeValidateable() {

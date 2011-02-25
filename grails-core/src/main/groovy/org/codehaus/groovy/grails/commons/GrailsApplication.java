@@ -175,7 +175,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The flattened config
      */
     @SuppressWarnings("rawtypes")
-    Map getFlatConfig();
+    Map<String, Object> getFlatConfig();
 
     /**
      * Returns the class loader instance for the Grails application.

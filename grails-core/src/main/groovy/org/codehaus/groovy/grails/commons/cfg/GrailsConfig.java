@@ -1,4 +1,5 @@
-/* Copyright 2006-2007 Graeme Rocher
+/*
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.util;
+package org.codehaus.groovy.grails.commons.cfg;
 
-import groovy.lang.GroovyObjectSupport;
+import groovy.util.ConfigObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -25,35 +26,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * General purpose Grails Configuration Utility for retieving configuration options with the ability
- * to log warnings on type/constraint mismatch.
+ * Type safe abstraction over Grails configuration
  *
- * @author Siegfried Puchbauer
- * @since 1.1
- * @deprecated Use {@link org.codehaus.groovy.grails.commons.cfg.GrailsConfig instead}
+ * @author Graeme Rocher
+ * @since  1.4
  */
-@SuppressWarnings("rawtypes")
-public class GrailsConfig extends GroovyObjectSupport {
-
+public class GrailsConfig {
+    
     private static final Log LOG = LogFactory.getLog(GrailsConfig.class);
 
-    private transient volatile static Map flatConfig;
-    private transient volatile static Map config;
+    private GrailsApplication grailsApplication;
 
-    private GrailsConfig() {
-        // static methods only
-    }
-
-    private static Map getFlatConfig() {
-        synchronized (GrailsConfig.class) {
-            return flatConfig != null ? flatConfig : (flatConfig = ConfigurationHolder.getFlatConfig());
-        }
-    }
-
-    private static Map getConfig() {
-        synchronized (GrailsConfig.class) {
-            return config != null ? config : (config = ConfigurationHolder.getConfig());
-        }
+    public GrailsConfig(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 
     /**
@@ -64,7 +49,7 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @return the value retrieved by ConfigurationHolder.flatConfig
      */
     @SuppressWarnings("unchecked")
-    public static <T> T get(String key) {
+    public <T> T get(String key) {
         if (key.indexOf(".") != -1) {
             return (T) getFlatConfig().get(key);
         }
@@ -81,7 +66,7 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @param <T> the type parameter
      * @return the value retrieved by ConfigurationHolder.flatConfig
      */
-    public static <T> T get(String key, Class<T> type) {
+    public <T> T get(String key, Class<T> type) {
         Object o = get(key);
         if (o != null) {
             if (!type.isAssignableFrom(o.getClass())) {
@@ -104,7 +89,7 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @return the value retrieved by ConfigurationHolder.flatConfig if not null, otherwise the <code>defaultValue</code>
      */
     @SuppressWarnings("unchecked")
-    public static <T> T get(String key, T defaultValue) {
+    public <T> T get(String key, T defaultValue) {
         T v;
         if (defaultValue != null) {
             v = (T) get(key, defaultValue.getClass());
@@ -124,7 +109,7 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @param <T>           the type parameter
      * @return the value retrieved by ConfigurationHolder.flatConfig, if it is contained in <code>allowedValues</code>, otherwise the <code>defaultValue</code>
      */
-    public static <T> T get(String key, T defaultValue, List<T> allowedValues) {
+    public <T> T get(String key, T defaultValue, List<T> allowedValues) {
         T v = get(key, defaultValue);
         if (!allowedValues.contains(v)) {
             LOG.warn(
@@ -145,7 +130,7 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @return the value retrieved by ConfigurationHolder.flatConfig
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getMandatory(String key) {
+    public <T> T getMandatory(String key) {
         T v = (T) getFlatConfig().get(key);
         if (v == null) {
             throw new GrailsConfigurationException(String.format(
@@ -165,7 +150,7 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @return the value retrieved by ConfigurationHolder.flatConfig
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getMandatory(String key, List<T> allowedValues) {
+    public <T> T getMandatory(String key, List<T> allowedValues) {
         T val = (T)getMandatory(key);
         if (!allowedValues.contains(val)) {
             throw new GrailsConfigurationException(
@@ -183,11 +168,19 @@ public class GrailsConfig extends GroovyObjectSupport {
      * @param key the config key
      * @return the configured value
      */
-    public static Object getAt(Object key) {
+    public Object getAt(Object key) {
         if (key instanceof String) {
             return get((String)key);
         }
 
         return getConfig().get(key);
+    }
+
+    public Map getFlatConfig() {
+        return grailsApplication.getFlatConfig();
+    }
+
+    public ConfigObject getConfig() {
+        return grailsApplication.getConfig();
     }
 }

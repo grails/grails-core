@@ -32,8 +32,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.GrailsMVCException;
@@ -50,11 +51,12 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
  *
  * @author Graeme Rocher
  */
-public class GrailsExceptionResolver extends SimpleMappingExceptionResolver implements ServletContextAware {
+public class GrailsExceptionResolver extends SimpleMappingExceptionResolver implements ServletContextAware, GrailsApplicationAware {
 
     private ServletContext servletContext;
 
     private static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
+    private GrailsApplication grailsApplication;
 
     /* (non-Javadoc)
      * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
@@ -178,7 +180,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
     }
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    public static String getRequestLogMessage(HttpServletRequest request) {
+    public String getRequestLogMessage(HttpServletRequest request) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("Exception occurred when processing request: ");
@@ -190,7 +192,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             sb.append(request.getRequestURI());
         }
 
-        @SuppressWarnings("rawtypes") Map flatConfig = ConfigurationHolder.getFlatConfig();
+        @SuppressWarnings("rawtypes") Map flatConfig = grailsApplication != null ? grailsApplication.getFlatConfig() : Collections.emptyMap();
         final boolean shouldLogRequestParameters;
 
         if (flatConfig.containsKey("grails.exceptionresolver.logRequestParameters")) {
@@ -236,5 +238,9 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
           .append("Stacktrace follows:");
 
         return sb.toString();
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 }

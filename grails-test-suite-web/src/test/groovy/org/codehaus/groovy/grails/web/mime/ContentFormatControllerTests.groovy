@@ -10,7 +10,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        def config = new ConfigSlurper().parse( """
+        MimeType.reset()
+        gcl.parseClass( """
 
 grails.mime.use.accept.header = true
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
@@ -24,9 +25,9 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       all: '*/*',
                       json: 'application/json'
                     ]
-        """)
+        """, "Config")
 
-        ConfigurationHolder.setConfig config
+
         gcl.parseClass '''
 import grails.converters.*
 

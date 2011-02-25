@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.web.binding
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.mime.MimeType
 
 /**
@@ -11,7 +10,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 class JSONBindingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        def config = new ConfigSlurper().parse( """
+        gcl.parseClass( """
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
@@ -23,9 +22,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       all: '*/*',
                       json: 'application/json'
                     ]
-        """)
-
-        ConfigurationHolder.setConfig config
+        """, 'Config')
 
         gcl.parseClass('''
 import grails.persistence.*
@@ -63,7 +60,6 @@ class SiteController {
 
     protected void tearDown() {
         super.tearDown()
-        ConfigurationHolder.setConfig null
         MimeType.reset()
     }
 

@@ -49,7 +49,9 @@ class ScaffoldingGrailsPlugin {
 
         scaffoldedActionMap(HashMap)
         controllerToScaffoldedDomainClassMap(HashMap)
-        scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader"))
+        scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader")) {
+            grailsApplication = ref("grailsApplication")
+        }
         BeanDefinition beanDef = getBeanDefinition("jspViewResolver")
 
         jspViewResolver(ScaffoldingViewResolver) {

@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.support;
 
 import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 
@@ -24,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -88,8 +90,8 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader{
 
             GrailsPluginManager pluginManager = getPluginManager(application.getMainContext());
             if (pluginManager != null) {
-                BuildSettings settings = pluginManager.getBuildSettings();
-                PluginBuildSettings pluginBuildSettings = pluginManager.getPluginBuildSettings();
+                BuildSettings settings = BuildSettingsHolder.getSettings();
+                PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
                 String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
                 String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
                 String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);

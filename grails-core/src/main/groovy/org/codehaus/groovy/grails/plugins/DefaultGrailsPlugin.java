@@ -340,8 +340,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
             if (resourceList != null) {
                 List<String> resourceListTmp = new ArrayList<String>();
-                GrailsPluginManager pluginManager = getManager();
-                PluginBuildSettings pluginBuildSettings = pluginManager != null ? pluginManager.getPluginBuildSettings() : null;
+                PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
                 if (pluginBuildSettings != null) {
 

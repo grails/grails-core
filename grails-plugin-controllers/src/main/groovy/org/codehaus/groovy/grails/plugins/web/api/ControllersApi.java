@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
@@ -55,10 +56,20 @@ public class ControllersApi extends CommonWebApi {
     private WithFormMethod withFormMethod = new WithFormMethod();
     private ForwardMethod forwardMethod;
 
-    public ControllersApi(GrailsPluginManager pluginManager, ApplicationContext applicationContext) {
+    public ControllersApi(GrailsApplication application, GrailsPluginManager pluginManager, ApplicationContext applicationContext) {
         super(pluginManager);
 
         this.redirect = new RedirectDynamicMethod(applicationContext);
+
+        if(application != null) {
+            Object gspEnc = application.getConfig().get("grails.views.gsp.encoding");
+
+            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                render.setGspEncoding( gspEnc.toString() );
+            }
+
+        }
+
         this.forwardMethod= new ForwardMethod((UrlMappingsHolder) applicationContext.getBean("grailsUrlMappingsHolder"));
     }
     /**

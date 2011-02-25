@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
@@ -82,7 +81,6 @@ hibernate {
         mockManager = new MockGrailsPluginManager(ga)
 
         ctx.registerMockBean("pluginManager", mockManager)
-        PluginManagerHolder.setPluginManager(mockManager)
 
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -110,7 +108,6 @@ hibernate {
 
         ga.initialise()
         ga.setApplicationContext(ctx)
-        ApplicationHolder.setApplication(ga)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
@@ -174,10 +171,8 @@ hibernate {
         ctx = null
         appCtx = null
 
-        ApplicationHolder.setApplication(null)
-        ExpandoMetaClass.disableGlobally()
 
-        PluginManagerHolder.setPluginManager(null)
+        ExpandoMetaClass.disableGlobally()
 
         originalHandler = null
 

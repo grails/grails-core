@@ -1,21 +1,15 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-
+import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
-import org.springframework.beans.factory.support.RootBeanDefinition
 
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
 
         gcl.parseClass '''
 class Book {
@@ -66,9 +60,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         parsePhoneDomainTestClasses()
     }
 
-    protected void onTearDown() {
-        PluginManagerHolder.pluginManager = null
-    }
+
 
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
         def domain = ga.getDomainClass("Book")

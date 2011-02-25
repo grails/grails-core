@@ -1,17 +1,17 @@
 package org.codehaus.groovy.grails.web.converters
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.0
  */
 class AutoParamsJSONMarshallingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        def config = new ConfigSlurper().parse( """
+
+        gcl.parseClass("""
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
@@ -23,9 +23,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       all: '*/*',
                       json: 'application/json'
                     ]
-        """)
-
-        ConfigurationHolder.setConfig config
+        """, "Config")
 
         gcl.parseClass '''
 
@@ -58,26 +56,26 @@ class AutoParamsJSONMarshallingAuthor {
 
     protected void tearDown() {
         super.tearDown()
-        ConfigurationHolder.setConfig null
         MimeType.reset()
     }
 
     void testJSONMarshallingIntoParamsObject() {
-        def controller = ga.getControllerClass("TestController").newInstance()
+            def controller = ga.getControllerClass("TestController").newInstance()
 
-        controller.request.contentType = "application/json"
-        controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
+            controller.request.contentType = "application/json"
+            controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
 
-        webRequest.informParameterCreationListeners()
-        def model = controller.create()
+            webRequest.informParameterCreationListeners()
+            def model = controller.create()
 
-        assert model
-        assert model.book
-        assertEquals "The Stand", model.book.title
-        assertEquals 1, model.book.author.id
-        assertEquals 'Stephen King', model.book.author.name
+            assert model
+            assert model.book
+            assertEquals "The Stand", model.book.title
+            assertEquals 1, model.book.author.id
+            assertEquals 'Stephen King', model.book.author.name
 
-        // "id" should not bind because we are binding to a domain class.
-        assertNull model.book.id
+            // "id" should not bind because we are binding to a domain class.
+            assertNull model.book.id
+
     }
 }

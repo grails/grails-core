@@ -1,27 +1,14 @@
 package org.codehaus.groovy.grails.commons
 
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
-/**
+ /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
     def gcl = new GroovyClassLoader()
 
-    protected void setUp() {
-        super.setUp()
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
-    }
-
-    protected void tearDown() {
-        super.tearDown()
-        PluginManagerHolder.pluginManager = null
-    }
 
     void testFetchMode() {
         gcl.parseClass """
@@ -274,7 +261,6 @@ class OneToOneTest2 {
         "}")
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-        ApplicationHolder.setApplication(ga)
         ga.initialise()
 
         DefaultGrailsDomainClass topDomainClass = new DefaultGrailsDomainClass(topClass)

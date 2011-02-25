@@ -42,6 +42,7 @@ import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Wraps a Grails RuntimeException and attempts to extract more relevent diagnostic messages
@@ -147,7 +148,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                     if (gspFile == null) {
                         fileName = className.replace('.', '/') + ".groovy";
 
-                        GrailsApplication application = ApplicationHolder.getApplication();
+                        GrailsApplication application = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext).getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
                         // @todo Refactor this to get the urlPrefix from the ArtefactHandler
                         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, className)) {
                             urlPrefix += "/controllers/";

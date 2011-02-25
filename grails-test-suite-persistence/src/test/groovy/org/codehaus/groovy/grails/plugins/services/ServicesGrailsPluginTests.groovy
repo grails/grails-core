@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.plugins.services;
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
@@ -10,7 +10,7 @@ import org.springframework.transaction.NoTransactionException
 class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 
     void onSetUp() {
-        def config = new ConfigSlurper().parse('''
+        gcl.parseClass('''
             dataSource {
                 pooled = true
                 driverClassName = "org.h2.Driver"
@@ -18,9 +18,8 @@ class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
                 password = ""
                 dbCreate = "create-drop"
             }
-''')
+''', 'Config')
 
-        ConfigurationHolder.config = config
         gcl.parseClass """
 import org.springframework.transaction.annotation.*
 import org.springframework.transaction.interceptor.TransactionAspectSupport
@@ -60,9 +59,7 @@ class PerMethodTransactionalService {
 """
     }
 
-    protected void onTearDown() {
-        ConfigurationHolder.config = null
-    }
+
 
     void testPerMethodTransactionAnnotations() {
         def appCtx = initializeContext()

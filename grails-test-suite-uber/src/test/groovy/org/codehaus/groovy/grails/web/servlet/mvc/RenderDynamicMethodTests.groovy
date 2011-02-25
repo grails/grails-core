@@ -1,19 +1,17 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
     private testCtrl
 
     protected void tearDown() {
         super.tearDown()
-        ConfigurationHolder.config = null
+
     }
 
     protected void onSetUp() {
-        def config = gcl.parseClass("grails.json.legacy.builder=false")
-        ConfigurationHolder.config = new ConfigSlurper().parse(config)
+        gcl.parseClass("grails.json.legacy.builder=false", "Config")
+
         gcl.parseClass """
         class TestController {
            def renderText = {

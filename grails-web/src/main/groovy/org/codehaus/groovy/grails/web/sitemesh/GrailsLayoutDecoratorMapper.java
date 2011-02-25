@@ -32,12 +32,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -73,7 +73,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private ServletContext servletContext;
     private WebApplicationContext applicationContext;
     private GrailsPluginManager pluginManager;
-    private PluginBuildSettings pluginBuildSettings;
+    private String defaultDecoratorName;
 
     @Override
     public void init(Config c, Properties properties, DecoratorMapper parentMapper) throws InstantiationException {
@@ -82,7 +82,17 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         if (applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
             pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
-            pluginBuildSettings = pluginManager.getPluginBuildSettings();
+        }
+        if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
+            GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+
+            Map conf = grailsApplication.getFlatConfig();
+            if (conf != null && conf.containsKey("grails.sitemesh.default.layout")) {
+                defaultDecoratorName = conf.get("grails.sitemesh.default.layout").toString();
+            }
+            else {
+                defaultDecoratorName = "application";
+            }
         }
     }
 
@@ -161,14 +171,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 
     @SuppressWarnings("rawtypes")
     protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
-        String defaultDecoratorName = null;
-        Map conf = ConfigurationHolder.getFlatConfig();
-        if (conf != null && conf.containsKey("grails.sitemesh.default.layout")) {
-            defaultDecoratorName = conf.get("grails.sitemesh.default.layout").toString();
-        }
-        else {
-            defaultDecoratorName = "application";
-        }
+
         return getNamedDecorator(request, defaultDecoratorName);
     }
 
@@ -225,8 +228,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private String searchPluginViewsInDevelopmentMode(String name) {
 
         String pluginViewLocation = null;
-        if (pluginBuildSettings != null) {
-            for (Resource resource : pluginBuildSettings.getPluginDirectories()) {
+            for (Resource resource : GrailsPluginUtils.getPluginDirectories()) {
                 try {
                     final String pathToLayoutInPlugin = "grails-app/views/layouts/"+name;
                     final String absolutePathToResource = resource.getFile().getAbsolutePath();
@@ -235,7 +237,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                     }
                     final Resource layoutPath = resource.createRelative(pathToLayoutInPlugin);
                     if (layoutPath.exists()) {
-                        GrailsPluginInfo info = pluginBuildSettings.getPluginInfo(absolutePathToResource);
+                        GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfo(absolutePathToResource);
                         pluginViewLocation = GrailsResourceUtils.WEB_INF + "/plugins/" + info.getFullName() + '/' + pathToLayoutInPlugin;
                     }
                 }
@@ -243,7 +245,6 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                     // ignore
                 }
             }
-        }
         return pluginViewLocation;
     }
 

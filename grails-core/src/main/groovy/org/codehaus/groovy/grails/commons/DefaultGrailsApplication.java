@@ -26,12 +26,7 @@ import groovy.util.ConfigObject;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,6 +98,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected Map applicationMeta = Metadata.getCurrent();
     protected Resource[] resources;
     protected boolean initialised = false;
+    protected ConfigObject config;
 
     /**
      * Creates a new empty Grails application.
@@ -386,16 +382,20 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public ConfigObject getConfig() {
-        ConfigObject c = ConfigurationHolder.getConfig();
-        if (c == null) {
-            c = ConfigurationHelper.loadConfigFromClasspath(this);
+
+        if (this.config == null) {
+            config = ConfigurationHelper.loadConfigFromClasspath(this);
         }
-        return c;
+        return config;
+    }
+
+    public void setConfig(ConfigObject config) {
+        this.config = config;
     }
 
     @SuppressWarnings("rawtypes")
-    public Map getFlatConfig() {
-        return ConfigurationHolder.getFlatConfig();
+    public Map<String, Object> getFlatConfig() {
+        return config != null ? config.flatten() : Collections.<String, String>emptyMap();
     }
 
     /**
@@ -896,6 +896,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler.isArtefact(artefactClass)) {
             GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);
+            artefactGrailsClass.setGrailsApplication(this);
 
             // Store the GrailsClass in cache
             DefaultArtefactInfo info = getArtefactInfo(artefactType, true);

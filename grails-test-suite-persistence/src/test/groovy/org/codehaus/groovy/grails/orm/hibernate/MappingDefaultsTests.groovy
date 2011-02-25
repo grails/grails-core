@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -14,12 +14,8 @@ import org.hibernate.type.YesNoType
  */
 class MappingDefaultsTests extends AbstractGrailsHibernateTests {
 
-    protected void onTearDown() {
-        ConfigurationHolder.setConfig(null)
-    }
 
     protected void onSetUp() {
-        ConfigurationHolder.setConfig(null)
         gcl.parseClass """
 grails.gorm.default.mapping = {
    cache true

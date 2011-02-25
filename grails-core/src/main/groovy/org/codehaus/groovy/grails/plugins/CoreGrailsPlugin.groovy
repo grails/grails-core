@@ -54,7 +54,7 @@ class CoreGrailsPlugin {
         xmlns grailsContext:"http://grails.org/schema/context"
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
-        addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer())
+        addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
 
         // replace AutoProxy advisor with Groovy aware one
         def grailsConfig = application.config.grails

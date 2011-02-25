@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
@@ -169,19 +170,25 @@ public abstract class GroovyPage extends Script {
         out = outputStack.getProxyWriter();
         this.webRequest = grailsWebRequest;
         final Map map = getBinding().getVariables();
+        GrailsApplication grailsApplication = null;
+
         if (map.containsKey(APPLICATION_CONTEXT)) {
             final ApplicationContext applicationContext = (ApplicationContext) map.get(APPLICATION_CONTEXT);
             if (applicationContext != null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
                 final GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
                 pluginContextPath = pluginManager.getPluginPathForInstance(this);
+                grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             }
         }
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
+            if(grailsApplication == null) {
+                grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
+            }
         }
         getBinding().setVariable(OUT, out);
         if (codecClass != null) {
-            codecOut=new CodecPrintWriter(out, codecClass);
+            codecOut=new CodecPrintWriter(grailsApplication, out, codecClass);
         } else {
             codecOut=out;
         }

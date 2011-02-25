@@ -15,16 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -41,6 +31,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulates a Grails request. An instance of this class is bound to the current thread using
@@ -269,7 +268,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         PropertyEditorRegistry registry = (PropertyEditorRegistry) servletRequest.getAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY);
         if (registry == null) {
             registry = new PropertyEditorRegistrySupport();
-            GrailsDataBinder.registerCustomEditors(registry, RequestContextUtils.getLocale(servletRequest));
+            GrailsDataBinder.registerCustomEditors(this, registry, RequestContextUtils.getLocale(servletRequest));
             servletRequest.setAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY, registry);
         }
         return registry;
@@ -283,12 +282,39 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     public static GrailsWebRequest lookup(HttpServletRequest request) {
         GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         if (webRequest == null) {
-            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-            if (requestAttributes instanceof GrailsWebRequest) {
-                webRequest = (GrailsWebRequest) requestAttributes;
-            }
+            return lookup();
         }
         return webRequest;
+    }
+
+    /**
+     * Looks up the current Grails WebRequest instance
+     * @return The GrailsWebRequest instance
+     */
+    public static GrailsWebRequest lookup() {
+        GrailsWebRequest webRequest = null;
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes instanceof GrailsWebRequest) {
+            webRequest = (GrailsWebRequest) requestAttributes;
+        }
+        return webRequest;
+    }
+
+
+    /**
+     * Looks up the GrailsApplication from the current request.
+
+     * @return The GrailsWebRequest
+     */
+    public static GrailsApplication lookupApplication() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes != null) {
+
+            if (requestAttributes instanceof GrailsWebRequest) {
+                return ((GrailsWebRequest) requestAttributes).getAttributes().getGrailsApplication();
+            }
+        }
+        return null;
     }
 
     /**

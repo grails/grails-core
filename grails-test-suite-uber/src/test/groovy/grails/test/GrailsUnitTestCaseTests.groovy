@@ -16,17 +16,14 @@ package grails.test
 
 import grails.converters.JSON
 import grails.converters.XML
-
-import junit.framework.AssertionFailedError
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 
-/**
+ /**
  * Test case for {@link GrailsUnitTestCase}.
  */
 class GrailsUnitTestCaseTests extends GroovyTestCase {
@@ -341,7 +338,7 @@ class TestUnitTestCase extends GrailsUnitTestCase {
         ''')
 
         assert config.foo.bar == "good"
-        assert ConfigurationHolder.config.foo.bar == "good"
+
     }
 }
 

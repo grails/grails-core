@@ -1,30 +1,20 @@
 package org.codehaus.groovy.grails.web.filters
 
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
 
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.0
  */
 class FilterToHandlerAdapterTests extends GroovyTestCase {
-    private originalApp
 
     protected void setUp() {
         super.setUp()
-        originalApp = ApplicationHolder.application
-
-        def mockApp = [getArtefactByLogicalPropertyName: { type, name ->
-            [getDefaultAction: {->'index'}] as GrailsControllerClass
-        }]
-        ApplicationHolder.application = mockApp as GrailsApplication
     }
 
     protected void tearDown() {
         super.tearDown()
-        ApplicationHolder.application = originalApp
     }
 
     void testURIMapping() {
@@ -104,7 +94,9 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
     }
 
     void testDefaultActionWithControllerMatchAndActionMatch() {
-        def filterAdapter = new FilterToHandlerAdapter()
+        def application = new DefaultGrailsApplication([DemoController] as Class[], getClass().classLoader)
+        application.initialise()
+        def filterAdapter = new FilterToHandlerAdapter(grailsApplication: application)
         filterAdapter.filterConfig = new Expando()
         filterAdapter.filterConfig.scope = new Expando()
         filterAdapter.filterConfig.scope.controller = "demo"
@@ -178,4 +170,7 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 
         assertFalse filterAdapter.accept(null, null, '/')
     }
+}
+class DemoController {
+    def index = {}
 }

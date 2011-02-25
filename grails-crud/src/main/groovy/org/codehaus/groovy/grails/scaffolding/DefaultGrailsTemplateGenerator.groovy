@@ -20,19 +20,18 @@ import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.cli.CommandLineHelper
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.util.Assert;
-import org.codehaus.groovy.grails.cli.CommandLineHelper
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.springframework.util.Assert
 
-/**
+ /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
  * from the domain model.
  *
@@ -48,22 +47,30 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     ResourceLoader resourceLoader
     Template renderEditorTemplate
     String domainSuffix = 'Instance'
+    GrailsApplication grailsApplication
 
     /**
      * Used by the scripts so that they can pass in their AntBuilder instance.
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
         engine = new SimpleTemplateEngine(classLoader)
-        def suffix = ConfigurationHolder.config?.grails?.scaffolding?.templates?.domainSuffix
-        if (suffix != [:]) {
-            domainSuffix = suffix
-        }
+
     }
 
     /**
      * Default constructor.
      */
     DefaultGrailsTemplateGenerator() {}
+
+    void setGrailsApplication(GrailsApplication ga) {
+        this.grailsApplication = ga
+        if(ga != null) {
+            def suffix = ga.config?.grails?.scaffolding?.templates?.domainSuffix
+            if (suffix != [:]) {
+                domainSuffix = suffix
+            }
+        }
+    }
 
     void setResourceLoader(ResourceLoader rl) {
         LOG.info "Scaffolding template generator set to use resource loader ${rl}"
@@ -231,7 +238,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     }
 
     private getTemplateText(String template) {
-        def application = ApplicationHolder.getApplication()
+        def application = grailsApplication
         // first check for presence of template in application
         if (resourceLoader && application?.warDeployed) {
             return resourceLoader.getResource("/WEB-INF/templates/scaffolding/${template}").inputStream.text
