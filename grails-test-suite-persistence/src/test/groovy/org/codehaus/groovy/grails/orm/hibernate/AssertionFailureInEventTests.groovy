@@ -1,14 +1,38 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class AssertionFailureInEventTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
+    protected getDomainClasses() {
+        [AssertionParent, AssertionChild, AssertionSubChild]
+    }
+
+    // test for HHH-2763 and GRAILS-4453
+    void testNoAssertionErrorInEvent() {
+        def Parent = ga.getDomainClass(AssertionParent.name).clazz
+        def Child = ga.getDomainClass(AssertionChild.name).clazz
+        def p = Parent.newInstance().save()
+        p.addToChilds(Child.newInstance(s:"one"))
+        p.save(flush:true)
+
+        session.clear()
+
+        p = Parent.findById(1, [fetch:[childs:'join']])
+
+        p.addToChilds(Child.newInstance(s:"two"))
+        p.save(flush:true)
+
+        session.clear()
+
+        p = Parent.get(1)
+        p.childs.each { println it.s }
+    }
+}
 
 @Entity
 class AssertionParent {
@@ -34,28 +58,4 @@ class AssertionChild {
 class AssertionSubChild {
     static belongsTo = [AssertionChild]
     String s
-}
-'''
-    }
-
-    // test for HHH-2763 and GRAILS-4453
-    void testNoAssertionErrorInEvent() {
-        def Parent = ga.getDomainClass("AssertionParent").clazz
-        def Child = ga.getDomainClass("AssertionChild").clazz
-        def p = Parent.newInstance().save()
-        p.addToChilds(Child.newInstance(s:"one"))
-        p.save(flush:true)
-
-        session.clear()
-
-        p = Parent.findById(1, [fetch:[childs:'join']])
-
-        p.addToChilds(Child.newInstance(s:"two"))
-        p.save(flush:true)
-
-        session.clear()
-
-        p = Parent.get(1)
-        p.childs.each { println it.s }
-    }
 }

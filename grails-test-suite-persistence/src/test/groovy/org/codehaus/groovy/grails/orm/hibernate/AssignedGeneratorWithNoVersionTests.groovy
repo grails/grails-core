@@ -1,17 +1,29 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class AssignedGeneratorWithNoVersionTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
+    protected getDomainClasses() {
+        [AssignedGeneratorMember]
+    }
+
+    // test for GRAILS-4049
+    void testPersistentDomain() {
+        def Member = ga.getDomainClass(AssignedGeneratorMember.name).clazz
+
+        def mem = Member.newInstance(firstName: 'Ilya', lastName: 'Sterin')
+        mem.id = 'abc'
+        assertNotNull "should have saved entity with assigned identifier", mem.save(flush:true)
+    }
+}
 
 @Entity
-class Member {
+class AssignedGeneratorMember {
 
     String id
     String firstName
@@ -21,17 +33,5 @@ class Member {
         table 'members'
         version false
         id column: 'member_name',generator: 'assigned'
-    }
-}
-'''
-    }
-
-    // test for GRAILS-4049
-    void testPersistentDomain() {
-        def Member = ga.getDomainClass("Member").clazz
-
-        def mem = Member.newInstance(firstName: 'Ilya', lastName: 'Sterin')
-        mem.id = 'abc'
-        assertNotNull "should have saved entity with assigned identifier", mem.save(flush:true)
     }
 }
