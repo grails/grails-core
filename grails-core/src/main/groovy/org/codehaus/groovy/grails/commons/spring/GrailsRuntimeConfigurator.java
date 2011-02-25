@@ -95,11 +95,14 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
 
         try {
-            pluginManager = parent.getBean(GrailsPluginManager.class);
+            pluginManager = parent != null ? parent.getBean(GrailsPluginManager.class) : null;
         } catch (BeansException e) {
-            pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
-            PluginManagerHolder.setPluginManager(pluginManager);
+			// ignore
         }
+		if(pluginManager == null) {
+			pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
+		}
+        PluginManagerHolder.setPluginManager(pluginManager);            		
     }
 
     /**
