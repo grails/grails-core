@@ -53,10 +53,10 @@ class SortWithNestedPropertiesTests extends AbstractGrailsHibernateTests {
         bookClass = ga.getDomainClass('Book').clazz
         def addressClass = ga.classLoader.loadClass("Address")
         ['C','A','b','a','c','B'].eachWithIndex { name, i ->
-            def person = personClass.newInstance(id:i, version:1, name:name).save(flush:true)
-            def author = authorClass.newInstance(id:i, version:1, name:name, person:person).save(flush:true)
+            def person = personClass.newInstance( version:1, name:name).save(flush:true)
+            def author = authorClass.newInstance( version:1, name:name, person:person).save(flush:true)
             def address = addressClass.newInstance(street:name, city:'Oslo')
-            bookClass.newInstance(id:i, version:1, title:'foo', author:author, address:address).save(flush:true)
+            bookClass.newInstance( version:1, title:'foo', author:author, address:address).save(flush:true)
         }
     }
 
