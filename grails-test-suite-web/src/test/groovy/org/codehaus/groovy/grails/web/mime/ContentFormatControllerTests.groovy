@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.mime
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -10,6 +11,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
+        RequestContextHolder.setRequestAttributes(null)
         MimeType.reset()
         gcl.parseClass( """
 

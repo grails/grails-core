@@ -19,6 +19,8 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.web.mime.MimeType
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
@@ -99,6 +101,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()
 
+        ConfigurationHolder.config = null
+        MimeType.reset()
         ApplicationHolder.application = null
         PluginManagerHolder.setPluginManager(null)
 
