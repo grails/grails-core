@@ -19,6 +19,7 @@ dependencyCache = {
 			}
 													
 			includes = dependencyIncludes as List
+			exclude "org.grails/**"
 		}
 		into "$projectDir/lib"
 	}
