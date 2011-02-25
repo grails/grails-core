@@ -54,7 +54,7 @@ class PdfBuilder {
         File homeFile = new File(home).canonicalFile
         String urlBase = "file://${homeFile.absolutePath}/src/${tool}/docs/style"
 
-        String xml = createXml(htmlFile, "${baseDir}")
+        String xml = createXml(htmlFile, baseDir)
         createPdf xml, outputFile, urlBase
     }
 
@@ -75,7 +75,11 @@ class PdfBuilder {
     }
 
     private static void createPdf(String xml, File outputFile, String urlBase) {
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        def dbf = DocumentBuilderFactory.newInstance()
+        dbf.validating = false
+        dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
+
+        DocumentBuilder builder = dbf.newDocumentBuilder()
         Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes()))
 
         ITextRenderer renderer = new ITextRenderer()

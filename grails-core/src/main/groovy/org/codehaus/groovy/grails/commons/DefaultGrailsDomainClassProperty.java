@@ -51,6 +51,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     private boolean oneToOne;
     private boolean hasOne = false;
     private boolean bidirectional;
+    private boolean derived = false;
 
     private Class<?> referencedPropertyType;
     private GrailsDomainClass referencedDomainClass;
@@ -483,6 +484,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if (isEmbedded) {
             component = new ComponentDomainClass(getType());
         }
+    }
+
+    public boolean isDerived() {
+        return derived;
+    }
+
+    public void setDerived(boolean derived) {
+        this.derived = derived;
     }
 
     /**

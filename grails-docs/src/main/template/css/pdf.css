@@ -1,6 +1,7 @@
 /* page layout and page numbering */
 @page {
    size: a4;
+   font-family:Arial;
 }
 
 @page :left {
@@ -21,7 +22,38 @@
     }
 }
 
+.body {
+    margin:0px;
+    padding:0px;
+}
+
+
+#header {
+    margin:0px;
+    padding:0px;
+    background:url(../img/bg.png) no-repeat;
+}
+
+#header .images .rsalogo{
+    display:none;
+}
+
+.body #header .message{
+    color:#FFFFFF;
+    font-size:16px;
+    margin-left:60px;
+    margin-top:730px;
+    border-bottom:none;
+    text-align:left;
+    
+}
+
 /* style overrides */
+
+.paragraph {
+    text-align:center;
+    margin:10px auto;
+}
 
 h1 {
     font-size: 20px;
@@ -75,9 +107,12 @@ pre .code {
 }
 
 .code, .bq {
-    border: 1px solid black;
     margin-bottom: 2em;
     page-break-inside: avoid;
+}
+
+.warning, .note{
+    background-position:10px 10px;
 }
 
 .warning, .note, table {

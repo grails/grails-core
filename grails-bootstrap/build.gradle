@@ -17,7 +17,7 @@ dependencies {
     runtime 'org.coconut.forkjoin:jsr166y:070108'
 }
 
-compileGroovy.doFirst {
+jar.doFirst {
     ant.mkdir(dir:sourceSets.main.classesDir)
     ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
         entry key:"grails.version", value:version

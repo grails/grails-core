@@ -112,18 +112,24 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             for (GrailsDomainClassProperty p : properties) {
                 // assume no formula issues if Hibernate isn't available to avoid CNFE
                 if (canPropertyBeConstrained(p)) {
-                    final String propertyName = p.getName();
-                    ConstrainedProperty cp = constrainedProperties.get(propertyName);
-                    if (cp == null) {
-                        cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
-                        cp.setOrder(constrainedProperties.size() + 1);
-                        constrainedProperties.put(propertyName, cp);
-                    }
-                    // Make sure all fields are required by default, unless
-                    // specified otherwise by the constraints
-                    // If the field is a Java entity annotated with @Entity skip this
-                    applyDefaultConstraints(propertyName, p, cp,
-                            defaultConstraints, delegate.getSharedConstraint(propertyName));
+                    if(p.isDerived()) {
+                        if(constrainedProperties.remove(p.getName()) != null) {
+                            LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
+                        }
+                    } else {
+                        final String propertyName = p.getName();
+                        ConstrainedProperty cp = constrainedProperties.get(propertyName);
+                        if (cp == null) {
+                            cp = new ConstrainedProperty(p.getDomainClass().getClazz(), propertyName, p.getType());
+                            cp.setOrder(constrainedProperties.size() + 1);
+                            constrainedProperties.put(propertyName, cp);
+                        }
+                        // Make sure all fields are required by default, unless
+                        // specified otherwise by the constraints
+                        // If the field is a Java entity annotated with @Entity skip this
+                        applyDefaultConstraints(propertyName, p, cp,
+                                defaultConstraints, delegate.getSharedConstraint(propertyName));
+                        }
                 }
             }
         }
@@ -225,7 +231,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         final GrailsDomainClassProperty versionProperty = domainClass.getVersion();
         final boolean isVersion = versionProperty != null && versionProperty.equals(property);
         return !constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT) &&
-            isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion;
+            isConstrainableProperty(property, propertyName) && !property.isIdentity() && !isVersion && !property.isDerived();
     }
 
     protected void applyMapOfConstraints(Map<String, Object> constraints, String propertyName, GrailsDomainClassProperty p, ConstrainedProperty cp) {
