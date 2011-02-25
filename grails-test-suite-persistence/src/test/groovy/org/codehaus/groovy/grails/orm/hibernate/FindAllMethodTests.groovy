@@ -6,23 +6,12 @@ package org.codehaus.groovy.grails.orm.hibernate
  */
 class FindAllMethodTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-class FindAllTest {
-    Long id
-    Long version
-    String name
-    Long index
-
-    static constraints = {
-        index(nullable: true)
-    }
-}
-'''
+    protected getDomainClasses() {
+        [FindAllTest]
     }
 
     void testUsingHibernateCache() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         def stats = sessionFactory.statistics
         stats.statisticsEnabled = true
@@ -75,7 +64,7 @@ class FindAllTest {
     }
 
     void testUsingHibernateCacheWithNamedParams() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         def stats = sessionFactory.statistics
         stats.statisticsEnabled = true
@@ -128,7 +117,7 @@ class FindAllTest {
     }
 
     void testHQLWithNamedArgs() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         theClass.newInstance(name:"fred").save(flush:true)
 
@@ -137,12 +126,12 @@ class FindAllTest {
     }
 
     void testFindAllWithNullNamedParam() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
         assertEquals 0, theClass.findAll(max:null).size()
     }
 
     void testNoArgs() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         assertEquals 0, theClass.findAll().size()
 
@@ -152,7 +141,7 @@ class FindAllTest {
     }
 
     void testMixedCaseHQL() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         assertEquals 0, theClass.findAll().size()
 
@@ -166,7 +155,7 @@ class FindAllTest {
     }
 
     void testWithSort() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         assertEquals 0, theClass.findAll().size()
 
@@ -179,7 +168,7 @@ class FindAllTest {
     }
 
     void testWithExample() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         assertEquals 0, theClass.findAll().size()
 
@@ -193,7 +182,7 @@ class FindAllTest {
     }
 
     void testWithExampleAndSort() {
-        def theClass = ga.getDomainClass("FindAllTest").clazz
+        def theClass = ga.getDomainClass(FindAllTest.name).clazz
 
         assertEquals 0, theClass.findAll().size()
 
@@ -219,3 +208,15 @@ class FindAllTest {
         assertEquals( [3, 2], results*.index )
     }
 }
+
+class FindAllTest {
+    Long id
+    Long version
+    String name
+    Long index
+
+    static constraints = {
+        index(nullable: true)
+    }
+}
+

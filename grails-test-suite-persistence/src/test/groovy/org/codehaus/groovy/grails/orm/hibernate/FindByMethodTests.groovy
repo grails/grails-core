@@ -8,45 +8,12 @@ package org.codehaus.groovy.grails.orm.hibernate
  */
 class FindByMethodTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-class FindByMethodBook {
-    Long id
-    Long version
-    String title
-    Date releaseDate
-    String writtenBy
-    static constraints  = {
-        releaseDate(nullable:true)
-        writtenBy(nullable: true)
-    }
-}
-class FindByMethodUser {
-    Long id
-    Long version
-    String firstName
-
-    Set books
-    static hasMany = [books:FindByMethodBook]
-}
-class FindByBooleanPropertyBook {
-    Long id
-    Long version
-    String author
-    String title
-    Boolean published
-}
-class Highway {
-    Long id
-    Long version
-    Boolean bypassed
-    String name
-}
-'''
+    protected getDomainClasses() {
+        [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway]
     }
 
     void testNullParameters() {
-        def bookClass = ga.getDomainClass("FindByMethodBook").clazz
+        def bookClass = ga.getDomainClass(FindByMethodBook.name).clazz
 
         assertNotNull bookClass.newInstance(title:"The Stand").save()
 
@@ -55,7 +22,7 @@ class Highway {
     }
 
     void testFindByIsNotNull() {
-        def userClass = ga.getDomainClass("FindByMethodUser").clazz
+        def userClass = ga.getDomainClass(FindByMethodUser.name).clazz
 
         userClass.newInstance(firstName:"Bob").save()
         userClass.newInstance(firstName:"Jerry").save()
@@ -70,7 +37,7 @@ class Highway {
     // test for GRAILS-3712
     void testFindByWithJoinQueryOnAssociation() {
 
-        def User = ga.getDomainClass("FindByMethodUser").clazz
+        def User = ga.getDomainClass(FindByMethodUser.name).clazz
 
         def user = User.newInstance(firstName:"Stephen")
         assertNotNull user.addToBooks(title:"The Shining")
@@ -84,7 +51,7 @@ class Highway {
     }
 
     void testBooleanPropertyQuery() {
-        def highwayClass = ga.getDomainClass('Highway').clazz
+        def highwayClass = ga.getDomainClass(Highway.name).clazz
         assertNotNull highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
         assertNotNull highwayClass.newInstance(bypassed: true, name: 'Bypassed Highway').save()
         assertNotNull highwayClass.newInstance(bypassed: false, name: 'Not Bypassed Highway').save()
@@ -128,7 +95,7 @@ class Highway {
         highway = highwayClass.findBypassedByName('Bypassed Highway')
         assertEquals 'Bypassed Highway', highway?.name
 
-        def bookClass = ga.getDomainClass("FindByBooleanPropertyBook").clazz
+        def bookClass = ga.getDomainClass(FindByBooleanPropertyBook.name).clazz
         assertNotNull bookClass.newInstance(author: 'Jeff', title: 'Fly Fishing For Everyone', published: false).save()
         assertNotNull bookClass.newInstance(author: 'Jeff', title: 'DGGv2', published: true).save()
         assertNotNull bookClass.newInstance(author: 'Graeme', title: 'DGGv2', published: true).save()
@@ -181,7 +148,7 @@ class Highway {
 
     void testQueryByPropertyWith_By_InName() {
         // GRAILS-5929
-        def bookClass = ga.getDomainClass("FindByMethodBook").clazz
+        def bookClass = ga.getDomainClass(FindByMethodBook.name).clazz
 
         assertNotNull bookClass.newInstance(title:"The Stand", writtenBy: 'Stephen King').save()
 
@@ -189,3 +156,37 @@ class Highway {
         assertEquals 1, results?.size()
     }
 }
+
+class FindByMethodBook {
+    Long id
+    Long version
+    String title
+    Date releaseDate
+    String writtenBy
+    static constraints  = {
+        releaseDate(nullable:true)
+        writtenBy(nullable: true)
+    }
+}
+class FindByMethodUser {
+    Long id
+    Long version
+    String firstName
+
+    Set books
+    static hasMany = [books:FindByMethodBook]
+}
+class FindByBooleanPropertyBook {
+    Long id
+    Long version
+    String author
+    String title
+    Boolean published
+}
+class Highway {
+    Long id
+    Long version
+    Boolean bypassed
+    String name
+}
+
