@@ -4,14 +4,10 @@ import grails.persistence.Entity
 
 class NamedCriteriaInheritanceTests extends AbstractGrailsHibernateTests {
     
-    void onApplicationCreated() {
-        def domainClasses = [NamedCriteriaPublication,
-                             NamedCriteriaPublicationSubclassWithNamedQueries, 
-                             NamedCriteriaPublicationSubclassWithoutNamedQueries]
-        
-        domainClasses.each {
-            ga.addArtefact 'Domain', it
-        }
+    protected getDomainClasses() {
+        [NamedCriteriaPublication,
+         NamedCriteriaPublicationSubclassWithNamedQueries, 
+         NamedCriteriaPublicationSubclassWithoutNamedQueries]
     }
 
     void testInheritedNamedQueries() {

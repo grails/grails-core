@@ -4,13 +4,9 @@ import org.hibernate.FetchMode
 
 class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
     
-    void onApplicationCreated() {
-        def domainClasses = [NamedCriteriaPlantCategory,
-                             NamedCriteriaPlant]
-        
-        domainClasses.each {
-            ga.addArtefact 'Domain', it
-        }
+    protected getDomainClasses() {
+        [NamedCriteriaPlantCategory,
+         NamedCriteriaPlant]
     }
 
     void testFetch() {

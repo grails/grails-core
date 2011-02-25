@@ -9,12 +9,8 @@ import org.hibernate.NonUniqueResultException
  */
 class NamedCriteriaTests extends AbstractGrailsHibernateTests {
 
-    void onApplicationCreated() {
-        def domainClasses = [NamedCriteriaPublication]
-        
-        domainClasses.each {
-            ga.addArtefact 'Domain', it
-        }
+    protected getDomainClasses() {
+        [NamedCriteriaPublication]
     }
 
     void testDynamicFinderAppendedToNamedQueryWhichCallsAnotherNamedQuery() {
