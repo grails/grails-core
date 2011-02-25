@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate.binding
 
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -57,7 +58,14 @@ class AssociationBindingAuthor {
 '''
     }
 
+    @Override protected void onTearDown() {
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
+
+
     void testManyToOneBinding() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
@@ -72,6 +80,7 @@ class AssociationBindingAuthor {
     }
 
     void testManyToOneUnBinding() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
@@ -84,6 +93,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyListBindingWithSubscriptOperator() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
@@ -105,6 +115,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyListBindingWithSubscriptOperatorCanExtendExistingList() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
@@ -126,6 +137,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyListBindingWithSubscriptOperatorCanInsertToEmptyIndexOfList() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
@@ -147,6 +159,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyListBindingWithNestedSubscriptOperatorCanInsertToEmptyIndexOfList() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
@@ -167,6 +180,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyListUnBindingWithSubscriptOperator() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
@@ -184,6 +198,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyListBindingNewInstance() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Page = ga.getDomainClass("AssociationBindingPage").clazz
@@ -202,6 +217,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyMapUnBindingWithSubscriptOperator() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Reviewer = ga.getDomainClass("AssociationBindingReviewer").clazz
@@ -219,6 +235,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyBindingWithSubscriptOperatorAndExistingInstance() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
         def Reviewer = ga.getDomainClass("AssociationBindingReviewer").clazz
@@ -274,6 +291,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyBindingWithSubscriptOperatorAndNewInstance() {
+        super.buildMockRequest()
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
         def author = Author.newInstance(name:"Stephen King")
@@ -326,6 +344,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyBindingWithAnArrayOfStrings() {
+        super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook2").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
 
@@ -344,6 +363,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyWithAString() {
+        super.buildMockRequest()
 
         def Book = ga.getDomainClass("AssociationBindingBook2").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
@@ -361,6 +381,7 @@ class AssociationBindingAuthor {
     }
 
     void testOneToManyWithIndexedParams() {
+        super.buildMockRequest()
 
         if(notYetImplemented()) return
 

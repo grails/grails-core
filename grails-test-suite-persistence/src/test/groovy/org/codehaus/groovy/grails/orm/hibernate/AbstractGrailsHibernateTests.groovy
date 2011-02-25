@@ -1,17 +1,19 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.GrailsUtil
-
+import grails.util.GrailsWebUtil
+import net.sf.ehcache.CacheManager
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
-import org.hibernate.EntityMode;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.hibernate.EntityMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.metadata.ClassMetadata
@@ -23,7 +25,9 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Log4jConfigurer
-import net.sf.ehcache.CacheManager
+import org.springframework.web.context.WebApplicationContext
+import org.codehaus.groovy.grails.plugins.*
+import org.springframework.mock.web.MockServletContext
 
 /**
  * @author Graeme Rocher
@@ -137,6 +141,16 @@ hibernate {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
      }
+
+    GrailsWebRequest buildMockRequest(ConfigObject config = null) throws Exception {
+        if(config != null)
+            ga.config = config
+        def servletContext = new MockServletContext()
+        appCtx.setServletContext(servletContext)
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+        return GrailsWebUtil.bindMockWebRequest(appCtx)
+    }
 
     protected void tearDown() {
 
