@@ -15,13 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Singleton which holds all default and named configurations for the Converter classes.
@@ -47,6 +47,13 @@ public class ConvertersConfigurationHolder {
 
     private ConvertersConfigurationHolder() {
         // singleton
+    }
+
+    public static void clear() {
+        final ConvertersConfigurationHolder configurationHolder = getInstance();
+        configurationHolder.defaultConfiguration.clear();
+        configurationHolder.namedConfigurations.clear();
+        configurationHolder.threadLocalConfiguration.clear();
     }
 
     public static <C extends Converter> void setDefaultConfiguration(Class<C> c, ConverterConfiguration<C> cfg) {

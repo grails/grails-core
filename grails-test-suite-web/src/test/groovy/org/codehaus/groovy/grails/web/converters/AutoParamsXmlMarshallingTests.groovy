@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.web.converters
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 
 /**
  * @author Graeme Rocher
@@ -11,6 +12,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class AutoParamsXmlMarshallingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
+        ConvertersConfigurationHolder.clear()
         RequestContextHolder.setRequestAttributes(null)
         MimeType.reset()
         gcl.parseClass( """

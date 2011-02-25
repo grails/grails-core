@@ -11,6 +11,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
+        ConvertersConfigurationHolder.clear()
         RequestContextHolder.setRequestAttributes(null)
         MimeType.reset()
         gcl.parseClass( """
