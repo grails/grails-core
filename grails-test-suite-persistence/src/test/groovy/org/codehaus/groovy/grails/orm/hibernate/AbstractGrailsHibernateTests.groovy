@@ -107,6 +107,7 @@ hibernate {
         afterPluginInitialization()
 
         ga.initialise()
+        onApplicationCreated()
         ga.setApplicationContext(ctx)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
@@ -129,6 +130,8 @@ hibernate {
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
     }
+    
+    void onApplicationCreated() {}
 
     protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
