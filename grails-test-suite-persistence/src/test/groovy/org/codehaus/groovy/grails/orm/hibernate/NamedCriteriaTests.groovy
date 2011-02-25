@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.FetchMode;
+import grails.persistence.Entity
+
+import org.hibernate.FetchMode
 import org.hibernate.NonUniqueResultException
 
 /**
@@ -8,142 +10,21 @@ import org.hibernate.NonUniqueResultException
  */
 class NamedCriteriaTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-class PlantCategory {
-    Long id
-    Long version
-    Set plants
-    String name
-
-    static hasMany = [plants:Plant]
-
-    static namedQueries = {
-        withPlantsInPatch {
-            plants {
-                eq 'goesInPatch', true
-            }
+    void onApplicationCreated() {
+        def domainClasses = [NamedCriteriaPublication, 
+                             NamedCriteriaPublicationSubclassWithNamedQueries, 
+                             NamedCriteriaPublicationSubclassWithoutNamedQueries, 
+                             NamedCriteriaPlant, 
+                             NamedCriteriaPlantCategory]
+        
+        domainClasses.each {
+            ga.addArtefact 'Domain', it
         }
-        withPlantsThatStartWithG {
-            plants {
-                like 'name', 'G%'
-            }
-        }
-        withPlantsInPatchThatStartWithG {
-            withPlantsInPatch()
-            withPlantsThatStartWithG()
-        }
-        withPlantsThatStartWithG {
-            plants {
-                nameStartsWithG()
-            }
-        }
-    }
-}
-
-class Plant {
-    Long id
-    Long version
-    boolean goesInPatch
-    String name
-    static namedQueries = {
-        nameStartsWithG {
-            like 'name', 'G%'
-        }
-    }
-}
-
-class PublicationSubclassWithoutNamedQueries extends Publication {
-}
-
-class PublicationSubclassWithNamedQueries extends Publication {
-    static namedQueries = {
-        oldPaperbacks {
-            paperbacks()
-            lt 'datePublished', new Date() - 365
-        }
-    }
-}
-
-class Publication {
-   Long id
-   Long version
-   String title
-   Date datePublished
-   Boolean paperback = true
-
-   static namedQueries = {
-       aPaperback  {
-          eq 'paperback', true
-       }
-
-       lastPublishedBefore { date ->
-           uniqueResult = true
-           le 'datePublished', date
-           order 'datePublished', 'desc'
-       }
-       recentPublications {
-           def now = new Date()
-           gt 'datePublished', now - 365
-       }
-
-       publicationsWithBookInTitle {
-           like 'title', '%Book%'
-       }
-
-       recentPublicationsByTitle { title ->
-           recentPublications()
-           eq 'title', title
-       }
-
-       latestBooks {
-           maxResults(10)
-           order("datePublished", "desc")
-       }
-
-       publishedBetween { start, end ->
-           between 'datePublished', start, end
-       }
-
-        publishedAfter { date ->
-           gt 'datePublished', date
-        }
-
-       paperbackOrRecent {
-           or {
-                def now = new Date()
-                gt 'datePublished', now - 365
-                paperbacks()
-           }
-       }
-
-       paperbacks {
-          eq 'paperback', true
-       }
-
-       paperbackAndRecent {
-           paperbacks()
-           recentPublications()
-       }
-
-       thisWeeksPaperbacks() {
-           paperbacks()
-           def today = new Date()
-           publishedBetween(today - 7, today)
-       }
-
-       queryThatNestsMultipleLevels {
-           // this nested query will call other nested queries
-           thisWeeksPaperbacks()
-       }
-   }
-}
-''')
     }
 
     void testDynamicFinderAppendedToNamedQueryWhichCallsAnotherNamedQuery() {
         // GRAILS-7253
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
 
@@ -169,7 +50,7 @@ class Publication {
     }
 
     void testUniqueResult() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
 
@@ -193,7 +74,7 @@ class Publication {
     }
 
     void testSorting() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         assert publicationClass.newInstance(title: "ZZZ New Paperback",
@@ -278,7 +159,7 @@ class Publication {
     }
 
     void testInheritedNamedQueries() {
-        def publicationClass = ga.getDomainClass("PublicationSubclassWithoutNamedQueries").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublicationSubclassWithoutNamedQueries").clazz
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some New Book",
@@ -293,7 +174,7 @@ class Publication {
         assertEquals 1, publications?.size()
         assertEquals 'Some New Book', publications[0].title
 
-        publicationClass = ga.getDomainClass("PublicationSubclassWithNamedQueries").clazz
+        publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublicationSubclassWithNamedQueries").clazz
 
         now = new Date()
         assert publicationClass.newInstance(title: "Some New Book",
@@ -314,7 +195,7 @@ class Publication {
     }
 
     void testFetch() {
-        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"Lettuce")
@@ -337,7 +218,7 @@ class Publication {
     }
 
     void testNamedQueryWithRelationshipInCriteria() {
-        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"Lettuce")
@@ -369,7 +250,7 @@ class Publication {
     }
 
     void testInvokingNamedQueryDefinedInAnotherDomainClass() {
-        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"Lettuce")
@@ -393,7 +274,7 @@ class Publication {
     }
 
     void testListDistinct() {
-        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"lettuce")
@@ -422,7 +303,7 @@ class Publication {
     }
 
     void testListDistinct2() {
-        def plantCategoryClass = ga.getDomainClass("PlantCategory").clazz
+        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
 
         assert plantCategoryClass.newInstance(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"lettuce")
@@ -452,7 +333,7 @@ class Publication {
     }
 
     void testFindAllWhereAttachedToChainedNamedQueries() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         def now = new Date()
 
         assert publicationClass.newInstance(title: "Some Book",
@@ -476,7 +357,7 @@ class Publication {
     }
 
     void testNamedQueryPassingMultipleParamsToNestedNamedQuery() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         def now = new Date()
 
         assert publicationClass.newInstance(title: "Some Book",
@@ -504,7 +385,7 @@ class Publication {
     }
 
     void testGetAttachedToChainedNamedQueries() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         def now = new Date()
 
         def oldPaperBackWithBookInTitleId =  publicationClass.newInstance(title: "Some Book",
@@ -519,7 +400,7 @@ class Publication {
     }
 
     void testPassingParamsAndAdditionalCriteria() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         def now = new Date()
 
         6.times { cnt ->
@@ -581,7 +462,7 @@ class Publication {
     }
 
     void testPropertyCapitalization() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         [true, false].each { isPaperback ->
@@ -598,7 +479,7 @@ class Publication {
     }
 
     void testChainingNamedQueries() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         [true, false].each { isPaperback ->
@@ -644,7 +525,7 @@ class Publication {
     }
 
     void testChainingQueriesWithParams() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def lastWeek = now - 7
@@ -684,7 +565,7 @@ class Publication {
 
     void testReferencingNamedQueryBeforeAnyDynamicMethodsAreInvoked() {
         // GRAILS-5809
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         /*
          * currently this will work:
@@ -701,7 +582,7 @@ class Publication {
     }
 
     void testAdditionalCriteriaClosure() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         6.times {
@@ -736,7 +617,7 @@ class Publication {
     }
 
     void testDisjunction() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def oldDate = now - 2000
@@ -754,7 +635,7 @@ class Publication {
     }
 
     void testConjunction() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def oldDate = now - 2000
@@ -770,7 +651,7 @@ class Publication {
     }
 
     void testList() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some New Book",
@@ -787,7 +668,7 @@ class Publication {
     }
 
     void testFindAllBy() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         3.times {
@@ -809,7 +690,7 @@ class Publication {
     }
 
     void testFindAllByBoolean() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
 
@@ -826,7 +707,7 @@ class Publication {
     }
 
     void testFindByBoolean() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
 
@@ -841,7 +722,7 @@ class Publication {
     }
 
     void testFindBy() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some Book",
@@ -856,7 +737,7 @@ class Publication {
     }
 
     void testCountBy() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         3.times {
@@ -875,7 +756,7 @@ class Publication {
     }
 
     void testListOrderBy() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
 
@@ -896,7 +777,7 @@ class Publication {
     }
 
     void testGetWithIdOfObjectWhichDoesNotMatchCriteria() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def hasBookInTitle = publicationClass.newInstance(title: "Some Book",
@@ -913,7 +794,7 @@ class Publication {
     }
 
     void testGetReturnsCorrectObject() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book",
@@ -931,7 +812,7 @@ class Publication {
     }
 
     void testThatParameterToGetIsConverted() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book", datePublished: now - 10).save()
@@ -948,7 +829,7 @@ class Publication {
     }
 
     void testGetReturnsNull() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book",
@@ -966,7 +847,7 @@ class Publication {
     }
 
     void testCount() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def newPublication = publicationClass.newInstance(title: "Some New Book",
@@ -982,7 +863,7 @@ class Publication {
     }
 
     void testCountWithParameterizedNamedQuery() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         assert publicationClass.newInstance(title: "Some Book",
@@ -997,7 +878,7 @@ class Publication {
     }
 
     void testMaxParam() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         (1..25).each {num ->
             publicationClass.newInstance(title: "Book Number ${num}",
                     datePublished: new Date()).save()
@@ -1008,7 +889,7 @@ class Publication {
     }
 
     void testMaxResults() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         (1..25).each {num ->
             publicationClass.newInstance(title: 'Book Title',
                     datePublished: new Date() + num).save()
@@ -1019,7 +900,7 @@ class Publication {
     }
 
     void testMaxAndOffsetParam() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
         (1..25).each {num ->
             publicationClass.newInstance(title: "Book Number ${num}",
                     datePublished: new Date()).save()
@@ -1040,7 +921,7 @@ class Publication {
     }
 
     void testFindAllWhereWithNamedQuery() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         (1..5).each {num ->
@@ -1055,7 +936,7 @@ class Publication {
     }
 
     void testFindAllWhereWithNamedQueryAndDisjuction() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def oldDate = now - 2000
@@ -1076,7 +957,7 @@ class Publication {
     }
 
     void testGetWithParameterizedNamedQuery() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         def recentPub = publicationClass.newInstance(title: "Some Title",
@@ -1092,7 +973,7 @@ class Publication {
     }
 
     void testNamedQueryWithOneParameter() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         (1..5).each {num ->
@@ -1107,7 +988,7 @@ class Publication {
     }
 
     void testNamedQueryWithMultipleParameters() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         (1..5).each {num ->
@@ -1120,7 +1001,7 @@ class Publication {
     }
 
     void testNamedQueryWithMultipleParametersAndDynamicFinder() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         (1..5).each {num ->
@@ -1135,7 +1016,7 @@ class Publication {
     }
 
     void testNamedQueryWithMultipleParametersAndMap() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         (1..10).each {num ->
@@ -1148,7 +1029,7 @@ class Publication {
     }
 
     void testFindWhereWithNamedQuery() {
-        def publicationClass = ga.getDomainClass("Publication").clazz
+        def publicationClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPublication").clazz
 
         def now = new Date()
         (1..5).each {num ->
@@ -1161,4 +1042,138 @@ class Publication {
         def pub = publicationClass.recentPublications.findWhere(title: 'Book Number 2')
         assertEquals 'Book Number 2', pub.title
     }
+}
+
+@Entity
+class NamedCriteriaPlantCategory {
+    Long id
+    Long version
+    Set plants
+    String name
+
+    static hasMany = [plants:NamedCriteriaPlant]
+
+    static namedQueries = {
+        withPlantsInPatch {
+            plants {
+                eq 'goesInPatch', true
+            }
+        }
+        withPlantsThatStartWithG {
+            plants {
+                like 'name', 'G%'
+            }
+        }
+        withPlantsInPatchThatStartWithG {
+            withPlantsInPatch()
+            withPlantsThatStartWithG()
+        }
+        withPlantsThatStartWithG {
+            plants {
+                nameStartsWithG()
+            }
+        }
+    }
+}
+
+@Entity
+class NamedCriteriaPlant {
+    Long id
+    Long version
+    boolean goesInPatch
+    String name
+    static namedQueries = {
+        nameStartsWithG {
+            like 'name', 'G%'
+        }
+    }
+}
+
+@Entity
+class NamedCriteriaPublicationSubclassWithoutNamedQueries extends NamedCriteriaPublication {
+}
+
+@Entity
+class NamedCriteriaPublicationSubclassWithNamedQueries extends NamedCriteriaPublication {
+    static namedQueries = {
+        oldPaperbacks {
+            paperbacks()
+            lt 'datePublished', new Date() - 365
+        }
+    }
+}
+
+@Entity
+class NamedCriteriaPublication {
+   Long id
+   Long version
+   String title
+   Date datePublished
+   Boolean paperback = true
+
+   static namedQueries = {
+       aPaperback  {
+          eq 'paperback', true
+       }
+
+       lastPublishedBefore { date ->
+           uniqueResult = true
+           le 'datePublished', date
+           order 'datePublished', 'desc'
+       }
+       recentPublications {
+           def now = new Date()
+           gt 'datePublished', now - 365
+       }
+
+       publicationsWithBookInTitle {
+           like 'title', '%Book%'
+       }
+
+       recentPublicationsByTitle { title ->
+           recentPublications()
+           eq 'title', title
+       }
+
+       latestBooks {
+           maxResults(10)
+           order("datePublished", "desc")
+       }
+
+       publishedBetween { start, end ->
+           between 'datePublished', start, end
+       }
+
+        publishedAfter { date ->
+           gt 'datePublished', date
+        }
+
+       paperbackOrRecent {
+           or {
+                def now = new Date()
+                gt 'datePublished', now - 365
+                paperbacks()
+           }
+       }
+
+       paperbacks {
+          eq 'paperback', true
+       }
+
+       paperbackAndRecent {
+           paperbacks()
+           recentPublications()
+       }
+
+       thisWeeksPaperbacks() {
+           paperbacks()
+           def today = new Date()
+           publishedBetween(today - 7, today)
+       }
+
+       queryThatNestsMultipleLevels {
+           // this nested query will call other nested queries
+           thisWeeksPaperbacks()
+       }
+   }
 }
