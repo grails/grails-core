@@ -15,18 +15,23 @@
  */
 package org.codehaus.groovy.grails.web.mime
 
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
-
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.0
  */
 class MimeType {
 
+    /**
+     * The bean name used to store the mime type definitions
+     */
+    public static final String BEAN_NAME = "mimeTypes"
+
     static final XML = 'application/xml'
 
     private static MIMES
+    private static DEFAULTS = createDefaults()
 
     MimeType(String n, Map params = [:]) {
         name = n
@@ -44,29 +49,18 @@ class MimeType {
         return "MimeType { name=$name,extension=$extension,parameters=$parameters }".toString()
     }
 
-    static void initializeMimeTypes(GrailsApplication application) {
-        def config = application.config
-        def mimeConfig = config?.grails?.mime?.types
-        if (!mimeConfig) MIMES = createDefaults()
 
-        def mimes = []
-        for (entry in mimeConfig) {
-            if (entry.value instanceof List) {
-                for (i in entry.value) {
-                    mimes << new MimeType(i)
-                    mimes[-1].extension = entry.key
-                }
-            }
-            else {
-                mimes << new MimeType(entry.value)
-                mimes[-1].extension = entry.key
-            }
-        }
-        MIMES = mimes as MimeType[]
-    }
-
+    /**
+     * @return An array of MimeTypes
+     */
     static MimeType[] getConfiguredMimeTypes() {
-        return MIMES
+        def webRequest = GrailsWebRequest.lookup()
+        def context = webRequest?.getApplicationContext()
+        if(context?.containsBean(MimeType.BEAN_NAME))
+            return context?.getBean(MimeType.BEAN_NAME, MimeType[].class)
+        else {
+            return DEFAULTS
+        }
     }
 
     static reset() {

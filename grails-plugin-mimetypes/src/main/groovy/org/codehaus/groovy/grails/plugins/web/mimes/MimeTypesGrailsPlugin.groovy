@@ -16,15 +16,13 @@
 package org.codehaus.groovy.grails.plugins.web.mimes
 
 import grails.util.GrailsUtil
-
 import javax.servlet.http.HttpServletRequest
-
 import org.apache.commons.collections.map.ListOrderedMap
 import org.codehaus.groovy.grails.web.mime.DefaultAcceptHeaderParser
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.codehaus.groovy.grails.web.mime.*
-
+import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -41,12 +39,13 @@ class MimeTypesGrailsPlugin {
     def observe = ['controllers']
 
     def doWithSpring = {
-        MimeType.initializeMimeTypes(application)
+        "${MimeType.BEAN_NAME}"(MimeTypesFactoryBean)
     }
 
-    def doWithDynamicMethods = { ctx ->
+    def doWithDynamicMethods = { ApplicationContext ctx ->
 
         def config = application.config.grails.mime
+        MimeType[] mimeTypes = ctx.getBean("mimeTypes", MimeType[].class)
         boolean useAcceptHeader = config.use.accept.header ? true : false
 
         // Reads the request format by parsing request headers. Will check for the existance of a format parameter first as an override
@@ -56,7 +55,7 @@ class MimeTypesGrailsPlugin {
 
                 def formatOverride = RequestContextHolder.currentRequestAttributes().params.format
                 if (formatOverride) {
-                    def allMimes = MimeType.getConfiguredMimeTypes()
+                    def allMimes = mimeTypes
                     def mime = allMimes.find { it.extension == formatOverride }
                     result = mime ? mime.extension : mimeTypes[0].extension
 
@@ -88,6 +87,7 @@ class MimeTypesGrailsPlugin {
                 def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
                 def parser = new DefaultAcceptHeaderParser(application)
+                parser.configuredMimeTypes = mimeTypes
                 def header = delegate.contentType
                 if (!header) header = delegate.getHeader(HttpHeaders.CONTENT_TYPE)
                 if (msie) header = "*/*"

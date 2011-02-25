@@ -9,8 +9,10 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 
- /**
+/**
  * @author Graeme Rocher
  * @since 1.0
  */
@@ -43,12 +45,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
 
     void testAreFileExtensionsEnabled() {
         def ga = new DefaultGrailsApplication(config:config)
-        def ctx = new MockApplicationContext()
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
-        def servletContext = new MockServletContext()
-        servletContext .setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
-        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), servletContext)
-        RequestContextHolder.setRequestAttributes(webRequest)
+        bindMockRequest(ga)
 
         assert !WebUtils.areFileExtensionsEnabled()
 
@@ -61,7 +58,24 @@ grails.mime.file.extensions=true
         assert WebUtils.areFileExtensionsEnabled()
     }
 
+    private def bindMockRequest(DefaultGrailsApplication ga) {
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+        def factory = new MimeTypesFactoryBean(grailsApplication: ga)
+        factory.afterPropertiesSet()
+
+        ctx.registerMockBean(MimeType.BEAN_NAME, factory.getObject())
+
+        def servletContext = new MockServletContext()
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), servletContext)
+        RequestContextHolder.setRequestAttributes(webRequest)
+    }
+
     void testGetFormatFromURI() {
+        def ga = new DefaultGrailsApplication(config:config)
+        bindMockRequest(ga)
+
         assertNull WebUtils.getFormatFromURI("/foo/bar/")
         assertNull WebUtils.getFormatFromURI("/foo/bar")
         assertNull WebUtils.getFormatFromURI("/foo/bar.")

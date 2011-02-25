@@ -30,6 +30,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
     static final LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
 
     GrailsApplication application
+    MimeType[] configuredMimeTypes
 
 
 
@@ -51,7 +52,12 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
         }
 
         if (!header) {
-            return MimeType.getConfiguredMimeTypes()
+            if(configuredMimeTypes != null) {
+                return configuredMimeTypes
+            }
+            else {
+                return MimeType.getConfiguredMimeTypes()
+            }
         }
 
         def tokens = header.split(',')

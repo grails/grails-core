@@ -15,24 +15,6 @@
 package org.codehaus.groovy.grails.web.util;
 
 import grails.util.GrailsUtil;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import grails.util.GrailsWebUtil;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -56,6 +38,16 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
 /**
  * Utility methods to access commons objects and perform common
@@ -453,6 +445,18 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The format or null if none
      */
     public static String getFormatFromURI(String uri) {
+        return getFormatFromURI(uri, MimeType.getConfiguredMimeTypes());
+    }
+
+    /**
+     * Obtains the format from the URI. The format is the string following the . file extension in the last token of the URI.
+     * If nothing comes after the ".", this method assumes that there is no format and returns <code>null</code>.
+     *
+     * @param uri The URI
+     * @param mimeTypes The configured mime types
+     * @return The format or null if none
+     */
+    public static String getFormatFromURI(String uri, MimeType[] mimeTypes) {
         if (uri.endsWith("/")) {
             return null;
         }
@@ -463,15 +467,15 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             idx = lastToken.lastIndexOf('.');
             if (idx > -1 && idx != lastToken.length() - 1) {
                 String extension =  lastToken.substring(idx+1, lastToken.length());
-                MimeType[] mimeTypes = MimeType.getConfiguredMimeTypes();
-                for (MimeType mimeType : mimeTypes) {
-                    if (mimeType.getExtension().equals(extension)) return extension;
+                if(mimeTypes != null) {
+                    for (MimeType mimeType : mimeTypes) {
+                        if (mimeType.getExtension().equals(extension)) return extension;
+                    }
                 }
             }
         }
         return null;
     }
-
     /**
      * Returns the value of the "grails.mime.file.extensions" setting configured in COnfig.groovy
      *
