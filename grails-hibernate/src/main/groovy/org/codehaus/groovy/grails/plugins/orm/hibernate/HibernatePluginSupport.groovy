@@ -547,6 +547,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
 
         ClassLoader classLoader = application.classLoader
         def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
+		findAllMethod.grailsApplication = application
         metaClass.static.findAll = {String query ->
             findAllMethod.invoke(domainClassType, "findAll", [query] as Object[])
         }
@@ -608,7 +609,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, argMap] as Object[])
         }
 
-        def listMethod = new ListPersistentMethod(sessionFactory, classLoader)
+        def listMethod = new ListPersistentMethod(application, sessionFactory, classLoader)
         metaClass.static.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
         metaClass.static.list = {Map args -> listMethod.invoke(domainClassType, "list", [args] as Object[])}
         metaClass.static.findWhere = {Map query ->

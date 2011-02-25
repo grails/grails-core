@@ -14,8 +14,7 @@ dependencies {
                 project(':grails-crud')
 }
 test {
-//    maxParallelForks = 4
-    forkEvery = 100
-    maxHeapSize = '1024m'
+    maxParallelForks = 2
+    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=256m']
 }
 
