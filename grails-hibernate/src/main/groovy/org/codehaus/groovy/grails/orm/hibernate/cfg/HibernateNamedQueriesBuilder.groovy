@@ -50,7 +50,7 @@ class HibernateNamedQueriesBuilder {
             new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-            new ListOrderByPersistentMethod(sessionFactory, classLoader)
+            new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader)
         ]
     }
 
