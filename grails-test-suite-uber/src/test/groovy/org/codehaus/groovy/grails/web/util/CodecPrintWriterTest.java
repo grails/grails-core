@@ -1,26 +1,19 @@
 package org.codehaus.groovy.grails.web.util;
 
-import static org.junit.Assert.assertEquals;
 import groovy.util.ConfigObject;
+import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.junit.Test;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.ArtefactInfo;
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
+import static org.junit.Assert.assertEquals;
 
 public class CodecPrintWriterTest {
 

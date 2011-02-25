@@ -18,26 +18,18 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
-
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -97,9 +89,14 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 
     public static SimpleTypeConverter converter = new SimpleTypeConverter();
+    private GrailsApplication grailsApplication;
 
     public FindAllPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
         super(sessionFactory, classLoader, Pattern.compile("^findAll$"));
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -150,28 +147,25 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                         }
                     }
                     if (queryNamedArgs != null) {
-                        for (Iterator it = queryNamedArgs.entrySet().iterator(); it.hasNext();) {
-                            Map.Entry entry = (Map.Entry) it.next();
+                        for (Object o : queryNamedArgs.entrySet()) {
+                            Map.Entry entry = (Map.Entry) o;
                             if (!(entry.getKey() instanceof String)) {
                                 throw new GrailsQueryException("Named parameter's name must be String: " + queryNamedArgs);
                             }
                             String stringKey = (String) entry.getKey();
                             // Won't try to bind these parameters since they are processed separately
-                            if (GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_CACHE.equals(stringKey)) continue;
+                            if (GrailsHibernateUtil.ARGUMENT_MAX.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_OFFSET.equals(stringKey) || GrailsHibernateUtil.ARGUMENT_CACHE.equals(stringKey))
+                                continue;
                             Object value = entry.getValue();
                             if (value == null) {
                                 q.setParameter(stringKey, null);
-                            }
-                            else if (value instanceof CharSequence) {
+                            } else if (value instanceof CharSequence) {
                                 q.setParameter(stringKey, value.toString());
-                            }
-                            else if (List.class.isAssignableFrom(value.getClass())) {
+                            } else if (List.class.isAssignableFrom(value.getClass())) {
                                 q.setParameterList(stringKey, (List) value);
-                            }
-                            else if (value.getClass().isArray()) {
+                            } else if (value.getClass().isArray()) {
                                 q.setParameterList(stringKey, (Object[]) value);
-                            }
-                            else {
+                            } else {
                                 q.setParameter(stringKey, value);
                             }
                         }
@@ -239,7 +233,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                 private int retrieveInt(Object param, String key) {
                     if (isMapWithValue(param, key)) {
                         Integer convertedParam = converter.convertIfNecessary(((Map) param).get(key),Integer.class);
-                        return convertedParam.intValue();
+                        return convertedParam;
                     }
                     if (isIntegerOrLong(param)) {
                         return ((Number)param).intValue();
@@ -267,7 +261,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                     crit.add(example);
 
                     Map argsMap = (arguments.length > 1 && (arguments[1] instanceof Map)) ? (Map) arguments[1] : Collections.EMPTY_MAP;
-                    GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit, argsMap);
+                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication,clazz, crit, argsMap);
                     return crit.list();
                 }
             });
@@ -277,7 +271,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
             return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException, SQLException {
                     Criteria crit = session.createCriteria(clazz);
-                    GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit, (Map)arguments[0]);
+                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, clazz, crit, (Map)arguments[0]);
                     return crit.list();
                 }
             });

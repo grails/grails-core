@@ -15,41 +15,12 @@
  */
 package grails.orm;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
-import groovy.lang.MissingMethodException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import groovy.lang.*;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.hibernate.Criteria;
-import org.hibernate.EntityMode;
-import org.hibernate.FetchMode;
-import org.hibernate.LockMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.AggregateProjection;
-import org.hibernate.criterion.CountProjection;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Junction;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projection;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.PropertyProjection;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.SimpleExpression;
+import org.hibernate.*;
+import org.hibernate.criterion.*;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
@@ -60,6 +31,8 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.util.*;
 
 /**
  * <p>Wraps the Hibernate Criteria API in a builder. The builder can be retrieved through the "createCriteria()" dynamic static
@@ -154,6 +127,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
     private boolean paginationEnabledList = false;
     private List<Order> orderEntries;
+    private GrailsApplication grailsApplication;
 
     @SuppressWarnings({"unchecked","rawtypes"})
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
@@ -167,6 +141,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         this.targetClass = targetClass;
         this.sessionFactory = sessionFactory;
         this.uniqueResult = uniqueResult;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 
     /**
@@ -524,7 +502,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
     /**
      * Sets the resultTransformer.
-     * @param resultTransformer The result transformer to use.
+     * @param transformer The result transformer to use.
      */
     public void resultTransformer(ResultTransformer transformer) {
         if (criteria == null) {
@@ -1156,7 +1134,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         // relevant to GRAILS-5692
                         criteria.setResultTransformer(resultTransformer);
                     }
-                    GrailsHibernateUtil.populateArgumentsForCriteria(targetClass, criteria, (Map)args[0]);
+                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, targetClass, criteria, (Map)args[0]);
                     PagedResultList pagedRes = new PagedResultList(criteria.list());
 
                     // Updated the paged results with the total number of records calculated previously.

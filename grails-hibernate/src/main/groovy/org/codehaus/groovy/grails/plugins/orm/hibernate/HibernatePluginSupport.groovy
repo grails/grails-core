@@ -357,6 +357,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             def initDomainClassOnce = initializeDomainOnceClosure.curry(dc)
             // these need to be eagerly initialised here, otherwise Groovy's findAll from the DGM is called
             def findAllMethod = new FindAllPersistentMethod(sessionFactory, application.classLoader)
+            findAllMethod.grailsApplication = application
             mc.static.findAll = {->
                 findAllMethod.invoke(mc.javaClass, "findAll", [] as Object[])
             }
@@ -440,7 +441,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                               new FindByPersistentMethod(application, sessionFactory, classLoader),
                               new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
                               new CountByPersistentMethod(application, sessionFactory, classLoader),
-                              new ListOrderByPersistentMethod(sessionFactory, classLoader)]
+                              new ListOrderByPersistentMethod(application, sessionFactory, classLoader)]
 
         // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
@@ -673,12 +674,19 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             } as HibernateCallback) == 1
         }
 
-        metaClass.static.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType, sessionFactory)}
+        metaClass.static.createCriteria = {->
+            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
+            builder.grailsApplication = application
+            return builder
+        }
         metaClass.static.withCriteria = {Closure callable ->
-            new HibernateCriteriaBuilder(domainClassType, sessionFactory).invokeMethod("doCall", callable)
+            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
+            builder.grailsApplication = application
+            builder.invokeMethod("doCall", callable)
         }
         metaClass.static.withCriteria = {Map builderArgs, Closure callable ->
             def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
+            builder.grailsApplication = application
             def builderBean = new BeanWrapperImpl(builder)
             for (entry in builderArgs) {
                 if (builderBean.isWritableProperty(entry.key)) {

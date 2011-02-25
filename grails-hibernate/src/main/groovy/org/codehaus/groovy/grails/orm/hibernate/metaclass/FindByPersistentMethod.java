@@ -15,12 +15,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.Closure;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
@@ -30,6 +24,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The "findBy*" static persistent method. This method allows querying for
@@ -67,11 +66,11 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
         return getHibernateTemplate().execute(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
 
-                Criteria crit = getCriteria(session, additionalCriteria, clazz);
+                Criteria crit = getCriteria(application, session, additionalCriteria, clazz);
                 if (arguments.length > 0) {
                     if (arguments[0] instanceof Map<?, ?>) {
                         Map<?, ?> argMap = (Map<?, ?>)arguments[0];
-                        GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit,argMap);
+                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit,argMap);
                         if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
                             crit.setMaxResults(1);
                         }

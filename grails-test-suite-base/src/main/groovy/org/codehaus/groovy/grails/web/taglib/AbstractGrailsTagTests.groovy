@@ -151,7 +151,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
         grailsApplication.initialise()
-        ApplicationHolder.application = ga
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)
 
