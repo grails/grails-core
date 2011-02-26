@@ -10,9 +10,7 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
     }
 
     void testFetch() {
-        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
-
-        assert plantCategoryClass.newInstance(name:"leafy")
+        assert new NamedCriteriaPlantCategory(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"Lettuce")
                                  .save(flush:true)
 
@@ -20,7 +18,7 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
 
         // the code below relies on some implementation details which is a little brittle but should work...
 
-        def query = plantCategoryClass.withPlantsInPatch
+        def query = NamedCriteriaPlantCategory.withPlantsInPatch
         query.list(fetch: [plants: 'lazy'])
         def crit = query.queryBuilder.instance
         def plantFetchMode = crit.getFetchMode('plants')
@@ -33,55 +31,51 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
     }
 
     void testNamedQueryWithRelationshipInCriteria() {
-        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
-
-        assert plantCategoryClass.newInstance(name:"leafy")
+        assert new NamedCriteriaPlantCategory(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"Lettuce")
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"groovy")
+        assert new NamedCriteriaPlantCategory(name:"groovy")
                                  .addToPlants(goesInPatch: true, name: 'Gplant')
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"grapes")
+        assert new NamedCriteriaPlantCategory(name:"grapes")
                                  .addToPlants(goesInPatch:false, name:"Gray")
                                  .save(flush:true)
 
         session.clear()
 
-        def results = plantCategoryClass.withPlantsInPatch.list()
+        def results = NamedCriteriaPlantCategory.withPlantsInPatch.list()
         assertEquals 2, results.size()
         assertTrue 'leafy' in results*.name
         assertTrue 'groovy' in results*.name
 
-        results = plantCategoryClass.withPlantsThatStartWithG.list()
+        results = NamedCriteriaPlantCategory.withPlantsThatStartWithG.list()
         assertEquals 2, results.size()
         assertTrue 'groovy' in results*.name
         assertTrue 'grapes' in results*.name
 
-        results = plantCategoryClass.withPlantsInPatchThatStartWithG.list()
+        results = NamedCriteriaPlantCategory.withPlantsInPatchThatStartWithG.list()
         assertEquals 1, results.size()
         assertEquals 'groovy', results[0].name
     }
 
     void testInvokingNamedQueryDefinedInAnotherDomainClass() {
-        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
-
-        assert plantCategoryClass.newInstance(name:"leafy")
+        assert new NamedCriteriaPlantCategory(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"Lettuce")
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"groovy")
+        assert new NamedCriteriaPlantCategory(name:"groovy")
                                  .addToPlants(goesInPatch: true, name: 'Gplant')
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"grapes")
+        assert new NamedCriteriaPlantCategory(name:"grapes")
                                  .addToPlants(goesInPatch:false, name:"Gray")
                                  .save(flush:true)
 
         session.clear()
 
-        def results = plantCategoryClass.withPlantsThatStartWithG.list()
+        def results = NamedCriteriaPlantCategory.withPlantsThatStartWithG.list()
         assertEquals 2, results.size()
         def names = results*.name
         assertTrue 'groovy' in names
@@ -89,26 +83,24 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
     }
 
     void testListDistinct() {
-        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
-
-        assert plantCategoryClass.newInstance(name:"leafy")
+        assert new NamedCriteriaPlantCategory(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"lettuce")
                                  .addToPlants(goesInPatch:true, name:"cabbage")
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"orange")
+        assert new NamedCriteriaPlantCategory(name:"orange")
                                  .addToPlants(goesInPatch:true, name:"carrots")
                                  .addToPlants(goesInPatch:true, name:"pumpkin")
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"grapes")
+        assert new NamedCriteriaPlantCategory(name:"grapes")
                                  .addToPlants(goesInPatch:false, name:"red")
                                  .addToPlants(goesInPatch:false, name:"white")
                                  .save(flush:true)
 
         session.clear()
 
-        def categories = plantCategoryClass.withPlantsInPatch().listDistinct()
+        def categories = NamedCriteriaPlantCategory.withPlantsInPatch().listDistinct()
 
         assertEquals 2, categories.size()
         def names = categories*.name
@@ -118,26 +110,24 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
     }
 
     void testListDistinct2() {
-        def plantCategoryClass = ga.getDomainClass("org.codehaus.groovy.grails.orm.hibernate.NamedCriteriaPlantCategory").clazz
-
-        assert plantCategoryClass.newInstance(name:"leafy")
+        assert new NamedCriteriaPlantCategory(name:"leafy")
                                  .addToPlants(goesInPatch:true, name:"lettuce")
                                  .addToPlants(goesInPatch:true, name:"cabbage")
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"orange")
+        assert new NamedCriteriaPlantCategory(name:"orange")
                                  .addToPlants(goesInPatch:true, name:"carrots")
                                  .addToPlants(goesInPatch:true, name:"pumpkin")
                                  .save(flush:true)
 
-        assert plantCategoryClass.newInstance(name:"grapes")
+        assert new NamedCriteriaPlantCategory(name:"grapes")
                                  .addToPlants(goesInPatch:false, name:"red")
                                  .addToPlants(goesInPatch:true, name:"white")
                                  .save(flush:true)
 
         session.clear()
 
-        def categories = plantCategoryClass.withPlantsInPatch.listDistinct()
+        def categories = NamedCriteriaPlantCategory.withPlantsInPatch.listDistinct()
 
         assertEquals 3, categories.size()
         def names = categories*.name
