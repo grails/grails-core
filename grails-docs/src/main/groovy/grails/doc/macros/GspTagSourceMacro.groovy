@@ -9,10 +9,11 @@ import org.radeox.util.Encoder
 
 class GspTagSourceMacro extends BaseMacro {
 
-    File base
+    List baseDirs
 
     GspTagSourceMacro(basedir) {
-        base = basedir as File
+        if (!(basedir instanceof Collection || basedir.class.array)) basedir = [ basedir ]
+        baseDirs = basedir.collect { f -> f as File }
     }
 
     String getName() { "source" }
@@ -35,7 +36,10 @@ class GspTagSourceMacro extends BaseMacro {
                 // Recursively search for the tag library source file in the
                 // configured base directory.
                 def tagLibFile = null
-                base.traverse(nameFilter: /${className}.groovy/) { tagLibFile = it }
+                baseDirs.find { dir ->
+                    dir.traverse(nameFilter: /${className}.groovy/) { tagLibFile = it }
+                    return tagLibFile
+                }
 
                 def text = tagLibFile?.text ?: ""
                 def matcher = regex.matcher(text)
