@@ -42,11 +42,8 @@ class DomainClassGrailsPlugin {
 
     def doWithSpring = {
 
-        def constraints = application.config?.grails?.gorm?.default?.constraints
-        def defaultConstraintsMap
-        if(constraints instanceof Closure) {
-            defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
-        }
+        def config = application.config
+        def defaultConstraintsMap = getDefaultConstraints(config)
 
         "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
              defaultConstraints = defaultConstraintsMap
@@ -78,14 +75,30 @@ class DomainClassGrailsPlugin {
         }
     }
 
+    private def getDefaultConstraints(ConfigObject config) {
+        def constraints = config?.grails?.gorm?.default?.constraints
+        def defaultConstraintsMap = null
+        if (constraints instanceof Closure) {
+            defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
+        }
+        return defaultConstraintsMap
+    }
+
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx->
         enhanceDomainClasses(application, ctx)
     }
 
-    def onConfigChange = {
-        application.domainClasses*.refreshConstraints()
+    def onConfigChange = { event ->
+        def beans = beans {
+            def defaultConstraintsMap = getDefaultConstraints(event.source)
+            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
+                 defaultConstraints = defaultConstraintsMap
+            }
+        }
+        beans.registerBeans(event.ctx)
+        event.application.refreshConstraints()
     }
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {

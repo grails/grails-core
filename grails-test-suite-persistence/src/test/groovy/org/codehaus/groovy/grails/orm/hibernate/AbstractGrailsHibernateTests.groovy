@@ -122,8 +122,8 @@ hibernate {
         def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
           doWithRuntimeConfiguration dependentPlugins, springConfig
 
+        ga.setMainContext(springConfig.getUnrefreshedApplicationContext())
         appCtx = springConfig.getApplicationContext()
-        ga.setMainContext(appCtx)
         applicationContext = appCtx
         dependentPlugins*.doWithApplicationContext(appCtx)
 

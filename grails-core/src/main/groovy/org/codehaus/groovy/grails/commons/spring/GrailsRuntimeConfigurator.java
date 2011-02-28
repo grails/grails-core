@@ -17,16 +17,9 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
 import grails.util.GrailsUtil;
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
-import groovy.lang.Binding;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
@@ -49,6 +42,11 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.ServletContext;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Handles the runtime configuration of the Grails ApplicationContext.
@@ -161,9 +159,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
             reset();
 
+            application.setMainContext(springConfig.getUnrefreshedApplicationContext());
             ctx = (WebApplicationContext) springConfig.getApplicationContext();
 
-            application.setMainContext(ctx);
             pluginManager.setApplicationContext(ctx);
             pluginManager.doDynamicMethods();
 
@@ -305,7 +303,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * Attempt to load the beans defined by a BeanBuilder DSL closure in "resources.groovy".
      *
      * @param config
-     * @param classLoader
      * @param context
      */
     private static void doLoadSpringGroovyResources(RuntimeSpringConfiguration config, GrailsApplication application,
@@ -320,7 +317,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     /**
      * Loads any external Spring configuration into the given RuntimeSpringConfiguration object.
      * @param config The config instance
-     * @param classLoader The class loader
      */
     @SuppressWarnings({ "serial", "rawtypes", "unchecked" })
     public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, final GrailsApplication application) {
