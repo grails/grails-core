@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 dependencies {
     groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
 
@@ -17,10 +19,15 @@ dependencies {
     runtime 'org.coconut.forkjoin:jsr166y:070108'
 }
 
-jar.doFirst {
-    ant.mkdir(dir:sourceSets.main.classesDir)
-    ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
-        entry key:"grails.version", value:version
-    }
+processResources{
+   inputs.property "version", version
+   filter(ReplaceTokens, tokens:[version:version])
 }
+//jar.doFirst {
+//    println "write grails.build.properties"
+//	ant.mkdir(dir:sourceSets.main.classesDir)
+//    ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
+//        entry key:"grails.version", value:version
+//    }
+//}
 jar.appendix = 'bootstrap'
