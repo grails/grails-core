@@ -708,8 +708,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             else {
                 if (isReadableAndPersistent(propertyName)) {
                     Class<?> type = getPropertyTypeForPath(propertyName);
-                    if (Collection.class.isAssignableFrom(type)) {
-                        bindCollectionAssociation(mpvs, pv);
+                    if(type != null) {
+                        if (Collection.class.isAssignableFrom(type)) {
+                            bindCollectionAssociation(mpvs, pv);
+                        }
                     }
                 }
             }
