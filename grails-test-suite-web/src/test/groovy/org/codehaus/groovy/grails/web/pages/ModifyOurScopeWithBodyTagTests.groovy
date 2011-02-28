@@ -18,6 +18,9 @@ class OutScopeTagLib {
             out << body()
     }
   }
+    def local = { attrs, body ->
+        out << body(attrs.vars)
+    }
 }
         '''
     }
@@ -39,5 +42,11 @@ class OutScopeTagLib {
     void testRestoreOuterVariableNamesWithBodyArguments() {
         def template = '<g:set var="counter" value="${1}"/><g:threeTimes var="counter">${counter++}</g:threeTimes>${counter}'
         assertOutputEquals '0121', template
+    }
+    
+    // test for GRAILS-7306
+    void testRestoreOuterVariableNamesWithBodyArgumentsEvenIfOuterValueIsNull() {
+        def template = '''<g:set var="foo" value="parentFooVal"/><g:set var="bar" value="${null}"/><g:local vars="[foo:'innerFooVal', bar:'nonNullVal']" someValue="nonNull" var="counter">inner foo: ${foo}, inner bar: ${bar}</g:local> outer foo: ${foo}, outer bar: ${bar}'''
+        assertOutputEquals 'inner foo: innerFooVal, inner bar: nonNullVal outer foo: parentFooVal, outer bar: ', template
     }
 }

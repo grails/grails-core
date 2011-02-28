@@ -124,9 +124,8 @@ public class GroovyPageTagBody extends Closure {
                         if (binding != null) {
                             // GRAILS-2675: Restore the original binding.
                             for (Object key : argsMap.keySet()) {
-                                Object originalVal = originalBinding.get(key);
-                                if (originalVal != null) {
-                                    currentBinding.put(key, originalVal);
+                                if(originalBinding.containsKey(key)) {
+                                    currentBinding.put(key, originalBinding.get(key));
                                 }
                             }
                         }
