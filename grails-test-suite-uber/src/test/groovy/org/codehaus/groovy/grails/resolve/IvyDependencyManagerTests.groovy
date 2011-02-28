@@ -1,24 +1,20 @@
 package org.codehaus.groovy.grails.resolve
 
-import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.plugins.resolver.FileSystemResolver
-import org.apache.ivy.util.Message
-import org.apache.ivy.util.MessageLogger
-import org.apache.ivy.util.DefaultMessageLogger
 import grails.util.BuildSettings
-import grails.util.BuildSettingsHolder
-import grails.util.GrailsUtil
 import groovy.xml.MarkupBuilder
-import org.apache.ivy.plugins.parser.m2.PomDependencyMgt
-import org.apache.ivy.core.resolve.IvyNode
-import org.apache.ivy.core.module.descriptor.DependencyDescriptor
-import org.apache.ivy.util.url.CredentialsStore
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.id.ArtifactId
-import org.apache.ivy.plugins.matcher.PatternMatcher
 import org.apache.ivy.core.module.id.ModuleId
+import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.apache.ivy.core.resolve.IvyNode
+import org.apache.ivy.plugins.matcher.PatternMatcher
+import org.apache.ivy.plugins.resolver.FileSystemResolver
+import org.apache.ivy.util.DefaultMessageLogger
+import org.apache.ivy.util.Message
+import org.apache.ivy.util.url.CredentialsStore
 
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.1
  */
@@ -509,8 +505,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-        assertEquals 56, manager.listDependencies('runtime').size()
-        assertEquals 59, manager.listDependencies('test').size()
+        assertEquals 73, manager.listDependencies('runtime').size()
+        assertEquals 77, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
@@ -536,9 +532,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
 
         assertEquals 0, manager.listDependencies('runtime').size()
-        assertEquals 3, manager.listDependencies('test').size()
+        assertEquals 4, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
-        assertEquals 58, manager.listDependencies('provided').size()
+        assertEquals 75, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
 
         manager = new IvyDependencyManager("project", "0.1",settings)
@@ -549,8 +545,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
 
-        assertEquals 56, manager.listDependencies('runtime').size()
-        assertEquals 59, manager.listDependencies('test').size()
+        assertEquals 73, manager.listDependencies('runtime').size()
+        assertEquals 77, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
         assertEquals 2, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
@@ -558,7 +554,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
     def getCurrentGrailsVersion() {
         def props = new Properties()
-        new File("../build.properties").withInputStream {
+        def file = new File("../build.properties")
+        if(!file.exists()) file = new File("build.properties")
+        file.withInputStream {
             props.load(it)
         }
         def grailsVersion = props.'grails.version'
@@ -680,8 +678,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
         assertEquals 18, manager.listDependencies("build").size()
-        assertEquals 20, manager.listDependencies("runtime").size()
-        assertEquals 21, manager.listDependencies("test").size()
+        assertEquals 30, manager.listDependencies("runtime").size()
+        assertEquals 31, manager.listDependencies("test").size()
     }
 
     void testParseDependencyDefinition() {
