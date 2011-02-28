@@ -184,7 +184,7 @@ public class GrailsDataBinderTests extends TestCase {
         assertNotNull( binder.getAllowedFields());
         assertEquals(0, binder.getAllowedFields().length);
         assertNotNull( binder.getDisallowedFields());
-        assertEquals(0, binder.getDisallowedFields().length);
+        assertEquals(2, binder.getDisallowedFields().length);
     }
 
     public void testBindStructuredDateWithDayPrecision() throws Exception {
