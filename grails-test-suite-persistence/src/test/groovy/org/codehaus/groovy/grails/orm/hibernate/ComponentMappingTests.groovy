@@ -3,8 +3,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
     void testComponentMapping() {
-        def personClass = ga.getDomainClass("ComponentMappingPerson")
-        def addressClass = ga.classLoader.loadClass("ComponentMappingAddress")
+        def personClass = ga.getDomainClass(ComponentMappingPerson.name)
+        def addressClass = ga.classLoader.loadClass(ComponentMappingAddress.name)
 
         def p = personClass.newInstance()
 
@@ -36,8 +36,8 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
     }
 
     void testNullableComponent() {
-        def personClass = ga.getDomainClass("ComponentMappingPerson")
-        def addressClass = ga.classLoader.loadClass("ComponentMappingAddress")
+        def personClass = ga.getDomainClass(ComponentMappingPerson.name)
+        def addressClass = ga.classLoader.loadClass(ComponentMappingAddress.name)
 
         def p = personClass.newInstance()
 
@@ -63,13 +63,13 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
     void testJira2773() {
 
-        def RegularPayment2773 = ga.getDomainClass('RegularPayment2773').clazz
+        def RegularPayment2773 = ga.getDomainClass(RegularPayment2773.name).clazz
         def payment = RegularPayment2773.newInstance()
 
-        def RegularPaymentPart2773 = ga.getDomainClass('RegularPaymentPart2773').clazz
+        def RegularPaymentPart2773 = ga.getDomainClass(RegularPaymentPart2773.name).clazz
         def paymentPart = RegularPaymentPart2773.newInstance()
 
-        def Money2773 = ga.getDomainClass('Money2773').clazz
+        def Money2773 = ga.getDomainClass(Money2773.name).clazz
         def money = Money2773.newInstance()
 
         money.value = 123
@@ -84,9 +84,11 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
         payment = RegularPayment2773.list()[0]
         assertEquals 123, payment.regular.amount.value
     }
-
-    protected void onSetUp() {
-        gcl.parseClass '''
+    
+    protected getDomainClasses() {
+        [ComponentMappingPerson, ComponentMappingStoreItem, ComponentMappingPrice, RegularPayment2773, RegularPaymentPart2773, Money2773]
+    }
+}
 class ComponentMappingPerson {
     Long id
     Long version
@@ -143,7 +145,4 @@ class Money2773 {
     Long version
 
     BigDecimal value
-}
-'''
-    }
 }

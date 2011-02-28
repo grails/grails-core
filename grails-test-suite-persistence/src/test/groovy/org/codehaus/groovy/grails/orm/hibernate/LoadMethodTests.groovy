@@ -11,32 +11,17 @@ import org.springframework.orm.hibernate3.HibernateObjectRetrievalFailureExcepti
  */
 class LoadMethodTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-class LoadMethodTest {
-    Long id
-    Long version
-    String name
-}
-
-class LoadMethodZeroIdTest {
-    Long id
-    Long version
-    String name
-    static mapping = {
-        id generator:'assigned'
-    }
-}
-''')
+    protected getDomainClasses() {
+        [LoadMethodTest, LoadMethodZeroIdTest]
     }
 
     void testNullId() {
-        def clazz = ga.getDomainClass('LoadMethodTest').clazz
+        def clazz = ga.getDomainClass(LoadMethodTest.name).clazz
         assertNull 'null id should return null instance', clazz.load(null)
     }
 
     void testIntId() {
-        String className = 'LoadMethodTest'
+        String className = LoadMethodTest.name
         def clazz = ga.getDomainClass(className).clazz
 
         def instance = clazz.load(1)
@@ -58,7 +43,7 @@ class LoadMethodZeroIdTest {
     }
 
     void testLongId() {
-        String className = 'LoadMethodTest'
+        String className = LoadMethodTest.name
         def clazz = ga.getDomainClass(className).clazz
 
         def instance = clazz.load(1L)
@@ -80,7 +65,7 @@ class LoadMethodZeroIdTest {
     }
 
     void testGetBeforeLoad() {
-        String className = 'LoadMethodTest'
+        String className = LoadMethodTest.name
         def clazz = ga.getDomainClass(className).clazz
 
         String name = 'Foo'
@@ -96,7 +81,7 @@ class LoadMethodZeroIdTest {
     }
 
     void testLoadBeforeGet() {
-        String className = 'LoadMethodTest'
+        String className = LoadMethodTest.name
         def clazz = ga.getDomainClass(className).clazz
 
         String name = 'Foo'
@@ -116,7 +101,7 @@ class LoadMethodZeroIdTest {
     }
 
     void testZeroId() {
-        String className = 'LoadMethodZeroIdTest'
+        String className = LoadMethodZeroIdTest.name
         def clazz = ga.getDomainClass(className).clazz
 
         def o = clazz.newInstance()
@@ -150,7 +135,7 @@ class LoadMethodZeroIdTest {
     }
 
     void testIdPropertyAccess() {
-        String className = 'LoadMethodTest'
+        String className = LoadMethodTest.name
         def clazz = ga.getDomainClass(className).clazz
 
         def instance = clazz.load(1L)
@@ -165,5 +150,19 @@ class LoadMethodZeroIdTest {
         assertTrue 'should be a proxy', instance instanceof HibernateProxy
         assertFalse 'should be a proxy', instance.getClass().name.equals(className)
         assertEquals 'proxied class should be domain class', className, Hibernate.getClass(instance).name
+    }
+}
+class LoadMethodTest {
+    Long id
+    Long version
+    String name
+}
+
+class LoadMethodZeroIdTest {
+    Long id
+    Long version
+    String name
+    static mapping = {
+        id generator:'assigned'
     }
 }

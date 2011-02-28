@@ -10,34 +10,12 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
  */
 class BasicArrayAndCollectionMappingTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-class BasicCollections {
-    Long id
-    Long version
-
-    Set names
-    Set numbers
-    Set moreNumbers
-    Set shortNames
-    List todos
-
-    static hasMany = [names:String,
-                      numbers:Integer,
-                      moreNumbers:Integer,
-                      shortNames:String,
-                      todos:String]
-
-    static mapping = {
-       numbers joinTable:[name:'bunch_o_numbers', key:'basic_id', column:'number']
-       shortNames joinTable:[column:'short', unique:2]
-    }
-}
-'''
+    protected getDomainClasses() {
+        [BasicCollections]
     }
 
     void testCollectionOfIntegers() {
-        def BasicCollections = ga.getDomainClass("BasicCollections").clazz
+        def BasicCollections = ga.getDomainClass(BasicCollections.name).clazz
 
         def test = BasicCollections.newInstance()
 
@@ -68,14 +46,14 @@ class BasicCollections {
     }
 
     void testDomain() {
-        GrailsDomainClass dc = ga.getDomainClass("BasicCollections")
+        GrailsDomainClass dc = ga.getDomainClass(BasicCollections.name)
 
         assertTrue dc.getPropertyByName("numbers").isBasicCollectionType()
         assertTrue dc.getPropertyByName("names").isBasicCollectionType()
     }
 
     void testListOfBasicTypes() {
-        def BasicCollections = ga.getDomainClass("BasicCollections").clazz
+        def BasicCollections = ga.getDomainClass(BasicCollections.name).clazz
 
         def test = BasicCollections.newInstance()
 
@@ -95,7 +73,7 @@ class BasicCollections {
     }
 
     void testChangeColumnLength() {
-        def BasicCollections = ga.getDomainClass("BasicCollections").clazz
+        def BasicCollections = ga.getDomainClass(BasicCollections.name).clazz
 
         def test = BasicCollections.newInstance()
 
@@ -114,7 +92,7 @@ class BasicCollections {
     }
 
     void testJoinTableMapping() {
-        def BasicCollections = ga.getDomainClass("BasicCollections").clazz
+        def BasicCollections = ga.getDomainClass(BasicCollections.name).clazz
 
         def test = BasicCollections.newInstance()
 
@@ -145,7 +123,7 @@ class BasicCollections {
     }
 
     void testDefaultMapping() {
-        def BasicCollections = ga.getDomainClass("BasicCollections").clazz
+        def BasicCollections = ga.getDomainClass(BasicCollections.name).clazz
 
         def test = BasicCollections.newInstance()
 
@@ -170,3 +148,26 @@ class BasicCollections {
         assertTrue num == "one" || num == "two"
     }
 }
+
+class BasicCollections {
+    Long id
+    Long version
+
+    Set names
+    Set numbers
+    Set moreNumbers
+    Set shortNames
+    List todos
+
+    static hasMany = [names:String,
+                      numbers:Integer,
+                      moreNumbers:Integer,
+                      shortNames:String,
+                      todos:String]
+
+    static mapping = {
+       numbers joinTable:[name:'bunch_o_numbers', key:'basic_id', column:'number']
+       shortNames joinTable:[column:'short', unique:2]
+    }
+}
+

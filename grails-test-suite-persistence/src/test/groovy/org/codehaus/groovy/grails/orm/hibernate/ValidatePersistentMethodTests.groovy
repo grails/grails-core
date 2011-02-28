@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testClearErrorsBetweenValidations() {
-        def personClass = ga.getDomainClass('Person')
+        def personClass = ga.getDomainClass(ValidatePerson.name)
         def person = personClass.newInstance()
         person.age = 999
         assertFalse 'validation should have failed for invalid age', person.validate()
@@ -19,9 +19,9 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testToOneCascadingValidation() {
-        def bookClass = ga.getDomainClass("Book")
-        def authorClass = ga.getDomainClass("Author")
-        def addressClass = ga.getDomainClass("Address")
+        def bookClass = ga.getDomainClass(ValidateBook.name)
+        def authorClass = ga.getDomainClass(ValidateAuthor.name)
+        def addressClass = ga.getDomainClass(ValidateAddress.name)
 
         def book = bookClass.newInstance()
 
@@ -61,9 +61,9 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testToManyCascadingValidation() {
-        def bookClass = ga.getDomainClass("Book")
-        def authorClass = ga.getDomainClass("Author")
-        def addressClass = ga.getDomainClass("Address")
+        def bookClass = ga.getDomainClass(ValidateBook.name)
+        def authorClass = ga.getDomainClass(ValidateAuthor.name)
+        def addressClass = ga.getDomainClass(ValidateAddress.name)
 
         def author = authorClass.newInstance()
 
@@ -96,7 +96,7 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFilteringValidation() {
         // Test validation on a sub-set of the available fields.
-        def profileClass = ga.getDomainClass('Profile')
+        def profileClass = ga.getDomainClass(ValidateProfile.name)
         def profile = profileClass.newInstance()
         profile.email = "This is not an e-mail address"
         assertFalse "Validation should have failed for invalid e-mail address", profile.validate([ "email" ])
@@ -115,7 +115,7 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testValidationAfterBindingErrors() {
-        def teamClass = ga.getDomainClass('Team')
+        def teamClass = ga.getDomainClass(ValidateTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertFalse 'validation should have failed', team.validate()
@@ -130,16 +130,19 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
         assertEquals 'wrong number of homePage errors found', 0, team.errors.getFieldErrors('homePage')?.size()
     }
 
-    void onSetUp() {
-        gcl.parseClass '''
-class Team {
+    protected getDomainClasses() {
+        [ValidateTeam, ValidatePerson, ValidateProfile, ValidateBook, ValidateAuthor, ValidateAddress]
+    }
+}
+
+class ValidateTeam {
     Long id
     Long version
     String name
     URL homePage
 }
 
-class Person {
+class ValidatePerson {
     Long id
     Long version
     Integer age
@@ -147,7 +150,7 @@ class Person {
       age(max:99)
     }
 }
-class Profile {
+class ValidateProfile {
     Long id
     Long version
     String firstName
@@ -162,40 +165,37 @@ class Profile {
         dateOfBirth(nullable: true)
     }
 }
-class Book {
+class ValidateBook {
     Long id
     Long version
     String title
-    Author author
-    static belongsTo = Author
+    ValidateAuthor author
+    static belongsTo = ValidateAuthor
     static constraints = {
        title(blank:false, size:1..255)
        author(nullable:false)
     }
 }
-class Author {
+class ValidateAuthor {
    Long id
    Long version
    String name
-   Address address
+   ValidateAddress address
    Set books = new HashSet()
-   static hasMany = [books:Book]
+   static hasMany = [books:ValidateBook]
    static constraints = {
         address(nullable:false)
         name(size:1..255, blank:false)
    }
 }
-class Address {
+class ValidateAddress {
     Long id
     Long version
-    Author author
+    ValidateAuthor author
     String location
-    static belongsTo = Author
+    static belongsTo = ValidateAuthor
     static constraints = {
        author(nullable:false)
        location(blank:false)
-    }
-}
-'''
     }
 }

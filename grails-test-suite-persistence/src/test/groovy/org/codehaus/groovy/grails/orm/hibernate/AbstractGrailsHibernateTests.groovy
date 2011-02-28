@@ -112,6 +112,9 @@ hibernate {
 
         ga.initialise()
         onApplicationCreated()
+        domainClasses?.each { dc ->
+            ga.addArtefact 'Domain', dc
+        }
         ga.setApplicationContext(ctx)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
@@ -137,6 +140,16 @@ hibernate {
     
     void onApplicationCreated() {}
 
+    /**
+     * Subclasses may override this method to return a list of classes which should
+     * be added to the GrailsApplication as domain classes
+     * 
+     * @return a list of classes
+     */
+    protected getDomainClasses() {
+        Collections.EMPTY_LIST
+    }
+    
     protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }

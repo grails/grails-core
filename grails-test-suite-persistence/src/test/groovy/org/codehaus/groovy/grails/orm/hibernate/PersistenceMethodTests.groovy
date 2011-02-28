@@ -1,12 +1,12 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByPersistentMethod
-import org.codehaus.groovy.runtime.InvokerInvocationException
 import org.codehaus.groovy.runtime.metaclass.MethodSelectionException
-
 import org.springframework.validation.Errors
 
 /**
@@ -17,31 +17,8 @@ import org.springframework.validation.Errors
  */
 class PersistenceMethodTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
-
-@Entity
-class PersistentMethodTests {
-    String firstName
-    String lastName
-    Integer age
-    boolean active = true
-    static constraints = {
-        firstName(size:4..15)
-        lastName(nullable:false)
-        age(nullable:true)
-    }
-}
-
-@Entity
-class PersistentMethodTestsDescendent extends PersistentMethodTests {
-    String gender
-    static constraints = {
-        gender(blank:false)
-    }
-}
-'''
+    protected getDomainClasses() {
+        [PersistentMethodTests, PersistentMethodTestsDescendent]
     }
 
     void testMethodSignatures() {
@@ -103,7 +80,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
 
     void testValidatePersistentMethodOnDerivedClass() {
 
-        GrailsDomainClass domainClass = loadDomainClass('PersistentMethodTestsDescendent')
+        GrailsDomainClass domainClass = loadDomainClass(PersistentMethodTestsDescendent.name)
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -131,7 +108,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testFindPersistentMethods() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -238,7 +215,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testFindByPersistentMethods() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -373,7 +350,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testGetPersistentMethod() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -396,7 +373,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testGetAllPersistentMethod() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -463,7 +440,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testDiscardMethod() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -478,7 +455,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testFindAllPersistentMethod() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -689,7 +666,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testListPersistentMethods() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -743,7 +720,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testExecuteQueryMethod() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
 
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
@@ -847,7 +824,7 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
     }
 
     void testDMLOperation() {
-        def domainClass = ga.getDomainClass("PersistentMethodTests").clazz
+        def domainClass = ga.getDomainClass(PersistentMethodTests.name).clazz
         def obj = domainClass.newInstance()
         obj.setProperty("id", 1)
         obj.setProperty("firstName", "fred")
@@ -886,7 +863,29 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         assertEquals 0, returnList.size()
     }
 
-    private loadDomainClass(String name = 'PersistentMethodTests') {
+    private loadDomainClass(String name = PersistentMethodTests.name) {
         grailsApplication.getArtefact DomainClassArtefactHandler.TYPE, name
     }
 }
+
+@Entity
+class PersistentMethodTests {
+    String firstName
+    String lastName
+    Integer age
+    boolean active = true
+    static constraints = {
+        firstName(size:4..15)
+        lastName(nullable:false)
+        age(nullable:true)
+    }
+}
+
+@Entity
+class PersistentMethodTestsDescendent extends PersistentMethodTests {
+    String gender
+    static constraints = {
+        gender(blank:false)
+    }
+}
+

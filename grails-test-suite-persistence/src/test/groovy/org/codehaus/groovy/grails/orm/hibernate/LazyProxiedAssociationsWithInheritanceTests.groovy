@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.proxy.HibernateProxy
+import grails.persistence.Entity
+
 import org.apache.commons.beanutils.PropertyUtils
 
 /**
@@ -11,75 +12,22 @@ import org.apache.commons.beanutils.PropertyUtils
  */
 class LazyProxiedAssociationsWithInheritanceTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
-
-@Entity
-class ContentRevision implements Serializable {
-
-    Date dateCreated
-
-    static belongsTo = [content: Content]
-}
-@Entity
-class Content implements Serializable {
-
-    Date dateCreated
-    Date lastUpdated
-
-    List revisions
-
-    static hasMany = [revisions: ContentRevision]
-}
-
-@Entity
-class ArticleRevision extends ContentRevision {
-    String body
-}
-
-@Entity
-class Article extends Content {
-    String author
-}
-
-@Entity
-class LazyProxiedAssociationsWithInheritancePerson {
-    static constraints = { name(nullable:true) }
-    String name
-}
-
-@Entity
-class LazyProxiedAssociationsWithInheritanceAuthor extends LazyProxiedAssociationsWithInheritancePerson {
-    static constraints = { address(nullable:true) }
-    LazyProxiedAssociationsWithInheritanceAddress address
-
-    def houseNumber() {
-        address.houseNumber
-    }
-
-    def sum(a, b) { a + b }
-}
-
-@Entity
-class LazyProxiedAssociationsWithInheritanceAddress {
-    static constraints = { houseNumber(nullable:true) }
-    String houseNumber
-}
-
-@Entity
-class LazyProxiedAssociationsWithInheritanceBook {
-    String title
-    LazyProxiedAssociationsWithInheritancePerson author
-}
-'''
+    protected getDomainClasses() {
+        [ContentRevision, 
+         Content, 
+         ArticleRevision, 
+         Article, 
+         LazyProxiedAssociationsWithInheritancePerson, 
+         LazyProxiedAssociationsWithInheritanceAuthor, 
+         LazyProxiedAssociationsWithInheritanceAddress, 
+         LazyProxiedAssociationsWithInheritanceBook]
     }
 
     void testMethodCallsOnProxiedObjects() {
 
-        def Author = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAuthor").clazz
-        def Address = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAddress").clazz
-        def Book = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceBook").clazz
+        def Author = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceAuthor.name).clazz
+        def Address = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceAddress.name).clazz
+        def Book = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceBook.name).clazz
 
         def addr = Address.newInstance(houseNumber:'52')
         def auth = Author.newInstance(name:'Marc Palmer')
@@ -110,9 +58,9 @@ class LazyProxiedAssociationsWithInheritanceBook {
     }
 
     void testSettersOnProxiedObjects() {
-        def Author = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAuthor").clazz
-        def Address = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAddress").clazz
-        def Book = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceBook").clazz
+        def Author = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceAuthor.name).clazz
+        def Address = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceAddress.name).clazz
+        def Book = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceBook.name).clazz
 
         def addr = Address.newInstance(houseNumber:'52')
         def auth = Author.newInstance(name:'Marc Palmer')
@@ -172,8 +120,8 @@ class LazyProxiedAssociationsWithInheritanceBook {
     }
 
     void testLazyProxiesWithInheritance() {
-        def Article = ga.getDomainClass("Article").clazz
-        def ArticleRevision = ga.getDomainClass("ArticleRevision").clazz
+        def Article = ga.getDomainClass(Article.name).clazz
+        def ArticleRevision = ga.getDomainClass(ArticleRevision.name).clazz
 
         def article = Article.newInstance(author:'author1')
         article.addToRevisions(ArticleRevision.newInstance(title:'title1', body:'body1'))
@@ -194,9 +142,9 @@ class LazyProxiedAssociationsWithInheritanceBook {
 
     void testLazyProxiesWithInheritance2() {
 
-        def Author = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAuthor").clazz
-        def Address = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceAddress").clazz
-        def Book = ga.getDomainClass("LazyProxiedAssociationsWithInheritanceBook").clazz
+        def Author = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceAuthor.name).clazz
+        def Address = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceAddress.name).clazz
+        def Book = ga.getDomainClass(LazyProxiedAssociationsWithInheritanceBook.name).clazz
 
         def addr = Address.newInstance(houseNumber:'52')
         def auth = Author.newInstance(name:'Marc Palmer')
@@ -216,3 +164,63 @@ class LazyProxiedAssociationsWithInheritanceBook {
         assertEquals "52", book.author.address.houseNumber
     }
 }
+
+
+@Entity
+class ContentRevision implements Serializable {
+
+    Date dateCreated
+
+    static belongsTo = [content: Content]
+}
+@Entity
+class Content implements Serializable {
+
+    Date dateCreated
+    Date lastUpdated
+
+    List revisions
+
+    static hasMany = [revisions: ContentRevision]
+}
+
+@Entity
+class ArticleRevision extends ContentRevision {
+    String body
+}
+
+@Entity
+class Article extends Content {
+    String author
+}
+
+@Entity
+class LazyProxiedAssociationsWithInheritancePerson {
+    static constraints = { name(nullable:true) }
+    String name
+}
+
+@Entity
+class LazyProxiedAssociationsWithInheritanceAuthor extends LazyProxiedAssociationsWithInheritancePerson {
+    static constraints = { address(nullable:true) }
+    LazyProxiedAssociationsWithInheritanceAddress address
+
+    def houseNumber() {
+        address.houseNumber
+    }
+
+    def sum(a, b) { a + b }
+}
+
+@Entity
+class LazyProxiedAssociationsWithInheritanceAddress {
+    static constraints = { houseNumber(nullable:true) }
+    String houseNumber
+}
+
+@Entity
+class LazyProxiedAssociationsWithInheritanceBook {
+    String title
+    LazyProxiedAssociationsWithInheritancePerson author
+}
+

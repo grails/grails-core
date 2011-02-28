@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -8,36 +10,14 @@ package org.codehaus.groovy.grails.orm.hibernate
  */
 class AdvancedEnumCollectionMappingTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
 
-@Entity
-class User {
-
-    static hasMany = [roles: Role]
-    Role primaryRole
-
-    String name
-
-    static constraints = {
-        name(blank: false, matches: "[a-zA-Z]+", maxSize: 20, unique: true)
+    protected getDomainClasses() {
+        [EnumCollectionMappingUser]
     }
-
-    String toString() { name}
-}
-
-enum Role {
-    ADMIN("0"), MANAGER("2"), EMPLOYEE("4")
-    Role(String id) { this.id = id }
-    final String id
-}
-'''
-    }
-
+    
     void testAdvancedEnumCollectionMapping() {
-        def User = ga.getDomainClass("User").clazz
-        def Role = ga.classLoader.loadClass("Role")
+        def User = ga.getDomainClass(EnumCollectionMappingUser.name).clazz
+        def Role = ga.classLoader.loadClass(EnumCollectionMappingRole.name)
 
         def user = User.newInstance(name:"Fred")
         user.primaryRole = Role.EMPLOYEE
@@ -58,10 +38,31 @@ enum Role {
 
         def conn = session.connection()
 
-        def rs = conn.prepareStatement("SELECT primary_role FROM USER").executeQuery()
+        def rs = conn.prepareStatement("SELECT primary_role FROM ENUM_COLLECTION_MAPPING_USER").executeQuery()
 
         rs.next()
 
         assertEquals "4", rs.getString("primary_role")
     }
+}
+
+@Entity
+class EnumCollectionMappingUser {
+
+    static hasMany = [roles: EnumCollectionMappingRole]
+    EnumCollectionMappingRole primaryRole
+
+    String name
+
+    static constraints = {
+        name(blank: false, matches: "[a-zA-Z]+", maxSize: 20, unique: true)
+    }
+
+    String toString() { name}
+}
+
+enum EnumCollectionMappingRole {
+    ADMIN("0"), MANAGER("2"), EMPLOYEE("4")
+    EnumCollectionMappingRole(String id) { this.id = id }
+    final String id
 }
