@@ -267,10 +267,6 @@ class OneToOneTest2 {
         DefaultGrailsDomainClass middleDomainClass = new DefaultGrailsDomainClass(middleClass)
         DefaultGrailsDomainClass bottomDomainClass = new DefaultGrailsDomainClass(bottomClass)
 
-        assertEquals("bottom class had wrong number of persistent properties", 3, bottomDomainClass.getPersistentProperties().length)
-        assertEquals("middle class had wrong number of persistent properties", 2, middleDomainClass.getPersistentProperties().length)
-        assertEquals("top class had wrong number of persistent properties", 1, topDomainClass.getPersistentProperties().length)
-
         GrailsDomainClassProperty topStringProperty = topDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in topDomainClass", topStringProperty)
         assertTrue("topString property was not persistent in topDomainClass", topStringProperty.isPersistent())
@@ -286,6 +282,7 @@ class OneToOneTest2 {
         topStringProperty = bottomDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in bottomDomainClass", topStringProperty)
         assertTrue("topString property was not persistent in bottomDomainClass", topStringProperty.isPersistent())
+        assertTrue("topString property was not inherited in bottomDomainClass", topStringProperty.isInherited())
 
         middleStringProperty = bottomDomainClass.getPropertyByName("middleString")
         assertNotNull("middleString property not found in bottomDomainClass", middleStringProperty)
