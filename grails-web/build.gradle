@@ -28,14 +28,15 @@ sourceSets {
     }
 }
 
-task addJsp21Classes(dependsOn:compileJsp21Groovy) {
-    doFirst {
-        copy {
-            from sourceSets.jsp21.classes
-            into sourceSets.main.classesDir
-        }
-    }
+//task addJsp21Classes(dependsOn:compileJsp21Groovy, type:Copy) {
+//   from compileJsp21Groovy.outputs.files
+//   into sourceSets.main.classesDir
+//}
+
+jar{
+	from compileJsp21Groovy.outputs.files
 }
-assemble.dependsOn addJsp21Classes
+
+//assemble.dependsOn addJsp21Classes
 
 jar.appendix = 'web'
