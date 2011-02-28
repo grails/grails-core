@@ -505,17 +505,12 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def grailsVersion = getCurrentGrailsVersion()
         manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
 
-        assertEquals 73, manager.listDependencies('runtime').size()
-        assertEquals 77, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
-        assertEquals 2, manager.listDependencies('provided').size()
-        assertEquals 22, manager.listDependencies('docs').size()
-
-    // This should be a functional test since it relies on the Grails
-    // JAR files being built. It also runs Ivy, which isn't ideal
-    // in unit tests.
-//        def report = manager.resolveDependencies()
-//        assertFalse "dependency resolve should have no errors!",report.hasError()
+        assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
+        assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
+        assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
+        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
 
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
@@ -531,11 +526,12 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
 
-        assertEquals 0, manager.listDependencies('runtime').size()
-        assertEquals 4, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
-        assertEquals 75, manager.listDependencies('provided').size()
-        assertEquals 22, manager.listDependencies('docs').size()
+        assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
+        assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
+        assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 70, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
+        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
 
         manager = new IvyDependencyManager("project", "0.1",settings)
         defaultDependencyClosure = IvyDependencyManager.getDefaultDependencies(grailsVersion)
@@ -545,11 +541,12 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
 
-        assertEquals 73, manager.listDependencies('runtime').size()
-        assertEquals 77, manager.listDependencies('test').size()
-        assertEquals 19, manager.listDependencies('build').size()
-        assertEquals 2, manager.listDependencies('provided').size()
-        assertEquals 22, manager.listDependencies('docs').size()
+        assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
+        assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
+        assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
+        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
 
     def getCurrentGrailsVersion() {
@@ -672,14 +669,6 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def manager = new IvyDependencyManager("test", "0.1")
         manager.parseDependencies TEST_DATA
         manager.resolveDependencies()
-    }
-
-    void testListDependencies() {
-        def manager = new IvyDependencyManager("test", "0.1")
-        manager.parseDependencies TEST_DATA
-        assertEquals 18, manager.listDependencies("build").size()
-        assertEquals 30, manager.listDependencies("runtime").size()
-        assertEquals 31, manager.listDependencies("test").size()
     }
 
     void testParseDependencyDefinition() {
