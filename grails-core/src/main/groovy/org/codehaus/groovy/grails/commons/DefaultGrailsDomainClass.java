@@ -775,8 +775,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private ConstraintsEvaluator getConstraintsEvaluator() {
         if(grailsApplication != null && grailsApplication.getMainContext() != null) {
             final ApplicationContext context = grailsApplication.getMainContext();
-            if(context.containsBean("constraintsEvaluator")) {
-                return context.getBean("constraintsEvalutor", ConstraintsEvaluator.class);
+            if(context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+                return context.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator.class);
             }
         }
         return new DefaultConstraintEvaluator(defaultConstraints);

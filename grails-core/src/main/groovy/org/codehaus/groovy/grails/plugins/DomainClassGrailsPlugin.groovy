@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -47,7 +48,7 @@ class DomainClassGrailsPlugin {
             defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
         }
 
-        constraintsEvaluator(ConstraintsEvaluatorFactoryBean) {
+        "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
              defaultConstraints = defaultConstraintsMap
         }
 

@@ -29,6 +29,7 @@ public interface ConstraintsEvaluator {
 
     String PROPERTY_NAME = "constraints";
     String CONSTRAINTS_GROOVY_SCRIPT = "Constraints.groovy";
+    String BEAN_NAME = "org.grails.beans.constraintsEvaluator";
 
     /**
      * The default constraints to use
