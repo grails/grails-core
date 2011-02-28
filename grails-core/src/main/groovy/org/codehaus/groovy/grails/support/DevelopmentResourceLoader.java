@@ -18,17 +18,15 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
-
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.support.GrailsPluginUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+
+import java.io.IOException;
 
 /**
  * Allows files references like /WEB-INF/grails-app to be loaded from ./grails-app to support
@@ -88,28 +86,24 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader{
 
         if (application != null) {
 
-            GrailsPluginManager pluginManager = getPluginManager(application.getMainContext());
-            if (pluginManager != null) {
-                BuildSettings settings = BuildSettingsHolder.getSettings();
-                PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
-                String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
-                String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
-                String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);
-                Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
-                if (r != null) {
-                    try {
-                        return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;
-                    }
-                    catch (IOException e) {
-                        return defaultPath;
-                    }
+            BuildSettings settings = BuildSettingsHolder.getSettings();
+            PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
+            String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
+            String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
+            String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);
+            Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
+            if (r != null) {
+                try {
+                    return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;
                 }
-
-                if (settings != null) {
-                    return "file:" + settings.getProjectPluginsDir().getAbsolutePath() + SLASH + pluginName + SLASH + remainingPath;
+                catch (IOException e) {
+                    return defaultPath;
                 }
             }
 
+            if (settings != null) {
+                return "file:" + settings.getProjectPluginsDir().getAbsolutePath() + SLASH + pluginName + SLASH + remainingPath;
+            }
         }
 
         return defaultPath;
