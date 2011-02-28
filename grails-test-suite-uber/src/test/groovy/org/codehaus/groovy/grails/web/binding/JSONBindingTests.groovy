@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.binding
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -10,6 +11,9 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 class JSONBindingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
+        RequestContextHolder.setRequestAttributes(null)
+        MimeType.reset()
+
         gcl.parseClass( """
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
