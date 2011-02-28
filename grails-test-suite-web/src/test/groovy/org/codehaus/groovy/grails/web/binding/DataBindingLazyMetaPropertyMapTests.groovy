@@ -16,7 +16,6 @@
 
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.commons.metaclass.PropertyMapTest
 
 class DataBindingLazyMetaPropertyMapTests extends GroovyTestCase {
 
@@ -30,4 +29,9 @@ class DataBindingLazyMetaPropertyMapTests extends GroovyTestCase {
         assertEquals "stuff", map.other
     }
 
+}
+class PropertyMapTest {
+    String name
+    Integer age
+    String other
 }
