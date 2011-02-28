@@ -23,11 +23,5 @@ processResources{
    inputs.property "version", version
    filter(ReplaceTokens, tokens:[version:version])
 }
-//jar.doFirst {
-//    println "write grails.build.properties"
-//	ant.mkdir(dir:sourceSets.main.classesDir)
-//    ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
-//        entry key:"grails.version", value:version
-//    }
-//}
+
 jar.appendix = 'bootstrap'
