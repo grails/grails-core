@@ -78,7 +78,7 @@ binExecutables = ["cygrails", "grails", "grails-debug", "grails-debug.bat", "gra
 distSpec = copySpec {
     from(projectDir) {
         into "grails-$grailsVersion"
-        include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'conf/', 'build.gradle', 'build.properties',
+        include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
         exclude 'ant/bin'
 
@@ -94,33 +94,37 @@ distSpec = copySpec {
     	include "gradlew"
     	fileMode = 0755
     }
-/*    from(docs.destinationDir) {
+    from(docs.destinationDir) {
         into "grails-$grailsVersion/doc"
-    }*/
+    }
     exclude "**/CVS/**"
     from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
         into "grails-$grailsVersion/plugins"
-    }
-    from('bin') {
-        into "grails-$grailsVersion/bin"
-        include binExecutables
-        fileMode = 0755
     }
     from('src/resources/docs/README') {
         into "grails-$grailsVersion"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
     from("src/resources/bash") {
-        include "startGrails.bat", "startGrails"
         into "grails-$grailsVersion/bin"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+		filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         fileMode = 0755
+    }
+    from("src/resources/conf") {
+        into "grails-$grailsVersion/conf"
+      	filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
+        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
+        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
+
     }
     from(libs.destinationDir) {
         into "grails-$grailsVersion/dist"
         exclude "*.zip"
     }
-    from("src/grails/grails-macros.xml") {
+    from("grails-resources/src/grails/grails-macros.xml") {
         into "grails-$grailsVersion/src/grails"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
