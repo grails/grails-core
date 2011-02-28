@@ -66,8 +66,9 @@ import org.springframework.validation.Validator
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.hibernate.*
+import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator
 
- /**
+/**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
  *
  * @author Graeme Rocher
@@ -85,6 +86,10 @@ class HibernatePluginSupport {
     static doWithSpring = {
         def factory = new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(), UniqueConstraint)
         ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory)
+
+        if (getSpringConfig().containsBean("constraintsEvaluator")) {
+            constraintsEvaluator.constraintsEvaluatorClass = HibernateConstraintsEvaluator.class
+        }
 
         for (GrailsDomainClass dc in application.domainClasses) {
             "${dc.fullName}Validator"(HibernateDomainClassValidator) {

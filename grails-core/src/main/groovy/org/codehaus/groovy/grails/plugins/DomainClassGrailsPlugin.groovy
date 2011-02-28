@@ -15,17 +15,17 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.ClosureToMapPopulator
 import grails.util.GrailsUtil
-
-import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
-
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.codehaus.groovy.grails.commons.*
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -40,6 +40,17 @@ class DomainClassGrailsPlugin {
     def loadAfter = ['controllers']
 
     def doWithSpring = {
+
+        def constraints = application.config?.grails?.gorm?.default?.constraints
+        def defaultConstraintsMap
+        if(constraints instanceof Closure) {
+            defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
+        }
+
+        constraintsEvaluator(ConstraintsEvaluatorFactoryBean) {
+             defaultConstraints = defaultConstraintsMap
+        }
+
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
             "${dc.fullName}"(dc.clazz) { bean ->

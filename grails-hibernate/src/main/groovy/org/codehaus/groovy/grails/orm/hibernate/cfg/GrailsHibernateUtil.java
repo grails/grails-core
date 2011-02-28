@@ -85,18 +85,11 @@ public class GrailsHibernateUtil {
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
         ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
-        Map defaultContraints = Collections.emptyMap();
-        if (artefactHandler instanceof DomainClassArtefactHandler) {
-            final Map map = ((DomainClassArtefactHandler) artefactHandler).getDefaultConstraints();
-            if (map != null) {
-                defaultContraints = map;
-            }
-        }
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
             configureDomainClass(sessionFactory, application, classMetadata,
                     classMetadata.getMappedClass(EntityMode.POJO),
-                    hibernateDomainClassMap, defaultContraints);
+                    hibernateDomainClassMap);
         }
         configureInheritanceMappings(hibernateDomainClassMap);
     }
@@ -125,8 +118,7 @@ public class GrailsHibernateUtil {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application,
-            ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap,
-            Map defaultContraints) {
+                                             ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap) {
 
         if (Modifier.isAbstract(persistentClass.getModifiers())) {
             return;
@@ -137,7 +129,7 @@ public class GrailsHibernateUtil {
         if (dc == null) {
             // a patch to add inheritance to this system
             GrailsHibernateDomainClass ghdc = new GrailsHibernateDomainClass(
-                    persistentClass, sessionFactory, application, cmd, defaultContraints);
+                    persistentClass, sessionFactory, application, cmd);
 
             hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
             dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
