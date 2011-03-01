@@ -17,5 +17,25 @@ test {
     maxParallelForks = 4
     forkEvery = 100
     jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
+    excludes = ["**/*TestCase.class", 
+				"**/*\$*.class", 
+				"**/ContentFormatControllerTests.class",
+				"**/JSONBindingTests.class",
+				"**/AutoParams*MarshallingTests.class"]
 }
+
+task isolatedTestsOne(type:Test) {
+    includes = [
+				"**/ContentFormatControllerTests.class",
+				]	
+}
+task isolatedTestsTwo(type:Test) {
+    includes = [
+				"**/JSONBindingTests.class",
+				"**/AutoParams*MarshallingTests.class"]	
+}
+
+
+test.dependsOn isolatedTestsOne, isolatedTestsTwo
+
 
