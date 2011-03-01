@@ -53,6 +53,8 @@ task libs(dependsOn: getTasksByName("assemble", true))  {
 	}
 }
 
+libs.inputs.files(subprojects.configurations.compile, subprojects.configurations.runtime)
+libs.outputs.files(fileTree("lib"))
 
 
 task pluginsFromSvn {
