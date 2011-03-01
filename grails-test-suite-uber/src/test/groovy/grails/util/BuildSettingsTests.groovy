@@ -104,7 +104,7 @@ class BuildSettingsTests extends GroovyTestCase {
             new File(grailsHome, "lib").mkdir()
             new File(grailsHome, "dist").mkdir()
 
-            def settings = new BuildSettings(new File("my-grails"))
+            def settings = new MockBuildSettings(new File("my-grails"))
 
             // Core properties first.
             assertEquals userHome, settings.userHome.path
@@ -312,6 +312,13 @@ class BuildSettingsTests extends GroovyTestCase {
     }
 }
 class MockBuildSettings extends BuildSettings {
+
+    MockBuildSettings() {
+    }
+
+    MockBuildSettings(File grailsHome) {
+        super(grailsHome)
+    }
 
     static version
 
