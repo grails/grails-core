@@ -15,24 +15,17 @@
  */
 package grails.util
 
-import grails.util.Metadata
-import groovyx.gpars.Asynchronizer
-
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
-
-import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.repository.TransferEvent
-import org.apache.ivy.util.ChecksumHelper;
+import org.apache.ivy.plugins.repository.TransferListener
+import org.apache.ivy.util.ChecksumHelper
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
-import java.util.concurrent.ConcurrentHashMap
 
-/**
+ /**
  * <p>Represents the project paths and other build settings
  * that the user can change when running the Grails commands. Defaults
  * are provided for all settings, but the user can override those by
@@ -559,7 +552,8 @@ class BuildSettings extends AbstractBuildSettings {
 
         }
     }
-    private def loadBuildPropertiesFromClasspath(Properties buildProps) {
+
+    protected def loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
         if (stream == null) {
             stream = getClass().classLoader.getResourceAsStream("build.properties")
