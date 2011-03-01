@@ -76,7 +76,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ga.config = config
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
-        return GrailsWebUtil.bindMockWebRequest(appCtx)
+        GrailsWebRequest request = GrailsWebUtil.bindMockWebRequest(appCtx)
+        initThemeSource(request.getCurrentRequest(), messageSource)
+        return request
     }
 
 
@@ -214,10 +216,14 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
-        request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
-        request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver())
+        initThemeSource(request, messageSource)
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
+    }
+
+    private def initThemeSource(request, StaticMessageSource messageSource) {
+        request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
+        request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver())
     }
 
     protected void tearDown() {
