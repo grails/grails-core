@@ -114,7 +114,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
         } catch (IOException e) {
             return null;
         }
-        if(i18nDir != null && i18nDir.exists()) {
+        if(i18nDir != null) {
 
             Properties properties = new Properties();
             final String defaultName = BASE_MESSAGES_PROPERTIES;
