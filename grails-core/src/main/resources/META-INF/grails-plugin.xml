@@ -1,3 +1,4 @@
 <plugin name='core'>
-  <class>org.codehaus.groovy.grails.plugins.CoreGrailsPlugin</class>
+  <type>org.codehaus.groovy.grails.plugins.CoreGrailsPlugin</type>
+  <type>org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin</type>
 </plugin>

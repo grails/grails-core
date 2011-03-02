@@ -35,6 +35,7 @@ class PluginDescriptorGenerator {
 
     String pluginName
     Resource[] resourceList
+    List excludes = ["UrlMappings", "DataSource", "BuildConfig", "Config"]
 
     PluginDescriptorGenerator(String pluginName, List<Resource> resourceList) {
         this.pluginName = pluginName
@@ -72,7 +73,7 @@ class PluginDescriptorGenerator {
 
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
         // Write the content!
-        def props = ['author', 'authorEmail', 'title', 'description', 'documentation']
+        def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type']
 
         def rcComparator = [compare: {a, b -> a.URI.compareTo(b.URI) }] as Comparator
         Arrays.sort(resourceList, rcComparator)
@@ -92,7 +93,8 @@ class PluginDescriptorGenerator {
                     for (r in resourceList) {
                         def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
                         def name = matcher[0][1].replaceAll('/', /\./)
-                        xml.resource(name)
+                        if(!excludes.contains(name))
+                            xml.resource(name)
                     }
                 }
                 dependencies {

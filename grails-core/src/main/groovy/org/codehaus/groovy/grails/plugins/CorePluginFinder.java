@@ -116,7 +116,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
                 try {
                     input = resource.getInputStream();
                     final GPathResult result = slurper.parse(input);
-                    GPathResult pluginClass = (GPathResult) result.getProperty("class");
+                    GPathResult pluginClass = (GPathResult) result.getProperty("type");
                     if (pluginClass.size() == 1) {
                         final String pluginClassName = pluginClass.text();
                         if (StringUtils.hasText(pluginClassName)) {

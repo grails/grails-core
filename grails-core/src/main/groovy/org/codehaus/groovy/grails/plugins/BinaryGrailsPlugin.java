@@ -21,8 +21,6 @@ import groovy.util.slurpersupport.GPathResult;
 import groovy.util.slurpersupport.Node;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.io.Resource;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.ViewResolver;
 
 import java.io.IOException;
 import java.util.*;
@@ -35,7 +33,7 @@ import java.util.*;
  * @author  Graeme Rocher
  * @since 1.4
  */
-public class BinaryGrailsPlugin extends DefaultGrailsPlugin implements ViewResolver {
+public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
 
 
     public static final String BASE_MESSAGES_PROPERTIES = "grails-app/i18n/messages";
@@ -151,7 +149,6 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin implements ViewResol
 	 * "messages_de_AT", "messages_de".
 	 * <p>Follows the rules defined by {@link java.util.Locale#toString()}.
      *
-     * @author Juergen Hoeller
 	 * @param basename the basename of the bundle
 	 * @param locale the locale
 	 * @return the List of filenames to check
@@ -183,8 +180,18 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin implements ViewResol
 		return result;
 	}
 
-    public View resolveViewName(String viewName, Locale locale) throws Exception {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    /**
+     * Resolves a view for the given view name, locale and content format within a binary plugin
+     *
+     * @param viewName The view name
+     * @param locale The locale
+     * @param contentFormat The content format
+     * @return A Resource for the view or null if it doesn't exist
+     *
+     */
+    public Resource resolveView(String viewName, Locale locale, String contentFormat)  {
+        // TODO: Implement resolving views from a binary plugin
+        return null;
     }
 
 
