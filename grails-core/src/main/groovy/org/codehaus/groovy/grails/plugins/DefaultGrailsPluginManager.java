@@ -15,49 +15,14 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.util.BuildSettings;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
-import grails.util.PluginBuildSettings;
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovyShell;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClassRegistry;
-import groovy.lang.Writable;
+import groovy.lang.*;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.Writer;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.ServletContext;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,6 +45,17 @@ import org.springframework.util.Assert;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.servlet.ServletContext;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -329,7 +305,16 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     private void attemptLoadPlugins(ClassLoader gcl) {
         // retrieve load core plugins first
-        List<GrailsPlugin>  grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
+
+
+        List<GrailsPlugin>  grailsCorePlugins = null;
+        try {
+            grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
+        } catch (Throwable e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
         List<GrailsPlugin>  grailsUserPlugins = findUserPlugins(gcl);
         userPlugins = grailsUserPlugins;
 
@@ -363,17 +348,31 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     private List<GrailsPlugin> findCorePlugins() {
         CorePluginFinder finder = new CorePluginFinder(application);
+        finder.setParentApplicationContext(parentCtx);
 
         List<GrailsPlugin> grailsCorePlugins = new ArrayList<GrailsPlugin>();
 
-        for (Class<?> pluginClass : finder.getPluginClasses()) {
+        final Class[] corePluginClasses = finder.getPluginClasses();
+
+        for (Class pluginClass : corePluginClasses) {
             if (pluginClass != null && !Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
-                GrailsPlugin plugin = createGrailsPlugin(pluginClass);
+                final BinaryGrailsPluginDescriptor binaryDescriptor = finder.getBinaryDescriptor(pluginClass);
+                GrailsPlugin plugin;
+                if(binaryDescriptor != null) {
+                    plugin = createBinaryGrailsPlugin(pluginClass, binaryDescriptor);
+                }
+                else {
+                    plugin = createGrailsPlugin(pluginClass);
+                }
                 plugin.setApplicationContext(applicationContext);
                 grailsCorePlugins.add(plugin);
             }
         }
         return grailsCorePlugins;
+    }
+
+    private GrailsPlugin createBinaryGrailsPlugin(Class<?> pluginClass, BinaryGrailsPluginDescriptor binaryDescriptor) {
+        return new BinaryGrailsPlugin(pluginClass, binaryDescriptor, application);
     }
 
     protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass) {

@@ -15,54 +15,71 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
+import groovy.util.slurpersupport.Node;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.StringUtils;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * Loads core plugin classes. Contains functionality moved in from <code>DefaultGrailsPluginManager</code>.
+ *
  * @author Graeme Rocher
  * @author Phil Zoio
  */
-public class CorePluginFinder {
+public class CorePluginFinder implements ParentApplicationContextAware {
 
     private static final Log LOG = LogFactory.getLog(CorePluginFinder.class);
+    public static final String CORE_PLUGIN_PATTERN = "classpath*:META-INF/grails-plugin.xml";
 
-    private final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     private final Set<Class<?>> foundPluginClasses = new HashSet<Class<?>>();
     private final GrailsApplication application;
+    private final Map<Class, BinaryGrailsPluginDescriptor> binaryDescriptors = new HashMap<Class, BinaryGrailsPluginDescriptor>();
 
     public CorePluginFinder(GrailsApplication application) {
         this.application = application;
     }
 
-    public Set<Class<?>> getPluginClasses() {
+    public Class[] getPluginClasses() {
 
         // just in case we try to use this twice
         foundPluginClasses.clear();
 
         try {
-            Resource[] resources = resolver.getResources(
-                "classpath*:org/codehaus/groovy/grails/**/plugins/**/*GrailsPlugin.class");
+            Resource[] resources = resolvePluginResources();
             if (resources.length > 0) {
                 loadCorePluginsFromResources(resources);
-            }
-            else {
+            } else {
                 LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container class loader configuration, see troubleshooting and FAQ for more info. ");
                 loadCorePluginsStatically();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             LOG.warn("WARNING: I/O exception loading core plugin dynamically, attempting static load. This is usually due to deployment onto containers with unusual classloading setups. Message: " + e.getMessage());
             loadCorePluginsStatically();
         }
-        return foundPluginClasses;
+        return foundPluginClasses.toArray(new Class[foundPluginClasses.size()]);
+    }
+
+    public BinaryGrailsPluginDescriptor getBinaryDescriptor(Class pluginClass) {
+        return binaryDescriptors.get(pluginClass);
+    }
+
+    private Resource[] resolvePluginResources() throws IOException {
+        return resolver.getResources(CORE_PLUGIN_PATTERN);
     }
 
     private void loadCorePluginsStatically() {
@@ -91,22 +108,55 @@ public class CorePluginFinder {
     private void loadCorePluginsFromResources(Resource[] resources) throws IOException {
 
         LOG.debug("Attempting to load [" + resources.length + "] core plugins");
-        for (Resource resource : resources) {
-            String url = resource.getURL().toString();
-            int packageIndex = url.indexOf("org/codehaus/groovy/grails");
-            url = url.substring(packageIndex, url.length());
-            url = url.substring(0, url.length() - 6);
-            String className = url.replace('/', '.');
+        try {
+            XmlSlurper slurper = new XmlSlurper();
+            for (Resource resource : resources) {
+                InputStream input = null;
 
-            loadCorePlugin(className);
+                try {
+                    input = resource.getInputStream();
+                    final GPathResult result = slurper.parse(input);
+                    GPathResult pluginClass = (GPathResult) result.getProperty("class");
+                    if (pluginClass.size() == 1) {
+                        final String pluginClassName = pluginClass.text();
+                        if (StringUtils.hasText(pluginClassName)) {
+                            loadCorePlugin(pluginClassName, resource, result);
+                        }
+                    } else {
+                        final Iterator iterator = pluginClass.nodeIterator();
+                        while (iterator.hasNext()) {
+                            Node node = (Node) iterator.next();
+                            final String pluginClassName = node.text();
+                            if (StringUtils.hasText(pluginClassName)) {
+                                loadCorePlugin(pluginClassName, resource, result);
+                            }
+                        }
+                    }
+                } finally {
+                   if(input != null)
+                        input.close();
+                }
+            }
+        } catch (ParserConfigurationException e) {
+            throw new GrailsConfigurationException("XML parsing error loading core plugins: " + e.getMessage(), e);
+        } catch (SAXException e) {
+            throw new GrailsConfigurationException("XML parsing error loading core plugins: " + e.getMessage(), e);
+        }
+    }
+
+    private void loadCorePlugin(String pluginClassName, Resource resource, GPathResult result) {
+        Class<?> pluginClass = attemptCorePluginClassLoad(pluginClassName);
+        if (pluginClass != null) {
+            addPlugin(pluginClass);
+            binaryDescriptors.put(pluginClass, new BinaryGrailsPluginDescriptor(resource, result));
         }
     }
 
     private Class<?> attemptCorePluginClassLoad(String pluginClassName) {
         try {
-            return application.getClassLoader().loadClass(pluginClassName);
-        }
-        catch (ClassNotFoundException e) {
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            return classLoader.loadClass(pluginClassName);
+        } catch (ClassNotFoundException e) {
             LOG.warn("[GrailsPluginManager] Core plugin [" + pluginClassName +
                     "] not found, resuming load without..");
             if (LOG.isDebugEnabled()) {
@@ -117,13 +167,16 @@ public class CorePluginFinder {
     }
 
     private void loadCorePlugin(String pluginClassName) {
-        Class<?> pluginClass = attemptCorePluginClassLoad(pluginClassName);
-        if (pluginClass != null) {
-            addPlugin(pluginClass);
-        }
+        loadCorePlugin(pluginClassName, null, null);
     }
 
     private void addPlugin(Class<?> plugin) {
         foundPluginClasses.add(plugin);
+    }
+
+    public void setParentApplicationContext(ApplicationContext parent) {
+        if (parent != null) {
+            this.resolver = new PathMatchingResourcePatternResolver(parent);
+        }
     }
 }

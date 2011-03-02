@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
-import net.sf.ehcache.CacheManager
+
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -188,7 +188,8 @@ hibernate {
             // means it is not active, ignore
         }
         try {
-            CacheManager.getInstance()?.shutdown()
+            getClass().classLoader.loadClass("net.sf.ehcache.CacheManager")
+                                    .getInstance()?.shutdown()
         }
         catch(e) {
             // means there is no cache, ignore

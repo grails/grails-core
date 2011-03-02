@@ -1,0 +1,3 @@
+<plugin name='urlMappings'>
+  <class>org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin</class>
+</plugin>

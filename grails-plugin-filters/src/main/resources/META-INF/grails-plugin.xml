@@ -1,0 +1,3 @@
+<plugin name='filters'>
+  <class>org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin</class>
+</plugin>

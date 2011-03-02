@@ -423,7 +423,7 @@ public class GrailsScriptRunner {
             addUrlsToRootLoader(settings.getRootLoader(), urls);
 
             // The compiled classes of the application!
-            urls = new URL[] { settings.getClassesDir().toURI().toURL() };
+            urls = new URL[] { settings.getClassesDir().toURI().toURL(), settings.getPluginClassesDir().toURI().toURL() };
             classLoader = new URLClassLoader(urls, settings.getRootLoader());
             Thread.currentThread().setContextClassLoader(classLoader);
         }

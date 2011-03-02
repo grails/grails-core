@@ -88,7 +88,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private static final String PLUGIN_CHANGE_EVENT_MANAGER = "manager";
 
     private static final String PLUGIN_OBSERVE = "observe";
-    private static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin.class);
+    protected static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin.class);
     private static final String INCLUDES = "includes";
     private static final String EXCLUDES = "excludes";
     private GrailsPluginClass pluginGrailsClass;

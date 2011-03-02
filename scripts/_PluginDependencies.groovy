@@ -192,7 +192,7 @@ target(loadPluginsAsync:"Asynchronously loads plugins") {
 target(loadPlugins:"Loads Grails' plugins") {
     if (!PluginManagerHolder.pluginManager) { // plugin manager already loaded?
 		PluginManagerHolder.inCreation = true
-		compConfig.setTargetDirectory(classesDir)
+		compConfig.setTargetDirectory(pluginClassesDir)
 		def unit = new CompilationUnit (compConfig , null , new GroovyClassLoader(classLoader))
 		def pluginFiles = pluginSettings.pluginDescriptors
 

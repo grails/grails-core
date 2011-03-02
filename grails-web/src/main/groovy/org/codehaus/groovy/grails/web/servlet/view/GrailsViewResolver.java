@@ -16,19 +16,13 @@ package org.codehaus.groovy.grails.web.servlet.view;
 
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
-
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -43,6 +37,11 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Evaluates the existance of a view for different extensions choosing which one to delegate to.
  *
@@ -50,7 +49,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @since 0.1
  */
 public class GrailsViewResolver extends InternalResourceViewResolver
-       implements ResourceLoaderAware, ApplicationContextAware, PluginManagerAware {
+       implements ResourceLoaderAware, ApplicationContextAware, PluginManagerAware, GrailsApplicationAware {
 
     private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
@@ -66,6 +65,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver
     private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
     private static final char DOT = '.';
     private GrailsPluginManager pluginManager;
+    private GrailsApplication grailsApplication;
 
     /**
      * Constructor.
@@ -81,12 +81,15 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         if (GrailsUtil.isDevelopmentEnv()) {
             return createGrailsView(viewName);
         }
-        View view = VIEW_CACHE.get(viewName);
-        if (view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
-            view = createGrailsView(viewName);
+        else {
+
+            View view = VIEW_CACHE.get(viewName);
+            if (view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
+                view = createGrailsView(viewName);
+            }
+            VIEW_CACHE.put(viewName, view);
+            return view;
         }
-        VIEW_CACHE.put(viewName, view);
-        return view;
     }
 
     private View createGrailsView(String viewName) throws Exception {
@@ -97,9 +100,12 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         HttpServletRequest request = webRequest.getCurrentRequest();
         GroovyObject controller = webRequest.getAttributes().getController(request);
 
-        GrailsApplication application = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        if(grailsApplication == null) {
 
-        ResourceLoader loader = establishResourceLoader(application);
+            grailsApplication = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        }
+
+        ResourceLoader loader = establishResourceLoader(grailsApplication);
 
         String format = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT) != null ?
                 request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT).toString() : null;
@@ -109,7 +115,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         if (format != null) {
             res = loader.getResource(gspView);
             if (!res.exists()) {
-                gspView = resolveViewForController(controller, application, viewName, loader);
+                gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
                 res = loader.getResource(gspView);
             }
         }
@@ -118,14 +124,13 @@ public class GrailsViewResolver extends InternalResourceViewResolver
             gspView = localPrefix + viewName + GSP_SUFFIX;
             res = loader.getResource(gspView);
             if (!res.exists()) {
-                gspView = resolveViewForController(controller, application, viewName, loader);
+                gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
                 res = loader.getResource(gspView);
             }
         }
 
         if (res.exists()) {
-            final View view = createGroovyPageView(webRequest, gspView);
-            return view;
+            return createGroovyPageView(webRequest, gspView);
         }
 
         AbstractUrlBasedView view = buildView(viewName);
@@ -203,5 +208,9 @@ public class GrailsViewResolver extends InternalResourceViewResolver
 
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 }

@@ -18,18 +18,10 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.Metadata;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
@@ -40,6 +32,10 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A ReloadableResourceBundleMessageSource that is capable of loading message sources from plugins.
@@ -143,6 +139,16 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 PropertiesHolder propHolder = getProperties(filename);
                 if (propHolder.getProperties() != null) {
                     mergedProps.putAll(propHolder.getProperties());
+                }
+            }
+        }
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+        for (GrailsPlugin plugin : allPlugins) {
+            if (plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
+                if (binaryPluginProperties != null) {
+                    mergedProps.putAll(binaryPluginProperties);
                 }
             }
         }
