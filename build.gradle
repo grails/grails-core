@@ -197,6 +197,10 @@ install.doLast {
         into "bin"
 
     }
+    // the fileMode property above should take care of the chmod work, but
+    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
+    ant.chmod(dir: 'bin', perm: '755', includes: '*')
+    
     copy {
         from("src/resources/conf")
         into "conf"
