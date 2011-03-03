@@ -18,17 +18,15 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.Factory
 import com.opensymphony.module.sitemesh.RequestConstants
-
 import grails.util.Environment
 import grails.util.GrailsNameUtils
-
 import groovy.text.Template
-
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
-
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -536,8 +534,9 @@ class RenderTagLib implements RequestConstants {
         def contextPath = attrs.contextPath ? attrs.contextPath : null
         def pluginName = attrs.plugin
         def pluginContextFromPagescope = false
+        def pm = pluginManager
         if (pluginName) {
-            contextPath = pluginManager?.getPluginPath(pluginName) ?: ''
+            contextPath = pm?.getPluginPath(pluginName) ?: ''
         }
         else if (contextPath == null) {
             if (uri.startsWith('/plugins/')) {
@@ -570,6 +569,24 @@ class RenderTagLib implements RequestConstants {
                     templateResolveOrder = [uri, templatePath, templateInContextPath]
                 }
                 t = engine.createTemplateForUri(templateResolveOrder as String[])
+
+                if(t == null) {
+                    GrailsPlugin pagePlugin = pageScope.getPagePlugin()
+                    if(pagePlugin instanceof BinaryGrailsPlugin) {
+                        def binaryView = "/WEB-INF/grails-app/views${uri}"
+                        def viewClass = pagePlugin.resolveView(binaryView)
+                        if(viewClass != null) {
+                            t = engine.createTemplate(viewClass)
+                        }
+                    }
+                    else if(pagePlugin != null) {
+                        def pluginPath = pm?.getPluginPath(pagePlugin.getName())
+                        if(pluginPath != null) {
+                            t = engine.createTemplateForUri("${pluginPath}/grails-app/views${uri}")
+                        }
+                    }
+                }
+
                 if (!t && scaffoldingTemplateGenerator) {
                     GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest()
                     def controllerActions = scaffoldedActionMap[webRequest.controllerName]

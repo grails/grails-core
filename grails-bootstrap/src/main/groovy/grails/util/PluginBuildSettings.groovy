@@ -204,16 +204,17 @@ class PluginBuildSettings {
             }
         }
 
-        def baseDir = buildSettings.getBaseDir().getCanonicalPath()
-        if(sourceFile.startsWith(baseDir)) {
-            def basePluginInfo = getPluginInfo(baseDir)
-            if(basePluginInfo != null) {
-                pluginInfoToSourceMap[sourceFile] = basePluginInfo
-                return basePluginInfo
+        def baseDir = buildSettings?.getBaseDir()?.getCanonicalPath()
+        if(baseDir != null) {
+
+            if(sourceFile.startsWith(baseDir)) {
+                def basePluginInfo = getPluginInfo(baseDir)
+                if(basePluginInfo != null) {
+                    pluginInfoToSourceMap[sourceFile] = basePluginInfo
+                    return basePluginInfo
+                }
             }
         }
-
-
 
         return null
     }

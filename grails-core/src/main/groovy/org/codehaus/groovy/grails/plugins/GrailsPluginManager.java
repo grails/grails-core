@@ -311,4 +311,11 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      */
     String getPluginViewsPathForClass(Class<? extends Object> theClass);
 
+    /**
+     * Obtains the GrailsPlugin for the given class
+     *
+     * @param theClass The class
+     * @return The GrailsPlugin for the given class or null if not related to any plugin
+     */
+    GrailsPlugin getPluginForClass(Class<?> theClass);
 }

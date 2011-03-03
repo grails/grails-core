@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.PluginBuildSettings;
 import org.apache.commons.io.IOUtils;
@@ -188,6 +189,14 @@ public class GroovyPageParser implements Tokens {
         this.gspEncoding = encoding;
 
 
+        if (filename != null && BuildSettingsHolder.getSettings() != null) {
+            PluginBuildSettings pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
+            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+            if (info != null) {
+                pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
+                    info.getVersion() + "')";
+            }
+        }
         String gspSource = readStream(in);
 
         Map<String, String> directives = parseDirectives(gspSource);
@@ -219,17 +228,6 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
-        // TODO: Deprecate PluginBuildSettingsHolder and inject via Spring
-
-        if (filename != null) {
-            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
-            if (info != null) {
-                pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
-                    info.getVersion() + "')";
-            }
-        }
-    }
 
     private Map<String, String> parseDirectives(String gspSource) {
         Map <String, String> result=new HashMap<String, String>();

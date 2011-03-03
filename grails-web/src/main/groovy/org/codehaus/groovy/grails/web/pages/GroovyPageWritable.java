@@ -248,6 +248,10 @@ class GroovyPageWritable implements Writable {
         GroovyPageBinding binding = pluginManager != null ?
                 new GroovyPageBinding(pluginManager.getPluginPathForClass(pageClass)) :
                 new GroovyPageBinding();
+
+        if(pluginManager != null) {
+            binding.setPagePlugin(pluginManager.getPluginForClass(pageClass));
+        }
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
         binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
         return binding;
