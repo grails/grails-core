@@ -170,6 +170,10 @@ target(packagePlugin:"Implementation target") {
 			copy(todir:"${metaInf}/scripts") {
 				fileset(dir:"${basedir}/scripts", excludes:"_Install.groovy,_Uninstall.groovy,_Upgrade.groovy")
 			}
+			mkdir(dir:"${classesDir}/src")
+			copy(todir:"${classesDir}/src") {
+				fileset(dir:"${basedir}/src", excludes:"groovy/**,java/**")
+			}
 			jar(destfile:"${projectTargetDir}/${pluginName}-${pluginProps.version}.jar") {
 				fileset(dir:classesDir, excludes:excludeList.join(','))
 				manifest {
