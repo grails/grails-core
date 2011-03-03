@@ -166,9 +166,12 @@ target(packagePlugin:"Implementation target") {
 			copy(todir:"${metaInf}/grails-app/i18n", failonerror:false) {
 				fileset(dir:"${resourcesDirPath}/grails-app/i18n")
 			}
-			jar(destfile:"${projectTargetDir}/${pluginName}-${pluginProps.version}.jar", 
-				basedir:classesDir,
-				excludes:excludeList.join(',')) {
+			mkdir(dir:"${metaInf}/scripts")
+			copy(todir:"${metaInf}/scripts") {
+				fileset(dir:"${basedir}/scripts", excludes:"_Install.groovy,_Uninstall.groovy,_Upgrade.groovy")
+			}
+			jar(destfile:"${projectTargetDir}/${pluginName}-${pluginProps.version}.jar") {
+				fileset(dir:classesDir, excludes:excludeList.join(','))
 				manifest {
 					attribute name:"Implementation-Title", value:pluginProps.title
 					attribute name:"Implementation-Version", value:pluginProps.version

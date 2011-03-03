@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.cli;
 
-import java.io.File;
-import java.util.List;
-
 import org.codehaus.gant.GantBinding;
+import org.springframework.core.io.Resource;
+
+import java.util.List;
 
 /**
  * Represents a script that has been cached with a specific binding.
@@ -29,5 +29,5 @@ import org.codehaus.gant.GantBinding;
 class CachedScript {
 
     GantBinding binding;
-    List<File> potentialScripts;
+    List<Resource> potentialScripts;
 }
