@@ -20,6 +20,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
@@ -115,8 +117,14 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         if (format != null) {
             res = loader.getResource(gspView);
             if (!res.exists()) {
-                gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
-                res = loader.getResource(gspView);
+                View v = lookupBinaryPluginView(webRequest, controller, gspView);
+                if(v != null) {
+                    return v;
+                }
+                else {
+                    gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
+                    res = loader.getResource(gspView);
+                }
             }
         }
 
@@ -124,8 +132,14 @@ public class GrailsViewResolver extends InternalResourceViewResolver
             gspView = localPrefix + viewName + GSP_SUFFIX;
             res = loader.getResource(gspView);
             if (!res.exists()) {
-                gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
-                res = loader.getResource(gspView);
+                View v = lookupBinaryPluginView(webRequest, controller, gspView);
+                if(v != null) {
+                    return v;
+                }
+                else {
+                    gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
+                    res = loader.getResource(gspView);
+                }
             }
         }
 
@@ -137,6 +151,33 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
         return view;
+    }
+
+    private View lookupBinaryPluginView(GrailsWebRequest webRequest, GroovyObject controller, String gspView) {
+        View v = null;
+        if(pluginManager != null && pluginManager.getPluginForInstance(controller) != null) {
+            final GrailsPlugin plugin = pluginManager.getPluginForInstance(controller);
+            if(plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryGrailsPlugin = (BinaryGrailsPlugin) plugin;
+                Class viewClass = binaryGrailsPlugin.resolveView(gspView);
+                if(viewClass != null) {
+                    v= createGroovyPageView(webRequest, gspView, viewClass);
+                }
+            }
+        }
+        return v;
+    }
+
+    private View createGroovyPageView(GrailsWebRequest webRequest, String gspView, Class viewClass) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Resolved GSP view at URI [" + gspView + "]");
+        }
+        GroovyPageView gspSpringView = new GroovyPageView();
+        gspSpringView.setServletContext(webRequest.getServletContext());
+        gspSpringView.setViewClass(viewClass);
+        gspSpringView.setApplicationContext(getApplicationContext());
+        gspSpringView.setTemplateEngine(templateEngine);
+        return gspSpringView;
     }
 
     private View createGroovyPageView(GrailsWebRequest webRequest, String gspView) {

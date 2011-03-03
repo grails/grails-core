@@ -134,7 +134,7 @@ target(packagePlugin:"Implementation target") {
 	    File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
 	    ant.gspc(destdir:classesDir,
 	             srcdir:"${basedir}/grails-app/views",
-	             packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName)}_",
+	             packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName),
 	             serverpath:"/WEB-INF/grails-app/views/",
 	             classpathref:"grails.compile.classpath",
 	             tmpdir:gspTmpDir)	

@@ -55,6 +55,9 @@ class BinaryPluginSpec extends Specification{
         when:
             def resource = new MockBinaryPluginResource(str.bytes)
             def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
+            resource.relativesResources['views.properties'] = new ByteArrayResource('''
+/WEB-INF/grails-app/views/bar/list.gsp=org.codehaus.groovy.grails.plugins.MyView
+'''.bytes)
             resource.relativesResources['grails-app/i18n'] = new ByteArrayResource(''.bytes)
             resource.relativesResources['grails-app/i18n/messages.properties'] = new ByteArrayResource('''
 foo.bar=one
@@ -65,6 +68,13 @@ foo.bar=one
         then:
             properties.isEmpty() == false
             properties['foo.bar'] == 'one'
+
+        when:
+            def viewClass = binaryPlugin.resolveView("/WEB-INF/grails-app/views/bar/list.gsp")
+
+        then:
+            viewClass != null
+            viewClass == MyView
 
 
     }
@@ -87,5 +97,12 @@ class MockBinaryPluginResource extends ByteArrayResource {
         return relativesResources[relativePath]
     }
 
+
+}
+class MyView extends Script {
+    @Override
+    Object run() {
+        return "Good"
+    }
 
 }

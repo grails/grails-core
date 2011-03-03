@@ -177,6 +177,16 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     /**
+     * Creates a template from a pre-compiled view class
+     * @param viewClass The view class
+     * @return The Template instance
+     */
+    public Template createTemplate(Class viewClass) {
+        final GroovyPageMetaInfo metaInfo = createPreCompiledGroovyPageMetaInfo(viewClass);
+        return new GroovyPageTemplate(metaInfo);
+    }
+
+    /**
      * Creates a Template for the given Spring Resource instance
      *
      * @param resource The Resource to create the Template for
@@ -327,12 +337,18 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                 LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
             }
             if (gspClass != null) {
-                meta = new GroovyPageMetaInfo(gspClass);
-                meta.setGrailsApplication(grailsApplication);
-                meta.setJspTagLibraryResolver(jspTagLibraryResolver);
-                meta.setTagLibraryLookup(tagLibraryLookup);
+                meta = createPreCompiledGroovyPageMetaInfo(gspClass);
             }
         }
+        return meta;
+    }
+
+    private GroovyPageMetaInfo createPreCompiledGroovyPageMetaInfo(Class<GroovyPage> gspClass) {
+        GroovyPageMetaInfo meta;
+        meta = new GroovyPageMetaInfo(gspClass);
+        meta.setGrailsApplication(grailsApplication);
+        meta.setJspTagLibraryResolver(jspTagLibraryResolver);
+        meta.setTagLibraryLookup(tagLibraryLookup);
         return meta;
     }
 
@@ -851,4 +867,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public void setCacheResources(boolean cacheResources) {
         this.cacheResources = cacheResources;
     }
+
+
+
 }

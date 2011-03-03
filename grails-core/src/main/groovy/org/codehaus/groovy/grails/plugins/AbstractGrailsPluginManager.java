@@ -18,13 +18,6 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.BuildScope;
 import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
@@ -36,6 +29,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import java.util.*;
 
 /**
  * Abstract implementation of the GrailsPluginManager interface
@@ -304,6 +299,25 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             return getPluginPathForClass(instance.getClass());
         }
         return null;
+    }
+
+    public GrailsPlugin getPluginForInstance(Object instance) {
+        if(instance != null) {
+            return getPluginForClass(instance.getClass());
+        }
+        return null;
+    }
+
+    public GrailsPlugin getPluginForClass(Class<?> theClass) {
+        if (theClass != null) {
+            org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin ann =
+                theClass.getAnnotation(org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin.class);
+            if (ann != null) {
+                return getGrailsPlugin(ann.name());
+            }
+        }
+        return null;
+
     }
 
     public String getPluginPathForClass(Class<? extends Object> theClass) {

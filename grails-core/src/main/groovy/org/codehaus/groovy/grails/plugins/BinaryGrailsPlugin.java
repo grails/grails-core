@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -37,8 +38,10 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
 
 
     public static final String BASE_MESSAGES_PROPERTIES = "grails-app/i18n/messages";
+    public static final String VIEWS_PROPERTIES = "views.properties";
     private BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts;
+    private Map<String, Class> precompiledViewMap = new HashMap<String, Class>();
 
     /**
      * Creates a binary plugin instance
@@ -53,6 +56,45 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
 
         if(descriptor != null) {
             initializeProvidedArtefacts(descriptor.getParsedXml());
+            initializeViewMap(descriptor);
+        }
+    }
+
+    protected void initializeViewMap(BinaryGrailsPluginDescriptor descriptor) {
+        final Resource descriptorResource = descriptor.getResource();
+
+        final Resource viewsPropertiesResource;
+        try {
+            viewsPropertiesResource = descriptorResource.createRelative(VIEWS_PROPERTIES);
+        } catch (IOException e) {
+            // ignore
+            return;
+        }
+        if(viewsPropertiesResource != null && viewsPropertiesResource.exists()) {
+            Properties viewsProperties = new Properties();
+            InputStream input = null;
+            try {
+                input = viewsPropertiesResource.getInputStream();
+                viewsProperties.load(input);
+                for (Object view : viewsProperties.keySet()) {
+                    String viewName = view.toString();
+                    final String viewClassName = viewsProperties.getProperty(viewName);
+                    try {
+                        final Class<?> viewClass = application.getClassLoader().loadClass(viewClassName);
+                        precompiledViewMap.put(viewName, viewClass);
+                    } catch (ClassNotFoundException e) {
+                        LOG.error("View not found loading precompiled view from binary plugin ["+this+"]: " + e.getMessage(), e);
+                    }
+                }
+            } catch (IOException e) {
+                LOG.error("Error loading views for binary plugin ["+this+"]: " + e.getMessage(),e);
+            } finally {
+                try {
+                    if(input != null) input.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
         }
     }
 
@@ -181,17 +223,15 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
 	}
 
     /**
-     * Resolves a view for the given view name, locale and content format within a binary plugin
+     * Resolves a view for the given view name
      *
      * @param viewName The view name
-     * @param locale The locale
-     * @param contentFormat The content format
-     * @return A Resource for the view or null if it doesn't exist
+     *
+     * @return The view class which is a subclass of GroovyPage
      *
      */
-    public Resource resolveView(String viewName, Locale locale, String contentFormat)  {
-        // TODO: Implement resolving views from a binary plugin
-        return null;
+    public Class resolveView(String viewName)  {
+        return precompiledViewMap.get(viewName);
     }
 
 
