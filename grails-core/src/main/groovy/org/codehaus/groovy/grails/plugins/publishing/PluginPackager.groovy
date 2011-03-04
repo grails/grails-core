@@ -215,7 +215,7 @@ class PluginPackager {
 			}
 	    }
 
-        def destinationFile = "${targetDir}/${pluginName}-${pluginProps.version}.jar"
+        def destinationFile = "${targetDir}/grails-plugin-${pluginName}-${pluginProps.version}.jar"
 		ant.sequential {
 			mkdir(dir:metaInf)
 			copy(file:"${basedir}/plugin.xml", tofile:"${metaInf}/grails-plugin.xml")
