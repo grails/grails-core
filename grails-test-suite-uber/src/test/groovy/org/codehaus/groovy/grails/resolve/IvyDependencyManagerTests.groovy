@@ -500,11 +500,17 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
     void testDefaultDependencyDefinition() {
 
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
-        def manager = new IvyDependencyManager("test", "0.1")
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
         def grailsVersion = getCurrentGrailsVersion()
-        manager.parseDependencies(IvyDependencyManager.getDefaultDependencies(grailsVersion))
+        settings.config.grails.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_INFO)
 
+        manager.parseDependencies {
+            inherits "global"
+        }
+
+        assertTrue( "all default dependencies should be inherited", manager.dependencyDescriptors.every { it.inherited == true } )
         assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()

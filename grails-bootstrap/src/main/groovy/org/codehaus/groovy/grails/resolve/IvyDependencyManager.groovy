@@ -14,50 +14,35 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import grails.util.BuildSettings
+import grails.util.GrailsNameUtils
+import grails.util.Metadata
+import java.util.concurrent.ConcurrentLinkedQueue
 import org.apache.ivy.core.event.EventManager
-import org.apache.ivy.core.module.descriptor.Configuration
-import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
-import org.apache.ivy.core.module.descriptor.DependencyDescriptor
+import org.apache.ivy.core.module.id.ArtifactId
+import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
+import org.apache.ivy.plugins.latest.LatestTimeStrategy
+import org.apache.ivy.plugins.matcher.ExactPatternMatcher
+import org.apache.ivy.plugins.matcher.PatternMatcher
+import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
+import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
+import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-
-import grails.util.BuildSettings
-import org.apache.ivy.core.module.descriptor.ExcludeRule
-import grails.util.GrailsNameUtils
-
-import org.apache.ivy.core.module.id.ModuleId
-import org.apache.ivy.core.report.ArtifactDownloadReport
-import org.apache.ivy.util.url.CredentialsStore
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor
-import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
-import grails.util.Metadata
-
-import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.util.MessageLogger
-import org.apache.ivy.core.module.descriptor.Artifact
-import org.apache.ivy.core.report.ConfigurationResolveReport
-import org.apache.ivy.core.report.DownloadReport
-import org.apache.ivy.core.report.DownloadStatus
-import org.apache.ivy.plugins.matcher.PatternMatcher
-import org.apache.ivy.plugins.matcher.ExactPatternMatcher
-import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
-import org.apache.ivy.core.module.id.ArtifactId
-import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
-import org.apache.ivy.plugins.repository.TransferListener
-import java.util.concurrent.ConcurrentLinkedQueue
-import org.apache.ivy.plugins.resolver.RepositoryResolver
-import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
+import org.apache.ivy.util.url.CredentialsStore
 import org.codehaus.groovy.grails.plugins.VersionComparator
+import org.apache.ivy.core.module.descriptor.*
+import org.apache.ivy.core.report.*
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -213,6 +198,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 def compileTimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'compile'
                 def runtimeDependenciesMethod = defaultDependenciesProvided ? 'provided' : 'runtime'
 
+                def isInheritedDependency = delegate.inherited || delegate.inheritsAll || delegate.currentPluginBeingConfigured
                 // dependencies needed by the Grails build system
                 for(mrid in [ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.4"),
                               ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
@@ -234,17 +220,20 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                               ModuleRevisionId.newInstance("org.springframework","spring-test","3.0.3.RELEASE"),
                               ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap","concurrentlinkedhashmap-lru","1.1_jdk5")] ) {
                         def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"build")
-                         addDependency mrid
+                        addDependency mrid
                         configureDependencyDescriptor(dependencyDescriptor, "build", null, false)
+                        dependencyDescriptor.inherited = isInheritedDependency
                   }
 
 
                 for(mrid in [ModuleRevisionId.newInstance("org.xhtmlrenderer","core-renderer","R8"),
                              ModuleRevisionId.newInstance("com.lowagie","itext","2.0.8"),
                              ModuleRevisionId.newInstance("org.grails","grails-radeox","1.0-b4")]) {
-                   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"docs")
+                    def scopeName = "docs"
+                   def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,scopeName)
                    addDependency mrid
                    configureDependencyDescriptor(dependencyDescriptor, "docs", null, false)
+                   dependencyDescriptor.inherited = isInheritedDependency
                 }
 
                 // dependencies needed during development, but not for deployment
@@ -253,6 +242,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                    def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"provided")
                    addDependency mrid
                    configureDependencyDescriptor(dependencyDescriptor, "provided", null, false)
+                   dependencyDescriptor.inherited = isInheritedDependency
                 }
 
                 // dependencies needed for compilation
@@ -317,6 +307,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
                            addDependency mrid
                            configureDependencyDescriptor(dependencyDescriptor, compileTimeDependenciesMethod, null, false)
+                           dependencyDescriptor.inherited = isInheritedDependency
                     }
 
 
@@ -325,9 +316,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                                     ModuleRevisionId.newInstance("org.grails","grails-plugin-testing","$grailsVersion"),
                                      ModuleRevisionId.newInstance("org.grails","grails-test","$grailsVersion"),
                                      ModuleRevisionId.newInstance("org.springframework","spring-test","3.0.3.RELEASE")] ) {
-                           def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
-                           addDependency mrid
-                           configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
+                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,"test")
+                        addDependency mrid
+                        configureDependencyDescriptor(dependencyDescriptor, "test", null, false)
+                        dependencyDescriptor.inherited = isInheritedDependency
                     }
 
                     // dependencies needed at runtime only
@@ -345,9 +337,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                                         // JSP support
                                         ModuleRevisionId.newInstance("taglibs","standard","1.1.2"),
                                         ModuleRevisionId.newInstance("xpp3","xpp3_min","1.1.4c") ] ) {
-                           def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
-                           addDependency mrid
-                           configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
+                        def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,runtimeDependenciesMethod)
+                        addDependency mrid
+                        configureDependencyDescriptor(dependencyDescriptor, runtimeDependenciesMethod, null, false)
+                        dependencyDescriptor.inherited = isInheritedDependency
                     }
 
                     // caching
