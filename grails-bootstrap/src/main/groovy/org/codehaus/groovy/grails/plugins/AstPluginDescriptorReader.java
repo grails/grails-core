@@ -17,13 +17,6 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyClassLoader;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -40,6 +33,12 @@ import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.core.io.Resource;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Used to read plugin information from the AST.
@@ -92,32 +91,35 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                 public void visitProperty(PropertyNode node) {
                     String name = node.getName();
                     final Expression expr = node.getField().getInitialExpression();
-                    Object value;
-                    if (expr instanceof ListExpression) {
-                        final List<String> list = new ArrayList<String>();
-                        value = list;
-                        for (Expression i : ((ListExpression)expr).getExpressions()) {
-                            list.add(i.getText());
-                        }
-                    }
-                    else if (expr instanceof MapExpression) {
-                        final Map<String, String> map = new LinkedHashMap<String, String>();
-                        value = map;
-                        for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
-                            map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
-                        }
-                    }
-                    else {
-                        value = expr.getText();
-                    }
 
-                    if (wrapper.isWritableProperty(name)) {
-                            wrapper.setPropertyValue(name, value);
+                    if(expr != null) {
+                        Object value;
+                        if (expr instanceof ListExpression) {
+                            final List<String> list = new ArrayList<String>();
+                            value = list;
+                            for (Expression i : ((ListExpression)expr).getExpressions()) {
+                                list.add(i.getText());
+                            }
+                        }
+                        else if (expr instanceof MapExpression) {
+                            final Map<String, String> map = new LinkedHashMap<String, String>();
+                            value = map;
+                            for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
+                                map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
+                            }
+                        }
+                        else {
+                            value = expr.getText();
+                        }
+
+                        if (wrapper.isWritableProperty(name)) {
+                                wrapper.setPropertyValue(name, value);
+                        }
+                        else {
+                            pluginInfo.setProperty(name, value);
+                        }
+                        super.visitProperty(node);
                     }
-                    else {
-                        pluginInfo.setProperty(name, value);
-                    }
-                    super.visitProperty(node);
                 }
 
                 @Override
