@@ -22,6 +22,16 @@ groovyVersion = "1.8.0-rc-1"
 archivesBaseName = 'grails'
 version = grailsVersion
 
+// Groovy is added as a dependency to both the 'groovy' and 'compile'
+// configurations, so place the dependency in a shared variable. The
+// 'compile' is required so that Groovy appears as a dependency in the
+// artifacts' POMs.
+if(System.getProperty('groovy.jar')) {
+    groovyDependency = files(System.getProperty('groovy.jar'))
+} else {
+    groovyDependency = "org.codehaus.groovy:groovy-all:${groovyVersion}"
+}
+
 
 subprojects { project ->
     apply plugin: 'groovy'
@@ -61,11 +71,8 @@ subprojects { project ->
     }
     dependencies {
         // Groovy
-        if(System.getProperty('groovy.jar')) {
-            groovy files(System.getProperty('groovy.jar'))
-        } else {
-            groovy "org.codehaus.groovy:groovy-all:${groovyVersion}"
-        }
+        groovy groovyDependency
+        compile groovyDependency
 
         // Jars in lib
         compile files(fileTree(dir:"$projectDir/src/libs" as File))
