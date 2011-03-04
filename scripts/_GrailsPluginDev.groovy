@@ -94,7 +94,7 @@ target(packagePlugin:"Implementation target") {
 	    pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)		
 	}
 	else {
-	    pluginZip = packager.packagePlugin(plugin.name, classesDir, baseFile)
+	    pluginZip = packager.packagePlugin(plugin.name, classesDir, grailsSettings.projectTargetDir)
 	}
 
 
