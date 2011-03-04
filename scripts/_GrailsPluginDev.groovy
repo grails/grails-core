@@ -17,13 +17,14 @@
 import groovy.xml.MarkupBuilder
 import grails.util.GrailsNameUtils
 import grails.util.PluginBuildSettings
-
+import grails.util.GrailsUtil
 import org.apache.commons.io.FilenameUtils
 import org.apache.ivy.core.report.ArtifactDownloadReport
 
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.plugins.publishing.PluginPackager
 
 /**
  * Gant script that deals with those tasks required for plugin developers
@@ -36,26 +37,11 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 includeTargets << grailsScript("_GrailsPackage")
 
-pluginIncludes = [
-    metadataFile.name,
-    "*GrailsPlugin.groovy",
-    "plugin.xml",
-    "LICENSE",
-    "LICENSE.txt",
-    "dependencies.groovy",
-    "grails-app/**",
-    "lib/**",
-    "scripts/**",
-    "web-app/**",
-    "src/**",
-    "docs/api/**",
-    "docs/gapi/**"
-]
-
-pluginExcludes = PluginBuildSettings.EXCLUDED_RESOURCES
+pluginIncludes = PluginPackager.INCLUDED_RESOURCES
+pluginExcludes = PluginPackager.EXCLUDED_RESOURCES
 
 target(packagePlugin:"Implementation target") {
-    depends(checkVersion, packageApp)
+    depends(checkVersion, parseArguments, packageApp)
 
     def pluginFile
     new File("${basedir}").eachFile {
@@ -64,141 +50,57 @@ target(packagePlugin:"Implementation target") {
         }
     }
 
+
     if (!pluginFile) ant.fail("Plugin file not found for plugin project")
 
-    plugin = generatePluginXml(pluginFile)
-	pluginProps = plugin
+	def pluginBaseDir = pluginFile.parentFile.absolutePath
+	plugin = pluginSettings.getPluginInfo(pluginBaseDir)
+    def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
 	
-	if(!pluginProps.packaging || pluginProps.packaging == 'source') {
-	    generateDependencyDescriptor()
+	def packager = new PluginPackager(plugin,resourceList, new File(projectWorkDir))
+	packager.ant = ant
+	packager.resourcesDir = new File(resourcesDirPath)
+	packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
 
-	    event("PackagePluginStart", [pluginName])
+	def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"	
+	def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
 
-	    // Package plugin's zip distribution
-	    pluginZip = "${basedir}/grails-${pluginName}-${plugin.version}.zip"
-	    ant.delete(file:pluginZip)
+    boolean supportsAtLeastVersion
+    try {
+        supportsAtLeastVersion = GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")
+    }
+    catch (e) {
+        println "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
+        exit 1
+    }
 
-	    if (pluginProps?.pluginExcludes) {
-	        pluginExcludes.addAll(pluginProps?.pluginExcludes)
-	    }
+    if (!supportsAtLeastVersion) {
+        IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+        def deps = dependencyManager.resolveExportedDependencies()
+        if (dependencyManager.resolveErrors) {
+            println "Error: There was an error resolving plugin JAR dependencies"
+            exit 1
+        }
 
-	    def includesList = pluginIncludes.join(",")
-	    def excludesList = pluginExcludes.join(",")
-	    def libsDir = new File("${projectWorkDir}/tmp-libs")
-	    ant.delete(dir:libsDir, failonerror:false)
-	    def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
-
-	    boolean supportsAtLeastVersion
-	    try {
-	        supportsAtLeastVersion = GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")
-	    }
-	    catch (e) {
-	        println "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
-	        exit 1
-	    }
-
-	    if (!supportsAtLeastVersion) {
-	        IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-	        def deps = dependencyManager.resolveExportedDependencies()
-	        if (dependencyManager.resolveErrors) {
-	            println "Error: There was an error resolving plugin JAR dependencies"
-	            exit 1
-	        }
-
-	        if (deps) {
-	            ant.mkdir(dir:"${libsDir}/lib")
-	            ant.copy(todir:"${libsDir}/lib") {
-	                for (ArtifactDownloadReport dep in deps) {
-	                    def file = dep.localFile
-	                    fileset(dir:file.parentFile, includes:file.name)
-	                }
-	            }
-	        }
-	    }
-
-	    def dependencyInfoDir = new File("$projectWorkDir/plugin-info")
-	    ant.zip(destfile:pluginZip, filesonly:true) {
-	        fileset(dir:basedir, includes:includesList, excludes:excludesList)
-	        if (dependencyInfoDir.exists()) {
-	            fileset(dir:dependencyInfoDir)
-	        }
-	        if (libsDir.exists()) {
-	            fileset(dir:libsDir)
-	        }
-	    }
+        if (deps) {
+			packager.jarFiles = deps.collect { it.localFile }
+        }
+    }
 		
-	}
-	else if(pluginProps.packaging == 'binary') {
-		ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
-	    // compile gsps in grails-app/views directory
-	    File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
-	    ant.gspc(destdir:classesDir,
-	             srcdir:"${basedir}/grails-app/views",
-	             packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName),
-	             serverpath:"/WEB-INF/grails-app/views/",
-	             classpathref:"grails.compile.classpath",
-	             tmpdir:gspTmpDir)	
-	
-		def metaInf = "${classesDir}/META-INF"
-		def excludeList = ['application.properties']
-		def defaultExcludes = [	"UrlMappings", "DataSource", "BuildConfig", "Config"]
-		for(exclude in defaultExcludes) {
-			excludeList << "${exclude}.class" << "${exclude}\$*.class"
-		}
+    event("PackagePluginStart", [plugin.name])
 
-		if (pluginProps?.pluginExcludes) {
-			for(exclude in pluginProps.pluginExcludes) {
-				exclude = "/$pluginName/$exclude"
-				
-				def excludeMatch = exclude =~ org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator.ARTEFACT_PATTERN
-				if(excludeMatch) {
-					exclude = excludeMatch[0][1].replaceAll(/[\/\\]/, /\./)
-					excludeList << "${exclude}.class" << "${exclude}\$*.class"
-				}
-			}
-	    }
-	  
-		ant.sequential {
-			mkdir(dir:metaInf)
-			copy(file:"${basedir}/plugin.xml", tofile:"${metaInf}/grails-plugin.xml")
-			move(file:"${classesDir}/gsp/views.properties", todir:metaInf, failonerror:false)
-			mkdir(dir:"${metaInf}/grails-app/i18n")
-			copy(todir:"${metaInf}/grails-app/i18n", failonerror:false) {
-				fileset(dir:"${resourcesDirPath}/grails-app/i18n")
-			}
-			mkdir(dir:"${metaInf}/scripts")
-			copy(todir:"${metaInf}/scripts") {
-				fileset(dir:"${basedir}/scripts", excludes:"_Install.groovy,_Uninstall.groovy,_Upgrade.groovy")
-			}
-			mkdir(dir:"${classesDir}/src")
-			copy(todir:"${classesDir}/src") {
-				fileset(dir:"${basedir}/src", excludes:"groovy/**,java/**")
-			}
-			jar(destfile:"${projectTargetDir}/${pluginName}-${pluginProps.version}.jar") {
-				fileset(dir:classesDir, excludes:excludeList.join(','))
-				manifest {
-					attribute name:"Implementation-Title", value:pluginProps.title
-					attribute name:"Implementation-Version", value:pluginProps.version
-				}
-			}
-		}
-		
+    // Package plugin's zip distribution
+	if(argsMap.binary) {
+	    pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)		
 	}
 	else {
-		println "Unsupported plugin packaging type [$plugin.packaging]"
-		exit 1
+	    pluginZip = packager.packagePlugin(plugin.name, classesDir, baseFile)
 	}
 
-    event("PackagePluginEnd", [pluginName])
+
+    event("PackagePluginEnd", [plugin.name])
 }
 
-private generateDependencyDescriptor() {
-    ant.delete(dir:"$projectWorkDir/plugin-info", failonerror:false)
-    if (grailsSettings.dependencyManager.hasApplicationDependencies()) {
-        ant.mkdir(dir:"$projectWorkDir/plugin-info")
-        ant.copy(file:"$basedir/grails-app/conf/BuildConfig.groovy", tofile:"$projectWorkDir/plugin-info/dependencies.groovy", failonerror:false)
-    }
-}
 
 private loadBasePlugin() {
     pluginManager?.allPlugins?.find { it.basePlugin }
