@@ -17,12 +17,11 @@
 package org.codehaus.groovy.grails.plugins.publishing
 
 import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.springframework.core.io.Resource
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.springframework.core.io.Resource
 
-/**
+ /**
  * Packages a plugin in source or binary form
  *
  * @since 1.4
@@ -69,8 +68,8 @@ class PluginPackager {
     private AntBuilder ant
     private File resourcesDir
 
-    boolean hasApplicationDependencies = false
     List<File> jarFiles = []
+    boolean hasApplicationDependencies
 
 
     PluginPackager(GrailsPluginInfo pluginInfo, Resource[] resourceList, File projectWorkDir) {
@@ -131,17 +130,18 @@ class PluginPackager {
 
 
     def packagePlugin(String pluginName, File classesDir, File targetDir) {
-        def pluginProps = generateDependencyDescriptor(pluginInfo.descriptor)
-        if(!pluginProps.packaging || pluginProps.packaging == 'source') {
-            return packageSource(pluginName, pluginProps, classesDir, targetDir)
+        generateDependencyDescriptor()
+        if(!pluginInfo.packaging || pluginInfo.packaging == 'source') {
+            return packageSource(pluginName, classesDir, targetDir)
         }
         else {
-            return packageBinary(pluginName, pluginProps, classesDir, targetDir)
+            return packageBinary(pluginName, classesDir, targetDir)
         }
     }
 
 
-    String packageSource(String pluginName, pluginProps, File classesDir, File targetDir) {
+    String packageSource(String pluginName, File classesDir, File targetDir) {
+        def pluginProps = pluginInfo
 	    generateDependencyDescriptor()
 
 	    // Package plugin's zip distribution
@@ -160,8 +160,6 @@ class PluginPackager {
 	    def excludesList = pluginExcludes.join(",")
 	    def libsDir = new File("${projectWorkDir}/tmp-libs")
 	    ant.delete(dir:libsDir, failonerror:false)
-	    def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
-
 
 	    if (jarFiles) {
             ant.mkdir(dir:"${libsDir}/lib")
@@ -186,7 +184,8 @@ class PluginPackager {
         return pluginZip
     }
 
-    String packageBinary(String pluginName, pluginProps, File classesDir, File targetDir) {
+    String packageBinary(String pluginName, File classesDir, File targetDir) {
+        def pluginProps = pluginInfo
 		ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
 	    // compile gsps in grails-app/views directory
 	    File gspTmpDir = new File(projectWorkDir, "gspcompile")
