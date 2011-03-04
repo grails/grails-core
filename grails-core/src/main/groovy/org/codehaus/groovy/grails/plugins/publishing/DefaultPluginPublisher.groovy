@@ -17,17 +17,15 @@
 package org.codehaus.groovy.grails.plugins.publishing
 
 import groovy.util.slurpersupport.GPathResult
-import groovy.xml.MarkupBuilder
-import org.springframework.core.io.Resource
-import grails.util.BuildSettingsHolder
-import javax.xml.transform.stream.StreamSource
-import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.OutputKeys
 import javax.xml.transform.Source
 import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
-import javax.xml.transform.OutputKeys
+import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.stream.StreamSource
+import org.springframework.core.io.Resource
 
-/**
+ /**
  * Utility methods for manipulating the plugin-list.xml file used
  * when publishing plugins to a Grails plugin repository
  *
@@ -38,12 +36,19 @@ class DefaultPluginPublisher {
 
     String revision = "0"
     String repositoryURL
-    DefaultPluginPublisher(String revNumber, String repositoryURL) {
+    File baseDir
+
+    DefaultPluginPublisher(File baseDir, String revNumber, String repositoryURL) {
         if (revNumber) {
             this.revision = revNumber
         }
+        this.baseDir = baseDir
         if (!repositoryURL) throw new IllegalArgumentException("Argument [repositoryURL] must be specified!")
         this.repositoryURL = repositoryURL
+    }
+
+    DefaultPluginPublisher(String revNumber, String repositoryURL) {
+        this(new File("."), revNumber, repositoryURL)
     }
 
     /**
@@ -150,7 +155,6 @@ class DefaultPluginPublisher {
     }
 
     protected GPathResult getPluginMetadata(String pluginName) {
-        def basedir = BuildSettingsHolder.settings?.baseDir ?: new File(".")
-        return new XmlSlurper().parse(new File("${basedir.absolutePath}/plugin.xml"))
+        return new XmlSlurper().parse(new File("${baseDir.absolutePath}/plugin.xml"))
     }
 }
