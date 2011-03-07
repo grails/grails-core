@@ -24,9 +24,9 @@ class PdfBuilder {
 
     private static final String LIVE_DOC_SITE = 'http://grails.org'
 
-    static void build(String baseDir, String grailsHome) {
+    static void build(String baseDir, String grailsHome = null) {
         baseDir = new File(baseDir).canonicalPath
-        build basedir: baseDir, home: grailsHome
+        build basedir: baseDir
     }
 
     /**
@@ -35,27 +35,21 @@ class PdfBuilder {
      * <li> $basedir/guide/single.html</li>
      * <li> $basedir/guide/css/</li>
      * <li> $basedir/guide/img/</li>
-     * <li> $home/src/$tool/docs/style</li>
      * </ul>
      *
      * The {@code options} map should have the following key/value pairs<ul>
      * <li>basedir = points to the root directory that contains the generated manual <b>required</b></li>
-     * <li>home = points to the tool home, e.g, $grailsHome <b>required</b></li>
-     * <li>tool = name of the tool. default <tt>grails</tt></li>
      * </ul>
      */
     static void build(Map options) {
         String baseDir = new File(options.basedir).canonicalPath
         String home = options.home
-        String tool = options.tool ?: 'grails'
  
         File htmlFile = new File("${baseDir}/guide/single.html")
         File outputFile = new File("${baseDir}/guide/single.pdf")
-        File homeFile = new File(home).canonicalFile
-        String urlBase = "file://${homeFile.absolutePath}/src/${tool}/docs/style"
 
         String xml = createXml(htmlFile, baseDir)
-        createPdf xml, outputFile, urlBase
+        createPdf xml, outputFile, "${baseDir}/guide"
     }
 
     private static String createXml(File htmlFile, String base) {
@@ -83,7 +77,7 @@ class PdfBuilder {
         Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes()))
 
         ITextRenderer renderer = new ITextRenderer()
-        renderer.setDocument(doc, urlBase + '/dummy')
+        renderer.setDocument(doc, new File(urlBase).toURI().toString())
 
         OutputStream outputStream
         try {
