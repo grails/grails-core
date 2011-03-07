@@ -17,6 +17,8 @@
 package org.codehaus.groovy.grails.compiler;
 
 import java.io.File;
+import org.springframework.core.io.Resource;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
