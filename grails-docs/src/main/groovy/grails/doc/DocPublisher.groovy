@@ -15,6 +15,7 @@
 
 package grails.doc
 
+import grails.doc.internal.StringEscapeCategory
 import groovy.text.Template
 
 import org.radeox.engine.context.BaseInitialRenderContext
@@ -106,6 +107,12 @@ class DocPublisher {
     }
 
     void publish() {
+        use(StringEscapeCategory) {
+            catPublish()
+        }
+    }
+
+    private void catPublish() {
         initialize()
         if (!src?.exists()) {
             return
