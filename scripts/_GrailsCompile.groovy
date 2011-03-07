@@ -16,6 +16,7 @@
 
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import grails.util.GrailsNameUtils
 
 /**
@@ -32,56 +33,29 @@ includeTargets << grailsScript("_GrailsArgParsing")
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
 ant.path(id: "grails.compile.classpath", compileClasspath)
 
-
+projectCompiler = null
 
 target(setCompilerSettings: "Updates the compile build settings based on args") {
     depends(parseArguments)
+
+	projectCompiler = new GrailsProjectCompiler(basedir,
+												grailsSettings.sourceDir.absolutePath,
+												pluginSettings.pluginSourceFiles,
+												compConfig,
+												classLoader)
+	projectCompiler.ant = ant
     if (argsMap.containsKey('verboseCompile')) {
         grailsSettings.verboseCompile = argsMap.verboseCompile as boolean
+		projectCompiler.verbose = grailsSettings.verboseCompile
     }
 }
 
 target(compile : "Implementation of compilation phase") {
     depends(compilePlugins)
-	
-	compilerPaths = { String classpathId ->
-		
-		def excludedPaths = ["views", "i18n", "conf"] // conf gets special handling
-	
-		for (dir in new File("${basedir}/grails-app").listFiles()) {
-			if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
-				src(path:"${dir}")
-			}
-		}
-		// Handle conf/ separately to exclude subdirs/package misunderstandings
-		src(path: "${basedir}/grails-app/conf")
-	
-		if (new File("${basedir}/grails-app/conf/spring").exists()) {
-			src(path: "${basedir}/grails-app/conf/spring")     // This stops resources.groovy becoming "spring.resources"
-		}
-	
-		if (new File("${grailsSettings.sourceDir}/groovy").exists()) {
-			src(path:"${grailsSettings.sourceDir}/groovy")
-		}
-		if (new File("${grailsSettings.sourceDir}/java").exists()) {
-			src(path:"${grailsSettings.sourceDir}/java")
-		}
-	
-		javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
-    }
-
-    def classesDirPath = new File(grailsSettings.classesDir.path)
-    ant.mkdir(dir:classesDirPath)
 
     profile("Compiling sources to location [$classesDirPath]") {
         try {
-            String classpathId = "grails.compile.classpath"
-            ant.groovyc(destdir:classesDirPath,
-                        classpathref:classpathId,
-                        encoding:"UTF-8",
-                        verbose: grailsSettings.verboseCompile,
-                        listfiles: grailsSettings.verboseCompile,
-                        compilerPaths.curry(classpathId))
+			projectCompiler.compile(grailsSettings.classesDir)
         }
         catch (Exception e) {
             event("StatusFinal", ["Compilation error: ${e.message}"])
@@ -90,78 +64,19 @@ target(compile : "Implementation of compilation phase") {
 
         classLoader.addURL(grailsSettings.classesDir.toURI().toURL())
         classLoader.addURL(grailsSettings.pluginClassesDir.toURI().toURL())
-
-        // If this is a plugin project, the descriptor is not included
-        // in the compiler's source path. So, we manually compile it now.
-        if (isPluginProject) compilePluginDescriptor(findPluginDescriptor(grailsSettings.baseDir))
     }
 }
 
 target(compilePlugins: "Compiles source files of all referenced plugins.") {
     depends(setCompilerSettings, resolveDependencies)
 
-    def classesDirPath = pluginClassesDirPath
-    ant.mkdir(dir:classesDirPath)
-
     profile("Compiling sources to location [$classesDirPath]") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        def classpathId = "grails.compile.classpath"
-        def pluginResources = pluginSettings.pluginSourceFiles
-        def excludedPaths = ["views", "i18n"] // conf gets special handling
-        pluginResources = pluginResources.findAll {
-            !excludedPaths.contains(it.file.name) && it.file.isDirectory()
-        }
-
-        if (pluginResources) {
-            // Only perform the compilation if there are some plugins
-            // installed or otherwise referenced.
-            ant.groovyc(destdir:classesDirPath,
-                        classpathref:classpathId,
-                        encoding:"UTF-8",
-                        verbose: grailsSettings.verboseCompile,
-                        listfiles: grailsSettings.verboseCompile) {
-                for (dir in pluginResources.file) {
-                    src(path:"${dir}")
-                }
-                exclude(name: "**/BootStrap.groovy")
-                exclude(name: "**/BuildConfig.groovy")
-                exclude(name: "**/Config.groovy")
-                exclude(name: "**/*DataSource.groovy")
-                exclude(name: "**/UrlMappings.groovy")
-                exclude(name: "**/resources.groovy")
-                javac(classpathref:classpathId, encoding:"UTF-8", debug:"yes")
-            }
-        }
+		projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
     }
 }
 
-/**
- * Compiles a given plugin descriptor file - *GrailsPlugin.groovy.
- */
-private compilePluginDescriptor(File descriptor) {
-	def className = descriptor.name - '.groovy'
-    def classFile = new File(grailsSettings.classesDir, "${className}.class")
-
-    if (descriptor.lastModified() > classFile.lastModified()) {
-        ant.echo(message: "Compiling plugin descriptor...")
-        compConfig.setTargetDirectory(classesDir)
-        def unit = new CompilationUnit(compConfig, null, new GroovyClassLoader(classLoader))
-        unit.addSource(descriptor)
-        unit.compile()
-    }
-}
-
-/**
- * Returns the first plugin descriptor it can find in the given directory,
- * or <code>null</code> if there is none.
- */
-private findPluginDescriptor(File dir) {
-    File[] files = dir.listFiles({ File d, String filename ->
-        return filename.endsWith("GrailsPlugin.groovy")
-    } as FilenameFilter)
-    return files ? files[0] : null
-}
 
 target(compilepackage : "Compile & Compile GSP files") {
     depends(compile, compilegsp)
