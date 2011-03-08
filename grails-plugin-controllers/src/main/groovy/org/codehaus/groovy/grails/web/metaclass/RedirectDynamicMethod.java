@@ -19,21 +19,9 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.mapping.UrlCreator;
@@ -45,6 +33,15 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectExcep
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "redirect" Controller method for action redirection.
@@ -77,6 +74,17 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     /**
      */
     public RedirectDynamicMethod(Collection<RedirectEventListener> redirectListeners) {
+        super(METHOD_PATTERN);
+
+        this.redirectListeners = redirectListeners;
+    }
+
+    /**
+     *
+     * @param applicationContext The ApplicationContext
+     * @deprecated Here fore compatibility, will be removed in a future version of Grails
+     */
+    public RedirectDynamicMethod(ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
 
         this.redirectListeners = redirectListeners;
