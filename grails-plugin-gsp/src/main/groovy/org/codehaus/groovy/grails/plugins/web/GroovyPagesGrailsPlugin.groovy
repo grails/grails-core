@@ -170,7 +170,11 @@ class GroovyPagesGrailsPlugin {
             "${taglib.fullName}"(taglib.clazz) { bean ->
                 bean.autowire = true
                 bean.lazyInit = true
-                instanceTagLibraryApi = ref("instanceTagLibraryApi")
+                def enhancedAnn = taglib.clazz.getAnnotation(Enhanced)
+                if(enhancedAnn != null) {
+                    instanceTagLibraryApi = ref("instanceTagLibraryApi")
+                }
+
                 // Taglib scoping support could be easily added here. Scope could be based on a static field in the taglib class.
                 //bean.scope = 'request'
             }
@@ -248,53 +252,52 @@ class GroovyPagesGrailsPlugin {
             MetaClass mc = taglib.metaClass
             Class cls = taglib.clazz
 
-            def enhancedAnn = cls.getAnnotation(Enhanced)
-            if(enhancedAnn == null)
-                enhancer.enhance mc
-
             String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
 
             for (tag in taglib.tagNames) {
                 WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }
 
+            def enhancedAnn = cls.getAnnotation(Enhanced)
+            if(enhancedAnn == null) {
+                enhancer.enhance mc
+                mc.propertyMissing = { String name ->
+                    def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)
+                    if (result == null) {
+                        def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
+                        if (!tagLibrary) {
+                            tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
+                        }
 
-            mc.propertyMissing = { String name ->
-                def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)
-                if (result == null) {
+                        def tagProperty = tagLibrary?."$name"
+                        result = tagProperty ? tagProperty.clone() : null
+                    }
+
+                    if (result != null) {
+                        mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
+                        return result
+                    }
+
+                    throw new MissingPropertyException(name, delegate.class)
+                }
+
+                mc.methodMissing = { String name, args ->
+                    def usednamespace = namespace
                     def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
                     if (!tagLibrary) {
                         tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
+                        usednamespace = GroovyPage.DEFAULT_NAMESPACE
+                    }
+                    if (tagLibrary) {
+                        WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, usednamespace, name)
+                        //WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
+                    }
+                    if (mc.respondsTo(delegate, name, args)) {
+                        return mc.invokeMethod(delegate, name, args)
                     }
 
-                    def tagProperty = tagLibrary?."$name"
-                    result = tagProperty ? tagProperty.clone() : null
+                    throw new MissingMethodException(name, delegate.class, args)
                 }
-
-                if (result != null) {
-                    mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
-                    return result
-                }
-
-                throw new MissingPropertyException(name, delegate.class)
-            }
-
-            mc.methodMissing = { String name, args ->
-                def usednamespace = namespace
-                def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-                if (!tagLibrary) {
-                    tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
-                    usednamespace = GroovyPage.DEFAULT_NAMESPACE
-                }
-                if (tagLibrary) {
-                    WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, usednamespace, name)
-                    //WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
-                }
-                if (mc.respondsTo(delegate, name, args)) {
-                    return mc.invokeMethod(delegate, name, args)
-                }
-
-                throw new MissingMethodException(name, delegate.class, args)
             }
         }
     }

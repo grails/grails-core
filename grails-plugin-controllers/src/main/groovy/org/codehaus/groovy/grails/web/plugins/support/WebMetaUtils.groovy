@@ -282,4 +282,8 @@ class WebMetaUtils {
             }
         }
     }
+
+    public static void registerPropertyMissingForTag (MetaClass mc, String name, Object result) {
+        mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
+    }
 }
