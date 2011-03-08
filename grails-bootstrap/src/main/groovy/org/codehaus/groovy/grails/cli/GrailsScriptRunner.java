@@ -266,6 +266,8 @@ public class GrailsScriptRunner {
             System.setProperty("disable.grails.plugin.transform", "true");
 
             settings.loadConfig();
+
+            System.setProperty("springloaded.directoriesContainingReloadableCode", settings.getClassesDir().getAbsolutePath() + ',' + settings.getPluginClassesDir().getAbsolutePath());
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
