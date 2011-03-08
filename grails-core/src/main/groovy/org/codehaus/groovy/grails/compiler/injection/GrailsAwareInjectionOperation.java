@@ -50,6 +50,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     private GroovyResourceLoader grailsResourceLoader;
     private static ClassInjector[] classInjectors = null;
+    private ClassInjector[] localClassInjectors;
 
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
         Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
@@ -57,11 +58,24 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
         initializeState();
     }
 
+    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
+        Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
+        this.grailsResourceLoader = resourceLoader;
+        this.localClassInjectors = classInjectors;
+    }
+
     public static ClassInjector[] getClassInjectors() {
         if(classInjectors == null) {
             initializeState();
         }
         return classInjectors;
+    }
+
+    public ClassInjector[] getLocalClassInjectors() {
+        if(localClassInjectors == null) {
+            return getClassInjectors();
+        }
+        return localClassInjectors;
     }
 
     private static void initializeState() {
@@ -93,7 +107,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
-        for (ClassInjector classInjector : classInjectors) {
+        for (ClassInjector classInjector : getLocalClassInjectors()) {
             try {
                 URL url;
                 if (GrailsResourceUtils.isGrailsPath(source.getName())) {
