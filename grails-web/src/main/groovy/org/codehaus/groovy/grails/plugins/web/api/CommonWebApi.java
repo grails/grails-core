@@ -165,7 +165,7 @@ public class CommonWebApi {
      * @return The plugin context path
      */
     public String getPluginContextPath(Object delegate) {
-        final String pluginPath = pluginManager.getPluginPathForInstance(delegate);
+        final String pluginPath = pluginManager != null ? pluginManager.getPluginPathForInstance(delegate) : null;
         return pluginPath !=null ? pluginPath : "";
     }
 }

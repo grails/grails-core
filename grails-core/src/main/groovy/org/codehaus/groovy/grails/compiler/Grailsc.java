@@ -15,21 +15,60 @@
  */
 package org.codehaus.groovy.grails.compiler;
 
-import grails.util.PluginBuildSettings;
+import groovy.lang.GroovyResourceLoader;
+import org.codehaus.groovy.ant.Groovyc;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.groovy.ant.Groovyc;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
-import org.springframework.core.io.Resource;
-
 public class Grailsc extends Groovyc {
 
     private List<File> destList = new ArrayList<File>();
-    private PluginBuildSettings pluginBuildSettings;
+
+
+    @Override protected CompilationUnit makeCompileUnit() {
+        BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
+        scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
+        scanner.scan("org.codehaus.groovy.grails.compiler");
+
+        CompilationUnit unit = super.makeCompileUnit();
+
+        List<ClassInjector> classInjectors = new ArrayList<ClassInjector>();
+        ClassLoader classLoader = getClass().getClassLoader();
+        for(String beanName : registry.getBeanDefinitionNames()) {
+            try {
+                Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
+                if(ClassInjector.class.isAssignableFrom(injectorClass))
+                    classInjectors.add((ClassInjector) injectorClass.newInstance());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            } catch (InstantiationException e) {
+                // ignore
+            } catch (IllegalAccessException e) {
+                // ignore
+            }
+        }
+        unit.addPhaseOperation(new GrailsAwareInjectionOperation(configureResourceLoader(), classInjectors.toArray(new ClassInjector[classInjectors.size()])), Phases.CANONICALIZATION);
+        return unit;
+    }
+
 
     @Override
     protected void scanDir(File srcDir, File destDir, String[] files) {
@@ -67,7 +106,7 @@ public class Grailsc extends Groovyc {
 
     @Override
     protected void compile() {
-        configureResourceLoader();
+
 
         if (compileList.length > 0) {
             long now = System.currentTimeMillis();
@@ -84,11 +123,10 @@ public class Grailsc extends Groovyc {
         }
     }
 
-    private void configureResourceLoader() {
-        if (pluginBuildSettings != null) {
-            Resource[] resources = pluginBuildSettings.getArtefactResources();
-            GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
-            GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
-        }
+    private GroovyResourceLoader configureResourceLoader() {
+        Resource[] resources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResources();
+        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
+        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
+        return resourceLoader;
     }
 }

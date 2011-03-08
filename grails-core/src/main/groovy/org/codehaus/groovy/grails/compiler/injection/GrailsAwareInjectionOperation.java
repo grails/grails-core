@@ -15,10 +15,6 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyResourceLoader;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
@@ -29,6 +25,9 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.springframework.util.Assert;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * A Groovy compiler injection operation that uses a specified array of ClassInjector instances to
@@ -54,24 +53,21 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
-        for (int i = 0; i < classInjectors.length; i++) {
-            ClassInjector classInjector = classInjectors[i];
+        for (ClassInjector classInjector : classInjectors) {
             try {
                 URL url;
                 if (GrailsResourceUtils.isGrailsPath(source.getName())) {
                     url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
-                }
-                else {
+                } else {
                     url = grailsResourceLoader.loadGroovySource(source.getName());
                 }
 
                 if (classInjector.shouldInject(url)) {
                     classInjector.performInjection(source, context, classNode);
                 }
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(), e);
-                throw new CompilationFailedException(Phases.CONVERSION,source, e);
+                throw new CompilationFailedException(Phases.CONVERSION, source, e);
             }
         }
     }

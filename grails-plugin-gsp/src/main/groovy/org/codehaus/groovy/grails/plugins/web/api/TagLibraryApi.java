@@ -33,6 +33,10 @@ import org.springframework.web.context.request.RequestContextHolder;
  */
 public class TagLibraryApi extends CommonWebApi {
 
+    public TagLibraryApi() {
+        super(null);
+    }
+
     public TagLibraryApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
     }

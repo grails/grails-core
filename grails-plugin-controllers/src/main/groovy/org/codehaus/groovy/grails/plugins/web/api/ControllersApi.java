@@ -16,27 +16,20 @@
 package org.codehaus.groovy.grails.plugins.web.api;
 
 import groovy.lang.Closure;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
-import org.codehaus.groovy.grails.web.metaclass.ChainMethod;
-import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
-import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
-import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod;
-import org.codehaus.groovy.grails.web.metaclass.WithFormMethod;
+import org.codehaus.groovy.grails.web.metaclass.*;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * API for each controller in a Grails application
@@ -56,22 +49,30 @@ public class ControllersApi extends CommonWebApi {
     private WithFormMethod withFormMethod = new WithFormMethod();
     private ForwardMethod forwardMethod;
 
-    public ControllersApi(GrailsApplication application, GrailsPluginManager pluginManager, ApplicationContext applicationContext) {
+    public ControllersApi() {
+        super(null);
+    }
+
+    public ControllersApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
 
-        this.redirect = new RedirectDynamicMethod(applicationContext);
 
-        if(application != null) {
-            Object gspEnc = application.getConfig().get("grails.views.gsp.encoding");
-
-            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                render.setGspEncoding( gspEnc.toString() );
-            }
-
-        }
-
-        this.forwardMethod= new ForwardMethod((UrlMappingsHolder) applicationContext.getBean("grailsUrlMappingsHolder"));
+        this.redirect = new RedirectDynamicMethod();
+        this.forwardMethod= new ForwardMethod();
     }
+
+    public void setGspEncoding(String gspEncoding) {
+        render.setGspEncoding( gspEncoding );
+    }
+
+    public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
+        redirect.setRedirectListeners(redirectListeners);
+    }
+
+    public void setUseJessionId(boolean useJessionId) {
+        redirect.setUseJessionId(useJessionId);
+    }
+
     /**
      * Returns the URI of the currently executing action
      *

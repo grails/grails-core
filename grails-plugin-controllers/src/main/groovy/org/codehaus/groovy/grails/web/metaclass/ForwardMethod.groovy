@@ -36,13 +36,6 @@ class ForwardMethod {
 
     public static final String CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED"
 
-    UrlMappingsHolder holder
-
-    ForwardMethod(UrlMappingsHolder urlMappingsHolder) {
-        Assert.notNull(urlMappingsHolder, "Argument [urlMappingsHolder] is required")
-        holder = urlMappingsHolder
-    }
-
     String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
         def urlInfo = new ForwardUrlMappingInfo()
 
