@@ -1,9 +1,23 @@
+
 dependencies {
     compile project(":grails-web"), project(":grails-plugin-codecs"), project(":grails-plugin-controllers")
+}
+sourceSets {
+    main {
+        compileClasspath = files(configurations.compile, ast.classes)
+    }
+    ast {
+        groovy.srcDirs = ['src/ast/groovy']
+        resources.srcDirs = []
+    }
 }
 test {
     maxParallelForks = 4
     forkEvery = 100
     maxHeapSize = '1024m'
 }
+jar{
+    from compileAstGroovy.outputs.files
+}
+
 jar.appendix = 'plugin-gsp'
