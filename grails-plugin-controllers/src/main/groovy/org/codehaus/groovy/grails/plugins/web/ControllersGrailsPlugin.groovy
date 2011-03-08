@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.plugins.web
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
@@ -85,7 +84,7 @@ class ControllersGrailsPlugin {
             stripLeadingSlash = false
         }
 
-        controllersApi(ControllersApi, ref("pluginManager"))
+        instanceControllersApi(ControllersApi, ref("pluginManager"))
 
         for (controller in application.controllerClasses) {
             log.debug "Configuring controller $controller.fullName"
@@ -93,7 +92,7 @@ class ControllersGrailsPlugin {
                 "${controller.fullName}"(controller.clazz) { bean ->
                     bean.scope = "prototype"
                     bean.autowire = "byName"
-                    controllersApi = ref("controllersApi")
+                    instanceControllersApi = ref("instanceControllersApi")
                 }
             }
         }
@@ -203,7 +202,7 @@ class ControllersGrailsPlugin {
             }
         }
 
-        ControllersApi controllerApi = ctx.getBean("controllersApi")
+        ControllersApi controllerApi = ctx.getBean("instanceControllersApi")
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding");
 
         if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
@@ -216,17 +215,6 @@ class ControllersGrailsPlugin {
         Object o = application.getFlatConfig().get(RedirectDynamicMethod.GRAILS_VIEWS_ENABLE_JSESSIONID);
         if (o instanceof Boolean) {
             controllerApi.setUseJessionId(o)
-        }
-
-
-        // add commons objects and dynamic methods like render and redirect to controllers
-        for (GrailsClass controller in application.controllerClasses) {
-            MetaClass mc = controller.metaClass
-            Class controllerClass = controller.clazz
-
-            mc.constructor = { ->
-                ctx.getBean(controllerClass.name)
-            }
         }
     }
 
@@ -246,7 +234,7 @@ class ControllersGrailsPlugin {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     bean.scope = "prototype"
                     bean.autowire = true
-                    controllersApi = ref("controllersApi")
+                    instanceControllersApi = ref("instanceControllersApi")
                 }
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will

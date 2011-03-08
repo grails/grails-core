@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 
@@ -22,6 +23,7 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter
  *
  * @author Graeme Rocher
  */
+@Artefact("TagLibrary")
 class JavascriptTagLib  {
 
     /**

@@ -24,10 +24,17 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A Groovy compiler injection operation that uses a specified array of ClassInjector instances to
@@ -39,15 +46,48 @@ import java.net.URL;
 public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation  {
 
     private static final Log LOG = LogFactory.getLog(GrailsAwareInjectionOperation.class);
+    private static final String INJECTOR_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
     private GroovyResourceLoader grailsResourceLoader;
-    private ClassInjector[] classInjectors = new ClassInjector[0];
+    private static ClassInjector[] classInjectors = null;
 
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] injectors) {
+    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
         Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
         this.grailsResourceLoader = resourceLoader;
-        if (injectors != null) {
-            this.classInjectors = injectors;
+        initializeState();
+    }
+
+    public static ClassInjector[] getClassInjectors() {
+        if(classInjectors == null) {
+            initializeState();
+        }
+        return classInjectors;
+    }
+
+    private static void initializeState() {
+        if (classInjectors == null) {
+            BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
+            ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
+            scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
+            scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
+            scanner.scan(INJECTOR_SCAN_PACKAGE);
+
+            List<ClassInjector> classInjectorList = new ArrayList<ClassInjector>();
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            for(String beanName : registry.getBeanDefinitionNames()) {
+                try {
+                    Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
+                    if(ClassInjector.class.isAssignableFrom(injectorClass))
+                        classInjectorList.add((ClassInjector) injectorClass.newInstance());
+                } catch (ClassNotFoundException e) {
+                    // ignore
+                } catch (InstantiationException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
+                    // ignore
+                }
+            }
+            classInjectors = classInjectorList.toArray(new ClassInjector[classInjectorList.size()]);
         }
     }
 

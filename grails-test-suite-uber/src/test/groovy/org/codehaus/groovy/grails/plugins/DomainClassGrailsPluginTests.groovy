@@ -11,8 +11,6 @@ class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
 
     void onSetUp() {
         gcl = new GrailsAwareClassLoader()
-        def injector = new AlwaysInjector()
-        gcl.setClassInjectors([injector] as ClassInjector[])
 
         def fs = File.separator
         gcl.parseClass(

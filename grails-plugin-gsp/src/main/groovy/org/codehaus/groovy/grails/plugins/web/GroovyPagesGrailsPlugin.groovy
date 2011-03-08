@@ -15,35 +15,27 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
-import grails.util.BuildSettings
-import grails.util.BuildSettingsHolder
-import grails.util.Environment
-import grails.util.GrailsUtil
-import grails.util.PluginBuildSettings
-
 import java.lang.reflect.Modifier
-
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer;
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
-import org.codehaus.groovy.grails.plugins.web.taglib.*
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
+import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
-import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.view.JstlView
+import grails.util.*
+import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.web.pages.*
+import grails.artefact.Enhanced
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -172,11 +164,13 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
+        instanceTagLibraryApi(TagLibraryApi, ref("pluginManager"))
         // Now go through tag libraries and configure them in spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
             "${taglib.fullName}"(taglib.clazz) { bean ->
                 bean.autowire = true
                 bean.lazyInit = true
+                instanceTagLibraryApi = ref("instanceTagLibraryApi")
                 // Taglib scoping support could be easily added here. Scope could be based on a static field in the taglib class.
                 //bean.scope = 'request'
             }
@@ -244,7 +238,7 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-        def tagLibApi = new TagLibraryApi(pluginManager)
+        def tagLibApi = ctx.getBean("instanceTagLibraryApi")
 
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi tagLibApi
@@ -252,13 +246,18 @@ class GroovyPagesGrailsPlugin {
         for (GrailsTagLibClass t in application.tagLibClasses) {
             GrailsTagLibClass taglib = t
             MetaClass mc = taglib.metaClass
+            Class cls = taglib.clazz
+
+            def enhancedAnn = cls.getAnnotation(Enhanced)
+            if(enhancedAnn == null)
+                enhancer.enhance mc
+
             String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
 
             for (tag in taglib.tagNames) {
                 WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }
 
-            enhancer.enhance mc
 
             mc.propertyMissing = { String name ->
                 def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)
@@ -328,6 +327,7 @@ class GroovyPagesGrailsPlugin {
                 def beans = beans {
                     "$beanName"(taglibClass.clazz) { bean ->
                         bean.autowire = true
+                        instanceTagLibraryApi = ref("instanceTagLibraryApi")
                         //bean.scope = 'request'
                     }
                 }

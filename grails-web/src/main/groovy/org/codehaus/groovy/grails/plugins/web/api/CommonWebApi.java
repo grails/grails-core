@@ -15,20 +15,24 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * API shared by controllers, tag libraries and any other web artifact
@@ -37,8 +41,11 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @since 1.4
  *
  */
-public class CommonWebApi {
+public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware{
     private GrailsPluginManager pluginManager;
+    private GrailsApplication grailsApplication;
+    private ServletContext servletContext;
+    private ApplicationContext applicationContext;
 
     public CommonWebApi(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -90,8 +97,11 @@ public class CommonWebApi {
      * @return The ServletContext instance
      */
     public ServletContext getServletContext(@SuppressWarnings("unused") Object instance) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return webRequest.getServletContext();
+        if(servletContext == null) {
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+            servletContext = webRequest.getServletContext();
+        }
+        return servletContext;
     }
 
     /**
@@ -119,8 +129,11 @@ public class CommonWebApi {
      * @return The GrailsApplication instance
      */
     public GrailsApplication getGrailsApplication(@SuppressWarnings("unused") Object instance) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return webRequest.getAttributes().getGrailsApplication();
+        if(grailsApplication == null) {
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+            grailsApplication = webRequest.getAttributes().getGrailsApplication();
+        }
+        return grailsApplication;
     }
 
     /**
@@ -128,7 +141,10 @@ public class CommonWebApi {
      * @return The ApplicationContext instance
      */
     public ApplicationContext getApplicationContext(Object instance) {
-        return WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext(instance));
+        if(applicationContext == null) {
+            applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext(instance));
+        }
+        return applicationContext;
     }
 
     /**
@@ -167,5 +183,20 @@ public class CommonWebApi {
     public String getPluginContextPath(Object delegate) {
         final String pluginPath = pluginManager != null ? pluginManager.getPluginPathForInstance(delegate) : null;
         return pluginPath !=null ? pluginPath : "";
+    }
+
+    @Override
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2004-2005 the original author or authors.
+/* Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,63 +14,39 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import grails.util.BuildSettingsHolder;
 import grails.util.PluginBuildSettings;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.control.CompilePhase;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
-import org.codehaus.groovy.transform.ASTTransformation;
-import org.codehaus.groovy.transform.GroovyASTTransformation;
-
 /**
- * Automatically annotates any class with @Plugin(name="foo") if it is a plugin resource.
+ *
  *
  * @author Graeme Rocher
- * @since 1.2
+ * @since 1.4
  */
-@GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class GlobalPluginAwareEntityASTTransformation implements ASTTransformation {
+@AstTransformer
+public class PluginAwareAstTransformer implements ClassInjector {
 
-    private boolean disableTransformation = Boolean.getBoolean("disable.grails.plugin.transform");
     PluginBuildSettings pluginBuildSettings;
 
-    public GlobalPluginAwareEntityASTTransformation() {
-        pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
+    public PluginAwareAstTransformer() {
+        this.pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
     }
 
-    public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
-        if (disableTransformation) {
-            return;
-        }
-
-        ASTNode astNode = astNodes[0];
-        if (!(astNode instanceof ModuleNode)) {
-            return;
-        }
-
-        ModuleNode moduleNode = (ModuleNode) astNode;
-        List<?> classes = moduleNode.getClasses();
-        if (classes.isEmpty()) {
-            return;
-        }
-
-        ClassNode classNode = (ClassNode) classes.get(0);
-        if (classNode.isAnnotationDefinition()) {
-            return;
-        }
-
-        File sourcePath = new File(sourceUnit.getName());
+    @Override
+    public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        File sourcePath = new File(source.getName());
         try {
             String absolutePath = sourcePath.getCanonicalPath();
             if (pluginBuildSettings == null) {
@@ -101,5 +77,15 @@ public class GlobalPluginAwareEntityASTTransformation implements ASTTransformati
         catch (IOException e) {
             // ignore
         }
+    }
+
+    @Override
+    public void performInjection(SourceUnit source, ClassNode classNode) {
+        performInjection(source, null, classNode);
+    }
+
+    @Override
+    public boolean shouldInject(URL url) {
+        return true;
     }
 }

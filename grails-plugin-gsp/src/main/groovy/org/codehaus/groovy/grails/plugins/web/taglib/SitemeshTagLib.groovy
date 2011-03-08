@@ -14,13 +14,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import com.opensymphony.module.sitemesh.RequestConstants
+import grails.artefact.Artefact
+import org.apache.commons.lang.WordUtils
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
-import com.opensymphony.module.sitemesh.RequestConstants
-import org.apache.commons.lang.WordUtils
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 
 /**
  * Internal Sitemesh pre-processor tags.
@@ -28,6 +29,7 @@ import org.apache.commons.lang.WordUtils
  * @author Graeme Rocher
  * @since 1.2
  */
+@Artefact("TagLibrary")
 class SitemeshTagLib implements RequestConstants {
 
     static namespace = 'sitemesh'

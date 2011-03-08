@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.compiler.web
 
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import spock.lang.Specification
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
 import javax.servlet.http.HttpServletRequest
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.springframework.web.context.request.RequestContextHolder
+import spock.lang.Specification
 
-/**
+ /**
  * Created by IntelliJ IDEA.
  * User: graemerocher
  * Date: 07/03/2011
@@ -16,17 +16,26 @@ import javax.servlet.http.HttpServletRequest
  */
 class ControllerTransformerSpec extends Specification{
 
+    void "Test get artefact type"() {
+        when:
+            def transformer = new ControllerTransformer()
+
+        then:
+            transformer.artefactType == 'Controller'
+    }
+
     void "Test that the API is injected via AST"() {
 
         given:
             def gcl = new GrailsAwareClassLoader()
-            gcl.classInjectors = [new ControllerTransformer() {
+            def transformer = new ControllerTransformer() {
                 @Override
                 boolean shouldInject(URL url) {
                     return true;
                 }
 
-            }] as ClassInjector[]
+            }
+            gcl.classInjectors = [transformer] as ClassInjector[]
 
 
         when:
@@ -36,8 +45,9 @@ class TestTransformedController {}
             def controller = cls.newInstance()
 
         then:
+
             controller != null
-            controller.controllersApi != null
+            controller.instanceControllersApi != null
 
         when:
             GrailsWebUtil.bindMockWebRequest()
@@ -55,7 +65,26 @@ class TestTransformedController {}
 
     }
 
+    void "Test annotated artefact"() {
+         when:
+            def gcl = new GrailsAwareClassLoader()
+            def cls = gcl.parseClass('''
+@grails.artefact.Artefact("Controller")
+class AnnotatedControllerTransformerController {
+
+}
+''')
+            def controller = cls.newInstance()
+
+        then:
+
+            controller != null
+            controller.instanceControllersApi != null
+
+    }
+
     def cleanup() {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
+

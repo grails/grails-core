@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
 /**
@@ -22,6 +23,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
  * @author Graeme Rocher
  * @since 1.1
  */
+@Artefact("TagLibrary")
 class PluginTagLib {
 
     static namespace = "plugin"

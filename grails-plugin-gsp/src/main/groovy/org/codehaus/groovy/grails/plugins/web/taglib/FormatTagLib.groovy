@@ -14,18 +14,16 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import grails.artefact.Artefact
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
-import java.util.Currency
-import java.util.Locale
-import java.util.TimeZone
-
 import org.apache.commons.lang.time.FastDateFormat
 import org.springframework.context.NoSuchMessageException
 import org.springframework.util.StringUtils
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
@@ -33,8 +31,11 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
  *
  * @author Jason Rudolph
  * @author Lari Hotari
+ * @author Graeme Rocher
+ *
  * @since 0.6
  */
+@Artefact("TagLibrary")
 class FormatTagLib {
 
     static returnObjectForTags = ['formatBoolean','formatDate','formatNumber','encodeAs']
@@ -202,7 +203,7 @@ class FormatTagLib {
      * e.g., &lt;g:formatNumber number="${myNumber}" format="###,##0" /&gt;
      *
      * @see java.text.DecimalFormat
-     * 
+     *
      * @attr number REQUIRED the number to display
      * @attr format The formatting pattern to use for the number, see DecimalFormat
      * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key.Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key. If format and formatName are empty, format is looked up with 'default.number.format' key. If the key is missing, '0' formatting pattern is used.
@@ -336,7 +337,7 @@ class FormatTagLib {
 
     /**
      * Encodes the body using the specified codec.
-     * 
+     *
      * @attr codec REQUIRED the codec name
      */
     def encodeAs = { attrs, body ->

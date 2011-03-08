@@ -22,7 +22,9 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -61,6 +63,15 @@ public class ControllersApi extends CommonWebApi {
         this.forwardMethod= new ForwardMethod();
     }
 
+    public static ApplicationContext getStaticApplicationContext() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if(requestAttributes instanceof GrailsWebRequest) {
+            GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
+            return webRequest.getApplicationContext();
+        }
+        return null;
+    }
+
     public void setGspEncoding(String gspEncoding) {
         render.setGspEncoding( gspEncoding );
     }
@@ -71,6 +82,21 @@ public class ControllersApi extends CommonWebApi {
 
     public void setUseJessionId(boolean useJessionId) {
         redirect.setUseJessionId(useJessionId);
+    }
+
+
+    /**
+     * Constructor used by controllers
+     *
+     * @param instance The instance
+
+     */
+    public static void initialize(Object instance) {
+        ApplicationContext applicationContext = getStaticApplicationContext();
+        if(applicationContext != null) {
+            applicationContext.getAutowireCapableBeanFactory().autowireBean(instance);
+
+        }
     }
 
     /**

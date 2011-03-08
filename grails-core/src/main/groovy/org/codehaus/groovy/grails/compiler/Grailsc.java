@@ -19,18 +19,11 @@ import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ant.Groovyc;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,30 +35,9 @@ public class Grailsc extends Groovyc {
 
 
     @Override protected CompilationUnit makeCompileUnit() {
-        BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
-        scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
-        scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
-        scanner.scan("org.codehaus.groovy.grails.compiler");
-
         CompilationUnit unit = super.makeCompileUnit();
-
-        List<ClassInjector> classInjectors = new ArrayList<ClassInjector>();
-        ClassLoader classLoader = getClass().getClassLoader();
-        for(String beanName : registry.getBeanDefinitionNames()) {
-            try {
-                Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
-                if(ClassInjector.class.isAssignableFrom(injectorClass))
-                    classInjectors.add((ClassInjector) injectorClass.newInstance());
-            } catch (ClassNotFoundException e) {
-                // ignore
-            } catch (InstantiationException e) {
-                // ignore
-            } catch (IllegalAccessException e) {
-                // ignore
-            }
-        }
-        unit.addPhaseOperation(new GrailsAwareInjectionOperation(configureResourceLoader(), classInjectors.toArray(new ClassInjector[classInjectors.size()])), Phases.CANONICALIZATION);
+        GrailsAwareInjectionOperation operation = new GrailsAwareInjectionOperation(configureResourceLoader());
+        unit.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return unit;
     }
 
