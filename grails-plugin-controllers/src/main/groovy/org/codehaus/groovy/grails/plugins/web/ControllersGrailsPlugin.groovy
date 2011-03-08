@@ -54,7 +54,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.MethodGrailsControllerHelper
 class ControllersGrailsPlugin {
 
     def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
-                            "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
+            "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version, urlMappings: version]
@@ -263,7 +263,7 @@ class ControllersGrailsPlugin {
             mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
             if(nonEnhancedControllerClasses.contains(controllerClass))
                 enhancer.enhance mc
-        }
+            }
 
     }
 

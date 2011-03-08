@@ -90,10 +90,11 @@ target(packagePlugin: "Implementation target") {
 
     event("PackagePluginStart", [plugin.name])
 
+    def descriptor = pluginSettings.getBasePluginDescriptor()
+     generatePluginXml(descriptor.file, false)
+
     // Package plugin's zip distribution
     if (argsMap.binary) {
-        def descriptor = pluginSettings.getBasePluginDescriptor()
-        generatePluginXml(descriptor.file, false)
         pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)
     }
     else {
