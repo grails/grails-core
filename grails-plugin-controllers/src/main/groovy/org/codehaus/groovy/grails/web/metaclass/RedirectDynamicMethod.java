@@ -70,6 +70,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
     private boolean useJessionId = false;
     private Collection<RedirectEventListener> redirectListeners;
+    private UrlMappingsHolder urlMappingsHolder;
 
     /**
      */
@@ -78,6 +79,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
         this.redirectListeners = redirectListeners;
     }
+
+
 
     /**
      *
@@ -92,6 +95,10 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
     public RedirectDynamicMethod() {
         super(METHOD_PATTERN);
+    }
+
+    public void setUrlMappingsHolder(UrlMappingsHolder urlMappingsHolder) {
+        this.urlMappingsHolder = urlMappingsHolder;
     }
 
     public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
@@ -115,7 +122,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        UrlMappingsHolder urlMappingsHolder = webRequest.getApplicationContext().getBean(UrlMappingsHolder.BEAN_ID, UrlMappingsHolder.class);
+        UrlMappingsHolder urlMappingsHolder = getUrlMappingsHolder(webRequest);
 
         HttpServletRequest request = webRequest.getCurrentRequest();
         if (request.getAttribute(GRAILS_REDIRECT_ISSUED) != null) {
@@ -190,6 +197,13 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         return redirectResponse(actualUri, request,response);
+    }
+
+    private UrlMappingsHolder getUrlMappingsHolder(GrailsWebRequest webRequest) {
+        if(this.urlMappingsHolder == null) {
+            urlMappingsHolder = webRequest.getApplicationContext().getBean(UrlMappingsHolder.BEAN_ID, UrlMappingsHolder.class);
+        }
+        return urlMappingsHolder;
     }
 
     @SuppressWarnings("rawtypes")

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.artefact.Enhanced
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
@@ -39,8 +40,9 @@ import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 
- /**
+/**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
@@ -53,6 +55,7 @@ class ControllersGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version, urlMappings: version]
+    def nonEnhancedControllerClasses = []
 
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
@@ -84,15 +87,24 @@ class ControllersGrailsPlugin {
             stripLeadingSlash = false
         }
 
-        instanceControllersApi(ControllersApi, ref("pluginManager"))
+        instanceControllersApi(ControllersApi, ref("pluginManager")) {
+            urlMappingsHolder = ref("grailsUrlMappingsHolder")
+        }
 
         for (controller in application.controllerClasses) {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
-                "${controller.fullName}"(controller.clazz) { bean ->
+                def cls = controller.clazz
+                "${controller.fullName}"(cls) { bean ->
                     bean.scope = "prototype"
                     bean.autowire = "byName"
-                    instanceControllersApi = ref("instanceControllersApi")
+                    def enhancedAnn = cls.getAnnotation(Enhanced)
+                    if(enhancedAnn != null) {
+                        instanceControllersApi = ref("instanceControllersApi")
+                    }
+                    else {
+                        nonEnhancedControllerClasses << cls
+                    }
                 }
             }
         }
@@ -215,6 +227,12 @@ class ControllersGrailsPlugin {
         Object o = application.getFlatConfig().get(RedirectDynamicMethod.GRAILS_VIEWS_ENABLE_JSESSIONID);
         if (o instanceof Boolean) {
             controllerApi.setUseJessionId(o)
+        }
+
+        if(nonEnhancedControllerClasses) {
+            def enhancer = new MetaClassEnhancer()
+            enhancer.addApi(controllerApi)
+            enhancer.enhanceAll nonEnhancedControllerClasses*.metaClass
         }
     }
 

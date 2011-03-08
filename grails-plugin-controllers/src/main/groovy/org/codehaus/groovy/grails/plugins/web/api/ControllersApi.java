@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.api;
 
 import groovy.lang.Closure;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.metaclass.*;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -84,6 +85,9 @@ public class ControllersApi extends CommonWebApi {
         redirect.setUseJessionId(useJessionId);
     }
 
+    public void setUrlMappingsHolder(UrlMappingsHolder urlMappingsHolder) {
+        redirect.setUrlMappingsHolder(urlMappingsHolder);
+    }
 
     /**
      * Constructor used by controllers
