@@ -105,7 +105,7 @@ class ControllersGrailsPlugin {
                         instanceControllersApi = ref("instanceControllersApi")
                     }
                     else {
-                        nonEnhancedControllerClasses << cls
+                        nonEnhancedControllerClasses << controller
                     }
                 }
             }
@@ -216,7 +216,7 @@ class ControllersGrailsPlugin {
             }
         }
 
-        ControllersApi controllerApi = ctx.getBean("instanceControllersApi")
+        ControllersApi controllerApi = ctx.getBean("instanceControllersApi",ControllersApi)
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding");
 
         if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
@@ -231,11 +231,16 @@ class ControllersGrailsPlugin {
             controllerApi.setUseJessionId(o)
         }
 
-        if(nonEnhancedControllerClasses) {
-            def enhancer = new MetaClassEnhancer()
-            enhancer.addApi(controllerApi)
-            enhancer.enhanceAll nonEnhancedControllerClasses*.metaClass
+        def enhancer = new MetaClassEnhancer()
+        enhancer.addApi(controllerApi)
+
+        for(controller in application.controllerClasses) {
+            def mc = controller.metaClass
+            mc.constructor = {-> ctx.getBean(controller.fullName)}
+            if(nonEnhancedControllerClasses.contains(controller))
+                enhancer.enhance mc
         }
+
     }
 
     def onChange = {event ->
