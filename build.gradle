@@ -186,10 +186,7 @@ task clean << {
     delete(buildDir)
 }
 
-task install(dependsOn:[populateDependencies])
-
-
-install.doLast {
+task installResources << {
     copy {
         from('src/resources/tests')
         into('lib')
@@ -207,7 +204,7 @@ install.doLast {
     // the fileMode property above should take care of the chmod work, but
     // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
     ant.chmod(dir: 'bin', perm: '755', includes: '*')
-    
+
     copy {
         from("src/resources/conf")
         into "conf"
@@ -220,4 +217,5 @@ install.doLast {
 }
 
 
+task install(dependsOn:[populateDependencies, installResources])
 task assemble(dependsOn:zipDist)

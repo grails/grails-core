@@ -1,6 +1,16 @@
+configurations {
+    agent.extendsFrom compile
+}
 dependencies {
     runtime 'oro:oro:2.0.8'
+    agent files(fileTree(dir:"$projectDir/lib" as File))
     compile project(":grails-bootstrap"), project(":grails-spring")
+}
+
+sourceSets {
+    main {
+        compileClasspath = files(configurations.agent)
+    }
 }
 
 compileGroovy.doFirst {
