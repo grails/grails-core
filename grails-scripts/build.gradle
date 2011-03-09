@@ -1,3 +1,6 @@
+configurations {
+    agent.extendsFrom compile
+}
 dependencies {
     agent 'com.springsource.springloaded:springloaded-core:0.7.2'
     // Testing
