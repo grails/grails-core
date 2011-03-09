@@ -351,8 +351,13 @@ class GroovyPagesGrailsPlugin {
                 def beans = beans {
                     "$beanName"(taglibClass.clazz) { bean ->
                         bean.autowire = true
-                        if(taglibClass.clazz.getAnnotation(Enhanced))
+                        if(taglibClass.clazz.getAnnotation(Enhanced)) {
+
                             instanceTagLibraryApi = ref("instanceTagLibraryApi")
+                        }
+                        else {
+                            nonEnhancedTagLibClasses << taglibClass
+                        }
                     }
                 }
                 beans.registerBeans(event.ctx)

@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
 
@@ -111,7 +112,9 @@ class UrlMappings {
         ctx.registerMockBean("testRedirect", callable)
         def pv = new MutablePropertyValues()
         pv.addPropertyValue("callable", callable)
-        appCtx.registerSingleton("testDirect",TestRedirectListener, pv )
+        ControllersApi api = appCtx.getBean("instanceControllersApi")
+
+        api.setRedirectListeners([new TestRedirectListener(callable: callable)])
 
         def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'

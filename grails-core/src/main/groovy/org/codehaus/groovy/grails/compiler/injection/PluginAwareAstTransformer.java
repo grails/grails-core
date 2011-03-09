@@ -30,7 +30,7 @@ import java.net.URL;
 import java.util.List;
 
 /**
- *
+ * Automatically annotates each class based on the plugin it originated from
  *
  * @author Graeme Rocher
  * @since 1.4
