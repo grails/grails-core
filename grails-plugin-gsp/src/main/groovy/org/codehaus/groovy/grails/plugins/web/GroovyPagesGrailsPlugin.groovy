@@ -272,6 +272,7 @@ class GroovyPagesGrailsPlugin {
             for (GrailsTagLibClass t in nonEnhancedTagLibClasses) {
                 GrailsTagLibClass taglib = t
                 MetaClass mc = taglib.metaClass
+                enhancer.enhance mc
                 String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
 
                 for (tag in taglib.tagNames) {
