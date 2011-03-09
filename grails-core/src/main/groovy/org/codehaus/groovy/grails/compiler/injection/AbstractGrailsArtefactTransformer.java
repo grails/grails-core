@@ -22,6 +22,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -36,12 +37,13 @@ import java.util.List;
 public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector{
 
     private static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
-    private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
+    protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     private static final ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
-    private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
-    private static final ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
+    protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
+    protected static final ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
     private static final String INSTANCE_PREFIX = "instance";
     private static final ClassNode CLASS_CLASSNODE = new ClassNode(Class.class);
+    private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
 
     @Override
     public String getArtefactType() {
@@ -53,7 +55,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     @Override
-    public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+    public final void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         Class instanceImplementation = getInstanceImplementation();
 
         if(instanceImplementation != null) {
@@ -65,7 +67,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             VariableExpression apiInstance = new VariableExpression(apiInstanceProperty);
 
 
-            classNode.addProperty(new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null));
+            PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null);
+            propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
+            classNode.addProperty(propertyNode);
 
             while(!implementationNode.equals(OBJECT_CLASS)) {
                 List<MethodNode> declaredMethods = implementationNode.getMethods();
@@ -104,11 +108,23 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 }
                 implementationNode = implementationNode.getSuperClass();
             }
+            performInjectionInternal(apiInstanceProperty, source, classNode);
         }
 
 
         classNode.addAnnotation(new AnnotationNode(new ClassNode(Enhanced.class)));
 
+    }
+
+    /**
+     * Subclasses can override to provide additional transformation
+     *
+     * @param apiInstanceProperty
+     * @param source The source
+     * @param classNode The class node
+     */
+    protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
+        // do nothing
     }
 
     private boolean isConstructor(MethodNode declaredMethod) {
@@ -151,7 +167,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public abstract Class getStaticImplementation();
 
     @Override
-    public void performInjection(SourceUnit source, ClassNode classNode) {
+    public final void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
 
