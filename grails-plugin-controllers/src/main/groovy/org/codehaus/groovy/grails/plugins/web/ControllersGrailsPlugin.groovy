@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
 import org.codehaus.groovy.grails.web.servlet.mvc.ClosureGrailsControllerHelper
 import org.codehaus.groovy.grails.web.servlet.mvc.MethodGrailsControllerHelper
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -60,9 +61,6 @@ class ControllersGrailsPlugin {
     def dependsOn = [core: version, i18n: version, urlMappings: version]
     def nonEnhancedControllerClasses = []
 
-    static final RESOLVE_CLOSURE = 'closure'
-    static final RESOLVE_METHOD = 'method'
-
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
 
@@ -77,15 +75,15 @@ class ControllersGrailsPlugin {
         def resolveStrategyClass = MixedGrailsControllerHelper
 
         switch (application.config.grails.controllers.actions.resolveStrategy) {
-            case RESOLVE_CLOSURE:
+            case DefaultGrailsControllerClass.RESOLVE_CLOSURE:
                 resolveStrategyClass = ClosureGrailsControllerHelper
                 break;
-            case RESOLVE_METHOD:
+            case DefaultGrailsControllerClass.RESOLVE_METHOD:
                 resolveStrategyClass = MethodGrailsControllerHelper
                 break;
             }
 
-        grailsControllerHelper(resolveStrategyClass) {
+        grailsControllerHelper(resolveStrategyClass) { bean->
                 grailsApplication = ref('grailsApplication')
                 bean.scope = 'prototype'
             }

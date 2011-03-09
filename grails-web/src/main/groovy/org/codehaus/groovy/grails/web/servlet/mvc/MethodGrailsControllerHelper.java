@@ -15,17 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingPropertyException;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.apache.commons.beanutils.MethodUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Implements action invokation throught Method
@@ -35,30 +31,30 @@ import java.lang.reflect.Modifier;
  */
 public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper {
 
+    public static final Class[] NOARGS = new Class[]{};
+
 
     @Override
     protected Method retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
-        Method action;
-        try {
-            action = (Method) controller.getClass().getMethod(actionName);
-            if(!Modifier.isPublic(action.getModifiers())){
-                throw new NoSuchMethodException();
-            }
-        } catch (NoSuchMethodException mpe) {
+        Method action = MethodUtils.getAccessibleMethod(controller.getClass(), actionName, NOARGS);
+
+        if (action == null) {
             try {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return null;
             } catch (IOException e) {
                 throw new ControllerExecutionException("I/O error sending 404 error", e);
             }
+        } else {
+            return action;
         }
-        return action;
+
     }
 
     @Override
     protected Object invoke(GroovyObject controller, Object action) {
         try {
-            return ((Method)action).invoke(controller);
+            return ((Method) action).invoke(controller);
         } catch (Exception e) {
             throw new ControllerExecutionException("Runtime error executing action", e);
         }

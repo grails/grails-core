@@ -25,8 +25,10 @@ import groovy.lang.MetaProperty;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
@@ -161,6 +163,10 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 
     public boolean isReadableProperty(String propName) {
         return classPropertyFetcher.isReadableProperty(propName);
+    }
+
+    public boolean isPublicAndNonStaticMethod(String methodName) {
+        return MethodUtils.getAccessibleMethod(getClazz(), methodName, new Class[0]) != null;
     }
 
     public boolean hasMetaMethod(String methodName) {

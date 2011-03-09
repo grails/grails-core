@@ -20,6 +20,7 @@ import grails.util.GrailsUtil;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
+import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
@@ -173,6 +174,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
         finally {
             ClassPropertyFetcher.clearClassPropertyFetcherCache();
+            MethodUtils.clearCache();
         }
 
         return ctx;

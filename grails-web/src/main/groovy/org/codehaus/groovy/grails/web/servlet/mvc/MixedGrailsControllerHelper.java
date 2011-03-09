@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
+import org.apache.commons.beanutils.MethodUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,20 +37,11 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
 
     @Override
     protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
-        Method mAction;
-        try {
-            mAction = controller.getClass().getMethod(actionName);
-            if (!Modifier.isPublic(mAction.getModifiers())) {
-                throw new NoSuchMethodException();
-            }
-        } catch (NoSuchMethodException mpe) {
-            mAction = null;
-        }
+        Method mAction = MethodUtils.getAccessibleMethod(controller.getClass(),actionName,  MethodGrailsControllerHelper.NOARGS);
 
         if (mAction != null) {
             return mAction;
         } else {
-            Closure action;
             try {
                 return controller.getProperty(actionName);
             } catch (MissingPropertyException mpe) {
@@ -67,10 +59,10 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
     @Override
     protected Object invoke(GroovyObject controller, Object action) {
         try {
-            if (action instanceof Closure) {
-                return ((Closure) action).call();
-            } else {
+            if (action.getClass() == Method.class) {
                 return ((Method) action).invoke(controller);
+            } else {
+                return ((Closure) action).call();
             }
         } catch (Exception e) {
             throw new ControllerExecutionException("Runtime error executing action", e);
