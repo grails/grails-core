@@ -1,6 +1,3 @@
-repositories {
-      mavenRepo name: "spring-release", urls: 'http://maven.springframework.org/release'
-}
 configurations {
     agent.extendsFrom compile
 }
