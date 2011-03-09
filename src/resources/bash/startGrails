@@ -235,6 +235,7 @@ startGrails() {
 	GRAILS_OPTS="-server -Xmx512M -XX:MaxPermSize=192m -Dfile.encoding=UTF-8"
   fi
   JAVA_OPTS="$GRAILS_OPTS $JAVA_OPTS -javaagent:$GRAILS_HOME/bin/springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+aren't, still researching that)
   # Start the Profiler or the JVM
   if $useprofiler; then
       runProfiler
