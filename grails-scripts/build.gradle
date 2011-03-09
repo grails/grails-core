@@ -1,4 +1,13 @@
+repositories {
+    mavenRepo urls:"http://snapshots.repository.codehaus.org/"
+    mavenRepo name: "spring-release", urls: 'http://maven.springframework.org/release'
+
+}
+configurations {
+    agent.extendsFrom compile
+}
 dependencies {
+    agent 'com.springsource.springloaded:springloaded-core:0.7.2'
     // Testing
     compile 'junit:junit:4.8.1'
     // Ant
@@ -22,6 +31,7 @@ dependencies {
 }
 sourceSets {
     main {
+        compileClasspath = files(configurations.agent)
 		groovy.srcDirs = ['../scripts']
     }
 }
