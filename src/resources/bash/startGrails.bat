@@ -125,6 +125,7 @@ set JAVA_EXE=%JAVA_HOME%\bin\java.exe
 set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 
 if "%JAVA_OPTS%" == "" set JAVA_OPTS=-Xmx512m -XX:MaxPermSize=96m
+set JAVA_OPTS=%JAVA_OPTS%  -javaagent:%GRAILS_HOME%\bin\springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name="%PROGNAME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.home="%GRAILS_HOME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version="@grails.version@"
