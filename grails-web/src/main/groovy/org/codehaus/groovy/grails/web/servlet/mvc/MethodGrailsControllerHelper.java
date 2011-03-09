@@ -41,7 +41,7 @@ public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper
         Method action;
         try {
             action = (Method) controller.getClass().getMethod(actionName);
-            if(Modifier.isPrivate(action.getModifiers())){
+            if(!Modifier.isPublic(action.getModifiers())){
                 throw new NoSuchMethodException();
             }
         } catch (NoSuchMethodException mpe) {

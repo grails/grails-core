@@ -22,6 +22,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * Implements action invokation throught Closure
@@ -33,23 +35,45 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
 
 
     @Override
-    protected Closure retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
-        Closure action;
+    protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
+        Method mAction;
         try {
-            action = (Closure) controller.getProperty(actionName);
-        } catch (MissingPropertyException mpe) {
+            mAction = controller.getClass().getMethod(actionName);
+            if (!Modifier.isPublic(mAction.getModifiers())) {
+                throw new NoSuchMethodException();
+            }
+        } catch (NoSuchMethodException mpe) {
+            mAction = null;
+        }
+
+        if (mAction != null) {
+            return mAction;
+        } else {
+            Closure action;
             try {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return null;
-            } catch (IOException e) {
-                throw new ControllerExecutionException("I/O error sending 404 error", e);
+                return controller.getProperty(actionName);
+            } catch (MissingPropertyException mpe) {
+                try {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    return null;
+                } catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error sending 404 error", e);
+                }
             }
         }
-        return action;
+
     }
 
     @Override
     protected Object invoke(GroovyObject controller, Object action) {
-        return ((Closure)action).call();
+        try {
+            if (action instanceof Closure) {
+                return ((Closure) action).call();
+            } else {
+                return ((Method) action).invoke(controller);
+            }
+        } catch (Exception e) {
+            throw new ControllerExecutionException("Runtime error executing action", e);
+        }
     }
 }
