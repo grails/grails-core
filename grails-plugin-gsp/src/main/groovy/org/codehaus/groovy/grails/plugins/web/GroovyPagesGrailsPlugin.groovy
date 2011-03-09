@@ -166,8 +166,9 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-        instanceTagLibraryApi(TagLibraryApi, ref("pluginManager"))
-        instanceControllerTagLibraryApi(ControllerTagLibraryApi, ref("pluginManager"))
+        final pluginManager = manager
+        instanceTagLibraryApi(TagLibraryApi, pluginManager)
+        instanceControllerTagLibraryApi(ControllerTagLibraryApi, pluginManager)
         // Now go through tag libraries and configure them in spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
 

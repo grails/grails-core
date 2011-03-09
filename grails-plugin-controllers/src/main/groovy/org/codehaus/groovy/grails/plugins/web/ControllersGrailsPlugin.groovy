@@ -87,7 +87,9 @@ class ControllersGrailsPlugin {
             stripLeadingSlash = false
         }
 
-        instanceControllersApi(ControllersApi, ref("pluginManager")) {
+        final pluginManager = manager
+
+        instanceControllersApi(ControllersApi, pluginManager) {
             urlMappingsHolder = ref("grailsUrlMappingsHolder")
         }
 
