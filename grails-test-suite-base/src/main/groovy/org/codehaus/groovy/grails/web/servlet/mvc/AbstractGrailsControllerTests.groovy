@@ -70,6 +70,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ga.initialise()
         ga.setApplicationContext(ctx)
 
+        ctx.registerMockBean("pluginManager", mockManager)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
