@@ -1,4 +1,5 @@
 dependencies {
+    agent 'com.springsource.springloaded:springloaded-core:0.7.2'
     // Testing
     compile 'junit:junit:4.8.1'
     // Ant
@@ -23,6 +24,7 @@ dependencies {
 }
 sourceSets {
     main {
+        compileClasspath = files(configurations.agent)
 		groovy.srcDirs = ['../scripts']
     }
 }
