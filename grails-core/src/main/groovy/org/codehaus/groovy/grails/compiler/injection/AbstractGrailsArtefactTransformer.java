@@ -44,6 +44,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final String INSTANCE_PREFIX = "instance";
     private static final ClassNode CLASS_CLASSNODE = new ClassNode(Class.class);
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
+    private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
 
     @Override
     public String getArtefactType() {
@@ -112,7 +113,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         }
 
 
-        classNode.addAnnotation(new AnnotationNode(new ClassNode(Enhanced.class)));
+        if(classNode.getAnnotations(ENHANCED_CLASS_NODE) == null)
+            classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
 
     }
 
