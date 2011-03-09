@@ -15,17 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
-import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
-import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
@@ -37,14 +33,19 @@ import org.springframework.web.util.UrlPathHelper;
  *
  * @author Steven Devijver
  * @author Graeme Rocher
+ * @author Stephane Maldini
  */
-public class SimpleGrailsController implements Controller, ServletContextAware {
+public class SimpleGrailsController implements Controller {
 
     private UrlPathHelper urlPathHelper = new GrailsUrlPathHelper();
-    private GrailsApplication application = null;
-    private ServletContext servletContext;
 
     private static final Log LOG = LogFactory.getLog(SimpleGrailsController.class);
+
+    private AbstractGrailsControllerHelper grailsControllerHelper;
+
+    public void setGrailsControllerHelper(AbstractGrailsControllerHelper _gch){
+        this.grailsControllerHelper = _gch;
+    }
 
     /**
      * <p>Wraps regular request and response objects into Grails request and response objects.
@@ -68,9 +69,7 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
 
         GrailsWebRequest webRequest = (GrailsWebRequest)ra;
 
-        ApplicationContext context = webRequest.getAttributes().getApplicationContext();
-        SimpleGrailsControllerHelper helper = new SimpleGrailsControllerHelper(application,context,servletContext);
-        ModelAndView mv = helper.handleURI(uri,webRequest);
+        ModelAndView mv = grailsControllerHelper.handleURI(uri,webRequest);
 
         if (mv != null) {
             if (LOG.isDebugEnabled()) {
@@ -81,15 +80,4 @@ public class SimpleGrailsController implements Controller, ServletContextAware {
         return mv;
     }
 
-    public void setGrailsApplication(GrailsApplication application) {
-        this.application = application;
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    public ServletContext getServletContext() {
-        return servletContext;
-    }
 }
