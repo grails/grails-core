@@ -17,8 +17,10 @@ package org.codehaus.groovy.grails.cli.agent;
 
 import com.springsource.loaded.Plugins;
 import com.springsource.loaded.ReloadEventProcessorPlugin;
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.springframework.beans.CachedIntrospectionResults;
 
 /**
  *
@@ -30,6 +32,8 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 public class GrailsPluginManagerReloadPlugin implements ReloadEventProcessorPlugin {
 
     public void reloadEvent(String typename, Class<?> aClass, String encodedTimestamp) {
+        CachedIntrospectionResults.clearClassLoader(aClass.getClassLoader());
+        ClassPropertyFetcher.clearClassPropertyFetcherCache();
         GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
         if(pluginManager != null) {
             pluginManager.informOfClassChange(aClass);
