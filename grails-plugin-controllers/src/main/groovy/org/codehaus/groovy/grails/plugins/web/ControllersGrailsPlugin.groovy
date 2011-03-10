@@ -235,9 +235,10 @@ class ControllersGrailsPlugin {
         enhancer.addApi(controllerApi)
 
         for(controller in application.controllerClasses) {
-            def mc = controller.metaClass
-            mc.constructor = {-> ctx.getBean(controller.fullName)}
-            if(nonEnhancedControllerClasses.contains(controller))
+            def controllerClass = controller
+            def mc = controllerClass.metaClass
+            mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
+            if(nonEnhancedControllerClasses.contains(controllerClass))
                 enhancer.enhance mc
         }
 

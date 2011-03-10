@@ -38,7 +38,7 @@ import grails.util.*
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
 
-/**
+ /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
  *
  * @author Graeme Rocher
@@ -230,21 +230,21 @@ class GroovyPagesGrailsPlugin {
 
             def namespaceGetters = [:]
             for (namespace in gspTagLibraryLookup.availableNamespaces) {
-                def propName = GrailsClassUtils.getGetterName(namespace)
+                def propName = namespace
                 def namespaceDispatcher = gspTagLibraryLookup.lookupNamespaceDispatcher(namespace)
                 namespaceGetters[propName] = namespaceDispatcher
             }
 
 
             def controllerClasses = application.controllerClasses*.clazz
-            for (Class controllerClass in controllerClasses) {
+            for (Class controller in controllerClasses) {
+                Class controllerClass = controller
                 MetaClass mc = controllerClass.metaClass
                 for(entry in namespaceGetters) {
-                    final String getter = entry.key
+                    final String propertyName = entry.key
                     final dispatcher = entry.value
-                    if (!mc.respondsTo(getter)) {
-                        mc."$getter" = {->
-                            dispatcher }
+                    if (!mc.getMetaProperty(propertyName)) {
+                        mc."${GrailsClassUtils.getGetterName(propertyName)}" = {-> dispatcher }
                     }
                 }
 
