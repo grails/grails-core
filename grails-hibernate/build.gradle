@@ -1,5 +1,6 @@
 repositories {
-    mavenRepo urls:'http://maven.springframework.org/milestone'
+    //mavenRepo urls:'http://maven.springframework.org/milestone'
+    mavenRepo urls:'http://maven.springframework.org/snapshot'
 }
 dependencies {
 
@@ -7,7 +8,7 @@ dependencies {
 
 
     // Srping Datastore APIs
-    compile 'org.grails:grails-datastore-gorm:1.0.0.M4'
+    compile 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT'
     
     // Hibernate related
     compile 'org.hibernate:hibernate-annotations:3.4.0.GA',

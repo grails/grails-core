@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
@@ -35,7 +36,6 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassV
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.hibernate.EmptyInterceptor
 import org.hibernate.FlushMode
 import org.hibernate.Session
@@ -58,7 +58,7 @@ import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.codehaus.groovy.grails.orm.hibernate.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
 
- /**
+/**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
  *
  * @author Graeme Rocher

@@ -19,19 +19,20 @@ import grails.orm.HibernateCriteriaBuilder
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormInstanceApi
 import org.grails.datastore.gorm.GormStaticApi
 import org.grails.datastore.gorm.GormValidationApi
-import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.engine.EntityEntry
 import org.hibernate.engine.SessionImplementor
 import org.hibernate.proxy.HibernateProxy
 import org.springframework.core.convert.ConversionService
+import org.springframework.core.convert.ConverterNotFoundException
 import org.springframework.dao.DataAccessException
 import org.springframework.datastore.mapping.model.PersistentEntity
 import org.springframework.orm.hibernate3.HibernateCallback
@@ -42,8 +43,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.hibernate.*
 
- /**
- * Extended GORM Enhancer that fills out the remaining GORM for Hibernate methods and
+/**
+ * Extended GORM Enhancer that fills out the remaining
+ * GORM for Hibernate methods and
  * implements string-based query support via HQL
  * 
  * @author Graeme Rocher
@@ -190,13 +192,21 @@ class HibernateGormStaticApi extends GormStaticApi {
 	@Override
 	public Object get(Serializable id) {
         if (id != null) {
-        	id = conversionService.convert( id, identityType )
+        	id = convertIdentifier(id)
             final Object result = hibernateTemplate.get(persistentClass, id)
             return GrailsHibernateUtil.unwrapIfProxy(result)
         }
 	}
 
-	@Override
+    private convertIdentifier(Serializable id) {
+        try {
+            return conversionService.convert(id, identityType)
+        } catch (ConverterNotFoundException e) {
+            return id
+        }
+    }
+
+    @Override
 	public Object read(Serializable id) {
         if (id == null) {
             return null
@@ -213,7 +223,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 
 	@Override
 	public Object load(Serializable id) {
-		id = conversionService.convert( id, identityType )
+		id = convertIdentifier(id)
 		if(id != null) {
 			return hibernateTemplate.load(persistentClass, id)	
 		}
@@ -229,7 +239,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 	@Override
 	public List getAll(Serializable... ids) {
         hibernateTemplate.execute({Session session ->            
-            ids = ids.collect { conversionService.convert( it, identityType ) }
+            ids = ids.collect { convertIdentifier(it) }
             def criteria = session.createCriteria(persistentClass)
 			def identityName = persistentEntity.identity.name
             criteria.add(Restrictions.'in'(identityName, ids))
@@ -253,7 +263,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 
 	@Override
 	public Object lock(Serializable id) {
-		id = conversionService.convert( id, identityType )
+		id = convertIdentifier(id)
         hibernateTemplate.get(persistentClass, id, LockMode.UPGRADE)
 	}
 
@@ -276,7 +286,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 	
 	@Override
 	public boolean exists(Serializable id) {        
-        id = conversionService.convert( id, identityType )
+        id = convertIdentifier(id)
         hibernateTemplate.execute({ Session session ->
             session.createCriteria(persistentEntity.javaClass)
                 .add(Restrictions.idEq(id))
@@ -678,7 +688,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 		}
 	}
 	
-	def save(boolean validate) {
+	def save(Object instance, boolean validate) {
 		if(saveMethod != null) {
 			return saveMethod.invoke(instance, "save", [validate] as Object[])
 		}
@@ -713,7 +723,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 			return saveMethod.invoke(instance, "save", [params] as Object[])
 		}
 		else {			
-			return super.save(instance);
+			return super.save(instance, params);
 		}
 	}
 
