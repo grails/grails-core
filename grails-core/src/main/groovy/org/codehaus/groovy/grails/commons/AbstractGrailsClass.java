@@ -166,7 +166,8 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public boolean isPublicAndNonStaticMethod(String methodName) {
-        return MethodUtils.getAccessibleMethod(getClazz(), methodName, new Class[0]) != null;
+        Method m =  MethodUtils.getAccessibleMethod(getClazz(), methodName, new Class[0]);
+        return m != null && !m.isSynthetic();
     }
 
     public boolean hasMetaMethod(String methodName) {

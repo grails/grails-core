@@ -38,7 +38,7 @@ public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper
     protected Method retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
         Method action = MethodUtils.getAccessibleMethod(controller.getClass(), actionName, NOARGS);
 
-        if (action == null) {
+        if (action == null || action.isSynthetic()) {
             try {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return null;

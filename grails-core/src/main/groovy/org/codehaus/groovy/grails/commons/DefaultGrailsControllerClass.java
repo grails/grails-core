@@ -150,7 +150,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private void methodStrategy(Collection<String> methodNames){
 
         for (Method method : getClazz().getMethods()) {
-            if (!Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())) {
+            if (!Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())
+                    && !method.isSynthetic()) {
                     String methodName = method.getName();
                     /*if (methodName.endsWith(FLOW_SUFFIX)) {
                         String flowId = methodName.substring(0, methodName.length()-FLOW_SUFFIX.length());

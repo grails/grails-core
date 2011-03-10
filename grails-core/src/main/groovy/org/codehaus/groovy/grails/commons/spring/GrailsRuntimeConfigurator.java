@@ -174,7 +174,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
         finally {
             ClassPropertyFetcher.clearClassPropertyFetcherCache();
-            MethodUtils.clearCache();
         }
 
         return ctx;
