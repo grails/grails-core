@@ -96,6 +96,7 @@ public class DirectoryWatcher extends Thread {
         initializeLastModifiedCache(directories, extensions);
         int count = 0;
         while(active) {
+
             Set<File> files = lastModifiedMap.keySet();
             for (File file : files) {
                 long currentLastModified = file.lastModified();

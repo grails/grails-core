@@ -175,7 +175,31 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-	projectCompiler.startCompilerDaemon(grailsSettings.classesDir, grailsSettings.pluginClassesDir)
+	def watcher = projectCompiler.startCompilerDaemon(grailsSettings.classesDir, grailsSettings.pluginClassesDir)
+	final grailsClassLoader = classLoader
+	final grailsPluginManager = pluginManager
+	watcher.addListener(new org.codehaus.groovy.grails.compiler.DirectoryWatcher.FileChangeListener() {
+	     void onChange(File file) {}
+
+         void onNew(File file) {
+			 Thread.start {
+				 def clsName = org.codehaus.groovy.grails.commons.GrailsResourceUtils.getClassName(file.absolutePath)
+				 def attempts = 0
+				 while(attempts != 5) {
+					try {
+						def cls = grailsClassLoader.loadClass(clsName)
+						grailsPluginManager.informOfClassChange(cls)					
+						break
+					}
+					catch(e) {
+						attempts++
+						sleep(3000)
+					}
+				}				
+			 }
+         }
+
+    })
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {

@@ -192,7 +192,6 @@ target(loadPlugins:"Loads Grails' plugins") {
 
 				pluginManager.doArtefactConfiguration()
 				grailsApp.initialise()
-
 				if(org.springframework.util.ClassUtils.isPresent("com.springsource.loaded.Plugins", rootLoader)) {
 					org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin.register()
 				}
