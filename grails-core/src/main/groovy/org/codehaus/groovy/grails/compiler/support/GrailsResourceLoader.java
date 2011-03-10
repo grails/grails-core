@@ -47,13 +47,12 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
     }
 
     private void createPathToURLMappings() {
-        for (int i = 0; i < resources.length; i++) {
+        for (Resource resource : resources) {
             try {
-                String resourceURL = resources[i].getURL().toString();
+                String resourceURL = resource.getURL().toString();
                 String pathWithinRoot = GrailsResourceUtils.getPathFromRoot(resourceURL);
-                pathToResource.put(pathWithinRoot, resources[i]);
-            }
-            catch (IOException e) {
+                pathToResource.put(pathWithinRoot, resource);
+            } catch (IOException e) {
                 throw new GrailsConfigurationException("Unable to load Grails resource: " + e.getMessage(), e);
             }
         }

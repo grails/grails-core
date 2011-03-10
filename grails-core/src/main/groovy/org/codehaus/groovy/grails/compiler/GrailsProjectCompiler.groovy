@@ -176,14 +176,24 @@ class GrailsProjectCompiler {
         DirectoryWatcher watcher = new DirectoryWatcher(allDirectories as File[], ['.groovy', '.java'] as String[] )
         watcher.addListener(new DirectoryWatcher.FileChangeListener() {
             void onChange(File file) {
-                compilePlugins(pluginClassesDir)
-                compile(classesDir)
+                try {
+                    compilePlugins(pluginClassesDir)
+                    compile(classesDir)
+                }
+                catch(e) {
+                    println e.message
+                }
             }
 
             void onNew(File file) {
-                sleep(5000) // sleep for a little while to wait for the final to become valid
-                compilePlugins(pluginClassesDir)
-                compile(classesDir)
+                try {
+                    sleep(5000) // sleep for a little while to wait for the final to become valid
+                    compilePlugins(pluginClassesDir)
+                    compile(classesDir)
+                }
+                catch(e) {
+                    println e.message
+                }
             }
 
         })

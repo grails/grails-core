@@ -68,15 +68,19 @@ public class DirectoryWatcher extends Thread {
         for (File file : files) {
             if(isValidFileToMonitor(file.getName(), extensions)) {
                 if(!lastModifiedMap.containsKey(file) && fireEvent) {
-                    for (FileChangeListener listener : listeners) {
-                        listener.onNew(file);
-                    }
+                    fireOnNew(file);
                 }
                 lastModifiedMap.put(file, file.lastModified());
             }
             else if(file.isDirectory()) {
                cacheFilesForDirectory(file, extensions, fireEvent);
             }
+        }
+    }
+
+    private void fireOnNew(File file) {
+        for (FileChangeListener listener : listeners) {
+            listener.onNew(file);
         }
     }
 
@@ -98,9 +102,7 @@ public class DirectoryWatcher extends Thread {
                 Long cachedTime = lastModifiedMap.get(file);
                 if(currentLastModified > cachedTime) {
                     lastModifiedMap.put(file, currentLastModified);
-                    for (FileChangeListener listener : listeners) {
-                        listener.onChange(file);
-                    }
+                    fireOnChange(file);
                 }
             }
             try {
@@ -113,6 +115,12 @@ public class DirectoryWatcher extends Thread {
             } catch (InterruptedException e) {
                 // ignore
             }
+        }
+    }
+
+    private void fireOnChange(File file) {
+        for (FileChangeListener listener : listeners) {
+            listener.onChange(file);
         }
     }
 
