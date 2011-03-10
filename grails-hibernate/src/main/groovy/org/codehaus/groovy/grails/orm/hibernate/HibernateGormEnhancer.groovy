@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 import grails.orm.HibernateCriteriaBuilder
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
@@ -31,8 +32,8 @@ import org.hibernate.criterion.Restrictions
 import org.hibernate.engine.EntityEntry
 import org.hibernate.engine.SessionImplementor
 import org.hibernate.proxy.HibernateProxy
+import org.springframework.beans.SimpleTypeConverter
 import org.springframework.core.convert.ConversionService
-import org.springframework.core.convert.ConverterNotFoundException
 import org.springframework.dao.DataAccessException
 import org.springframework.datastore.mapping.model.PersistentEntity
 import org.springframework.orm.hibernate3.HibernateCallback
@@ -183,7 +184,9 @@ class HibernateGormStaticApi extends GormStaticApi {
 		if(mappingContext instanceof GrailsDomainClassMappingContext) {
 			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
-			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
+			GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
+            identityType = domainClass.identifier.type
+
 			this.mergeMethod = new MergePersistentMethod( sessionFactory, classLoader, grailsApplication, domainClass )
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
 		}
@@ -198,12 +201,24 @@ class HibernateGormStaticApi extends GormStaticApi {
         }
 	}
 
+    SimpleTypeConverter typeConverter = new SimpleTypeConverter()
+
     private convertIdentifier(Serializable id) {
-        try {
-            return conversionService.convert(id, identityType)
-        } catch (ConverterNotFoundException e) {
-            return id
+        final idType = identityType
+        if (id != null && !idType.isAssignableFrom(id.class)) {
+            try {
+                if (id instanceof Number && Long.equals(idType)) {
+                    id = id.toLong()
+                }
+                else {
+                    id = typeConverter.convertIfNecessary(id, idType)
+                }
+            } catch (e) {
+                // ignore
+            }
         }
+
+        return id
     }
 
     @Override
@@ -532,7 +547,28 @@ class HibernateGormValidationApi extends GormValidationApi {
 	
 	}
 
-	@Override
+    @Override
+    boolean validate(Object instance) {
+		if(validateMethod != null) {
+			return validateMethod.invoke(instance, "validate", [] as Object[])
+		}
+		else {
+			return super.validate(instance, );
+		}
+    }
+
+    @Override
+    boolean validate(Object instance, boolean evict) {
+		if(validateMethod != null) {
+			return validateMethod.invoke(instance, "validate", [evict] as Object[])
+		}
+		else {
+			return super.validate(instance, evict);
+		}
+    }
+
+
+    @Override
 	public boolean validate(Object instance, Map arguments) {
 		if(validateMethod != null) {
 			return validateMethod.invoke(instance, "validate", [arguments] as Object[])
