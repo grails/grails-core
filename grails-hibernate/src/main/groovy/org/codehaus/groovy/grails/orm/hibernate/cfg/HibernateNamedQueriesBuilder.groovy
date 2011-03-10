@@ -19,6 +19,7 @@ import grails.util.GrailsNameUtils
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
+import org.hibernate.SessionFactory
 import org.hibernate.criterion.CriteriaSpecification
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 
@@ -38,11 +39,11 @@ class HibernateNamedQueriesBuilder {
      * @param grailsApplication a GrailsApplication instance
      * @param ctx the main spring application context
      */
-    HibernateNamedQueriesBuilder(domainClass, grailsApplication, ctx) {
+    HibernateNamedQueriesBuilder(domainClass, grailsApplication, SessionFactory sessionFactory) {
         this.domainClass = domainClass
 
         def classLoader = grailsApplication.classLoader
-        def sessionFactory = ctx.getBean('sessionFactory')
+
 
         dynamicMethods = [
             new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
