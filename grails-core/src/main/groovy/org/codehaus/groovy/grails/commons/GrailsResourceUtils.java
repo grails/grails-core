@@ -62,12 +62,12 @@ public class GrailsResourceUtils {
      Domain path is always matched against the normalized File representation of an URL and
     can therefore work with slashes as separators.
      */
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/"+GRAILS_APP_DIR+"/domain/(.+)\\.groovy");
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/"+GRAILS_APP_DIR+"/domain/(.+)\\.(groovy|java)");
 
     /*
      This pattern will match any resource within a given directory inside grails-app
      */
-    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/(.+?)/(.+?\\.groovy)");
+    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/(.+?)/(.+?\\.(groovy|java))");
 
     public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/conf/spring/(.+?\\.groovy)");
 
@@ -86,6 +86,8 @@ public class GrailsResourceUtils {
     public static final Pattern GRAILS_RESOURCE_PATTERN_FOURTH_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_FIFTH_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_SIXTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH;
 
     static {
         String fs = File.separator;
@@ -93,6 +95,8 @@ public class GrailsResourceUtils {
 
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "java"));
+        GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "groovy" ));
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
         GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
@@ -104,6 +108,8 @@ public class GrailsResourceUtils {
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH,
         GRAILS_RESOURCE_PATTERN_SECOND_MATCH,
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH,
+        GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH,
+        GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH,
         GRAILS_RESOURCE_PATTERN_FOURTH_MATCH,
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH,
         GRAILS_RESOURCE_PATTERN_SIXTH_MATCH
@@ -111,7 +117,7 @@ public class GrailsResourceUtils {
     private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
 
     private static String createGrailsResourcePattern(String separator, String base) {
-        return ".+" + separator + base + separator + "(.+)\\.groovy";
+        return ".+" + separator + base + separator + "(.+)\\.(groovy|java)";
     }
 
     /**

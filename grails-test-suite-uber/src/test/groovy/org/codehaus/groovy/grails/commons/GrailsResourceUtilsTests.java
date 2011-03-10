@@ -24,8 +24,19 @@ public class GrailsResourceUtilsTests extends TestCase {
     public void testGetArtifactDirectory() {
         assertEquals("controllers", GrailsResourceUtils.getArtefactDirectory(TEST_CONTROLLER_URL));
         assertEquals("domain", GrailsResourceUtils.getArtefactDirectory(TEST_PACKAGE_URL));
-
     }
+
+    public void testJavaAndGroovySources() {
+        assertEquals("mycompany.Test", GrailsResourceUtils.getClassName(TEST_PACKAGE_URL));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/grails-app/domain/mycompany/Test.java"));
+
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/groovy/mycompany/Test.java"));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/java/mycompany/Test.java"));
+
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/groovy/mycompany/Test.groovy"));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/java/mycompany/Test.groovy"));
+    }
+
     public void testIsDomainClass() throws Exception {
         URL testUrl = new URL(TEST_URL);
         assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
