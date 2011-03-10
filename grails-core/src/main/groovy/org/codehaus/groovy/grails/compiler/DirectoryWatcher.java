@@ -16,10 +16,7 @@
 
 package org.codehaus.groovy.grails.compiler;
 
-import org.springframework.core.io.Resource;
-
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +36,7 @@ public class DirectoryWatcher extends Thread {
     private List<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
 
     private Map<File, Long> lastModifiedMap = new ConcurrentHashMap<File, Long>();
+    private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
 
@@ -59,18 +57,25 @@ public class DirectoryWatcher extends Thread {
     private void initializeLastModifiedCache(File[] directories, final String[] extensions) {
 
         for (File directory : directories) {
-            cacheFilesForDirectory(directory, extensions);
+            cacheFilesForDirectory(directory, extensions, false);
         }
 
     }
 
-    private void cacheFilesForDirectory(File directory, String[] extensions) {
+    private void cacheFilesForDirectory(File directory, String[] extensions, boolean fireEvent) {
+        directoryWatch.put(directory, directory.lastModified());
         File[] files = directory.listFiles();
         for (File file : files) {
-            if(isValidFileToMonitor(file.getName(),extensions))
+            if(isValidFileToMonitor(file.getName(), extensions)) {
+                if(!lastModifiedMap.containsKey(file) && fireEvent) {
+                    for (FileChangeListener listener : listeners) {
+                        listener.onNew(file);
+                    }
+                }
                 lastModifiedMap.put(file, file.lastModified());
+            }
             else if(file.isDirectory()) {
-               cacheFilesForDirectory(file, extensions);
+               cacheFilesForDirectory(file, extensions, fireEvent);
             }
         }
     }
@@ -85,8 +90,8 @@ public class DirectoryWatcher extends Thread {
     @Override
     public void run() {
         initializeLastModifiedCache(directories, extensions);
+        int count = 0;
         while(active) {
-            int count = 0;
             Set<File> files = lastModifiedMap.keySet();
             for (File file : files) {
                 long currentLastModified = file.lastModified();
@@ -100,14 +105,25 @@ public class DirectoryWatcher extends Thread {
             }
             try {
                 count++;
-                if(count > 3) {
+                if(count > 2) {
                     count = 0;
-                    initializeLastModifiedCache(directories, extensions);
+                    checkForNewFiles();
                 }
                 sleep(sleepTime);
             } catch (InterruptedException e) {
                 // ignore
             }
+        }
+    }
+
+    private void checkForNewFiles() {
+        for (File directory : directoryWatch.keySet()) {
+            final Long currentTimestamp = directoryWatch.get(directory);
+
+            if(currentTimestamp < directory.lastModified()) {
+                cacheFilesForDirectory(directory, extensions, true);
+            }
+
         }
     }
 
@@ -118,5 +134,6 @@ public class DirectoryWatcher extends Thread {
 
     public static interface FileChangeListener {
         public abstract void onChange(File file);
+        public abstract void onNew(File file);
     }
 }

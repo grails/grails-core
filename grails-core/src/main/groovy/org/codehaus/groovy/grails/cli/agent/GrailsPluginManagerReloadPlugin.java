@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
  */
 public class GrailsPluginManagerReloadPlugin implements ReloadEventProcessorPlugin {
 
-    @Override
     public void reloadEvent(String typename, Class<?> aClass, String encodedTimestamp) {
         GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
         if(pluginManager != null) {
