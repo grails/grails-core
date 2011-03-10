@@ -19,9 +19,8 @@ package org.codehaus.groovy.grails.compiler
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
-/**
+ /**
  *
  * Encapsulates the compilation logic required for a Grails application
  *
@@ -175,10 +174,19 @@ class GrailsProjectCompiler {
         allDirectories.addAll(srcDirectories.collect { new File(it) })
         allDirectories.addAll( pluginSourceDirectories.findAll { Resource r -> r.file.isDirectory() }.collect { it.file } )
         DirectoryWatcher watcher = new DirectoryWatcher(allDirectories as File[], ['.groovy', '.java'] as String[] )
-        watcher.addListener({
-           compilePlugins(pluginClassesDir)
-           compile(classesDir)
-        } as DirectoryWatcher.FileChangeListener)
+        watcher.addListener(new DirectoryWatcher.FileChangeListener() {
+            void onChange(File file) {
+                compilePlugins(pluginClassesDir)
+                compile(classesDir)
+            }
+
+            void onNew(File file) {
+                sleep(5000) // sleep for a little while to wait for the final to become valid
+                compilePlugins(pluginClassesDir)
+                compile(classesDir)
+            }
+
+        })
         watcher.start()
         return watcher
     }
