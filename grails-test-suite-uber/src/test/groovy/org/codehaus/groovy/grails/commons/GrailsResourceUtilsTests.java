@@ -1,13 +1,12 @@
 package org.codehaus.groovy.grails.commons;
 
-import java.net.URL;
-
 import junit.framework.TestCase;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+
+import java.net.URL;
 
 public class GrailsResourceUtilsTests extends TestCase {
 
@@ -21,6 +20,17 @@ public class GrailsResourceUtilsTests extends TestCase {
 
     private static final String UNIT_TESTS_URL = "file:///test/grails/app/grails-tests/SomeTests.groovy";
 
+
+    public void testJavaAndGroovySources() {
+        assertEquals("mycompany.Test", GrailsResourceUtils.getClassName(TEST_PACKAGE_URL));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/grails-app/domain/mycompany/Test.java"));
+
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/groovy/mycompany/Test.java"));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/java/mycompany/Test.java"));
+
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/groovy/mycompany/Test.groovy"));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/java/mycompany/Test.groovy"));
+    }
     public void testIsDomainClass() throws Exception {
         URL testUrl = new URL(TEST_URL);
         assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
