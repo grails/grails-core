@@ -853,6 +853,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 	@Override
 	public Object refresh(Object instance) {
 		hibernateTemplate.refresh(instance)
+        return instance
 	}
 
 	@Override
