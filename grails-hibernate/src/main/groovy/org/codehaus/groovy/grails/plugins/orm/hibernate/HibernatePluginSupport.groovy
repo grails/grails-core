@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins.orm.hibernate
 
-import grails.orm.HibernateCriteriaBuilder
-import grails.util.GrailsUtil
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
@@ -25,28 +23,25 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
-import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
-import org.codehaus.groovy.grails.exceptions.GrailsDomainException
-import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
-import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTransactionManager
-import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
-import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.hibernate.EmptyInterceptor
+import org.hibernate.FlushMode
+import org.hibernate.Session
+import org.hibernate.SessionFactory
 import org.hibernate.cfg.Environment
-import org.hibernate.criterion.Projections
-import org.hibernate.criterion.Restrictions
 import org.hibernate.proxy.HibernateProxy
-import org.springframework.beans.BeanWrapperImpl
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
 import org.springframework.beans.factory.config.BeanDefinition
@@ -54,19 +49,14 @@ import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
+import org.springframework.datastore.mapping.model.MappingContext
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
 import org.springframework.orm.hibernate3.HibernateAccessor
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
-import org.springframework.orm.hibernate3.SessionHolder
-import org.springframework.transaction.support.TransactionCallback
-import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.springframework.transaction.support.TransactionTemplate
-import org.springframework.validation.Validator
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.springframework.orm.hibernate3.HibernateTransactionManager
+import org.codehaus.groovy.grails.orm.hibernate.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
-import org.hibernate.*
-import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -227,6 +217,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             persistenceInterceptor(HibernatePersistenceContextInterceptor) {
                 sessionFactory = sessionFactory
             }
+            hibernateMappingContext(GrailsDomainClassMappingContext,application)
 
             if (manager?.hasGrailsPlugin("controllers")) {
                 flushingRedirectEventListener(FlushOnRedirectEventListener, sessionFactory)
@@ -341,52 +332,10 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
     }
 
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
-        // we're going to configure Grails to lazily initialise the dynamic methods on domain classes to avoid
-        // the overhead of doing so at start-up time
-        def lazyInit = {GrailsDomainClass dc ->
-            registerDynamicMethods(dc, application, ctx, sessionFactory)
-            for (subClass in dc.subClasses) {
-                registerDynamicMethods(subClass, application, ctx, sessionFactory)
-            }
-            MetaClass emc = GroovySystem.metaClassRegistry.getMetaClass(dc.clazz)
-        }
-        def initializeDomainOnceClosure = {GrailsDomainClass dc ->
-            initializeDomain(dc.clazz)
-        }
-
-        for (GrailsDomainClass dc in application.domainClasses) {
-            //    registerDynamicMethods(dc, application, ctx)
-            MetaClass mc = dc.metaClass
-            def initDomainClass = lazyInit.curry(dc)
-            DOMAIN_INITIALIZERS[dc.clazz] = initDomainClass
-            def initDomainClassOnce = initializeDomainOnceClosure.curry(dc)
-            // these need to be eagerly initialised here, otherwise Groovy's findAll from the DGM is called
-            def findAllMethod = new FindAllPersistentMethod(sessionFactory, application.classLoader)
-            findAllMethod.grailsApplication = application
-            mc.static.findAll = {->
-                findAllMethod.invoke(mc.javaClass, "findAll", [] as Object[])
-            }
-            mc.static.findAll = {Object example -> findAllMethod.invoke(mc.javaClass, "findAll", [example] as Object[])}
-            mc.static.findAll = {Object example, Map args -> findAllMethod.invoke(mc.javaClass, "findAll", [example, args] as Object[])}
-
-            mc.methodMissing = { String name, args ->
-                initDomainClassOnce()
-                mc.invokeMethod(delegate, name, args)
-            }
-            mc.static.methodMissing = {String name, args ->
-                initDomainClassOnce()
-                def result
-                if (delegate instanceof Class) {
-                    result = mc.invokeStaticMethod(delegate, name, args)
-                }
-                else {
-                    result = mc.invokeMethod(delegate, name, args)
-                }
-                result
-            }
-            addValidationMethods(dc, application, ctx, sessionFactory)
-            addNamedQuerySupport(dc, application, ctx)
-        }
+        def mappingContext = ctx.getBean("hibernateMappingContext", MappingContext)
+        def transactionManager = ctx.getBean(HibernateTransactionManager)
+        HibernateGormEnhancer enhancer = new HibernateGormEnhancer(new HibernateDatastore(mappingContext, sessionFactory), transactionManager)
+        enhancer.enhance()
     }
 
     static final LAZY_PROPERTY_HANDLER = { String propertyName ->
@@ -412,362 +361,6 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         }
     }
 
-    private static registerDynamicMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
-        dc.metaClass.methodMissing = { String name, args ->
-            throw new MissingMethodException(name, dc.clazz, args, true)
-        }
-        addBasicPersistenceMethods(dc, application, ctx)
-        addQueryMethods(dc, application, ctx)
-        addTransactionalMethods(dc, application, ctx)
-        addValidationMethods(dc, application, ctx,sessionFactory)
-        addDynamicFinderSupport(dc, application, ctx)
-    }
-
-    private static addNamedQuerySupport(dc, application, ctx) {
-        try {
-            def property = GrailsClassUtils.getStaticPropertyValue(dc.clazz, GrailsDomainClassProperty.NAMED_QUERIES)
-            if (property instanceof Closure) {
-                def builder = new HibernateNamedQueriesBuilder(dc, application, ctx)
-                builder.evaluate(property)
-            }
-        } catch (Exception e) {
-            GrailsUtil.deepSanitize(e)
-            throw new GrailsDomainException("Error evaluating named queries block for domain [${dc.fullName}]:  " + e.message, e)
-        }
-    }
-
-    private static addDynamicFinderSupport(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
-        def mc = dc.metaClass
-        ClassLoader classLoader = application.classLoader
-        def sessionFactory = ctx.getBean('sessionFactory')
-
-        def dynamicMethods = [new FindAllByPersistentMethod(application, sessionFactory, classLoader),
-                              new FindAllByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-                              new FindByPersistentMethod(application, sessionFactory, classLoader),
-                              new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
-                              new CountByPersistentMethod(application, sessionFactory, classLoader),
-                              new ListOrderByPersistentMethod(application, sessionFactory, classLoader)]
-
-        // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
-        // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
-        // register a new method with the ExpandoMetaClass so the next time it is invoked it doesn't have this overhead.
-        mc.static.methodMissing = {String methodName, args ->
-            def result = null
-            StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
-            if (method) {
-                // register the method invocation for next time
-                synchronized(this) {
-                    mc.static."$methodName" = {List varArgs ->
-                        method.invoke(dc.clazz, methodName, varArgs)
-                    }
-                }
-                result = method.invoke(dc.clazz, methodName, args)
-            }
-            else {
-                throw new MissingMethodException(methodName, delegate, args)
-            }
-            result
-        }
-    }
-
-    private static addValidationMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx, SessionFactory sessionFactory) {
-        def metaClass = dc.metaClass
-
-        Validator validator = ctx.containsBean("${dc.fullName}Validator") ? ctx.getBean("${dc.fullName}Validator") : null
-        def validateMethod = new ValidatePersistentMethod(sessionFactory, application.classLoader, application,validator)
-        metaClass.validate = {->
-            validateMethod.invoke(delegate, "validate", [] as Object[])
-        }
-        metaClass.validate = {Map args ->
-            validateMethod.invoke(delegate, "validate", [args] as Object[])
-        }
-        metaClass.validate = {Boolean b ->
-            validateMethod.invoke(delegate, "validate", [b] as Object[])
-        }
-        metaClass.validate = {List args ->
-            validateMethod.invoke(delegate, "validate", [args] as Object[])
-        }
-    }
-
-    private static addTransactionalMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
-        def metaClass = dc.metaClass
-        SessionFactory sessionFactory = ctx.getBean('sessionFactory')
-        def Class domainClassType = dc.clazz
-
-        ClassLoader classLoader = application.classLoader
-
-        metaClass.static.withTransaction = {Closure callable ->
-            new TransactionTemplate(ctx.getBean('transactionManager')).execute({status ->
-                callable.call(status)
-            } as TransactionCallback)
-        }
-        metaClass.static.withSession = { Closure callable ->
-            new HibernateTemplate(sessionFactory).execute({ session ->
-                callable(session)
-            } as HibernateCallback)
-        }
-        metaClass.static.withNewSession = { Closure callable ->
-            HibernateTemplate template = new HibernateTemplate(sessionFactory)
-            SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
-            Session previousSession = sessionHolder?.session
-            try {
-                template.alwaysUseNewSession = true
-                template.execute({ Session session ->
-                    if(sessionHolder == null) {
-                        sessionHolder = new SessionHolder(session)
-                        TransactionSynchronizationManager.bindResource(sessionFactory, sessionHolder)
-                    }
-                    else {
-                        sessionHolder.addSession(session)
-                    }
-
-                    callable(session)
-                } as HibernateCallback)
-            }
-            finally {
-                if (previousSession) {
-                    sessionHolder?.addSession(previousSession)
-                }
-            }
-        }
-        // Initiates a pessimistic lock on the row represented by the object using
-        // the dbs "SELECT FOR UPDATE" mechanism
-        def template = new HibernateTemplate(sessionFactory)
-        metaClass.lock = {->
-            template.lock(delegate, LockMode.UPGRADE)
-        }
-        metaClass.static.lock = { Serializable id ->
-            def identityType = dc.identifier.type
-            id = convertToType(id, identityType)
-
-            template.get(delegate, id, LockMode.UPGRADE)
-        }
-    }
-
-    private static addQueryMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
-        def metaClass = dc.metaClass
-        SessionFactory sessionFactory = ctx.getBean('sessionFactory')
-        def template = new HibernateTemplate(sessionFactory)
-        Class domainClassType = dc.clazz
-
-        ClassLoader classLoader = application.classLoader
-        def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
-		findAllMethod.grailsApplication = application
-        metaClass.static.findAll = {String query ->
-            findAllMethod.invoke(domainClassType, "findAll", [query] as Object[])
-        }
-        metaClass.static.findAll = {String query, Collection positionalParams ->
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams] as Object[])
-        }
-        metaClass.static.findAll = {String query, Collection positionalParams, Map paginateParams ->
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams, paginateParams] as Object[])
-        }
-        metaClass.static.findAll = {String query, Map namedArgs ->
-            findAllMethod.invoke(domainClassType, "findAll", [query, namedArgs] as Object[])
-        }
-        metaClass.static.findAll = {String query, Map namedArgs, Map paginateParams ->
-            findAllMethod.invoke(domainClassType, "findAll", [query, namedArgs, paginateParams] as Object[])
-        }
-
-        def findMethod = new FindPersistentMethod(sessionFactory, classLoader)
-        metaClass.static.find = {String query ->
-            findMethod.invoke(domainClassType, "find", [query] as Object[])
-        }
-        metaClass.static.find = {String query, Collection args ->
-            findMethod.invoke(domainClassType, "find", [query, args] as Object[])
-        }
-        metaClass.static.find = {String query, Map namedArgs ->
-            findMethod.invoke(domainClassType, "find", [query, namedArgs] as Object[])
-        }
-        metaClass.static.find = {String query, Map namedArgs, Map queryParams ->
-            findMethod.invoke(domainClassType, "find", [query, namedArgs, queryParams] as Object[])
-        }
-        metaClass.static.find = {Object example ->
-            findMethod.invoke(domainClassType, "find", [example] as Object[])
-        }
-
-        def executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader)
-        metaClass.static.executeQuery = {String query ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query] as Object[])
-        }
-        metaClass.static.executeQuery = {String query, Collection positionalParams ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
-        }
-        metaClass.static.executeQuery = {String query, Collection positionalParams, Map paginateParams ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, paginateParams] as Object[])
-        }
-        metaClass.static.executeQuery = {String query, Map namedParams ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams] as Object[])
-        }
-        metaClass.static.executeQuery = {String query, Map namedParams, Map paginateParams ->
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, namedParams, paginateParams] as Object[])
-        }
-
-        def executeUpdateMethod = new ExecuteUpdatePersistentMethod(sessionFactory, classLoader)
-        metaClass.static.executeUpdate = { String query ->
-            executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query] as Object[])
-        }
-        metaClass.static.executeUpdate = { String query, Collection args ->
-            executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, args] as Object[])
-        }
-        metaClass.static.executeUpdate = { String query, Map argMap ->
-            executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, argMap] as Object[])
-        }
-
-        def listMethod = new ListPersistentMethod(application, sessionFactory, classLoader)
-        metaClass.static.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
-        metaClass.static.list = {Map args -> listMethod.invoke(domainClassType, "list", [args] as Object[])}
-        metaClass.static.findWhere = {Map query ->
-            if (!query) return null
-            template.execute({Session session ->
-                Map queryArgs = filterQueryArgumentMap(query)
-                List<String> nullNames = removeNullNames(queryArgs)
-                Criteria criteria = session.createCriteria(domainClassType)
-                criteria.add(Restrictions.allEq(queryArgs))
-                for (name in nullNames) {
-                    criteria.add Restrictions.isNull(name)
-                }
-                criteria.setMaxResults(1)
-                GrailsHibernateUtil.unwrapIfProxy(criteria.uniqueResult())
-            } as HibernateCallback)
-        }
-        metaClass.static.findAllWhere = {Map query ->
-            if (!query) return null
-            template.execute({Session session ->
-                Map queryArgs = filterQueryArgumentMap(query)
-                List<String> nullNames = removeNullNames(queryArgs)
-                Criteria criteria = session.createCriteria(domainClassType)
-                criteria.add(Restrictions.allEq(queryArgs))
-                for (name in nullNames) {
-                    criteria.add Restrictions.isNull(name)
-                }
-                criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                criteria.list()
-            } as HibernateCallback)
-        }
-        metaClass.static.getAll = {->
-            template.execute({session ->
-                session.createCriteria(domainClassType).list()
-            } as HibernateCallback)
-        }
-        metaClass.static.getAll = {List ids ->
-            template.execute({Session session ->
-                def identityType = dc.identifier.type
-                ids = ids.collect {convertToType(it, identityType)}
-                def criteria = session.createCriteria(domainClassType)
-                criteria.add(Restrictions.'in'(dc.identifier.name, ids))
-                def results = criteria.list()
-                def idsMap = [:]
-                for (object in results) {
-                    idsMap[object[dc.identifier.name]] = object
-                }
-                results.clear()
-                for (id in ids) {
-                    results << idsMap[id]
-                }
-                results
-            } as HibernateCallback)
-
-        }
-        metaClass.static.exists = {id ->
-            def identityType = dc.identifier.type
-            id = convertToType(id, identityType)
-            template.execute({ Session session ->
-                session.createCriteria(dc.clazz)
-                    .add(Restrictions.idEq(id))
-                    .setProjection(Projections.rowCount())
-                    .uniqueResult()
-            } as HibernateCallback) == 1
-        }
-
-        metaClass.static.createCriteria = {->
-            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
-            builder.grailsApplication = application
-            return builder
-        }
-        metaClass.static.withCriteria = {Closure callable ->
-            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
-            builder.grailsApplication = application
-            builder.invokeMethod("doCall", callable)
-        }
-        metaClass.static.withCriteria = {Map builderArgs, Closure callable ->
-            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
-            builder.grailsApplication = application
-            def builderBean = new BeanWrapperImpl(builder)
-            for (entry in builderArgs) {
-                if (builderBean.isWritableProperty(entry.key)) {
-                    builderBean.setPropertyValue(entry.key, entry.value)
-                }
-            }
-            builder.invokeMethod("doCall", callable)
-        }
-
-        // TODO: deprecated methods planned for removing from further releases
-
-        def deprecated = {methodSignature ->
-            GrailsUtil.deprecated("${methodSignature} domain class dynamic method is deprecated since 0.6. Check out docs at: http://grails.org/DomainClass+Dynamic+Methods")
-        }
-        metaClass.static.findAll = {String query, Integer max ->
-            deprecated("findAll(String query, int max)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, max] as Object[])
-        }
-        metaClass.static.findAll = {String query, Integer max, Integer offset ->
-            deprecated("findAll(String query, int max, int offset)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, max, offset] as Object[])
-        }
-
-        metaClass.static.findAll = {String query, Collection positionalParams, Integer max ->
-            deprecated("findAll(String query, Collection positionalParams, int max)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams, max] as Object[])
-        }
-        metaClass.static.findAll = {String query, Collection positionalParams, Integer max, Integer offset ->
-            deprecated("findAll(String query, Collection positionalParams, int max, int offset)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams, max, offset] as Object[])
-        }
-        metaClass.static.findAll = {String query, Object[] positionalParams ->
-            deprecated("findAll(String query, Object[] positionalParams)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams] as Object[])
-        }
-        metaClass.static.findAll = {String query, Object[] positionalParams, Integer max ->
-            deprecated("findAll(String query, Object[] positionalParams, int max)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams, max] as Object[])
-        }
-        metaClass.static.findAll = {String query, Object[] positionalParams, Integer max, Integer offset ->
-            deprecated("findAll(String query, Object[] positionalParams, int max, int offset)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams, max, offset] as Object[])
-        }
-        metaClass.static.findAll = {String query, Object[] positionalParams, Map args ->
-            deprecated("findAll(String query, Object[] positionalParams, Map namedArgs)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, positionalParams, args] as Object[])
-        }
-        metaClass.static.findAll = {String query, Map namedArgs, Integer max ->
-            deprecated("findAll(String query, Map namedParams, int max)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, namedArgs, max] as Object[])
-        }
-        metaClass.static.findAll = {String query, Map namedArgs, Integer max, Integer offset ->
-            deprecated("findAll(String query, Map namedParams, int max, int offset)")
-            findAllMethod.invoke(domainClassType, "findAll", [query, namedArgs, max, offset] as Object[])
-        }
-
-        metaClass.static.find = {String query, Object[] args ->
-            deprecated("find(String query, Object[] positionalParams)")
-            findMethod.invoke(domainClassType, "find", [query, args] as Object[])
-        }
-
-        metaClass.static.executeQuery = {String query, Object[] positionalParams ->
-            deprecated("executeQuery(String query, Object[] positionalParams)")
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams] as Object[])
-        }
-        metaClass.static.executeQuery = {String query, Object[] positionalParams, Map args ->
-            deprecated("executeQuery(String query, Object[] positionalParams, Map namedParams)")
-            executeQueryMethod.invoke(domainClassType, "executeQuery", [query, positionalParams, args] as Object[])
-        }
-
-        metaClass.static.executeUpdate = {String query, Object[] args ->
-            deprecated("executeQuery(String query, Object[] positionalParams)")
-            template.bulkUpdate(query, args)
-        }
-    }
 
     static Map filterQueryArgumentMap(Map query) {
         def queryArgs = [:]
@@ -794,182 +387,6 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         nullNames
     }
 
-    /**
-     * Adds the basic methods for performing persistence such as save, get, delete etc.
-     */
-    private static addBasicPersistenceMethods(GrailsDomainClass dc, GrailsApplication application, ApplicationContext ctx) {
-        def classLoader = application.classLoader
-        SessionFactory sessionFactory = ctx.getBean("sessionFactory")
-        def template = new HibernateTemplate(sessionFactory)
-
-        def saveMethod = new SavePersistentMethod(sessionFactory, classLoader, application, dc)
-        def metaClass = dc.metaClass
-
-        metaClass.save = {Boolean validate ->
-            saveMethod.invoke(delegate, "save", [validate] as Object[])
-        }
-        metaClass.save = {Map args ->
-            saveMethod.invoke(delegate, "save", [args] as Object[])
-        }
-        metaClass.save = {->
-            saveMethod.invoke(delegate, "save", [] as Object[])
-        }
-
-        def mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, application, dc)
-        metaClass.merge = {Map args ->
-            mergeMethod.invoke(delegate, "merge", [args] as Object[])
-        }
-        metaClass.merge = {->
-            mergeMethod.invoke(delegate, "merge", [] as Object[])
-        }
-        metaClass.static.merge = { Object instance ->
-            mergeMethod.invoke(instance, "merge", [] as Object[])
-        }
-
-        metaClass.instanceOf = { Class c ->
-            if (delegate instanceof HibernateProxy) {
-                def instance = GrailsHibernateUtil.unwrapProxy(delegate)
-                return c.isInstance(instance)
-            }
-            return c.isInstance(delegate)
-        }
-
-        metaClass.delete = {->
-            def obj = delegate
-            try {
-                template.execute({Session session ->
-                    session.delete obj
-                    if (this.shouldFlush(application)) {
-                        session.flush()
-                    }
-                } as HibernateCallback)
-            }
-            catch (DataAccessException e) {
-                handleDataAccessException(template, e)
-            }
-        }
-        metaClass.delete = { Map args ->
-            def obj = delegate
-            template.delete obj
-            if (shouldFlush(application, args)) {
-                try {
-                    template.flush()
-                }
-                catch (DataAccessException e) {
-                    handleDataAccessException(template, e)
-                }
-            }
-        }
-        metaClass.refresh = {-> template.refresh(delegate); delegate }
-        metaClass.discard = {->template.evict(delegate); delegate }
-        metaClass.attach = {->template.lock(delegate, LockMode.NONE); delegate }
-        metaClass.isAttached = {-> template.contains(delegate) }
-
-        metaClass.static.get = {id ->
-            def identityType = dc.identifier.type
-
-            id = convertToType(id, identityType)
-            if (id != null) {
-                final Object result = template.get(dc.clazz, id)
-                return GrailsHibernateUtil.unwrapIfProxy(result)
-            }
-        }
-
-        metaClass.static.read = {id ->
-            if (id == null) {
-                return null
-            }
-
-            template.execute({ Session session ->
-                def o = get(id)
-                if (o && session.contains(o)) {
-                    session.setReadOnly(o, true)
-                }
-                return o
-            } as HibernateCallback)
-        }
-
-        metaClass.static.load = { id ->
-            id = convertToType(id, dc.identifier.type)
-            if (id != null) {
-                return template.load(dc.clazz, id)
-            }
-        }
-
-        metaClass.static.count = {->
-            template.execute({Session session ->
-                def criteria = session.createCriteria(dc.clazz)
-                criteria.setProjection(Projections.rowCount())
-                def num = criteria.uniqueResult()
-                num == null ? 0 : num
-            } as HibernateCallback)
-        }
-
-        metaClass.isDirty = { ->
-            def session = sessionFactory.currentSession
-            def entry = findEntityEntry(delegate, session)
-            if (!entry) {
-                return false
-            }
-
-            Object[] values = entry.persister.getPropertyValues(delegate, session.entityMode)
-            def dirtyProperties = entry.persister.findDirty(values, entry.loadedState, delegate, session)
-            return dirtyProperties != null
-        }
-
-        metaClass.isDirty = { String fieldName ->
-            def session = sessionFactory.currentSession
-            def entry = findEntityEntry(delegate, session)
-            if (!entry) {
-                return false
-            }
-
-            Object[] values = entry.persister.getPropertyValues(delegate, session.entityMode)
-            int[] dirtyProperties = entry.persister.findDirty(values, entry.loadedState, delegate, session)
-            int fieldIndex = entry.persister.propertyNames.findIndexOf { fieldName == it }
-            return fieldIndex in dirtyProperties
-        }
-
-        metaClass.getDirtyPropertyNames = { ->
-            def session = sessionFactory.currentSession
-            def entry = findEntityEntry(delegate, session)
-            if (!entry) {
-                return []
-            }
-
-            Object[] values = entry.persister.getPropertyValues(delegate, session.entityMode)
-            int[] dirtyProperties = entry.persister.findDirty(values, entry.loadedState, delegate, session)
-            def names = []
-            for (index in dirtyProperties) {
-                names << entry.persister.propertyNames[index]
-            }
-            names
-        }
-
-        metaClass.getPersistentValue = { String fieldName ->
-            def session = sessionFactory.currentSession
-            def entry = findEntityEntry(delegate, session, false)
-            if (!entry) {
-                return null
-            }
-
-            int fieldIndex = entry.persister.propertyNames.findIndexOf { fieldName == it }
-            return fieldIndex == -1 ? null : entry.loadedState[fieldIndex]
-        }
-    }
-
-    private static findEntityEntry(instance, session, boolean forDirtyCheck = true) {
-        def entry = session.persistenceContext.getEntry(instance)
-        if (!entry) {
-            return null
-        }
-
-        if (forDirtyCheck && !entry.requiresDirtyCheck(instance) && entry.loadedState) {
-            return null
-        }
-
-        entry
-    }
 
     /**
      * Session should no longer be flushed after a data access exception occurs (such a constriant violation)

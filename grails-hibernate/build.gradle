@@ -1,6 +1,10 @@
 dependencies {
 
     compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring"),project(":grails-web")
+
+
+    // Srping Datastore APIs
+    compile 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT'
     
     // Hibernate related
     compile 'org.hibernate:hibernate-annotations:3.4.0.GA',

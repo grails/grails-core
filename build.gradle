@@ -14,7 +14,7 @@ apply plugin: 'idea'
 
 grailsVersion = '1.4.0.BUILD-SNAPSHOT'
 antVersion = "1.7.1"
-springVersion = "3.0.3.RELEASE"
+springVersion = "3.0.5.RELEASE"
 ivyVersion = "2.2.0"
 gantVersion = "1.9.4-SNAPSHOT"
 groovyVersion = "1.8.0-rc-1"
@@ -68,6 +68,7 @@ subprojects { project ->
     repositories {
         mavenCentral()
         mavenRepo urls:"http://maven.springframework.org/release"
+        mavenRepo urls:'http://maven.springframework.org/snapshot'
     }
     dependencies {
         // Groovy
