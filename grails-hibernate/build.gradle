@@ -4,7 +4,12 @@ dependencies {
 
 
     // Srping Datastore APIs
-    compile 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT'
+    compile( 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT' ) {
+        transitive = false
+    }
+    compile( 'org.springframework:spring-datastore-core:1.0.0.BUILD-SNAPSHOT' ) {
+        transitive = false
+    }
     
     // Hibernate related
     compile 'org.hibernate:hibernate-annotations:3.4.0.GA',
