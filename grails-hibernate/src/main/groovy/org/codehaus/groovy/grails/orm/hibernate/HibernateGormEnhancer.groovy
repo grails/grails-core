@@ -250,13 +250,22 @@ class HibernateGormStaticApi extends GormStaticApi {
             session.createCriteria(persistentClass).list()
         } as HibernateCallback)
 	}
-	
+
+
+    public List getAll(List ids) {
+        getAllInternal(ids)
+    }
+
 	@Override
 	public List getAll(Serializable... ids) {
-        hibernateTemplate.execute({Session session ->            
+        getAllInternal(ids)
+	}
+
+    private List getAllInternal(ids) {
+        hibernateTemplate.execute({Session session ->
             ids = ids.collect { convertIdentifier(it) }
             def criteria = session.createCriteria(persistentClass)
-			def identityName = persistentEntity.identity.name
+            def identityName = persistentEntity.identity.name
             criteria.add(Restrictions.'in'(identityName, ids))
             def results = criteria.list()
             def idsMap = [:]
@@ -269,9 +278,9 @@ class HibernateGormStaticApi extends GormStaticApi {
             }
             results
         } as HibernateCallback)
-	}
+    }
 
-	@Override
+    @Override
 	public Object createCriteria() {
 		return new HibernateCriteriaBuilder(persistentClass, sessionFactory)
 	}
@@ -331,6 +340,126 @@ class HibernateGormStaticApi extends GormStaticApi {
 		findMethod.invoke(persistentClass, "find", [example, args] as Object[])
 	}
 
+    /**
+     * Finds a single result for the given query and arguments and a maximum results to return value
+     *
+     * @param query The query
+     * @param args The arguments
+     * @param max The maximum to return
+     * @return A single result or null
+     *
+     *
+     * @deprecated Use Book.find('..', [foo:'bar], [max:10]) instead
+     */
+	public Object find(String query, Map args, Integer max) {
+		findMethod.invoke(persistentClass, "find", [query, args, max] as Object[])
+	}
+
+    /**
+     * Finds a single result for the given query and arguments and a maximum results to return value
+     *
+     * @param query The query
+     * @param args The arguments
+     * @param max The maximum to return
+     * @param offset The offset
+     * @return A single result or null
+     *
+     *
+     * @deprecated Use Book.find('..', [foo:'bar], [max:10, offset:5]) instead
+     */
+	public Object find(String query, Map args, Integer max, Integer offset) {
+		findMethod.invoke(persistentClass, "find", [query, args, max, offset] as Object[])
+	}
+
+    /**
+     * Finds a single result for the given query and a maximum results to return value
+     *
+     * @param query The query
+     * @param max The maximum to return
+     * @return A single result or null
+     *
+     *
+     * @deprecated Use Book.find('..', [max:10]) instead
+     */
+	public Object find(String query, Integer max) {
+		findMethod.invoke(persistentClass, "find", [query, max] as Object[])
+	}
+
+    /**
+     * Finds a single result for the given query and a maximum results to return value
+     *
+     * @param query The query
+     * @param max The maximum to return
+     * @param offset The offset to use
+     * @return A single result or null
+     *
+     *
+     * @deprecated Use Book.find('..', [max:10, offset:5]) instead
+     */
+	public Object find(String query, Integer max, Integer offset) {
+		findMethod.invoke(persistentClass, "find", [query, max, offset] as Object[])
+	}
+
+    /**
+     * Finds a list of results for the given query and arguments and a maximum results to return value
+     *
+     * @param query The query
+     * @param args The arguments
+     * @param max The maximum to return
+     * @return A list of results
+     *
+     *
+     * @deprecated Use findAll('..', [foo:'bar], [max:10]) instead
+     */
+	public Object findAll(String query, Map args, Integer max) {
+		findAllMethod.invoke(persistentClass, "findAll", [query, args, max] as Object[])
+	}
+
+    /**
+     * Finds a list of results for the given query and arguments and a maximum results to return value
+     *
+     * @param query The query
+     * @param args The arguments
+     * @param max The maximum to return
+     * @param offset The offset
+     *
+     * @return A list of results
+     *
+     *
+     * @deprecated Use findAll('..', [foo:'bar], [max:10, offset:5]) instead
+     */
+	public Object findAll(String query, Map args, Integer max, Integer offset) {
+		findAllMethod.invoke(persistentClass, "findAll", [query, args, max, offset] as Object[])
+	}
+
+    /**
+     * Finds a list of results for the given query and a maximum results to return value
+     *
+     * @param query The query
+     * @param max The maximum to return
+     * @return A list of results
+     *
+     *
+     * @deprecated Use findAll('..', [max:10]) instead
+     */
+	public Object findAll(String query, Integer max) {
+		findAllMethod.invoke(persistentClass, "findAll", [query, max] as Object[])
+	}
+
+    /**
+     * Finds a list of results for the given query and a maximum results to return value
+     *
+     * @param query The query
+     * @param max The maximum to return
+     * @return A list of results
+     *
+     *
+     * @deprecated Use findAll('..', [max:10, offset:5]) instead
+     */
+	public Object findAll(String query, Integer max, Integer offset) {
+		findAllMethod.invoke(persistentClass, "findAll", [query, max, offset] as Object[])
+	}
+
 	@Override
 	List findAllWhere(Map queryMap, Map args) {
         if (!queryMap) return null
@@ -346,12 +475,13 @@ class HibernateGormStaticApi extends GormStaticApi {
             criteria.list()
         } as HibernateCallback)
 	}
-	
+
+    @Override
 	def findWhere(Map queryMap, Map args) {
 		if (!queryMap) return null
 		hibernateTemplate.execute({Session session ->
 			Map queryArgs = filterQueryArgumentMap(queryMap)
-			List<String> nullNames = removeNullNames(queryMap)
+			List<String> nullNames = removeNullNames(queryArgs)
 			Criteria criteria = session.createCriteria(persistentClass)
 			criteria.add(Restrictions.allEq(queryArgs))
 			for (name in nullNames) {
@@ -426,6 +556,11 @@ class HibernateGormStaticApi extends GormStaticApi {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query] as Object[])
 	}
 
+
+	public Object executeQuery(String query, Object arg) {
+        executeQueryMethod.invoke(persistentClass, "executeQuery", [query, arg] as Object[])
+	}
+
 	@Override
 	public Object executeQuery(String query, Map args) {
 		executeQueryMethod.invoke(persistentClass, "executeQuery", [query, args] as Object[])
@@ -475,6 +610,11 @@ class HibernateGormStaticApi extends GormStaticApi {
 	public Object find(String query) {
         findMethod.invoke(persistentClass, "find", [query] as Object[])
 	}
+
+
+    public Object find(String query, Object[] params) {
+        findMethod.invoke(persistentClass, "find", [query, params] as Object[])
+    }
 
 	@Override
 	public Object find(String query, Map args) {
