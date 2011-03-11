@@ -196,7 +196,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 
 	@Override
 	public Object get(Serializable id) {
-        if (id != null) {
+        if (id) {
         	id = convertIdentifier(id)
             final Object result = hibernateTemplate.get(persistentClass, id)
             return GrailsHibernateUtil.unwrapIfProxy(result)
