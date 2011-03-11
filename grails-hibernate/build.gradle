@@ -1,7 +1,3 @@
-repositories {
-    //mavenRepo urls:'http://maven.springframework.org/milestone'
-    mavenRepo urls:'http://maven.springframework.org/snapshot'
-}
 dependencies {
 
     compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring"),project(":grails-web")

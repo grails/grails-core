@@ -68,6 +68,7 @@ subprojects { project ->
     repositories {
         mavenCentral()
         mavenRepo urls:"http://maven.springframework.org/release"
+        mavenRepo urls:'http://maven.springframework.org/snapshot'
     }
     dependencies {
         // Groovy
