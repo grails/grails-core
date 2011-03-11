@@ -185,17 +185,14 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
         return pluginPath !=null ? pluginPath : "";
     }
 
-    @Override
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
 
-    @Override
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }

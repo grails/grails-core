@@ -184,6 +184,8 @@ class HibernateGormStaticApi extends GormStaticApi {
 		if(mappingContext instanceof GrailsDomainClassMappingContext) {
 			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
+
+            findAllMethod.grailsApplication = grailsApplication
 			GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
             identityType = domainClass.identifier.type
 
@@ -745,9 +747,8 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 	private SessionFactory sessionFactory
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
 	
-	
-	boolean autoFlush
-	
+	private config = Collections.emptyMap()
+
 	public HibernateGormInstanceApi(Class persistentClass, HibernateDatastore datastore) {
 		super(persistentClass, datastore);
 		
@@ -760,7 +761,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
 			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
-			
+			this.config = grailsApplication.config?.grails?.gorm
 			this.saveMethod = new SavePersistentMethod( sessionFactory, classLoader, grailsApplication, domainClass )
 			this.mergeMethod = new MergePersistentMethod( sessionFactory, classLoader, grailsApplication, domainClass )
 		}
@@ -991,7 +992,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 	   if (map?.containsKey('flush')) {
 		   shouldFlush = Boolean.TRUE == map.flush
 	   } else {
-		   shouldFlush = this.autoFlush
+		   shouldFlush = config.autoFlush instanceof Boolean ? config.autoFlush : false
 	   }
 	   return shouldFlush
    }
