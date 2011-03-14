@@ -4,7 +4,16 @@ dependencies {
 
 
     // Srping Datastore APIs
-    compile 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT'
+    compile 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT', {
+        exclude module: "grails-core"
+        exclude module: "grails-bootstrap"
+        exclude module: "grails-test"
+        exclude module: "spring-beans"
+        exclude module: "spring-context"
+        exclude module: "spring-core"
+        exclude module: "spring-tx"
+        exclude module: "spring-web"
+    }
     
     // Hibernate related
     compile 'org.hibernate:hibernate-annotations:3.4.0.GA',
