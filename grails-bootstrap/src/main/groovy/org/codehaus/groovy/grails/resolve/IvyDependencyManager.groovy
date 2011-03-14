@@ -201,10 +201,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 def isInheritedDependency = delegate.inherited || delegate.inheritsAll || delegate.currentPluginBeingConfigured
                 // dependencies needed by the Grails build system
                 for(mrid in [ ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.4"),
-                              ModuleRevisionId.newInstance("org.apache.ant","ant","1.7.1"),
-                              ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.7.1"),
-                              ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.7.1"),
-                              ModuleRevisionId.newInstance("org.apache.ant","ant-nodeps","1.7.1"),
+                              ModuleRevisionId.newInstance("org.apache.ant","ant","1.8.1"),
+                              ModuleRevisionId.newInstance("org.apache.ant","ant-launcher","1.8.1"),
+                              ModuleRevisionId.newInstance("org.apache.ant","ant-junit","1.8.1"),
+                              ModuleRevisionId.newInstance("org.apache.ant","ant-nodeps","1.8.1"),
                               ModuleRevisionId.newInstance("org.apache.ant","ant-trax","1.7.1"),
                               ModuleRevisionId.newInstance("jline","jline","0.9.94"),
                               ModuleRevisionId.newInstance("org.fusesource.jansi","jansi","1.2.1"),
