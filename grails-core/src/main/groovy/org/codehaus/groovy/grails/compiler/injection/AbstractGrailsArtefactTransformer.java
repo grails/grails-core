@@ -81,7 +81,13 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                         ArgumentListExpression arguments = new ArgumentListExpression();
                         arguments.addExpression(THIS_EXPRESSION);
                         constructorBody.addStatement(new ExpressionStatement( new MethodCallExpression(new ClassExpression(implementationNode), "initialize",arguments)));
-                        classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+                        ConstructorNode constructorNode = getDefaultConstructor(classNode);
+                        if(constructorNode != null){
+                            constructorBody.addStatement(constructorNode.getCode());
+                            constructorNode.setCode(constructorBody);
+                        }else{
+                            classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+                        }
                     }
                     else if(isCandidateInstanceMethod(declaredMethod)) {
 
@@ -127,6 +133,17 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      */
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         // do nothing
+    }
+
+    private ConstructorNode getDefaultConstructor(ClassNode classNode) {
+        ConstructorNode constructorNode = null;
+        for(ConstructorNode cons : classNode.getDeclaredConstructors()){
+            if(cons.getParameters().length == 0){
+                constructorNode = cons;
+                break;
+            }
+        }
+        return constructorNode;
     }
 
     private boolean isConstructor(MethodNode declaredMethod) {
