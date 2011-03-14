@@ -10,7 +10,7 @@ dependencies {
             "org.apache.ant:ant-launcher:${antVersion}",
             "org.apache.ant:ant-junit:${antVersion}",
             "org.apache.ant:ant-nodeps:${antVersion}",
-            "org.apache.ant:ant-trax:${antVersion}",
+            "org.apache.ant:ant-trax:${antTraxVersion}",
             "org.apache.ivy:ivy:2.2.0",
             'org.codehaus.gant:gant_groovy1.7:1.9.3'
 
