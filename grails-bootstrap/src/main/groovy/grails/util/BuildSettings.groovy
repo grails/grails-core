@@ -509,7 +509,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
+        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion, jquery:null]
         defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.
