@@ -211,7 +211,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             for (String filename : filenames) {
                 PropertiesHolder holder = getProperties(filename);
                 result = holder.getProperty(code);
-                if (result != null) break;
+                if (result != null) return result;
             }
         }
         return result;
@@ -229,7 +229,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                     if(foundCode != null) {
                         result = new MessageFormat(foundCode, locale);
                     }
-                    if(result != null) break;
+                    if(result != null) return result;
                 }
             }
         }
@@ -243,7 +243,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             for (String filename : filenames) {
                 PropertiesHolder holder = getProperties(filename);
                 result = holder.getMessageFormat(code, locale);
-                if (result != null) break;
+                if (result != null) return result;
             }
         }
         return result;

@@ -21,7 +21,6 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 
 import java.beans.FeatureDescriptor;
-import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -150,7 +149,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private void methodStrategy(Collection<String> methodNames){
 
         for (Method method : getClazz().getMethods()) {
-            if (!Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())
+            if (Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())
                     && !method.isSynthetic()) {
                     String methodName = method.getName();
                     /*if (methodName.endsWith(FLOW_SUFFIX)) {
@@ -164,7 +163,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             }
         }
 
-        if (!isPublicAndNonStaticMethod(defaultActionName) && methodNames.size() == 1) {
+        if (!isPublicAndStaticMethod(defaultActionName) && methodNames.size() == 1) {
             defaultActionName = methodNames.iterator().next();
         }
     }

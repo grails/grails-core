@@ -39,7 +39,7 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
     protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
         Method mAction = MethodUtils.getAccessibleMethod(controller.getClass(),actionName,  MethodGrailsControllerHelper.NOARGS);
 
-        if (mAction != null) {
+        if (mAction != null && !mAction.isSynthetic()) {
             return mAction;
         } else {
             try {

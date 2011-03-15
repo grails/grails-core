@@ -165,7 +165,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         return classPropertyFetcher.isReadableProperty(propName);
     }
 
-    public boolean isPublicAndNonStaticMethod(String methodName) {
+    public boolean isPublicAndStaticMethod(String methodName) {
         Method m =  MethodUtils.getAccessibleMethod(getClazz(), methodName, new Class[0]);
         return m != null && !m.isSynthetic();
     }
