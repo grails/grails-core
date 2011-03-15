@@ -272,6 +272,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                                 ModuleRevisionId.newInstance("org.grails","grails-resources","$grailsVersion"),
                                 ModuleRevisionId.newInstance("org.grails","grails-spring","$grailsVersion"),
                                 ModuleRevisionId.newInstance("org.grails","grails-web","$grailsVersion"),
+                                ModuleRevisionId.newInstance("org.grails","grails-datastore-gorm","1.0.0.BUILD-SNAPSHOT"),
 
                                 // Plugins
                                 ModuleRevisionId.newInstance("org.grails","grails-plugin-codecs","$grailsVersion"),
@@ -303,6 +304,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                                 ModuleRevisionId.newInstance("org.springframework","spring-tx","3.0.5.RELEASE"),
                                 ModuleRevisionId.newInstance("org.springframework","spring-web","3.0.5.RELEASE"),
                                 ModuleRevisionId.newInstance("org.springframework","spring-webmvc","3.0.5.RELEASE"),
+                                ModuleRevisionId.newInstance("org.springframework","spring-datastore-core","1.0.0.BUILD-SNAPSHOT"),
                                 ModuleRevisionId.newInstance("org.slf4j","slf4j-api","1.6.1")] ) {
                            def dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false ,compileTimeDependenciesMethod)
                            addDependency mrid
