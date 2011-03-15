@@ -185,7 +185,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             repositories {
                 grailsPlugins()
                 grailsHome()
-                // uncomment the below to enable remote dependency resolution
+                 // uncomment the below to enable remote dependency resolution
                 // from public Maven repositories
                 //mavenCentral()
                 //mavenLocal()
@@ -288,6 +288,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                                 ModuleRevisionId.newInstance("org.grails","grails-plugin-servlets","$grailsVersion"),
                                 ModuleRevisionId.newInstance("org.grails","grails-plugin-url-mappings","$grailsVersion"),
                                 ModuleRevisionId.newInstance("org.grails","grails-plugin-validation","$grailsVersion"),
+
 
                                 ModuleRevisionId.newInstance("org.springframework","spring-core","3.0.5.RELEASE"),
                                 ModuleRevisionId.newInstance("org.springframework","spring-aop","3.0.5.RELEASE"),

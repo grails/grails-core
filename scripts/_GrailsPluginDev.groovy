@@ -17,13 +17,14 @@
 import groovy.xml.MarkupBuilder
 import grails.util.GrailsNameUtils
 import grails.util.PluginBuildSettings
-import grails.util.GrailsUtil
+
 import org.apache.commons.io.FilenameUtils
 import org.apache.ivy.core.report.ArtifactDownloadReport
 
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+
+import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.publishing.PluginPackager
 
 /**
@@ -40,7 +41,7 @@ includeTargets << grailsScript("_GrailsPackage")
 pluginIncludes = PluginPackager.INCLUDED_RESOURCES
 pluginExcludes = PluginPackager.EXCLUDED_RESOURCES
 
-target(packagePlugin:"Implementation target") {
+target(packagePlugin: "Implementation target") {
     depends(checkVersion, parseArguments, packageApp)
 
     def pluginFile
@@ -53,17 +54,17 @@ target(packagePlugin:"Implementation target") {
 
     if (!pluginFile) ant.fail("Plugin file not found for plugin project")
 
-	def pluginBaseDir = pluginFile.parentFile.absolutePath
-	plugin = pluginSettings.getPluginInfo(pluginBaseDir)
+    def pluginBaseDir = pluginFile.parentFile.absolutePath
+    plugin = pluginSettings.getPluginInfo(pluginBaseDir)
     def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
-	
-	def packager = new PluginPackager(plugin,resourceList, new File(projectWorkDir))
-	packager.ant = ant
-	packager.resourcesDir = new File(resourcesDirPath)
-	packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
 
-	def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"	
-	def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
+    def packager = new PluginPackager(plugin, resourceList, new File(projectWorkDir))
+    packager.ant = ant
+    packager.resourcesDir = new File(resourcesDirPath)
+    packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
+
+    def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+    def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
 
     boolean supportsAtLeastVersion
     try {
@@ -83,19 +84,21 @@ target(packagePlugin:"Implementation target") {
         }
 
         if (deps) {
-			packager.jarFiles = deps.collect { it.localFile }
+            packager.jarFiles = deps.collect { it.localFile }
         }
     }
-		
+
     event("PackagePluginStart", [plugin.name])
 
     // Package plugin's zip distribution
-	if(argsMap.binary) {
-	    pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)		
-	}
-	else {
-	    pluginZip = packager.packagePlugin(plugin.name, classesDir, grailsSettings.projectTargetDir)
-	}
+    if (argsMap.binary) {
+        def descriptor = pluginSettings.getBasePluginDescriptor()
+        generatePluginXml(descriptor.file, false)
+        pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)
+    }
+    else {
+        pluginZip = packager.packagePlugin(plugin.name, classesDir, grailsSettings.projectTargetDir)
+    }
 
 
     event("PackagePluginEnd", [plugin.name])
