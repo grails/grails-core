@@ -511,7 +511,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
 
         assertTrue( "all default dependencies should be inherited", manager.dependencyDescriptors.every { it.inherited == true } )
-        assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 53, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
@@ -547,7 +547,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
 
-        assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 53, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
