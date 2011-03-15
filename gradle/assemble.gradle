@@ -3,19 +3,19 @@ import org.apache.tools.ant.filters.ReplaceTokens
 dependencyCache = {
 	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
 	copy {
-		from( cacheLocation ) {	
-			def dependencyIncludes = [] as Set			
+		from( cacheLocation ) {
+			def dependencyIncludes = [] as Set
 			def includeClosure = { artifact ->
-				def dependency = artifact.getResolvedDependency() 	
-				def file = artifact.file	
-				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"					
-				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"										
-			}
+				def dependency = artifact.getResolvedDependency()
+				def file = artifact.file
+                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                }
 			for(project in subprojects) {
-				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
-				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
-				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure) 
+				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
+				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
+				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
 			}
 			includes = dependencyIncludes as List
           exclude "org.grails/**"
@@ -37,24 +37,24 @@ task populateDependencies {
 
 task libs(dependsOn: getTasksByName("assemble", true))  {
 	doFirst dependencyCache
-	
+
     destinationDir = 'dist'
 	doLast {
-		copy {		
+		copy {
 			for(project in subprojects) {
 				from( project.libsDir ) {
 					include "*-${grailsVersion}.jar"
 				}
-			}		
-			into 'dist'			
+			}
+			into 'dist'
 		}
 		copy {
 			from("$projectDir/grails-resources") {
 				include 'src/grails', 'src/war'
-			}			
-			into projectDir			
+			}
+			into projectDir
 		}
-		
+
 	}
 }
 
@@ -95,7 +95,7 @@ distSpec = copySpec {
 		include 'src/grails/**', 'src/war/**'
         // this file is accounted for later with special handling to do some token replacement
         exclude 'src/grails/grails-macros.xml'
-		
+
 	}
     from(projectDir) {
     	into "grails-$grailsVersion"
@@ -142,7 +142,7 @@ task zipDist(type: Zip,dependsOn:libs) {
     from distSpec
 	destinationDir = "${buildDir}/distributions" as File
 	baseName = 'grails'
-	appendix = grailsVersion	
+	appendix = grailsVersion
 }
 
 /*task zipDoc(type: Zip) {

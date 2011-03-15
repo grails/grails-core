@@ -290,6 +290,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                                 ModuleRevisionId.newInstance("org.grails","grails-plugin-validation","$grailsVersion"),
 
 
+                                ModuleRevisionId.newInstance("org.springframework","spring-datastore-core","1.0.0.BUILD-SNAPSHOT"),
                                 ModuleRevisionId.newInstance("org.springframework","spring-core","3.0.5.RELEASE"),
                                 ModuleRevisionId.newInstance("org.springframework","spring-aop","3.0.5.RELEASE"),
                                 ModuleRevisionId.newInstance("org.springframework","spring-aspects","3.0.5.RELEASE"),
