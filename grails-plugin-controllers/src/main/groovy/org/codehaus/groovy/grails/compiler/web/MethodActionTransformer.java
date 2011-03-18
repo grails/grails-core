@@ -16,14 +16,20 @@
 package org.codehaus.groovy.grails.compiler.web;
 
 
+import grails.artefact.Artefact;
+import grails.util.BuildSettingsHolder;
 import grails.web.Action;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -89,24 +95,34 @@ class TestController{
 public class MethodActionTransformer implements ClassInjector {
 
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
+    private static final AnnotationNode ARTEFACT_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Artefact.class));
     private static final Parameter[] EMPTY_PARAMS = new Parameter[0];
     private static final ClassNode[] EMPTY_EXCEPTIONS = new ClassNode[0];
+    private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
+    private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
+    private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
+
+    private Boolean converterEnabled;
+
+    public MethodActionTransformer() {
+        converterEnabled = BuildSettingsHolder.getSettings().getConvertClosuresArtefacts();
+    }
 
     @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-
         annotateCandidateActionMethods(classNode);
-        transformClosuresToMethods(classNode);
+        if (converterEnabled) {
+            transformClosuresToMethods(classNode);
+        }
     }
 
     private void annotateCandidateActionMethods(ClassNode classNode) {
-
         for (MethodNode method : classNode.getMethods()) {
             if (!method.isStatic() &&
                     method.getParameters().length == 0 &&
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0
-                ) {
+                    ) {
 
                 method.addAnnotation(ACTION_ANNOTATION_NODE);
             }
@@ -125,13 +141,41 @@ public class MethodActionTransformer implements ClassInjector {
             if (!field.isStatic() &&
                     initialExpression != null && initialExpression.getClass().equals(ClosureExpression.class)) {
                 closureAction = (ClosureExpression) initialExpression;
-                actionMethod = new MethodNode(field.getName(), Modifier.PUBLIC, field.getType(), EMPTY_PARAMS, EMPTY_EXCEPTIONS, closureAction.getCode());
+                actionMethod = new MethodNode(field.getName(), Modifier.PUBLIC, field.getType(), EMPTY_PARAMS, EMPTY_EXCEPTIONS, closureCode(closureAction));
                 actionMethod.addAnnotation(ACTION_ANNOTATION_NODE);
 
                 classNode.getProperties().remove(field);
                 classNode.addMethod(actionMethod);
             }
         }
+    }
+
+    private Statement closureCode(ClosureExpression closureAction) {
+        Statement newCommandCode;
+        ConstructorCallExpression constructorCallExpression;
+        ArgumentListExpression arguments;
+
+        BlockStatement wrapper = new BlockStatement();
+
+        for (Parameter param : closureAction.getParameters()) {
+            constructorCallExpression = new ConstructorCallExpression(param.getType(), EMPTY_TUPLE);
+            newCommandCode = new ExpressionStatement(
+                    new DeclarationExpression(new VariableExpression(param.getName(), param.getType()),
+                            Token.newSymbol(Types.EQUALS, 0, 0),
+                            constructorCallExpression
+                    ));
+
+            wrapper.addStatement(newCommandCode);
+
+            arguments = new ArgumentListExpression();
+            arguments.addExpression(new VariableExpression(param.getName()));
+            arguments.addExpression(new VariableExpression(PARAMS_EXPRESSION));
+            wrapper.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments)));
+        }
+
+        wrapper.addStatement(closureAction.getCode());
+
+        return wrapper;
     }
 
     @Override
