@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
+import grails.web.Action;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -165,9 +166,9 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         return classPropertyFetcher.isReadableProperty(propName);
     }
 
-    public boolean isPublicAndStaticMethod(String methodName) {
+    public boolean isActionMethod(String methodName) {
         Method m =  MethodUtils.getAccessibleMethod(getClazz(), methodName, new Class[0]);
-        return m != null && !m.isSynthetic();
+        return m != null && m.getAnnotation(Action.class) != null;
     }
 
     public boolean hasMetaMethod(String methodName) {

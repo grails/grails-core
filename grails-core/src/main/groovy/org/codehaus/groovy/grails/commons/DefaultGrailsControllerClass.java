@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
@@ -149,21 +150,17 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private void methodStrategy(Collection<String> methodNames){
 
         for (Method method : getClazz().getMethods()) {
-            if (Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())
-                    && !method.isSynthetic()) {
+            if (Modifier.isPublic(method.getModifiers())
+                    && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
-                    /*if (methodName.endsWith(FLOW_SUFFIX)) {
-                        String flowId = methodName.substring(0, methodName.length()-FLOW_SUFFIX.length());
-                        flows.put(flowId, new MethodDescriptor(method));
-                        methodName = flowId;
-                    }*/
+                   
                     methodNames.add(methodName);
 
                     configureMappingForClosureProperty(methodName);
             }
         }
 
-        if (!isPublicAndStaticMethod(defaultActionName) && methodNames.size() == 1) {
+        if (!isActionMethod(defaultActionName) && methodNames.size() == 1) {
             defaultActionName = methodNames.iterator().next();
         }
     }

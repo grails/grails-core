@@ -119,7 +119,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         }
 
 
-        if(classNode.getAnnotations(ENHANCED_CLASS_NODE) == null)
+        if(classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty())
             classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
 
     }

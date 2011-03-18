@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
@@ -39,11 +40,11 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
     protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
         Method mAction = MethodUtils.getAccessibleMethod(controller.getClass(),actionName,  MethodGrailsControllerHelper.NOARGS);
 
-        if (mAction != null && !mAction.isSynthetic()) {
+        if (mAction != null && mAction.getAnnotation(Action.class) != null) {
             return mAction;
         } else {
             try {
-                return controller.getProperty(actionName);
+                return (Closure)controller.getProperty(actionName);
             } catch (MissingPropertyException mpe) {
                 try {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
