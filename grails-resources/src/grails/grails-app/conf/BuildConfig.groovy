@@ -3,7 +3,7 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 
-grails.compile.artefacts.closures.convert = true
+grails.compile.artefacts.closures.convert = false
 
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
