@@ -793,37 +793,42 @@ class BuildSettings extends AbstractBuildSettings {
 
             cachedResolve.withInputStream { input ->
                 def ois = new ObjectInputStream(input)
-                def dependencyMap = ois.readObject()
+                Map dependencyMap = ois.readObject()
 
-                def compileDeps = dependencyMap.compile
-                def runtimeDeps = dependencyMap.runtime
-                def testDeps = dependencyMap.test
-                def buildDeps = dependencyMap.build
-                def providedDeps = dependencyMap.provided
-
-                if (compileDeps) {
-                    this.@compileDependencies.addAll(compileDeps)
-                    defaultCompileDepsAdded = true
+                if(dependencyMap?.values()*.any { !it.exists() }) {
+                    modified = true
                 }
+                else {
+                    def compileDeps = dependencyMap.compile
+                    def runtimeDeps = dependencyMap.runtime
+                    def testDeps = dependencyMap.test
+                    def buildDeps = dependencyMap.build
+                    def providedDeps = dependencyMap.provided
 
-                if (runtimeDeps) {
-                    this.@runtimeDependencies.addAll(runtimeDeps)
-                    defaultRuntimeDepsAdded = true
-                }
+                    if (compileDeps) {
+                        this.@compileDependencies.addAll(compileDeps)
+                        defaultCompileDepsAdded = true
+                    }
 
-                if (testDeps) {
-                    this.@testDependencies.addAll(testDeps)
-                    defaultTestDepsAdded = true
-                }
+                    if (runtimeDeps) {
+                        this.@runtimeDependencies.addAll(runtimeDeps)
+                        defaultRuntimeDepsAdded = true
+                    }
 
-                if (buildDeps) {
-                    this.@buildDependencies.addAll(buildDeps)
-                    defaultBuildDepsAdded = true
-                }
+                    if (testDeps) {
+                        this.@testDependencies.addAll(testDeps)
+                        defaultTestDepsAdded = true
+                    }
 
-                if (providedDeps) {
-                    this.@providedDependencies.addAll(providedDeps)
-                    defaultProvidedDepsAdded = true
+                    if (buildDeps) {
+                        this.@buildDependencies.addAll(buildDeps)
+                        defaultBuildDepsAdded = true
+                    }
+
+                    if (providedDeps) {
+                        this.@providedDependencies.addAll(providedDeps)
+                        defaultProvidedDepsAdded = true
+                    }
                 }
             }
         }
