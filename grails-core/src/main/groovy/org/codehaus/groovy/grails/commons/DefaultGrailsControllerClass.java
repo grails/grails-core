@@ -96,22 +96,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
         controllerPath = uri + SLASH;
 
-
-        //Todo refactor using another way to detect resolve strategy
-        String resolveStrategy = (String)ConfigurationHolder.getConfig().get(RESOLVE_ACTION_KEY);
-
-        //Method Strategy only
-        if(resolveStrategy != null && resolveStrategy.equalsIgnoreCase(RESOLVE_METHOD)){
-            methodStrategy(actionNames);
-        }
-        //Closure Strategy only
-        else if(resolveStrategy != null && resolveStrategy.equalsIgnoreCase(RESOLVE_CLOSURE)){
-            closureStrategy(actionNames);
-        }
-        //Mixed Strategy : Method first, Closure then
-        else{
-            mixedStrategy(actionNames);
-        }
+        mixedStrategy(actionNames);
 
         configureDefaultActionIfSet();
         configureURIsForCurrentState();
