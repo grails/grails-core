@@ -46,7 +46,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
 
-    @Override
     public String getArtefactType() {
         String simpleName = getClass().getSimpleName();
         if(simpleName.length()>11) {
@@ -55,7 +54,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return simpleName;
     }
 
-    @Override
     public final void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         Class instanceImplementation = getInstanceImplementation();
 
@@ -185,7 +183,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      */
     public abstract Class getStaticImplementation();
 
-    @Override
     public final void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }

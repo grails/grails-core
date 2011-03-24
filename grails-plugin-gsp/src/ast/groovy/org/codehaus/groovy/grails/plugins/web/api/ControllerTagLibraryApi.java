@@ -55,10 +55,11 @@ public class ControllerTagLibraryApi extends CommonWebApi {
      *
      * @param instance The instance
      * @param methodName The method name
-     * @param args The arguments
+     * @param argsObject The arguments
      * @return The result
      */
-    public Object methodMissing(Object instance, String methodName, Object[] args) {
+    public Object methodMissing(Object instance, String methodName, Object argsObject) {
+        Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
         TagLibraryLookup lookup = getTagLibraryLookup();
         GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
         if (tagLibrary != null) {

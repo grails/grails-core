@@ -117,7 +117,13 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 }
 
                 if (classInjector.shouldInject(url)) {
-                    classInjector.performInjection(source, context, classNode);
+                    try {
+                        classInjector.performInjection(source, context, classNode);
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                        System.out.println("Error occurred calling AST injector [" + classInjector.getClass() + "]: " + e.getMessage());
+                        throw e;
+                    }
                 }
             } catch (MalformedURLException e) {
                 LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(), e);
