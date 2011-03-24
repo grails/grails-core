@@ -14,18 +14,9 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
@@ -34,6 +25,10 @@ import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
 import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.engine.FilterDefinition;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Allows configuring Grails' hibernate support to work in conjuntion with Hibernate's annotation
@@ -132,6 +127,8 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
      */
     @Override
     protected void secondPassCompile() throws MappingException {
+        final Thread currentThread = Thread.currentThread();
+        final ClassLoader originalContextLoader = currentThread.getContextClassLoader();
         if (!configLocked) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[GrailsAnnotationConfiguration] [" + domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
@@ -145,7 +142,7 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
                 final String fullClassName = domainClass.getFullName();
 
                 String hibernateConfig = fullClassName.replace('.', '/') + ".hbm.xml";
-                final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                final ClassLoader loader = originalContextLoader;
                 // don't configure Hibernate mapped classes
                 if (loader.getResource(hibernateConfig) != null) continue;
 
@@ -159,7 +156,14 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
             }
         }
 
-        super.secondPassCompile();
+
+        try {
+            currentThread.setContextClassLoader(grailsApplication.getClassLoader());
+            super.secondPassCompile();
+        } finally {
+            currentThread.setContextClassLoader(originalContextLoader);
+
+        }
         configLocked = true;
     }
 

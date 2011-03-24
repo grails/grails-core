@@ -1119,13 +1119,13 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     criteria.setFirstResult(0);
                     criteria.setMaxResults(Integer.MAX_VALUE);
                     criteria.setProjection(Projections.rowCount());
-                    int totalCount = ((Integer)criteria.uniqueResult()).intValue();
+                    int totalCount = ((Number)criteria.uniqueResult()).intValue();
 
                     // Drop the projection, add settings for the pagination parameters,
                     // and then execute the query.
                     criteria.setProjection(null);
-                    for (Iterator<Order> it = orderEntries.iterator(); it.hasNext();) {
-                        criteria.addOrder(it.next());
+                    for (Order orderEntry : orderEntries) {
+                        criteria.addOrder(orderEntry);
                     }
                     if (resultTransformer == null) {
                         criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
@@ -1200,9 +1200,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 return name;
             }
 
-            if (targetBean.isReadableProperty(name.toString())) {
+            if (targetBean.isReadableProperty(name)) {
                 ClassMetadata meta = sessionFactory.getClassMetadata(targetBean.getWrappedClass());
-                Type type = meta.getPropertyType(name.toString());
+                Type type = meta.getPropertyType(name);
                 if (type.isAssociationType()) {
                     String otherSideEntityName =
                         ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
@@ -1210,7 +1210,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
                     BeanWrapper oldTargetBean = targetBean;
                     targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
-                    associationStack.add(name.toString());
+                    associationStack.add(name);
                     final String associationPath = getAssociationPath();
                     createAliasIfNeccessary(name, associationPath);
                     // the criteria within an association node are grouped with an implicit AND
@@ -1306,8 +1306,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             if (fullPath.length() > 0) fullPath.append(".");
             fullPath.append(propertyName);
         }
-        final String associationPath = fullPath.toString();
-        return associationPath;
+        return fullPath.toString();
     }
 
     private boolean isCriteriaConstructionMethod(String name, Object[] args) {

@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import javax.sql.DataSource
 import java.sql.Types
+import javax.sql.DataSource
+import org.hibernate.type.TextType
 
 /**
  * @author Graeme Rocher
@@ -96,16 +97,18 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         def p = personClass.newInstance()
         p.firstName = "Wilma"
 
-        p.save(flush:true)
         p.addToChildren(firstName:"Dino", lastName:'Dinosaur')
         p.addToCousins(firstName:"Bob", lastName:'The Builder')
         p.save(flush:true)
         session.clear()
 
-        p = personClass.clazz.get(1)
+        personClass.clazz.withNewSession {
+            p = personClass.clazz.get(1)
 
-        assertTrue p.children.wasInitialized()
-        assertFalse p.cousins.wasInitialized()
+            assertTrue p.children.wasInitialized()
+            assertFalse p.cousins.wasInitialized()
+        }
+
     }
 
     void testUserTypes() {
@@ -117,20 +120,12 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         r.save()
         session.flush()
 
-        def con
-        try {
-            con = ds.getConnection()
-            def statement = con.prepareStatement("select * from relative")
-            def result = statement.executeQuery()
-            assertTrue result.next()
-            def metadata = result.getMetaData()
-            assertEquals "FIRST_NAME",metadata.getColumnLabel(3)
-            // h2 returns CLOB for text type, if it wasn't mapped as text it would be VARCHAR so this is an ok test
-            assertEquals( Types.CLOB, metadata.getColumnType(3) )
-        }
-        finally {
-            con.close()
-        }
+        final cmd = session.getSessionFactory().getClassMetadata(relativeClass.clazz)
+
+        final type = cmd.getPropertyType("firstName")
+
+        assert type instanceof TextType
+
     }
 
     void testCompositeIdMapping() {

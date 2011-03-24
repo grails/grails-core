@@ -16,20 +16,6 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.util.GrailsUtil;
 import groovy.lang.Closure;
-
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -45,7 +31,6 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
-import org.hibernate.Hibernate;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
@@ -53,14 +38,16 @@ import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.cfg.SecondPass;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
+import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Table;
-import org.hibernate.type.ForeignKeyDirection;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.TimestampType;
-import org.hibernate.type.Type;
-import org.hibernate.type.TypeFactory;
+import org.hibernate.type.*;
 import org.hibernate.util.StringHelper;
+
+import java.sql.Types;
+import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles the binding Grails domain classes and properties to the Hibernate runtime meta model.
@@ -117,7 +104,7 @@ public final class GrailsDomainBinder {
         private static CollectionType SET = new CollectionType(Set.class) {
             @Override
             public Collection create(GrailsDomainClassProperty property, PersistentClass owner, String path, Mappings mappings) throws MappingException {
-                org.hibernate.mapping.Set coll = new org.hibernate.mapping.Set(owner);
+                org.hibernate.mapping.Set coll = new org.hibernate.mapping.Set(mappings, owner);
                 coll.setCollectionTable(owner.getTable());
                 bindCollection(property, coll, owner, mappings, path);
                 return coll;
@@ -127,7 +114,7 @@ public final class GrailsDomainBinder {
         private static CollectionType LIST = new CollectionType(List.class) {
             @Override
             public Collection create(GrailsDomainClassProperty property, PersistentClass owner, String path, Mappings mappings) throws MappingException {
-                org.hibernate.mapping.List coll = new org.hibernate.mapping.List(owner);
+                org.hibernate.mapping.List coll = new org.hibernate.mapping.List(mappings, owner);
                 coll.setCollectionTable(owner.getTable());
                 bindCollection(property, coll, owner, mappings, path);
                 return coll;
@@ -137,7 +124,7 @@ public final class GrailsDomainBinder {
         private static CollectionType MAP = new CollectionType(Map.class) {
             @Override
             public Collection create(GrailsDomainClassProperty property, PersistentClass owner, String path, Mappings mappings) throws MappingException {
-                org.hibernate.mapping.Map map = new org.hibernate.mapping.Map(owner);
+                org.hibernate.mapping.Map map = new org.hibernate.mapping.Map(mappings, owner);
                 bindCollection(property, map, owner, mappings, path);
                 return map;
             }
@@ -276,7 +263,7 @@ public final class GrailsDomainBinder {
               Map<?, ?> persistentClasses, org.hibernate.mapping.Map map) {
         bindCollectionSecondPass(property, mappings, persistentClasses, map);
 
-        SimpleValue value = new SimpleValue(map.getCollectionTable());
+        SimpleValue value = new SimpleValue(mappings, map.getCollectionTable());
 
         bindSimpleValue(getIndexColumnType(property, STRING_TYPE), value, true, getIndexColumnName(property),mappings);
         PropertyConfig pc = getPropertyConfig(property);
@@ -291,7 +278,7 @@ public final class GrailsDomainBinder {
         map.setIndex(value);
 
         if (!property.isOneToMany() && !property.isManyToMany()) {
-            SimpleValue elt = new SimpleValue(map.getCollectionTable());
+            SimpleValue elt = new SimpleValue(mappings, map.getCollectionTable());
             map.setElement(elt);
 
             String typeName = getTypeName(property,getPropertyConfig(property), getMapping(property.getDomainClass()));
@@ -300,7 +287,7 @@ public final class GrailsDomainBinder {
                     typeName = property.getReferencedPropertyType().getName();
                 }
                 else {
-                    typeName = Hibernate.STRING.getName();
+                    typeName = StandardBasicTypes.STRING.getName();
                 }
             }
             bindSimpleValue(typeName, elt, false, getMapElementName(property),mappings);
@@ -330,7 +317,7 @@ public final class GrailsDomainBinder {
 
         String columnName = getIndexColumnName(property);
 
-        SimpleValue iv = new SimpleValue(list.getCollectionTable());
+        SimpleValue iv = new SimpleValue(mappings, list.getCollectionTable());
         bindSimpleValue("integer", iv, true, columnName, mappings);
         iv.setTypeName("integer");
         list.setIndex(iv);
@@ -473,7 +460,7 @@ public final class GrailsDomainBinder {
         }
 
         // setup the primary key references
-        DependantValue key = createPrimaryKeyValue(property, collection, persistentClasses);
+        DependantValue key = createPrimaryKeyValue(mappings, property, collection, persistentClasses);
 
         // link a bidirectional relationship
         if (property.isBidirectional()) {
@@ -507,7 +494,7 @@ public final class GrailsDomainBinder {
             if (property.isBidirectional()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("[GrailsDomainBinder] Mapping other side " + otherSide.getDomainClass().getName() + "." + otherSide.getName() + " -> " + collection.getCollectionTable().getName() + " as ManyToOne");
-                ManyToOne element = new ManyToOne(collection.getCollectionTable());
+                ManyToOne element = new ManyToOne(mappings, collection.getCollectionTable());
                 bindManyToMany(otherSide, element, mappings);
                 collection.setElement(element);
                 bindCollectionForPropertyConfig(collection, propConfig);
@@ -572,11 +559,11 @@ public final class GrailsDomainBinder {
 
         SimpleValue element;
         if (property.isBasicCollectionType()) {
-           element = new SimpleValue(collection.getCollectionTable());
+           element = new SimpleValue(mappings, collection.getCollectionTable());
         }
         else {
             // for a normal unidirectional one-to-many we use a join column
-            element = new ManyToOne(collection.getCollectionTable());
+            element = new ManyToOne(mappings, collection.getCollectionTable());
             bindUnidirectionalOneToManyInverseValues(property, (ManyToOne) element);
         }
         collection.setInverse(false);
@@ -604,7 +591,7 @@ public final class GrailsDomainBinder {
 
                 String typeName = getTypeName(property, config, getMapping(property.getDomainClass()));
                 if (typeName == null) {
-                    Type type = TypeFactory.basic(className);
+                    Type type = mappings.getTypeResolver().basic(className);
                     if (type != null) {
                         typeName = type.getName();
                     }
@@ -759,13 +746,15 @@ public final class GrailsDomainBinder {
     /**
      * Creates the DependentValue object that forms a primary key reference for the collection
      *
+     *
+     * @param mappings
      * @param property          The grails property
      * @param collection        The collection object
      * @param persistentClasses
      * @return The DependantValue (key)
      */
-    private static DependantValue createPrimaryKeyValue(@SuppressWarnings("unused") GrailsDomainClassProperty property,
-            Collection collection, @SuppressWarnings("unused") Map<?, ?> persistentClasses) {
+    private static DependantValue createPrimaryKeyValue(Mappings mappings, @SuppressWarnings("unused") GrailsDomainClassProperty property,
+                                                        Collection collection, @SuppressWarnings("unused") Map<?, ?> persistentClasses) {
         KeyValue keyValue;
         DependantValue key;
         String propertyRef = collection.getReferencedPropertyName();
@@ -779,7 +768,7 @@ public final class GrailsDomainBinder {
         if (LOG.isDebugEnabled())
             LOG.debug("[GrailsDomainBinder] creating dependant key value  to table [" + keyValue.getTable().getName() + "]");
 
-        key = new DependantValue(collection.getCollectionTable(), keyValue);
+        key = new DependantValue(mappings, collection.getCollectionTable(), keyValue);
 
         key.setTypeName(null);
         // make nullable and non-updateable
@@ -919,7 +908,7 @@ public final class GrailsDomainBinder {
 
         // if it's a one-to-many mapping
         if (shouldBindCollectionWithForeignKey(property)) {
-            OneToMany oneToMany = new OneToMany(collection.getOwner());
+            OneToMany oneToMany = new OneToMany(mappings, collection.getOwner());
             collection.setElement(oneToMany);
             bindOneToMany(property, oneToMany, mappings);
         } else {
@@ -1205,8 +1194,7 @@ public final class GrailsDomainBinder {
     private static void bindSubClasses(GrailsDomainClass domainClass, PersistentClass parent, Mappings mappings) {
         Set<GrailsDomainClass> subClasses = domainClass.getSubClasses();
 
-        for (Iterator<GrailsDomainClass> i = subClasses.iterator(); i.hasNext();) {
-            GrailsDomainClass sub = i.next();
+        for (GrailsDomainClass sub : subClasses) {
             if (sub.getClazz().getSuperclass().equals(domainClass.getClazz())) {
                 bindSubClass(sub, parent, mappings);
             }
@@ -1280,7 +1268,7 @@ public final class GrailsDomainBinder {
         LOG.info("Mapping joined-subclass: " + joinedSubclass.getEntityName() +
                         " -> " + joinedSubclass.getTable().getName());
 
-        SimpleValue key = new DependantValue(mytable, joinedSubclass.getIdentifier());
+        SimpleValue key = new DependantValue(mappings, mytable, joinedSubclass.getIdentifier());
         joinedSubclass.setKey(key);
         GrailsDomainClassProperty identifier = sub.getIdentifier();
         String columnName = getColumnNameForPropertyAndPath(identifier, EMPTY_PATH, null);
@@ -1304,7 +1292,7 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * Binds a sub-class using table-per-heirarchy in heritance mapping
+     * Binds a sub-class using table-per-hierarchy inheritance mapping
      *
      * @param sub      The Grails domain class instance representing the sub-class
      * @param subClass The Hibernate SubClass instance
@@ -1328,7 +1316,7 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * Creates and binds the discriminator property used in table-per-heirarchy inheritance to
+     * Creates and binds the discriminator property used in table-per-hierarchy inheritance to
      * discriminate between sub class instances
      *
      * @param table    The table to bind onto
@@ -1337,7 +1325,7 @@ public final class GrailsDomainBinder {
      */
     private static void bindDiscriminatorProperty(Table table, RootClass entity, Mappings mappings) {
         Mapping m = getMapping(entity.getMappedClass());
-        SimpleValue d = new SimpleValue(table);
+        SimpleValue d = new SimpleValue(mappings, table);
         entity.setDiscriminator(d);
         entity.setDiscriminatorValue(m!=null && m.getDiscriminator() != null ? m.getDiscriminator() : entity.getClassName());
 
@@ -1378,12 +1366,8 @@ public final class GrailsDomainBinder {
         }
     }
 
-    /**
+    /*
      * Binds a persistent classes to the table representation and binds the class properties
-     *
-     * @param domainClass
-     * @param root
-     * @param mappings
      */
     private static void bindRootPersistentClassCommonValues(GrailsDomainClass domainClass,
             RootClass root, Mappings mappings) {
@@ -1398,12 +1382,15 @@ public final class GrailsDomainBinder {
             CacheConfig cc = m.getCache();
             if (cc != null && cc.getEnabled()) {
                 root.setCacheConcurrencyStrategy(cc.getUsage());
+                if("read-only".equals(cc.getUsage())) {
+                    root.setMutable(false);
+                }
                 root.setLazyPropertiesCacheable(!"non-lazy".equals(cc.getInclude()));
             }
 
             Integer bs = m.getBatchSize();
             if (bs != null) {
-                root.setBatchSize(bs.intValue());
+                root.setBatchSize(bs);
             }
 
             if (m.getDynamicUpdate()) {
@@ -1478,7 +1465,7 @@ public final class GrailsDomainBinder {
     }
 
     private static void bindCompositeId(GrailsDomainClass domainClass, RootClass root, CompositeIdentity compositeIdentity, Mappings mappings) {
-        Component id = new Component(root);
+        Component id = new Component(mappings, root);
         id.setNullValue("undefined");
         root.setIdentifier(id);
         root.setEmbeddedIdentifier(true);
@@ -1502,7 +1489,7 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * Creates and binds the properties for the specified Grails domain class and PersistantClass
+     * Creates and binds the properties for the specified Grails domain class and PersistentClass
      * and binds them to the Hibernate runtime meta model
      *
      * @param domainClass     The Grails domain class
@@ -1544,7 +1531,7 @@ public final class GrailsDomainBinder {
                 value = collection;
             }
             else if (currentGrailsProp.isEnum()) {
-                value = new SimpleValue(table);
+                value = new SimpleValue(mappings, table);
                 bindEnumType(currentGrailsProp, (SimpleValue) value, EMPTY_PATH);
             }
             // work out what type of relationship it is and bind value
@@ -1552,7 +1539,7 @@ public final class GrailsDomainBinder {
                 if (LOG.isDebugEnabled())
                     LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as ManyToOne");
 
-                value = new ManyToOne(table);
+                value = new ManyToOne(mappings, table);
                 bindManyToOne(currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings);
             }
             else if (currentGrailsProp.isOneToOne() && userType == null) {
@@ -1564,22 +1551,22 @@ public final class GrailsDomainBinder {
                                "." + currentGrailsProp.getName() + "] is not bidirectional. Specify the other side of the relationship!");
                 }
                 else if (canBindOneToOneWithSingleColumnAndForeignKey(currentGrailsProp)) {
-                    value = new OneToOne(table, persistentClass);
+                    value = new OneToOne(mappings, table, persistentClass);
                     bindOneToOne(currentGrailsProp, (OneToOne) value, EMPTY_PATH);
                 }
                 else {
                     if (currentGrailsProp.isHasOne() && currentGrailsProp.isBidirectional()) {
-                        value = new OneToOne(table, persistentClass);
+                        value = new OneToOne(mappings, table, persistentClass);
                         bindOneToOne(currentGrailsProp, (OneToOne) value, EMPTY_PATH);
                     }
                     else {
-                        value = new ManyToOne(table);
+                        value = new ManyToOne(mappings, table);
                         bindManyToOne(currentGrailsProp, (ManyToOne) value, EMPTY_PATH, mappings);
                     }
                 }
             }
             else if (currentGrailsProp.isEmbedded()) {
-                value = new Component(persistentClass);
+                value = new Component(mappings, persistentClass);
 
                 bindComponent((Component) value, currentGrailsProp, true, mappings);
             }
@@ -1587,7 +1574,7 @@ public final class GrailsDomainBinder {
                 if (LOG.isDebugEnabled())
                     LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 
-                value = new SimpleValue(table);
+                value = new SimpleValue(mappings, table);
                 bindSimpleValue(currentGrailsProp, null, (SimpleValue) value, EMPTY_PATH, mappings);
             }
 
@@ -1630,7 +1617,7 @@ public final class GrailsDomainBinder {
         if (currentGrailsProp.isBidirectional()) {
             final GrailsDomainClassProperty otherSide = currentGrailsProp.getOtherSide();
             if (otherSide.isHasOne()) return false;
-            if (!currentGrailsProp.isOwningSide() && (otherSide != null && otherSide.isOwningSide())) {
+            if (!currentGrailsProp.isOwningSide() && (otherSide.isOwningSide())) {
                 return true;
             }
         }
@@ -1779,7 +1766,7 @@ public final class GrailsDomainBinder {
     private static void bindComponentProperty(Component component, GrailsDomainClassProperty componentProperty,
              GrailsDomainClassProperty currentGrailsProp, PersistentClass persistentClass,
              String path, Table table, Mappings mappings) {
-        Value value = null;
+        Value value;
         // see if its a collection type
         CollectionType collectionType = CollectionType.collectionTypeForClass(currentGrailsProp.getType());
         if (collectionType != null) {
@@ -1799,30 +1786,30 @@ public final class GrailsDomainBinder {
             if (LOG.isDebugEnabled())
                 LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as ManyToOne");
 
-            value = new ManyToOne(table);
+            value = new ManyToOne(mappings, table);
             bindManyToOne(currentGrailsProp, (ManyToOne) value, path, mappings);
         } else if (currentGrailsProp.isOneToOne()) {
             if (LOG.isDebugEnabled())
                 LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as OneToOne");
 
            if (canBindOneToOneWithSingleColumnAndForeignKey(currentGrailsProp)) {
-                value = new OneToOne(table, persistentClass);
+                value = new OneToOne(mappings, table, persistentClass);
                 bindOneToOne(currentGrailsProp, (OneToOne) value, path);
             }
             else {
-                value = new ManyToOne(table);
+                value = new ManyToOne(mappings, table);
                 bindManyToOne(currentGrailsProp, (ManyToOne) value, path, mappings);
             }
         }
         else if (currentGrailsProp.isEmbedded()) {
-            value = new Component(persistentClass);
+            value = new Component(mappings, persistentClass);
             bindComponent((Component) value, currentGrailsProp, true, mappings);
         }
         else {
             if (LOG.isDebugEnabled())
                 LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
 
-            value = new SimpleValue(table);
+            value = new SimpleValue(mappings, table);
             if (currentGrailsProp.isEnum()) {
                 bindEnumType(currentGrailsProp, (SimpleValue) value, path);
             }
@@ -1851,12 +1838,9 @@ public final class GrailsDomainBinder {
         return !domainClass.isRoot() && (mapping == null || mapping.isTablePerHierarchy()) || componentProperty.isOptional();
     }
 
-    /**
-     * Creates a persistant class property based on the GrailDomainClassProperty instance
+    /*
+     * Creates a persistent class property based on the GrailDomainClassProperty instance
      *
-     * @param value
-     * @param persistentClass
-     * @param mappings
      */
     private static Property createProperty(Value value, PersistentClass persistentClass, GrailsDomainClassProperty grailsProperty, Mappings mappings) {
         // set type
@@ -1872,35 +1856,7 @@ public final class GrailsDomainBinder {
         return prop;
     }
 
-    /**
-     * @param property
-     * @param oneToOne
-     * @param mappings
-     */
-/*    private static void bindOneToOne(GrailsDomainClassProperty property, OneToOne oneToOne, Mappings mappings) {
-
-        // bind value
-        bindSimpleValue(property, oneToOne, mappings );
-        // set foreign key type
-        oneToOne.setForeignKeyType( ForeignKeyDirection.FOREIGN_KEY_TO_PARENT );
-
-        oneToOne.setForeignKeyName( property.getFieldName() + FOREIGN_KEY_SUFFIX );
-
-        // TODO configure fetch settings
-        oneToOne.setFetchMode( FetchMode.DEFAULT );
-        // TODO configure lazy loading
-        oneToOne.setLazy(true);
-
-        oneToOne.setPropertyName( property.getTagName() );
-        oneToOne.setReferencedEntityName( property.getType().getTagName() );
-
-
-    }*/
-
-    /**
-     * @param currentGrailsProp
-     * @param one
-     * @param mappings
+    /*
      */
     private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one,
             @SuppressWarnings("unused") Mappings mappings) {
@@ -1911,10 +1867,6 @@ public final class GrailsDomainBinder {
     /**
      * Binds a many-to-one relationship to the
      *
-     * @param property
-     * @param manyToOne
-     * @param path
-     * @param mappings
      */
     @SuppressWarnings("unchecked")
     private static void bindManyToOne(GrailsDomainClassProperty property, ManyToOne manyToOne,
@@ -2018,8 +1970,6 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * @param property
-     * @param manyToOne
      */
     private static void bindManyToOneValues(GrailsDomainClassProperty property, ManyToOne manyToOne) {
         PropertyConfig config = getPropertyConfig(property);
@@ -2031,7 +1981,7 @@ public final class GrailsDomainBinder {
             manyToOne.setFetchMode(FetchMode.DEFAULT);
         }
 
-        manyToOne.setLazy(getLazyiness(property));
+        manyToOne.setLazy(getLaziness(property));
 
         if (config != null) {
            manyToOne.setIgnoreNotFound(config.getIgnoreNotFound());
@@ -2042,12 +1992,10 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * @param version
-     * @param mappings
      */
     private static void bindVersion(GrailsDomainClassProperty version, RootClass entity, Mappings mappings) {
 
-        SimpleValue val = new SimpleValue(entity.getTable());
+        SimpleValue val = new SimpleValue(mappings, entity.getTable());
 
         bindSimpleValue(version, null, val, EMPTY_PATH, mappings);
 
@@ -2072,17 +2020,11 @@ public final class GrailsDomainBinder {
         entity.addProperty(prop);
     }
 
-    /**
-     * @param identifier
-     * @param entity
-     * @param mappings
-     * @param mappedId
-     */
     @SuppressWarnings("unchecked")
     private static void bindSimpleId(GrailsDomainClassProperty identifier, RootClass entity, Mappings mappings, Identity mappedId) {
 
         // create the id value
-        SimpleValue id = new SimpleValue(entity.getTable());
+        SimpleValue id = new SimpleValue(mappings, entity.getTable());
         // set identifier on entity
 
         Properties params = new Properties();
@@ -2099,6 +2041,8 @@ public final class GrailsDomainBinder {
             // configure generator strategy
             id.setIdentifierGeneratorStrategy("native");
         }
+
+        params.put( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, mappings.getObjectNameNormalizer() );
 
         if (mappings.getSchemaName() != null) {
             params.setProperty(PersistentIdentifierGenerator.SCHEMA, mappings.getSchemaName());
@@ -2153,7 +2097,7 @@ public final class GrailsDomainBinder {
                              grailsProperty.isPersistent() && !grailsProperty.isAssociation() && !grailsProperty.isIdentity();
 
         if (isLazyable) {
-            final boolean isLazy = getLazyiness(grailsProperty);
+            final boolean isLazy = getLaziness(grailsProperty);
             prop.setLazy(isLazy);
 
             if (isLazy && (grailsProperty.isManyToOne() || grailsProperty.isOneToOne())) {
@@ -2162,7 +2106,7 @@ public final class GrailsDomainBinder {
         }
     }
 
-    private static boolean getLazyiness(GrailsDomainClassProperty grailsProperty) {
+    private static boolean getLaziness(GrailsDomainClassProperty grailsProperty) {
         PropertyConfig config = getPropertyConfig(grailsProperty);
         final boolean isLazy = config!=null ? config.getLazy() : true;
         return isLazy;

@@ -14,6 +14,17 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import grails.util.GrailsWebUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
+import org.hibernate.type.AbstractStandardBasicType;
+import org.hibernate.type.TypeResolver;
+import org.hibernate.usertype.ParameterizedType;
+import org.hibernate.usertype.UserType;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,22 +32,7 @@ import java.lang.reflect.Modifier;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import grails.util.GrailsWebUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
-import org.hibernate.type.NullableType;
-import org.hibernate.type.TypeFactory;
-import org.hibernate.usertype.ParameterizedType;
-import org.hibernate.usertype.UserType;
+import java.util.*;
 
 /**
  * Hibernate Usertype that enum values by their ID.
@@ -50,14 +46,15 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
 
     private static final Log LOG = LogFactory.getLog(IdentityEnumType.class);
 
+    private static TypeResolver typeResolver = new TypeResolver();
     public static final String ENUM_ID_ACCESSOR = "getId";
+
     public static final String PARAM_ENUM_CLASS = "enumClass";
 
     private static final Map<Class<? extends Enum<?>>, BidiEnumMap> ENUM_MAPPINGS = new HashMap<Class<? extends Enum<?>>, BidiEnumMap>();
-
     private Class<? extends Enum<?>> enumClass;
     private BidiEnumMap bidiMap;
-    private NullableType type;
+    private AbstractStandardBasicType type;
     private int[] sqlTypes;
 
     public static BidiEnumMap getBidiEnumMap(Class<? extends Enum<?>> cls) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -90,7 +87,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
                 int mods = idAccessor.getModifiers();
                 if (Modifier.isPublic(mods) && !Modifier.isStatic(mods)) {
                     Class<?> returnType = idAccessor.getReturnType();
-                    return returnType != null && TypeFactory.basic(returnType.getName()) instanceof NullableType;
+                    return returnType != null && typeResolver.basic(returnType.getName()) instanceof AbstractStandardBasicType;
                 }
             }
             catch (NoSuchMethodException e) {
@@ -109,11 +106,11 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
                 LOG.debug(String.format("Building ID-mapping for Enum Class %s", enumClass.getName()));
             }
             bidiMap = getBidiEnumMap(enumClass);
-            type = (NullableType) TypeFactory.basic(bidiMap.keyType.getName());
+            type = (AbstractStandardBasicType)typeResolver.basic(bidiMap.keyType.getName());
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Mapped Basic Type is %s", type));
             }
-            sqlTypes = new int[]{type.sqlType()};
+            sqlTypes = type.sqlTypes(null);
         }
         catch (Exception e) {
             throw new MappingException("Error mapping Enum Class using IdentifierEnumType", e);
@@ -137,7 +134,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
     }
 
     public Object nullSafeGet(ResultSet resultSet, String[] names, Object owner) throws HibernateException, SQLException {
-        Object id = type.get(resultSet, names[0]);
+        Object id = type.nullSafeGet(resultSet, names[0], null);
         if ((!resultSet.wasNull()) && id != null) {
             return bidiMap.getEnumValue(id);
         }
@@ -149,7 +146,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
             pstmt.setNull(idx, sqlTypes[0]);
         }
         else {
-            type.set(pstmt, bidiMap.getKey(value), idx);
+            type.nullSafeSet(pstmt, bidiMap.getKey(value), idx, null);
         }
     }
 
