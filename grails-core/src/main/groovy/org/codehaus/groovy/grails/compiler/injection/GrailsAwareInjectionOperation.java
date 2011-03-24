@@ -34,6 +34,8 @@ import org.springframework.util.Assert;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -101,6 +103,14 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                     // ignore
                 }
             }
+            Collections.sort(classInjectorList, new Comparator<ClassInjector>() {
+                public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
+                    if(classInjectorA instanceof Comparable) {
+                        return ((Comparable)classInjectorA).compareTo(classInjectorB);
+                    }
+                    return 0;
+                }
+            });
             classInjectors = classInjectorList.toArray(new ClassInjector[classInjectorList.size()]);
         }
     }

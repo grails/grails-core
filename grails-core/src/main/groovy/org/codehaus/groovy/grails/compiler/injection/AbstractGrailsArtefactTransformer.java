@@ -34,7 +34,7 @@ import java.util.List;
  * @since 1.4
  * @author  Graeme Rocher
  */
-public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector{
+public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable{
 
     private static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
@@ -52,6 +52,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             return simpleName.substring(0, simpleName.length()-11);
         }
         return simpleName;
+    }
+
+    public int compareTo(Object o) {
+        return 0; // treat all as the same by default for ordering
     }
 
     public final void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
