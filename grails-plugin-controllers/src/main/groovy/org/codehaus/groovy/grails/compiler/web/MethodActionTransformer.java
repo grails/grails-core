@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.web;
 
 
 import grails.artefact.Artefact;
+import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.web.Action;
 import org.codehaus.groovy.ast.*;
@@ -105,10 +106,10 @@ public class MethodActionTransformer implements ClassInjector {
     private Boolean converterEnabled;
 
     public MethodActionTransformer() {
-        converterEnabled = BuildSettingsHolder.getSettings().getConvertClosuresArtefacts();
+        final BuildSettings settings = BuildSettingsHolder.getSettings();
+        converterEnabled = settings != null && settings.getConvertClosuresArtefacts();
     }
 
-    @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         annotateCandidateActionMethods(classNode);
         if (converterEnabled) {
@@ -178,12 +179,10 @@ public class MethodActionTransformer implements ClassInjector {
         return wrapper;
     }
 
-    @Override
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
 
-    @Override
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
