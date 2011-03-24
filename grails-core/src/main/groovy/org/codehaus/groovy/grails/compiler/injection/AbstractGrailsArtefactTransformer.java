@@ -34,7 +34,7 @@ import java.util.List;
  * @since 1.4
  * @author  Graeme Rocher
  */
-public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector{
+public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable{
 
     private static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
@@ -46,7 +46,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
 
-    @Override
     public String getArtefactType() {
         String simpleName = getClass().getSimpleName();
         if(simpleName.length()>11) {
@@ -55,7 +54,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return simpleName;
     }
 
-    @Override
+    public int compareTo(Object o) {
+        return 0; // treat all as the same by default for ordering
+    }
+
     public final void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         Class instanceImplementation = getInstanceImplementation();
 
@@ -81,7 +83,13 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                         ArgumentListExpression arguments = new ArgumentListExpression();
                         arguments.addExpression(THIS_EXPRESSION);
                         constructorBody.addStatement(new ExpressionStatement( new MethodCallExpression(new ClassExpression(implementationNode), "initialize",arguments)));
-                        classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+                        ConstructorNode constructorNode = getDefaultConstructor(classNode);
+                        if(constructorNode != null){
+                            constructorBody.addStatement(constructorNode.getCode());
+                            constructorNode.setCode(constructorBody);
+                        }else{
+                            classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+                        }
                     }
                     else if(isCandidateInstanceMethod(declaredMethod)) {
 
@@ -113,7 +121,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         }
 
 
-        if(classNode.getAnnotations(ENHANCED_CLASS_NODE) == null)
+        if(classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty())
             classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
 
     }
@@ -127,6 +135,17 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      */
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         // do nothing
+    }
+
+    private ConstructorNode getDefaultConstructor(ClassNode classNode) {
+        ConstructorNode constructorNode = null;
+        for(ConstructorNode cons : classNode.getDeclaredConstructors()){
+            if(cons.getParameters().length == 0){
+                constructorNode = cons;
+                break;
+            }
+        }
+        return constructorNode;
     }
 
     private boolean isConstructor(MethodNode declaredMethod) {
@@ -168,7 +187,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      */
     public abstract Class getStaticImplementation();
 
-    @Override
     public final void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }

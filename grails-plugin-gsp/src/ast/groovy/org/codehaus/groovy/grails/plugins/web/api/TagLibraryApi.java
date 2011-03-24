@@ -102,10 +102,11 @@ public class TagLibraryApi extends CommonWebApi {
      *
      * @param instance The instance
      * @param methodName The method name
-     * @param args The arguments
+     * @param argsObject The arguments
      * @return The result
      */
-    public Object methodMissing(Object instance, String methodName, Object[] args) {
+    public Object methodMissing(Object instance, String methodName, Object argsObject) {
+        Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
         String usednamespace = getNamespace(instance);
         TagLibraryLookup tagLibraryLookup = getTagLibraryLookup();

@@ -14,15 +14,16 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.proxy;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Set;
-
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.ProxyFactory;
 import org.hibernate.type.AbstractComponentType;
+import org.hibernate.type.CompositeType;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * Hibernate's default proxying mechanism proxies Groovy's getMetaClass() method. To avoid this
@@ -58,6 +59,10 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
         this.setIdentifierMethod = setIdentifierMethod;
         this.componentIdType = componentIdType;
         factory = GroovyAwareJavassistLazyInitializer.getProxyFactory(persistentClass, this.interfaces);
+    }
+
+    public void postInstantiate(String entityName, Class persistentClass, Set interfaces, Method getIdentifierMethod, Method setIdentifierMethod, CompositeType componentIdType) throws HibernateException {
+        // do nothing
     }
 
     public HibernateProxy getProxy(Serializable id, SessionImplementor session) throws HibernateException {

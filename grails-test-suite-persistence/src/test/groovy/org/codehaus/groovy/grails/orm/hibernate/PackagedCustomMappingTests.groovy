@@ -28,10 +28,13 @@ class PackagedCustomMapping {
 
         session.clear()
 
-        test = testClass.get(1)
-        test.name = "Bob"
-        shouldFail(UnsupportedOperationException) {
-            test.save(flush:true)
+        testClass.withNewSession {
+            test = testClass.get(1)
+            test.name = "Bob"
+            shouldFail(IllegalStateException) {
+                test.save(flush:true)
+            }
         }
+
     }
 }

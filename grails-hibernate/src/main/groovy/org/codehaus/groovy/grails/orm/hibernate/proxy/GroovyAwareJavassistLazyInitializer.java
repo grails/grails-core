@@ -231,6 +231,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
                 persistentClass,
                 interfaces,
                 getIdentifier(),
+                false,
                 getIdentifierMethod,
                 setIdentifierMethod,
                 componentIdType

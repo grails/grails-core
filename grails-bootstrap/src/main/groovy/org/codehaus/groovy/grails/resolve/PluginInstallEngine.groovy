@@ -464,7 +464,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 
             if (pluginDir?.exists()) {
                 def uninstallScript = new File("${pluginDir}/scripts/_Uninstall.groovy")
-                runPluginScript(uninstallScript, pluginDir.name, "uninstall script")
+                runPluginScript(uninstallScript, pluginDir.canonicalFile.name, "uninstall script")
                 if (isNotInlinePluginLocation(pluginDir)) {
                     ant.delete(dir:pluginDir, failonerror:true)
                 }

@@ -15,30 +15,34 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.CouldNotDetermineHibernateDialectException;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.DialectFactory;
+import org.hibernate.dialect.resolver.DialectFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.util.Properties;
 
 /**
  * @author Steven Devijver
  */
-public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>, InitializingBean {
+public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>, InitializingBean, GrailsApplicationAware {
 
     private DataSource dataSource;
     private Properties vendorNameDialectMappings;
     private String hibernateDialectClassName;
     private Dialect hibernateDialect;
+    private GrailsApplication grailsApplication;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -64,20 +68,33 @@ public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>,
         Assert.notNull(dataSource, "Data source is not set!");
         Assert.notNull(vendorNameDialectMappings, "Vendor name/dialect mappings are not set!");
 
+        Connection connection = null;
+
+
         String dbName = (String)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName");
-        Integer majorVersion = (Integer)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseMajorVersion");
 
         try {
-            hibernateDialect = DialectFactory.determineDialect(dbName,majorVersion.intValue());
-            hibernateDialectClassName = hibernateDialect.getClass().getName();
-        }
-        catch (HibernateException e) {
-            hibernateDialectClassName = vendorNameDialectMappings.getProperty(dbName);
+            connection = DataSourceUtils.getConnection(dataSource);
+
+            try {
+                hibernateDialect = DialectFactory.buildDialect(grailsApplication.getConfig().toProperties(), connection);
+                hibernateDialectClassName = hibernateDialect.getClass().getName();
+            } catch (HibernateException e) {
+                hibernateDialectClassName = vendorNameDialectMappings.getProperty(dbName);
+            }
+
+
+           if (!StringUtils.hasText(hibernateDialectClassName)) {
+                throw new CouldNotDetermineHibernateDialectException(
+                        "Could not determine Hibernate dialect for database name [" + dbName + "]!");
+           }
+        } finally {
+            DataSourceUtils.releaseConnection(connection,dataSource);
         }
 
-        if (StringUtils.isBlank(hibernateDialectClassName)) {
-            throw new CouldNotDetermineHibernateDialectException(
-                    "Could not determine Hibernate dialect for database name [" + dbName + "]!");
-        }
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 }

@@ -7,9 +7,7 @@ import java.util.Set;
 
 import javax.naming.Reference;
 
-import org.hibernate.Interceptor;
-import org.hibernate.SessionFactory;
-import org.hibernate.StatelessSession;
+import org.hibernate.*;
 import org.hibernate.classic.Session;
 import org.hibernate.engine.FilterDefinition;
 import org.hibernate.metadata.ClassMetadata;
@@ -99,12 +97,24 @@ public class SessionFactoryAdapter implements SessionFactory {
         return null;
     }
 
+    public boolean containsFetchProfileDefinition(String name) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public TypeHelper getTypeHelper() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public Statistics getStatistics() {
         return null;
     }
 
     public boolean isClosed() {
         return false;
+    }
+
+    public Cache getCache() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public Session openSession() {

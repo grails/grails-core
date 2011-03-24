@@ -63,11 +63,17 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
         if(value != null && (value instanceof ConstantExpression)) {
             ConstantExpression ce = (ConstantExpression) value;
             String artefactType = ce.getText();
-            ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
-            GrailsArtefactClassInjector injector = findInjector(artefactType, classInjectors);
-            if(injector != null) {
-                injector.performInjection(sourceUnit,cNode);
-                return;
+            try {
+                ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
+                GrailsArtefactClassInjector injector = findInjector(artefactType, classInjectors);
+                if(injector != null) {
+                    injector.performInjection(sourceUnit,cNode);
+                    return;
+                }
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                System.out.println("Error occurred calling AST injector: " + e.getMessage());
+                throw e;
             }
         }
 

@@ -166,7 +166,6 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer{
         return tags;
     }
 
-    @Override
     public boolean shouldInject(URL url) {
         return url != null && TAGLIB_PATTERN.matcher(url.getFile()).find();
     }

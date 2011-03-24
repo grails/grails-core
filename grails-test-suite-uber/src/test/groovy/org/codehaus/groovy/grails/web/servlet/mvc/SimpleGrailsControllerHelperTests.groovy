@@ -51,13 +51,13 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
     void testConstructHelper() {
         runTest {
             def webRequest = RequestContextHolder.currentRequestAttributes()
-            def helper = new SimpleGrailsControllerHelper(ga, ctx, servletContext)
+            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
         }
     }
 
     void testCallsAfterInterceptorWithModel() {
         runTest {
-            def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test/list", webRequest)
             assert mv.getModel()["after"] == "value"
         }
@@ -65,7 +65,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     void testCallsAfterInterceptorWithModelAndExplicitParam() {
         runTest {
-            def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test2/list", webRequest)
             assert mv.getModel()["after"] == "value"
         }
@@ -73,7 +73,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     void testCallsAfterInterceptorWithModelAndViewExplicitParams() {
         runTest {
-            def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test3/list", webRequest)
             assert mv.getModel()["after"] == "/test3/list"
         }
@@ -81,7 +81,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     void testReturnsNullIfAfterInterceptorReturnsFalse() {
         runTest {
-            def helper = new SimpleGrailsControllerHelper(ga, appCtx , servletContext)
+            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test4/list", webRequest)
             assert mv == null
         }
