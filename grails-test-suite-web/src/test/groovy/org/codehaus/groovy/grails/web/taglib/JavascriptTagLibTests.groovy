@@ -79,31 +79,13 @@ class TestUrlMappings {
         assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
     }
 
-    void testRemoteFieldWithExtraParams() {
-        def template = '<g:remoteField controller="test" action="hello" id="1" params="[var1: \'one\', var2: \'two\']" update="success" name="myname" value="myvalue"/>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals '<input type="text" name="myname" value="myvalue" onkeyup="new Ajax.Updater(\'success\',\'/test/hello/1\',{asynchronous:true,evalScripts:true,parameters:\'value=\'+this.value+\'&var1=one&var2=two\'});" />', template
-    }
-
-    void testPrototypeSubmitToRemoteWithExtraParams() {
-        def template = '<g:submitToRemote name="myButton" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ></g:submitToRemote>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<input onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this.form)+\'&var2=two\'});return false" type="button" name="myButton"></input>', template)
-    }
-
-    void testPrototypeFormRemoteWithExtraParams() {
-        def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\', var2:\'two\']]" ><g:textField name="foo" /></g:formRemote>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+\'&var2=two\'});return false" method="POST" action="/people/details/one?var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
-    }
-
     /**
      * Tests that the 'formRemote' tag complains if a 'params' attribute
      * is given.
      */
-    void testPrototypeFormRemoteWithParamsAttribute() {
+    void testFormRemoteWithParamsAttribute() {
         def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'list\']" params="[var1:\'one\', var2:\'two\']"><g:textField name="foo" /></g:formRemote>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
 
         shouldFail(GrailsTagException) {
             applyTemplate(template)
@@ -117,121 +99,31 @@ class TestUrlMappings {
      *
      * <p>Also makes sure no regressions on http://jira.codehaus.org/browse/GRAILS-3330</p>
      */
-    void testPrototypeFormRemoteWithOverrides() {
+    void testFormRemoteWithOverrides() {
         def template = '''\
 <g:formRemote name="myForm" method="GET" action="/person/showOld?var1=one&var2=two"
               url="[controller:'person', action:'show', params: [var1:'one', var2:'two']]" >\
 <g:textField name="foo" />\
 </g:formRemote>'''
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
 
         assertOutputEquals('''\
-<form onsubmit="new Ajax.Request('/people/details/one',{method:'get',asynchronous:true,evalScripts:true,parameters:Form.serialize(this)+'&var2=two'});return false" method="GET"\
+<form onsubmit="<remote>return false" method="GET"\
  action="/person/showOld?var1=one&var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
-    }
-
-    void testPrototypeFormRemoteWithExactParams() {
-        def template = '<g:formRemote name="myForm" url="[controller:\'person\', action:\'show\', params:[var1:\'one\']]" ><g:textField name="foo" /></g:formRemote>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<form onsubmit="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:Form.serialize(this)});return false" method="POST" action="/people/details/one" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>', template)
-    }
-
-    void testPrototypeWithAsyncProperty() {
-        def template = '<g:remoteFunction controller="bar" action="foo" options="[asynchronous:false]" />'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals("new Ajax.Request('/bar/foo',{asynchronous:false,evalScripts:true});", template)
-    }
-
-    void testPrototypeWithExtraParams() {
-        def template = '<g:remoteFunction controller="person" action="show" params="[var1:\'one\', var2:\'two\']" />'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals("new Ajax.Request('/people/details/one',{asynchronous:true,evalScripts:true,parameters:'var2=two'});", template)
-    }
-
-    void testPrototypeLinkWithExtraParams() {
-        def template = '<g:remoteLink controller="person" action="show" params="[var1:\'one\', var2:\'two\']" elementId="myid">hello</g:remoteLink>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<a href="/people/details/one?var2=two" onclick="new Ajax.Request(\'/people/details/one\',{asynchronous:true,evalScripts:true,parameters:\'var2=two\'});return false;" id="myid">hello</a>', template)
     }
 
     void testRemoteLinkWithSpaceBeforeGStringVariable() {
         // see http://jira.codehaus.org/browse/GRAILS-4672
         def template = '<g:remoteLink controller="people" action="theAction" params="someParams" update="success" onComplete="doSomething();" title="The Album Is ${variable}" class="hoverLT">${variable}</g:remoteLink>'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
         assertOutputContains 'title="The Album Is Undertow"', template, [variable: 'Undertow']
     }
 
     void testRemoteLinkWithSpaceBeforeAndAfterGStringVariable() {
         // see http://jira.codehaus.org/browse/GRAILS-4672
         def template = '<g:remoteLink controller="people" action="theAction" params="someParams" update="success" onComplete="doSomething();" title="The Album Is ${variable} By Tool" class="hoverLT">${variable}</g:remoteLink>'
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
         assertOutputContains 'title="The Album Is Undertow By Tool"', template, [variable: 'Undertow']
-    }
-
-    void testRemoteLinkWithMethod() {
-        // see http://jira.codehaus.org/browse/GRAILS-2468
-        def template = '<g:remoteLink controller="person" action="show" update="success" method="GET">Test</g:remoteLink>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<a href="/person/show" onclick="new Ajax.Updater(\'success\',\'/person/show\',{method:\'get\',asynchronous:true,evalScripts:true});return false;">Test</a>', template)
-    }
-
-    void testRemoteLinkWithEvents() {
-        // see http://jira.codehaus.org/browse/GRAILS-7062
-        def template = '<g:remoteLink controller="person" action="show" update="success" onComplete="doSomething();" on404="handleNotFound();">Test</g:remoteLink>'
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['prototype'])
-        assertOutputEquals('<a href="/person/show" onclick="new Ajax.Updater(\'success\',\'/person/show\',{asynchronous:true,evalScripts:true,onComplete:function(e){doSomething();},on404:function(e){handleNotFound();}});return false;">Test</a>', template)
-    }
-
-    void testRemoteFieldWithAdditionalArgs() {
-        def template = '<g:remoteField controller="bar" action="storeField" id="2" name="nv" paramName="pnv" params="\'a=b&\'" />'
-        assertOutputEquals '<input type="text" name="nv" value="" onkeyup="new Ajax.Request(\'/bar/storeField/2\',{asynchronous:true,evalScripts:true,parameters:\'a=b&\'+\'pnv=\'+this.value});" />', template
-    }
-
-    void testPrototypeRemoteFunction() {
-        StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-
-        withTag("remoteFunction", pw) {tag ->
-            GroovyObject tagLibrary = (GroovyObject) tag.getOwner()
-            def request = tagLibrary.getProperty("request")
-            def includedLibrary = ['prototype']
-            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
-
-            def attrs = [action: 'action', controller: 'test']
-            tag.call(attrs)
-            assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true});", sw.toString())
-
-            sw.getBuffer().delete(0, sw.getBuffer().length())
-            attrs = [action: 'action', controller: 'test', params: [test: '<hello>']]
-            tag.call(attrs)
-            assertEquals("new Ajax.Request('/test/action',{asynchronous:true,evalScripts:true,parameters:'test=%3Chello%3E'});", sw.toString())
-
-            sw.getBuffer().delete(0, sw.getBuffer().length())
-            attrs = [action: 'action', controller: 'test', update: [success: 'updateMe'], options: [insertion: 'Insertion.Bottom']]
-            tag.call(attrs)
-            assertEquals("new Ajax.Updater({success:'updateMe'},'/test/action',{asynchronous:true,evalScripts:true,insertion:Insertion.Bottom});", sw.toString())
-        }
-    }
-
-    void testRemoteField() {
-        // <g:remoteField action="changeTitle" update="titleDiv"  name="title" value="${book?.title}"/>
-        StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-
-        withTag("remoteField", pw) {tag ->
-            GroovyObject tagLibrary = (GroovyObject) tag.getOwner()
-            def request = tagLibrary.getProperty("request")
-            def includedLibrary = ['prototype']
-            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", includedLibrary)
-
-            def attrs = [controller: 'test', action: 'changeTitle', update: 'titleDiv', name: 'title', value: 'testValue']
-            def retval = tag.call(attrs) {"body"}
-            assertEquals("<input type=\"text\" name=\"title\" value=\"testValue\" onkeyup=\"new Ajax.Updater('titleDiv','/test/changeTitle',{asynchronous:true,evalScripts:true,parameters:'value='+this.value});\" />", sw.toString())
-        }
-    }
-
-    void testRemoteLink() {
-        // test for GRAILS-1304
-        def template = '<g:remoteLink controller="person" action="show" update="async" params="[var1:\'0\']">Show async</g:remoteLink>'
-        assertOutputEquals '<a href="/people/details/0" onclick="new Ajax.Updater(\'async\',\'/people/details/0\',{asynchronous:true,evalScripts:true});return false;">Show async</a>', template
     }
 
     void testPluginAwareJSSrc() {

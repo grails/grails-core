@@ -2,6 +2,8 @@ package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
+import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
+import org.codehaus.groovy.grails.web.taglib.TestProvider
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
@@ -30,6 +32,8 @@ class GroovyPageLineNumberTests extends AbstractGrailsTagTests {
         assertOutputEquals "/one/one two", template, [foo:"one", bar:"two"]
 
         template = '<g:link name="blah" action="${remoteFunction(action:\'bar\', params:\'\\\'grp=\\\' + encodeURIComponent(this.value)\')}"></g:link>'
+        JavascriptTagLib.PROVIDER_MAPPINGS["test"] = TestProvider
+		request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
         printCompiledSource template
 
         // test will fail if compilation fails

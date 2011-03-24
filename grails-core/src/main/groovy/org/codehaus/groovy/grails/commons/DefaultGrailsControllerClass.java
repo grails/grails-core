@@ -16,10 +16,12 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -49,6 +51,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     public static final String CONTROLLER = "Controller";
 
+    public static final String RESOLVE_ACTION_KEY = "grails.controllers.actions.resolveStrategy";
+    public static final String RESOLVE_METHOD = "method";
+    public static final String RESOLVE_CLOSURE = "closure";
+
     private static final String SLASH = "/";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
     private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
@@ -68,7 +74,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private final Set commandObjectActions = new HashSet();
     private final Set commandObjectClasses = new HashSet();
-    private Map<String, PropertyDescriptor> flows = new HashMap<String, PropertyDescriptor>();
+    private Map<String, FeatureDescriptor> flows = new HashMap<String, FeatureDescriptor>();
 
     public void setDefaultActionName(String defaultActionName) {
         this.defaultActionName = defaultActionName;
@@ -86,9 +92,37 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
-        Collection<String> closureNames = new ArrayList<String>();
+        Collection<String> actionNames = new ArrayList<String>();
 
         controllerPath = uri + SLASH;
+
+
+        //Todo refactor using another way to detect resolve strategy
+        String resolveStrategy = (String)ConfigurationHolder.getConfig().get(RESOLVE_ACTION_KEY);
+
+        //Method Strategy only
+        if(resolveStrategy != null && resolveStrategy.equalsIgnoreCase(RESOLVE_METHOD)){
+            methodStrategy(actionNames);
+        }
+        //Closure Strategy only
+        else if(resolveStrategy != null && resolveStrategy.equalsIgnoreCase(RESOLVE_CLOSURE)){
+            closureStrategy(actionNames);
+        }
+        //Mixed Strategy : Method first, Closure then
+        else{
+            mixedStrategy(actionNames);
+        }
+
+        configureDefaultActionIfSet();
+        configureURIsForCurrentState();
+    }
+
+    private void mixedStrategy(Collection<String> actionNames){
+        closureStrategy(actionNames);
+        methodStrategy(actionNames);
+    }
+
+    private void closureStrategy(Collection<String> closureNames){
 
         for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors()) {
             Method readMethod = propertyDescriptor.getReadMethod();
@@ -111,8 +145,24 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (!isReadableProperty(defaultActionName) && closureNames.size() == 1) {
             defaultActionName = closureNames.iterator().next();
         }
-        configureDefaultActionIfSet();
-        configureURIsForCurrentState();
+    }
+
+    private void methodStrategy(Collection<String> methodNames){
+
+        for (Method method : getClazz().getMethods()) {
+            if (Modifier.isPublic(method.getModifiers())
+                    && method.getAnnotation(Action.class) != null) {
+                    String methodName = method.getName();
+                   
+                    methodNames.add(methodName);
+
+                    configureMappingForClosureProperty(methodName);
+            }
+        }
+
+        if (!isActionMethod(defaultActionName) && methodNames.size() == 1) {
+            defaultActionName = methodNames.iterator().next();
+        }
     }
 
     private void configureURIsForCurrentState() {

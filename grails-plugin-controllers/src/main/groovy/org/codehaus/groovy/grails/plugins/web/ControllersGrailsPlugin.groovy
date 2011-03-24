@@ -41,6 +41,10 @@ import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAda
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
+import org.codehaus.groovy.grails.web.servlet.mvc.ClosureGrailsControllerHelper
+import org.codehaus.groovy.grails.web.servlet.mvc.MethodGrailsControllerHelper
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -51,7 +55,7 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 class ControllersGrailsPlugin {
 
     def watchedResources = ["file:./grails-app/controllers/**/*Controller.groovy",
-                            "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
+            "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version, urlMappings: version]
@@ -68,8 +72,24 @@ class ControllersGrailsPlugin {
             multipartResolver(ContentLengthAwareCommonsMultipartResolver)
         }
 
+        def resolveStrategyClass = MixedGrailsControllerHelper
+
+        switch (application.config.grails.controllers.actions.resolveStrategy) {
+            case DefaultGrailsControllerClass.RESOLVE_CLOSURE:
+                resolveStrategyClass = ClosureGrailsControllerHelper
+                break;
+            case DefaultGrailsControllerClass.RESOLVE_METHOD:
+                resolveStrategyClass = MethodGrailsControllerHelper
+                break;
+            }
+
+        grailsControllerHelper(resolveStrategyClass) { bean->
+                grailsApplication = ref('grailsApplication')
+                bean.scope = 'prototype'
+            }
+
         mainSimpleController(SimpleGrailsController) {
-            grailsApplication = ref("grailsApplication", true)
+            grailsControllerHelper = ref('grailsControllerHelper')
         }
 
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
@@ -87,6 +107,7 @@ class ControllersGrailsPlugin {
             stripLeadingSlash = false
         }
 
+        def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
         final pluginManager = manager
 
         instanceControllersApi(ControllersApi, pluginManager) {
@@ -98,7 +119,7 @@ class ControllersGrailsPlugin {
             if (controller.available) {
                 def cls = controller.clazz
                 "${controller.fullName}"(cls) { bean ->
-                    bean.scope = "prototype"
+                    bean.scope = controller.getPropertyValue("scope") ?: defaultScope
                     bean.autowire = "byName"
                     def enhancedAnn = cls.getAnnotation(Enhanced)
                     if(enhancedAnn != null) {
@@ -204,14 +225,14 @@ class ControllersGrailsPlugin {
 
             mc.constructor = { Map map ->
                 def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
-                DataBindingUtils.bindObjectToDomainInstance(dc,instance, map)
-                DataBindingUtils.assignBidirectionalAssociations(instance,map,dc)
+                DataBindingUtils.bindObjectToDomainInstance(dc, instance, map)
+                DataBindingUtils.assignBidirectionalAssociations(instance, map, dc)
                 return instance
             }
             mc.setProperties = {Object o ->
                 DataBindingUtils.bindObjectToDomainInstance(dc, delegate, o)
             }
-            mc.getProperties = { ->
+            mc.getProperties = {->
                 new DataBindingLazyMetaPropertyMap(delegate)
             }
         }
@@ -240,7 +261,7 @@ class ControllersGrailsPlugin {
             mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
             if(nonEnhancedControllerClasses.contains(controllerClass))
                 enhancer.enhance mc
-        }
+            }
 
     }
 
@@ -255,10 +276,12 @@ class ControllersGrailsPlugin {
                 return
             }
 
+            def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
+
             def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
             def beanDefinitions = beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
-                    bean.scope = "prototype"
+                    bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
                     bean.autowire = true
                     instanceControllersApi = ref("instanceControllersApi")
                 }

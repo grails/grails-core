@@ -20,6 +20,7 @@ import grails.util.GrailsUtil;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
+import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
@@ -94,6 +95,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
         try {
             pluginManager = parent != null ? parent.getBean(GrailsPluginManager.class) : null;
+            pluginManager = pluginManager != null ? pluginManager : PluginManagerHolder.getPluginManager();
         } catch (BeansException e) {
 			// ignore
         }

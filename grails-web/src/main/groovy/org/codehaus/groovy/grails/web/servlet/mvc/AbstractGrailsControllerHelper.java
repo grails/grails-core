@@ -18,8 +18,6 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingPropertyException;
-import groovy.util.Proxy;
 
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -32,6 +30,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import groovy.util.Proxy;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.lang.StringUtils;
@@ -49,40 +48,37 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.NoViewNameDefinedException;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Does the main job of dealing with Grails web requests.
+ * Processes Grails controller requests and responses.
  *
  * @author Graeme Rocher
- * @since 0.1
+ * @author Stephane Maldini
+ * @since 1.4
  */
-public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
+public abstract class AbstractGrailsControllerHelper implements ApplicationContextAware, ServletContextAware {
 
-    private GrailsApplication application;
-    private ApplicationContext applicationContext;
+    protected GrailsApplication application;
+    protected ApplicationContext applicationContext;
     @SuppressWarnings("rawtypes")
-    private Map chainModel = Collections.EMPTY_MAP;
-    private ServletContext servletContext;
-    private GrailsApplicationAttributes grailsAttributes;
-    private GrailsWebRequest webRequest;
+    protected Map chainModel = Collections.EMPTY_MAP;
+    protected ServletContext servletContext;
+    protected GrailsApplicationAttributes grailsAttributes;
+    protected GrailsWebRequest webRequest;
 
-    private static final Log LOG = LogFactory.getLog(SimpleGrailsControllerHelper.class);
+    private static final Log LOG = LogFactory.getLog(AbstractGrailsControllerHelper.class);
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
 
-    private String id;
-    private String controllerName;
-    private String actionName;
-
-    public SimpleGrailsControllerHelper(GrailsApplication application, ApplicationContext context, ServletContext servletContext) {
-        this.application = application;
-        applicationContext = context;
-        this.servletContext = servletContext;
-        grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
-    }
+    protected String id;
+    protected String controllerName;
+    protected String actionName;
 
     public ServletContext getServletContext() {
         return servletContext;
@@ -193,6 +189,8 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return returnModelAndView ? mv : null;
     }
 
+    protected abstract Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response);
+
     /**
      * Invokes the action defined by the webRequest for the given arguments.
      *
@@ -206,25 +204,14 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected ModelAndView executeAction(GroovyObject controller,
-            @SuppressWarnings("unused") GrailsControllerClass controllerClass,
+            GrailsControllerClass controllerClass,
             String viewName, HttpServletRequest request, HttpServletResponse response, Map params) {
         // Step 5a: Check if there is a before interceptor if there is execute it
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            // Step 6: get closure from closure property
-            Closure action;
-            try {
-                action = (Closure)controller.getProperty(actionName);
-            }
-            catch(MissingPropertyException mpe) {
-                try {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return null;
-                }
-                catch (IOException e) {
-                    throw new ControllerExecutionException("I/O error sending 404 error",e);
-                }
-            }
+            // Step 6: get action from implementation
+            Object action = retrieveAction(controller, actionName, response);
+
 
             // Step 7: process the action
             Object returnValue = null;
@@ -291,7 +278,7 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
 
     private boolean invokeBeforeInterceptor(GroovyObject controller, GrailsControllerClass controllerClass) {
         boolean executeAction = true;
-        if (controllerClass.isInterceptedBefore(controller,actionName)) {
+        if (controllerClass.isInterceptedBefore(controller, actionName)) {
             Closure<?> beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
             if (beforeInterceptor!= null) {
                 if (beforeInterceptor.getDelegate() != controller) {
@@ -352,20 +339,22 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
         return grailsAttributes;
     }
 
-    public Object handleAction(GroovyObject controller, @SuppressWarnings("rawtypes") Closure action, HttpServletRequest request,
+    public Object handleAction(GroovyObject controller, @SuppressWarnings("rawtypes") Object action, HttpServletRequest request,
             HttpServletResponse response) {
         return handleAction(controller,action,request,response,Collections.EMPTY_MAP);
     }
 
+    protected abstract Object invoke(GroovyObject controller, Object action);
+
     @SuppressWarnings("rawtypes")
-    public Object handleAction(GroovyObject controller,Closure action, HttpServletRequest request,
+    public Object handleAction(GroovyObject controller, Object action, HttpServletRequest request,
             HttpServletResponse response, Map params) {
         GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
         // if there are additional params add them to the params dynamic property
         if (params != null && !params.isEmpty()) {
             paramsMap.putAll( params );
         }
-        Object returnValue = action.call();
+        Object returnValue = invoke(controller, action);
 
         // Step 8: add any errors to the request
         request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );
@@ -458,5 +447,20 @@ public class SimpleGrailsControllerHelper implements GrailsControllerHelper {
                 chainModel = Collections.EMPTY_MAP;
             }
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+        this.grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
+    }
+
+    public void setGrailsApplication(GrailsApplication application){
+        this.application = application;
     }
 }

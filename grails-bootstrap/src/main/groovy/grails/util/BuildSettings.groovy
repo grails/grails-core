@@ -147,6 +147,12 @@ class BuildSettings extends AbstractBuildSettings {
      */
     public static final String CORE_WORKING_DIR_NAME = '.core'
 
+    /**
+     *  A property name to enable/disable AST conversion of closures actions&tags to methods
+     */
+
+    private static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
+
 
     /**
      * The base directory for the build, which is normally the root
@@ -264,6 +270,9 @@ class BuildSettings extends AbstractBuildSettings {
     List applicationJars = []
 
     List buildListeners = []
+
+    boolean convertClosuresArtefacts = false
+
 
     /**
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
@@ -480,6 +489,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
+    private boolean convertClosuresArtefactsSet
     private String resolveChecksum
     private Map resolveCache = new ConcurrentHashMap()
 
@@ -509,7 +519,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
+        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion, jquery:null]
         defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.
@@ -632,6 +642,13 @@ class BuildSettings extends AbstractBuildSettings {
     void setProjectWarExplodedDir(File dir) {
         projectWarExplodedDir = dir
         projectWarExplodedDirSet = true
+    }
+
+    boolean getConvertClosuresArtefacts(){ convertClosuresArtefacts }
+
+    void setConvertClosuresArtefacts(boolean convert){
+        convertClosuresArtefacts = convert
+        convertClosuresArtefactsSet = true
     }
 
     boolean getProjectWarOsgiHeaders() { projectWarOsgiHeaders }
@@ -1021,6 +1038,10 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectWarExplodedDirSet) {
             projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
+        }
+
+        if (!convertClosuresArtefactsSet) {
+            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  '').toBoolean()
         }
 
         if (!projectWarOsgiHeadersSet) {
