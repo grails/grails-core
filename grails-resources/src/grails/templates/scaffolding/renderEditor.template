@@ -1,20 +1,20 @@
-<%  if (property.type == Boolean.class || property.type == boolean.class)
+<%  if (property.type == Boolean || property.type == boolean)
         out << renderBooleanEditor(domainClass, property)
-    else if (Number.class.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean.class))
+    else if (Number.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean))
         out << renderNumberEditor(domainClass, property)
-    else if (property.type == String.class)
+    else if (property.type == String)
         out << renderStringEditor(domainClass, property)
-    else if (property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class || property.type == Calendar.class)
+    else if (property.type == Date || property.type == java.sql.Date || property.type == java.sql.Time || property.type == Calendar)
         out << renderDateEditor(domainClass, property)
-    else if (property.type == URL.class)
+    else if (property.type == URL)
         out << renderStringEditor(domainClass, property)
     else if (property.isEnum())
         out << renderEnumEditor(domainClass, property)
-    else if (property.type == TimeZone.class)
+    else if (property.type == TimeZone)
         out << renderSelectTypeEditor("timeZone", domainClass, property)
-    else if (property.type == Locale.class)
+    else if (property.type == Locale)
         out << renderSelectTypeEditor("locale", domainClass, property)
-    else if (property.type == Currency.class)
+    else if (property.type == Currency)
         out << renderSelectTypeEditor("currency", domainClass, property)
     else if (property.type==([] as Byte[]).class) //TODO: Bug in groovy means i have to do this :(
         out << renderByteArrayEditor(domainClass, property)
@@ -34,25 +34,28 @@
     private renderStringEditor(domainClass, property) {
         if (!cp) {
             return "<g:textField name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" />"
-        }
-        else {
+        } else {
             if ("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
                 return "<g:textArea name=\"${property.name}\" cols=\"40\" rows=\"5\" value=\"\${${domainInstance}?.${property.name}}\" />"
-            }
-            else {
-                if (cp.inList) {
-                    return "<g:select name=\"${property.name}\" from=\"\${${domainInstance}.constraints.${property.name}.inList}\" value=\"\${${domainInstance}?.${property.name}}\" valueMessagePrefix=\"${domainClass.propertyName}.${property?.name}\" ${renderNoSelection(property)} />"
-                }
-                else {
-                    def sb = new StringBuffer("<g:")
-                    cp.password ? sb << "passwordField " : sb << "textField "
-                    sb << "name=\"${property.name}\" "
-                    if (cp.maxSize) sb << "maxlength=\"${cp.maxSize}\" "
-                    if (!cp.editable) sb << "readonly=\"readonly\" "
-                    sb << "value=\"\${${domainInstance}?.${property.name}}\" />"
-                    return sb.toString()
-                }
-            }
+            } else if (cp.inList) {
+				return "<g:select name=\"${property.name}\" from=\"\${${domainInstance}.constraints.${property.name}.inList}\" value=\"\${${domainInstance}?.${property.name}}\" valueMessagePrefix=\"${domainClass.propertyName}.${property?.name}\" ${renderNoSelection(property)} />"
+			} else {
+				def sb = new StringBuilder("")
+				if (cp.password) {
+					sb << "<g:field type=\"password\" "
+				} else if (cp.url) {
+					sb << "<g:field type=\"url\" "
+				} else if (cp.email) {
+					sb << "<g:field type=\"email\" "
+				} else {
+					sb << "<g:textField "
+				}
+				sb << "name=\"${property.name}\" "
+				if (cp.maxSize) sb << "maxlength=\"${cp.maxSize}\" "
+				if (!cp.editable) sb << "readonly=\"readonly\" "
+				sb << "value=\"\${${domainInstance}?.${property.name}}\" />"
+				return sb.toString()
+			}
         }
     }
 
@@ -62,12 +65,12 @@
 
     private renderManyToOne(domainClass,property) {
         if (property.association) {
-            return "<g:select name=\"${property.name}.id\" from=\"\${${property.type.name}.list()}\" optionKey=\"id\" value=\"\${${domainInstance}?.${property.name}?.id}\" ${renderNoSelection(property)} />"
+            return "<g:select name=\"${property.name}.id\" from=\"\${${property.type.name}.list()}\" optionKey=\"id\" value=\"\${${domainInstance}?.${property.name}?.id}\" class=\"many-to-one\" ${renderNoSelection(property)} />"
         }
     }
 
     private renderManyToMany(domainClass, property) {
-        return "<g:select name=\"${property.name}\" from=\"\${${property.referencedDomainClass.fullName}.list()}\" multiple=\"yes\" optionKey=\"id\" size=\"5\" value=\"\${${domainInstance}?.${property.name}*.id}\" />"
+        return "<g:select name=\"${property.name}\" from=\"\${${property.referencedDomainClass.fullName}.list()}\" multiple=\"multiple\" optionKey=\"id\" size=\"5\" value=\"\${${domainInstance}?.${property.name}*.id}\" class=\"many-to-many\" />"
     }
 
     private renderOneToMany(domainClass, property) {
@@ -85,22 +88,21 @@
 
     private renderNumberEditor(domainClass, property) {
         if (!cp) {
-            if (property.type == Byte.class) {
-                return "<g:select name=\"${property.name}\" from=\"\${-128..127}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
+            if (property.type == Byte) {
+                return "<g:select name=\"${property.name}\" from=\"\${-128..127}\" class=\"range\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
+            } else {
+                return "<g:field type=\"number\" name=\"${property.name}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
             }
-            else {
-                return "<g:textField name=\"${property.name}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
-            }
-        }
-        else {
+        } else {
             if (cp.range) {
-                return "<g:select name=\"${property.name}\" from=\"\${${cp.range.from}..${cp.range.to}}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" ${renderNoSelection(property)} />"
-            }
-            else if (cp.inList) {
+                return "<g:select name=\"${property.name}\" from=\"\${${cp.range.from}..${cp.range.to}}\" class=\"range\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" ${renderNoSelection(property)} />"
+            } else if (cp.inList) {
                 return "<g:select name=\"${property.name}\" from=\"\${${domainInstance}.constraints.${property.name}.inList}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" valueMessagePrefix=\"${domainClass.propertyName}.${property?.name}\" ${renderNoSelection(property)} />"
-            }
-            else {
-                return "<g:textField name=\"${property.name}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
+            } else {
+				def sb = new StringBuilder("<g:field type=\"number\" name=\"${property.name}\" ")
+				if (cp.min != null) sb << "min=\"${cp.min}\" "
+				if (cp.max != null) sb << "max=\"${cp.max}\" "
+				sb << "value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
             }
         }
      }
@@ -108,9 +110,8 @@
     private renderBooleanEditor(domainClass, property) {
         if (!cp) {
             return "<g:checkBox name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" />"
-        }
-        else {
-            def sb = new StringBuffer("<g:checkBox name=\"${property.name}\" ")
+        } else {
+            def sb = new StringBuilder("<g:checkBox name=\"${property.name}\" ")
             if (cp.widget) sb << "widget=\"${cp.widget}\" ";
             cp.attributes.each { k, v ->
                 sb << "${k}=\"${v}\" "
@@ -121,16 +122,14 @@
     }
 
     private renderDateEditor(domainClass, property) {
-        def precision = (property.type == Date.class || property.type == java.sql.Date.class || property.type == Calendar.class) ? "day" : "minute";
+        def precision = (property.type == Date || property.type == java.sql.Date || property.type == Calendar) ? "day" : "minute";
         if (!cp) {
             return "<g:datePicker name=\"${property.name}\" precision=\"${precision}\" value=\"\${${domainInstance}?.${property.name}}\" />"
-        }
-        else {
+        } else {
             if (!cp.editable) {
                 return "\${${domainInstance}?.${property.name}?.toString()}"
-            }
-            else {
-                def sb = new StringBuffer("<g:datePicker name=\"${property.name}\" ")
+            } else {
+                def sb = new StringBuilder("<g:datePicker name=\"${property.name}\" ")
                 if (cp.format) sb << "format=\"${cp.format}\" "
                 if (cp.widget) sb << "widget=\"${cp.widget}\" "
                 cp.attributes.each { k, v ->
@@ -145,9 +144,8 @@
     private renderSelectTypeEditor(type, domainClass,property) {
         if (!cp) {
             return "<g:${type}Select name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" />"
-        }
-        else {
-            def sb = new StringBuffer("<g:${type}Select name=\"${property.name}\" ")
+        } else {
+            def sb = new StringBuilder("<g:${type}Select name=\"${property.name}\" ")
             if (cp.widget) sb << "widget=\"${cp.widget}\" ";
             cp.attributes.each { k, v ->
                 sb << "${k}=\"${v}\" "
@@ -161,11 +159,9 @@
         if (property.optional) {
             if (property.manyToOne || property.oneToOne) {
                 return "noSelection=\"['null': '']\""
-            }
-            else if (property.type == Date.class || property.type == java.sql.Date.class || property.type == java.sql.Time.class || property.type == Calendar.class) {
+            } else if (property.type == Date || property.type == java.sql.Date || property.type == java.sql.Time || property.type == Calendar) {
                 return "default=\"none\" noSelection=\"['': '']\""
-            }
-            else {
+            } else {
                 return "noSelection=\"['': '']\""
             }
         }

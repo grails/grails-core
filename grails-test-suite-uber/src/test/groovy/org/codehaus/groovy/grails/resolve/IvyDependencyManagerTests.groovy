@@ -511,7 +511,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
 
         assertTrue( "all default dependencies should be inherited", manager.dependencyDescriptors.every { it.inherited == true } )
-        assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 53, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
@@ -536,7 +536,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
-        assertEquals 70, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
+        assertEquals 72, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
 
         manager = new IvyDependencyManager("project", "0.1",settings)
@@ -547,7 +547,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
 
-        assertEquals 51, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 53, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
@@ -691,7 +691,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         ModuleRevisionId entry = orgDeps.find { ModuleRevisionId rev -> rev.name == 'ant-junit'}
         assertEquals "org.apache.ant", entry.organisation
         assertEquals "ant-junit", entry.name
-        assertEquals "1.7.1", entry.revision
+        assertEquals "1.8.1", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
         assertEquals 6, resolvers.size()
@@ -723,8 +723,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         dependencies {
 
             build "org.tmatesoft.svnkit:svnkit:1.2.0",
-                  "org.apache.ant:ant-junit:1.7.1",
-                  "org.apache.ant:ant-nodeps:1.7.1",
+                  "org.apache.ant:ant-junit:1.8.1",
+                  "org.apache.ant:ant-nodeps:1.8.1",
                   "org.apache.ant:ant-trax:1.7.1",
                   "org.grails:grails-radeox:1.0-b4",
                   "com.h2database:h2:1.2.144",

@@ -10,11 +10,13 @@ dependencies {
             "org.apache.ant:ant-launcher:${antVersion}",
             "org.apache.ant:ant-junit:${antVersion}",
             "org.apache.ant:ant-nodeps:${antVersion}",
-            "org.apache.ant:ant-trax:${antVersion}",
+            "org.apache.ant:ant-trax:${antTraxVersion}",
             "org.apache.ivy:ivy:${ivyVersion}",
             'org.codehaus.gant:gant_groovy1.7:1.9.3'
 
-    runtime 'org.coconut.forkjoin:jsr166y:070108'
+    runtime 'org.coconut.forkjoin:jsr166y:070108',
+            'org.fusesource.jansi:jansi:1.2.1',
+            'jline:jline:0.9.94'
 }
 
 processResources{

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * Tags for developing javascript and ajax applications.
@@ -32,16 +33,8 @@ class JavascriptTagLib  {
     static final INCLUDED_LIBRARIES = "org.codehaus.grails.INCLUDED_JS_LIBRARIES"
     static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"
     static final CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
-    static final LIBRARY_MAPPINGS = [prototype: ['prototype/prototype']]
-
-    static {
-        LIBRARY_MAPPINGS.scriptaculous = LIBRARY_MAPPINGS.prototype + ['prototype/scriptaculous']
-        LIBRARY_MAPPINGS.rico = LIBRARY_MAPPINGS.prototype + ['prototype/rico']
-    }
-
-    static final PROVIDER_MAPPINGS = [prototype: PrototypeProvider,
-                                      scriptaculous: PrototypeProvider,
-                                      rico: PrototypeProvider]
+    static final LIBRARY_MAPPINGS = [:]
+    static final PROVIDER_MAPPINGS = [:]
 
     GrailsPluginManager pluginManager
 
@@ -62,7 +55,7 @@ class JavascriptTagLib  {
      * &lt;g:javascript src="myscript.js" /&gt; // actually imports '/app/js/myscript.js'
      *
      * @attr src The name of the javascript file to import. Will look in web-app/js dir
-     * @attr library The name of the library to include. Either "prototype", "scriptaculous", "yahoo" or "dojo"
+     * @attr library The name of the library to include. e.g. "jquery", "prototype", "scriptaculous", "yahoo" or "dojo"
      * @attr plugin The plugin to look for the javascript in
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
      * @attr base specifies the full base url to prepend to the library name
@@ -145,7 +138,7 @@ class JavascriptTagLib  {
     }
 
     /**
-     * Creates a remote function call using the prototype library.
+     * Creates a remote function call.
      *
      * @attr before The javascript function to call before the remote function call
      * @attr after The javascript function to call after the remote function call
@@ -197,7 +190,7 @@ class JavascriptTagLib  {
     }
 
     /**
-     * A link to a remote uri that used the prototype library to invoke the link via ajax.
+     * Creates a link to a remote uri that can be invoked via ajax.
      *
      * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
      * @attr before The javascript function to call before the remote function call
@@ -293,7 +286,7 @@ class JavascriptTagLib  {
     }
 
     /**
-     * A form which used prototype to serialize its parameters and submit via an asynchronous ajax call.
+     * A form which uses the javascript provider to serialize its parameters and submit via an asynchronous ajax call.
      * 
      * @attr name REQUIRED The form name
      * @attr url REQUIRED The url to submit to as either a map (containing values for the controller, action, id, and params) or a URL string
@@ -414,7 +407,7 @@ a 'params' key to the [url] attribute instead.""")
         setUpRequestAttributes()
         def providerClass = PROVIDER_MAPPINGS.find { request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains(it.key) }?.value
         if (providerClass == null) {
-            providerClass = PrototypeProvider
+            throw new GrailsTagException("No javascript provider is configured")
         }
         return providerClass.newInstance()
     }
@@ -446,166 +439,4 @@ class JavascriptValue {
     }
 
     String toString() { "'+$value+'" }
-}
-
-/**
- * Prototype implementation of JavaScript provider
- *
- * @author Graeme Rocher
- */
-class PrototypeProvider implements JavascriptProvider {
-
-    def doRemoteFunction(taglib,attrs, out) {
-        out << 'new Ajax.'
-        if (attrs.update) {
-            out << 'Updater('
-            if (attrs.update instanceof Map) {
-                out << "{"
-                def update = []
-                if (attrs.update?.success) {
-                    update << "success:'${attrs['update']['success']}'"
-                }
-                if (attrs.update?.failure) {
-                    update << "failure:'${attrs['update']['failure']}'"
-                }
-                out << update.join(',')
-                out << "},"
-            }
-            else {
-                out << "'" << attrs.update << "',"
-            }
-            attrs.remove("update")
-        }
-        else {
-            out << "Request("
-        }
-        out << "'"
-
-        def url
-        def jsParams = [:]
-
-        if (attrs.params instanceof Map) {
-            jsParams = attrs.params?.findAll { it.value instanceof JavascriptValue }
-            jsParams?.each { attrs.params?.remove(it.key) }
-        }
-
-        if (attrs.url) {
-            url = taglib.createLink(attrs.url)?.toString()
-        }
-        else {
-            url = taglib.createLink(attrs)?.toString()
-        }
-
-        if (!attrs.params) attrs.params = [:]
-        jsParams?.each { attrs.params[it.key] = it.value }
-
-        def i = url?.indexOf('?')
-
-        if (i > -1) {
-            if (attrs.params instanceof String) {
-                attrs.params += "+'&${url[i+1..-1].encodeAsJavaScript()}'"
-            }
-            else if (attrs.params instanceof Map) {
-                def params = createQueryString(attrs.params)
-                attrs.params = "'${params}${params ? '&' : ''}${url[i+1..-1].encodeAsJavaScript()}'"
-            }
-            else {
-                attrs.params = "'${url[i+1..-1].encodeAsJavaScript()}'"
-            }
-            out << url[0..i-1]
-        }
-        else {
-            out << url
-        }
-        out << "',"
-        // process options
-        out << getAjaxOptions(attrs)
-        // close
-        out << ');'
-        attrs.remove('params')
-    }
-
-    private String createQueryString(params) {
-        def allParams = []
-        for (entry in params) {
-            def value = entry.value
-            def key = entry.key
-            if (value instanceof JavascriptValue) {
-                allParams << "${key.encodeAsURL()}='+${value.value}+'"
-            }
-            else {
-                allParams << "${key.encodeAsURL()}=${value.encodeAsURL()}".encodeAsJavaScript()
-            }
-        }
-        if (allParams.size() == 1) {
-            return allParams[0]
-        }
-
-        return allParams.join('&')
-    }
-
-    // helper function to build ajax options
-    def getAjaxOptions(options) {
-        def ajaxOptions = []
-
-        if (options.method) {
-            ajaxOptions << "method:'${options.method.toLowerCase()}'"
-        }
-
-        // necessary defaults
-        def optionsAttr = options.remove('options')
-        def async = optionsAttr?.remove('asynchronous')
-        if (async != null) {
-            ajaxOptions << "asynchronous:${async}"
-        }
-        else {
-            ajaxOptions << "asynchronous:true"
-        }
-
-        def eval = optionsAttr?.remove('evalScripts')
-        if (eval != null) {
-            ajaxOptions << "evalScripts:${eval}"
-        }
-        else {
-            ajaxOptions << "evalScripts:true"
-        }
-
-        if (options) {
-            // process callbacks
-            def callbacks = options.findAll { k,v ->
-                k ==~ /on(\p{Upper}|\d){1}\w+/
-            }
-            callbacks.each { k,v ->
-                ajaxOptions << "${k}:function(e){${v}}"
-                options.remove(k)
-            }
-            if (options.params) {
-                def params = options.remove('params')
-                if (params instanceof Map) {
-                    params = createQueryString(params)
-                }
-                ajaxOptions << "parameters:${params}"
-            }
-        }
-        // remaining options
-        optionsAttr.each { k, v ->
-            if (k != 'url') {
-                switch(v) {
-                    case 'true': ajaxOptions << "${k}:${v}"; break
-                    case 'false': ajaxOptions << "${k}:${v}"; break
-                    case ~/\s*function(\w*)\s*/: ajaxOptions << "${k}:${v}"; break
-                    case ~/Insertion\..*/: ajaxOptions << "${k}:${v}"; break
-                    default:ajaxOptions << "${k}:'${v}'"; break
-                }
-            }
-        }
-
-        return "{${ajaxOptions.join(',')}}"
-    }
-
-    def prepareAjaxForm(attrs) {
-        if (!attrs.forSubmitTag) attrs.forSubmitTag = ""
-
-        attrs.params = "Form.serialize(this${attrs.remove('forSubmitTag')})".toString()
-    }
 }
