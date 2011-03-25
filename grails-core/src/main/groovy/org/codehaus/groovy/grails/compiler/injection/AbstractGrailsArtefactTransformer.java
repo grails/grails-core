@@ -40,7 +40,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     private static final ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
     protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
-    protected static final ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
     private static final String INSTANCE_PREFIX = "instance";
     private static final ClassNode CLASS_CLASSNODE = new ClassNode(Class.class);
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
