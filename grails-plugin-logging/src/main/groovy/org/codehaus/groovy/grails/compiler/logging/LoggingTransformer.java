@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -45,8 +44,8 @@ public class LoggingTransformer implements ClassInjector{
     public static final String LOG_PROPERTY = "log";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        final PropertyNode existingProperty = classNode.getProperty(LOG_PROPERTY);
-        if(existingProperty == null) {
+        final FieldNode existingField = classNode.getField(LOG_PROPERTY);
+        if(existingField == null) {
             final String path = source.getName();
 
             if(path != null) {
