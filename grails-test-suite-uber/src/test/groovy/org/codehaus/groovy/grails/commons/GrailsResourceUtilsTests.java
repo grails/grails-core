@@ -1,13 +1,12 @@
 package org.codehaus.groovy.grails.commons;
 
-import java.net.URL;
-
 import junit.framework.TestCase;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+
+import java.net.URL;
 
 public class GrailsResourceUtilsTests extends TestCase {
 
@@ -21,6 +20,12 @@ public class GrailsResourceUtilsTests extends TestCase {
 
     private static final String UNIT_TESTS_URL = "file:///test/grails/app/grails-tests/SomeTests.groovy";
 
+
+    public void testGetArtifactDirectory() {
+        assertEquals("controllers", GrailsResourceUtils.getArtefactDirectory(TEST_CONTROLLER_URL));
+        assertEquals("domain", GrailsResourceUtils.getArtefactDirectory(TEST_PACKAGE_URL));
+
+    }
     public void testIsDomainClass() throws Exception {
         URL testUrl = new URL(TEST_URL);
         assertTrue(GrailsResourceUtils.isDomainClass(testUrl));

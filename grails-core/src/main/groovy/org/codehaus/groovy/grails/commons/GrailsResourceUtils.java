@@ -15,18 +15,18 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
@@ -148,8 +148,8 @@ public class GrailsResourceUtils {
      * @return The class name or null if it doesn't exist
      */
     public static String getClassName(String path) {
-        for (int i = 0; i < patterns.length; i++) {
-            Matcher m = patterns[i].matcher(path);
+        for (Pattern pattern : patterns) {
+            Matcher m = pattern.matcher(path);
             if (m.find()) {
                 return m.group(1).replaceAll("[/\\\\]", ".");
             }
@@ -164,8 +164,8 @@ public class GrailsResourceUtils {
      * @return True if it is a Grails path
      */
     public static boolean isGrailsPath(String path) {
-        for (int i = 0; i < patterns.length; i++) {
-            Matcher m = patterns[i].matcher(path);
+        for (Pattern pattern : patterns) {
+            Matcher m = pattern.matcher(path);
             if (m.find()) {
                 return true;
             }
@@ -306,10 +306,30 @@ public class GrailsResourceUtils {
      * @return The path relative to the root folder grails-app
      */
     public static String getPathFromRoot(String path) {
-        for (int i = 0; i < COMPILER_ROOT_PATTERNS.length; i++) {
-            Matcher m = COMPILER_ROOT_PATTERNS[i].matcher(path);
+        for (Pattern COMPILER_ROOT_PATTERN : COMPILER_ROOT_PATTERNS) {
+            Matcher m = COMPILER_ROOT_PATTERN.matcher(path);
             if (m.find()) {
                 return m.group(m.groupCount());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Takes a file path and returns the name of the folder under grails-app i.e:
+     *
+     * Input: /usr/joe/project/grails-app/domain/com/mystartup/Book.groovy
+     * Output: domain
+     *
+     * @param path The path
+     * @return The domain or null if not known
+     */
+    public static String getArtefactDirectory(String path) {
+
+        if(path != null) {
+            final Matcher matcher = RESOURCE_PATH_PATTERN.matcher(path);
+            if(matcher.find()) {
+                return matcher.group(1);
             }
         }
         return null;
