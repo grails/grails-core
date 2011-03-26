@@ -42,7 +42,7 @@
 						if (hasHibernate) {
 							cp = domainClass.constrainedProperties[p.name]
 							display = (cp?.display ?: true)
-							required = (cp ? !(cp.propertyType in [boolean, Boolean]) && !cp.nullable : false)
+							required = (cp ? !(cp.propertyType in [boolean, Boolean]) && !cp.nullable && (cp.propertyType != String || !cp.blank) : false)
 						}
 						if (display) { %>
 					<div class="fieldcontain \${hasErrors(bean: ${propertyName}, field: '${p.name}', 'error')} ${required ? 'required' : ''}">
