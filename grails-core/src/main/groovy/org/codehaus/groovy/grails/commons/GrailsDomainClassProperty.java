@@ -99,7 +99,7 @@ public interface GrailsDomainClassProperty {
     boolean isPersistent();
 
     /**
-     * Returns true if the property is required.
+     * Returns false if the property is required.
      * @return Whether the property is optional
      */
     boolean isOptional();
