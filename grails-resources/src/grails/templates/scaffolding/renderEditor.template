@@ -71,6 +71,7 @@
 				sb << ' name="' << property.name << '"'
 				if (cp.maxSize) sb << ' maxlength="' << cp.maxSize << '"'
 				if (!cp.editable) sb << ' readonly="readonly"'
+				if (cp.matches) sb << ' pattern="${' << "${domainInstance}.constraints.${property.name}.matches" << '}"'
 				if (isRequired()) sb << ' required="required"'
 				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
 				sb << '/>'
