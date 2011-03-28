@@ -29,6 +29,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -275,11 +276,40 @@ public class ControllersApi extends CommonWebApi {
         return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args, filter});
     }
 
-    // the withForm method
+    /**
+     * Sets a response header for the given name and value
+     *
+     * @param instance The instance
+     * @param headerName The header name
+     * @param headerValue The header value
+     */
+    public void header(Object instance, String headerName, Object headerValue) {
+        if(headerValue != null) {
+            final HttpServletResponse response = getResponse(instance);
+            if(response != null) {
+                response.setHeader(headerName, headerValue.toString());
+            }
+        }
+    }
+
+    /**
+     * Used the synchronizer token pattern to avoid duplicate form submissions
+     *
+     * @param instance The instance
+     * @param callable The closure to execute
+     * @return The result of the closure execution
+     */
     public Object withForm(Object instance, Closure callable) {
         return withFormMethod.withForm(getRequest(instance), callable);
     }
 
+    /**
+     * Forwards a request for the given parameters using the RequestDispatchers forward method
+     *
+     * @param instance The instance
+     * @param params The parameters
+     * @return The forwarded URL
+     */
     public String forward(@SuppressWarnings("unused") Object instance, Map params) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         return forwardMethod.forward(webRequest.getCurrentRequest(), webRequest.getCurrentResponse(), params);

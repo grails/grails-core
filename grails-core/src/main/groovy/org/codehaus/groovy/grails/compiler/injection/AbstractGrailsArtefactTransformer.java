@@ -69,9 +69,17 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             VariableExpression apiInstance = new VariableExpression(apiInstanceProperty);
 
 
-            PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null);
-            propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
-            classNode.addProperty(propertyNode);
+            if(requiresAutowiring()) {
+
+                PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null);
+                propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
+                classNode.addProperty(propertyNode);
+            }
+            else {
+                final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
+                FieldNode fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);
+                classNode.addField(fieldNode);
+            }
 
             while(!implementationNode.equals(OBJECT_CLASS)) {
                 List<MethodNode> declaredMethods = implementationNode.getMethods();
@@ -126,6 +134,16 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     /**
+     * If the API requires autowiring then a @Autowired property will be added. If not a private field
+     * that instantiates the API will be crated. Defaults to true.
+     *
+     * @return Whether autowiring is required
+     */
+    protected boolean requiresAutowiring() {
+        return true;
+    }
+
+    /**
      * Subclasses can override to provide additional transformation
      *
      * @param apiInstanceProperty
@@ -168,7 +186,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     private boolean isCandidateMethod(MethodNode declaredMethod) {
-        return !declaredMethod.isSynthetic()
+        return !declaredMethod.isSynthetic() &&
+                !declaredMethod.getName().contains("$")
                 && Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isAbstract(declaredMethod.getModifiers());
     }
 

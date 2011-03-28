@@ -27,8 +27,9 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
@@ -93,7 +94,7 @@ class TestController{
 */
 
 @AstTransformer
-public class MethodActionTransformer implements ClassInjector {
+public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
     private static final AnnotationNode ARTEFACT_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Artefact.class));
@@ -185,5 +186,9 @@ public class MethodActionTransformer implements ClassInjector {
 
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+    public String getArtefactType() {
+        return ControllerArtefactHandler.TYPE;
     }
 }
