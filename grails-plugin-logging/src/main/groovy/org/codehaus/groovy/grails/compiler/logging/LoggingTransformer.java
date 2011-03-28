@@ -26,8 +26,8 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.compiler.injection.AllArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -40,7 +40,7 @@ import java.net.URL;
  * @since 1.4
  */
 @AstTransformer
-public class LoggingTransformer implements ClassInjector{
+public class LoggingTransformer implements AllArtefactClassInjector{
     public static final String LOG_PROPERTY = "log";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
