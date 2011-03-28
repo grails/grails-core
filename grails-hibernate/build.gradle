@@ -16,6 +16,8 @@ dependencies {
     compile 'javassist:javassist:3.11.0.GA'
 
 
+    testCompile 'org.grails:grails-datastore-gorm-test:1.0.0.BUILD-SNAPSHOT'
+
 
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',
             'org.hibernate:hibernate-ehcache:3.6.1.Final',

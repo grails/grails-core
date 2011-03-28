@@ -259,9 +259,10 @@ class ControllersGrailsPlugin {
             def controllerClass = controller
             def mc = controllerClass.metaClass
             mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
-            if(nonEnhancedControllerClasses.contains(controllerClass))
+            if(nonEnhancedControllerClasses.contains(controllerClass)) {
                 enhancer.enhance mc
             }
+        }
 
     }
 

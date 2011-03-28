@@ -32,7 +32,7 @@ import org.codehaus.groovy.control.SourceUnit;
  */
 public interface ClassInjector {
 
-    int PRIVATE_STATIC_MODIFIER = Modifier.PRIVATE & Modifier.STATIC;
+    int PRIVATE_STATIC_MODIFIER = Modifier.PRIVATE | Modifier.STATIC;
 
     /**
      * Handles injection of properties, methods etc. into a class.
