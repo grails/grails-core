@@ -176,7 +176,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             MethodCallExpression apiLookupMethod = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
 
             for (MethodNode declaredMethod : declaredMethods) {
-                if(isCandidateMethod(declaredMethod)) {
+                if(isStaticCandidateMethod(declaredMethod)) {
                     Parameter[] parameterTypes = declaredMethod.getParameters();
                     String declaredMethodName = declaredMethod.getName();
                     if(!classNode.hasMethod(declaredMethodName, parameterTypes)) {
@@ -211,6 +211,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         if(classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty())
             classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
 
+    }
+
+    protected boolean isStaticCandidateMethod(MethodNode declaredMethod) {
+        return isCandidateMethod(declaredMethod);
     }
 
     private void createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiInstanceProperty, String lookupMethodName) {
@@ -291,12 +295,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
 
-    private boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
+    protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
         Parameter[] parameterTypes = declaredMethod.getParameters();
         return isCandidateMethod(declaredMethod) && parameterTypes != null && parameterTypes.length > 0 && parameterTypes[0].getType().equals(OBJECT_CLASS);
     }
 
-    private boolean isCandidateMethod(MethodNode declaredMethod) {
+    protected boolean isCandidateMethod(MethodNode declaredMethod) {
         return !declaredMethod.isSynthetic() &&
                 !declaredMethod.getName().contains("$")
                 && Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isAbstract(declaredMethod.getModifiers());

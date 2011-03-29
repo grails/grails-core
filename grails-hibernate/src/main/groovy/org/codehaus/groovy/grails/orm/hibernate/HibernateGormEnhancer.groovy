@@ -93,57 +93,20 @@ class HibernateGormEnhancer extends GormEnhancer{
 		instanceApi.classLoader = classLoader
 		return instanceApi
 	}
-	
-	@Override
-	protected void registerNamedQueries( PersistentEntity entity, Closure namedQueries ) {
+
+    @Override
+	protected void registerNamedQueries( PersistentEntity entity, Object namedQueries ) {
 		if(grailsApplication != null) {
 			SessionFactory sessionFactory = datastore.sessionFactory
 			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.name)
 			if(domainClass != null) {
 				def builder = new HibernateNamedQueriesBuilder(domainClass, grailsApplication, sessionFactory)
-				builder.evaluate(namedQueries)
+				builder.evaluate((Closure)namedQueries)
 			}
 		}
 
 	}
-	
-	@Override
-	protected void registerMethodMissing(Class cls) {
-		
-		SessionFactory sessionFactory = datastore.sessionFactory
-		
-		if(grailsApplication != null) {
-			def dynamicMethods = [	new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ]
-			def mc = cls.metaClass
-			mc.static.methodMissing = {String methodName, args ->
-				def result = null
-				StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
-				if (method) {
-					// register the method invocation for next time
-					synchronized(this) {
-						mc.static."$methodName" = {List varArgs ->
-							method.invoke(cls, methodName, varArgs)
-						}
-					}
-					result = method.invoke(cls, methodName, args)
-				}
-				else {
-					throw new MissingMethodException(methodName, delegate, args)
-				}
-				result
-			}
-		}
-		else {
-			super.registerMethodMissing cls
-		}
-		
-	}
-	
+
 }
 
 /**
@@ -720,7 +683,6 @@ class HibernateGormValidationApi extends GormValidationApi {
 		if(mappingContext instanceof GrailsDomainClassMappingContext) {
 			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
-			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
 			def validator = mappingContext.getEntityValidator( mappingContext.getPersistentEntity(persistentClass.name) )
 			this.validateMethod = new ValidatePersistentMethod(sessionFactory, 
 																classLoader, 
