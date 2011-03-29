@@ -48,6 +48,11 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
         return GormStaticApi.class;
     }
 
+    @Override
+    protected boolean requiresStaticLookupMethod() {
+        return true;
+    }
+
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);
     }

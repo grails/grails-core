@@ -48,6 +48,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
     public static final int PUBLIC_STATIC_MODIFIER = Modifier.PUBLIC | Modifier.STATIC;
+    public static final String CURRENT_PREFIX = "current";
 
     public String getArtefactType() {
         String simpleName = getClass().getSimpleName();
@@ -78,10 +79,14 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
 
             String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
-            VariableExpression apiInstance = new VariableExpression(apiInstanceProperty);
+            Expression apiInstance = new VariableExpression(apiInstanceProperty);
 
-
-            if(requiresAutowiring()) {
+            if(requiresStaticLookupMethod()) {
+                final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();
+                createStaticLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName);
+                apiInstance = new MethodCallExpression(new ClassExpression(classNode),lookupMethodName, ZERO_ARGS);
+            }
+            else if(requiresAutowiring()) {
 
                 PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null);
                 propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
@@ -149,14 +154,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             final List<MethodNode> declaredMethods = staticImplementationNode.getMethods();
             final String staticImplementationSimpleName = staticImplementation.getSimpleName();
             String apiInstanceProperty = STATIC_PREFIX + staticImplementationSimpleName;
-            final String lookupMethodName = "current" + staticImplementationSimpleName;
+            final String lookupMethodName = CURRENT_PREFIX + staticImplementationSimpleName;
 
-            if(requiresAutowiring()) {
-                // if autowiring is required we add a default method that throws an exception
-                // the method should be override via meta-programming in the Grails environment
-                BlockStatement methodBody = new BlockStatement();
-                MethodNode lookupMethod = populateAutowiredApiLookupMethod(staticImplementationNode, apiInstanceProperty, lookupMethodName, methodBody);
-                classNode.addMethod(lookupMethod);
+            if(requiresStaticLookupMethod()) {
+                createStaticLookupMethod(classNode, staticImplementationNode, apiInstanceProperty, lookupMethodName);
             }
             else {
 
@@ -203,6 +204,25 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         if(classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty())
             classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
 
+    }
+
+    private void createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiInstanceProperty, String lookupMethodName) {
+        // if autowiring is required we add a default method that throws an exception
+        // the method should be override via meta-programming in the Grails environment
+        BlockStatement methodBody = new BlockStatement();
+        MethodNode lookupMethod = populateAutowiredApiLookupMethod(implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
+        classNode.addMethod(lookupMethod);
+    }
+
+
+    /**
+     * Subclasses should override in the instance API requires a static lookup method instead of autowiring.
+     * Defaults to false.
+     *
+     * @return Whether a static lookup method is used for the instance API
+     */
+    protected boolean requiresStaticLookupMethod() {
+        return false;
     }
 
     protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
