@@ -38,7 +38,7 @@ import java.util.List;
  */
 public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable{
 
-    private static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
+    protected static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     private static final ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
     protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");

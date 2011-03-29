@@ -15,6 +15,13 @@
  */
 package org.codehaus.groovy.grails.compiler.gorm;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
@@ -32,6 +39,8 @@ import java.net.URL;
  */
 @AstTransformer
 public class GormTransformer extends AbstractGrailsArtefactTransformer {
+
+    public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You other don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
 
     @Override
     public String getArtefactType() {
@@ -51,6 +60,14 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     @Override
     protected boolean requiresStaticLookupMethod() {
         return true;
+    }
+
+    @Override
+    protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
+        ArgumentListExpression arguments = new ArgumentListExpression();
+        arguments.addExpression(new ConstantExpression(MISSING_GORM_ERROR_MESSAGE));
+        methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
+        return new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);
     }
 
     public boolean shouldInject(URL url) {
