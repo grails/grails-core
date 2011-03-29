@@ -165,7 +165,8 @@ class HibernateGormStaticApi extends GormStaticApi {
 	private ExecuteQueryPersistentMethod executeQueryMethod
 	private ExecuteUpdatePersistentMethod executeUpdateMethod
 	private MergePersistentMethod mergeMethod
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader() 
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
+    private List<StaticMethodInvocation> dynamicMethods = []
 	
 	public HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore) {
 		super(persistentClass, datastore);
@@ -191,10 +192,41 @@ class HibernateGormStaticApi extends GormStaticApi {
 
 			this.mergeMethod = new MergePersistentMethod( sessionFactory, classLoader, grailsApplication, domainClass )
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
+
+            this.dynamicMethods = [	new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ]
+
 		}
 	}
 
-	@Override
+    @Override
+    def methodMissing(String methodName, Object args) {
+        def result = null
+        StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
+        def cls = persistentClass
+        def mc = cls.metaClass
+        if (method) {
+            // register the method invocation for next time
+            synchronized(this) {
+                mc.static."$methodName" = {List varArgs ->
+                    method.invoke(cls, methodName, varArgs)
+                }
+            }
+            result = method.invoke(cls, methodName, args)
+        }
+        else {
+            throw new MissingMethodException(methodName, cls, args)
+        }
+        return result
+    }
+
+
+
+    @Override
 	public Object get(Serializable id) {
         if (id || (id instanceof Number)) {
         	id = convertIdentifier(id)

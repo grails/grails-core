@@ -49,6 +49,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
     public static final int PUBLIC_STATIC_MODIFIER = Modifier.PUBLIC | Modifier.STATIC;
     public static final String CURRENT_PREFIX = "current";
+    public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
+    public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
 
     public String getArtefactType() {
         String simpleName = getClass().getSimpleName();
@@ -176,16 +178,21 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             for (MethodNode declaredMethod : declaredMethods) {
                 if(isCandidateMethod(declaredMethod)) {
                     Parameter[] parameterTypes = declaredMethod.getParameters();
-                    if(!classNode.hasMethod(declaredMethod.getName(), parameterTypes)) {
+                    String declaredMethodName = declaredMethod.getName();
+                    if(!classNode.hasMethod(declaredMethodName, parameterTypes)) {
                         BlockStatement methodBody = new BlockStatement();
                         ArgumentListExpression arguments = new ArgumentListExpression();
 
                         for (Parameter parameterType : parameterTypes) {
                             arguments.addExpression(new VariableExpression(parameterType.getName()));
                         }
-                        methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(apiLookupMethod, declaredMethod.getName(), arguments)));
+                        methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(apiLookupMethod, declaredMethodName, arguments)));
 
-                        MethodNode methodNode = new MethodNode(declaredMethod.getName(),
+                        if(METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
+                            declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
+                        }
+
+                        MethodNode methodNode = new MethodNode(declaredMethodName,
                                                                PUBLIC_STATIC_MODIFIER,
                                                                declaredMethod.getReturnType(),
                                                                parameterTypes,
