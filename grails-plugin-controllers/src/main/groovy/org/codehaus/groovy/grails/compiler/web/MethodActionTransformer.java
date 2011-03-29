@@ -27,8 +27,9 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
@@ -82,7 +83,7 @@ class TestController{
     }
 
     / becomes behind the scene :
-               @Action def lol4(){
+               @Action(commandObjects={PeterCommand}) def lol4(){
                  PeterCommand cmd = new PeterCommand(); bindData(cmd, params)
                  render 'testxx'
                }
@@ -93,11 +94,12 @@ class TestController{
 */
 
 @AstTransformer
-public class MethodActionTransformer implements ClassInjector {
+public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
     private static final AnnotationNode ARTEFACT_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Artefact.class));
     private static final Parameter[] EMPTY_PARAMS = new Parameter[0];
+    private static final String ACTION_MEMBER_TARGET = "commandObjects";
     private static final ClassNode[] EMPTY_EXCEPTIONS = new ClassNode[0];
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
@@ -106,8 +108,11 @@ public class MethodActionTransformer implements ClassInjector {
     private Boolean converterEnabled;
 
     public MethodActionTransformer() {
-        final BuildSettings settings = BuildSettingsHolder.getSettings();
-        converterEnabled = settings != null && settings.getConvertClosuresArtefacts();
+        converterEnabled =  Boolean.parseBoolean(System.getProperties().getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
+    }
+
+    public String getArtefactType() {
+       return ControllerArtefactHandler.TYPE;
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
@@ -120,45 +125,81 @@ public class MethodActionTransformer implements ClassInjector {
     private void annotateCandidateActionMethods(ClassNode classNode) {
         for (MethodNode method : classNode.getMethods()) {
             if (!method.isStatic() &&
-                    method.getParameters().length == 0 &&
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0
                     ) {
 
-                method.addAnnotation(ACTION_ANNOTATION_NODE);
+                method.setCode(bodyCode(method.getParameters(), method.getCode()));
+                convertToMethodAction(method);
             }
         }
     }
 
+    private void convertToMethodAction(MethodNode method) {
+        if (isCommandObjectAction(method.getParameters())) {
+
+            ListExpression initArray = new ListExpression();
+
+
+            for (Parameter parameter : method.getParameters()) {
+                initArray.addExpression(new ClassExpression(parameter.getType()));
+            }
+
+            AnnotationNode paramActionAnn = new AnnotationNode(new ClassNode(Action.class));
+            paramActionAnn.setMember(ACTION_MEMBER_TARGET, initArray);
+            method.addAnnotation(paramActionAnn);
+
+        } else {
+            method.addAnnotation(ACTION_ANNOTATION_NODE);
+        }
+        method.setParameters(EMPTY_PARAMS);
+    }
+
+    //See WebMetaUtils#isCommandObjectAction
+    private boolean isCommandObjectAction(Parameter[] params) {
+        return params != null && params.length > 0
+                && params[0].getType() != new ClassNode(Object[].class)
+                && params[0].getType() != new ClassNode(Object.class);
+    }
+
+
     private void transformClosuresToMethods(ClassNode classNode) {
-        List<PropertyNode> fields = new ArrayList<PropertyNode>(classNode.getProperties());
+        List<PropertyNode> propertyNodes = new ArrayList<PropertyNode>(classNode.getProperties());
 
         Expression initialExpression;
         ClosureExpression closureAction;
         MethodNode actionMethod;
 
-        for (PropertyNode field : fields) {
-            initialExpression = field.getInitialExpression();
-            if (!field.isStatic() &&
+        for (PropertyNode property : propertyNodes) {
+            initialExpression = property.getInitialExpression();
+            if (!property.isStatic() &&
                     initialExpression != null && initialExpression.getClass().equals(ClosureExpression.class)) {
                 closureAction = (ClosureExpression) initialExpression;
-                actionMethod = new MethodNode(field.getName(), Modifier.PUBLIC, field.getType(), EMPTY_PARAMS, EMPTY_EXCEPTIONS, closureCode(closureAction));
-                actionMethod.addAnnotation(ACTION_ANNOTATION_NODE);
+                actionMethod = new MethodNode(
+                        property.getName(),
+                        Modifier.PUBLIC, property.getType(),
+                        closureAction.getParameters(),
+                        EMPTY_EXCEPTIONS,
+                        bodyCode(closureAction.getParameters(), closureAction.getCode())
+                );
 
-                classNode.getProperties().remove(field);
+                convertToMethodAction(actionMethod);
+
+                classNode.getProperties().remove(property);
+                classNode.getFields().remove(property.getField());
                 classNode.addMethod(actionMethod);
             }
         }
     }
 
-    private Statement closureCode(ClosureExpression closureAction) {
+    private Statement bodyCode(Parameter[] actionParameters, Statement actionCode) {
         Statement newCommandCode;
         ConstructorCallExpression constructorCallExpression;
         ArgumentListExpression arguments;
 
         BlockStatement wrapper = new BlockStatement();
 
-        for (Parameter param : closureAction.getParameters()) {
+        for (Parameter param : actionParameters) {
             constructorCallExpression = new ConstructorCallExpression(param.getType(), EMPTY_TUPLE);
             newCommandCode = new ExpressionStatement(
                     new DeclarationExpression(new VariableExpression(param.getName(), param.getType()),
@@ -174,7 +215,7 @@ public class MethodActionTransformer implements ClassInjector {
             wrapper.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments)));
         }
 
-        wrapper.addStatement(closureAction.getCode());
+        wrapper.addStatement(actionCode);
 
         return wrapper;
     }

@@ -151,7 +151,7 @@ class BuildSettings extends AbstractBuildSettings {
      *  A property name to enable/disable AST conversion of closures actions&tags to methods
      */
 
-    private static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
+    public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
 
 
     /**
@@ -270,8 +270,6 @@ class BuildSettings extends AbstractBuildSettings {
     List applicationJars = []
 
     List buildListeners = []
-
-    boolean convertClosuresArtefacts = false
 
 
     /**
@@ -644,10 +642,10 @@ class BuildSettings extends AbstractBuildSettings {
         projectWarExplodedDirSet = true
     }
 
-    boolean getConvertClosuresArtefacts(){ convertClosuresArtefacts }
+    boolean getConvertClosuresArtefacts(){ System.properties[CONVERT_CLOSURES_KEY]?.toBoolean() }
 
     void setConvertClosuresArtefacts(boolean convert){
-        convertClosuresArtefacts = convert
+        System.properties[CONVERT_CLOSURES_KEY] = convert
         convertClosuresArtefactsSet = true
     }
 

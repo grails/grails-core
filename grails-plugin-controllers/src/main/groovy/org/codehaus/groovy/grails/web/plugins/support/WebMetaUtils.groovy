@@ -15,12 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.plugins.support
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.context.ApplicationContext
-import org.springframework.validation.BeanPropertyBindingResult
-import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
+import java.lang.reflect.Method
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
@@ -32,6 +29,10 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.context.ApplicationContext
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -43,7 +44,7 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 class WebMetaUtils {
 
     static Closure createAndPrepareCommandObjectAction(GroovyObject controller, Closure originalAction,
-            String actionName, ApplicationContext ctx) {
+                                                       String actionName, ApplicationContext ctx) {
         def bindingAction = createCommandObjectBindingAction(ctx)
         prepareCommandObjectBindingAction bindingAction, originalAction, actionName, controller, ctx
     }
@@ -58,9 +59,9 @@ class WebMetaUtils {
      * @return The new binding action
      */
     static Closure prepareCommandObjectBindingAction(Closure action, Closure originalAction,
-            String actionName, Object controller, ApplicationContext ctx) {
+                                                     String actionName, Object controller, ApplicationContext ctx) {
         def commandObjectAction = action.curry(originalAction, actionName)
-        controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = { ->
+        controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = {->
             def actionDelegate = commandObjectAction.clone()
             actionDelegate.delegate = delegate
             actionDelegate
@@ -70,6 +71,18 @@ class WebMetaUtils {
         }
         commandObjectAction.delegate = controller
         return commandObjectAction
+    }
+
+    /**
+     * Prepares a command object binding action for usage
+     *
+     * @param action The binding action
+     */
+    static void prepareCommandObjectBindingAction(Method action, Class[] commandObjectClasses, ApplicationContext ctx) {
+
+        for (type in commandObjectClasses) {
+            enhanceCommandObject ctx, type
+        }
     }
 
     /**
@@ -102,7 +115,7 @@ class WebMetaUtils {
                         if (!commandObject) {
                             commandObject = paramType.newInstance()
                             ctx.autowireCapableBeanFactory?.autowireBeanProperties(
-                                commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                                    commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                             commandObjects << commandObject
                         }
 
@@ -118,7 +131,7 @@ class WebMetaUtils {
                         for (constrainedProperty in constrainedProperties) {
                             constrainedProperty.messageSource = ctx.getBean("messageSource")
                             constrainedProperty.validate(commandObject, commandObject.getProperty(
-                                constrainedProperty.getPropertyName()), errors)
+                                    constrainedProperty.getPropertyName()), errors)
                         }
                         commandObject.errors = errors
                     }
@@ -134,7 +147,7 @@ class WebMetaUtils {
     }
 
     private static String convertTypeNameToParamsPrefix(Class clazz) {
-        def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/,'-$1')?.toLowerCase()
+        def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/, '-$1')?.toLowerCase()
         if (result?.endsWith("-command")) {
             return result.substring(0, result.size() - 8)
         } else {
@@ -143,10 +156,10 @@ class WebMetaUtils {
     }
 
     /**
-    * Checks whether the given action is a command object action
-    * @param callable The action to check
-    * @return True if it is a command object action
-    */
+     * Checks whether the given action is a command object action
+     * @param callable The action to check
+     * @return True if it is a command object action
+     */
     static boolean isCommandObjectAction(Closure callable) {
         def paramTypes = callable.parameterTypes
         paramTypes && paramTypes[0] != Object[].class && paramTypes[0] != Object
@@ -164,22 +177,22 @@ class WebMetaUtils {
 
             commandObjectMetaClass.setErrors = { Errors errors ->
                 RCH.currentRequestAttributes().setAttribute(
-                    "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
+                        "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
             }
 
-            commandObjectMetaClass.getErrors = { ->
+            commandObjectMetaClass.getErrors = {->
                 def errors = RCH.currentRequestAttributes().getAttribute(
-                    "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
+                        "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
                 if (!errors) {
-                    errors =  new BeanPropertyBindingResult(delegate, delegate.getClass().getName())
+                    errors = new BeanPropertyBindingResult(delegate, delegate.getClass().getName())
                     RCH.currentRequestAttributes().setAttribute(
-                        "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
+                            "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
                 }
                 return errors
             }
 
-            commandObjectMetaClass.hasErrors = { -> errors?.hasErrors() ? true : false }
-            commandObjectMetaClass.validate = { ->
+            commandObjectMetaClass.hasErrors = {-> errors?.hasErrors() ? true : false }
+            commandObjectMetaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
             def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObjectClass)
@@ -193,10 +206,10 @@ class WebMetaUtils {
             }
             commandObjectMetaClass.getConstraints = {-> constrainedPropertyBuilder.constrainedProperties }
 
-            commandObjectMetaClass.clearErrors = { ->
-                delegate.setErrors (new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
+            commandObjectMetaClass.clearErrors = {->
+                delegate.setErrors(new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
             }
-            commandObjectMetaClass.grailsEnhanced = { -> true }
+            commandObjectMetaClass.grailsEnhanced = {-> true }
         }
     }
 
@@ -205,13 +218,13 @@ class WebMetaUtils {
      * are implemented by looking up the current request from the RequestContextHolder (RCH)
      */
     static registerCommonWebProperties(MetaClass mc, GrailsApplication application) {
-        def paramsObject =         { -> RCH.currentRequestAttributes().params }
-        def flashObject =          { -> RCH.currentRequestAttributes().flashScope }
-        def sessionObject =        { -> RCH.currentRequestAttributes().session }
-        def requestObject =        { -> RCH.currentRequestAttributes().currentRequest }
-        def responseObject =       { -> RCH.currentRequestAttributes().currentResponse }
-        def servletContextObject = { -> RCH.currentRequestAttributes().servletContext }
-        def grailsAttrsObject =    { -> RCH.currentRequestAttributes().attributes }
+        def paramsObject = {-> RCH.currentRequestAttributes().params }
+        def flashObject = {-> RCH.currentRequestAttributes().flashScope }
+        def sessionObject = {-> RCH.currentRequestAttributes().session }
+        def requestObject = {-> RCH.currentRequestAttributes().currentRequest }
+        def responseObject = {-> RCH.currentRequestAttributes().currentResponse }
+        def servletContextObject = {-> RCH.currentRequestAttributes().servletContext }
+        def grailsAttrsObject = {-> RCH.currentRequestAttributes().attributes }
 
         // the params object
         mc.getParams = paramsObject
@@ -228,11 +241,11 @@ class WebMetaUtils {
         // The GrailsApplicationAttributes object
         mc.getGrailsAttributes = grailsAttrsObject
         // The GrailsApplication object
-        mc.getGrailsApplication = { -> RCH.currentRequestAttributes().attributes.grailsApplication }
+        mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
 
-        mc.getActionName =     { -> RCH.currentRequestAttributes().actionName }
-        mc.getControllerName = { -> RCH.currentRequestAttributes().controllerName }
-        mc.getWebRequest =     { -> RCH.currentRequestAttributes() }
+        mc.getActionName = {-> RCH.currentRequestAttributes().actionName }
+        mc.getControllerName = {-> RCH.currentRequestAttributes().controllerName }
+        mc.getWebRequest = {-> RCH.currentRequestAttributes() }
     }
 
     static registerMethodMissingForTags(MetaClass mc, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
@@ -248,24 +261,24 @@ class WebMetaUtils {
         mc."$name" = {Closure body ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, RCH.currentRequestAttributes())
         }
-        mc."$name" = { ->
+        mc."$name" = {->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, RCH.currentRequestAttributes())
         }
     }
 
     static registerMethodMissingForTags(MetaClass mc, ApplicationContext ctx,
-            GrailsTagLibClass tagLibraryClass, String name) {
+                                        GrailsTagLibClass tagLibraryClass, String name) {
         //def tagLibrary = ctx.getBean(tagLibraryClass.fullName)
         TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
         String namespace = tagLibraryClass.namespace ?: GroovyPage.DEFAULT_NAMESPACE
-        registerMethodMissingForTags(mc,gspTagLibraryLookup,namespace,name)
+        registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, name)
     }
 
     static registerStreamCharBufferMetaClass() {
         StreamCharBuffer.metaClass.methodMissing = { String name, args ->
             def retval = delegate.toString().invokeMethod(name, args)
             StreamCharBuffer.metaClass."$name" = { Object[] varArgs ->
-                delegate.toString().invokeMethod(name,varArgs)
+                delegate.toString().invokeMethod(name, varArgs)
             }
             retval
         }
@@ -283,7 +296,7 @@ class WebMetaUtils {
         }
     }
 
-    public static void registerPropertyMissingForTag (MetaClass mc, String name, Object result) {
+    public static void registerPropertyMissingForTag(MetaClass mc, String name, Object result) {
         mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
     }
 }

@@ -8,6 +8,7 @@ class CommandObjectActionMethodsTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+@grails.artefact.Artefact("Controller")
 class SampleController {
     def renderWithCmd = { SampleCommand cmd ->
         render(view:'alt', model:[cmd:cmd])
@@ -53,29 +54,4 @@ class SecondCommand {
         def model = ctrl.renderWithCmd()
     }
 
-    void testInvokeControllerMethodWithPassedCommandObject() {
-        def cmd1 = ga.getClassLoader().loadClass("SampleCommand").newInstance()
-        def cmd2 = ga.getClassLoader().loadClass("SecondCommand").newInstance()
-
-        def ctrl = ga.getControllerClass("SampleController").newInstance()
-        cmd1.first = "one"
-        cmd1.second = "two"
-
-        def model = ctrl.defaultRenderWithCmd(cmd1)
-
-        assertEquals "one", model.cmd.first
-        assertEquals "two", model.cmd.second
-
-        model = ctrl.defaultRenderWithCmd(cmd1)
-
-        assertEquals "one", model.cmd.first
-        assertEquals "two", model.cmd.second
-
-        cmd2.name = "hello"
-        model = ctrl.twoCommandAction(cmd1,cmd2)
-
-        assertEquals "one", model.cmd1.first
-        assertEquals "two", model.cmd1.second
-        assertEquals "hello", model.cmd2.name
-    }
 }
