@@ -364,7 +364,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         else if (!Map.class.isAssignableFrom(property.getType())) {
             // no relationship defined for set.
             // set not persistent
-            property.setPersistant(false);
+            property.setPersistent(false);
         }
     }
 

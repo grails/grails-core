@@ -15,21 +15,15 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
-
-import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.beans.PropertyDescriptor;
+import java.util.*;
 
 /**
  * Represents a property of a domain class and contains meta information about the
@@ -41,7 +35,7 @@ import org.springframework.validation.Validator;
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
     private GrailsDomainClass domainClass;
-    private boolean persistant = true; // persistant by default
+    private boolean persistent = true; // persistant by default
     private boolean identity;
     private boolean oneToMany;
     private String name;
@@ -89,6 +83,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
             establishFetchMode();
         }
+
+        if(descriptor.getReadMethod() == null || descriptor.getWriteMethod() == null) {
+            persistent = false;
+        }
+
+        if(Errors.class.isAssignableFrom(type)) {
+            persistent = false;
+        }
     }
 
     /**
@@ -122,7 +124,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                 // if the property name is on the not persistant list
                 // then set persistant to false
                 if (propertyName.equals(name)) {
-                    persistant = false;
+                    persistent = false;
                     break;
                 }
             }
@@ -195,7 +197,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isPersistant()
      */
     public boolean isPersistent() {
-        return persistant;
+        return persistent;
     }
 
     /* (non-Javadoc)
@@ -299,10 +301,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /**
-     * @param persistant The persistant to set.
+     * @param persistent The persistant to set.
      */
-    protected void setPersistant(boolean persistant) {
-        this.persistant = persistant;
+    protected void setPersistent(boolean persistent) {
+        this.persistent = persistent;
     }
 
     /**
