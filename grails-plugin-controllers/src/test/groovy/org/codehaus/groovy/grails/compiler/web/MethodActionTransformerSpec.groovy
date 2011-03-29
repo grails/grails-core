@@ -11,8 +11,8 @@ import org.springframework.web.context.request.RequestContextHolder
 class MethodActionTransformerSpec extends Specification{
 
 
-    void setupSpec(){
-        System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = true
+    void setup(){
+        System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'true'
     }
 
 
@@ -99,6 +99,7 @@ class MethodActionTransformerSpec extends Specification{
 
     def cleanup() {
         RequestContextHolder.setRequestAttributes(null)
+        System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'false'
     }
 
 }
