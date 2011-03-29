@@ -40,7 +40,7 @@ import java.net.URL;
 @AstTransformer
 public class GormTransformer extends AbstractGrailsArtefactTransformer {
 
-    public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You other don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
+    public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You either don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
 
     @Override
     public String getArtefactType() {
