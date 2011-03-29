@@ -6,6 +6,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
  */
 class CommandObjectActionMethodsTests extends AbstractGrailsControllerTests {
 
+    //forcing Controller artefact
     protected void onSetUp() {
         gcl.parseClass('''
 @grails.artefact.Artefact("Controller")
@@ -32,6 +33,7 @@ class SecondCommand {
 }
         ''')
     }
+
 
     void testInvokeControllerMethodWithCommandObject() {
         def cmd = ga.getClassLoader().loadClass("SampleCommand").newInstance()
