@@ -1,4 +1,5 @@
 idea
+/lib
 /doc
 /cobertura.ser
 /cruise/coverage/report
@@ -13,3 +14,7 @@ idea
 /grails.iws
 .gradle
 .DS_Store
+.classpath
+.project
+/.settings
+/*/build/*
