@@ -214,7 +214,7 @@ class HibernateGormStaticApi extends GormStaticApi {
         }
 	}
 
-    SimpleTypeConverter typeConverter = new SimpleTypeConverter()
+    private SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 
     private convertIdentifier(Serializable id) {
         final idType = identityType
@@ -673,6 +673,11 @@ class HibernateGormStaticApi extends GormStaticApi {
 	public List findAll(String query, Collection params, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [query, params, args] as Object[])
 	}
+
+    @Override
+    Object create() {
+        return super.create()    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }
 
 class HibernateGormValidationApi extends GormValidationApi {
