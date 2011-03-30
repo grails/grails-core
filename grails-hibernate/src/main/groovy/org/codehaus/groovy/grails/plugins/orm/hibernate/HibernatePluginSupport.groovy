@@ -57,6 +57,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.codehaus.groovy.grails.orm.hibernate.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
+import grails.artefact.Enhanced
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -335,7 +336,15 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         def mappingContext = ctx.getBean("hibernateMappingContext", MappingContext)
         def transactionManager = ctx.getBean(HibernateTransactionManager)
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(new HibernateDatastore(mappingContext, sessionFactory), transactionManager)
-        enhancer.enhance()
+        for(entity in mappingContext.getPersistentEntities()) {
+            if(entity.javaClass.getAnnotation(Enhanced) == null) {
+                enhancer.enhance entity
+            }
+            else {
+                enhancer.enhance entity, true
+            }
+        }
+
     }
 
     static final LAZY_PROPERTY_HANDLER = { String propertyName ->

@@ -41,6 +41,7 @@ public interface GrailsDomainClassProperty {
     String LAST_UPDATED = "lastUpdated";
     String SORT = "sort";
     String EMBEDDED = "embedded";
+    String ERRORS = "errors";
     int FETCH_EAGER = 1;
     int FETCH_LAZY = 0;
 

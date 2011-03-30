@@ -741,7 +741,7 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
             domainClass.executeQuery()
         }
 
-        // test query with too many params
+
         shouldFail(MissingMethodException) {
             domainClass.executeQuery("query", "param", [:], "4")
         }

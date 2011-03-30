@@ -227,4 +227,8 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
+
+    public String getArtefactType() {
+        return ControllerArtefactHandler.TYPE;
+    }
 }

@@ -27,6 +27,9 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A transformation used to apply transformers to classes not located in Grails directory structure. For example
  * any class can be annotated with @Artefact("Controller") to make it into a controller no matter what the location
@@ -64,8 +67,14 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
             ConstantExpression ce = (ConstantExpression) value;
             String artefactType = ce.getText();
             try {
-                if(injectIfArtefact(artefactType, cNode, sourceUnit))return;
-
+                ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
+                java.util.List<ClassInjector> injectors = findInjectors(artefactType, classInjectors);
+                if(!injectors.isEmpty()) {
+                    for (ClassInjector injector : injectors) {
+                        injector.performInjection(sourceUnit,cNode);
+                    }
+                    return;
+                }
             } catch (RuntimeException e) {
                 e.printStackTrace();
                 System.out.println("Error occurred calling AST injector: " + e.getMessage());
@@ -76,19 +85,21 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
         throw new RuntimeException("Class ["+cName+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
     }
 
-    private boolean injectIfArtefact(String artefactType, ClassNode cNode, SourceUnit sourceUnit) {
-        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
-        boolean isArtefactFound=false;
+
+    public static List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
+        List<ClassInjector> injectors = new ArrayList<ClassInjector>();
         for (ClassInjector classInjector : classInjectors) {
             if(classInjector instanceof GrailsArtefactClassInjector) {
                 GrailsArtefactClassInjector gace = (GrailsArtefactClassInjector) classInjector;
 
                 if(artefactType.equals(gace.getArtefactType())) {
-                    gace.performInjection(sourceUnit,cNode);
-                    isArtefactFound=true;
+                    injectors.add(gace);
                 }
             }
+            else if(classInjector instanceof AllArtefactClassInjector) {
+                injectors.add(classInjector);
+            }
         }
-        return isArtefactFound;
+        return injectors;
     }
 }

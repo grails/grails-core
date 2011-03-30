@@ -27,6 +27,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import grails.artefact.Enhanced
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -105,17 +106,23 @@ class DomainClassGrailsPlugin {
         for (GrailsDomainClass dc in application.domainClasses) {
             def domainClass = dc
             MetaClass metaClass = domainClass.metaClass
+            def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
 
-            metaClass.ident = {-> delegate[domainClass.identifier.name] }
+
             metaClass.constructor = { ->
                 getDomainInstance domainClass, ctx
             }
-            metaClass.static.create = { ->
-                getDomainInstance domainClass, ctx
-            }
 
-            addValidationMethods(application, domainClass, ctx)
+            registerConstraintsProperty(metaClass, domainClass)
             addRelationshipManagementMethods(domainClass, ctx)
+
+            if(!isEnhanced) {
+                metaClass.ident = {-> delegate[domainClass.identifier.name] }
+                metaClass.static.create = { ->
+                    getDomainInstance domainClass, ctx
+                }
+                addValidationMethods(application, domainClass, ctx)
+            }
         }
     }
 
@@ -123,7 +130,7 @@ class DomainClassGrailsPlugin {
         def metaClass = dc.metaClass
         def domainClass = dc
 
-        registerConstraintsProperty(metaClass, domainClass)
+
 
         metaClass.hasErrors = {-> delegate.errors?.hasErrors() }
 

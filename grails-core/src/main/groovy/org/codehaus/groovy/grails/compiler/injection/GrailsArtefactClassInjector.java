@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+
 /**
  * Interface specific to Grails artefacts that returns the artefact type
  *
@@ -22,6 +24,8 @@ package org.codehaus.groovy.grails.compiler.injection;
  * @since 1.4
  */
 public interface GrailsArtefactClassInjector extends ClassInjector{
+
+    ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
 
     String getArtefactType();
 }

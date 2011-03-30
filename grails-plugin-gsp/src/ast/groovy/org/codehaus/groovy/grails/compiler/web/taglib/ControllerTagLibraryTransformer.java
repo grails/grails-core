@@ -29,6 +29,5 @@ public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTrans
 
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
-
     }
 }

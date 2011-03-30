@@ -98,65 +98,8 @@ class MimeTypesGrailsPlugin {
             }
             result
         }
-
-        addWithFormatMethod(application.controllerClasses)
     }
 
-    def onChange = { event ->
-        addWithFormatMethod([event.source])
-    }
-
-    private addWithFormatMethod(controllers) {
-        controllers*.metaClass*.withFormat = { Closure callable ->
-            def formats = [:]
-            try {
-                callable.delegate = new FormatInterceptor()
-                callable.resolveStrategy = Closure.DELEGATE_ONLY
-                callable.call()
-                formats = callable.delegate.formatOptions
-            }
-            finally {
-                callable.delegate = delegate
-                callable.resolveStrategy = Closure.OWNER_FIRST
-            }
-
-            def result
-            def req = request
-            def mimeTypes = req.mimeTypes
-            def format = req.format
-            if (formats) {
-                if (format == 'all') {
-                    def firstKey = formats.firstKey()
-                    result = getResponseForFormat(formats[firstKey], firstKey, req)
-                }
-                else {
-                    // if the format has been specified then use that
-                    if (formats.containsKey(format)) {
-                        result = getResponseForFormat(formats[format], format, req)
-                    }
-                    // otherwise look for the best match
-                    else {
-                        for (mime in req.mimeTypes) {
-                            if (formats.containsKey(mime.extension)) {
-                                result = getResponseForFormat(formats[mime.extension], mime.extension, req)
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-            result
-        }
-    }
-
-    private getResponseForFormat(formatResponse, format, req) {
-        req[GrailsApplicationAttributes.CONTENT_FORMAT] = format
-        if (formatResponse instanceof Map) {
-            return formatResponse
-        }
-
-        return formatResponse?.call()
-    }
 }
 
 class FormatInterceptor {

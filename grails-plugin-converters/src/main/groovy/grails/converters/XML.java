@@ -18,17 +18,6 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
 import groovy.util.XmlSlurper;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.util.Map;
-import java.util.Stack;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
@@ -48,6 +37,15 @@ import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter;
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter;
 import org.codehaus.groovy.grails.web.xml.XMLStreamWriter;
 import org.springframework.util.Assert;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * A converter that converts domain classes to XML.
@@ -72,7 +70,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
 
     public XML() {
         config = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
-        encoding = config.getEncoding();
+        encoding = config.getEncoding() != null ? config.getEncoding() : "UTF-8";
         circularReferenceBehaviour = config.getCircularReferenceBehaviour();
     }
 
