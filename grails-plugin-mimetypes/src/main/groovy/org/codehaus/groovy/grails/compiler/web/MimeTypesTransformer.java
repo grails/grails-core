@@ -29,9 +29,9 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
 
@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  * @since 1.4
  */
 @AstTransformer
-public class MimeTypesTransformer implements ClassInjector{
+public class MimeTypesTransformer implements GrailsArtefactClassInjector{
     public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/"+ GrailsResourceUtils.GRAILS_APP_DIR+"/controllers/(.+)Controller\\.groovy");
     public static final String FIELD_MIME_TYPES_API = "mimeTypesApi";
     public static final Parameter[] CLOSURE_PARAMETER = new Parameter[]{ new Parameter(new ClassNode(Closure.class), "callable")};
@@ -75,5 +75,9 @@ public class MimeTypesTransformer implements ClassInjector{
 
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+    public String getArtefactType() {
+        return ControllerArtefactHandler.TYPE;
     }
 }
