@@ -87,7 +87,7 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
 
 
 
-    private List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
+    public static List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();
         for (ClassInjector classInjector : classInjectors) {
             if(classInjector instanceof GrailsArtefactClassInjector) {

@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.compiler.web.converters;
 
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
@@ -32,6 +33,12 @@ import java.net.URL;
  */
 @AstTransformer
 public class ConvertersDomainTransformer extends AbstractGrailsArtefactTransformer{
+
+    @Override
+    public String getArtefactType() {
+        return DomainClassArtefactHandler.TYPE;
+    }
+
     @Override
     public Class getInstanceImplementation() {
         return ConvertersApi.class;

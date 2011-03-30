@@ -22,8 +22,11 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
+
+import java.util.List;
 
 /**
  * Injects the necessary fields and behaviors into a domain class in order to make it a property GORM entity.
@@ -57,5 +60,20 @@ public class EntityASTTransformation implements ASTTransformation {
 
         GrailsDomainClassInjector domainInjector = new DefaultGrailsDomainClassInjector();
         domainInjector.performInjectionOnAnnotatedEntity(cNode);
+
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
+
+        final List<ClassInjector> domainInjectors = ArtefactTypeAstTransformation.findInjectors(DomainClassArtefactHandler.TYPE, classInjectors);
+
+        for (ClassInjector injector : domainInjectors) {
+            try {
+                injector.performInjection(sourceUnit, cNode);
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                System.out.println("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage());
+                throw e;
+            }
+        }
+
     }
 }
