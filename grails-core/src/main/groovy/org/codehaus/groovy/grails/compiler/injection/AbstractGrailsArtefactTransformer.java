@@ -122,7 +122,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                     else if(isCandidateInstanceMethod(declaredMethod)) {
 
                         Parameter[] parameterTypes = getParameterTypes(declaredMethod.getParameters());
-                        if(!classNode.hasMethod(declaredMethod.getName(), parameterTypes)) {
+                        if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
                             BlockStatement methodBody = new BlockStatement();
                             ArgumentListExpression arguments = new ArgumentListExpression();
                             arguments.addExpression(THIS_EXPRESSION);
@@ -179,7 +179,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 if(isStaticCandidateMethod(declaredMethod)) {
                     Parameter[] parameterTypes = declaredMethod.getParameters();
                     String declaredMethodName = declaredMethod.getName();
-                    if(!classNode.hasMethod(declaredMethodName, parameterTypes)) {
+                    if(!classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
                         BlockStatement methodBody = new BlockStatement();
                         ArgumentListExpression arguments = new ArgumentListExpression();
 
