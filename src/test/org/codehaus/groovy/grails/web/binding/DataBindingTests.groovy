@@ -52,7 +52,40 @@ class Author {
 class City {
     String name
 }
+@Entity
+class Person {
+    String name
+    Date birthDate
+    static constraints = {
+        birthDate nullable: true
+    }
+}
         ''')
+    }
+
+    void testBindingNullToANullableDateThatAlreadyHasAValue() {
+        def c = ga.getControllerClass('TestController').newInstance()
+        def person = ga.getDomainClass('Person').newInstance()
+
+        def params = c.params
+        params.name = 'Douglas Adams'
+        params.birthDate_year = '1952'
+        params.birthDate_day = '11'
+        params.birthDate_month = '3'
+
+        person.properties = params
+        assertEquals 'Douglas Adams', person.name
+        assertNotNull person.birthDate
+
+        params.name = 'Douglas Adams'
+        params.birthDate_year = ''
+        params.birthDate_day = ''
+        params.birthDate_month = ''
+
+        person.properties = params
+        assertEquals 'Douglas Adams', person.name
+        assertNull person.birthDate
+
     }
 
     void testNamedBinding() {

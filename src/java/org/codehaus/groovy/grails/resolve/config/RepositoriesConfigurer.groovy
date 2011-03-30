@@ -76,7 +76,18 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
             return
         }
 
-        flatDir(name:"grailsHome", dirs:"${grailsHome}/lib")
+        grailsHome = new File(grailsHome).absolutePath
+        def fileSystemResolver = new FileSystemResolver()
+        fileSystemResolver.local = true
+        fileSystemResolver.name = "grailsHome"
+        fileSystemResolver.addIvyPattern( "${grailsHome}/lib/[organisation]/[module]/ivy-[revision](-[classifier]).xml")
+        fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/jars/[module]-[revision](-[classifier]).[ext]"
+        fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/bundles/[module]-[revision](-[classifier]).[ext]"
+        fileSystemResolver.settings = dependencyManager.ivySettings
+        
+        addToChainResolver(fileSystemResolver)
+        
+        flatDir(name:"grailsHome", dirs:"${grailsHome}/src/libs")
         flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
         if (grailsHome!='.') {
             def resolver = createLocalPluginResolver("grailsHome", grailsHome)

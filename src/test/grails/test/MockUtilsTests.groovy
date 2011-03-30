@@ -14,6 +14,7 @@
  */
 package grails.test
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
@@ -53,6 +54,7 @@ class MockUtilsTests extends GroovyTestCase {
         metaTestHelper.tearDown()
         MockUtils.resetIds()
         PluginManagerHolder.pluginManager = null
+        ApplicationHolder.application = null
     }
 
     /**
@@ -242,6 +244,11 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findAllByAgeBetween(18, 35, [sort: "name", order: "desc", max: 3, offset: 1])
         assertEquals 0, result.size()
+    }    
+
+    void testUnknownJoinTypeThrowsException() {
+        MockUtils.mockDomain(TestDomain, errorsMap, [])
+        shouldFail(RuntimeException) { TestDomain.findByCountryNotEqualUnknownNameLike("A","B") }
     }
 
     /**

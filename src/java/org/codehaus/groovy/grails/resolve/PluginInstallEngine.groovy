@@ -120,7 +120,7 @@ class PluginInstallEngine {
                 errorHandler "Failed to resolve plugins."
             }
             else {
-                for (ArtifactDownloadReport ar in report.allArtifactsReports) {
+                for (ArtifactDownloadReport ar in report.getArtifactsReports(null, false)) {
                     def arName = ar.artifact.moduleRevisionId.name
                     if (plugins.any { it.name == arName }) {
                         installPlugin ar.localFile
@@ -363,7 +363,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                     errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
                 }
                 else {
-                    addJarsToRootLoader resolveReport.allArtifactsReports.localFile
+                    addJarsToRootLoader resolveReport.getArtifactsReports(null, false).localFile
                 }
             }
         }
@@ -540,7 +540,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
     private void resolveDependenciesAgain() {
         for (type in ['compile', 'build', 'test', 'runtime']) {
             def existing = settings."${type}Dependencies"
-            def all = settings.dependencyManager.resolveDependencies(IvyDependencyManager."${type.toUpperCase()}_CONFIGURATION").allArtifactsReports.localFile
+            def all = settings.dependencyManager.resolveDependencies(IvyDependencyManager."${type.toUpperCase()}_CONFIGURATION").getArtifactsReports(null, false).localFile
             def toAdd = all - existing
             if (toAdd) {
                 existing.addAll(toAdd)

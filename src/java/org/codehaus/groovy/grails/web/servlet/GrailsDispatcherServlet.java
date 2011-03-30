@@ -130,7 +130,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         }
         catch (NoSuchBeanDefinitionException ex) {
             // We need to use the default.
-            localeResolver = getDefaultStrategy(context, LocaleResolver.class);
+            localeResolver = (LocaleResolver) getDefaultStrategy(context, LocaleResolver.class);
             if (logger.isDebugEnabled()) {
                 logger.debug("Unable to locate LocaleResolver with name '" + LOCALE_RESOLVER_BEAN_NAME +
                         "': using default [" + localeResolver + "]");

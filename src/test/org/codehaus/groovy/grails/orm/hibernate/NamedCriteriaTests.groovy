@@ -140,7 +140,34 @@ class Publication {
 }
 ''')
     }
-    
+
+    void testDynamicFinderAppendedToNamedQueryWhichCallsAnotherNamedQuery() {
+        // GRAILS-7253
+        def publicationClass = ga.getDomainClass("Publication").clazz
+
+        def now = new Date()
+
+        assert publicationClass.newInstance(title: "Ten Day Old Paperback",
+                                            datePublished: now - 10,
+                                            paperback: true).save()
+        assert publicationClass.newInstance(title: "Four Hundred Day Old Paperback",
+                                            datePublished: now - 400,
+                                            paperback: true).save()
+        assert publicationClass.newInstance(title: "Ten Day Old Hardback",
+                                            datePublished: now - 10,
+                                            paperback: false).save()
+        assert publicationClass.newInstance(title: "Four Hundred Day Old Hardback",
+                                            datePublished: now - 400,
+                                            paperback: false).save()
+
+        def results = publicationClass.paperbackOrRecent().findAllByTitleLike('%Day Old%')
+        assertEquals 3, results?.size()
+
+        results = publicationClass.paperbackOrRecent().findAllByTitleLike('Ten Day Old%')
+        assertEquals 2, results?.size()
+
+    }
+
     void testUniqueResult() {
         def publicationClass = ga.getDomainClass("Publication").clazz
 

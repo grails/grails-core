@@ -57,6 +57,17 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
         }
 
         String yearString = (String) fieldValues.get("year");
+        String monthString = (String) fieldValues.get("month");
+        String dayString = (String) fieldValues.get("day");
+        String hourString = (String) fieldValues.get("hour");
+        String minuteString = (String) fieldValues.get("minute");
+        if (StringUtils.isBlank(yearString)
+                && StringUtils.isBlank(monthString)
+                && StringUtils.isBlank(dayString)
+                && StringUtils.isBlank(hourString)
+                && StringUtils.isBlank(minuteString)) {
+            return null;
+        }
         int year;
         try {
             if (StringUtils.isBlank(yearString)) {

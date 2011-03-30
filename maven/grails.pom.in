@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>1.8.0-beta-4-SNAPSHOT</version>
+            <version>1.8.0-beta-4</version>
             <exclusions>
                 <exclusion>
                     <groupId>jline</groupId>

@@ -84,8 +84,31 @@ task appFilesJars {
 }
 
 distJars = tasks.withType(Jar).matching({ jar -> !jar.appFileJar } as Spec)
+dependencyCache = {
+	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
+	copy {
+		from( cacheLocation ) {	
+			def dependencyIncludes = []			
+			def includeClosure = { artifact ->
+				def dependency = artifact.getResolvedDependency() 	
+				def file = artifact.file	
+				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"					
+				dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"										
+			}
+			configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
+			configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 								
+			configurations.jsp21.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 												
+			includes = dependencyIncludes
+		}
+		into "$projectDir/lib"
+	}
+
+}
 
 task libs {
+	doFirst dependencyCache
+	
     destinationDir = 'dist'
     dependsOn { distJars.all }
 }
@@ -139,7 +162,7 @@ task bootstrapJar(type: Jar, description: 'Package up the classes used to bootst
 
 task scriptsJar(type: Jar, description: 'Package up files used for generating documentation.') {
     appendix = "scripts"
-    from sourceSets.buildScripts.classes, "scripts/log4j.properties"
+    from sourceSets.buildScripts.classes
     osgify = true
     mavenArtifact = true
 }
@@ -341,8 +364,9 @@ distSpec = copySpec {
 }
 
 task zipDist(type: Zip) {
+    dependsOn tasks.withType(Jar).all/*, docs*/
     from distSpec
-    dependsOn tasks.withType(Jar).all, docs
+	doFirst dependencyCache
 }
 
 task zipDoc(type: Zip) {

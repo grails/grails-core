@@ -311,7 +311,7 @@ class BuildSettings extends AbstractBuildSettings {
 		Message.info "Resolving [compile] dependencies..."
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-                            .allArtifactsReports
+                            .getArtifactsReports(null, false)
                             .localFile + applicationJars
         Message.debug("Resolved jars for [compile]: ${{->jarFiles.join('\n')}}")
 		resolveCache['compile'] = jarFiles
@@ -343,7 +343,7 @@ class BuildSettings extends AbstractBuildSettings {
 		Message.info "Resolving [test] dependencies..."
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
-                            .allArtifactsReports
+                            .getArtifactsReports(null, false)
                             .localFile + applicationJars
         Message.debug("Resolved jars for [test]: ${{->jarFiles.join('\n')}}")
 		resolveCache['test'] = jarFiles
@@ -375,7 +375,7 @@ class BuildSettings extends AbstractBuildSettings {
 		Message.info "Resolving [runtime] dependencies..."
         def jarFiles = dependencyManager
                    .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-                   .allArtifactsReports
+                   .getArtifactsReports(null, false)
                    .localFile + applicationJars
         Message.debug("Resolved jars for [runtime]: ${{->jarFiles.join('\n')}}")
 		resolveCache['runtime'] = jarFiles
@@ -410,7 +410,7 @@ class BuildSettings extends AbstractBuildSettings {
 		Message.info "Resolving [provided] dependencies..."
         def jarFiles = dependencyManager
                        .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-                       .allArtifactsReports
+                       .getArtifactsReports(null, false)
                        .localFile
 
         Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
@@ -449,7 +449,7 @@ class BuildSettings extends AbstractBuildSettings {
 		Message.info "Resolving [build] dependencies..."
         def jarFiles = dependencyManager
                            .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-                           .allArtifactsReports
+                           .getArtifactsReports(null, false)
                            .localFile + applicationJars
 
         Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")

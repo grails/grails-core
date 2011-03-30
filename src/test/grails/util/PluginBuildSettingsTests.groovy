@@ -45,6 +45,10 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                     def documentation = "http://grails.org/plugin/dummy" 
                 }
                 '''.stripIndent()
+		// for testing that .svn directory gets ignored
+		new File(pluginDir, "grails-app/.svn").mkdirs()
+		// for testing that CVS directory gets ignored
+		new File(pluginDir, "grails-app/CVS").mkdirs()
     }
 
     protected void tearDown() {
@@ -53,8 +57,15 @@ class PluginBuildSettingsTests extends GroovyTestCase {
     }
 
     void testGetPluginSourceFiles() {
-        PluginBuildSettings pluginSettings = createPluginBuildSettings()
+        PluginBuildSettings pluginSettings = createPluginBuildSettings(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR)
         def sourceFiles = pluginSettings.getPluginSourceFiles()
+		// Test GRAILS-7213
+		sourceFiles.each { it ->
+			assertFalse("There should be no .svn directory", it.file.name == '.svn')	
+			assertFalse("There should be no CVS directory", it.file.name == 'CVS')
+        }
+		assertEquals 7, sourceFiles.size()
+		
     }
 
     void testGetMetadataForPlugin() {

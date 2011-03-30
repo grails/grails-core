@@ -2,12 +2,24 @@ package grails.test
 
 import grails.persistence.Entity
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class MockUtilsAndHasManyTests extends GroovyTestCase {
 
+    @Override
+    protected void setUp() {
+        ApplicationHolder.application = null
+    }
+
+    @Override
+    protected void tearDown() {
+        ApplicationHolder.application = null
+    }
+    
     void testMockDomainWithHasMany() {
         def test = new MagazineTests()
         test.setUp()
@@ -16,6 +28,11 @@ class MockUtilsAndHasManyTests extends GroovyTestCase {
 }
 
 class MagazineTests extends GrailsUnitTestCase {
+
+    @Override
+    protected void tearDown() {
+        ApplicationHolder.application = null
+    }
 
     void testSomething() {
         mockDomain(Magazine)

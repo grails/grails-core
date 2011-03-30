@@ -40,6 +40,8 @@ public class ConfigurationHolder {
         // reset flat config
         if (newConfig != null) {
             flatConfig = newConfig.flatten();
+        } else {
+            flatConfig = null;
         }
     }
 

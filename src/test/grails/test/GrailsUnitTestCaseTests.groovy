@@ -19,6 +19,7 @@ import grails.converters.XML
 
 import junit.framework.AssertionFailedError
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
@@ -30,15 +31,37 @@ import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
  */
 class GrailsUnitTestCaseTests extends GroovyTestCase {
 
+	@Override
+	protected void tearDown() throws Exception {
+		ApplicationHolder.setApplication null
+	}
     void testMockConfig() {
         def testCase = new TestUnitTestCase()
+        def d = new GrailsUnitTestClass()
+
+        // Empty at first
+        testCase.setUp()
+        d.testEmptyConfig()
+        testCase.tearDown()
+
+        // Not empty
         testCase.setUp()
         testCase.mockConfig '''
             foo.bar = "good"
         '''
+        d.testConfig()
+        testCase.tearDown()
 
-        new GrailsUnitTestClass().testConfig()
+        // Then empty again
+        testCase.setUp()
+        d.testEmptyConfig()
+        testCase.tearDown()
+    }
 
+    void testMockConfigReturnsConfig() {
+        def testCase = new TestUnitTestCase()
+        testCase.setUp()
+        testCase.testMockConfigReturnsConfig()
         testCase.tearDown()
     }
 
@@ -311,6 +334,15 @@ class TestUnitTestCase extends GrailsUnitTestCase {
         assertTrue testDomain.validate()
         assertFalse testDomain.hasErrors()
     }
+
+    void testMockConfigReturnsConfig() {
+        def config = mockConfig('''
+            foo.bar = "good"
+        ''')
+
+        assert config.foo.bar == "good"
+        assert ConfigurationHolder.config.foo.bar == "good"
+    }
 }
 
 class GrailsUnitTestClass {
@@ -337,6 +369,12 @@ class GrailsUnitTestClass {
 
     void testConfig() {
         assert ConfigurationHolder.config.foo.bar == "good"
+        assert ConfigurationHolder.flatConfig["foo.bar"] == "good"
+    }
+
+    void testEmptyConfig() {
+        assert ConfigurationHolder.config == null
+        assert ConfigurationHolder.flatConfig.size() == 0
     }
 
     static constraints = {
