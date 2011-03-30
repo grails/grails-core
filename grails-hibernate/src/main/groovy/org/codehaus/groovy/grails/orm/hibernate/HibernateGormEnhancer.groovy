@@ -183,12 +183,18 @@ class HibernateGormStaticApi extends GormStaticApi {
         }
         else {
             try {
-                result = this."$methodName"(*args)
-                synchronized(this) {
-                    mc.static."$methodName" = {List varArgs ->
-                         this."$methodName"(*varArgs )
+                if(respondsTo(methodName, args)) {
+                    result = this."$methodName"(*args)
+                    synchronized(this) {
+                        mc.static."$methodName" = {List varArgs ->
+                             this."$methodName"(*varArgs )
+                        }
                     }
                 }
+                else {
+                    throw new MissingMethodException(methodName, cls, args)
+                }
+
             }
             catch(MissingMethodException e) {
                 throw new MissingMethodException(methodName, cls, args)

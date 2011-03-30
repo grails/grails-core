@@ -16,19 +16,14 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.GString;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -74,7 +69,12 @@ public abstract class BaseApiProvider {
                     instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(method)) {
                         @Override
                         public Object invoke(Object object, Object[] arguments) {
-                            return super.invoke(apiInstance, ArrayUtils.add(checkForGStrings(arguments), 0, object));
+                            if(arguments.length == 0) {
+                                return super.invoke(apiInstance, new Object[]{object});
+                            }
+                            else {
+                                return super.invoke(apiInstance, ArrayUtils.add(checkForGStrings(arguments), 0, object));
+                            }
                         }
 
                         private Object[] checkForGStrings(Object[] arguments) {
@@ -106,10 +106,13 @@ public abstract class BaseApiProvider {
 
         if (EXCLUDED_METHODS.contains(name)) return false;
 
-        Integer parameterCount = METHOD_CLOSURES.get(name);
+        boolean isStatic = Modifier.isStatic(modifiers);
+        int minParameters = isStatic ? 0 : 1;
+
         return Modifier.isPublic(modifiers) &&
+                !(method.isSynthetic() || method.isBridge()) &&
                 !Modifier.isAbstract(modifiers) &&
                     !name.contains("$") &&
-                        !(parameterCount != null && (parameterCount == method.getParameterTypes().length));
+                      (method.getParameterTypes().length >= minParameters);
     }
 }
