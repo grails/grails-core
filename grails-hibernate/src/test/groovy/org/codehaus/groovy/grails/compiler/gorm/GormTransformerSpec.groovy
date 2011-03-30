@@ -7,6 +7,7 @@ import org.grails.datastore.gorm.GormStaticApi
 import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Errors
 import spock.lang.Specification
+import org.grails.datastore.gorm.GormValidationApi
 
 /**
  * Created by IntelliJ IDEA.
@@ -63,7 +64,7 @@ class TestEntity {
     void "Test that the new Errors property is valid"() {
         given:
               def gcl = new GrailsAwareClassLoader()
-              def transformer = new GormTransformer() {
+              def transformer = new GormValidationTransformer() {
                   @Override
                   boolean shouldInject(URL url) {
                       return true;
@@ -94,6 +95,9 @@ class TestEntity {
              obj.errors instanceof Errors
 
           when:
+             def ds = new SimpleMapDatastore()
+
+             cls.metaClass.static.currentGormValidationApi = {-> new GormValidationApi(cls, ds)}
              obj.clearErrors()
 
           then:

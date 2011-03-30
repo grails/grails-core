@@ -74,7 +74,7 @@ class HibernateGormEnhancer extends GormEnhancer{
 		
 	}
 
-	protected GormValidationApi getValidationApi(Class cls) {
+    protected GormValidationApi getValidationApi(Class cls) {
 		def validateApi = new HibernateGormValidationApi(cls, datastore)
 		validateApi.classLoader = classLoader
 		return validateApi
