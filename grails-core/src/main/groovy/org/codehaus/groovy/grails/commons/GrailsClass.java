@@ -30,6 +30,13 @@ import org.springframework.beans.BeanWrapper;
 public interface GrailsClass extends GrailsApplicationAware {
 
     /**
+     * Whether the class is abstract or not
+     *
+     * @return True if it is abstract
+     */
+    boolean isAbstract();
+
+    /**
      * The GrailsApplication that this class belongs to
      *
      * @return The GrailsApplication instance

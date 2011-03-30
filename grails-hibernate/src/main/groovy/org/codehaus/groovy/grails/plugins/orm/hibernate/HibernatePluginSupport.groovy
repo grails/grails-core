@@ -83,10 +83,12 @@ class HibernatePluginSupport {
         }
 
         for (GrailsDomainClass dc in application.domainClasses) {
-            "${dc.fullName}Validator"(HibernateDomainClassValidator) {
-                messageSource = ref("messageSource")
-                domainClass = ref("${dc.fullName}DomainClass")
-                grailsApplication = ref("grailsApplication", true)
+            if(!dc.abstract) {
+                "${dc.fullName}Validator"(HibernateDomainClassValidator) {
+                    messageSource = ref("messageSource")
+                    domainClass = ref("${dc.fullName}DomainClass")
+                    grailsApplication = ref("grailsApplication", true)
+                }
             }
         }
         def vendorToDialect = new Properties()

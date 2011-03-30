@@ -52,27 +52,30 @@ class DomainClassGrailsPlugin {
 
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
-            "${dc.fullName}"(dc.clazz) { bean ->
-                bean.singleton = false
-                bean.autowire = "byName"
+            if(!dc.abstract) {
+                "${dc.fullName}"(dc.clazz) { bean ->
+                    bean.singleton = false
+                    bean.autowire = "byName"
+                }
+                "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
+                    targetObject = ref("grailsApplication", true)
+                    targetMethod = "getArtefact"
+                    bean.lazyInit = true
+                    arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
+                }
+                "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
+                    targetObject = ref("${dc.fullName}DomainClass")
+                    bean.lazyInit = true
+                    targetMethod = "getClazz"
+                }
+                "${dc.fullName}Validator"(GrailsDomainClassValidator) { bean ->
+                    messageSource = ref("messageSource")
+                    bean.lazyInit = true
+                    domainClass = ref("${dc.fullName}DomainClass")
+                    grailsApplication = ref("grailsApplication", true)
+                }
             }
-            "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
-                targetObject = ref("grailsApplication", true)
-                targetMethod = "getArtefact"
-                bean.lazyInit = true
-                arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
-            }
-            "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
-                targetObject = ref("${dc.fullName}DomainClass")
-                bean.lazyInit = true
-                targetMethod = "getClazz"
-            }
-            "${dc.fullName}Validator"(GrailsDomainClassValidator) { bean ->
-                messageSource = ref("messageSource")
-                bean.lazyInit = true
-                domainClass = ref("${dc.fullName}DomainClass")
-                grailsApplication = ref("grailsApplication", true)
-            }
+
         }
     }
 
@@ -108,9 +111,10 @@ class DomainClassGrailsPlugin {
             MetaClass metaClass = domainClass.metaClass
             def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
 
-
-            metaClass.constructor = { ->
-                getDomainInstance domainClass, ctx
+            if(!dc.abstract) {
+                metaClass.constructor = { ->
+                    getDomainInstance domainClass, ctx
+                }
             }
 
             registerConstraintsProperty(metaClass, domainClass)

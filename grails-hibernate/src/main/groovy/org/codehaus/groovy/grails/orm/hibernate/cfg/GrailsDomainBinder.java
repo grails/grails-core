@@ -43,6 +43,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.type.*;
 import org.hibernate.util.StringHelper;
 
+import java.lang.reflect.Modifier;
 import java.sql.Types;
 import java.util.*;
 import java.util.List;
@@ -1156,6 +1157,7 @@ public final class GrailsDomainBinder {
     public static void bindRoot(GrailsDomainClass domainClass, Mappings mappings) {
         if (mappings.getClass(domainClass.getFullName()) == null) {
             RootClass root = new RootClass();
+            root.setAbstract(Modifier.isAbstract(domainClass.getClazz().getModifiers()));
             if (!domainClass.hasSubClasses()) {
                 root.setPolymorphic(false);
             }

@@ -223,12 +223,15 @@ class ControllersGrailsPlugin {
             GrailsDomainClass dc = domainClass
             def mc = domainClass.metaClass
 
-            mc.constructor = { Map map ->
-                def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
-                DataBindingUtils.bindObjectToDomainInstance(dc, instance, map)
-                DataBindingUtils.assignBidirectionalAssociations(instance, map, dc)
-                return instance
+            if(!dc.abstract) {
+                mc.constructor = { Map map ->
+                    def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
+                    DataBindingUtils.bindObjectToDomainInstance(dc, instance, map)
+                    DataBindingUtils.assignBidirectionalAssociations(instance, map, dc)
+                    return instance
+                }
             }
+
             mc.setProperties = {Object o ->
                 DataBindingUtils.bindObjectToDomainInstance(dc, delegate, o)
             }

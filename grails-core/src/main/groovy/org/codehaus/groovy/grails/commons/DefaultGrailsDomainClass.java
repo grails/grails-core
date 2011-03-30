@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Validator;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -62,9 +61,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         super(clazz, "");
         PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
 
-        if (!clazz.getSuperclass().equals(GroovyObject.class) &&
-                !clazz.getSuperclass().equals(Object.class) &&
-                !Modifier.isAbstract(clazz.getSuperclass().getModifiers())) {
+        final Class<?> superClass = clazz.getSuperclass();
+        if (DomainClassArtefactHandler.isDomainClass(superClass)) {
             root = false;
         }
         propertyMap = new LinkedHashMap<String, GrailsDomainClassProperty>();

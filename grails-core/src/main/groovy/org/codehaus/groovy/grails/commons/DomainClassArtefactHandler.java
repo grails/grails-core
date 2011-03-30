@@ -35,7 +35,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
     private Map defaultConstraints;
 
     public DomainClassArtefactHandler() {
-        super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null);
+        super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
 
     @Override
