@@ -99,7 +99,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
 
             Class<?>[] loadedPlugins = classes.toArray(new Class[classes.size()]);
 
-            pluginManager = new DefaultGrailsPluginManager(loadedPlugins, application);
+            pluginManager = new     DefaultGrailsPluginManager(loadedPlugins, application);
             pluginManager.setApplicationContext(applicationContext);
             PluginManagerHolder.setPluginManager(pluginManager);
             pluginManager.loadPlugins();

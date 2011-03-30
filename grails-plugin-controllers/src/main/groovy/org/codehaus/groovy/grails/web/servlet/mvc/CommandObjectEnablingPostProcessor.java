@@ -14,13 +14,10 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
+import org.apache.commons.beanutils.MethodUtils;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
@@ -28,6 +25,12 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Graeme Rocher
@@ -50,26 +53,43 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
         if (shouldPostProcessController(bean, beanName)) {
             if (grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, bean.getClass().getName()) != null) {
                 GroovyObject controller = (GroovyObject) bean;
-                Map<String, Object> props = (Map<String, Object>) controller.getProperty("properties");
-                for (String propName : props.keySet()) {
-                    Object value = props.get(propName);
-                    if (value instanceof Closure) {
-                        final Closure<?> callable = (Closure<?>) value;
-                        if (WebMetaUtils.isCommandObjectAction(callable)) {
-                            WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, propName, controller, applicationContext);
-                        }
-                    }
-                }
+                scanClosureActions(controller);
+                scanMethodActions(controller);
                 processedControllerNames.add(beanName);
             }
         }
         return super.postProcessBeforeInitialization(bean, beanName);
     }
 
+    private void scanClosureActions(GroovyObject controller) {
+        Map<String, Object> props = (Map<String, Object>) controller.getProperty("properties");
+        for (String propName : props.keySet()) {
+            Object value = props.get(propName);
+            if (value instanceof Closure) {
+                final Closure<?> callable = (Closure<?>) value;
+                if (WebMetaUtils.isCommandObjectAction(callable)) {
+                    WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction, callable, propName, controller, applicationContext);
+                }
+            }
+        }
+    }
+
+    private void scanMethodActions(GroovyObject controller) {
+        Method[] methods = ReflectionUtils.getAllDeclaredMethods(controller.getClass());
+        Action actionAnn = null;
+        for(Method method : methods){
+            actionAnn = method.getAnnotation(Action.class);
+            Class[] commandObjectClasses = actionAnn != null ? actionAnn.commandObjects() : null;
+            if(commandObjectClasses != null && commandObjectClasses.length > 0){
+                WebMetaUtils.prepareCommandObjectBindingAction(method, commandObjectClasses, applicationContext);
+            }
+        }
+    }
+
     private boolean shouldPostProcessController(Object bean, String beanName) {
         return beanName.endsWith(ControllerArtefactHandler.TYPE) &&
-               !processedControllerNames.contains(beanName) &&
-               grailsApplication != null && bean != null && (bean instanceof GroovyObject);
+                !processedControllerNames.contains(beanName) &&
+                grailsApplication != null && bean != null && (bean instanceof GroovyObject);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

@@ -16,8 +16,9 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
         """
 
         gcl.parseClass """
+        import grails.web.Action
         class Test2Controller {
-           def list = {}
+           @Action def list(){}
 
            def afterInterceptor = { model ->
                 model.put("after", "value")
@@ -27,8 +28,9 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
         """
 
         gcl.parseClass """
+        import grails.web.Action
         class Test3Controller {
-           def list = {}
+           @Action def list(){}
 
            def afterInterceptor = { model, modelAndView ->
                 model.put("after", modelAndView.getViewName())
@@ -51,13 +53,13 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
     void testConstructHelper() {
         runTest {
             def webRequest = RequestContextHolder.currentRequestAttributes()
-            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
         }
     }
 
     void testCallsAfterInterceptorWithModel() {
         runTest {
-            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test/list", webRequest)
             assert mv.getModel()["after"] == "value"
         }
@@ -65,7 +67,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     void testCallsAfterInterceptorWithModelAndExplicitParam() {
         runTest {
-            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test2/list", webRequest)
             assert mv.getModel()["after"] == "value"
         }
@@ -73,7 +75,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     void testCallsAfterInterceptorWithModelAndViewExplicitParams() {
         runTest {
-            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test3/list", webRequest)
             assert mv.getModel()["after"] == "/test3/list"
         }
@@ -81,7 +83,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     void testReturnsNullIfAfterInterceptorReturnsFalse() {
         runTest {
-            def helper = new ClosureGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
             def mv = helper.handleURI("/test4/list", webRequest)
             assert mv == null
         }

@@ -449,12 +449,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
     }
 
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    @Override
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
         this.grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);

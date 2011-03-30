@@ -44,7 +44,6 @@ public class PluginAwareAstTransformer implements ClassInjector {
         this.pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
     }
 
-    @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         File sourcePath = new File(source.getName());
         try {
@@ -83,12 +82,10 @@ public class PluginAwareAstTransformer implements ClassInjector {
         }
     }
 
-    @Override
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
 
-    @Override
     public boolean shouldInject(URL url) {
         return true;
     }

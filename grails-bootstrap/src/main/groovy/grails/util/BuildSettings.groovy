@@ -151,7 +151,7 @@ class BuildSettings extends AbstractBuildSettings {
      *  A property name to enable/disable AST conversion of closures actions&tags to methods
      */
 
-    private static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
+    public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
 
 
     /**
@@ -272,7 +272,6 @@ class BuildSettings extends AbstractBuildSettings {
     List buildListeners = []
 
     boolean convertClosuresArtefacts = false
-
 
     /**
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
@@ -519,7 +518,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
+        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion, jquery:"1.4.4.1"]
         defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.

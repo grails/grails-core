@@ -64,12 +64,8 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
             ConstantExpression ce = (ConstantExpression) value;
             String artefactType = ce.getText();
             try {
-                ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
-                GrailsArtefactClassInjector injector = findInjector(artefactType, classInjectors);
-                if(injector != null) {
-                    injector.performInjection(sourceUnit,cNode);
-                    return;
-                }
+                if(injectIfArtefact(artefactType, cNode, sourceUnit))return;
+
             } catch (RuntimeException e) {
                 e.printStackTrace();
                 System.out.println("Error occurred calling AST injector: " + e.getMessage());
@@ -80,16 +76,19 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
         throw new RuntimeException("Class ["+cName+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
     }
 
-    private GrailsArtefactClassInjector findInjector(String artefactType, ClassInjector[] classInjectors) {
+    private boolean injectIfArtefact(String artefactType, ClassNode cNode, SourceUnit sourceUnit) {
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
+        boolean isArtefactFound=false;
         for (ClassInjector classInjector : classInjectors) {
             if(classInjector instanceof GrailsArtefactClassInjector) {
                 GrailsArtefactClassInjector gace = (GrailsArtefactClassInjector) classInjector;
 
                 if(artefactType.equals(gace.getArtefactType())) {
-                    return gace;
+                    gace.performInjection(sourceUnit,cNode);
+                    isArtefactFound=true;
                 }
             }
         }
-        return null;
+        return isArtefactFound;
     }
 }
