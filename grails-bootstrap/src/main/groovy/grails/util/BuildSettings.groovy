@@ -271,6 +271,7 @@ class BuildSettings extends AbstractBuildSettings {
 
     List buildListeners = []
 
+    boolean convertClosuresArtefacts = false
 
     /**
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
@@ -642,10 +643,10 @@ class BuildSettings extends AbstractBuildSettings {
         projectWarExplodedDirSet = true
     }
 
-    boolean getConvertClosuresArtefacts(){ System.properties[CONVERT_CLOSURES_KEY]?.toBoolean() }
+    boolean getConvertClosuresArtefacts(){ convertClosuresArtefacts }
 
     void setConvertClosuresArtefacts(boolean convert){
-        System.properties[CONVERT_CLOSURES_KEY] = convert
+        convertClosuresArtefacts = convert
         convertClosuresArtefactsSet = true
     }
 
