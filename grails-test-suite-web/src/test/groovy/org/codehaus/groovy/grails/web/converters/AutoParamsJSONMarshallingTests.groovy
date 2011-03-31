@@ -47,7 +47,7 @@ class AutoParamsJSONMarshallingAuthor {
     String name
 
     // mocked get method
-    static get(Object id) {
+    static get(Serializable id) {
         new AutoParamsJSONMarshallingAuthor(id:id.toLong())
     }
 }

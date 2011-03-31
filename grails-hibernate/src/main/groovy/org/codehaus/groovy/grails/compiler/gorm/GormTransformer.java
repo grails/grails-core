@@ -17,13 +17,14 @@ package org.codehaus.groovy.grails.compiler.gorm;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
+import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.grails.datastore.gorm.GormInstanceApi;
@@ -41,7 +42,13 @@ import java.net.URL;
 public class GormTransformer extends AbstractGrailsArtefactTransformer {
 
     public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You either don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
+    public static final String NEW_INSTANCE_METHOD = "newInstance";
 
+
+    @Override
+    protected boolean isStaticCandidateMethod(MethodNode declaredMethod) {
+        return !(declaredMethod.getName().equals("create") && declaredMethod.getParameters().length == 0) && super.isStaticCandidateMethod(declaredMethod);
+    }
 
     @Override
     public String getArtefactType() {
@@ -71,7 +78,12 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
         return new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);
     }
 
-
+    @Override
+    protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
+        final BlockStatement methodBody = new BlockStatement();
+        methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(classNode), NEW_INSTANCE_METHOD,ZERO_ARGS)));
+        classNode.addMethod(new MethodNode(CreateDynamicMethod.METHOD_NAME, PUBLIC_STATIC_MODIFIER, classNode, ZERO_PARAMETERS,null, methodBody));
+    }
 
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);

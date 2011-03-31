@@ -18,9 +18,9 @@ package org.codehaus.groovy.grails.compiler.gorm;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -45,8 +45,9 @@ import java.util.ArrayList;
 @AstTransformer
 public class GormValidationTransformer extends AbstractGrailsArtefactTransformer{
 
+    public static final String HAS_ERRORS_METHOD = "hasErrors";
     private static final java.util.List<String> EXCLUDES = new ArrayList<String>() {{
-       add("setErrors"); add("getErrors");
+       add("setErrors"); add("getErrors"); add(HAS_ERRORS_METHOD);
     }};
 
     @Override
@@ -93,5 +94,9 @@ public class GormValidationTransformer extends AbstractGrailsArtefactTransformer
                              .addExpression(new ConstantExpression(classNode.getName()));
         final ConstructorCallExpression emptyErrorsConstructorCall = new ConstructorCallExpression(new ClassNode(BeanPropertyBindingResult.class), errorsConstructorArgs);
         classNode.addProperty(GrailsDomainClassProperty.ERRORS, Modifier.PUBLIC, new ClassNode(Errors.class), emptyErrorsConstructorCall, null, null);
+
+        final BlockStatement methodBody = new BlockStatement();
+        methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(GrailsDomainClassProperty.ERRORS), HAS_ERRORS_METHOD, ZERO_ARGS)));
+        classNode.addMethod(new MethodNode(HAS_ERRORS_METHOD, Modifier.PUBLIC, new ClassNode(Boolean.class), ZERO_PARAMETERS,null, methodBody));
     }
 }
