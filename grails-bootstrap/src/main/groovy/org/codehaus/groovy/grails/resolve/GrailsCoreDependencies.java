@@ -35,6 +35,7 @@ public class GrailsCoreDependencies {
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, String... excludes) {
         for (ModuleRevisionId mrid : dependencies) {
             EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false, scope);
+            descriptor.setInherited(true);
             if (excludes != null) {
                 for (String exclude : excludes) {
                     descriptor.exclude(exclude);
