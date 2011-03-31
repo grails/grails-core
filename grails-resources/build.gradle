@@ -1,0 +1,57 @@
+task createSharedFilesJar(type: Jar, description: 'Package up the files that are shared by both applications and plugins.') {
+	version = null
+    appendix = "shared-files"
+    appFileJar = true
+    from("src/war/WEB-INF") {
+        into "web-app/WEB-INF"
+        include "applicationContext.xml", "sitemesh.xml", "tld/*.tld"
+    }
+    from("src/grails/grails-app/conf") {
+        into "grails-app/conf"
+        include "DataSource.groovy", "UrlMappings.groovy"
+    }
+}
+
+task createSharedApplicationFilesJar(type: Jar, description: 'Package up the files that are exclusive to applications.') {
+	version = null	
+    appendix = "app-files"
+    appFileJar = true
+    from("src/war") {
+        into "web-app"
+        exclude "WEB-INF/**"
+    }
+    from("src/grails/grails-app") {
+        into "grails-app"
+        exclude "taglib/**", "utils/**", "conf/DataSource.groovy", "conf/UrlMappings.groovy"
+    }
+}
+
+task createSharedPluginFilesJar(type: Jar, description: 'Package up the files that are exclusive to plugins.') {
+	version = null	
+    appendix = "plugin-files"
+    appFileJar = true
+    from("src/grails/templates/plugins")
+    from("src/grails") {
+        include "grails-app/conf/BuildConfig.groovy", "grails-app/views/error.gsp"
+    }
+    from("src/grails/plugin")
+}
+
+task createIntegrationFilesJar(type: Jar, description: 'Files to integrate Grails with IDEs and build systems.') {
+	version = null	
+    appendix = "integration-files"
+    appFileJar = true
+    from("src/grails/templates/ide-support", "src/grails/ant")
+}
+
+allJarFileTasks = [createSharedFilesJar,createSharedApplicationFilesJar,createSharedPluginFilesJar,createIntegrationFilesJar]
+task resourceJarFiles(dependsOn:allJarFileTasks)
+
+
+jar.dependsOn resourceJarFiles
+
+for(jarTask in allJarFileTasks) {
+	jar.from(jarTask.archivePath)
+}
+	
+jar.appendix = 'resources'

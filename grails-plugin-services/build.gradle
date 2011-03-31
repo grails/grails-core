@@ -1,0 +1,4 @@
+dependencies {
+	compile project(":grails-core")
+}
+jar.appendix = 'plugin-services'

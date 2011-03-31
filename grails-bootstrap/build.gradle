@@ -4,4 +4,11 @@ repositories {
 dependencies {
    	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
 }
+
+compileGroovy.doFirst {
+ 	ant.mkdir(dir:sourceSets.main.classesDir)
+	ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
+		entry key:"grails.version", value:version
+	}
+}
 jar.appendix = 'bootstrap'

@@ -1,0 +1,10 @@
+dependencies {
+	
+	compile project(':grails-plugin-controllers'),
+			project(':grails-plugin-gsp'),
+			project(':grails-plugin-filters'),
+			project(':grails-plugin-mimetypes'),
+			project(':grails-plugin-converters'),
+			project(':grails-test')
+}
+jar.appendix = 'webflow'

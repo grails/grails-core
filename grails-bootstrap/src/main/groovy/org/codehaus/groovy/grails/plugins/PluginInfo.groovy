@@ -89,7 +89,7 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
      * Returns the location of the descriptor
      */
     Resource getDescriptor() {
-        GrailsPluginUtils.getDescriptorForPlugin(pluginDir)
+        pluginBuildSettings.getDescriptorForPlugin(pluginDir)
     }
 
     String getFullName() {
